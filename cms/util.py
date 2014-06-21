@@ -32,6 +32,8 @@ import sys
 from argparse import ArgumentParser
 from collections import namedtuple
 
+import six
+
 import gevent.socket
 
 
@@ -51,6 +53,24 @@ def mkdir(path):
         if error.errno != errno.EEXIST:
             return False
     return True
+
+
+def utf8_decoder(value):
+    """Decode given binary to text (if it isn't already) using UTF8.
+
+    value (string): value to decode.
+
+    return (unicode): decoded value.
+
+    raise (TypeError): if value isn't a string.
+
+    """
+    if isinstance(value, six.text_type):
+        return value
+    elif isinstance(value, six.binary_type):
+        return value.decode('utf-8')
+    else:
+        raise TypeError("Not a string.")
 
 
 class Address(namedtuple("Address", "ip port")):
@@ -169,7 +189,7 @@ def default_argument_parser(description, cls, ask_contest=None):
 
     """
     parser = ArgumentParser(description=description)
-    parser.add_argument("shard", nargs="?", type=int, default=None)
+    parser.add_argument("shard", action="store", type=int, nargs="?")
 
     # We need to allow using the switch "-c" also for services that do
     # not need the contest_id because RS needs to be able to restart
@@ -177,8 +197,8 @@ def default_argument_parser(description, cls, ask_contest=None):
     contest_id_help = "id of the contest to automatically load"
     if ask_contest is None:
         contest_id_help += " (ignored)"
-    parser.add_argument("-c", "--contest-id", help=contest_id_help,
-                        nargs="?", type=int)
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help=contest_id_help)
     args = parser.parse_args()
 
     try:

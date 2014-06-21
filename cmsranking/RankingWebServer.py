@@ -444,9 +444,8 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Ranking for CMS.")
-    parser.add_argument("-d", "--drop",
-                        help="drop the data already stored",
-                        action="store_true")
+    parser.add_argument("-d", "--drop", action="store_true",
+                        help="drop the data already stored")
     args = parser.parse_args()
 
     if args.drop:

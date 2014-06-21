@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 import argparse
 import sys
 
+from cms import utf8_decoder
 from cms.db import SessionGen, User, Contest, ask_for_contest
 
 
@@ -56,23 +57,22 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Adds a user to a contest in CMS.")
-    parser.add_argument("first_name",
+    parser.add_argument("first_name", action="store", type=utf8_decoder,
                         help="first name of the user")
-    parser.add_argument("last_name",
+    parser.add_argument("last_name", action="store", type=utf8_decoder,
                         help="last name of the user")
-    parser.add_argument("username",
+    parser.add_argument("username", action="store", type=utf8_decoder,
                         help="username of the user")
-    parser.add_argument("-c", "--contest-id",
-                        help="id of contest where to add the user",
-                        action="store", type=int)
-    parser.add_argument("-p", "--password", help="password of the user",
-                        action="store")
-    parser.add_argument("-i", "--ip-address", help="ip address of the user",
-                        action="store")
-    parser.add_argument("-e", "--email", help="email address of the user",
-                        action="store")
-    parser.add_argument("-H", "--hidden", help="if the user is hidden",
-                        action="store_true")
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help="id of contest where to add the user")
+    parser.add_argument("-p", "--password", action="store", type=utf8_decoder,
+                        help="password of the user")
+    parser.add_argument("-i", "--ip-address", action="store",
+                        type=utf8_decoder, help="ip address of the user")
+    parser.add_argument("-e", "--email", action="store", type=utf8_decoder,
+                        help="email address of the user")
+    parser.add_argument("-H", "--hidden", action="store_true",
+                        help="if the user is hidden")
     args = parser.parse_args()
 
     if args.contest_id is None:

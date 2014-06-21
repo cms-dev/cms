@@ -44,12 +44,13 @@ from __future__ import unicode_literals
 import io
 import os
 import shutil
-import six
 import sys
 import zipfile
 
 from argparse import ArgumentParser
 from glob import glob
+
+from cms import utf8_decoder
 
 
 def to_timestamp(time_tuple):
@@ -72,7 +73,8 @@ def main():
     """
     parser = ArgumentParser(
         description="Translate from a filesystem format to the Replay format.")
-    parser.add_argument("source", type=six.text_type, help="source directory")
+    parser.add_argument("source", action="store", type=utf8_decoder,
+                        help="source directory")
     args = parser.parse_args()
 
     all_events = []

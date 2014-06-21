@@ -28,6 +28,7 @@ from __future__ import unicode_literals
 import argparse
 import sys
 
+from cms import utf8_decoder
 from cms.db import SessionGen, Task, ask_for_contest
 
 
@@ -46,10 +47,10 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Remove a task from a contest in CMS.")
-    parser.add_argument("task_name", help="short name of the task")
-    parser.add_argument("-c", "--contest-id",
-                        help="id of contest the task is in",
-                        action="store", type=int)
+    parser.add_argument("task_name", action="store", type=utf8_decoder,
+                        help="short name of the task")
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help="id of contest the task is in")
     args = parser.parse_args()
 
     if args.contest_id is None:

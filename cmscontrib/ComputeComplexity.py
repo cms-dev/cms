@@ -43,6 +43,7 @@ import io
 import numpy
 import sys
 
+from cms import utf8_decoder
 from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 
@@ -305,9 +306,9 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Extract the complexity of submissions of a task.")
-    parser.add_argument("task_id",
+    parser.add_argument("task_id", action="store", type=int,
                         help="id of the task in the DB")
-    parser.add_argument("-l", "--lengther",
+    parser.add_argument("-l", "--lengther", action="store", type=utf8_decoder,
                         help="filename of a Python source "
                         "with a FileLengther class")
     args = parser.parse_args()
@@ -328,7 +329,7 @@ def main():
             print("Module %s must have a class named FileLengther." %
                   args.lengther)
 
-    return extract_complexity(int(args.task_id), file_lengther=file_lengther)
+    return extract_complexity(args.task_id, file_lengther=file_lengther)
 
 
 if __name__ == "__main__":

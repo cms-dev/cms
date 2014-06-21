@@ -51,7 +51,7 @@ from six.moves import xrange
 from requests import Session, Request
 from requests.exceptions import RequestException
 
-from cms import config
+from cms import config, utf8_decoder
 
 
 logger = logging.getLogger(__name__)
@@ -85,9 +85,9 @@ def main():
     # FIXME It would be nice to use '--rankings' with action='store'
     # and nargs='+' but it doesn't seem to work with subparsers...
     parser.add_argument(
-        '-r', '--ranking', dest='rankings', action='append', default=None,
+        '-r', '--ranking', dest='rankings', action='append', type=int,
         choices=list(xrange(len(config.rankings))), metavar='shard',
-        type=int, help="select which RWS to connect to (omit for 'all')")
+        help="select which RWS to connect to (omit for 'all')")
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
         help='what to ask the RWS to do with the entity')
@@ -100,14 +100,14 @@ def main():
     parser_create = subparsers.add_parser('create', help="create the entity")
     parser_create.set_defaults(action='create')
     parser_create.add_argument(
-        'file', type=argparse.FileType('rb'),
+        'file', action="store", type=argparse.FileType('rb'),
         help="file holding the entity body to send ('-' for stdin)")
 
     # Create the parser for the "update" command
     parser_update = subparsers.add_parser('update', help='update the entity')
     parser_update.set_defaults(action='update')
     parser_update.add_argument(
-        'file', type=argparse.FileType('rb'),
+        'file', action="store", type=argparse.FileType('rb'),
         help="file holding the entity body to send ('-' for stdin)")
 
     # Create the parser for the "delete" command
@@ -121,7 +121,7 @@ def main():
         'entity_type', action='store', choices=ENTITY_TYPES, metavar='type',
         help="type of the entity (e.g. contest, user, task, etc.)")
     group.add_argument(
-        'entity_id', action='store', type=six.text_type, metavar='id',
+        'entity_id', action='store', type=utf8_decoder, metavar='id',
         help='ID of the entity (usually a short codename)')
 
     # Parse the given arguments

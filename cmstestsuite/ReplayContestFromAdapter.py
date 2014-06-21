@@ -51,6 +51,7 @@ from argparse import ArgumentParser
 from mechanize import Browser
 from threading import Thread
 
+from cms import utf8_decoder
 from cmstestsuite.web.CWSRequests import \
     LoginRequest, SubmitRequest, TokenRequest
 
@@ -205,11 +206,12 @@ def main():
     global start, speed, old_speed
 
     parser = ArgumentParser(description="Replay a contest.")
-    parser.add_argument("address", type=six.text_type,
-                        help="http address of CWS",
-                        default="http://127.0.0.1:8888")
-    parser.add_argument("source", type=six.text_type, help="events file")
-    parser.add_argument("-r", "--resume", type=six.text_type,
+    parser.add_argument("address", action="store", type=utf8_decoder,
+                        default="http://127.0.0.1:8888",
+                        help="http address of CWS")
+    parser.add_argument("source", action="store", type=utf8_decoder,
+                        help="events file")
+    parser.add_argument("-r", "--resume", action="store", type=utf8_decoder,
                         help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
     start_from = None

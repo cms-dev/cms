@@ -43,6 +43,7 @@ import logging
 import os
 import os.path
 
+from cms import utf8_decoder
 from cms.db import SessionGen, User, init_db, drop_db
 from cms.db.filecacher import FileCacher
 
@@ -149,9 +150,10 @@ def main():
                         "before importing")
     parser.add_argument("-n", "--user-number", action="store", type=int,
                         help="put N random users instead of importing them")
-    parser.add_argument("-L", "--loader", action="store", default=None,
+    parser.add_argument("-L", "--loader",
+                        action="store", type=utf8_decoder, default=None,
                         help="use the specified loader (default: autodetect)")
-    parser.add_argument("import_directory",
+    parser.add_argument("import_directory", action="store", type=utf8_decoder,
                         help="source directory from where import")
 
     args = parser.parse_args()

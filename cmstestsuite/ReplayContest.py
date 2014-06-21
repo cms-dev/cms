@@ -42,7 +42,6 @@ import io
 import os
 import shutil
 import json
-import six
 import sys
 import tempfile
 import time
@@ -51,7 +50,7 @@ from argparse import ArgumentParser
 from mechanize import Browser
 from threading import Thread, RLock
 
-from cms import config, logger
+from cms import config, logger, utf8_decoder
 from cmscontrib.ContestImporter import ContestImporter
 from cmstestsuite.web.CWSRequests import \
     LoginRequest, SubmitRequest, TokenRequest
@@ -310,14 +309,14 @@ class ContestReplayer(object):
 
 def main():
     parser = ArgumentParser(description="Replayer of CMS contests.")
-    parser.add_argument("cws_address", type=six.text_type,
-                        help="http address of CWS",
-                        default="http://127.0.0.1:8888")
-    parser.add_argument("import_source",
+    parser.add_argument("cws_address", action="store", type=utf8_decoder,
+                        default="http://127.0.0.1:8888",
+                        help="http address of CWS")
+    parser.add_argument("import_source", action="store", type=utf8_decoder,
                         help="source directory or compressed file")
     parser.add_argument("-i", "--no-import", action="store_true",
                         help="assume the contest is already in the database")
-    parser.add_argument("-r", "--resume", type=six.text_type,
+    parser.add_argument("-r", "--resume", action="store", type=utf8_decoder,
                         help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
     start_from = None

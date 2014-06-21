@@ -28,11 +28,10 @@ import sys
 import subprocess
 import datetime
 import re
-import six
 
 from argparse import ArgumentParser
 
-from cms import LANGUAGES
+from cms import LANGUAGES, utf8_decoder
 from cmstestsuite import get_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     add_user, add_task, add_testcase, add_manager, combine_coverage, \
@@ -364,15 +363,13 @@ def config_is_usable(cms_config):
 def main():
     parser = ArgumentParser(description="Runs the CMS functional test suite.")
     parser.add_argument(
-        "regex", metavar="regex",
-        type=six.text_type, nargs='*',
+        "regex", action="store", type=utf8_decoder, nargs='*', metavar="regex",
         help="a regex to match to run a subset of tests")
     parser.add_argument(
-        "-l", "--languages",
-        type=six.text_type, action="store", default="",
+        "-l", "--languages", action="store", type=utf8_decoder, default="",
         help="a comma-separated list of languages to test")
     parser.add_argument(
-        "-c", "--contest", action="store",
+        "-c", "--contest", action="store", type=utf8_decoder,
         help="use an existing contest (and the tasks in it)")
     parser.add_argument(
         "-r", "--retry-failed", action="store_true",

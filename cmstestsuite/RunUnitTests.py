@@ -23,12 +23,12 @@ from __future__ import unicode_literals
 
 import io
 import os
-import six
 import sys
 import subprocess
 import datetime
 from argparse import ArgumentParser
 
+from cms import utf8_decoder
 from cmstestsuite import CONFIG, FrameworkException, info, sh
 from cmstestsuite import combine_coverage
 
@@ -145,12 +145,14 @@ def main():
 
     # Unused parameters.
     parser.add_argument(
-        "regex", metavar="regex",
-        type=six.text_type, nargs='*', help="unused")
+        "regex", action="store", type=utf8_decoder, nargs='*', metavar="regex",
+        help="unused")
     parser.add_argument(
-        "-l", "--languages",
-        type=six.text_type, action="store", default="", help="unused")
-    parser.add_argument("-c", "--contest", action="store", help="unused")
+        "-l", "--languages", action="store", type=utf8_decoder, default="",
+        help="unused")
+    parser.add_argument(
+        "-c", "--contest", action="store", type=utf8_decoder,
+        help="unused")
 
     args = parser.parse_args()
 
