@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -40,7 +40,7 @@ from gevent import subprocess
 #import gevent_subprocess as subprocess
 
 from cms import config, get_safe_shard, ServiceCoord
-from cms.io import Service, rpc_method, RemoteServiceClient
+from cms.io import Service, rpc_method
 
 
 logger = logging.getLogger(__name__)
@@ -410,8 +410,9 @@ class ResourceService(Service):
         except ValueError:
             logger.error("Unable to decode service shard.")
 
-        remote_service = RemoteServiceClient(ServiceCoord(name, shard))
-        remote_service.quit(reason="Asked by ResourceService")
+        remote_service = self.connect_to(ServiceCoord(name, shard))
+        result = remote_service.quit(reason="Asked by ResourceService")
+        return result.get()
 
     @rpc_method
     def toggle_autorestart(self, service):
