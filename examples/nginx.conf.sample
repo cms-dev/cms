@@ -123,6 +123,8 @@ http {
         location ^~ /rws/ {
             proxy_pass http://rws/;
             include proxy_params;
+            proxy_redirect http://$host/ /rws/;
+            proxy_redirect https://$host/ /rws/;
             # Buffering blocks the streaming HTTP requests used for
             # live-update.
             proxy_buffering off;
