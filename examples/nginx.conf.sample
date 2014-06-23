@@ -39,14 +39,24 @@ http {
     # to work.
     upstream cws {
         ip_hash;
+        keepalive 500;
         server 127.0.0.1:8888;
         # Insert other CWSs here.
+    }
+
+    # To benefit from kept-alive connections also on AdminWebServer a
+    # group for it has to be created as well, even if it will contain
+    # just one server.
+    upstream aws {
+        keepalive 5;
+        server 127.0.0.1:8889;
     }
 
     # Group the RankingWebServers to load balance among them (useful to
     # overcome the hard limit on simultaneous open file descriptors if
     # you expect a very large number of clients).
     upstream rws {
+        keepalive 500;
         server 127.0.0.1:8890;
         # Insert other RWSs here.
     }
@@ -102,8 +112,10 @@ http {
 
         # Serve AWS on a prefix.
         location ^~ /aws/ {
-            proxy_pass http://127.0.0.1:8889/;
+            proxy_pass http://aws/;
             include proxy_params;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
 
             # Protect it with an authentication. For more information
             # see http://wiki.nginx.org/HttpAuthBasicModule.
@@ -125,6 +137,8 @@ http {
             include proxy_params;
             proxy_redirect http://$host/ /rws/;
             proxy_redirect https://$host/ /rws/;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
             # Buffering blocks the streaming HTTP requests used for
             # live-update.
             proxy_buffering off;
@@ -144,6 +158,8 @@ http {
         location / {
             proxy_pass http://cws/;
             include proxy_params;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
 
             # Needs to be as large as the maximum allowed submission
             # and input lengths set in cms.conf.
