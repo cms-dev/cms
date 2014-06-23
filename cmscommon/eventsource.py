@@ -287,7 +287,7 @@ class EventSource(object):
 
         # The third non-standard behavior that we expect (related to
         # the previous one) is that no one in the application-to-client
-        # chain does response buffering: neither any middleware not the
+        # chain does response buffering: neither any middleware nor the
         # server (gevent doesn't!). This should also hold outside the
         # server realm (i.e. no proxy buffering) but that's definetly
         # not our responsibility.
@@ -354,7 +354,7 @@ class EventSource(object):
         sub = self._pub.get_subscriber(last_event_id)
 
         # Send some data down the pipe. We need that to make the user
-        # agent announce the connection (see the spec.). Since it's a
+        # agent announces the connection (see the spec.). Since it's a
         # comment it will be ignored.
         write(b":\n")
 
