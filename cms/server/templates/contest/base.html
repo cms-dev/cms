@@ -3,7 +3,7 @@
 {% import json %}
 {% from cms import LANGUAGE_NAMES, LANGUAGE_TO_SOURCE_EXT_MAP %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
-{% from cmscommon.datetime import make_timestamp %}
+{% from cmscommon.datetime import make_timestamp, utc %}
 {% from cmscommon.isocodes import translate_language_country_code %}
 <!DOCTYPE html>
 <html>
@@ -26,6 +26,8 @@
 // FIXME use Date objects
 var utils = new CMS.CWSUtils("{{ url_root }}",
                              {{ make_timestamp(timestamp) }},
+                             {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
+                             {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
                              {{ make_timestamp(current_phase_begin) }},
                              {{ make_timestamp(current_phase_end) }},
                              {{ actual_phase }});

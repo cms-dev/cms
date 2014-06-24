@@ -25,11 +25,12 @@
 
 var CMS = CMS || {};
 
-CMS.CWSUtils = function(url_root, timestamp,
+CMS.CWSUtils = function(url_root, timestamp, timezoned_timestamp,
                         current_phase_begin, current_phase_end, phase) {
     this.url_root = url_root;
     this.last_notification = timestamp;
     this.server_timestamp = timestamp;
+    this.server_timezoned_timestamp = timezoned_timestamp;
     this.client_timestamp = $.now() / 1000;
     this.current_phase_begin = current_phase_begin;
     this.current_phase_end = current_phase_end;
@@ -123,27 +124,18 @@ CMS.CWSUtils.prototype.two_digits = function(n) {
 };
 
 
-CMS.CWSUtils.prototype.format_iso_date = function(timestamp) {
-    var date = new Date(timestamp * 1000);
-    return date.getFullYear() + "-"
-        + this.two_digits(date.getMonth() + 1) + "-"
-        + this.two_digits(date.getDate());
-};
-
-
+/**
+ * Return the time of the given timestamp as "HH:MM:SS" in UTC.
+ *
+ * timestamp (float): a UNIX timestamp.
+ * return (string): hours, minutes and seconds, zero-padded to two
+ *     digits and colon-separated, of timestamp in UTC timezone.
+ */
 CMS.CWSUtils.prototype.format_time = function(timestamp) {
     var date = new Date(timestamp * 1000);
-    return this.two_digits(date.getHours()) + ":"
-        + this.two_digits(date.getMinutes()) + ":"
-        + this.two_digits(date.getSeconds());
-};
-
-
-CMS.CWSUtils.prototype.format_iso_datetime = function(timestamp) {
-    /* The result value differs from Date.toISOString() because if uses
-       " " as a date/time separator (instead of "T") and because it stops
-       at the seconds (and not at milliseconds). */
-    return this.format_iso_date(timestamp) + " " + this.format_time(timestamp);
+    return this.two_digits(date.getUTCHours()) + ":"
+        + this.two_digits(date.getUTCMinutes()) + ":"
+        + this.two_digits(date.getUTCSeconds());
 };
 
 
@@ -168,8 +160,12 @@ CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
 CMS.CWSUtils.prototype.update_time = function() {
     var now = $.now() / 1000;
 
+    // FIXME This may cause some problems around DST boundaries, as it
+    // is not adjusted because we consider it to be in UTC timezone.
+    var server_timezoned_time = now - this.client_timestamp + this.server_timezoned_timestamp;
+    $("#server_time").text(this.format_time(server_timezoned_time));
+
     var server_time = now - this.client_timestamp + this.server_timestamp;
-    $("#server_time").text(this.format_time(server_time));
 
     // TODO consider possible null values of this.current_phase_begin
     // and this.current_phase_end (they mean -inf and +inf
