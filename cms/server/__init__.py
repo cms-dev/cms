@@ -122,9 +122,14 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
                 current_phase_begin = contest_start
                 current_phase_end = contest_stop
             else:
+                user_begin_time = max(starting_time, contest_start)
                 user_end_time = min(starting_time + per_user_time, contest_stop)
-                if timestamp <= user_end_time:
-                    current_phase_begin = starting_time
+                if timestamp < user_begin_time:
+                    actual_phase = -1
+                    current_phase_begin = contest_start
+                    current_phase_end = user_begin_time
+                elif timestamp <= user_end_time:
+                    current_phase_begin = user_begin_time
                     current_phase_end = user_end_time
                 else:
                     actual_phase = +1
@@ -144,7 +149,7 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
         valid_phase_begin = contest_start
         valid_phase_end = contest_stop
     elif starting_time is not None:
-        valid_phase_begin = starting_time
+        valid_phase_begin = max(starting_time, contest_start)
         valid_phase_end = min(starting_time + per_user_time, contest_stop)
 
     # consider the extra time
@@ -155,6 +160,9 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
             actual_phase = 0
             current_phase_begin = valid_phase_begin
             current_phase_end = valid_phase_end
+
+        if actual_phase > 0:
+            current_phase_begin = max(current_phase_begin, valid_phase_end)
 
     return (actual_phase,
             current_phase_begin, current_phase_end,
