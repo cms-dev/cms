@@ -47,6 +47,120 @@ from cmscommon.datetime import make_datetime, utc
 logger = logging.getLogger(__name__)
 
 
+def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
+                         starting_time, delay_time, extra_time):
+    """Determine the current phase and when the active phase is.
+
+    The "actual phase" of the contest for a certain user is the status
+    in which the contest is presented to the user and determines the
+    information the latter is allowed to see (and the actions he is
+    allowed to perform). In general it may be different for each user.
+
+    The phases, and their meaning, are the following:
+    * -2: the user cannot compete because the contest hasn't started
+          yet;
+    * -1: the user cannot compete because, even if the contest has
+          already started, its per-user time frame hasn't yet (this
+          usually means the user still has to click on the "start!"
+          button in USACO-like contests);
+    * 0: the user can compete;
+    * +1: the user cannot compete because, even if the contest hasn't
+          stopped yet, its per-user time frame already has (again, this
+          should normally happen only in USACO-like contests);
+    * +2: the user cannot compete because the contest has already
+          stopped.
+    A user is said to "compete" if he can read the tasks' statements,
+    submit solutions, see their results, etc.
+
+    This function returns the actual phase at the given timestamp, as
+    well as its boundaries (i.e. when it started and will end, with
+    None meaning +/- infinity) and the boundaries of the phase 0 (if it
+    is defined, otherwise None).
+
+    timestamp (datetime): the current time.
+    contest_start (datetime): the contest's start.
+    contest_stop (datetime): the contest's stop.
+    per_user_time (timedelta|None): the amount of time allocated to
+        each user; if it's None the contest is traditional, otherwise
+        it's USACO-like.
+    starting_time (datetime|None): when the user started his time
+        frame.
+    delay_time (timedelta): how much the user's start is delayed.
+    extra_time (timedelta): how much extra time is given to the user at
+        the end.
+
+    return (tuple): 5 items: an integer (in [-2, +2]) and two pairs of
+        datetimes (or None) defining two intervals.
+
+    """
+    if contest_start is not None and contest_start > timestamp:
+        phase = -1
+    elif contest_stop is None or contest_stop > timestamp:
+        phase = 0
+    else:
+        phase = 1
+
+    # "adjust" the phase, considering the per_user_time
+    actual_phase = 2 * phase
+
+    if phase == -1:
+        # pre-contest phase
+        current_phase_begin = None
+        current_phase_end = contest_start
+    elif phase == 0:
+        # contest phase
+        if per_user_time is None:
+            # "traditional" contest: every user can compete for
+            # the whole contest time
+            current_phase_begin = contest_start
+            current_phase_end = contest_stop
+        else:
+            # "USACO-like" contest: every user can compete only
+            # for a limited time frame during the contest time
+            if starting_time is None:
+                actual_phase = -1
+                current_phase_begin = contest_start
+                current_phase_end = contest_stop
+            else:
+                user_end_time = min(starting_time + per_user_time, contest_stop)
+                if timestamp <= user_end_time:
+                    current_phase_begin = starting_time
+                    current_phase_end = user_end_time
+                else:
+                    actual_phase = +1
+                    current_phase_begin = user_end_time
+                    current_phase_end = contest_stop
+    else:  # phase == 1
+        # post-contest phase
+        current_phase_begin = contest_stop
+        current_phase_end = None
+
+    # compute valid_phase_begin and valid_phase_end (that is,
+    # the time at which actual_phase started/will start and
+    # stopped/will stop being zero, or None if unknown).
+    valid_phase_begin = None
+    valid_phase_end = None
+    if per_user_time is None:
+        valid_phase_begin = contest_start
+        valid_phase_end = contest_stop
+    elif starting_time is not None:
+        valid_phase_begin = starting_time
+        valid_phase_end = min(starting_time + per_user_time, contest_stop)
+
+    # consider the extra time
+    if valid_phase_end is not None:
+        valid_phase_end += extra_time
+        if valid_phase_begin <= timestamp <= valid_phase_end:
+            # phase = 0
+            actual_phase = 0
+            current_phase_begin = valid_phase_begin
+            current_phase_end = valid_phase_end
+
+    return (actual_phase,
+            current_phase_begin, current_phase_end,
+            valid_phase_begin, valid_phase_end)
+
+
 def actual_phase_required(*actual_phases):
     """Return decorator filtering out requests in the wrong phase.
 

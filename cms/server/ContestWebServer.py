@@ -73,7 +73,7 @@ from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
     actual_phase_required, get_url_root, filter_ascii, \
-    CommonRequestHandler, format_size
+    CommonRequestHandler, format_size, compute_actual_phase
 from cmscommon.isocodes import is_language_code, translate_language_code, \
     is_country_code, translate_country_code, \
     is_language_country_code, translate_language_country_code
@@ -301,70 +301,17 @@ class BaseHandler(CommonRequestHandler):
         ret["phase"] = self.contest.phase(self.timestamp)
 
         if self.current_user is not None:
-            # "adjust" the phase, considering the per_user_time
-            ret["actual_phase"] = 2 * ret["phase"]
+            res = compute_actual_phase(
+                self.timestamp, self.contest.start, self.contest.stop,
+                self.contest.per_user_time, self.current_user.starting_time,
+                timedelta(), self.current_user.extra_time)
 
-            if ret["phase"] == -1:
-                # pre-contest phase
-                ret["current_phase_begin"] = None
-                ret["current_phase_end"] = self.contest.start
-            elif ret["phase"] == 0:
-                # contest phase
-                if self.contest.per_user_time is None:
-                    # "traditional" contest: every user can compete for
-                    # the whole contest time
-                    ret["current_phase_begin"] = self.contest.start
-                    ret["current_phase_end"] = self.contest.stop
-                else:
-                    # "USACO-like" contest: every user can compete only
-                    # for a limited time frame during the contest time
-                    if self.current_user.starting_time is None:
-                        ret["actual_phase"] = -1
-                        ret["current_phase_begin"] = self.contest.start
-                        ret["current_phase_end"] = self.contest.stop
-                    else:
-                        user_end_time = min(
-                            self.current_user.starting_time +
-                            self.contest.per_user_time,
-                            self.contest.stop)
-                        if self.timestamp <= user_end_time:
-                            ret["current_phase_begin"] = \
-                                self.current_user.starting_time
-                            ret["current_phase_end"] = user_end_time
-                        else:
-                            ret["actual_phase"] = +1
-                            ret["current_phase_begin"] = user_end_time
-                            ret["current_phase_end"] = self.contest.stop
-            else:  # ret["phase"] == 1
-                # post-contest phase
-                ret["current_phase_begin"] = self.contest.stop
-                ret["current_phase_end"] = None
+            ret["actual_phase"], ret["current_phase_begin"], \
+                ret["current_phase_end"], ret["valid_phase_begin"], \
+                ret["valid_phase_end"] = res
 
-            # compute valid_phase_begin and valid_phase_end (that is,
-            # the time at which actual_phase started/will start and
-            # stopped/will stop being zero, or None if unknown).
-            ret["valid_phase_begin"] = None
-            ret["valid_phase_end"] = None
-            if self.contest.per_user_time is None:
-                ret["valid_phase_begin"] = self.contest.start
-                ret["valid_phase_end"] = self.contest.stop
-            elif self.current_user.starting_time is not None:
-                ret["valid_phase_begin"] = self.current_user.starting_time
-                ret["valid_phase_end"] = min(
-                    self.current_user.starting_time +
-                    self.contest.per_user_time,
-                    self.contest.stop)
-
-            # consider the extra time
-            if ret["valid_phase_end"] is not None:
-                ret["valid_phase_end"] += self.current_user.extra_time
-                if ret["valid_phase_begin"] <= \
-                        self.timestamp <= \
-                        ret["valid_phase_end"]:
-                    ret["phase"] = 0
-                    ret["actual_phase"] = 0
-                    ret["current_phase_begin"] = ret["valid_phase_begin"]
-                    ret["current_phase_end"] = ret["valid_phase_end"]
+            if ret["actual_phase"] == 0:
+                ret["phase"] = 0
 
             # set the timezone used to format timestamps
             ret["timezone"] = get_timezone(self.current_user, self.contest)
