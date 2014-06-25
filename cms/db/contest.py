@@ -157,6 +157,7 @@ class Contest(Base):
     # Max contest time for each user in seconds.
     per_user_time = Column(
         Interval,
+        CheckConstraint("per_user_time >= '0 seconds'"),
         nullable=True)
 
     # Maximum number of submissions or user_tests allowed for each user

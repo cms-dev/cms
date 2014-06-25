@@ -1763,6 +1763,7 @@ class UserViewHandler(BaseHandler):
 
             self.get_string(attrs, "timezone", empty=None)
             self.get_datetime(attrs, "starting_time")
+            self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")
 
             self.get_bool(attrs, "hidden")
@@ -1803,6 +1804,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
             self.get_string(attrs, "timezone", empty=None)
             self.get_datetime(attrs, "starting_time")
+            self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")
 
             self.get_bool(attrs, "hidden")

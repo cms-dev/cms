@@ -304,7 +304,7 @@ class BaseHandler(CommonRequestHandler):
             res = compute_actual_phase(
                 self.timestamp, self.contest.start, self.contest.stop,
                 self.contest.per_user_time, self.current_user.starting_time,
-                timedelta(), self.current_user.extra_time)
+                self.current_user.delay_time, self.current_user.extra_time)
 
             ret["actual_phase"], ret["current_phase_begin"], \
                 ret["current_phase_end"], ret["valid_phase_begin"], \

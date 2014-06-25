@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,7 +30,8 @@ from __future__ import unicode_literals
 
 from datetime import timedelta
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
+    UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
@@ -131,9 +132,18 @@ class User(Base):
         DateTime,
         nullable=True)
 
+    # A shift in the time interval during which the user is allowed to
+    # submit.
+    delay_time = Column(
+        Interval,
+        CheckConstraint("delay_time >= '0 seconds'"),
+        nullable=False,
+        default=timedelta())
+
     # An extra amount of time allocated for this user.
     extra_time = Column(
         Interval,
+        CheckConstraint("extra_time >= '0 seconds'"),
         nullable=False,
         default=timedelta())
 
