@@ -176,14 +176,16 @@ def get_service_shards(service):
 
 
 def default_argument_parser(description, cls, ask_contest=None):
-    """Default argument parser for services - in two versions: needing
-    a contest_id, or not.
+    """Default argument parser for services.
+
+    This has two versions, depending on whether the service needs a
+    contest_id, or not.
 
     description (string): description of the service.
     cls (type): service's class.
-    ask_contest (function): None if the service does not require a
-                            contest, otherwise a function that returns
-                            a contest_id (after asking the admins?)
+    ask_contest (function|None): None if the service does not require
+        a contest, otherwise a function that returns a contest_id
+        (after asking the admins?)
 
     return (object): an instance of a service.
 

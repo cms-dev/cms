@@ -655,8 +655,8 @@ def white_diff_step(sandbox, output_filename,
         sandbox.
     correct_output_filename (string): the same with reference output.
 
-    return ((float, [str])): the outcome as above and a description
-        text.
+    return ((float, [unicode])): the outcome as above and a
+        description text.
 
     """
     if sandbox.file_exists(output_filename):
