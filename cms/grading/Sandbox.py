@@ -275,6 +275,7 @@ class SandboxBase(object):
         system path.
 
         path (string): relative path of the file inside the sandbox.
+
         return (string): the absolute path.
 
         """
@@ -286,6 +287,7 @@ class SandboxBase(object):
 
         path (string): relative path of the file inside the sandbox.
         executable (bool): to set permissions.
+
         return (file): the file opened in write binary mode.
 
         """
@@ -362,6 +364,7 @@ class SandboxBase(object):
         path (string): relative path of the file inside the sandbox.
         maxlen (int): maximum number of bytes to read, or None if no
                       limit.
+
         return (string): the content of the file up to maxlen bytes.
 
         """
@@ -398,6 +401,7 @@ class SandboxBase(object):
         """Return the stats of a file in the sandbox.
 
         path (string): relative path of the file inside the sandbox.
+
         return (stat_result): the stat results.
 
         """
@@ -407,6 +411,7 @@ class SandboxBase(object):
         """Return if a file exists in the sandbox.
 
         path (string): relative path of the file inside the sandbox.
+
         return (bool): if the file exists.
 
         """
@@ -578,9 +583,10 @@ class StupidSandbox(SandboxBase):
         stdin (file): a file descriptor/object or None.
         stdout (file): a file descriptor/object or None.
         stderr (file): a file descriptor/object or None.
-        preexec_fn (callable): to be called just before execve() or
-                               None.
+        preexec_fn (function|None): to be called just before execve()
+            or None.
         close_fds (bool): close all file descriptor before executing.
+
         return (object): popen object.
 
         """
@@ -1105,6 +1111,7 @@ class IsolateSandbox(SandboxBase):
         absolute path inside the sandbox.
 
         path (string): relative path of the file inside the sandbox.
+
         return (string): the absolute path of the file inside the sandbox.
 
         """
@@ -1119,6 +1126,7 @@ class IsolateSandbox(SandboxBase):
 
         command (list): executable filename and arguments of the
                         command.
+
         return (bool): True if the sandbox didn't report errors
                        (caused by the sandbox itself), False otherwise
 

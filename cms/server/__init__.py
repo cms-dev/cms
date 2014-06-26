@@ -48,7 +48,11 @@ logger = logging.getLogger(__name__)
 
 
 def actual_phase_required(*actual_phases):
-    """Return decorator that accepts requests iff contest is in the given phase
+    """Return decorator filtering out requests in the wrong phase.
+
+    actual_phases ([int]): the phases in which the request can pass.
+
+    return (function): the decorator.
 
     """
     def decorator(func):
@@ -111,7 +115,7 @@ DIMS = list(1024 ** x for x in xrange(9))
 
 
 def format_size(n):
-    """Format the given number of bytes
+    """Format the given number of bytes.
 
     Return a size, given as a number of bytes, properly formatted
     using the most appropriate size unit. Always use three
@@ -134,11 +138,13 @@ def format_size(n):
 
 
 def format_date(dt, timezone, locale=None):
-    """Return the date of dt formatted according to the given locale
+    """Return the date of dt formatted according to the given locale.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the date of dt, formatted using the given locale
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the date of dt, formatted using the given
+        locale.
 
     """
     if locale is None:
@@ -153,11 +159,12 @@ def format_date(dt, timezone, locale=None):
 
 
 def format_time(dt, timezone, locale=None):
-    """Return the time of dt formatted according to the given locale
+    """Return the time of dt formatted according to the given locale.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the time of dt, formatted using the given locale
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the time of dt, formatted using the given locale.
 
     """
     if locale is None:
@@ -172,11 +179,13 @@ def format_time(dt, timezone, locale=None):
 
 
 def format_datetime(dt, timezone, locale=None):
-    """Return the date and time of dt formatted according to the given locale
+    """Return the date and time of dt formatted as per locale.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the date and time of dt, formatted using the given locale
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the date and time of dt, formatted using the given
+        locale.
 
     """
     if locale is None:
@@ -191,11 +200,15 @@ def format_datetime(dt, timezone, locale=None):
 
 
 def format_datetime_smart(dt, timezone, locale=None):
-    """Return dt formatted as 'date & time' or, if date is today, just 'time'
+    """Return dt formatted as '[date] time'.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the [date and] time of dt, formatted using the given locale
+    Date is present in the output if it is not today.
+
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the [date and] time of dt, formatted using the given
+        locale.
 
     """
     if locale is None:
@@ -218,7 +231,8 @@ def get_score_class(score, max_score):
 
     score (float): the score of the submission.
     max_score (float): maximum score.
-    return (str): class name
+
+    return (unicode): class name
 
     """
     if score <= 0:
@@ -302,13 +316,13 @@ def format_token_rules(tokens, t_type=None, locale=None):
     """Return a human-readable string describing the given token rules
 
     tokens (dict): all the token rules (as seen in Task or Contest),
-                   without the "token_" prefix.
-    t_type (str): the type of tokens the string should refer to (can be
-                  "contest" to mean contest-tokens, "task" to mean
-                  task-tokens, any other value to mean normal tokens).
+        without the "token_" prefix.
+    t_type (string): the type of tokens the string should refer to
+        (can be "contest" to mean contest-tokens, "task" to mean
+        task-tokens, any other value to mean normal tokens).
     locale (Locale|NullTranslation): the locale to be used.
 
-    return (string): localized string describing the rules.
+    return (unicode): localized string describing the rules.
 
     """
     if locale is None:
@@ -399,11 +413,13 @@ def format_token_rules(tokens, t_type=None, locale=None):
 
 
 def format_dataset_attrs(dataset):
-    """Construct a printable string containing the attributes of a given
-    dataset (e.g. live, autojudge enabled, etc.)
+    """Return a printable string for the attributes of a dataset.
 
-    dataset (Dataset): the dataset in question
-    return (str): printable string of relevant attributes
+    E.g.: live, autojudge enabled, etc.
+
+    dataset (Dataset): the dataset in question.
+
+    return (unicode): printable string of relevant attributes.
 
     """
     if dataset is dataset.task.active_dataset:
@@ -415,11 +431,14 @@ def format_dataset_attrs(dataset):
 
 
 def filter_ascii(string):
-    """Avoid problem with printing a string provided by a malicious
+    """Return the printable ascii character in string.
+
+    This to avoid problem printing a string privided by a malicious
     entity.
 
-    string (str): the input string.
-    return (str): string with non-printable chars substituted by *.
+    string (unicode): the input string.
+
+    return (unicode): string with non-printable chars substituted by *.
 
     """
     def filter_ascii_char(c):
@@ -433,8 +452,14 @@ def filter_ascii(string):
 
 
 def encode_for_url(url_fragment):
-    """Encode to UTF-8 and then percent-encode a unicode string to be
-    used as an URL fragment.
+    """Return the string encoded safely for becoming a url fragment.
+
+    In particular, this means encoding it to UTF-8 and then
+    percent-encoding it.
+
+    url_fragment(unicode): the string to be encoded.
+
+    return (str): the encoded string.
 
     """
     return quote(url_fragment.encode('utf-8'), safe='')
