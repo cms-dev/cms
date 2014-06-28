@@ -44,7 +44,7 @@ There are two configuration files, one for CMS itself and one for the rankings. 
 
 * :file:`cms.conf` is intended to be the same on all servers; all configurations are explained in the file; of particular importance is the definition of ``core_services``, that specifies where the services are going to be run, and how many of them, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
 
-* :file:`cms.ranking.conf` is intended to be different on each server that will host a ranking. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.conf`.
+* :file:`cms.ranking.conf` is not necessarily meant to be the same on each server that will host a ranking, since it just controls settings relevant for one single server. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.conf`.
 
 These files are a pretty good starting point if you want to try CMS. There are some mandatory changes to do though:
 
@@ -56,6 +56,10 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 If you are organizing a real contest, you must change ``secret_key`` from the default, and also you will need to think about how to distribute your services and change accordingly ``core_services``. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, to use a non-trivial username and password.
 
+.. warning::
+
+   As the name implies, the value of ``secret_key`` must be kept confidential. If a contestant knows it (for example because you are using the default value), they may be easily able to log in as another contestant.
+
 After having modified :file:`cms.conf` and :file:`cms.ranking.conf` in :gh_tree:`examples/`, you can reinstall CMS in order to make these changes effective, with
 
 .. sourcecode:: bash
@@ -66,7 +70,7 @@ After having modified :file:`cms.conf` and :file:`cms.ranking.conf` in :gh_tree:
 Running CMS
 ===========
 
-Here we will assume you installed CMS. If not, you should replace all commands path with the appropriate local versions (for example, ``cmsLogService`` becomes ``./cms/service/LogService.py``).
+Here we will assume you installed CMS. If not, you should replace all commands path with the appropriate local versions (for example, ``cmsLogService`` becomes :gh_blob:`./scripts/cmsLogService`).
 
 At this point, you should have CMS installed on all the machines you want run services on, with the same configuration file, and a running PostgreSQL instance. To run CMS, you need a contest in the database. To create a contest, follow :doc:`these instructions <Creating a contest>`.
 
@@ -96,13 +100,11 @@ Note that it is your duty to keep CMS's configuration synchronized among the mac
 Recommended setup
 =================
 
-Of course, the number of servers one needs to run a contest depends on many factors (number of participants, length of the contest, economical issues, more technical matters...). We recommend that, for fairness, there is at least one server associated only to a Worker.
+Of course, the number of servers one needs to run a contest depends on many factors (number of participants, length of the contest, economical issues, more technical matters...). We recommend that, for fairness, each Worker runs an a dedicated machine (i.e., without other CMS services beyond ResourceService).
 
-As for the distribution of services, usually there is one ResourceService for each server, one copy each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different servers.
+As for the distribution of services, usually there is one ResourceService for each machine, one instance for each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more instances of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different machines.
 
-Our preferred distribution is Ubuntu >= 13.04, and support it out of the box.
-
-Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions.
+We suggest and support out-of-the-box using CMS over Ubuntu 14.04. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
 
 You can replicate the service handling the contestant-facing web server, :file:`cmsContestWebServer`; in this case, you need to configure a load balancer in front of them. We suggest to use nginx for that, and provide a sample configuration for it at :gh_blob:`examples/nginx.conf.sample` (this file also configures nginx to act as a HTTPS endpoint and to force secure connections, by redirecting HTTP to HTTPS). This file probably needs to be adapted to your distribution if it's not Ubuntu: try to merge it with the file you find installed by default. For additional information see the official nginx `documentation <http://wiki.nginx.org/HttpUpstreamModule>`_ and `examples <http://wiki.nginx.org/LoadBalanceExample>`_. Note that without the ``ip_hash`` option some features might not always work as expected.
 
@@ -123,4 +125,4 @@ service. This is the meaning of the log levels:
 
 - critical: a condition so unexpected that the service is really startled and refuses to continue working; you are forced to take action because with high probability the service will continue having the same problem upon restarting.
 
-Warning, error, and critical logs are also displayed in the main page of AdminWebServer.
+Warning, error, and critical log messages are also displayed in the main page of AdminWebServer.
