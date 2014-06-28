@@ -208,7 +208,7 @@ class SandboxBase(object):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, file_cacher=None):
+    def __init__(self, file_cacher):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
