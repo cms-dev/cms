@@ -131,9 +131,10 @@ class Publisher(object):
         The returned subscriber will receive all messages after the one
         with the given index (if they are still in the cache).
 
-        last_event_id (unicode): the ID of the last message the client
-            did receive, to request the one generated since then to be
-            sent again. If not given no past message will be sent.
+        last_event_id (unicode|None): the ID of the last message the
+            client did receive, to request the one generated since
+            then to be sent again. If not given no past message will
+            be sent.
 
         return (Subscriber): a new subscriber instance.
 

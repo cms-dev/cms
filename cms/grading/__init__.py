@@ -184,8 +184,9 @@ def format_status_text(status, translator=None):
     returned.
 
     status ([unicode]|unicode): a status, as described above.
-    translator (function): a function expecting a string and returning
-        that same string translated in some language.
+    translator (function|None): a function expecting a string and
+        returning that same string translated in some language, or
+        None to apply the identity.
 
     """
     # Mark strings for localization.

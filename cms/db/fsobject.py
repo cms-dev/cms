@@ -135,8 +135,8 @@ class LargeObject(io.RawIOBase):
         parameters (dict): the parameters to fill in the operation.
         message (unicode): a description to tell humans what we were
             doing in case something went wrong.
-        cursor (cursor): the cursor to use to execute the statement
-            (create and use a temporary one if not given).
+        cursor (cursor|None): the cursor to use to execute the
+            statement (create and use a temporary one if not given).
 
         """
         if cursor is None:
@@ -206,6 +206,9 @@ class LargeObject(io.RawIOBase):
 
         return (int): the number of bytes read.
 
+        raise (io.UnsopportedOperation): when the file is closed or
+            not open for reads.
+
         """
         if self._fd is None:
             raise io.UnsupportedOperation("Large object is closed.")
@@ -231,6 +234,9 @@ class LargeObject(io.RawIOBase):
 
         return (int): the number of bytes written.
 
+        raise (io.UnsopportedOperation): when the file is closed or
+            not open for writes.
+
         """
         if self._fd is None:
             raise io.UnsupportedOperation("Large object is closed.")
@@ -251,6 +257,8 @@ class LargeObject(io.RawIOBase):
         whence (int): reference point, expressed like in os.seek().
 
         return (int): the new absolute position.
+
+        raise (io.UnsopportedOperation): when the file is closed.
 
         """
         if self._fd is None:
@@ -280,7 +288,7 @@ class LargeObject(io.RawIOBase):
     def truncate(self, size=None):
         """Trucate a large object.
 
-        size (int): the desired new size. If not given defaults to
+        size (int|None): the desired new size. If None, defaults to
             current position.
 
         return (int): the new actual size.

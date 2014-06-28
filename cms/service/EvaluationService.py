@@ -248,7 +248,8 @@ class JobQueue(object):
 
         job (JobQueueEntry): the job to add to the queue.
         priority (int): the priority of the job.
-        timestamp (datetime): the time of the submission.
+        timestamp (datetime|None): the time of the submission, or None
+            to use now.
 
         """
         if timestamp is None:
@@ -524,12 +525,13 @@ class WorkerPool(object):
         return ret
 
     def find_worker(self, job, require_connection=False, random_worker=False):
-        """Return a worker whose assigned job is job. Remember that
-        there is a placeholder job to signal that the worker is not
-        doing anything (or disabled).
+        """Return a worker whose assigned job is job.
 
-        job (JobQueueEntry): the job we are looking for, or
-            WorkerPool.WORKER_*.
+        Remember that there is a placeholder job to signal that the
+        worker is not doing anything (or disabled).
+
+        job (JobQueueEntry|unicode|None): the job we are looking for,
+            or WorkerPool.WORKER_*.
         require_connection (bool): True if we want to find a worker
             doing the job and that is actually connected to us (i.e.,
             did not die).
@@ -1309,8 +1311,6 @@ class EvaluationService(Service):
 
         submission_id (int): the id of the new submission.
 
-        returns (bool): True if everything went well.
-
         """
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
@@ -1387,11 +1387,12 @@ class EvaluationService(Service):
         currently enqueued are deleted, and the ones already assigned
         to the workers are ignored. New appropriate jobs are enqueued.
 
-        submission_id (int): id of the submission to invalidate, or
-                             None.
-        dataset_id (int): id of the dataset to invalidate, or None.
-        user_id (int): id of the user to invalidate, or None.
-        task_id (int): id of the task to invalidate, or None.
+        submission_id (int|None): id of the submission to invalidate,
+            or None.
+        dataset_id (int|None): id of the dataset to invalidate, or
+            None.
+        user_id (int|None): id of the user to invalidate, or None.
+        task_id (int|None): id of the task to invalidate, or None.
         level (string): 'compilation' or 'evaluation'
 
         """

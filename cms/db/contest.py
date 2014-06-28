@@ -491,8 +491,8 @@ class Contest(Base):
 
         username (string): the username of the user.
         task_name (string): the name of the task.
-        timestamp (datetime): the time relative to which making the
-            calculation.
+        timestamp (datetime|None): the time relative to which making
+            the calculation, or None to use now.
 
         return ((int, datetime|None, datetime|None)): see description
             above.

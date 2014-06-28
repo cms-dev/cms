@@ -36,11 +36,11 @@ from . import SessionGen, Contest
 def get_contest_list(session=None):
     """Return all the contest objects available on the database.
 
-    session (Session): if specified, use such session for connecting
-        to the database; otherwise, create a temporary one and discard
-        it after the operation (this means that no further expansion
-        of lazy properties of the returned Contest objects will be
-        possible).
+    session (Session|None): if specified, use such session for
+        connecting to the database; otherwise, create a temporary one
+        and discard it after the operation (this means that no further
+        expansion of lazy properties of the returned Contest objects
+        will be possible).
 
     return ([Contest]): the list of contests in the DB.
 

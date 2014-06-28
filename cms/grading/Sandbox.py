@@ -212,7 +212,7 @@ class SandboxBase(object):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
-            (to interact with FS).
+            (to interact with FS), if the sandbox needs it.
 
         """
         self.file_cacher = file_cacher
@@ -344,8 +344,8 @@ class SandboxBase(object):
         """Open a file in the sandbox given its relative path.
 
         path (string): relative path of the file inside the sandbox.
-        trunc_len (int): if None, does nothing; otherwise, before
-                         returning truncate it at the specified length.
+        trunc_len (int|None): if None, does nothing; otherwise, before
+            returning truncate it at the specified length.
 
         return (file): the file opened in read binary mode.
 
@@ -363,7 +363,7 @@ class SandboxBase(object):
 
         path (string): relative path of the file inside the sandbox.
         maxlen (int): maximum number of bytes to read, or None if no
-                      limit.
+            limit.
 
         return (string): the content of the file up to maxlen bytes.
 
@@ -386,8 +386,8 @@ class SandboxBase(object):
 
         path (string): relative path of the file inside the sandbox.
         description (string): the description for FS.
-        trunc_len (int): if None, does nothing; otherwise, before
-                         returning truncate it at the specified length.
+        trunc_len (int|None): if None, does nothing; otherwise, before
+            returning truncate it at the specified length.
 
         return (string): the digest of the file.
 
@@ -580,9 +580,9 @@ class StupidSandbox(SandboxBase):
 
         command ([string]): executable filename and arguments of the
             command.
-        stdin (file): a file descriptor/object or None.
-        stdout (file): a file descriptor/object or None.
-        stderr (file): a file descriptor/object or None.
+        stdin (file|None): a file descriptor/object or None.
+        stdout (file|None): a file descriptor/object or None.
+        stderr (file|None): a file descriptor/object or None.
         preexec_fn (function|None): to be called just before execve()
             or None.
         close_fds (bool): close all file descriptor before executing.

@@ -77,7 +77,8 @@ class ScoreType(object):
 
         score_details (unicode): the data saved by the score type
             itself in the database; can be public or private.
-        translator (function): the function to localize strings.
+        translator (function|None): the function to localize strings,
+            or None to use the identity.
 
         return (string): an HTML string representing score_details.
 

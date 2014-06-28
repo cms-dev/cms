@@ -319,8 +319,8 @@ class DBBackend(FileCacherBackend):
         This implementation also accepts an additional (and optional)
         parameter: a SQLAlchemy session to use to query the database.
 
-        session (Session): the session to use; if not given a temporary
-            one will be created and used.
+        session (Session|None): the session to use; if not given a
+            temporary one will be created and used.
 
         """
         def _list(session):
@@ -390,13 +390,15 @@ class FileCacher(object):
         By default the database-powered backend will be used, but this
         can be changed using the parameters.
 
-        service (Service): the service we are running for. Only used to
-            determine the location of the file-system cache (and to
-            provide the shard number to the Sandbox... sigh!).
-        path (string): if specified, back the FileCacher with a file
-            system-based storage instead of the default database-based
-            one. The specified directory will be used as root for the
-            storage and it will be created if it doesn't exist.
+        service (Service|None): the service we are running for. Only
+            used if present to determine the location of the
+            file-system cache (and to provide the shard number to the
+            Sandbox... sigh!).
+        path (string|None): if specified, back the FileCacher with a
+            file system-based storage instead of the default
+            database-based one. The specified directory will be used
+            as root for the storage and it will be created if it
+            doesn't exist.
         null (bool): if True, back the FileCacher with a NullBackend,
             that just discards every file it receives. This setting
             takes priority over path.

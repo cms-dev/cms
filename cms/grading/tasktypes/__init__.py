@@ -49,11 +49,15 @@ def get_task_type(name=None, parameters=None,
     If "dataset" is given then all other arguments should be omitted as
     they are obtained from the dataset.
 
-    name (str): the name of the TaskType class
-    parameters (str): the JSON-encoded parameters
-    dataset (Dataset): the dataset whose TaskType we want
+    name (unicode|None): the name of the TaskType class.
+    parameters (unicode|None): the JSON-encoded parameters.
+    dataset (Dataset|None): the dataset whose TaskType we want (if
+        None, use the other parameters to find the task type).
 
     return (TaskType): an instance of the correct TaskType class.
+
+    raise (ValueError): when the arguments are not consistent or
+        cannot be parsed.
 
     """
     if dataset is not None:

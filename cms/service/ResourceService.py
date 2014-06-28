@@ -238,8 +238,9 @@ class ResourceService(Service):
         """Returns the pid of a given service running on this machine.
 
         service (ServiceCoord): the service we are interested in
-        returns (psutil.Process): the process of service, or None if
-                                  not found
+
+        return (psutil.Process|None): the process of service, or None
+             if not found
 
         """
         logger.debug("ResourceService._find_proc")

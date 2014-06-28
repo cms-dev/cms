@@ -39,11 +39,12 @@ __all__ = [
 
 
 def make_datetime(timestamp=None):
-    """Return the datetime object associated with the given timestamp
+    """Return the datetime object associated with the given timestamp.
 
-    timestamp (int|float): a POSIX timestamp
-    returns (datetime): the datetime representing the UTC time of the
-        given timestamp, or now if timestamp is None.
+    timestamp (int|float|None): a POSIX timestamp, or None to use now.
+
+    return (datetime): the datetime representing the UTC time of the
+        given timestamp.
 
     """
     if timestamp is None:
@@ -56,12 +57,12 @@ EPOCH = datetime(1970, 1, 1)
 
 
 def make_timestamp(_datetime=None):
-    """Return the timestamp associated with the given datetime object
+    """Return the timestamp associated with the given datetime object.
 
-    _datetime (datetime): a datetime object
-    returns (float): the POSIX timestamp corresponding to the given
-                     datetime ("read" in UTC), or now if datetime is
-                     None.
+    _datetime (datetime|None): a datetime object, or None to use now.
+
+    return (float): the POSIX timestamp corresponding to the given
+        datetime ("read" in UTC).
 
     """
     if _datetime is None:
@@ -72,6 +73,11 @@ def make_timestamp(_datetime=None):
 
 def get_timezone(user, contest):
     """Return the timezone for the given user and contest
+
+    user (User): the user owning the timezone.
+    contest (Contest): the contest in which the user is competing.
+
+    return (tzinfo): the timezone information for the user.
 
     """
     if user.timezone is not None and user.timezone in all_timezones:
@@ -85,11 +91,10 @@ def get_system_timezone():
     """Return the timezone of the system.
 
     See http://stackoverflow.com/questions/7669938/
-               get-the-olson-tz-name-for-the-local-timezone
+        get-the-olson-tz-name-for-the-local-timezone
 
-    return (string): one among the possible timezone description
-                     strings in the form Europe/Rome, or None if
-                     nothing is found.
+    return (unicode|None): one among the possible timezone description
+        strings in the form Europe/Rome, or None if nothing is found.
 
     """
     if time.daylight:

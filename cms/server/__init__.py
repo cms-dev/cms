@@ -267,7 +267,8 @@ def format_amount_of_time(seconds, precision=2, locale=None):
 
     seconds (int): the length of the amount of time in seconds.
     precision (int): see above
-    locale (Locale): the locale to be used.
+    locale (Locale|None): the locale to be used, or None for the
+        default.
 
     return (string): seconds formatted as above.
 
@@ -317,10 +318,11 @@ def format_token_rules(tokens, t_type=None, locale=None):
 
     tokens (dict): all the token rules (as seen in Task or Contest),
         without the "token_" prefix.
-    t_type (string): the type of tokens the string should refer to
+    t_type (string|None): the type of tokens the string should refer to
         (can be "contest" to mean contest-tokens, "task" to mean
         task-tokens, any other value to mean normal tokens).
-    locale (Locale|NullTranslation): the locale to be used.
+    locale (Locale|NullTranslation|None): the locale to be used (None
+        for the default).
 
     return (unicode): localized string describing the rules.
 

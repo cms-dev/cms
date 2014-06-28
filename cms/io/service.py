@@ -180,8 +180,11 @@ class Service(object):
         on_connect and on_disconnect handlers and return it.
 
         coord (ServiceCoord): the coord of the service to connect to.
-        on_connect (function): to be called when the service connects.
-        on_disconnect (function): to be called when it disconnects.
+        on_connect (function|None): to be called when the service
+            connects.
+        on_disconnect (function|None): to be called when it
+            disconnects.
+
         return (RemoteServiceClient): a proxy to that service.
 
         """

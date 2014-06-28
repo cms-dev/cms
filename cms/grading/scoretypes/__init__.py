@@ -50,11 +50,11 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
     If "dataset" is given then all other arguments should be omitted as
     they are obtained from the dataset.
 
-    name (unicode): the name of the ScoreType class.
-    parameters (unicode): the JSON-encoded parameters.
-    public_testcases ({str: bool}): for each testcase (identified by
-        its codename) a flag telling whether it's public or not.
-    dataset (Dataset): the dataset whose ScoreType we want.
+    name (unicode|None): the name of the ScoreType class.
+    parameters (unicode|None): the JSON-encoded parameters.
+    public_testcases ({str: bool}|None): for each testcase (identified
+        by its codename) a flag telling whether it's public or not.
+    dataset (Dataset|None): the dataset whose ScoreType we want.
 
     return (ScoreType): an instance of the correct ScoreType class.
 

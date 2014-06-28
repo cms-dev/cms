@@ -45,14 +45,16 @@ def get_submissions(contest_id=None, user_id=None, task_id=None,
     already gives the contest it belongs to). Trying to give them both
     is useless and could only lead to inconsistencies and errors.
 
-    contest_id (int): id of the contest to filter with, or None.
-    user_id (int): id of the user to filter with, or None.
-    task_id (int): id of the task to filter with, or None.
-    submission_id (int): id of the submission to filter with, or None.
-    session (Session): the database session to use, or None to use a
-                       temporary one.
-    returns (list of Submissions): the list of submission that match
-                                   the given criteria
+    contest_id (int|None): id of the contest to filter with, or None.
+    user_id (int|None): id of the user to filter with, or None.
+    task_id (int|None): id of the task to filter with, or None.
+    submission_id (int|None): id of the submission to filter with, or
+        None.
+    session (Session|None): the database session to use, or None to
+        use a temporary one.
+
+    return ([Submission]): the list of submission that match the given
+        criteria
 
     """
     if session is None:
@@ -97,15 +99,17 @@ def get_submission_results(contest_id=None, user_id=None, task_id=None,
     give them both is useless and could only lead to inconsistencies
     and errors.
 
-    contest_id (int): id of the contest to filter with, or None.
-    user_id (int): id of the user to filter with, or None.
-    task_id (int): id of the task to filter with, or None.
-    submission_id (int): id of the submission to filter with, or None.
-    dataset_id (int): id of the dataset to filter with, or None.
-    session (Session): the database session to use, or None to use a
-                       temporary one.
-    returns (list of SubmissionResults): the list of submission results
-                                         that match the given criteria
+    contest_id (int|None): id of the contest to filter with, or None.
+    user_id (int|None): id of the user to filter with, or None.
+    task_id (int|None): id of the task to filter with, or None.
+    submission_id (int|None): id of the submission to filter with, or
+        None.
+    dataset_id (int|None): id of the dataset to filter with, or None.
+    session (Session|None): the database session to use, or None to
+        use a temporary one.
+
+    return ([SubmissionResult]): the list of submission results that
+        match the given criteria
 
     """
     if session is None:
@@ -154,7 +158,8 @@ def get_datasets_to_judge(task):
     by the contest admin (by invalidating it).
 
     task (Task): the task to query.
-    returns (list of Datasets): list of datasets to judge.
+
+    return ([Dataset]): list of datasets to judge.
 
     """
     judge = []
