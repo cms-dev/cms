@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 16:39+0200\n"
-"PO-Revision-Date: 2014-04-02 19:33+0100\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:18+0100\n"
 "Last-Translator: Vedran Ljubović <vljubovic@smartnet.ba>\n"
 "Language-Team: Bosnian\n"
 "Language: bs\n"
@@ -88,6 +88,9 @@ msgstr "Djelomično ispravno"
 
 msgid "Invalid files in submission"
 msgstr "Neispravne datoteke u prijavi"
+
+msgid "Execution completed successfully"
+msgstr ""
 
 msgid "No compilation needed"
 msgstr "Nije potrebno kompajliranje"
@@ -328,7 +331,7 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "Nemate %(type_pl)s dostupnih za ovaj zadatak."
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "Imate beskonačan broj %(type_pl)s za ovaj zadatak."
 
 #, python-format
@@ -404,6 +407,10 @@ msgstr[2] "Ne možete koristiti više od %(max_number)d %(type_pl)s ukupno."
 
 msgid "You have no limitations on how you use them."
 msgstr "Nemate ograničenja na njihovu upotrebu."
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr ""
 
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"

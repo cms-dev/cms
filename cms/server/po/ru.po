@@ -8,15 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 15:11+0100\n"
-"PO-Revision-Date: 2014-03-13 23:02-0700\n"
-"Last-Translator: Artem Iglikov <artem.iglikov@gmail.com>\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:23+0100\n"
+"Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Language: ru_RU\n"
 "X-Source-Language: C\n"
 
@@ -99,6 +100,9 @@ msgstr "Частичное решение"
 
 msgid "Invalid files in submission"
 msgstr "Отправлены недопустимые файлы"
+
+msgid "Execution completed successfully"
+msgstr "Выполнение успешно завершилось"
 
 msgid "No compilation needed"
 msgstr "Нет необходимости компилировать"
@@ -356,15 +360,15 @@ msgstr "токены"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "You don't have %(type_pl)s available for this task."
+msgstr "Для этой задачи у вас нет %(type_pl)s."
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
-msgstr "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "Для этой задачи у вас неограниченное количество %(type_pl)s."
 
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "You start with no %(type_pl)s."
+msgstr "Вы начинаете без %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
@@ -436,6 +440,10 @@ msgstr[2] "Вы можете использовать не более %(max_numb
 #, fuzzy
 msgid "You have no limitations on how you use them."
 msgstr "У вас нет ограничений по тому, как использовать их."
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "Автоматически (%s)"
 
 #, python-format
 msgid ""
@@ -803,11 +811,11 @@ msgstr "Команды компиляции"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a "
-"href=\"%(url_root)s/\">contest overview page</a>."
+"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"\">contest overview page</a>."
 msgstr ""
-"Вы можете найти правила для %(type_pl)s на <a "
-"href=\"%(url_root)s/\">странице информации о контесте</a>."
+"Вы можете найти правила для %(type_pl)s на <a href=\"%(url_root)s/"
+"\">странице информации о контесте</a>."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
@@ -843,7 +851,7 @@ msgstr "Сейчас у вас один токен для этой задачи.
 
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
-msgstr "Сейчас у вас %(token)s токенов для этой задачи."
+msgstr "Сейчас у вас %(tokens)s токенов для этой задачи."
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."

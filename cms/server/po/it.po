@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-21 21:59+0200\n"
-"PO-Revision-Date: 2014-06-21 22:02+0200\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:20+0100\n"
 "Last-Translator: Giovanni Mascellani <mascellani@poisson.phc.unipi.it>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -352,7 +352,7 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "Non hai %(type_pl)s disponibili per questo problema."
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "Hai un numero infinito di %(type_pl)s per questo problema."
 
 #, python-format

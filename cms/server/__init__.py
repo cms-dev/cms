@@ -488,7 +488,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
         # This message will only be shown on tasks in case of a mixed
         # modes scenario.
         result += \
-            _("You have infinite an infinite number of %(type_pl)s "
+            _("You have an infinite number of %(type_pl)s "
               "for this task.") % tokens
     else:
         if tokens['gen_initial'] == 0:
