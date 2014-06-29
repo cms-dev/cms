@@ -4,7 +4,7 @@ Creating a contest
 Creating a contest from scratch
 ===============================
 
-The most immediate (and less practical) way to create a contest in CMS is using the admin interface. You can start the AdminWebServer using the command ``cmsAdminWebServer``.
+The most immediate (but often less practical) way to create a contest in CMS is using the admin interface. You can start the AdminWebServer using the command ``cmsAdminWebServer`` (or using the ResourceService).
 
 After that, you can connect to the server using the address and port specified in :file:`cms.conf`; typically, http://localhost:8889/.
 
@@ -16,15 +16,16 @@ Luckily, there is another way to create a contest.
 Creating a contest from the filesystem
 ======================================
 
-The idea we wanted to implement is that CMS does not get in the way of how you create your contest and your tasks (unless you want to). We think that every national IOI selection team and every contest administrator has a preferred way of developing the tasks, and of storing their data in the filesystem, and we do not want to change the way you work.
+Our idea is that CMS does not get in the way of how you create your contest and your tasks (unless you want to). We think that every national IOI selection team and every contest administrator has a preferred way of developing the tasks, and of storing their data in the filesystem, and we do not want to change the way you work.
 
-Instead, you are encouraged to write an "importer", that is a piece of software that reads data from your filesystem structure and creates the contest in the database. You can also write a "reimporter" if you want to change the contest details without losing the data (submissions, user tests, ...) already uploaded.
+Instead, we provided CMS with tools to import a contest from a custom filesystem description. The command ``cmsImporter`` reads a filesystem description and creates a new contest from it. The command ``cmsReimporter`` reads a filesystem description and updates an existing contest. Thus, with reimporting you can update, add or remove users or tasks to a contest without losing the existing submissions (unless, of course, they belong to a task or a user that is being deleted).
 
-We provide examples of both importer and reimporter that target the format used by the Italian IOI selection team. You can either adapt them to the format you use, or decide to use the Italian format. An example of a contest written in this format is in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
+In order to make these tools compatible with your filesystem format, you have to write a simple Python module that converts your filesystem description to the internal CMS representation of the contest. This is not a hard task: you just have to write an extension of the class ``Loader`` in :gh_blob:`cmscontrib/BaseLoader.py`, implementing missing methods as required by the docstrings. You can use the loader for the Italian format at :gh_blob:`cmscontrib/YamlLoader.py` as a template.
+
+You can also use the Italian filesystem format, which is supported out-of-the-box by CMS. This is discouraged, though, because it evolved in a rather messy way and is now full of legacy behaviors and shortcomings. No compatibility in time is guaranteed with this format. If you want to use it anyway, an example of a contest written in this format is in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
 
 
 Creating a contest from an exported contest
 ===========================================
 
 This option is not really suited for creating new contests but to store and move contest already used in CMS. If you have the dump of a contest exported from CMS, you can import it with ``cmsContestImporter <source>``, where ``<source>`` is the archive filename or directory of the contest.
-
