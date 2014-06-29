@@ -4,13 +4,15 @@ Localization
 For developers
 ==============
 
-When you change a string in a template or in a web server, you have to generate again the file :gh_blob:`cms/server/po/messages.pot`. To do so, run this command inside :gh_tree:`cms/`.
+When you change a string in a template or in a web server, you have to generate again the file :gh_blob:`cms/server/po/messages.pot`. To do so, run this command from the root of the repository.
 
 .. sourcecode:: bash
 
-    xgettext -o server/po/messages.pot --language=Python --no-location --width=79 --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 \
-      grading/__init__.py grading/ScoreType.py grading/scoretypes/*.py grading/tasktypes/*.py \
-      server/*.py server/templates/admin/*.html server/templates/contest/*.html
+    xgettext -o cms/server/po/messages.pot --language=Python --no-location \
+      --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 --width=79 \
+      cms/grading/*.py cms/grading/*/*.py cms/server/*.py \
+      cms/server/templates/admin/*.html \
+      cms/server/templates/contest/*.html
 
 When you have a new translation, or an update of an old translation, you need to update the ``.mo`` files (the compiled versions of the ``.po`` files). You can run ``./setup.py build`` to update all translations (and also do a couple of other things, like compiling the sandbox). Alternatively, run the following inside :gh_tree:`cms/server/`.
 
@@ -30,7 +32,7 @@ To begin translating to a new language, run this command, from :gh_tree:`cms/ser
 
     msginit --width=79 -l <two_letter_code_of_language>
 
-Right after that, open :file:`<code>.po` and fill the information in the header. To translate a string, simply fill the corresponding msgstr with the translations.
+Right after that, open :file:`<code>.po` and fill the information in the header. To translate a string, simply fill the corresponding msgstr with the translations. You can also use specialized translation softwares such as poEdit and others.
 
 If the developers updated the ``.pot`` file, you do not need to start from scratch. Instead, you can create a new ``.po`` file that merges the old translated string with the new, to-be-translated ones. The command is the following, run inside :gh_tree:`cms/server/po/`.
 
