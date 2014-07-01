@@ -97,6 +97,8 @@ The flag ``-a`` informs ResourceService that it has to start all other services,
 Note that it is your duty to keep CMS's configuration synchronized among the machines.
 
 
+.. _running-cms_recommended-setup:
+
 Recommended setup
 =================
 
