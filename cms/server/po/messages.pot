@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 15:11+0100\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,6 +91,9 @@ msgid "Partially correct"
 msgstr ""
 
 msgid "Invalid files in submission"
+msgstr ""
+
+msgid "Execution completed successfully"
 msgstr ""
 
 msgid "No compilation needed"
@@ -336,7 +339,7 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr ""
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr ""
 
 #, python-format
@@ -405,9 +408,13 @@ msgid "You have no limitations on how you use them."
 msgstr ""
 
 #, python-format
+msgid "Automatic (%s)"
+msgstr ""
+
+#, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
-"</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 msgstr ""
 
 msgid "Logout"

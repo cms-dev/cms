@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -37,8 +37,11 @@ The zip file contains all files submitted.
 
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
+import io
 import os
 import shutil
 import sys
@@ -46,6 +49,8 @@ import zipfile
 
 from argparse import ArgumentParser
 from glob import glob
+
+from cms import utf8_decoder
 
 
 def to_timestamp(time_tuple):
@@ -68,7 +73,8 @@ def main():
     """
     parser = ArgumentParser(
         description="Translate from a filesystem format to the Replay format.")
-    parser.add_argument("source", type=str, help="source directory")
+    parser.add_argument("source", action="store", type=utf8_decoder,
+                        help="source directory")
     args = parser.parse_args()
 
     all_events = []
@@ -87,7 +93,8 @@ def main():
             submissions = [os.path.splitext(os.path.basename(x))[0]
                            for x in glob("%s/*.data" % userdir)]
             for sid in submissions:
-                content = open("%s/%s.data" % (userdir, sid)).readlines()
+                content = io.open("%s/%s.data" % (userdir, sid),
+                                  "rt", encoding="utf-8").readlines()
                 submit = to_timestamp(
                     [int(x)
                      for x in content[0].strip().split()[1].split(":")])
@@ -129,7 +136,7 @@ def main():
 
     all_events.sort()
     for event in all_events:
-        print(" ".join([str(x) for x in event]))
+        print(" ".join(["%s" % x for x in event]))
 
     return 0
 

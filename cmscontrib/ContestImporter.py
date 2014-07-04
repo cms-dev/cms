@@ -1,11 +1,12 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,6 +26,10 @@ target of a ContestExport. The process of exporting and importing
 again should be idempotent.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -46,6 +51,7 @@ from sqlalchemy.types import \
 
 import cms.db as class_hook
 
+from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
     SubmissionResult, UserTestResult, RepeatedUnicode
@@ -75,7 +81,7 @@ def find_root_of_archive(file_names):
 
     current_root = None
     for file_name in file_names:
-        if '/' not in file_name:
+        if '/' not in file_name or '/' not in file_name[0:-1]:
             if current_root is None:
                 current_root = file_name
             else:
@@ -113,7 +119,7 @@ class ContestImporter(object):
         if not os.path.isdir(self.import_source):
             if self.import_source.endswith(".zip"):
                 archive = zipfile.ZipFile(self.import_source, "r")
-                file_names = archive.infolist()
+                file_names = archive.namelist()
 
                 self.import_dir = tempfile.mkdtemp()
                 archive.extractall(self.import_dir)
@@ -308,7 +314,7 @@ class ContestImporter(object):
 
         if contest_id is not None:
             logger.info("Import finished (contest id: %s)." %
-                        ", ".join(str(id_) for id_ in contest_id))
+                        ", ".join("%d" % id_ for id_ in contest_id))
         else:
             logger.info("Import finished.")
 
@@ -467,7 +473,7 @@ def main():
                         help="don't import submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
                         help="don't import user tests")
-    parser.add_argument("import_source",
+    parser.add_argument("import_source", action="store", type=utf8_decoder,
                         help="source directory or compressed file")
 
     args = parser.parse_args()

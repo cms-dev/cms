@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -20,9 +20,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import ast
+import io
 import os
 import sys
 import mechanize
@@ -30,7 +33,7 @@ import threading
 import optparse
 import random
 import time
-import codecs
+import io
 
 from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
@@ -89,7 +92,7 @@ class RequestLog(object):
                                   request.__class__.__name__)
         filepath = os.path.join(self.log_dir, filename)
         linkpath = os.path.join(self.log_dir, request.__class__.__name__)
-        with codecs.open(filepath, 'w', encoding='utf-8') as fd:
+        with io.open(filepath, 'wt', encoding='utf-8') as fd:
             request.store_to_file(fd)
         try:
             os.remove(linkpath)
@@ -156,14 +159,14 @@ class Actor(threading.Thread):
         try:
             request.prepare()
         except Exception as exc:
-            print("Unhandled exception while preparing the request: %s" %
-                  (str(exc)), file=sys.stderr)
+            print("Unhandled exception while preparing the request: %s" % exc,
+                  file=sys.stderr)
             return
         try:
             request.execute()
         except Exception as exc:
-            print("Unhandled exception while executing the request %s" %
-                  (str(exc)), file=sys.stderr)
+            print("Unhandled exception while executing the request %s" % exc,
+                  file=sys.stderr)
             return
         self.log.__dict__[request.outcome] += 1
         self.log.total_time += request.duration
@@ -290,8 +293,8 @@ def main():
         contest_data = dict()
         contest_data['users'] = users
         contest_data['tasks'] = tasks
-        with open(options.prepare_path, "w") as file_:
-            file_.write(str(contest_data))
+        with io.open(options.prepare_path, "wt", encoding="utf-8") as file_:
+            file_.write("%s" % contest_data)
         return
 
     users = []
@@ -302,7 +305,7 @@ def main():
     if options.read_from is None:
         users, tasks = harvest_contest_data(options.contest_id)
     else:
-        with open(options.read_from, "r") as file_:
+        with io.open(options.read_from, "rt", encoding="utf-8") as file_:
             contest_data = ast.literal_eval(file_.read())
         users = contest_data['users']
         tasks = contest_data['tasks']

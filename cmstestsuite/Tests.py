@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,20 +19,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 
-from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON
+from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
+    LANG_PYTHON
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckNonzeroReturn
 
 
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
-COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON)
-
+COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON)
 
 ALL_TESTS = [
 
@@ -85,8 +89,8 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
-    Test('incorrect-readstdio',
-         task=batch_fileio, filename='correct-stdio.%l',
+    Test('incorrect-fileio-with-stdio',
+         task=batch_fileio, filename='incorrect-fileio-with-stdio.%l',
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100)]),
 
@@ -148,7 +152,7 @@ ALL_TESTS = [
          languages=(LANG_C, LANG_CPP),
          checks=[CheckOverallScore(0, 100)]),
 
-    # OOM problems. TODO: add appropriate checks for the correct output.
+    # OOM problems.
 
     Test('oom-static',
          task=batch_stdio, filename='oom-static.%l',
@@ -160,28 +164,28 @@ ALL_TESTS = [
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100)]),
 
-    # Tasks with graders. TODO: add Pascal and Python.
+    # Tasks with graders. Python and PHP are not yet supported.
 
     Test('managed-correct',
          task=batch_fileio_managed, filename='managed-correct.%l',
-         languages=(LANG_C, LANG_CPP),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('managed-incorrect',
          task=batch_fileio_managed, filename='managed-incorrect.%l',
-         languages=(LANG_C, LANG_CPP),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
-    # Communication tasks. TODO: add Pascal and Python.
+    # Communication tasks. Python and PHP are not yet supported.
 
     Test('communication-correct',
-         task=communication, filename='managed-correct.%l',
-         languages=(LANG_C, LANG_CPP),
+         task=communication, filename='communication-correct.%l',
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('communication-incorrect',
-         task=communication, filename='managed-incorrect.%l',
-         languages=(LANG_C, LANG_CPP),
+         task=communication, filename='communication-incorrect.%l',
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
 ]

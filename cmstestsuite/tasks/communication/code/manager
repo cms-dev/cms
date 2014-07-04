@@ -1,14 +1,17 @@
 #!/usr/bin/python2 -sS
 
+from __future__ import print_function
+
+import io
 import sys
 
 fifo_path_from_user, fifo_path_to_user = sys.argv[1:]
 
 # The order these are opened is very important.  It must match the stub.
-fifo_to_user = file(fifo_path_to_user, "wb", 0)
-fifo_from_user = file(fifo_path_from_user, "rb", 0)
+fifo_to_user = io.open(fifo_path_to_user, "wb", buffering=0)
+fifo_from_user = io.open(fifo_path_from_user, "rb", buffering=0)
 
-input_value = int(file("input.txt", "r").readline())
+input_value = int(io.open("input.txt", "rb").readline())
 
 correct = True
 
@@ -26,7 +29,8 @@ for i in range(10,20) + [0]:
         break
     # These are the only things we expect from our stub.
     if l.strip() != 'correct %d' % x:
-        sys.exit(1)
+        correct = False
+        break
 
     correct = correct and (int(l.split()[1]) == x)
 else:
@@ -34,10 +38,10 @@ else:
     fifo_to_user.write("0\n")
 
 # This file exists just for convenience.
-file("output.txt", "w").write(l + "\n")
+io.open("output.txt", "wb").write(l + "\n")
 
 # This is the final score.
 if correct:
-    print "1"
+    print("1")
 else:
-    print "0"
+    print("0")

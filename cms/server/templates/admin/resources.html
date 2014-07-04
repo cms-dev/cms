@@ -160,7 +160,7 @@ var getters = [];
                 else
                 {
                     strings.push('</td><td>');
-                    strings.push(utils.repr_time_ago_2((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
+                    strings.push(utils.repr_time_ago_short((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
                     if (s.lastIndexOf("LogService,", 0) !== 0 &&
                         s.lastIndexOf("ResourceService,", 0) !== 0)
                       strings.push(" <a onclick='window.getters[" + this.shard + "].kill_service(\"" + s + "\", this);'>[Kill]</a>");
@@ -192,8 +192,9 @@ var getters = [];
 
         update_resources: function()
         {
-            var f = cmsutils.bind_func(this, this.update_resources_cb);
-            cmsrpc_request("ResourceService", this.shard,
+            var f = utils.bind_func(this, this.update_resources_cb);
+            cmsrpc_request("{{ url_root }}",
+                           "ResourceService", this.shard,
                            "get_resources",
                            {"last_time": this.last_time},
                            f);
@@ -202,14 +203,16 @@ var getters = [];
         kill_service: function(s, link)
         {
             link.parentNode.innerHTML = '<img src="{{ url_root }}/static/loading.gif" />';
-            cmsrpc_request("ResourceService", this.shard,
+            cmsrpc_request("{{ url_root }}",
+                           "ResourceService", this.shard,
                            "kill_service",
                            {"service": s});
         },
 
         toggle_autorestart: function(s, checkbox)
         {
-            cmsrpc_request("ResourceService", this.shard,
+            cmsrpc_request("{{ url_root }}",
+                           "ResourceService", this.shard,
                            "toggle_autorestart",
                            {"service": s});
         }
@@ -259,7 +262,7 @@ var plotOptions = {
 for (var i = 0; i < {{ resource_shards }}; i++)
 {
     getters[i] = new RSgetter(i, plotOptions);
-    var f = cmsutils.bind_func(getters[i], getters[i].update_resources);
+    var f = utils.bind_func(getters[i], getters[i].update_resources);
     setInterval(f, 10000);
     getters[i].update_resources()
 
@@ -281,14 +284,14 @@ for (var i = 0; i < {{ resource_shards }}; i++)
   <table id="services_{{ i }}_table" class="sub_table">
     <thead>
       <tr>
-        <th style="width: 19%">Service</th>
-        <th style="width: 13%">Uptime (s)</th>
-        <th style="width: 10%">Threads</th>
-        <th style="width: 13%">Resident (MB)</th>
-        <th style="width: 13%">Virtual (MB)</th>
-        <th style="width: 10%">User (%)</th>
-        <th style="width: 10%">System (%)</th>
-        <th style="width: 12%">Autorestart</th>
+        <th>Service</th>
+        <th>Uptime (s)</th>
+        <th>Threads</th>
+        <th>Resident (MB)</th>
+        <th>Virtual (MB)</th>
+        <th>User (%)</th>
+        <th>System (%)</th>
+        <th>Autorestart</th>
       </tr>
     </thead>
     <tbody>

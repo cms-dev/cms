@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -20,6 +20,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import json
 import logging
@@ -46,11 +50,11 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
     If "dataset" is given then all other arguments should be omitted as
     they are obtained from the dataset.
 
-    name (str): the name of the ScoreType class
-    parameters (str): the JSON-encoded parameters
-    public_testcases ({str: bool}): for each testcase (identified by
-        its codename) a flag telling whether it's public or not
-    dataset (Dataset): the dataset whose ScoreType we want
+    name (unicode|None): the name of the ScoreType class.
+    parameters (unicode|None): the JSON-encoded parameters.
+    public_testcases ({str: bool}|None): for each testcase (identified
+        by its codename) a flag telling whether it's public or not.
+    dataset (Dataset|None): the dataset whose ScoreType we want.
 
     return (ScoreType): an instance of the correct ScoreType class.
 

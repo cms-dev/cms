@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -24,6 +24,10 @@
 """A service that assigns a score to submission results.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 
@@ -255,16 +259,16 @@ class ScoringService(Service):
           or, if None, to any dataset of contest_id or, if None, to any
           dataset in the database.
 
-        submission_id (int): id of the submission whose results should
+        submission_id (int|None): id of the submission whose results
+            should be invalidated, or None.
+        dataset_id (int|None): id of the dataset whose results should
             be invalidated, or None.
-        dataset_id (int): id of the dataset whose results should be
+        user_id (int|None): id of the user whose results should be
             invalidated, or None.
-        user_id (int): id of the user whose results should be
+        task_id (int|None): id of the task whose results should be
             invalidated, or None.
-        task_id (int): id of the task whose results should be
-            invalidated, or None.
-        contest_id (int): id of the contest whose results should be
-            invalidated, or None.
+        contest_id (int|None): id of the contest whose results should
+            be invalidated, or None.
 
         """
         logger.info("Invalidation request received.")

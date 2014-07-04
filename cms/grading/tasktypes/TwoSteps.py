@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -19,6 +19,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 import os
@@ -88,7 +92,7 @@ class TwoSteps(TaskType):
             commands = get_compilation_commands(language,
                                                 source_filenames,
                                                 executable_filename)
-            res[language] = [command]
+            res[language] = commands
         return res
 
     def compile(self, job, file_cacher):
@@ -175,6 +179,8 @@ class TwoSteps(TaskType):
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
+        os.chmod(fifo_dir, 0o755)
+        os.chmod(fifo, 0o666)
 
         # First step: we start the first manager.
         first_filename = "manager"
@@ -186,7 +192,7 @@ class TwoSteps(TaskType):
         first_files_to_get = {
             "input.txt": job.input
             }
-        first_allow_path = ["input.txt", fifo]
+        first_allow_path = [fifo_dir]
 
         # Put the required files into the sandbox
         for filename, digest in first_executables_to_get.iteritems():
@@ -213,7 +219,7 @@ class TwoSteps(TaskType):
             job.executables[second_filename].digest
             }
         second_files_to_get = {}
-        second_allow_path = [fifo, "output.txt"]
+        second_allow_path = [fifo_dir]
 
         # Put the required files into the second sandbox
         for filename, digest in second_executables_to_get.iteritems():
@@ -293,7 +299,7 @@ class TwoSteps(TaskType):
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = outcome
+        job.outcome = str(outcome)
         job.text = text
 
         delete_sandbox(first_sandbox)

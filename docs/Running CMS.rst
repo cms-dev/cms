@@ -16,13 +16,7 @@ The first thing to do is to create the user and the database. For PostgreSQL, th
 
 The last two lines are required to give the PostgreSQL user some privileges which it doesn't have by default, despite being the database owner.
 
-If you are going to use CMS services on different hosts from the one where PostgreSQL is running, you also need to instruct it to accept the connections from the services. To do so, you need to change the listening address of PostgreSQL in :file:`postgresql.conf`, for example like this::
-
-    listen_addresses = '127.0.0.1,192.168.0.x'
-
-Moreover, you need to change the HBA (a sort of access control list for PostgreSQL) to accept login requests from outside localhost. Open the file :file:`pg_hba.conf` and add a line like this one::
-
-    host  database  cmsuser  192.168.0.0/24  md5
+Then you may need to adjust the CMS configuration to contain the correct database parameters. See :ref:`running-cms_configuring-cms`.
 
 Finally you have to create the database schema for CMS, by running:
 
@@ -30,6 +24,18 @@ Finally you have to create the database schema for CMS, by running:
 
     cmsInitDB
 
+.. note::
+
+    If you are going to use CMS services on different hosts from the one where PostgreSQL is running, you also need to instruct it to accept the connections from the services. To do so, you need to change the listening address of PostgreSQL in :file:`postgresql.conf`, for example like this::
+
+        listen_addresses = '127.0.0.1,192.168.0.x'
+
+    Moreover, you need to change the HBA (a sort of access control list for PostgreSQL) to accept login requests from outside localhost. Open the file :file:`pg_hba.conf` and add a line like this one::
+
+        host  database  cmsuser  192.168.0.0/24  md5
+
+
+.. _running-cms_configuring-cms:
 
 Configuring CMS
 ===============
@@ -42,7 +48,7 @@ There are two configuration files, one for CMS itself and one for the rankings. 
 
 These files are a pretty good starting point if you want to try CMS. There are some mandatory changes to do though:
 
-* you must change the connection string given in ``database``; this usually means to change username and password with the ones you chose before;
+* you must change the connection string given in ``database``; this usually means to change username, password and database with the ones you chose before;
 
 * if you are running low on disk space, you may want to change ``keep_sandbox`` to ``false``;
 

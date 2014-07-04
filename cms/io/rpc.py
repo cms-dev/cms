@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -21,8 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import functools
 import json
@@ -120,7 +120,7 @@ class RemoteServiceBase(object):
             remote address, for use in log messages and exceptions.
 
         """
-        return "unknown service (%r)" % (self.remote_address,)
+        return "%s:%d" % (self.remote_address)
 
     def initialize(self, sock, plus):
         """Activate the communication on the given socket.
@@ -430,7 +430,8 @@ class RemoteServiceClient(RemoteServiceBase):
 
     def _repr_remote(self):
         """See RemoteServiceBase._repr_remote."""
-        return "%r (%r)" % (self.remote_service_coord, self.remote_address)
+        return "%s:%d (%r)" % (self.remote_address +
+                               (self.remote_service_coord,))
 
     def finalize(self, reason=""):
         """See RemoteServiceBase.finalize."""

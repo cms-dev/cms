@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -29,6 +29,10 @@ already existing in the database.
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -39,6 +43,7 @@ import logging
 import os
 import os.path
 
+from cms import utf8_decoder
 from cms.db import SessionGen, Base, Contest, User, Task, Submission, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
@@ -327,11 +332,12 @@ def main():
     parser.add_argument("-f", "--force", action="store_true",
                         help="force the reimport even if some users or tasks "
                         "may get lost")
-    parser.add_argument("-L", "--loader", action="store", default=None,
+    parser.add_argument("-L", "--loader",
+                        action="store", type=utf8_decoder, default=None,
                         help="use the specified loader (default: autodetect)")
     parser.add_argument("-F", "--full", action="store_true",
                         help="reimport tasks even if they haven't changed")
-    parser.add_argument("import_directory",
+    parser.add_argument("import_directory", action="store", type=utf8_decoder,
                         help="source directory from where import")
 
     args = parser.parse_args()

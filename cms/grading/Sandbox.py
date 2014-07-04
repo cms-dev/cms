@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -19,6 +19,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import io
 import logging
@@ -204,11 +208,11 @@ class SandboxBase(object):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, file_cacher=None):
+    def __init__(self, file_cacher):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
-            (to interact with FS).
+            (to interact with FS), if the sandbox needs it.
 
         """
         self.file_cacher = file_cacher
@@ -271,6 +275,7 @@ class SandboxBase(object):
         system path.
 
         path (string): relative path of the file inside the sandbox.
+
         return (string): the absolute path.
 
         """
@@ -282,6 +287,7 @@ class SandboxBase(object):
 
         path (string): relative path of the file inside the sandbox.
         executable (bool): to set permissions.
+
         return (file): the file opened in write binary mode.
 
         """
@@ -338,8 +344,8 @@ class SandboxBase(object):
         """Open a file in the sandbox given its relative path.
 
         path (string): relative path of the file inside the sandbox.
-        trunc_len (int): if None, does nothing; otherwise, before
-                         returning truncate it at the specified length.
+        trunc_len (int|None): if None, does nothing; otherwise, before
+            returning truncate it at the specified length.
 
         return (file): the file opened in read binary mode.
 
@@ -357,7 +363,8 @@ class SandboxBase(object):
 
         path (string): relative path of the file inside the sandbox.
         maxlen (int): maximum number of bytes to read, or None if no
-                      limit.
+            limit.
+
         return (string): the content of the file up to maxlen bytes.
 
         """
@@ -379,8 +386,8 @@ class SandboxBase(object):
 
         path (string): relative path of the file inside the sandbox.
         description (string): the description for FS.
-        trunc_len (int): if None, does nothing; otherwise, before
-                         returning truncate it at the specified length.
+        trunc_len (int|None): if None, does nothing; otherwise, before
+            returning truncate it at the specified length.
 
         return (string): the digest of the file.
 
@@ -394,6 +401,7 @@ class SandboxBase(object):
         """Return the stats of a file in the sandbox.
 
         path (string): relative path of the file inside the sandbox.
+
         return (stat_result): the stat results.
 
         """
@@ -403,6 +411,7 @@ class SandboxBase(object):
         """Return if a file exists in the sandbox.
 
         path (string): relative path of the file inside the sandbox.
+
         return (bool): if the file exists.
 
         """
@@ -571,12 +580,13 @@ class StupidSandbox(SandboxBase):
 
         command ([string]): executable filename and arguments of the
             command.
-        stdin (file): a file descriptor/object or None.
-        stdout (file): a file descriptor/object or None.
-        stderr (file): a file descriptor/object or None.
-        preexec_fn (callable): to be called just before execve() or
-                               None.
+        stdin (file|None): a file descriptor/object or None.
+        stdout (file|None): a file descriptor/object or None.
+        stderr (file|None): a file descriptor/object or None.
+        preexec_fn (function|None): to be called just before execve()
+            or None.
         close_fds (bool): close all file descriptor before executing.
+
         return (object): popen object.
 
         """
@@ -1101,6 +1111,7 @@ class IsolateSandbox(SandboxBase):
         absolute path inside the sandbox.
 
         path (string): relative path of the file inside the sandbox.
+
         return (string): the absolute path of the file inside the sandbox.
 
         """
@@ -1115,6 +1126,7 @@ class IsolateSandbox(SandboxBase):
 
         command (list): executable filename and arguments of the
                         command.
+
         return (bool): True if the sandbox didn't report errors
                        (caused by the sandbox itself), False otherwise
 

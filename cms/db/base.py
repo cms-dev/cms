@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -21,6 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
@@ -242,7 +243,7 @@ class Base(object):
             a single int (even encoded as unicode or bytes) will work.
         session (Session): the session to query.
 
-        return (object): the wanted object, or None.
+        return (Base|None): the desired object, or None if not found.
 
         """
         try:

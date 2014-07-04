@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -24,10 +24,15 @@
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 import logging
 import tarfile
 import zipfile
+from datetime import datetime, timedelta
 from urllib import quote
 
 from functools import wraps
@@ -43,8 +48,143 @@ from cmscommon.datetime import make_datetime, utc
 logger = logging.getLogger(__name__)
 
 
+def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
+                         starting_time, delay_time, extra_time):
+    """Determine the current phase and when the active phase is.
+
+    The "actual phase" of the contest for a certain user is the status
+    in which the contest is presented to the user and determines the
+    information the latter is allowed to see (and the actions he is
+    allowed to perform). In general it may be different for each user.
+
+    The phases, and their meaning, are the following:
+    * -2: the user cannot compete because the contest hasn't started
+          yet;
+    * -1: the user cannot compete because, even if the contest has
+          already started, its per-user time frame hasn't yet (this
+          usually means the user still has to click on the "start!"
+          button in USACO-like contests);
+    * 0: the user can compete;
+    * +1: the user cannot compete because, even if the contest hasn't
+          stopped yet, its per-user time frame already has (again, this
+          should normally happen only in USACO-like contests);
+    * +2: the user cannot compete because the contest has already
+          stopped.
+    A user is said to "compete" if he can read the tasks' statements,
+    submit solutions, see their results, etc.
+
+    This function returns the actual phase at the given timestamp, as
+    well as its boundaries (i.e. when it started and will end, with
+    None meaning +/- infinity) and the boundaries of the phase 0 (if it
+    is defined, otherwise None).
+
+    timestamp (datetime): the current time.
+    contest_start (datetime): the contest's start.
+    contest_stop (datetime): the contest's stop.
+    per_user_time (timedelta|None): the amount of time allocated to
+        each user; if it's None the contest is traditional, otherwise
+        it's USACO-like.
+    starting_time (datetime|None): when the user started his time
+        frame.
+    delay_time (timedelta): how much the user's start is delayed.
+    extra_time (timedelta): how much extra time is given to the user at
+        the end.
+
+    return (tuple): 5 items: an integer (in [-2, +2]) and two pairs of
+        datetimes (or None) defining two intervals.
+
+    """
+    # Validate arguments.
+    assert (isinstance(timestamp, datetime) and
+            isinstance(contest_start, datetime) and
+            isinstance(contest_stop, datetime) and
+            (per_user_time is None or isinstance(per_user_time, timedelta)) and
+            (starting_time is None or isinstance(starting_time, datetime)) and
+            isinstance(delay_time, timedelta) and
+            isinstance(extra_time, timedelta))
+
+    assert contest_start <= contest_stop
+    assert per_user_time is None or per_user_time >= timedelta()
+    assert delay_time >= timedelta()
+    assert extra_time >= timedelta()
+
+    if per_user_time is not None and starting_time is None:
+        # "USACO-like" contest, but we still don't know when the user
+        # started/will start.
+        actual_start = None
+        actual_stop = None
+
+        if contest_start <= timestamp <= contest_stop:
+            actual_phase = -1
+            current_phase_begin = contest_start
+            current_phase_end = contest_stop
+        elif timestamp < contest_start:
+            actual_phase = -2
+            current_phase_begin = None
+            current_phase_end = contest_start
+        elif contest_stop < timestamp:
+            actual_phase = +2
+            current_phase_begin = contest_stop
+            current_phase_end = None
+        else:
+            raise RuntimeError("Logic doesn't seem to be working...")
+    else:
+        if per_user_time is None:
+            # "Traditional" contest.
+            intended_start = contest_start
+            intended_stop = contest_stop
+        else:
+            # "USACO-like" contest, and we already know when the user
+            # started/will start.
+            # Both values are lower- and upper-bounded to prevent the
+            # ridiculous situations of starting_time being set by the
+            # admin way before contest_start or after contest_stop.
+            intended_start = min(max(starting_time,
+                                     contest_start), contest_stop)
+            intended_stop = min(max(starting_time + per_user_time,
+                                    contest_start), contest_stop)
+        actual_start = intended_start + delay_time
+        actual_stop = intended_stop + delay_time + extra_time
+
+        assert contest_start <= actual_start <= actual_stop
+
+        if actual_start <= timestamp <= actual_stop:
+            actual_phase = 0
+            current_phase_begin = actual_start
+            current_phase_end = actual_stop
+        elif contest_start <= timestamp < actual_start:
+            # This also includes a funny corner case: the user's start
+            # is known but is in the future (the admin either set it
+            # that way or added some delay after the user started).
+            actual_phase = -1
+            current_phase_begin = contest_start
+            current_phase_end = actual_start
+        elif timestamp < contest_start:
+            actual_phase = -2
+            current_phase_begin = None
+            current_phase_end = contest_start
+        elif actual_stop < timestamp <= contest_stop:
+            actual_phase = +1
+            current_phase_begin = actual_stop
+            current_phase_end = contest_stop
+        elif contest_stop < timestamp:
+            actual_phase = +2
+            current_phase_begin = max(contest_stop, actual_stop)
+            current_phase_end = None
+        else:
+            raise RuntimeError("Logic doesn't seem to be working...")
+
+    return (actual_phase,
+            current_phase_begin, current_phase_end,
+            actual_start, actual_stop)
+
+
 def actual_phase_required(*actual_phases):
-    """Return decorator that accepts requests iff contest is in the given phase
+    """Return decorator filtering out requests in the wrong phase.
+
+    actual_phases ([int]): the phases in which the request can pass.
+
+    return (function): the decorator.
 
     """
     def decorator(func):
@@ -107,7 +247,7 @@ DIMS = list(1024 ** x for x in xrange(9))
 
 
 def format_size(n):
-    """Format the given number of bytes
+    """Format the given number of bytes.
 
     Return a size, given as a number of bytes, properly formatted
     using the most appropriate size unit. Always use three
@@ -130,11 +270,13 @@ def format_size(n):
 
 
 def format_date(dt, timezone, locale=None):
-    """Return the date of dt formatted according to the given locale
+    """Return the date of dt formatted according to the given locale.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the date of dt, formatted using the given locale
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the date of dt, formatted using the given
+        locale.
 
     """
     if locale is None:
@@ -149,11 +291,12 @@ def format_date(dt, timezone, locale=None):
 
 
 def format_time(dt, timezone, locale=None):
-    """Return the time of dt formatted according to the given locale
+    """Return the time of dt formatted according to the given locale.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the time of dt, formatted using the given locale
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the time of dt, formatted using the given locale.
 
     """
     if locale is None:
@@ -168,11 +311,13 @@ def format_time(dt, timezone, locale=None):
 
 
 def format_datetime(dt, timezone, locale=None):
-    """Return the date and time of dt formatted according to the given locale
+    """Return the date and time of dt formatted as per locale.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the date and time of dt, formatted using the given locale
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the date and time of dt, formatted using the given
+        locale.
 
     """
     if locale is None:
@@ -187,11 +332,15 @@ def format_datetime(dt, timezone, locale=None):
 
 
 def format_datetime_smart(dt, timezone, locale=None):
-    """Return dt formatted as 'date & time' or, if date is today, just 'time'
+    """Return dt formatted as '[date] time'.
 
-    dt (datetime): a datetime object
-    timezone (tzinfo): the timezone the output should be in
-    return (str): the [date and] time of dt, formatted using the given locale
+    Date is present in the output if it is not today.
+
+    dt (datetime): a datetime object.
+    timezone (tzinfo): the timezone the output should be in.
+
+    return (str): the [date and] time of dt, formatted using the given
+        locale.
 
     """
     if locale is None:
@@ -214,7 +363,8 @@ def get_score_class(score, max_score):
 
     score (float): the score of the submission.
     max_score (float): maximum score.
-    return (str): class name
+
+    return (unicode): class name
 
     """
     if score <= 0:
@@ -249,7 +399,8 @@ def format_amount_of_time(seconds, precision=2, locale=None):
 
     seconds (int): the length of the amount of time in seconds.
     precision (int): see above
-    locale (Locale): the locale to be used.
+    locale (Locale|None): the locale to be used, or None for the
+        default.
 
     return (string): seconds formatted as above.
 
@@ -298,13 +449,14 @@ def format_token_rules(tokens, t_type=None, locale=None):
     """Return a human-readable string describing the given token rules
 
     tokens (dict): all the token rules (as seen in Task or Contest),
-                   without the "token_" prefix.
-    t_type (str): the type of tokens the string should refer to (can be
-                  "contest" to mean contest-tokens, "task" to mean
-                  task-tokens, any other value to mean normal tokens).
-    locale (Locale|NullTranslation): the locale to be used.
+        without the "token_" prefix.
+    t_type (string|None): the type of tokens the string should refer to
+        (can be "contest" to mean contest-tokens, "task" to mean
+        task-tokens, any other value to mean normal tokens).
+    locale (Locale|NullTranslation|None): the locale to be used (None
+        for the default).
 
-    return (string): localized string describing the rules.
+    return (unicode): localized string describing the rules.
 
     """
     if locale is None:
@@ -336,7 +488,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
         # This message will only be shown on tasks in case of a mixed
         # modes scenario.
         result += \
-            _("You have infinite an infinite number of %(type_pl)s "
+            _("You have an infinite number of %(type_pl)s "
               "for this task.") % tokens
     else:
         if tokens['gen_initial'] == 0:
@@ -395,11 +547,13 @@ def format_token_rules(tokens, t_type=None, locale=None):
 
 
 def format_dataset_attrs(dataset):
-    """Construct a printable string containing the attributes of a given
-    dataset (e.g. live, autojudge enabled, etc.)
+    """Return a printable string for the attributes of a dataset.
 
-    dataset (Dataset): the dataset in question
-    return (str): printable string of relevant attributes
+    E.g.: live, autojudge enabled, etc.
+
+    dataset (Dataset): the dataset in question.
+
+    return (unicode): printable string of relevant attributes.
 
     """
     if dataset is dataset.task.active_dataset:
@@ -411,11 +565,14 @@ def format_dataset_attrs(dataset):
 
 
 def filter_ascii(string):
-    """Avoid problem with printing a string provided by a malicious
+    """Return the printable ascii character in string.
+
+    This to avoid problem printing a string privided by a malicious
     entity.
 
-    string (str): the input string.
-    return (str): string with non-printable chars substituted by *.
+    string (unicode): the input string.
+
+    return (unicode): string with non-printable chars substituted by *.
 
     """
     def filter_ascii_char(c):
@@ -429,8 +586,14 @@ def filter_ascii(string):
 
 
 def encode_for_url(url_fragment):
-    """Encode to UTF-8 and then percent-encode a unicode string to be
-    used as an URL fragment.
+    """Return the string encoded safely for becoming a url fragment.
+
+    In particular, this means encoding it to UTF-8 and then
+    percent-encoding it.
+
+    url_fragment(unicode): the string to be encoded.
+
+    return (str): the encoded string.
 
     """
     return quote(url_fragment.encode('utf-8'), safe='')

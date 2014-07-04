@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -23,6 +23,10 @@
 """Task type for output only tasks.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 
@@ -161,7 +165,7 @@ class OutputOnly(TaskType):
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = str(outcome) if outcome is not None else None
+        job.outcome = "%s" % outcome if outcome is not None else None
         job.text = text
 
         delete_sandbox(sandbox)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -22,6 +22,7 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import io
 import logging
@@ -31,7 +32,7 @@ import sys
 import yaml
 from datetime import timedelta
 
-from cms import LANGUAGES
+from cms import LANGUAGES, LANGUAGE_TO_HEADER_EXT_MAP
 from cmscommon.datetime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
     SubmissionFormatElement, Dataset, Manager, Testcase
@@ -263,8 +264,8 @@ class YamlLoader(Loader):
             for lang in LANGUAGES:
                 files.append(os.path.join(path, "sol", "grader.%s" % lang))
             for other_filename in os.listdir(os.path.join(path, "sol")):
-                if other_filename.endswith('.h') or \
-                        other_filename.endswith('lib.pas'):
+                if any(other_filename.endswith(header)
+                       for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                     files.append(os.path.join(path, "sol", other_filename))
 
         # Yaml
@@ -475,8 +476,8 @@ class YamlLoader(Loader):
                     logger.warning("Grader for language %s not found " % lang)
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(task_path, "sol")):
-                if other_filename.endswith('.h') or \
-                        other_filename.endswith('lib.pas'):
+                if any(other_filename.endswith(header)
+                       for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                     digest = self.file_cacher.put_file_from_path(
                         os.path.join(task_path, "sol", other_filename),
                         "Manager %s for task %s" % (other_filename, name))
@@ -560,13 +561,13 @@ class YamlLoader(Loader):
                     n_input = testcases
                     if n_input != 0:
                         input_value = total_value / n_input
-                    args["score_type_parameters"] = str(input_value)
+                    args["score_type_parameters"] = "%s" % input_value
                 else:
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
                     n_input = sum([int(st[1]) for st in subtasks])
                     args["score_type"] = "GroupMin"
-                    args["score_type_parameters"] = str(subtasks)
+                    args["score_type_parameters"] = "%s" % subtasks
 
                 if "n_input" in conf:
                     assert int(conf['n_input']) == n_input
@@ -579,7 +580,7 @@ class YamlLoader(Loader):
             n_input = int(conf['n_input'])
             if n_input != 0:
                 input_value = total_value / n_input
-            args["score_type_parameters"] = str(input_value)
+            args["score_type_parameters"] = "%s" % input_value
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
@@ -618,6 +619,15 @@ class YamlLoader(Loader):
                         else:
                             logger.warning("Stub for language %s not "
                                            "found." % lang)
+                    for other_filename in os.listdir(os.path.join(task_path,
+                                                                  "sol")):
+                        if any(other_filename.endswith(header) for header in
+                               LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                            digest = self.file_cacher.put_file_from_path(
+                                os.path.join(task_path, "sol", other_filename),
+                                "Stub %s for task %s" % (other_filename, name))
+                            args["managers"] += [
+                                Manager(other_filename, digest)]
                     break
 
             # Otherwise, the task type is Batch

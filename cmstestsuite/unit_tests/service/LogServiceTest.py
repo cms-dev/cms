@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,10 @@
 """Tests for the logger service.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 import unittest
@@ -64,7 +68,7 @@ class TestLogService(unittest.TestCase):
                               TestLogService.MSG + severity)
             self.assertEquals(last_message["coord"],
                               TestLogService.SERVICE_NAME + severity +
-                              "," + str(TestLogService.SERVICE_SHARD))
+                              "," + ("%d" % TestLogService.SERVICE_SHARD))
             self.assertEquals(last_message["operation"],
                               TestLogService.OPERATION + severity)
             self.assertEquals(last_message["severity"],

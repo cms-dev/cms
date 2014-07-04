@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-14 18:50+0100\n"
-"PO-Revision-Date: 2014-01-29 19:54+0100\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:18+0100\n"
 "Last-Translator: Damien Leroy <damien.leroy@be-oi.be>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -17,43 +17,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: grading/__init__.py:130 grading/ScoreType.py:151
-#: grading/scoretypes/Sum.py:42 server/templates/contest/overview.html:199
-#: server/templates/contest/overview.html:206
-#: server/templates/contest/submission_details.html:22
-#: server/templates/contest/submission_details.html:31
-#: server/templates/contest/submission_row.html:13
-#: server/templates/contest/submission_row.html:15
-#: server/templates/contest/submission_row.html:24
-#: server/templates/contest/submission_row.html:26
-#: server/templates/contest/submission_row.html:34
-#: server/templates/contest/submission_row.html:36
-#: server/templates/contest/submission_row.html:44
-#: server/templates/contest/submission_row.html:46
-#: server/templates/contest/submission_row.html:73
-#: server/templates/contest/user_test_details.html:21
-#: server/templates/contest/user_test_details.html:30
-#: server/templates/contest/user_test_row.html:35
-#: server/templates/contest/user_test_row.html:44
-#: server/templates/contest/user_test_row.html:64
 msgid "N/A"
 msgstr "N/A"
 
-#: grading/__init__.py:206
 msgid "Compilation succeeded"
 msgstr "Compilation réussie"
 
-#: grading/__init__.py:214 server/ContestWebServer.py:1236
-#: server/templates/contest/submission_row.html:20
-#: server/templates/contest/user_test_row.html:16
 msgid "Compilation failed"
 msgstr "Erreur de compilation"
 
-#: grading/__init__.py:221
 msgid "Compilation timed out"
 msgstr "Durée maximale de compilation dépassée"
 
-#: grading/__init__.py:231
 #, python-format
 msgid ""
 "Compilation killed with signal %d (could be triggered by violating memory "
@@ -61,11 +36,9 @@ msgid ""
 msgstr "Compilation interrompue : signal %d (peut provenir d'un débordement"
 " de mémoire)"
 
-#: grading/__init__.py:414
 msgid "Execution timed out"
 msgstr "Durée maximale d'exécution dépassée"
 
-#: grading/__init__.py:416
 #, python-format
 msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
@@ -73,448 +46,351 @@ msgid ""
 msgstr "Exécution interrompue : signal %d (peut provenir d'un débordement"
 " de mémoire)"
 
-#: grading/__init__.py:421
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
 msgstr "Exécution interrompue : utilisation interdite de l'appel système %s"
 
-#: grading/__init__.py:425
 msgid "Execution killed because of forbidden file access"
 msgstr "Exécution interrompue : accès à un fichier (interdit)"
 
-#: grading/__init__.py:428
 msgid "Execution failed because the return code was nonzero"
 msgstr "Exécution échouée: code de retour différent de zéro"
 
-#: grading/__init__.py:595
 msgid "Output is correct"
 msgstr "Sortie correcte"
 
-#: grading/__init__.py:598
 msgid "Output isn't correct"
 msgstr "Sortie incorrecte"
 
-#: grading/__init__.py:601 grading/tasktypes/Batch.py:269
-#: grading/tasktypes/TwoSteps.py:273
 #, python-format
 msgid "Evaluation didn't produce file %s"
 msgstr "L'exécution n'a pas produit de fichier %s"
 
-#: grading/ScoreType.py:146
 #, python-format
 msgid "Subtask %d"
 msgstr "Sous-tâche %d"
 
-#: grading/ScoreType.py:147 grading/scoretypes/Sum.py:38
 msgid "Outcome"
 msgstr "Résultat"
 
-#: grading/ScoreType.py:148 grading/scoretypes/Sum.py:39
 msgid "Details"
 msgstr "Détails"
 
-#: grading/ScoreType.py:149 grading/scoretypes/Sum.py:40
-#: server/templates/contest/test_interface.html:161
 msgid "Execution time"
 msgstr "Durée d'exécution"
 
-#: grading/ScoreType.py:150 grading/scoretypes/Sum.py:41
-#: server/templates/contest/test_interface.html:162
 msgid "Memory used"
 msgstr "Mémoire utilisée"
 
-#: grading/scoretypes/GroupMin.py:41 grading/scoretypes/GroupMul.py:41
-#: grading/scoretypes/GroupThreshold.py:45 grading/scoretypes/Sum.py:155
 msgid "Not correct"
 msgstr "Incorrect"
 
-#: grading/scoretypes/GroupMin.py:43 grading/scoretypes/GroupMul.py:43
-#: grading/scoretypes/GroupThreshold.py:43 grading/scoretypes/Sum.py:157
 msgid "Correct"
 msgstr "Correct"
 
-#: grading/scoretypes/GroupMin.py:45 grading/scoretypes/GroupMul.py:45
-#: grading/scoretypes/Sum.py:159
 msgid "Partially correct"
 msgstr "Partiellement correct"
 
-#: grading/tasktypes/Batch.py:146 grading/tasktypes/Communication.py:104
-#: grading/tasktypes/TwoSteps.py:110
 msgid "Invalid files in submission"
 msgstr "Fichiers soumis incorrects"
 
-#: grading/tasktypes/OutputOnly.py:90
+msgid "Execution completed successfully"
+msgstr "Exécution terminée avec succès"
+
 msgid "No compilation needed"
 msgstr "Compilation non nécessaire"
 
-#: grading/tasktypes/OutputOnly.py:109
 msgid "File not submitted"
 msgstr "Aucun fichier soumis"
 
-#: server/ContestWebServer.py:814
 msgid "Question received"
 msgstr "Question envoyée"
 
-#: server/ContestWebServer.py:815
 msgid ""
 "Your question has been received, you will be notified when the it will be "
 "answered."
 msgstr "Votre question a été envoyée, vous serez notifié lorsque quelqu'un y"
 " aura répondu."
 
-#: server/ContestWebServer.py:847
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
 msgstr "Vous avez atteint le nombre maximum de %d soumissions toutes tâches "
 "confondues."
 
-#: server/ContestWebServer.py:857
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions on this task."
 msgstr "Vous avez atteint le nombre maximum de %d soumissions pour cette tâche."
 
-#: server/ContestWebServer.py:864
 msgid "Too many submissions!"
 msgstr "Trop de soumissions !"
 
-#: server/ContestWebServer.py:882
 #, python-format
 msgid ""
 "Among all tasks, you can submit again after %d seconds from last submission."
 msgstr "Toutes tâches confondues, vous ne pouvez resoumettre que %d secondes "
 "après votre précédente soumission."
 
-#: server/ContestWebServer.py:897
 #, python-format
 msgid ""
 "For this task, you can submit again after %d seconds from last submission."
 msgstr "Pour cette tâche, vous ne pouvez resoumettre que %d secondes après"
 " votre précédente soumission."
 
-#: server/ContestWebServer.py:904
 msgid "Submissions too frequent!"
 msgstr "Soumissions trop rapprochées !"
 
-#: server/ContestWebServer.py:916 server/ContestWebServer.py:963
 msgid "Invalid submission format!"
 msgstr "Format de soumission invalide !"
 
-#: server/ContestWebServer.py:917 server/ContestWebServer.py:964
-#: server/ContestWebServer.py:1430 server/ContestWebServer.py:1477
 msgid "Please select the correct files."
 msgstr "Sélectionnez les fichiers corrects."
 
-#: server/ContestWebServer.py:942 server/ContestWebServer.py:1455
 msgid "Invalid archive format!"
 msgstr "Format d'archive invalide !"
 
-#: server/ContestWebServer.py:943 server/ContestWebServer.py:1456
 msgid "The submitted archive could not be opened."
 msgstr "Impossible d'ouvrir l'archive soumise."
 
-#: server/ContestWebServer.py:1020
 msgid "Cannot recognize submission's language."
 msgstr "Impossible de reconnaître le language du fichier soumis."
 
-#: server/ContestWebServer.py:1024 server/ContestWebServer.py:1536
 msgid "All sources must be in the same language."
 msgstr "Toutes les fichiers sources doivent être dans le même."
 " language"
 
-#: server/ContestWebServer.py:1032
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "Le langage ‘%s’ n’est pas autorisé dans ce concours."
+
 msgid "Invalid submission!"
 msgstr "Soumission invalide !"
 
-#: server/ContestWebServer.py:1044
 msgid "Submission too big!"
 msgstr "Fichier soumis trop gros !"
 
-#: server/ContestWebServer.py:1045 server/ContestWebServer.py:1557
 #, python-format
 msgid "Each source file must be at most %d bytes long."
 msgstr "Chaque fichier source ne peut pas faire plus de %d octets."
 
-#: server/ContestWebServer.py:1093
 msgid "Submission storage failed!"
 msgstr "Erreur d'enregistrement de votre soumission !"
 
-#: server/ContestWebServer.py:1094 server/ContestWebServer.py:1616
 msgid "Please try again."
 msgstr "Veuillez réessayer."
 
-#: server/ContestWebServer.py:1116
 msgid "Submission received"
 msgstr "Soumission reçue"
 
-#: server/ContestWebServer.py:1117
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "Votre soumission a bien été reçue et est en cours d'évaluation."
 
-#: server/ContestWebServer.py:1163 server/ContestWebServer.py:1178
 msgid "Token request discarded"
 msgstr "Demande de token refusée"
 
-#: server/ContestWebServer.py:1164
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "Votre requête a été annulée car vous n'avez plus de jetons "
 "disponibles."
 
-#: server/ContestWebServer.py:1179
 msgid ""
 "Your request has been discarded because you already used a token on that "
 "submission."
 msgstr "Votre requête a été annulée car vous avez déjà utilisé un jeton sur "
 "cette soumission."
 
-#: server/ContestWebServer.py:1197
 msgid "Token request received"
 msgstr "Demande de jeton reçue"
 
-#: server/ContestWebServer.py:1198
 msgid "Your request has been received and applied to the submission."
 msgstr "Votre requête a été reçue et appliquée à la soumission."
 
-#: server/ContestWebServer.py:1232
-#: server/templates/contest/submission_row.html:10
-#: server/templates/contest/user_test_row.html:10
 msgid "Compiling..."
 msgstr "Compilation..."
 
-#: server/ContestWebServer.py:1236 server/ContestWebServer.py:1246
-#: server/templates/contest/submission_row.html:21
-#: server/templates/contest/submission_row.html:52
-#: server/templates/contest/user_test_row.html:17
-#: server/templates/contest/user_test_row.html:30
 msgid "details"
 msgstr "détails"
 
-#: server/ContestWebServer.py:1239
-#: server/templates/contest/submission_row.html:31
 msgid "Evaluating..."
 msgstr "Evaluation..."
 
-#: server/ContestWebServer.py:1242
-#: server/templates/contest/submission_row.html:41
 msgid "Scoring..."
 msgstr "Calcul des points..."
 
-#: server/ContestWebServer.py:1246
-#: server/templates/contest/submission_row.html:51
 msgid "Evaluated"
 msgstr "Évalué"
 
-#: server/ContestWebServer.py:1361
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "Vous avez atteint le nombre maximal de %d tests toutes tâches "
 "confondues."
 
-#: server/ContestWebServer.py:1370
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Vous avez atteint le nombre maximal de %d tests pour cette tâche."
 
-#: server/ContestWebServer.py:1377
 msgid "Too many tests!"
 msgstr "Trop de tests !"
 
-#: server/ContestWebServer.py:1395
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
 msgstr "Toutes tâches confondues, vous ne pouvez relancer un test que %d "
 "secondes après votre précédent test."
 
-#: server/ContestWebServer.py:1410
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
 msgstr "Pour cette tâche, vous ne pouvez relancer un test que %d "
 "secondes après votre précédent test."
 
-#: server/ContestWebServer.py:1417
 msgid "Tests too frequent!"
 msgstr "Tests trop rapprochés !"
 
-#: server/ContestWebServer.py:1429 server/ContestWebServer.py:1476
 msgid "Invalid test format!"
 msgstr "Format de test invalide !"
 
-#: server/ContestWebServer.py:1532
 msgid "Cannot recognize test's language."
 msgstr "Impossible de reconnaître le language du test."
 
-#: server/ContestWebServer.py:1544
 msgid "Invalid test!"
 msgstr "Test invalide !"
 
-#: server/ContestWebServer.py:1556
 msgid "Test too big!"
 msgstr "Test trop gros !"
 
-#: server/ContestWebServer.py:1566
 msgid "Input too big!"
 msgstr "Fichier d'entrée trop gros !"
 
-#: server/ContestWebServer.py:1567
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr "Le fichier d'entrée ne peut pas faire plus de %d octets."
 
-#: server/ContestWebServer.py:1615
 msgid "Test storage failed!"
 msgstr "Impossible d'enregistrer le test !"
 
-#: server/ContestWebServer.py:1648
 msgid "Test received"
 msgstr "Test reçu"
 
-#: server/ContestWebServer.py:1649
 msgid "Your test has been received and is currently being executed."
 msgstr "Votre test a été reçu et est en cours d'exécution."
 
-#: server/__init__.py:148
+msgid "Executing..."
+msgstr "En cours d'exécution..."
+
+msgid "Executed"
+msgstr "Exécuté"
+
+#, fuzzy, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f seconde"
+
 msgid "%Y-%m-%d"
 msgstr "%d/%m/%Y"
 
-#: server/__init__.py:167 server/__init__.py:207
 msgid "%H:%M:%S"
 msgstr "%H:%M:%S"
 
-#: server/__init__.py:186 server/__init__.py:209
 msgid "%Y-%m-%d %H:%M:%S"
 msgstr "%d/%m/%Y %H:%M:%S"
 
-#: server/__init__.py:232 server/__init__.py:261
+msgid "loading..."
+msgstr "chargement ..."
+
 #, python-format
 msgid "%d second"
 msgid_plural "%d seconds"
-msgstr[0] "%s seconde"
-msgstr[1] "%s secondes"
+msgstr[0] "%d seconde"
+msgstr[1] "%d secondes"
 
-#: server/__init__.py:233
 #, python-format
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minute"
 msgstr[1] "%d minutes"
 
-#: server/__init__.py:234
 #, python-format
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d heure"
 msgstr[1] "%d heures"
 
-#: server/__init__.py:235
 #, python-format
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] "%d jour"
 msgstr[1] "%d jours"
 
-#: server/__init__.py:285
 #, python-format
 msgid "%s and %s"
 msgstr "%s et %s"
 
-#: server/__init__.py:288
 #, python-format
 msgid "more than %s"
 msgstr "plus de %s"
 
-#: server/__init__.py:312
 msgid "contest-token"
 msgstr "jeton d'épreuve"
 
-#: server/__init__.py:313
 msgid "contest-tokens"
 msgstr "jetons d'épreuve"
 
-#: server/__init__.py:315
 msgid "task-token"
 msgstr "jeton de tâche"
 
-#: server/__init__.py:316
 msgid "task-tokens"
 msgstr "jetons de tâche"
 
-#: server/__init__.py:318
 msgid "token"
 msgstr "jeton"
 
-#: server/__init__.py:319
 msgid "tokens"
 msgstr "jetons"
 
-#: server/__init__.py:330
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
 msgstr "Vous n'avez plus de %(type_pl)s disponibles pour cette tâche."
 
-#: server/__init__.py:332
 #, python-format
-msgid "You have infinite %(type_pl)s."
-msgstr "Vous avez une infinité de %(type_pl)s."
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "Vous avez un nombre infini de %(type_pl)s pour cette tâche."
 
-#: server/__init__.py:337 server/__init__.py:380
-#, python-format
-msgid "You can use a %(type_s)s every second."
-msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "Vous pouvez utiliser un %(type_s)s chaque seconde."
-msgstr[1] "Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g "
-"secondes."
-
-#: server/__init__.py:341 server/__init__.py:388
-msgid "You have no limitations on how you use them."
-msgstr "Il n'y a pas de limitation sur leur utilisation."
-
-#: server/__init__.py:344
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "Vous commencez avec aucun %(type_s)s."
+msgstr "Vous commencez avec aucun %(type_pl)s."
 
-#: server/__init__.py:346
 #, python-format
 msgid "You start with one %(type_s)s."
-msgid_plural "You start with %(initial)d %(type_pl)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "Vous commencez avec un %(type_s)s."
-msgstr[1] "Vous commencez avec %(initial)d %(type_pl)s."
+msgstr[1] "Vous commencez avec %(gen_initial)d %(type_pl)s."
 
-#: server/__init__.py:353
 #, python-format
 msgid "Every minute "
-msgid_plural "Every %(gen_time)g minutes "
+msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Chaque minute "
-msgstr[1] "Toutes les %(gen_time)g minutes "
+msgstr[1] "Toutes les %(gen_interval)g minutes "
 
-#: server/__init__.py:357
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "vous recevez un nouveau %(type_s)s, "
 msgstr[1] "vous recevez %(gen_number)d nouveaux %(type_pl)s, "
 
-#: server/__init__.py:360
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
-msgid_plural "up to a maximum of %(max)d %(type_pl)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "jusqu'à un maximum d'un %(type_s)s."
-msgstr[1] "jusqu'à un maximum de %(max)d %(type_pl)s."
+msgstr[1] "jusqu'à un maximum de %(gen_max)d %(type_pl)s."
 
-#: server/__init__.py:364
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "vous recevez un %(type_s)s supplémentaire."
 msgstr[1] "vous recevez %(gen_number)d %(type_pl)s supplémentaires."
 
-#: server/__init__.py:368
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "Vous ne recevez plus de %(type_s)s."
+msgstr "Vous ne recevez plus de %(type_pl)s."
 
-#: server/__init__.py:373
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
@@ -522,21 +398,31 @@ msgstr[0] "Vous pouvez utiliser un %(type_s)s par seconde "
 msgstr[1] "Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g "
 "secondes "
 
-#: server/__init__.py:376
 #, python-format
 msgid "and no more than one %(type_s)s in total."
-msgid_plural "and no more than %(total)d %(type_pl)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "et pas plus d'un %(type_s)s au total."
-msgstr[1] "et pas plus de %(total)d %(type_pl)s au total."
+msgstr[1] "et pas plus de %(max_number)d %(type_pl)s au total."
 
-#: server/__init__.py:384
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "Vous pouvez utiliser un %(type_s)s par seconde."
+msgstr[1] "Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g secondes."
+
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
-msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Vous pouvez utiliser au maximum un %(type_s)s."
-msgstr[1] "Vous pouvez utiliser au maximum %(total)d %(type_pl)."
+msgstr[1] "Vous pouvez utiliser au maximum %(max_number)d %(type_pl)s."
 
-#: server/templates/contest/base.html:53
+msgid "You have no limitations on how you use them."
+msgstr "Il n'y a pas de limitation sur leur utilisation."
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "Automatique (%s)"
+
 #, python-format
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
@@ -545,168 +431,116 @@ msgstr ""
 "Connecté en tant que <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
 
-#: server/templates/contest/base.html:54
 msgid "Logout"
 msgstr "Se déconnecter"
 
-#: server/templates/contest/base.html:65
 msgid "Failed to log in."
 msgstr "Connexion impossible"
 
-#: server/templates/contest/base.html:71
 msgid "Welcome"
 msgstr "Bienvenue"
 
-#: server/templates/contest/base.html:72
 msgid "Please log in"
 msgstr "Veuillez vous connecter"
 
-#: server/templates/contest/base.html:77
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: server/templates/contest/base.html:83
 msgid "Password"
 msgstr "Mot de passe"
 
-#: server/templates/contest/base.html:90
 msgid "Login"
 msgstr "Se connecter"
 
-#: server/templates/contest/base.html:91
-#: server/templates/contest/communication.html:53
-#: server/templates/contest/task_submissions.html:110
-#: server/templates/contest/task_submissions.html:129
-#: server/templates/contest/test_interface.html:106
-#: server/templates/contest/test_interface.html:124
 msgid "Reset"
 msgstr "Effacer"
 
-#: server/templates/contest/base.html:102
 msgid "New message"
 msgstr "Nouveau message"
 
-#: server/templates/contest/base.html:105
 msgid "New announcement"
 msgstr "Nouvelle annonce"
 
-#: server/templates/contest/base.html:108
 msgid "New answer"
 msgstr "Nouvelle réponse"
 
-#: server/templates/contest/base.html:111
-#: server/templates/contest/base.html:144
-#: server/templates/contest/base.html:147
 #, python-format
 msgid "%d unread"
 msgstr "%d non lu(s)"
 
-#: server/templates/contest/base.html:114
 msgid "Until contest starts:"
 msgstr "L'épreuve commence dans :"
 
-#: server/templates/contest/base.html:117
 msgid "Until contest ends:"
 msgstr "Temps d'épreuve restant :"
 
-#: server/templates/contest/base.html:120
 msgid "Time left:"
 msgstr "Temps restant :"
 
-#: server/templates/contest/base.html:127
 msgid "Server time:"
 msgstr "Heure serveur :"
 
-#: server/templates/contest/base.html:138
-#: server/templates/contest/overview.html:10
 msgid "Overview"
 msgstr "Présentation"
 
-#: server/templates/contest/base.html:142
-#: server/templates/contest/communication.html:8
 msgid "Communication"
 msgstr "Communication"
 
-#: server/templates/contest/base.html:157
-#: server/templates/contest/task_description.html:18
 msgid "Statement"
 msgstr "Énoncé"
 
-#: server/templates/contest/base.html:160
 msgid "Submissions"
 msgstr "Soumissions"
 
-#: server/templates/contest/base.html:166
-#: server/templates/contest/documentation.html:8
 msgid "Documentation"
 msgstr "Documentation"
 
-#: server/templates/contest/base.html:170
-#: server/templates/contest/test_interface.html:70
 msgid "Testing"
 msgstr "Tests"
 
-#: server/templates/contest/base.html:176
 msgid "Contest Management System"
 msgstr "Contest Management System"
 
-#: server/templates/contest/base.html:177
 msgid "is released under the"
 msgstr "est publié sous la"
 
-#: server/templates/contest/base.html:178
 msgid "GNU Affero General Public License"
 msgstr "licence GNU Affero General Public"
 
-#: server/templates/contest/communication.html:12
 msgid "Announcements"
 msgstr "Annonces"
 
-#: server/templates/contest/communication.html:19
-#: server/templates/contest/communication.html:68
-#: server/templates/contest/communication.html:80
-#: server/templates/contest/communication.html:107
 msgid "(no subject)"
 msgstr "(aucun objet)"
 
-#: server/templates/contest/communication.html:34
 msgid "Questions"
 msgstr "Questions"
 
-#: server/templates/contest/communication.html:39
 msgid "Subject"
 msgstr "Objet"
 
-#: server/templates/contest/communication.html:45
 msgid "Text"
 msgstr "Texte"
 
-#: server/templates/contest/communication.html:52
 msgid "Ask question"
 msgstr "Poser une question"
 
-#: server/templates/contest/communication.html:89
 msgid "no answer yet"
 msgstr "pas encore de réponse"
 
-#: server/templates/contest/communication.html:100
 msgid "Messages"
 msgstr "Messages"
 
-#: server/templates/contest/documentation.html:12
 msgid "Standard Template Library"
 msgstr "Librairie Standard C++ (STL)"
 
-#: server/templates/contest/error.html:7
 #, python-format
 msgid "Error %d"
 msgstr "Erreur %d"
 
-#: server/templates/contest/error.html:11
 msgid "An error occured while the server was handling your request."
 msgstr "Une erreur s'est produite lors du traitement de votre requête."
 
-#: server/templates/contest/error.html:15
 msgid ""
 "Note that attempts to tamper with Contest Management System (such as probing "
 "the server with customized URLs) may be considered cheating and may lead to "
@@ -716,136 +550,61 @@ msgstr ""
 "(telle que manipuler les adresses du site) sera considéré comme de la triche "
 "et pourra mener à une disqualification."
 
-#: server/templates/contest/error.html:19
 msgid ""
 "If you encountered this error during normal usage, please notify the contest "
 "administrators."
 msgstr "Si vous recontrer cette erreur alors que vous utilisez le service "
 "normalement, veuillez en notifier les administrateurs du concours."
 
-#: server/templates/contest/overview.html:13
 msgid "General information"
 msgstr "Information générale"
 
-#: server/templates/contest/overview.html:22
 msgid "The contest hasn't started yet."
 msgstr "L'épreuve n'a pas encore commencé."
 
-#: server/templates/contest/overview.html:25
 #, python-format
 msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
 msgstr "Le concours commencera le %(start_time)s et se terminera le "
 "%(stop_time)s."
 
-#: server/templates/contest/overview.html:27
 msgid "The contest is currently running."
 msgstr "Le concours est en cours."
 
-#: server/templates/contest/overview.html:30
 #, python-format
 msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
 msgstr "Le concours a commencé le %(start_time)s et se terminera le %(stop_time)s."
 
-#: server/templates/contest/overview.html:32
 msgid "The contest has already ended."
 msgstr "L'épreuve est terminée."
 
-#: server/templates/contest/overview.html:35
 #, python-format
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr "Le concours a commencé le %(start_time)s et s'est terminé le "
 "%(stop_time)s."
 
-#: server/templates/contest/overview.html:44
-#: server/templates/contest/task_description.html:146
-msgid "You have an infinite set of tokens."
+msgid "You have an infinite number of tokens."
 msgstr "Vous avez un nombre infini de jetons."
 
-#: server/templates/contest/overview.html:45
-#: server/templates/contest/overview.html:70
-#: server/templates/contest/overview.html:87
-msgid ""
-"You can use one of these tokens to see the detailed result of a submission."
-msgstr "Vous pouvez utiliser l'un de ces jetons pour obtenir les résultats "
-"détaillés de votre soumission."
+#, fuzzy
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr "Vous pouvez voir le résultat détaillé d’une soumission en utilisant un jeton."
 
-#: server/templates/contest/overview.html:46
-#: server/templates/contest/overview.html:71
-#: server/templates/contest/overview.html:88
-#: server/templates/contest/overview.html:103
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
 "and the last one."
 msgstr "Votre score pour chaque tâche sera le maximum entre les soumissions "
 "pour lesquelles vous aurez utilisé un jeton, et votre dernière soumission."
 
-#: server/templates/contest/overview.html:52
-#: server/templates/contest/task_description.html:165
-msgid "You can use at most one token every second among all tasks."
-msgstr "Vous pouvez utiliser au plus un jeton par seconde toutes tâches "
-"confondues."
-
-#: server/templates/contest/overview.html:54
-#: server/templates/contest/task_description.html:167
-#, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds among all tasks."
-msgstr "Vous pouvez utiliser au plus un jeton toutes les %(min_interval)d"
-" secondes toutes tâches confondues."
-
-#: server/templates/contest/overview.html:57
-msgid "Tasks may pose further limitations on how often you can use tokens."
-msgstr "Chaque tâche peut définir des limitations supplémentaires en ce qui "
-"concerne l'utilisation de jetons."
-
-#: server/templates/contest/overview.html:58
-#: server/templates/contest/overview.html:64
-#: server/templates/contest/overview.html:96
-msgid "See the description page of each task for more information."
-msgstr "Consultez la description de chaque tâche pour plus d'informations."
-
-#: server/templates/contest/overview.html:63
-msgid "Tasks may pose some limitations on how often you can use tokens."
-msgstr "Chaque tâche peut définir certaines limitations sur le nombre "
-"de jetons maximum qui vous pouvez utiliser."
-
-#: server/templates/contest/overview.html:69
 msgid "You have a distinct set of tokens for each task."
 msgstr "Vous avez un nombre différent de jetons pour chaque tâche."
 
-#: server/templates/contest/overview.html:75
-msgid ""
-"You can find the rules for the tokens on the description page of each task."
-msgstr "Vous trouverez les règles d'attribution des jetons dans la description"
-" de chaque tâche."
-
-#: server/templates/contest/overview.html:78
-msgid ""
-"In addition to those rules, you can use at most one token every second among "
-"all tasks."
-msgstr "En plus de ces règles, vous pouvez utiliser, au plus, un jeton chaque "
-"seconde toutes tâches confondues."
-
-#: server/templates/contest/overview.html:80
 #, python-format
-msgid ""
-"In addition to those rules, you can use at most one token every "
-"%(min_interval)d seconds among all tasks."
-msgstr "En plus de ces règles, vous pouvez utiliser, au plus, un jeton toutes "
-"les %(min_interval)d secondes toutes tâches confondues."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "Vous pouvez trouver les règles des %(type_pl)s sur la description de chaque tâche."
 
-#: server/templates/contest/overview.html:86
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Vous avez un ensemble de jetons partagés entre toutes les tâches."
 
-#: server/templates/contest/overview.html:95
-msgid ""
-"In addition to these rules, tasks may pose some limitations on how often you "
-"can use tokens."
-msgstr "En plus de ces règles, chaque tâche peut définir certaines "
-"limitations sur le nombre de jetons que vous pouvez utiliser."
-
-#: server/templates/contest/overview.html:101
 msgid ""
 "You have two types of tokens: a set of <em>contest-tokens</em> shared among "
 "all tasks and a distinct set of <em>task-tokens</em> for each task."
@@ -853,20 +612,12 @@ msgstr "Vous avez deux types de jetons : un ensemble de <em>jetons d'épreuve"
 "</em> partagés entre toutes les tâches, et un ensemble de <em>jetons de tâche"
 "</em> spécifique à chaque tâche."
 
-#: server/templates/contest/overview.html:102
 msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
 "one of each type."
 msgstr "Vous pouvez voir le résultat détaillé d'une soumission en utilisant "
 "deux jetons, un de chaque type."
 
-#: server/templates/contest/overview.html:109
-msgid ""
-"You can find the rules for the task-tokens on each task's description page."
-msgstr "Vous pouvez trouver les règles pour les jetons de tâche sur la "
-"description de chacun des tâches."
-
-#: server/templates/contest/overview.html:121
 #, python-format
 msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
@@ -875,13 +626,10 @@ msgstr ""
 "Chaque utilisateur est autorisé à participer (c.-à.-d. soumettre des "
 "solutions) de façon ininterrompue durant %(per_user_time)s."
 
-#: server/templates/contest/overview.html:126
 msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Dès que le concours a débuté, vous pouvez choisir la fourchette de "
 "temps pendant laquelle vous participez."
 
-#: server/templates/contest/overview.html:127
-#: server/templates/contest/overview.html:130
 msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
@@ -889,17 +637,14 @@ msgstr "Lorsque vous avez commencé, vous pouvez soumettre jusqu'à ce que "
 "votre fourchette de participation soit terminée ou que le concours se "
 "termine (selon le premier ayant lieu)"
 
-#: server/templates/contest/overview.html:129
 msgid "By clicking on the button below you can start your time frame."
 msgstr "En cliquant sur le bouton ci-dessous, vous commencerez votre "
 "fourchette de participation."
 
-#: server/templates/contest/overview.html:132
 #, python-format
 msgid "You started your time frame at %(start_time)s."
 msgstr "Vous avez commencé votre fourchette de participation le %(start_time)s."
 
-#: server/templates/contest/overview.html:133
 msgid ""
 "You can submit solutions until the end of the time frame or until the end of "
 "the contest, whatever comes first."
@@ -907,453 +652,258 @@ msgstr ""
 "Vous pouvez soumettre jusqu'à la fin de votre fourchette de participation ou "
 "jusqu'à la fin du concours (selon le premier qui aura lieu)."
 
-#: server/templates/contest/overview.html:135
-#: server/templates/contest/overview.html:141
 #, python-format
 msgid ""
 "You started your time frame at %(start_time)s and you already finished it."
 msgstr "Votre fourchette de participation a débuté le %(start_time)s "
 "et est maintenant terminée."
 
-#: server/templates/contest/overview.html:136
-#: server/templates/contest/overview.html:143
 msgid "There's nothing you can do now."
 msgstr "Il n'y a plus rien à faire pour l'instant."
 
-#: server/templates/contest/overview.html:139
 msgid "You never started your time frame. Now it's too late."
 msgstr "Vous n'avez pas démarré votre fenêtre de participantion. "
 "Il est maintenant trop tard."
 
-#: server/templates/contest/overview.html:150
 msgid "Start!"
 msgstr "Commencer !"
 
-#: server/templates/contest/overview.html:162
 msgid "Task overview"
 msgstr "Résumé des tâches"
 
-#: server/templates/contest/overview.html:175
 msgid "Task"
 msgstr "Tâche"
 
-#: server/templates/contest/overview.html:176
 msgid "Name"
 msgstr "Nom"
 
-#: server/templates/contest/overview.html:177
-#: server/templates/contest/task_description.html:103
 msgid "Time limit"
 msgstr "Limite de temps"
 
-#: server/templates/contest/overview.html:178
-#: server/templates/contest/task_description.html:115
 msgid "Memory limit"
 msgstr "Limite de mémoire"
 
-#: server/templates/contest/overview.html:179
-#: server/templates/contest/task_description.html:98
 msgid "Type"
 msgstr "Type"
 
-#: server/templates/contest/overview.html:180
-#: server/templates/contest/task_submissions.html:225
-#: server/templates/contest/test_interface.html:165
 msgid "Files"
 msgstr "Fichiers"
 
-#: server/templates/contest/overview.html:182
-#: server/templates/contest/task_description.html:142
 msgid "Tokens"
 msgstr "Jetons"
 
-#: server/templates/contest/overview.html:194
-#: server/templates/contest/task_description.html:106
 #, python-format
 msgid "%(seconds)g second"
 msgstr "%(seconds)g seconde"
 
-#: server/templates/contest/overview.html:196
-#: server/templates/contest/task_description.html:108
 #, python-format
 msgid "%(seconds)g seconds"
 msgstr "%(seconds)g secondes"
 
-#: server/templates/contest/overview.html:204
-#: server/templates/contest/task_description.html:116
 #, python-format
 msgid "%(mb)d MiB"
 msgstr "%(mb)d Mio (MiB)"
 
-#: server/templates/contest/overview.html:214
 msgid "Yes"
 msgstr "Oui"
 
-#: server/templates/contest/overview.html:216
 msgid "No"
 msgstr "Non"
 
-#: server/templates/contest/submission_details.html:11
-#: server/templates/contest/user_test_details.html:10
 msgid "Compilation output"
 msgstr "Résultat de la compilation"
 
-#: server/templates/contest/submission_details.html:15
-#: server/templates/contest/user_test_details.html:14
 msgid "Compilation outcome:"
 msgstr "Résultat de la compilation :"
 
-#: server/templates/contest/submission_details.html:19
-#: server/templates/contest/user_test_details.html:18
 msgid "Compilation time:"
 msgstr "Durée de la compilation :"
 
-#: server/templates/contest/submission_details.html:28
-#: server/templates/contest/user_test_details.html:27
 msgid "Memory used:"
 msgstr "Mémoire utilisée :"
 
-#: server/templates/contest/submission_details.html:40
-#: server/templates/contest/user_test_details.html:39
 msgid "Standard output"
 msgstr "Sortie standard"
 
-#: server/templates/contest/submission_details.html:44
-#: server/templates/contest/user_test_details.html:43
 msgid "Standard error"
 msgstr "Sortie d'erreur"
 
-#: server/templates/contest/submission_row.html:83
-#: server/templates/contest/user_test_row.html:80
 msgid "None"
 msgstr "Aucun(e)"
 
-#: server/templates/contest/submission_row.html:91
-#: server/templates/contest/submission_row.html:96
-#: server/templates/contest/user_test_row.html:53
-#: server/templates/contest/user_test_row.html:68
-#: server/templates/contest/user_test_row.html:85
-#: server/templates/contest/user_test_row.html:90
 msgid "Download"
 msgstr "Télécharger"
 
-#: server/templates/contest/submission_row.html:120
 msgid "Played"
 msgstr "Utilisé"
 
-#: server/templates/contest/submission_row.html:125
 msgid "Play!"
 msgstr "Utiliser !"
 
-#: server/templates/contest/submission_row.html:128
-#: server/templates/contest/user_test_row.html:59
 msgid "Wait..."
 msgstr "Attendez..."
 
-#: server/templates/contest/submission_row.html:130
 msgid "No tokens"
 msgstr "Aucun jeton"
 
-#: server/templates/contest/task_description.html:14
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr "%(name)s (%(short_name)s) <small>description</small>"
 
-#: server/templates/contest/task_description.html:23
 msgid "no statement available"
 msgstr "aucun énoncé disponible"
 
-#: server/templates/contest/task_description.html:30
 msgid "Download task statement"
 msgstr "Télécharger l'énoncé"
 
-#: server/templates/contest/task_description.html:38
 msgid ""
 "The statement for this task is available in multiple versions, in different "
 "languages."
 msgstr "L'énoncé pour cette tâche est disponible en plusieurs versions "
 "(plusieurs langues)."
 
-#: server/templates/contest/task_description.html:39
 msgid "You can see (and download) all of them using the list on the right."
 msgstr "Vous pouvez les voir toutes (et les télécharger) dans la liste "
 "sur la droite."
 
-#: server/templates/contest/task_description.html:40
 msgid "Some suggested translations follow."
 msgstr "D'autres versions peuvent également être disponibles."
 
-#: server/templates/contest/task_description.html:47
-#: server/templates/contest/task_description.html:59
 #, python-format
 msgid "Statement in <b>%s</b>"
 msgstr "Énoncé en <b>%s</b>"
 
-#: server/templates/contest/task_description.html:49
-#: server/templates/contest/task_description.html:61
 #, python-format
 msgid "Statement in %s"
 msgstr "Énoncé en %s"
 
-#: server/templates/contest/task_description.html:74
 #, python-format
 msgid "<b>%s</b>"
 msgstr "<b>%s</b>"
 
-#: server/templates/contest/task_description.html:76
 #, python-format
 msgid "%s"
 msgstr "%s"
 
-#: server/templates/contest/task_description.html:88
 msgid "Some details"
 msgstr "Quelques détails"
 
-#: server/templates/contest/task_description.html:122
 msgid "Compilation commands"
 msgstr "Commandes utilisées pour compiler"
 
-#: server/templates/contest/task_description.html:154
-msgid "You can use at most one token every second for this task "
-msgstr "Vous pouvez utiliser au plus un jeton chaque seconde pour cette tâche "
-
-#: server/templates/contest/task_description.html:156
 #, python-format
 msgid ""
-"You can use at most one token every %(min_interval)d seconds for this task "
-msgstr "Vous pouvez utiliser au plus une jeton toutes les %(min_interval)d "
-"secondes pour cette tâche "
-
-#: server/templates/contest/task_description.html:159
-msgid "and at most one token every second among all tasks."
-msgstr "et au maximum un jeton par seconde pour l'ensemble des tâches."
-
-#: server/templates/contest/task_description.html:161
-#, python-format
-msgid "and at most one token every %(min_interval)d seconds among all tasks."
-msgstr "et au maximum un jeton chaque %(min_interval)d secondes pour "
-"l'ensemble des tâches."
-
-#: server/templates/contest/task_description.html:171
-msgid "You can use at most one token every second for this task."
-msgstr "Vous pouvez utiliser au plus un jeton chaque seconde pour cette tâche."
-
-#: server/templates/contest/task_description.html:173
-#, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds for this task."
-msgstr "Vous pouvez utiliser au plus un jeton toutes les %(min_interval)d "
-"secondes pour cette tâche."
-
-#: server/templates/contest/task_description.html:176
-#: server/templates/contest/task_description.html:209
-msgid "On this task you don't have additional rules."
-msgstr "Il n'y a pas de règle supplémentaires pour cette tâche."
-
-#: server/templates/contest/task_description.html:189
-msgid ""
-"In addition to these rules, you can use at most one token every second among "
-"all tasks."
-msgstr "En plus de ces règles, vous pouvez utiliser au plus un jeton chaque "
-"seconde toutes tâches confondues."
-
-#: server/templates/contest/task_description.html:191
-#, python-format
-msgid ""
-"In addition to these rules, you can use at most one token every "
-"%(min_interval)d seconds among all tasks."
-msgstr "En plus de ces règles, vous pouvez utiliser au plus un jeton toutes "
-"les %(min_interval)d secondes toutes tâches confondues."
-
-#: server/templates/contest/task_description.html:197
-#, python-format
-msgid ""
-"You can find the rules for the tokens on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
 "\">contest overview page</a>."
-msgstr "Vous pouvez trouver les règles sur l'utilisation des jetons "
-"sur la <a href=\"%(url_root)s/\">page de présentation de l'épreuve</a>."
+msgstr "Vous pouvez trouver les règles des %(type_pl)s sur <a href=\"%(url_root)s/\">la page générale du concours</a>."
 
-#: server/templates/contest/task_description.html:204
-msgid ""
-"In addition to those rules, you can use at most one token every second on "
-"this task."
-msgstr "En plus de ces règles, vous pouvez utiliser au plus un jeton chaque "
-"seconde sur cette tâche."
-
-#: server/templates/contest/task_description.html:206
-#, python-format
-msgid ""
-"In addition to those rules, you can use at most one token every "
-"%(min_interval)d seconds on this task."
-msgstr "En plus de ces règles, vous pouvez utiliser au plus un jeton toutes "
-"les %(min_interval)d secondes sur cette tâche."
-
-#: server/templates/contest/task_description.html:215
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr "Rappelez-vous que pour voir les résultats détaillés d'une soumission, "
 "vous avez besoin à la fois d'un jeton d'épreuve et d'un jeton de tâche."
 
-#: server/templates/contest/task_description.html:221
-#, python-format
-msgid ""
-"You can find the rules for the contest-tokens on the <a href=\"%(url_root)s/"
-"\">contest overview page</a>."
-msgstr "Vous pouvez retrouver les règles des jetons d'épreuves sur la "
-"<a href=\"%(url_root)s/\">page de présentation de l'épreuve</a>."
-
-#: server/templates/contest/task_description.html:233
 msgid "Attachments"
 msgstr "Pièces jointes"
 
-#: server/templates/contest/task_submissions.html:89
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>soumissions</small>"
 
-#: server/templates/contest/task_submissions.html:93
 msgid "Submit a solution"
 msgstr "Soumettre une solution"
 
-#: server/templates/contest/task_submissions.html:109
-#: server/templates/contest/task_submissions.html:128
-#: server/templates/contest/test_interface.html:105
-#: server/templates/contest/test_interface.html:123
 msgid "Submit"
 msgstr "Soumettre"
 
-#: server/templates/contest/task_submissions.html:121
-#: server/templates/contest/test_interface.html:116
 msgid "submission.zip"
 msgstr "soumission.zip"
 
-#: server/templates/contest/task_submissions.html:139
 msgid "Previous submissions"
 msgstr "Soumissions précédentes"
 
-#: server/templates/contest/task_submissions.html:148
 msgid "Right now, you have infinite tokens available on this task."
 msgstr "Pour l'instant, vous avez un nombre infini de jetons "
 "pour cette tâche."
 
-#: server/templates/contest/task_submissions.html:150
 msgid "Right now, you have one token available on this task."
 msgstr "Pour l'instant, vous avez un jeton disponible pour cette tâche."
 
-#: server/templates/contest/task_submissions.html:152
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
 msgstr "Pour l'instant, vous avez %(tokens)s jetons disponibles pour "
 "cette tâche."
 
-#: server/templates/contest/task_submissions.html:156
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
 msgstr "Mais vous devez attendre jusqu'à %(expiration_time)s pour les "
 "utiliser."
 
-#: server/templates/contest/task_submissions.html:160
-#: server/templates/contest/task_submissions.html:168
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
 msgstr "Vous recevrez un nouveau jeton à %(gen_time)s."
 
-#: server/templates/contest/task_submissions.html:162
-#: server/templates/contest/task_submissions.html:174
 msgid "In the current situation, no more tokens will be generated."
 msgstr "Aucun nouveau jeton n'est regénéré pour l'instant."
 
-#: server/templates/contest/task_submissions.html:165
 msgid "Right now, you do not have tokens available for this task."
 msgstr "Pour l'instant, vous n'avez pas de jeton disponible pour cette tâche."
 
-#: server/templates/contest/task_submissions.html:171
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Mais vous devrez attendre jusqu'à %(expiration_time)s pour l'utiliser."
 
-#: server/templates/contest/task_submissions.html:214
-#: server/templates/contest/test_interface.html:156
 msgid "Date and time"
 msgstr "Date et heure"
 
-#: server/templates/contest/task_submissions.html:216
-#: server/templates/contest/test_interface.html:158
 msgid "Time"
 msgstr "Heure"
 
-#: server/templates/contest/task_submissions.html:218
-#: server/templates/contest/test_interface.html:160
 msgid "Status"
 msgstr "Status"
 
-#: server/templates/contest/task_submissions.html:220
 msgid "Public score"
 msgstr "Score public"
 
-#: server/templates/contest/task_submissions.html:221
 msgid "Total score"
 msgstr "Score total"
 
-#: server/templates/contest/task_submissions.html:223
 msgid "Score"
 msgstr "Score"
 
-#: server/templates/contest/task_submissions.html:227
 msgid "Token"
 msgstr "Jeton"
 
-#: server/templates/contest/task_submissions.html:235
-#: server/templates/contest/task_submissions.html:237
 msgid "no submissions yet"
 msgstr "aucune soumission"
 
-#: server/templates/contest/task_submissions.html:253
 msgid "Submission details"
 msgstr "Détails de la soumission"
 
-#: server/templates/contest/task_submissions.html:258
-#: server/templates/contest/test_interface.html:199
 msgid "Close"
 msgstr "Fermer"
 
-#: server/templates/contest/test_interface.html:89
 msgid "Submit a test"
 msgstr "Soumettre un test"
 
-#: server/templates/contest/test_interface.html:95
 msgid "input"
 msgstr "entrée"
 
-#: server/templates/contest/test_interface.html:133
 msgid "Previous tests"
 msgstr "Tests précédents"
 
-#: server/templates/contest/test_interface.html:163
 msgid "Input"
 msgstr "Entrée"
 
-#: server/templates/contest/test_interface.html:164
 msgid "Output"
 msgstr "Sortie"
 
-#: server/templates/contest/test_interface.html:171
 msgid "no tests yet"
 msgstr "aucun test"
 
-#: server/templates/contest/test_interface.html:194
 msgid "Test details"
 msgstr "Détails du test"
 
-#: server/templates/contest/user_test_details.html:5
 msgid "Evaluation outcome"
 msgstr "Résultat de l'évaluation"
 
-#: server/templates/contest/user_test_row.html:23
-msgid "Executing..."
-msgstr "En cours d'exécution..."
-
-#: server/templates/contest/user_test_row.html:29
-msgid "Executed"
-msgstr "Exécuté"

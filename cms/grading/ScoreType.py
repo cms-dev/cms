@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -29,6 +29,10 @@ assign them a score, keeping the global state of the scoring for the
 task.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import json
 import logging
@@ -71,10 +75,11 @@ class ScoreType(object):
         """Return an HTML string representing the score details of a
         submission.
 
-        score_details (dict): the data saved by the score type itself
-                              in the database; can be public or
-                              private.
-        translator (function): the function to localize strings.
+        score_details (unicode): the data saved by the score type
+            itself in the database; can be public or private.
+        translator (function|None): the function to localize strings,
+            or None to use the identity.
+
         return (string): an HTML string representing score_details.
 
         """

@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -36,10 +40,10 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Resource monitor and service starter for CMS.")
-    parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",
-                        help="restart automatically services on its machine",
-                        nargs="?", type=int, const=-1)
-    parser.add_argument("shard", type=int, nargs="?", default=None)
+    parser.add_argument("-a", "--autorestart", action="store", type=int,
+                        nargs="?", const=-1, metavar="CONTEST_ID",
+                        help="restart automatically services on its machine")
+    parser.add_argument("shard", action="store", type=int, nargs="?")
     args = parser.parse_args()
 
     try:
@@ -55,9 +59,8 @@ def main():
             if is_contest_id(args.autorestart):
                 ResourceService(args.shard, contest_id=args.autorestart).run()
             else:
-                import sys
-                print >> sys.stderr, "There is no contest " \
-                      "with the specified id. Please try again."
+                print("There is no contest with the specified id. "
+                      "Please try again.", file=sys.stderr)
                 return False
     else:
         return ResourceService(args.shard).run()

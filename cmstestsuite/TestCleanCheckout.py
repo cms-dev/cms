@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
@@ -18,6 +18,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import atexit
 import tempfile
 import subprocess
@@ -25,6 +29,7 @@ import shutil
 import os
 from argparse import ArgumentParser
 
+from cms import utf8_decoder
 from cmstestsuite import info, sh, configure_cms, read_cms_config, CONFIG
 
 # These settings are only used within this file.
@@ -89,15 +94,13 @@ if __name__ == "__main__":
     parser = ArgumentParser(
         description="This utility tests a clean checkout of CMS.")
     parser.add_argument(
-        "-r", "--revision",
-        type=str, default=None, action="store",
+        "-r", "--revision", action="store", type=utf8_decoder,
         help="Test a specific git revision.")
     parser.add_argument(
-        "-k", "--keep-working",
-        default=False, action="store_true",
+        "-k", "--keep-working", action="store_true", default=False,
         help="Do not delete the working directory.")
     parser.add_argument(
-        "arguments", nargs="*",
+        "arguments", action="store", type=utf8_decoder, nargs="*",
         help="All remaining arguments are passed to the test script.")
     args = parser.parse_args()
 

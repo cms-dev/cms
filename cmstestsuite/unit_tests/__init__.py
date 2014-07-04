@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,6 +22,10 @@
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import unittest
 
 from cms import LANGUAGES, DEFAULT_LANGUAGES, LANGUAGE_NAMES, \
@@ -35,9 +40,18 @@ class TestCmsInit(unittest.TestCase):
         for lang in LANGUAGES:
             assert lang in LANGUAGE_NAMES
             assert lang in LANGUAGE_TO_SOURCE_EXT_MAP
-            assert lang in LANGUAGE_TO_HEADER_EXT_MAP
+            # This isn't true, as not all languages need headers.
+            # assert lang in LANGUAGE_TO_HEADER_EXT_MAP
         # All default languages are languages.
         for lang in DEFAULT_LANGUAGES:
+            assert lang in LANGUAGES
+        # All keys are languages.
+        for lang in LANGUAGE_TO_SOURCE_EXT_MAP.iterkeys():
+            assert lang in LANGUAGES
+        for lang in LANGUAGE_TO_HEADER_EXT_MAP.iterkeys():
+            assert lang in LANGUAGES
+        # All values are languages.
+        for lang in SOURCE_EXT_TO_LANGUAGE_MAP.itervalues():
             assert lang in LANGUAGES
         # Extensions are sane.
         for lang in LANGUAGES:

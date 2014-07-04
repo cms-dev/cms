@@ -64,6 +64,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <tr>
         <td>Statement</td>
         <td>
+          <a href="{{ url_root }}/add_statement/{{ task.id }}">Add statement</a><br/>
           {% if len(task.statements) == 0 %}
           No statements uploaded yet
           {% else %}
@@ -74,7 +75,6 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% end %}
           </ul>
           {% end %}
-          <a href="{{ url_root }}/add_statement/{{ task.id }}">Upload a new statement</a><br/>
         </td>
       </tr>
       <tr>
@@ -251,6 +251,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
       <a href="{{ url_root }}/add_testcase/{{ dataset.id }}">Add a testcase</a>
+      <a href="{{ url_root }}/add_testcases/{{ dataset.id }}">Add testcases</a>
       <table class="bordered" style="text-align:center">
         <thead>
           <tr>

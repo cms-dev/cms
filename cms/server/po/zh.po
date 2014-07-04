@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 13:15+0100\n"
-"PO-Revision-Date: 2013-12-16 02:48+0800\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:24+0100\n"
 "Last-Translator: magrady24 <b01902110@csie.ntu.edu.tw>\n"
 "Language-Team: TW\n"
 "Language: tw\n"
@@ -90,6 +90,9 @@ msgstr "部分正確"
 
 msgid "Invalid files in submission"
 msgstr "傳送中包含錯誤的檔案"
+
+msgid "Execution completed successfully"
+msgstr ""
 
 msgid "No compilation needed"
 msgstr "略過編譯程序"
@@ -334,17 +337,8 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "在本題中, 您沒有任何可用的 %(type_pl)s."
 
 #, python-format
-msgid "You have infinite %(type_pl)s."
-msgstr "您有無限的 %(type_pl)s."
-
-#, python-format
-msgid "You can use a %(type_s)s every second."
-msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "每秒可以使用一次 %(type_s)s"
-msgstr[1] "每次使用 %(type_s)s 之間必須間隔 %(min_interval)g 秒."
-
-msgid "You have no limitations on how you use them."
-msgstr "使用上並沒有特別的限制."
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr ""
 
 #, python-format
 msgid "You start with no %(type_pl)s."
@@ -397,10 +391,23 @@ msgstr[0] "且總共至多只能使用一個 %(type_s)s."
 msgstr[1] "且總共可以使用 %(max_number)d 個 %(type_s)s."
 
 #, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "且一旦產生 %(type_s)s 後將不會再增加."
 msgstr[1] "且一旦產生總共 %(max_number)d 個 %(type_s)s 後將不會再增加."
+
+msgid "You have no limitations on how you use them."
+msgstr ""
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr ""
 
 #, python-format
 msgid ""
@@ -554,12 +561,11 @@ msgstr "競賽已經結束"
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr "競賽時間於 %(start_time)s 開始, 並已於 %(stop_time)s 結束."
 
-msgid "You have an infinite set of tokens."
+msgid "You have an infinite number of tokens."
 msgstr "在本題中有無限量的 Token 可供使用."
 
-msgid ""
-"You can use one of these tokens to see the detailed result of a submission."
-msgstr "繳交 Token 後即可觀看本次傳送的詳細得分情形."
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr ""
 
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
@@ -568,49 +574,15 @@ msgstr ""
 "本題的最終得分將以所有使用 Token 的傳送或最後一次傳送 (無論是否使用 Token) 所"
 "得的最高總分計算."
 
-msgid "You can use at most one token every second among all tasks."
-msgstr "每秒鐘至多只能使用一個 Token."
-
-#, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds among all tasks."
-msgstr "在整個競賽中, 兩次使用 Token 之前必須間隔至少 %(min_interval)d 秒."
-
-msgid "Tasks may pose further limitations on how often you can use tokens."
-msgstr "各題可能有關於 Token 使用頻率的額外限制."
-
-msgid "See the description page of each task for more information."
-msgstr "請仔細閱讀題目敘述頁面以獲得更多資訊."
-
-msgid "Tasks may pose some limitations on how often you can use tokens."
-msgstr "各題目或許會額外限制 Token 的使用頻率."
-
 msgid "You have a distinct set of tokens for each task."
 msgstr "每題的 Token 額度是獨立計算的."
 
-msgid ""
-"You can find the rules for the tokens on the description page of each task."
-msgstr "關於各題中題目-Token 的詳細使用規則, 請參閱各題的題目敘述頁面."
-
-msgid ""
-"In addition to those rules, you can use at most one token every second among "
-"all tasks."
-msgstr "除以上規則外, 在競賽中每秒均可以使用一個 Token."
-
 #, python-format
-msgid ""
-"In addition to those rules, you can use at most one token every "
-"%(min_interval)d seconds among all tasks."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
 msgstr ""
-"除以上規則外, 在競賽中兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "您有一些所有題目共用的 Token."
-
-msgid ""
-"In addition to these rules, tasks may pose some limitations on how often you "
-"can use tokens."
-msgstr "除以上規則外, 各題可能有關於 Token 使用頻率的額外限制."
 
 msgid ""
 "You have two types of tokens: a set of <em>contest-tokens</em> shared among "
@@ -623,10 +595,6 @@ msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
 "one of each type."
 msgstr "對於每次傳送而言, 使用兩類 Token 各一枚即可觀看該次詳細的評測結果."
-
-msgid ""
-"You can find the rules for the task-tokens on each task's description page."
-msgstr "關於題目-Token 的詳細使用規則, 請參閱各題的題目敘述頁面."
 
 #, python-format
 msgid ""
@@ -791,72 +759,14 @@ msgstr "詳細資訊"
 msgid "Compilation commands"
 msgstr "編譯指令"
 
-msgid "You can use at most one token every second for this task "
-msgstr "在本題中, 每秒至多可以使用一個 Token, "
-
 #, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds for this task "
-msgstr "在本題中, 兩次 Token 的使用間至少需相隔 %(min_interval)d 秒, "
-
-msgid "and at most one token every second among all tasks."
-msgstr "在競賽中, 每秒至多可以使用一個 Token."
-
-#, python-format
-msgid "and at most one token every %(min_interval)d seconds among all tasks."
-msgstr "在競賽中, 兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
-
-msgid "You can use at most one token every second for this task."
-msgstr "在本題中, 每秒至多可以使用一個 Token."
-
-#, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds for this task."
-msgstr "在本題中, 兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
-
-msgid "On this task you don't have additional rules."
-msgstr "本題並沒有 Token 使用上的額外限制."
-
-msgid ""
-"In addition to these rules, you can use at most one token every second among "
-"all tasks."
-msgstr "此外在競賽中, 每秒至多可以使用一個 Token."
-
-#, python-format
-msgid ""
-"In addition to these rules, you can use at most one token every "
-"%(min_interval)d seconds among all tasks."
-msgstr "此外在競賽中, 兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
-
-#, python-format
-msgid ""
-"You can find the rules for the tokens on the <a href=\"%(url_root)s/"
-"\">contest overview page</a>."
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
 msgstr ""
-"關於競賽 Token 的使用規則, 請參閱 <a href=\"%(url_root)s/\">競賽資訊</a>."
-
-msgid ""
-"In addition to those rules, you can use at most one token every second on "
-"this task."
-msgstr "此外在本題中, 每秒至多可以使用一個 Token."
-
-#, python-format
-msgid ""
-"In addition to those rules, you can use at most one token every "
-"%(min_interval)d seconds on this task."
-msgstr "此外在本題中, 兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr "請注意: 欲觀看詳細的評測結果, 須使用競賽-Token 與題目-Token 各一枚."
-
-#, python-format
-msgid ""
-"You can find the rules for the contest-tokens on the <a href=\"%(url_root)s/"
-"\">contest overview page</a>."
-msgstr ""
-"關於競賽-Token 的使用規則, 請參閱<a href=\"%(url_root)s/\">競賽資訊</a>."
 
 msgid "Attachments"
 msgstr "附件"

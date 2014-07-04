@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
+import io
 import os
 import sys
 import subprocess
 import datetime
 from argparse import ArgumentParser
 
+from cms import utf8_decoder
 from cmstestsuite import CONFIG, FrameworkException, info, sh
 from cmstestsuite import combine_coverage
 
@@ -72,7 +76,8 @@ def run_unittests(test_list):
         results += " %s.%s\n" % (path, filename)
 
     if failures:
-        with open(FAILED_UNITTEST_FILENAME, "w") as failed_filename:
+        with io.open(FAILED_UNITTEST_FILENAME,
+                     "wt", encoding="utf-8") as failed_filename:
             for path, filename in failures:
                 failed_filename.write("%s %s\n" % (path, filename))
         results += "\n"
@@ -92,7 +97,7 @@ def load_test_list_from_file(filename):
     if not os.path.exists(filename):
         return []
     try:
-        lines = open(filename).readlines()
+        lines = io.open(filename, "rt", encoding="utf-8").readlines()
         return [line.strip().split(" ") for line in lines]
     except (IOError, OSError) as error:
         print("Failed to read test list. %s." % error)
@@ -140,12 +145,14 @@ def main():
 
     # Unused parameters.
     parser.add_argument(
-        "regex", metavar="regex",
-        type=str, nargs='*', help="unused")
+        "regex", action="store", type=utf8_decoder, nargs='*', metavar="regex",
+        help="unused")
     parser.add_argument(
-        "-l", "--languages",
-        type=str, action="store", default="", help="unused")
-    parser.add_argument("-c", "--contest", action="store", help="unused")
+        "-l", "--languages", action="store", type=utf8_decoder, default="",
+        help="unused")
+    parser.add_argument(
+        "-c", "--contest", action="store", type=utf8_decoder,
+        help="unused")
 
     args = parser.parse_args()
 
@@ -156,7 +163,7 @@ def main():
     try:
         git_root = subprocess.check_output(
             "git rev-parse --show-toplevel", shell=True,
-            stderr=open(os.devnull, "w")).strip()
+            stderr=io.open(os.devnull, "wb")).strip()
     except subprocess.CalledProcessError:
         print("Please run the unit tests from the git repository.")
         return 1

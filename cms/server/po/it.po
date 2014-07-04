@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 15:11+0100\n"
-"PO-Revision-Date: 2013-12-20 12:01+0000\n"
-"Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:20+0100\n"
+"Last-Translator: Giovanni Mascellani <mascellani@poisson.phc.unipi.it>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -97,6 +97,9 @@ msgstr "Parzialmente corretto"
 
 msgid "Invalid files in submission"
 msgstr "File non validi nella sottoposizione"
+
+msgid "Execution completed successfully"
+msgstr "Esecuzione completata con successo"
 
 msgid "No compilation needed"
 msgstr "Compilazione non necessaria"
@@ -349,7 +352,7 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "Non hai %(type_pl)s disponibili per questo problema."
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "Hai un numero infinito di %(type_pl)s per questo problema."
 
 #, python-format
@@ -418,12 +421,16 @@ msgid "You have no limitations on how you use them."
 msgstr "Non hai limitazioni sul loro utilizzo."
 
 #, python-format
+msgid "Automatic (%s)"
+msgstr "Automatica (%s)"
+
+#, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
-"</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 msgstr ""
-"Accesso effettuato come <strong>%(first_name)s %(last_name)s</strong> <em>"
-"(%(username)s)</em>"
+"Accesso effettuato come <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 
 msgid "Logout"
 msgstr "Logout"

@@ -16,6 +16,8 @@ Standard task types
 
 CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first two are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. Communication should be usable but it is less tested than the first two. The last one, TwoSteps, is probably not ready for usage in a public competition. The first two task types cover all but three of the IOI tasks up to IOI 2012.
 
+OutputOnly does not involve programming languages. Batch works with all supported languages (C, C++, Pascal, Java, Python, PHP), but only the first four if you are using a grader. The other task types have not been tested with Java, Python or PHP.
+
 You can configure, for each task, the behavior of these task types on the task's page in AdminWebServer.
 
 
@@ -30,11 +32,13 @@ The source file is either standalone or to be compiled with a grader provided by
 
 The three choices (standalone or with a grader, standard input and output or files, diff or comparator) are specified through parameters.
 
-If the admins want to provide a grader that takes care of reading the input and writing the output (so that the contestants only need to write one or more functions), they must provide three managers, called :file:`grader.c`, :file:`grader.cpp` and :file:`grader.pas`. If header files are needed, they can be provided with names :file:`{task_name}.h` or :file:`{task_name}lib.pas`.
+If the admins want to provide a grader that takes care of reading the input and writing the output (so that the contestants only need to write one or more functions), they must provide a manager for each allowed language, called :file:`grader.ext`, where ``ext`` is the standard extension of a source file in that language. If header files for C/C++ or Pascal are needed, they can be provided with names :file:`{task_name}.h` or :file:`{task_name}lib.pas`. See the end of the section for specific issues of Java.
 
 If the output is compared with a diff, the outcome will be a float, 0.0 if the output is not correct, 1.0 if it is. If the output is validated by a comparator, you need to provide a manager called :file:`checker` that is an executable taking three arguments: input, correct output and contestant's output and that must write on standard output the outcome (that is going to be used by the score type, usually a float between 0.0 and 1.0), and on standard error a message to forward to the contestant.
 
 The submission format must contain one filename ending with ``.%l``. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
+
+Batch tasks are supported also for Java, with some requirements. The solutions of the contestants must contain a class named like the short name of the task. A grader must have a class named ``grader`` that in turns contains the main method; whether in this case the contestants should write a static method or a class is up to the admins.
 
 
 .. _tasktypes_outputonly:

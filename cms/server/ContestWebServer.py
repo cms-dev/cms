@@ -1,12 +1,13 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,6 +35,10 @@
 - query the test interface.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import base64
 import gettext
@@ -68,7 +73,7 @@ from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
     actual_phase_required, get_url_root, filter_ascii, \
-    CommonRequestHandler, format_size
+    CommonRequestHandler, format_size, compute_actual_phase
 from cmscommon.isocodes import is_language_code, translate_language_code, \
     is_country_code, translate_country_code, \
     is_language_country_code, translate_language_country_code
@@ -180,20 +185,51 @@ class BaseHandler(CommonRequestHandler):
         return user
 
     def get_user_locale(self):
-        if config.installed:
-            localization_dir = os.path.join(
-                "/", "usr", "local", "share", "locale")
-        else:
-            localization_dir = os.path.join(os.path.dirname(__file__), "mo")
+        self.langs = self.application.service.langs
 
-        # Retrieve the available translations.
-        langs = ["en-US"] + [
-            path.split("/")[-3].replace("_", "-") for path in glob.glob(
-                os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
+        if self.contest.allowed_localizations:
+            # We just check if a prefix of each language is allowed
+            # because this way one can just type "en" to include also
+            # "en-US" (and similar cases with other languages). It's
+            # the same approach promoted by HTTP in its Accept header
+            # parsing rules.
+            # TODO Be more fussy with prefix checking: validate strings
+            # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
+            # prefix is on the dashes.
+            self.langs = [lang for lang in self.langs if any(
+                lang.startswith(prefix)
+                for prefix in self.contest.allowed_localizations)]
+
+        if not self.langs:
+            logger.warning("No allowed localization matches any installed one."
+                           "Resorting to en-US.")
+            self.langs = ["en-US"]
+        else:
+            # TODO Be more fussy with prefix checking: validate strings
+            # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
+            # prefix is on the dashes.
+            useless = [
+                prefix for prefix in self.contest.allowed_localizations
+                if not any(lang.startswith(prefix) for lang in self.langs)]
+            if useless:
+                logger.warning("The following allowed localizations don't "
+                               "match any installed one: %s" %
+                               ",".join(useless))
+
+        # TODO We fallback on any available language if none matches:
+        # we could return 406 Not Acceptable instead.
         # Select the one the user likes most.
-        lang = parse_accept_header(
+        self.browser_lang = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(langs, "en-US")
+            LanguageAccept).best_match(self.langs, self.langs[0])
+
+        self.cookie_lang = self.get_cookie("language", None)
+
+        if self.cookie_lang in self.langs:
+            lang = self.cookie_lang
+        else:
+            lang = self.browser_lang
+
         self.set_header("Content-Language", lang)
         lang = lang.replace("-", "_")
 
@@ -215,7 +251,7 @@ class BaseHandler(CommonRequestHandler):
             fallback=True)
         cms_locale = gettext.translation(
             "cms",
-            localization_dir,
+            self.application.service.localization_dir,
             [lang],
             fallback=True)
         cms_locale.add_fallback(iso_639_locale)
@@ -261,75 +297,21 @@ class BaseHandler(CommonRequestHandler):
         ret["timestamp"] = self.timestamp
         ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
-        ret["cookie"] = str(self.cookies)  # FIXME really needed?
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
         if self.current_user is not None:
-            # "adjust" the phase, considering the per_user_time
-            ret["actual_phase"] = 2 * ret["phase"]
+            res = compute_actual_phase(
+                self.timestamp, self.contest.start, self.contest.stop,
+                self.contest.per_user_time, self.current_user.starting_time,
+                self.current_user.delay_time, self.current_user.extra_time)
 
-            if ret["phase"] == -1:
-                # pre-contest phase
-                ret["current_phase_begin"] = None
-                ret["current_phase_end"] = self.contest.start
-            elif ret["phase"] == 0:
-                # contest phase
-                if self.contest.per_user_time is None:
-                    # "traditional" contest: every user can compete for
-                    # the whole contest time
-                    ret["current_phase_begin"] = self.contest.start
-                    ret["current_phase_end"] = self.contest.stop
-                else:
-                    # "USACO-like" contest: every user can compete only
-                    # for a limited time frame during the contest time
-                    if self.current_user.starting_time is None:
-                        ret["actual_phase"] = -1
-                        ret["current_phase_begin"] = self.contest.start
-                        ret["current_phase_end"] = self.contest.stop
-                    else:
-                        user_end_time = min(
-                            self.current_user.starting_time +
-                            self.contest.per_user_time,
-                            self.contest.stop)
-                        if self.timestamp <= user_end_time:
-                            ret["current_phase_begin"] = \
-                                self.current_user.starting_time
-                            ret["current_phase_end"] = user_end_time
-                        else:
-                            ret["actual_phase"] = +1
-                            ret["current_phase_begin"] = user_end_time
-                            ret["current_phase_end"] = self.contest.stop
-            else:  # ret["phase"] == 1
-                # post-contest phase
-                ret["current_phase_begin"] = self.contest.stop
-                ret["current_phase_end"] = None
+            ret["actual_phase"], ret["current_phase_begin"], \
+                ret["current_phase_end"], ret["valid_phase_begin"], \
+                ret["valid_phase_end"] = res
 
-            # compute valid_phase_begin and valid_phase_end (that is,
-            # the time at which actual_phase started/will start and
-            # stopped/will stop being zero, or None if unknown).
-            ret["valid_phase_begin"] = None
-            ret["valid_phase_end"] = None
-            if self.contest.per_user_time is None:
-                ret["valid_phase_begin"] = self.contest.start
-                ret["valid_phase_end"] = self.contest.stop
-            elif self.current_user.starting_time is not None:
-                ret["valid_phase_begin"] = self.current_user.starting_time
-                ret["valid_phase_end"] = min(
-                    self.current_user.starting_time +
-                    self.contest.per_user_time,
-                    self.contest.stop)
-
-            # consider the extra time
-            if ret["valid_phase_end"] is not None:
-                ret["valid_phase_end"] += self.current_user.extra_time
-                if ret["valid_phase_begin"] <= \
-                        self.timestamp <= \
-                        ret["valid_phase_end"]:
-                    ret["phase"] = 0
-                    ret["actual_phase"] = 0
-                    ret["current_phase_begin"] = ret["valid_phase_begin"]
-                    ret["current_phase_end"] = ret["valid_phase_end"]
+            if ret["actual_phase"] == 0:
+                ret["phase"] = 0
 
             # set the timezone used to format timestamps
             ret["timezone"] = get_timezone(self.current_user, self.contest)
@@ -344,6 +326,24 @@ class BaseHandler(CommonRequestHandler):
             ret["tokens_tasks"] = 2  # all infinite
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
+
+        ret["langs"] = self.langs
+
+        # TODO Now all language names are shown in the active language.
+        # It would be better to show them in the corresponding one.
+        ret["lang_names"] = {}
+        for lang in self.langs:
+            language_name = None
+            try:
+                language_name = translate_language_country_code(
+                    lang.replace("-", "_"), self.locale)
+            except ValueError:
+                language_name = translate_language_code(
+                    lang.replace("-", "_"), self.locale)
+            ret["lang_names"][lang] = language_name
+
+        ret["cookie_lang"] = self.cookie_lang
+        ret["browser_lang"] = self.browser_lang
 
         return ret
 
@@ -422,6 +422,18 @@ class ContestWebServer(WebService):
         # that are handled by the db. Each username points to a list
         # of tuples (timestamp, subject, text).
         self.notifications = {}
+
+        # Retrieve the available translations.
+        if config.installed:
+            self.localization_dir = os.path.join(
+                "/", "usr", "local", "share", "locale")
+        else:
+            self.localization_dir = os.path.join(
+                os.path.dirname(__file__), "mo")
+        self.langs = ["en-US"] + [
+            path.split("/")[-3].replace("_", "-") for path in glob.glob(
+                os.path.join(self.localization_dir,
+                             "*", "LC_MESSAGES", "cms.mo"))]
 
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
@@ -763,7 +775,7 @@ class NotificationsHandler(BaseHandler):
         prev_unread_count = self.get_secure_cookie("unread_count")
         next_unread_count = len(res) + (
             int(prev_unread_count) if prev_unread_count is not None else 0)
-        self.set_secure_cookie("unread_count", str(next_unread_count))
+        self.set_secure_cookie("unread_count", "%d" % next_unread_count)
 
         # Simple notifications
         notifications = self.application.service.notifications
@@ -1061,7 +1073,7 @@ class SubmitHandler(BaseHandler):
                 # therefore we open the file in binary mode.
                 with io.open(
                         os.path.join(path,
-                                     str(int(make_timestamp(self.timestamp)))),
+                                     "%d" % make_timestamp(self.timestamp)),
                         "wb") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
@@ -1583,7 +1595,7 @@ class UserTestHandler(BaseHandler):
                 # therefore we open the file in binary mode.
                 with io.open(
                         os.path.join(path,
-                                     str(int(make_timestamp(self.timestamp)))),
+                                     "%d" % make_timestamp(self.timestamp)),
                         "wb") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,

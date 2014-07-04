@@ -1,11 +1,11 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,8 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 
 # As this package initialization code is run by all code that imports
 # something in cms.* it's the best place to setup the logging handlers.
@@ -41,7 +41,7 @@ __all__ = [
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
-    "mkdir", "Address", "ServiceCoord", "get_safe_shard",
+    "mkdir", "utf8_decoder", "Address", "ServiceCoord", "get_safe_shard",
     "get_service_address", "get_service_shards", "default_argument_parser",
     # conf
     "config",
@@ -104,12 +104,9 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_C: ".h",
     LANG_CPP: ".h",
     LANG_PASCAL: "lib.pas",
-    LANG_PYTHON: ".py",
-    LANG_PHP: ".php",
-    LANG_JAVA: ".java",
 }
 
-from .util import mkdir, Address, ServiceCoord, get_safe_shard, \
+from .util import mkdir, utf8_decoder, Address, ServiceCoord, get_safe_shard, \
     get_service_address, get_service_shards, default_argument_parser
 from .conf import config
 from .plugin import plugin_list, plugin_lookup

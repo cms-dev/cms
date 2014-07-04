@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -24,7 +24,9 @@ Italian IOI repository for storing the results of a contest.
 
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -32,11 +34,12 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import argparse
-import codecs
+import io
 import logging
 import os
 import time
 
+from cms import utf8_decoder
 from cms.db import SessionGen, Contest, ask_for_contest
 from cms.db.filecacher import FileCacher
 from cms.grading.scoretypes import get_score_type
@@ -45,7 +48,7 @@ from cms.grading.scoretypes import get_score_type
 logger = logging.getLogger(__name__)
 
 
-# TODO: review this file to use io instead of codecs and avoid print.
+# TODO: review this file to avoid print.
 class SpoolExporter(object):
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
@@ -111,8 +114,8 @@ class SpoolExporter(object):
         """
         logger.info("Exporting submissions.")
 
-        queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
-                                 encoding="utf-8")
+        queue_file = io.open(os.path.join(self.spool_dir, "queue"), "w",
+                             encoding="utf-8")
         for submission in sorted(self.submissions, key=lambda x: x.timestamp):
             logger.info("Exporting submission %s." % submission.id)
             username = submission.user.username
@@ -144,12 +147,12 @@ class SpoolExporter(object):
             active_dataset = submission.task.active_dataset
             result = submission.get_result(active_dataset)
             if result.evaluated():
-                res_file = codecs.open(os.path.join(
+                res_file = io.open(os.path.join(
                     self.spool_dir,
                     "%d.%s.%s.%s.res" % (timestamp, username,
                                          task, submission.language)),
                     "w", encoding="utf-8")
-                res2_file = codecs.open(
+                res2_file = io.open(
                     os.path.join(self.spool_dir,
                                  "%s.%s.%s.res" % (username, task,
                                                    submission.language)),
@@ -240,10 +243,10 @@ class SpoolExporter(object):
         sorted_tasks = sorted(self.contest.tasks,
                               key=lambda task: task.num)
 
-        ranking_file = codecs.open(
+        ranking_file = io.open(
             os.path.join(self.spool_dir, "classifica.txt"),
             "w", encoding="utf-8")
-        ranking_csv = codecs.open(
+        ranking_csv = io.open(
             os.path.join(self.spool_dir, "classifica.csv"),
             "w", encoding="utf-8")
 
@@ -283,9 +286,9 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Exporter for the Italian repository for CMS.")
-    parser.add_argument("-c", "--contest-id", help="id of contest to export",
-                        action="store", type=int)
-    parser.add_argument("export_directory",
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help="id of contest to export")
+    parser.add_argument("export_directory", action="store", type=utf8_decoder,
                         help="target directory where to export")
     args = parser.parse_args()
 

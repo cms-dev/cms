@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -29,10 +29,17 @@ current ranking.
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import logging
 import random
 from datetime import timedelta
 from collections import namedtuple
+from functools import wraps
+
+import gevent.coros
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Service, rpc_method
@@ -105,6 +112,41 @@ def user_test_to_evaluate(user_test_result):
 # job_type is a constant defined in EvaluationService.
 JobQueueEntry = namedtuple('JobQueueEntry',
                            ['job_type', 'object_id', 'dataset_id'])
+
+
+def jqe_check(jqe):
+    """
+    Check that a JobQueueEntry object is actually to be enqueued.
+
+    I.e., check that the associated action has not been performed
+    yet. It is used in cases when the status of the underlying object
+    may have changed since last check.
+
+    jqe (JobQueueEntry): the queue entry to test.
+
+    return (bool): True if jqe is still to be performed.
+
+    """
+    with SessionGen() as session:
+        dataset = Dataset.get_from_id(jqe.dataset_id, session)
+        if jqe.job_type == EvaluationService.JOB_TYPE_COMPILATION:
+            submission = Submission.get_from_id(jqe.object_id, session)
+            submission_result = submission.get_result_or_create(dataset)
+            return to_compile(submission_result)
+        elif jqe.job_type == EvaluationService.JOB_TYPE_EVALUATION:
+            submission = Submission.get_from_id(jqe.object_id, session)
+            submission_result = submission.get_result_or_create(dataset)
+            return to_evaluate(submission_result)
+        elif jqe.job_type == EvaluationService.JOB_TYPE_TEST_COMPILATION:
+            user_test = UserTest.get_from_id(jqe.object_id, session)
+            user_test_result = user_test.get_result_or_create(dataset)
+            return user_test_to_compile(user_test_result)
+        elif jqe.job_type == EvaluationService.JOB_TYPE_TEST_EVALUATION:
+            user_test = UserTest.get_from_id(jqe.object_id, session)
+            user_test_result = user_test.get_result_or_create(dataset)
+            return user_test_to_evaluate(user_test_result)
+
+    raise Exception("Should never arrive here")
 
 
 class JobQueue(object):
@@ -206,7 +248,8 @@ class JobQueue(object):
 
         job (JobQueueEntry): the job to add to the queue.
         priority (int): the priority of the job.
-        timestamp (datetime): the time of the submission.
+        timestamp (datetime|None): the time of the submission, or None
+            to use now.
 
         """
         if timestamp is None:
@@ -482,12 +525,13 @@ class WorkerPool(object):
         return ret
 
     def find_worker(self, job, require_connection=False, random_worker=False):
-        """Return a worker whose assigned job is job. Remember that
-        there is a placeholder job to signal that the worker is not
-        doing anything (or disabled).
+        """Return a worker whose assigned job is job.
 
-        job (JobQueueEntry): the job we are looking for, or
-            WorkerPool.WORKER_*.
+        Remember that there is a placeholder job to signal that the
+        worker is not doing anything (or disabled).
+
+        job (JobQueueEntry|unicode|None): the job we are looking for,
+            or WorkerPool.WORKER_*.
         require_connection (bool): True if we want to find a worker
             doing the job and that is actually connected to us (i.e.,
             did not die).
@@ -540,7 +584,7 @@ class WorkerPool(object):
             s_data = (s_data[0], make_timestamp(s_data[1])) \
                 if s_data is not None else None
 
-            result[str(shard)] = {
+            result["%d" % shard] = {
                 'connected': self._worker[shard].connected,
                 'job': self._job[shard],
                 'start_time': s_time,
@@ -566,7 +610,7 @@ class WorkerPool(object):
                     # Here shard is a working worker with no sign of
                     # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
-                                 "worker %d because of no reponse "
+                                 "worker %d because of no response "
                                  "in %s." %
                                  (shard, active_for))
                     assert self._job[shard] != WorkerPool.WORKER_INACTIVE \
@@ -608,6 +652,14 @@ class WorkerPool(object):
                 self.release_worker(shard)
 
         return lost_jobs
+
+
+def with_post_finish_lock(func):
+    @wraps(func)
+    def wrapped(self, *args, **kwargs):
+        with self.post_finish_lock:
+            return func(self, *args, **kwargs)
+    return wrapped
 
 
 class EvaluationService(Service):
@@ -655,6 +707,7 @@ class EvaluationService(Service):
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
+        self.post_finish_lock = gevent.coros.RLock()
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
 
@@ -704,7 +757,8 @@ class EvaluationService(Service):
                                     submission.id,
                                     dataset.id),
                                 EvaluationService.JOB_PRIORITY_HIGH,
-                                submission.timestamp):
+                                submission.timestamp,
+                                check_again=True):
                             new_jobs += 1
                     elif to_evaluate(submission_result):
                         if self.push_in_queue(
@@ -713,7 +767,8 @@ class EvaluationService(Service):
                                     submission.id,
                                     dataset.id),
                                 EvaluationService.JOB_PRIORITY_MEDIUM,
-                                submission.timestamp):
+                                submission.timestamp,
+                                check_again=True):
                             new_jobs += 1
 
             # The same for user tests
@@ -729,7 +784,8 @@ class EvaluationService(Service):
                                     user_test.id,
                                     dataset.id),
                                 EvaluationService.JOB_PRIORITY_HIGH,
-                                user_test.timestamp):
+                                user_test.timestamp,
+                                check_again=True):
                             new_jobs += 1
                     elif user_test_to_evaluate(user_test_result):
                         if self.push_in_queue(
@@ -738,7 +794,8 @@ class EvaluationService(Service):
                                     user_test.id,
                                     dataset.id),
                                 EvaluationService.JOB_PRIORITY_MEDIUM,
-                                user_test.timestamp):
+                                user_test.timestamp,
+                                check_again=True):
                             new_jobs += 1
 
             session.commit()
@@ -932,21 +989,32 @@ class EvaluationService(Service):
         else:
             raise Exception("Wrong job type %s" % job_type)
 
-    def push_in_queue(self, job, priority, timestamp):
-        """Push a job in the job queue if the submission is not
-        already in the queue or assigned to a worker.
+    @with_post_finish_lock
+    def push_in_queue(self, job, priority, timestamp, check_again=False):
+        """Check a job and push it in the queue.
+
+        Push a job in the job queue if the submission is not already
+        in the queue or assigned to a worker. Optionally check that
+        the job is actually still to be performed by running
+        jqe_check() on it.
 
         job (JobQueueEntry): the job to put in the queue.
+        priority (int): the priority of the job.
+        timestamp (datetime): the time of the submission.
+        check_again (bool): whether or not to run jqe_check() on the job.
 
         return (bool): True if pushed, False if not.
 
         """
         if self.job_busy(job):
             return False
+        elif check_again and not jqe_check(job):
+            return False
         else:
             self.queue.push(job, priority, timestamp)
             return True
 
+    @with_post_finish_lock
     def action_finished(self, data, plus, error=None):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
@@ -1243,8 +1311,6 @@ class EvaluationService(Service):
 
         submission_id (int): the id of the new submission.
 
-        returns (bool): True if everything went well.
-
         """
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
@@ -1321,11 +1387,12 @@ class EvaluationService(Service):
         currently enqueued are deleted, and the ones already assigned
         to the workers are ignored. New appropriate jobs are enqueued.
 
-        submission_id (int): id of the submission to invalidate, or
-                             None.
-        dataset_id (int): id of the dataset to invalidate, or None.
-        user_id (int): id of the user to invalidate, or None.
-        task_id (int): id of the task to invalidate, or None.
+        submission_id (int|None): id of the submission to invalidate,
+            or None.
+        dataset_id (int|None): id of the dataset to invalidate, or
+            None.
+        user_id (int|None): id of the user to invalidate, or None.
+        task_id (int|None): id of the task to invalidate, or None.
         level (string): 'compilation' or 'evaluation'
 
         """

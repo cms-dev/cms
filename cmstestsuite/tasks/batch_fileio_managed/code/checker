@@ -1,26 +1,29 @@
 #!/usr/bin/python2 -sS
 
+from __future__ import print_function
+
+import io
 import sys
 
 input_file, solution_file, output_file = sys.argv[1:]
 
 # We assume input and solution files are well-formed.
-number = int(file(input_file, 'r').readline())
-solution_word = file(solution_file, 'r').readline().split()[0]
+number = int(io.open(input_file, 'rb').readline())
+solution_word = io.open(solution_file, 'rb').readline().split()[0]
 
 # Ensure output is of the form "<word> <number>" where word is from the
 # solution, and number is from the student.
 try:
-    f = file(output_file, 'r')
+    f = io.open(output_file, 'rb')
     line = f.readline().strip()
     more = f.readline()
     if line == '%s %d' % (solution_word, number) and more == '':
-        print "1.0"
-        print >>sys.stderr, "Correcto"
+        print("1.0")
+        print("Correcto", file=sys.stderr)
     else:
         assert more == ''
-        print "0.0"
-        print >>sys.stderr, "Plain wrong"
+        print("0.0")
+        print("Plain wrong", file=sys.stderr)
 except:
     # Given the file comes from the manager, it really should have been
     # correct.

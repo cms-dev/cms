@@ -3,40 +3,40 @@
 {% import json %}
 {% from cms import LANGUAGE_NAMES, LANGUAGE_TO_SOURCE_EXT_MAP %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
-{% from cmscommon.datetime import make_timestamp %}
+{% from cmscommon.datetime import make_timestamp, utc %}
+{% from cmscommon.isocodes import translate_language_country_code %}
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript">
-<!--
-var url_root = "{{ url_root }}";
--->
         </script>
         <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
         <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
         <script type="text/javascript" src="{{ url_root }}/static/js/bootstrap.js"></script>
-        <script type="text/javascript" src="{{ url_root }}/static/script_new.js"></script>
+        <script type="text/javascript" src="{{ url_root }}/static/cws_utils.js"></script>
         <link rel="stylesheet" href="{{ url_root }}/static/css/bootstrap.css">
-        <link rel="stylesheet" href="{{ url_root }}/static/style_new.css">
+        <link rel="stylesheet" href="{{ url_root }}/static/cws_style.css">
 
         <title>{{ contest.description }}</title>
 
 {% if current_user is not None %}
         <script type="text/javascript">
+// FIXME use Date objects
+var utils = new CMS.CWSUtils("{{ url_root }}",
+                             {{ make_timestamp(timestamp) }},
+                             {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
+                             {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
+                             {{ make_timestamp(current_phase_begin) }},
+                             {{ make_timestamp(current_phase_end) }},
+                             {{ actual_phase }});
 $(document).ready(function () {
-    // FIXME use Date objects
-    Utils.init({{ make_timestamp(timestamp) }},
-               {{ make_timestamp(current_phase_begin) }},
-               {{ make_timestamp(current_phase_end) }},
-               {{ actual_phase }});
-
-    firstDate = new Date(); // FIXME very bad: global variable
-    Utils.update_time();
-    setInterval(Utils.update_time, 1000);
-    Utils.update_notifications();
-    setInterval(Utils.update_notifications, 15000);
+    utils.update_time();
+    setInterval(function() { utils.update_time(); }, 1000);
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 15000);
+    $('#main').css('top', $('#navigation_bar').outerHeight());
 });
 
 {% block js %}{% end %}
@@ -45,10 +45,20 @@ $(document).ready(function () {
 
     </head>
     <body id="body">
-        <div class="navbar navbar-fixed-top">
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
+{% if len(langs) > 1 %}
+                    <p class="navbar-text pull-right">
+                        <select id="lang" class="form-control btn btn-info" onchange="CMS.CWSUtils.switch_lang()">
+                            <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }}</option>
+                        {% for lang_code, lang_name in sorted(lang_names.iteritems(), key=lambda x: x[1]) %}
+                            <option value="{{ lang_code }}"{% if cookie_lang == lang_code %} selected{% end %}>{{ lang_name }}</option>
+                        {% end %}
+                        </select>
+                    </p>
+{% end %}
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
                         {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": current_user.first_name, "last_name": current_user.last_name, "username": current_user.username} %}
@@ -121,7 +131,7 @@ $(document).ready(function () {
             {{ _("Time left:") }}
         </div>
         <!-- End -->
-        <div class="container">
+        <div id="main" class="container">
             <div class="row">
                 <div class="span3">
                     <h3 id="server_time_box">
@@ -144,7 +154,7 @@ $(document).ready(function () {
     {% if unread_count is None or int(unread_count) == 0 %}
                                     <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
     {% else %}
-                                    <script>$(document).ready(function () {Utils.unread_count = {{ int(unread_count) }};});</script>
+                                    <script>$(document).ready(function () { utils.unread_count = {{ int(unread_count) }};});</script>
                                     <span id="unread_count" class="label label-warning">{{ _("%d unread") % int(unread_count) }}</span>
     {% end %}
                                     </a>

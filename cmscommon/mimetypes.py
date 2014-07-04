@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
+import io
 import os.path
 import fnmatch
 import mimetypes
@@ -50,16 +53,19 @@ from cms import config
 # parsing ourselves. they also provide ways to find the MIME type.
 
 _aliases = dict(tuple(l.strip().split()) for l in
-                open(os.path.join(config.shared_mime_info_prefix,
-                                  "share", "mime", "aliases")).readlines())
+                io.open(os.path.join(config.shared_mime_info_prefix,
+                                     "share", "mime", "aliases"),
+                        "rt", encoding="utf-8").readlines())
 
 _icons = dict(tuple(l.strip().split(':')) for l in
-              open(os.path.join(config.shared_mime_info_prefix,
-                                "share", "mime", "generic-icons")).readlines())
+              io.open(os.path.join(config.shared_mime_info_prefix,
+                                   "share", "mime", "generic-icons"),
+                      "rt", encoding="utf-8").readlines())
 
 _types = list(l.strip() for l in
-              open(os.path.join(config.shared_mime_info_prefix,
-                                "share", "mime", "types")).readlines())
+              io.open(os.path.join(config.shared_mime_info_prefix,
+                                   "share", "mime", "types"),
+                      "rt", encoding="utf-8").readlines())
 
 _comments = dict()
 

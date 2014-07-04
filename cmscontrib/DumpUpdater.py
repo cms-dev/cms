@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Contest Management System
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
@@ -26,6 +26,10 @@ of the old supported versions to the current one.
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -37,6 +41,7 @@ import json
 import logging
 import os
 
+from cms import utf8_decoder
 from cms.db import version as model_version
 
 
@@ -50,7 +55,8 @@ def main():
         "-V", "--to-version", action="store", type=int, default=-1,
         help="Update to given version number")
     parser.add_argument(
-        "path", help="location of the dump or of the 'contest.json' file")
+        "path", action="store", type=utf8_decoder,
+        help="location of the dump or of the 'contest.json' file")
 
     args = parser.parse_args()
     path = args.path

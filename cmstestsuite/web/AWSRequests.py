@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
@@ -19,6 +19,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import re
 
@@ -72,10 +76,10 @@ class AWSSubmissionViewRequest(GenericRequest):
         evaluations = []
         tags = soup.findAll(id=re.compile(r"^eval_outcome_"))
         for outcome_tag in sorted(tags, key=lambda t: t['id']):
-            index = int(outcome_tag['id'][len("eval_outcome_"):])
+            codename = outcome_tag['id'][len("eval_outcome_"):]
 
             # Get evaluation text also.
-            text_tag = soup.findAll(id="eval_text_%d" % index)[0]
+            text_tag = soup.findAll(id="eval_text_%s" % codename)[0]
 
             evaluations.append({
                 'outcome': outcome_tag.text.strip(),

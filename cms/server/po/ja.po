@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 15:11+0100\n"
-"PO-Revision-Date: 2014-02-06 23:09+0900\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:21+0100\n"
 "Last-Translator: Kento Nikaido <snukent@gmail.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
@@ -94,6 +94,9 @@ msgstr "部分的に正解"
 
 msgid "Invalid files in submission"
 msgstr "提出物の中に無効なファイルがあります"
+
+msgid "Execution completed successfully"
+msgstr "正常に実行が完了しました"
 
 msgid "No compilation needed"
 msgstr "コンパイルの必要はありません"
@@ -337,7 +340,7 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "この課題に対して使用可能な%(type_pl)sはありません。"
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "この課題では無限個の%(type_pl)sが使用できます。"
 
 #, python-format
@@ -399,6 +402,10 @@ msgstr[0] "あなたは%(type_pl)sを"
 
 msgid "You have no limitations on how you use them."
 msgstr "%(type_pl)sを使う間隔や回数に制限はありません。"
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "自動 (%s)"
 
 #, python-format
 msgid ""

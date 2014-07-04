@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.1.0pre\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 15:11+0100\n"
-"PO-Revision-Date: 2014-03-31 01:00+0300\n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:21+0100\n"
 "Last-Translator: Vytis Banaitis <vytis.banaitis@gmail.com>\n"
 "Language-Team: Lithuanian\n"
 "Language: lt\n"
@@ -95,6 +95,9 @@ msgstr "Dalinai teisingai"
 
 msgid "Invalid files in submission"
 msgstr "Pateiktas netinkamas failas"
+
+msgid "Execution completed successfully"
+msgstr "Vykdymas sėkmingas"
 
 msgid "No compilation needed"
 msgstr "Kompiliavimas nereikalingas"
@@ -351,7 +354,7 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "Tu neturi %(type_pl)s šiai užduočiai."
 
 #, python-format
-msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "Turi neribotą %(type_pl)s skaičių."
 
 #, python-format
@@ -379,7 +382,7 @@ msgstr[0] "gausi po vieną %(type_s)s, "
 msgstr[1] "gausi po %(gen_number)d %(type_pl)s, "
 msgstr[2] "gausi po %(gen_number)d %(type_pl)s, "
 
-#, uzzy, python-format
+#, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "kol pasieksi vieną %(type_s)s."
@@ -427,6 +430,10 @@ msgstr[2] "Iš viso gali naudoti ne daugiau nei %(max_number)d %(type_pl)s."
 
 msgid "You have no limitations on how you use them."
 msgstr "Neturi apribojimų jų naudojimui."
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "Automatiška (%s)"
 
 #, python-format
 msgid ""

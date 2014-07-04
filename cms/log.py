@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -44,8 +44,8 @@
 # http://hg.python.org/cpython/file/69ee9b554eca/Lib/logging/handlers.py
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import curses
 import logging
@@ -293,7 +293,7 @@ class CustomFormatter(logging.Formatter):
         # Determine the second part (service coords) and its color.
         if hasattr(record, "service_name") and \
                 hasattr(record, "service_shard"):
-            coord_str = record.service_name + "," + str(record.service_shard)
+            coord_str = "%s,%d" % (record.service_name, record.service_shard)
         else:
             coord_str = "None"
         coord_col = get_color_hash(coord_str)

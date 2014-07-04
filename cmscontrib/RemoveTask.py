@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system - utility to remove a task.
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Utility to remove a task.
+
+"""
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import argparse
 import sys
 
+from cms import utf8_decoder
 from cms.db import SessionGen, Task, ask_for_contest
 
 
@@ -38,10 +47,10 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Remove a task from a contest in CMS.")
-    parser.add_argument("task_name", help="short name of the task")
-    parser.add_argument("-c", "--contest-id",
-                        help="id of contest the task is in",
-                        action="store", type=int)
+    parser.add_argument("task_name", action="store", type=utf8_decoder,
+                        help="short name of the task")
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help="id of contest the task is in")
     args = parser.parse_args()
 
     if args.contest_id is None:

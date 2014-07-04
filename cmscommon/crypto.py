@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -23,6 +23,8 @@
 """Utilities dealing with encryption and randomness."""
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import base64
 import binascii
@@ -93,7 +95,7 @@ def encrypt_string(pt, key=None):
     # (that is, for AES, 16 bytes), using a byte 0x01 followed by as many bytes
     # 0x00 as needed. If the length of the message is already a multiple of 16
     # bytes, add a new block.
-    pt_pad = pt + '\01' + '\00' * (16 - (len(pt) + 1) % 16)
+    pt_pad = bytes(pt) + b'\01' + b'\00' * (16 - (len(pt) + 1) % 16)
     # The IV is a random block used to differentiate messages encrypted with
     # the same key. An IV should never be used more than once in the lifetime
     # of the key. In this way encrypting the same plaintext twice will produce
@@ -103,7 +105,7 @@ def encrypt_string(pt, key=None):
     aes = AES.new(key, AES.MODE_CBC, iv)
     ct = aes.encrypt(pt_pad)
     # Convert the ciphertext in a URL-safe base64 encoding
-    ct_b64 = base64.urlsafe_b64encode(iv + ct).replace('=', '.')
+    ct_b64 = base64.urlsafe_b64encode(iv + ct).replace(b'=', b'.')
     return ct_b64
 
 
@@ -120,14 +122,14 @@ def decrypt_string(ct_b64, key=None):
         # Convert the ciphertext from a URL-safe base64 encoding to a
         # bytestring, which contains both the IV (the first 16 bytes) as well
         # as the encrypted padded plaintext.
-        iv_ct = base64.urlsafe_b64decode(str(ct_b64).replace('.', '='))
+        iv_ct = base64.urlsafe_b64decode(bytes(ct_b64).replace(b'.', b'='))
         aes = AES.new(key, AES.MODE_CBC, iv_ct[:16])
         # Get the padded plaintext.
         pt_pad = aes.decrypt(iv_ct[16:])
         # Remove the padding.
         # TODO check that the padding is correct, i.e. that it contains at most
         # 15 bytes 0x00 preceded by a byte 0x01.
-        pt = pt_pad.rstrip('\x00')[:-1]
+        pt = pt_pad.rstrip(b'\x00')[:-1]
         return pt
     except TypeError:
         raise ValueError('Could not decode from base64.')
@@ -142,7 +144,7 @@ def encrypt_number(num, key=None):
     If key is not specified, it is obtained from the configuration.
 
     """
-    hexnum = hex(num).replace('0x', '')
+    hexnum = b"%x" % num
     return encrypt_string(hexnum, key)
 
 

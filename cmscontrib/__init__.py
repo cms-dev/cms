@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -26,7 +26,12 @@ losing no data in the process).
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import hashlib
+import io
 import os
 
 
@@ -39,10 +44,10 @@ def sha1sum(path):
 
     """
     buffer_length = 8192
-    with open(path, 'rb') as fin:
+    with io.open(path, 'rb') as fin:
         hasher = hashlib.new("sha1")
         buf = fin.read(buffer_length)
-        while buf != '':
+        while buf != b'':
             hasher.update(buf)
             buf = fin.read(buffer_length)
         return hasher.hexdigest()
@@ -58,5 +63,5 @@ def touch(path):
     path (str): the path to be touched.
 
     """
-    with file(path, 'a'):
+    with io.open(path, 'ab'):
         os.utime(path, None)

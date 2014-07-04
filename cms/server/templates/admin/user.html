@@ -43,12 +43,12 @@ function update_additional_answer(element, invoker)
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 10%">Time</th>
-        <th style="width: 14%">Task</th>
-        <th style="width: 35%">Status</th>
-        <th style="width: 15%">Files</th>
-        <th style="width: 8%">Token</th>
-        <th style="width: 18%">Reevaluate</th>
+        <th>Time</th>
+        <th>Task</th>
+        <th>Status</th>
+        <th>Files</th>
+        <th>Token</th>
+        <th>Reevaluate</th>
       </tr>
     </thead>
     <tbody>
@@ -92,9 +92,9 @@ function update_additional_answer(element, invoker)
               <table class="nested bordered">
                 <thead>
                   <tr>
-                    <th style="width: 20%">Outcome</th>
-                    <th style="width: 5%"></th>
-                    <th style="width: 75%">Details</th>
+                    <th>Outcome</th>
+                    <th></th>
+                    <th>Details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -191,6 +191,10 @@ function update_additional_answer(element, invoker)
       <tr>
         <td>First login time during contest (in UTC)</td>
         <td><input type="text" name="starting_time" value="{{ str(selected_user.starting_time) if selected_user.starting_time is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>Delay (in seconds)</td>
+        <td><input type="text" name="delay_time" value="{{ int(selected_user.delay_time.total_seconds()) }}"></td>
       </tr>
       <tr>
         <td>Extra time (in seconds)</td>

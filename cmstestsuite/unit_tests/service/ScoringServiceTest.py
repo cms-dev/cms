@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,10 @@
 """Tests for the scoring service.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -113,10 +117,10 @@ class TestScoringService(unittest.TestCase):
     def new_score_info():
         return (
             random.randint(1, 1000),
-            str(random.randint(1, 1000)),
+            "%d" % random.randint(1, 1000),
             random.randint(1, 1000),
-            str(random.randint(1, 1000)),
-            [str(random.randint(1, 1000)), str(random.randint(1, 1000))]
+            "%d" % random.randint(1, 1000),
+            ["%d" % random.randint(1, 1000), "%d" % random.randint(1, 1000)]
         )
 
     @staticmethod

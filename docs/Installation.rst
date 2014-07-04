@@ -66,9 +66,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``.
 
-Nearly all dependencies (i.e., all except gevent) can be installed automatically on most Linux distributions (we need version 1.0 of gevent, which many distributions don't provide yet). Instructions for manually installing gevent are below.
+All dependencies can be installed automatically on most Linux distributions.
 
-On Ubuntu 12.04, one will need to run the following script to satisfy all dependencies (except gevent):
+On Ubuntu 14.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
@@ -77,13 +77,13 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
          python-sqlalchemy python-psutil python-netifaces python-crypto \
          python-tz python-six iso-codes shared-mime-info stl-manual \
          python-beautifulsoup python-mechanize python-coverage python-mock \
-         cgroup-lite python-requests python-werkzeug
+         cgroup-lite python-requests python-werkzeug python-gevent
 
     # Optional.
     # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
     #      python-yaml python-sphinx
 
-On Arch Linux, the following command will install almost all dependencies (four of them can be found in the AUR):
+On Arch Linux, the following command will install almost all dependencies (three of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -91,13 +91,13 @@ On Arch Linux, the following command will install almost all dependencies (four 
          setuptools python2-tornado python2-psycopg2 python2-sqlalchemy \
          python2-psutil python2-netifaces python2-crypto python2-pytz \
          python2-six iso-codes shared-mime-info python2-beautifulsoup3 \
-         python2-mechanize python2-requests python2-werkzeug python2-gevent
+         python2-mechanize python2-mock python2-requests python2-werkzeug \
+         python2-gevent
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
     # https://aur.archlinux.org/packages/sgi-stl-doc/
     # https://aur.archlinux.org/packages/python2-coverage/
-    # https://aur.archlinux.org/packages/python2-mock/
 
     # Optional.
     # sudo pacman -S nginx php php-fpm phppgadmin python2-yaml python-sphinx
@@ -107,19 +107,6 @@ If you prefer using Python Package Index, you can retrieve all Python dependenci
 .. sourcecode:: bash
 
     sudo pip install -r REQUIREMENTS.txt
-
-Installing gevent (version 1.0)
-===============================
-
-If you don't use Arch Linux, to install gevent please clone its GIT repository and use the ``setup.py`` script:
-
-.. sourcecode:: bash
-
-    sudo apt-get install cython python-dev python-pip
-    git clone https://github.com/surfly/gevent.git
-    cd gevent
-    python ./setup.py build
-    sudo python ./setup.py install
 
 
 Installing CMS

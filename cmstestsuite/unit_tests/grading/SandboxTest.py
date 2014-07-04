@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
@@ -20,6 +20,10 @@
 
 """Tests for general utility functions."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import unittest
 import io
 
@@ -35,7 +39,7 @@ class TestTruncator(unittest.TestCase):
         pass
 
     def perform_truncator_test(self, orig_len, trunc_len, read_chunk_size):
-        back_file = io.BytesIO('a' * orig_len)
+        back_file = io.BytesIO(b'a' * orig_len)
         truncator = Truncator(back_file, trunc_len)
         buf = truncator.read(read_chunk_size)
         read_len = 0

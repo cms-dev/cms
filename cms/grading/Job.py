@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -35,6 +35,10 @@ certain testcase".
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import json
 from copy import deepcopy
 
@@ -55,13 +59,13 @@ class Job(object):
                  shard=None, sandboxes=None, info=None):
         """Initialization.
 
-        task_type (string): the name of the task type.
-        task_type_parameters (string): the parameters for the creation
-            of the correct task type.
-        shard (int): the shard of the Worker completing this job.
-        sandboxes ([string]): the paths of the sandboxes used in the
-            Worker during the execution of the job.
-        info (string): a human readable description of the job.
+        task_type (string|None): the name of the task type.
+        task_type_parameters (string|None): the parameters for the
+            creation of the correct task type.
+        shard (int|None): the shard of the Worker completing this job.
+        sandboxes ([string]|None): the paths of the sandboxes used in
+            the Worker during the execution of the job.
+        info (string|None): a human readable description of the job.
 
         """
         if task_type is None:
@@ -127,19 +131,21 @@ class CompilationJob(Job):
 
         See base class for the remaining arguments.
 
-        language (string): the language of the submission / user test.
-        files ({string: File}): files submitted by the user.
-        managers ({string: Manager}): managers provided by the admins.
-        success (bool): whether the job succeeded.
-        compilation_success (bool): whether the compilation implicit
+        language (string|None): the language of the submission / user
+            test.
+        files ({string: File}|None): files submitted by the user.
+        managers ({string: Manager}|None): managers provided by the
+            admins.
+        success (bool|None): whether the job succeeded.
+        compilation_success (bool|None): whether the compilation implicit
             in the job succeeded, or there was a compilation error.
-        executables ({string: Executable}): executables created in the
-            job.
-        text ([object]): description of the outcome of the job, to be
-            presented to the user. The first item is a string,
+        executables ({string: Executable}|None): executables created
+            in the job.
+        text ([object]|None): description of the outcome of the job,
+            to be presented to the user. The first item is a string,
             potentially with %-escaping; the following items are the
             values to be %-formatted into the first.
-        plus ({}): additional metadata.
+        plus ({}|None): additional metadata.
 
         """
         if files is None:
@@ -197,7 +203,7 @@ class EvaluationJob(Job):
 
     Input data (usually filled by ES): language, files, managers,
     executables, input, output, time_limit, memory_limit. Output data
-    (filled by the Worker): success, outcome, text, user_output, plux.
+    (filled by the Worker): success, outcome, text, user_output,
     executables, text, plus. Metadata: only_execution, get_output.
 
     """
@@ -213,30 +219,33 @@ class EvaluationJob(Job):
 
         See base class for the remaining arguments.
 
-        language (string): the language of the submission / user test.
-        files ({string: File}): files submitted by the user.
-        managers ({string: Manager}): managers provided by the admins.
-        executables ({string: Executable}): executables created in the
-            compilation.
-        input (string): digest of the input file.
-        output (string): digest of the output file.
-        time_limit (float): user time limit in seconds.
-        memory_limit (int): memory limit in bytes.
-        success (bool): whether the job succeeded.
-        outcome (string): the outcome of the evaluation, from which to
-            compute the score.
-        text ([object]): description of the outcome of the job, to be
-            presented to the user. The first item is a string,
+        language (string|None): the language of the submission / user test.
+        files ({string: File}|None): files submitted by the user.
+        managers ({string: Manager}|None): managers provided by the
+            admins.
+        executables ({string: Executable}|None): executables created
+            in the compilation.
+        input (string|None): digest of the input file.
+        output (string|None): digest of the output file.
+        time_limit (float|None): user time limit in seconds.
+        memory_limit (int|None): memory limit in bytes.
+        success (bool|None): whether the job succeeded.
+        outcome (string|None): the outcome of the evaluation, from
+            which to compute the score.
+        text ([object]|None): description of the outcome of the job,
+            to be presented to the user. The first item is a string,
             potentially with %-escaping; the following items are the
             values to be %-formatted into the first.
-        user_output (unicode): if requested (with get_output), the
-            digest of the file containing the output of the user
+        user_output (unicode|None): if requested (with get_output),
+            the digest of the file containing the output of the user
             program.
-        plus ({}): additional metadata.
-        only_execution (bool): whether to perform only the execution,
-            or to compare the output with the reference solution too.
-        get_output (bool): whether to retrieve the execution output
-            (together with only_execution, useful for the user tests).
+        plus ({}|None): additional metadata.
+        only_execution (bool|None): whether to perform only the
+            execution, or to compare the output with the reference
+            solution too.
+        get_output (bool|None): whether to retrieve the execution
+            output (together with only_execution, useful for the user
+            tests).
 
         """
         if files is None:
@@ -310,8 +319,9 @@ class JobGroup(object):
     def __init__(self, jobs=None, success=None):
         """Initialization.
 
-        jobs ({string: Job}): the jobs composing the group.
-        success (bool): whether all jobs succeded.
+        jobs ({string: Job}|None): the jobs composing the group, or
+            None for no jobs.
+        success (bool|None): whether all jobs succeded.
 
         """
         if jobs is None:

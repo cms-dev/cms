@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Contest Management System
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,9 @@ d66951d3149a954fb0b81b6015e8e0b060020152
 
 """
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 
 
 class Updater(object):

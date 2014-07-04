@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -21,8 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import errno
 import logging
@@ -31,6 +31,8 @@ import os
 import sys
 from argparse import ArgumentParser
 from collections import namedtuple
+
+import six
 
 import gevent.socket
 
@@ -51,6 +53,24 @@ def mkdir(path):
         if error.errno != errno.EEXIST:
             return False
     return True
+
+
+def utf8_decoder(value):
+    """Decode given binary to text (if it isn't already) using UTF8.
+
+    value (string): value to decode.
+
+    return (unicode): decoded value.
+
+    raise (TypeError): if value isn't a string.
+
+    """
+    if isinstance(value, six.text_type):
+        return value
+    elif isinstance(value, six.binary_type):
+        return value.decode('utf-8')
+    else:
+        raise TypeError("Not a string.")
 
 
 class Address(namedtuple("Address", "ip port")):
@@ -156,20 +176,22 @@ def get_service_shards(service):
 
 
 def default_argument_parser(description, cls, ask_contest=None):
-    """Default argument parser for services - in two versions: needing
-    a contest_id, or not.
+    """Default argument parser for services.
+
+    This has two versions, depending on whether the service needs a
+    contest_id, or not.
 
     description (string): description of the service.
     cls (type): service's class.
-    ask_contest (function): None if the service does not require a
-                            contest, otherwise a function that returns
-                            a contest_id (after asking the admins?)
+    ask_contest (function|None): None if the service does not require
+        a contest, otherwise a function that returns a contest_id
+        (after asking the admins?)
 
     return (object): an instance of a service.
 
     """
     parser = ArgumentParser(description=description)
-    parser.add_argument("shard", nargs="?", type=int, default=None)
+    parser.add_argument("shard", action="store", type=int, nargs="?")
 
     # We need to allow using the switch "-c" also for services that do
     # not need the contest_id because RS needs to be able to restart
@@ -177,8 +199,8 @@ def default_argument_parser(description, cls, ask_contest=None):
     contest_id_help = "id of the contest to automatically load"
     if ask_contest is None:
         contest_id_help += " (ignored)"
-    parser.add_argument("-c", "--contest-id", help=contest_id_help,
-                        nargs="?", type=int)
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help=contest_id_help)
     args = parser.parse_args()
 
     try:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,10 @@
 """Tests for the worker.
 
 """
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import gevent
 import unittest
@@ -213,8 +217,8 @@ class TestWorker(unittest.TestCase):
         calls = []
         for i in xrange(number_of_jobs):
             job_params = ("fake_task_type", "fake_parameters_%s" % i)
-            job = EvaluationJob(*job_params, info=prefix + str(i))
-            jobgroup_dict[str(i)] = job
+            job = EvaluationJob(*job_params, info="%s%d" % (prefix, i))
+            jobgroup_dict["%s" % i] = job
             calls.append(call(*job_params))
         return JobGroup(jobgroup_dict), calls
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -26,6 +26,7 @@
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
@@ -93,6 +94,16 @@ class Submission(Base):
     # results (list of SubmissionResult objects)
 
     def get_result(self, dataset=None):
+        """Return the result associated to a dataset.
+
+        dataset (Dataset|None): the dataset for which the caller wants
+            the submission result; if None, the active one is used.
+
+        return (SubmissionResult|None): the submission result
+            associated to this submission and the given dataset, if it
+            exists in the database, otherwise None.
+
+        """
         if dataset is not None:
             # Use IDs to avoid triggering a lazy-load query.
             assert self.task_id == dataset.task_id
@@ -104,6 +115,16 @@ class Submission(Base):
             (self.id, dataset_id), self.sa_session)
 
     def get_result_or_create(self, dataset=None):
+        """Return and, if necessary, create the result for a dataset.
+
+        dataset (Dataset|None): the dataset for which the caller wants
+            the submission result; if None, the active one is used.
+
+        return (SubmissionResult): the submission result associated to
+            the this submission and the given dataset; if it
+            does not exists, a new one is created.
+
+        """
         if dataset is None:
             dataset = self.task.active_dataset
 
@@ -599,4 +620,5 @@ class Evaluation(Base):
 
     @property
     def codename(self):
+        """Return the codename of the testcase."""
         return self.testcase.codename

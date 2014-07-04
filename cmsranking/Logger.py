@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import curses
 import logging
@@ -173,7 +177,7 @@ class CustomFormatter(logging.Formatter):
         ANSI command.
 
         """
-        return "\033[%sm" % ';'.join([str(x)
+        return "\033[%sm" % ';'.join(["%s" % x
                                       for x in args]) if self.color else ''
 
     def formatException(self, exc_info):

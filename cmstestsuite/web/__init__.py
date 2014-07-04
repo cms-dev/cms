@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
@@ -20,8 +20,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
+import io
 import sys
 import time
 import urllib
@@ -72,8 +75,8 @@ def browser_do_request(browser, url, data=None, files=None):
         for field_name, file_path in files:
             browser.form.new_control('file', field_name, {'id': field_name})
             filename = os.path.basename(file_path)
-            browser.form.add_file(open(file_path), 'text/plain', filename,
-                                  id=field_name)
+            browser.form.add_file(io.open(file_path, 'rb'), 'text/plain',
+                                  filename, id=field_name)
 
         browser.form.set_all_readonly(False)
         browser.form.fixup()

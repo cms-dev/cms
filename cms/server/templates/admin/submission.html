@@ -18,8 +18,8 @@
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 20%">Property</th>
-        <th style="width: 80%">Value</th>
+        <th>Property</th>
+        <th>Value</th>
       </tr>
     </thead>
     <tbody>
@@ -136,17 +136,19 @@
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 10%">Outcome</th>
-        <th style="width: 2%"></th>
-        <th style="width: 45%">Details</th>
-        <th style="width: 8%">Shard</th>
-        <th style="width: 15%">Resources</th>
-        <th style="width: 20%">Sandbox</th>
+        <th>Codename</th>
+        <th>Outcome</th>
+        <th></th>
+        <th>Details</th>
+        <th>Shard</th>
+        <th>Resources</th>
+        <th>Sandbox</th>
       </tr>
     </thead>
     <tbody>
       {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
       <tr>
+        <td id="eval_codename_{{ idx }}">{{ ev.codename }}</td>
         <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
         {% if s.token is not None or ev.testcase.public %}
         <td style="align: center;">&bullet;</td>
