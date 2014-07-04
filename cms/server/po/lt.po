@@ -97,7 +97,7 @@ msgid "Invalid files in submission"
 msgstr "Pateiktas netinkamas failas"
 
 msgid "Execution completed successfully"
-msgstr ""
+msgstr "Vykdymas sėkmingas"
 
 msgid "No compilation needed"
 msgstr "Kompiliavimas nereikalingas"
@@ -433,7 +433,7 @@ msgstr "Neturi apribojimų jų naudojimui."
 
 #, python-format
 msgid "Automatic (%s)"
-msgstr ""
+msgstr "Automatiška (%s)"
 
 #, python-format
 msgid ""
