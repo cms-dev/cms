@@ -90,7 +90,7 @@ msgid "Invalid files in submission"
 msgstr "Neispravne datoteke u prijavi"
 
 msgid "Execution completed successfully"
-msgstr ""
+msgstr "Izvršavanje uspješno završeno"
 
 msgid "No compilation needed"
 msgstr "Nije potrebno kompajliranje"
@@ -410,7 +410,7 @@ msgstr "Nemate ograničenja na njihovu upotrebu."
 
 #, python-format
 msgid "Automatic (%s)"
-msgstr ""
+msgstr "Automatski (%s)"
 
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
