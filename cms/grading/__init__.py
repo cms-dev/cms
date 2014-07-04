@@ -784,3 +784,4 @@ def task_score(user, task):
                 partial = True
 
     return max(last_score, max_tokened_score), partial
+

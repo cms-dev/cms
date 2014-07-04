@@ -34,7 +34,7 @@ import cms.log
 # Define what this package will provide.
 
 __all__ = [
-    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP",
+    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP", "LANG_QB",
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
@@ -59,6 +59,7 @@ LANG_PASCAL = "pas"
 LANG_PYTHON = "py"
 LANG_PHP = "php"
 LANG_JAVA = "java"
+LANG_QB = "basic"
 
 LANGUAGE_NAMES = {
     LANG_C: "C",
@@ -67,10 +68,11 @@ LANGUAGE_NAMES = {
     LANG_PYTHON: "Python",
     LANG_PHP: "PHP",
     LANG_JAVA: "Java",
+    LANG_QB: "Basic",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
-DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
+LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, LANG_QB]
+DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_QB]
 
 # A reference for extension-based automatic language detection.
 # (It's more difficult with headers because ".h" is ambiguous.)
@@ -85,6 +87,7 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".py": LANG_PYTHON,
     ".php": LANG_PHP,
     ".java": LANG_JAVA,
+    ".bas": LANG_QB,
 }
 
 # Our preferred source file and header file extension for each language.
@@ -95,6 +98,7 @@ LANGUAGE_TO_SOURCE_EXT_MAP = {
     LANG_PYTHON: ".py",
     LANG_PHP: ".php",
     LANG_JAVA: ".java",
+    LANG_QB: ".bas",
 }
 LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_C: ".h",
