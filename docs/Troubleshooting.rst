@@ -31,11 +31,7 @@ Servers
 
 - *Symptom.* Ranking Web Server displays wrong data, or too much data.
 
-  *Possible cause.* RWS is designed to handle groups of contests. If you want to delete the previous data, run it with the ```-d``` option. See :doc:`RankingWebServer` for more details
-
-- *Symptom.* Ranking Web Server misbehaving
-
-  *Possible cause.* Ensure you are running Tornado 2.0 or higher. (see :gh_issue:`2`)
+  *Possible cause.* RWS is designed to handle groups of contests, so it retains data about past contests. If you want to delete previous data, run RWS with the ```-d``` option. See :doc:`RankingWebServer` for more details
 
 
 Sandbox
@@ -44,19 +40,3 @@ Sandbox
 - *Symptom.* The Worker fails to evaluate a submission logging about an invalid (empty) output from the manager.
 
   *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```.
-
-
-Importers
-=========
-
-- *Symptom.* Importing a contest with ContestImporter fails.
-
-  *Possible cause.* The contest was imported with a previous version of CMS. Wait for us to provide update scripts for exports, or contact us for the fast solution.
-
-
-Configuration
-=============
-
-- *Symptom.* ResourceService keeps restarting its services.
-
-  *Possible cause.* As stated in the README, a reason for this could be that the "process_cmdline" in the configuration isn't suited to your system. To find the one that suits you, you can run a service by hand (for example *cmsLogService*), then run :samp:`ps aux` and search for a process that looks like :samp:`/usr/bin/python2 /usr/local/bin/cmsLogService`. The "process_cmdline" corresponding to this would be :samp:`["/usr/bin/python2", "/usr/local/bin/cms%s", "%d"]`. This value is the default one and should work well on most Ubuntu systems, but for example on some Gentoo systems you may need to use :samp:`["/usr/bin/python2.7", "/usr/bin/cms%s", "%d"]`.
