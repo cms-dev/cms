@@ -34,7 +34,7 @@ To begin translating to a new language, run this command, from :gh_tree:`cms/ser
 
 Right after that, open :file:`<code>.po` and fill the information in the header. To translate a string, simply fill the corresponding msgstr with the translations. You can also use specialized translation softwares such as poEdit and others.
 
-If the developers updated the ``.pot`` file, you do not need to start from scratch. Instead, you can create a new ``.po`` file that merges the old translated string with the new, to-be-translated ones. The command is the following, run inside :gh_tree:`cms/server/po/`.
+When the developers update the ``.pot`` file, you do not need to start from scratch. Instead, you can create a new ``.po`` file that merges the old translated string with the new, to-be-translated ones. The command is the following, run inside :gh_tree:`cms/server/po/`.
 
 .. sourcecode:: bash
 
