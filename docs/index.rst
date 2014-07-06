@@ -11,6 +11,7 @@ Welcome to CMS's documentation!
    Configuring a contest
    Task types
    Score types
+   Task versioning
    External contest formats
    RankingWebServer
    Localization
