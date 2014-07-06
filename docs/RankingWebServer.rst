@@ -8,15 +8,12 @@ The **RankingWebServer** (RWS for short) is the web server used to show a live s
 
 RWS is designed to be completely separated from the rest of CMS: it has its own configuration file, it doesn't use the PostgreSQL database to store its data and it doesn't communicate with other services using the internal RPC protocol (its code is also in a different package: ``cmsranking`` instead of ``cms``). This has been done to allow contest administrators to run RWS in a different location (on a different network) than the core of CMS, if they don't want to expose a public access to their core network on the internet (for security reasons) or if the on-site internet connection isn't good enough to serve a public website.
 
-Running it
-==========
-
-To start RWS you have to execute ``cmsRankingWebServer`` if you have installed CMS (by running ``./setup.py install``), and execute ``$REPO/cmsranking/RankingWebServer.py`` otherwise (where ``$REPO`` has the same meaning as in the README).
+To start RWS you have to execute ``cmsRankingWebServer``.
 
 Configuring it
 --------------
 
-The configuration file is named :file:`cms.ranking.conf` and RWS will search for it in :file:`/usr/local/etc` and in :file:`/etc` (in this order!). In case it's not found in any of these, RWS will use a hard-coded default configuration that can be found in :file:`$REPO/cmsranking/Config.py`. If RWS is not installed then the ``./examples`` directory will also be checked for configuration files (note that for this to work your working directory needs to be ``$REPO``). In any case, as soon as you start it, RWS will tell you which configuration file it's using.
+The configuration file is named :file:`cms.ranking.conf` and RWS will search for it in :file:`/usr/local/etc` and in :file:`/etc` (in this order!). In case it's not found in any of these, RWS will use a hard-coded default configuration that can be found in :gh_blob:`cmsranking/Config.py`. If RWS is not installed then the :gh_tree:`examples` directory will also be checked for configuration files (note that for this to work your working directory needs to be root of the repository). In any case, as soon as you start it, RWS will tell you which configuration file it's using.
 
 The configuration file is a JSON object. The most important parameters are:
 
@@ -36,7 +33,7 @@ The configuration file is a JSON object. The most important parameters are:
 
   They specify the credentials needed to alter the data of RWS. We suggest to set them to long random strings, for maximum security, since you won't need to remember them. ``username`` cannot contain a colon.
 
-  .. note::
+  .. warning::
 
     Remember to change the ``username`` and ``password`` every time you set up a RWS. Keeping the default ones will leave your scoreboard open to illegitimate access.
 
@@ -53,18 +50,18 @@ Managing it
 
 RWS doesn't use the PostgreSQL database. Instead, it stores its data in :file:`/var/local/lib/cms/ranking` (or whatever directory is given as ``lib_dir`` in the configuration file) as a collection of JSON files. Thus, if you want to backup the RWS data, just make a copy of that directory. RWS modifies this data in response to specific (authenticated) HTTP requests it receives.
 
-The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ScoringService (SS for short). When SS is started for a certain contest, it'll send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and the submissions received so far. Then it'll continue to send new submissions as soon as they're scored and it'll update them as needed (for example when a user uses a token). Note that hidden users (and their submissions) won't be sent to RWS.
+The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ProxyService (PS for short). When PS is started for a certain contest, it will send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and the submissions received so far. Then it will continue to send new submissions as soon as they are scored and it will update them as needed (for example when a user uses a token). Note that hidden users (and their submissions) will not be sent to RWS.
 
-There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. They're both discouraged but, at the moment, they're the only way to add team information to RWS (see :gh_issue:`65`).
+There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. They are both discouraged but, at the moment, they are the only way to add team information to RWS (see :gh_issue:`65`).
 
 Logo, flags and faces
 ---------------------
 
 RWS can also display a custom global logo, a flag for each team and a photo ("face") for each user. Again, the only way to add these is to put them directly in the data directory of RWS:
 
-* the logo has to be saved in the top-level directory, named "logo" with an appropriate extension;
-* the flag for a team has to be saved in the "flags" directory, named as the team's name with an appropriate extension;
-* the face for a user has to be saved in the "faces" directory, named as the user's username with an appropriate extension.
+* the logo has to be saved right in the data directory, named "logo" with an appropriate extension (e.g. :file:`logo.png`), with a recommended resolution of 200x160;
+* the flag for a team has to be saved in the "flags" subdirectory, named as the team's name with an appropriate extension (e.g. :file:`ITA.png`);
+* the face for a user has to be saved in the "faces" subdirectory, named as the user's username with an appropriate extension (e.g. :file:`ITA1.png`).
 
 We support the following extensions: .png, .jpg, .gif and .bmp.
 
@@ -73,48 +70,56 @@ We support the following extensions: .png, .jpg, .gif and .bmp.
 Removing data
 -------------
 
-SS is only able to create or update data on RWS, but not to delete it. This means that, for example, when a user or a task is removed from CMS it'll continue to be shown on RWS. There are several ways to fix that (presented in increasing order of difficulty and decreasing order of downtime needed).
+PS is only able to create or update data on RWS, but not to delete it. This means that, for example, when a user or a task is removed from CMS it will continue to be shown on RWS. To fix this you will have to intervene manually. The ``cmsRWSHelper`` script is designed to make this operation straightforward. For example, calling :samp:`cmsRWSHelper delete user {username}` will cause the user *username* to be removed from all the RWSs that are specified in :file:`cms.conf`. See ``cmsRWSHelper --help`` and :samp:`cmsRWSHelper {action} --help` for more usage details.
 
-* You can stop RWS, remove all its data (either by deleting its data directory or by starting RWS with the ``--drop`` option), start RWS again and restart SS for the contest you're interested in, to have it send the data again.
+In case using ``cmsRWSHelper`` is impossible (for example because no :file:`cms.conf` is available) there are alternative ways to achieve the same result, presented in decreasing order of difficulty and increasing order of downtime needed.
 
-* You can stop RWS, delete only the JSON files of the data you want to remove and start RWS again. Note that if you remove an object (e.g. a user) you have to remove all objects (e.g. the submissions) that depend on it, that is you have to simulate the "on delete cascade" behavior of SQL by hand. (When you delete a submission remember to delete also the related subchanges).
+* You can send a hand-crafted HTTP request to RWS (a ``DELETE`` method on the :samp:`/{entity_type}/{entity_id}` resource, giving credentials by Basic Auth) and it will, all by itself, delete that object and all the ones that depend on it, recursively (that is, when deleting a task or a user it will delete its submissions and, for each of them, its subchanges).
 
-* You can keep RWS running and send a hand-crafted HTTP request to it and it'll, all by itself, delete the objects you want to remove and all the ones that depend on it. (Actually, ``cmsRWSHelper`` should make this operation quite easy).
+* You can stop RWS, delete only the JSON files of the data you want to remove and start RWS again. In this case you have to *manually* determine the depending objects and delete them as well.
 
-Note that when you change the username of an user, the name of a task or the name of a contest in CMS and then restart SS, that user, task or contest will be duplicated in RWS and you will need to delete the old copy using this procedure.
+* You can stop RWS, remove *all* its data (either by deleting its data directory or by starting RWS with the ``--drop`` option), start RWS again and restart PS for the contest you're interested in, to have it send the data again.
+
+.. note::
+
+    When you change the username of an user, the name of a task or the name of a contest in CMS and then restart PS, that user, task or contest will be duplicated in RWS and you will need to delete the old copy using this procedure.
 
 Multiple contests
 -----------------
 
-Since the data in RWS will persist even after the SS that sent it has been stopped it's possible to have many SS serve the same RWS, one after the other (or even simultaneously). This allows to have many contests inside the same RWS. The users of the contests will be merged by their username: that is, two users of two different contests will be shown as the same user if they have the same username. To show one contest at a time it's necessary to delete the previous one before adding the next one (the procedure to delete an object is the one described in :ref:`rankingwebserver_removing-data`).
+Since the data in RWS will persist even after the PS that sent it has been stopped it's possible to have many PS serve the same RWS, one after the other (or even simultaneously). This allows to have many contests inside the same RWS. The users of the contests will be merged by their username: that is, two users of two different contests will be shown as the same user if they have the same username. To show one contest at a time it's necessary to delete the previous one before adding the next one (the procedure to delete an object is the one described in :ref:`rankingwebserver_removing-data`).
 
 Keeping the previous contests may seem annoying to contest administrators who want to run many different and independent contests one after the other, but it's indispensable for many-day contests like the IOI.
 
 .. _rankingwebserver_securing-the-connection-between-ss-and-rws:
 
-Securing the connection between SS and RWS
+Securing the connection between PS and RWS
 ==========================================
 
-RWS accepts data only from clients that successfully authenticate themselves using the HTTP Basic Access Authentication. Thus an attacker that wants to alter the data on RWS needs the username and the password to authenticate its request. If they are random (and long) enough he/she can't guess them but, since they're sent as plaintext in the HTTP request, he/she could read them if he/she can eavesdrop the communication channel between SS and RWS. Therefore we suggest to use HTTPS, that encrypts the transmission with TLS/SSL, when the communication channel between SS and RWS isn't secure.
-HTTPS doesn't only protect against eavesdropping attacks but also against more active attacks, like a man-in-the-middle. To do all of this it uses public-key cryptography based on so-called certificates. In our setting RWS has a certificate (and its private key) that is given to SS, that verifies its authenticity before sending any data (in particular before sending the username and the password!). The same certificate is then used to establish a secure communication channel.
+RWS accepts data only from clients that successfully authenticate themselves using the HTTP Basic Access Authentication. Thus an attacker that wants to alter the data on RWS needs the username and the password to authenticate its request. If they are random (and long) enough the attacker cannot guess them but may eavesdrop the plaintext HTTP request between PS and RWS. Therefore we suggest to use HTTPS, that encrypts the transmission with TLS/SSL, when the communication channel between PS and RWS is not secure.
 
-The general public doesn't need to use HTTPS since it's not sending nor receiving any sensitive information. We think the best solution is, for RWS, to listen on both HTTP and HTTPS ports, but to use HTTPS only for private internal use.
-Not having final users use HTTPS also allows you to use home-made (i.e. self-signed) certificates without causing apocalyptic warnings in the users' browsers.
-Note that users will still be able to connect to the HTTPS port if they discover its number, but that's of no harm. Note also that RWS will continue to accept incoming data even on the HTTP port, it's just that SS won't send it.
+HTTPS does not only protect against eavesdropping attacks but also against active attacks, like a man-in-the-middle. To do all of this it uses public-key cryptography based on so-called certificates. In our setting RWS has a public certificate (and its private key). PS has access to a copy to the same certificate and can use it to verify the identity of the receiver before sending any data (in particular before sending the username and the password!). The same certificate is then used to establish a secure communication channel.
 
-To use HTTPS we suggest you to create a self-signed certificate, use that as both RWS's and SS's ``https_certfile`` and use its private key as RWS's ``https_keyfile``. If your SS manages multiple RWSs we suggest you to use a different certificate for each of those and to create a new file, obtained by joining all certificates, as the ``https_certfile`` of SS. Alternatively you may want to use a Certificate Authority to sign the certificates of RWSs and just give its certificate to SS. Details on how to do this follow.
+The general public does not need to use HTTPS, since it is not sending nor receiving any sensitive information. We think the best solution is, for RWS, to listen on both HTTP and HTTPS ports, but to use HTTPS only for private internal use. Not having final users use HTTPS also allows you to use home-made (i.e. self-signed) certificates without causing apocalyptic warnings in the users' browsers.
+
+Note that users will still be able to connect to the HTTPS port if they discover its number, but that is of no harm. Note also that RWS will continue to accept incoming data even on the HTTP port; simply, PS will not send it.
+
+To use HTTPS we suggest you to create a self-signed certificate, use that as both RWS's and PS's ``https_certfile`` and use its private key as RWS's ``https_keyfile``. If your PS manages multiple RWSs we suggest you to use a different certificate for each of those and to create a new file, obtained by joining all certificates, as the ``https_certfile`` of PS. Alternatively you may want to use a Certificate Authority to sign the certificates of RWSs and just give its certificate to PS. Details on how to do this follow.
+
+.. note::
+   Please note that, while the indications here are enough to make RWS work, computer security is a delicate subject; we urge you to be sure of what you are doing when setting up a contest in which "failure is not an option".
 
 Creating certificates
 ---------------------
 
-A quick-and-dirty way to create a self-signed certificate, ready to be used with SS and RWS, is:
+A quick-and-dirty way to create a self-signed certificate, ready to be used with PS and RWS, is:
 
 .. sourcecode:: bash
 
     openssl req -newkey rsa:1024 -nodes -keyform PEM -keyout key.pem \
                 -new -x509 -days 365 -outform PEM -out cert.pem -utf8
 
-You will be prompted to enter some information to be included in the certificate. After you do this you'll have two files, :file:`key.pem` and :file:`cert.pem`, to be used respectively as the ``https_keyfile`` and ``https_certfile`` for SS and RWS.
+You will be prompted to enter some information to be included in the certificate. After you do this you'll have two files, :file:`key.pem` and :file:`cert.pem`, to be used respectively as the ``https_keyfile`` and ``https_certfile`` for PS and RWS.
 
 Once you have a self-signed certificate you can use it as a :abbr:`CA (Certificate Authority)` to sign other certificates. If you have a ``ca_key.pem``/``ca_cert.pem`` pair that you want to use to create a ``key.pem``/``cert.pem`` pair signed by it, do:
 
@@ -135,7 +140,7 @@ For additional information on certificates see `the official Python documentatio
 Using a proxy
 =============
 
-As a security measure, we recommend not to run RWS as root but to run it as an unprivileged user instead. This means that RWS cannot listen on port 80 and 443 (the default HTTP and HTTPS ports) but it needs to listen on ports whose number is higher than or equal to 1024. This isn't a big issue, since we can use a reverse proxy to map the default HTTP and HTTPS ports to the ones used by RWS. We suggest you to use nginx, since it has been already successfully used for this purpose (some users have reported that other software, like Apache, has some issues, probably due to the use of long-polling HTTP requests by RWS).
+As a security measure, we recommend not to run RWS as root but to run it as an unprivileged user instead. This means that RWS cannot listen on port 80 and 443 (the default HTTP and HTTPS ports) but it needs to listen on ports whose number is higher than or equal to 1024. This is not a big issue, since we can use a reverse proxy to map the default HTTP and HTTPS ports to the ones used by RWS. We suggest you to use nginx, since it has been already proved successfully  for this purpose (some users have reported that other software, like Apache, has some issues, probably due to the use of long-polling HTTP requests by RWS).
 
 A reverse proxy is most commonly used to map RWS from a high port number (say 8080) to the default HTTP port (i.e. 80), hence we will assume this scenario throughout this section.
 
@@ -168,6 +173,8 @@ The trailing slash is needed in the argument of both the ``location`` and the ``
 If you decide to have HTTPS for private internal use only, as suggested above (that is, you want your users to use only HTTP), then it's perfectly fine to keep using a high port number for HTTPS and not map it to port 443, the standard HTTPS port.
 Note also that you could use nginx as an HTTPS endpoint, i.e. make nginx decrypt the HTTPS trasmission and redirect it, as cleartext, into RWS's HTTP port. This allows to use two different certificates (one by nginx, one by RWS directly), although we don't see any real need for this.
 
+The example configuration file provided in :ref:`running-cms_recommended-setup` already contains sections for RWS.
+
 Tuning nginx
 ------------
 
@@ -189,7 +196,7 @@ For more information see the official nginx documentation:
 Some final suggestions
 ======================
 
-The suggested setup (the one that we also used at the IOI 2012) is to make RWS listen on both HTTP and HTTPS ports (we used 8080 and 8443), to use nginx to map port 80 to port 8080, to make all three ports (80, 8080 and 8443) accessible from the internet, to make SS connect to RWS via HTTPS on port 8443 and to use a Certificate Authority to generate certificates (the last one is probably an overkill).
+The suggested setup (the one that we also used at the IOI 2012) is to make RWS listen on both HTTP and HTTPS ports (we used 8080 and 8443), to use nginx to map port 80 to port 8080, to make all three ports (80, 8080 and 8443) accessible from the internet, to make PS connect to RWS via HTTPS on port 8443 and to use a Certificate Authority to generate certificates (the last one is probably an overkill).
 
 At the IOI we had only one server, running on a 2 GHz machine, and we were able to serve about 1500 clients simultaneously (and, probably, we were limited to this value by a misconfiguration of nginx). This is to say that you'll likely need only one public RWS server.
 
