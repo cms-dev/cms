@@ -757,6 +757,8 @@ class IsolateSandbox(SandboxBase):
        command number N.
 
     """
+    next_id = 0
+
     def __init__(self, file_cacher=None, temp_dir=None):
         """Initialization.
 
@@ -765,15 +767,19 @@ class IsolateSandbox(SandboxBase):
         """
         SandboxBase.__init__(self, file_cacher)
 
-        # Get our shard number, to use as a unique identifier for the
-        # sandbox on this machine. FIXME This is the only use of
-        # FileCacher.service, and it's an improper use! Avoid it!
+        # Isolate only accepts ids between 0 and 99. We assign the
+        # range [(shard+1)*10, (shard+2)*10) to each Worker and keep
+        # the range [0, 10) for other uses (command-line scripts like
+        # cmsMake or direct console users of isolate). Inside each
+        # range ids are assigned sequentially, with a wrap-around.
+        # FIXME This is the only use of FileCacher.service, and it's an
+        # improper use! Avoid it!
         if file_cacher is not None and file_cacher.service is not None:
-            # We add 1 to avoid conflicting with console users of the
-            # sandbox who use the default box id of 0.
-            box_id = file_cacher.service.shard + 1
+            box_id = ((file_cacher.service.shard + 1) * 10
+                      + (IsolateSandbox.next_id % 10)) % 100
         else:
-            box_id = 0
+            box_id = IsolateSandbox.next_id % 10
+        IsolateSandbox.next_id += 1
 
         # We create a directory "tmp" inside the outer temporary directory,
         # because the sandbox will bind-mount the inner one. The sandbox also
