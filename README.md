@@ -46,9 +46,11 @@ particular we are aware of the following.
     - [IOI 2013](http://www.ioi2013.org), Brisbane, Australia, July
       2013;
     - [FARIO 2012](http://orac.amt.edu.au/fario/fario12results.html)
-      (French-Australian Regional Informatics Olympiad), March 2012.
+      (French-Australian Regional Informatics Olympiad), March 2012;
     - [APIO 2014](http://olympiads.kz/apio2014/) (Asia-Pacific
-      Informatics Olympiad), Almaty, Kazakhstan, May 2014.
+      Informatics Olympiad), Almaty, Kazakhstan, May 2014;
+    - [CEOI 2014](http://ceoi2014.informatik-olympiade.de/) (Central
+      European Olympiad in Informatics), Jena, Germany, June 2014.
 - National competitions:
     - OII 2011 ([Italian Olympiad in Informatics]
       (http://www.olimpiadi-informatica.it)), Sirmione, September
@@ -77,14 +79,15 @@ particular we are aware of the following.
     - ABC 2013 (Algoritmi Bergamo Contest), Bergamo, Italy, 18 May
       2013;
     - ABC 2014 (Algoritmi Bergamo Contest), Bergamo, Italy, 17 May
-      2014.
+      2014;
     - KTSS (High schools competition), Sarajevo, Bosnia and
-      Herzegovina, 12 April 2014.
+      Herzegovina, 12 April 2014;
     - KTOS (Elementary schools competition), Sarajevo, Bosnia and
       Herzegovina, 26 April 2014.
 - Training:
     - training camps for the selections of the national IOI teams of
-      Australia, Egypt, India, Italy, Japan, Latvia, Serbia and Taiwan.
+      Australia, Egypt, Germany, India, Italy, Japan, Latvia, Serbia
+      and Taiwan.
 - Other:
     - laboratory exercises and exams of the course "Algorithms and
       data structures" at University of Trento, Italy (year
