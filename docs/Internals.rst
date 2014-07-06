@@ -1,12 +1,19 @@
 Internals
 *********
 
-This section contains some details about some CMS internals. They're
-mostly meant for developers, not for users. However, if you're curious
-about what's under the hood, you'll find something interesting here
+This section contains some details about some CMS internals. They are
+mostly meant for developers, not for users. However, if you are curious
+about what's under the hood, you will find something interesting here
 (though without any pretension of completeness). Moreover, these are
 not meant to be full specifications, but only useful notes for the
 future.
+
+Oh, I was nearly forgetting: if you are curious about what happens
+inside CMS, you may actually be interested in helping us writing
+it. We can assure you it is a very rewarding task. After all, if you
+are hanging around here, you must have some interest in coding! In
+case, feel free `to get in touch with us
+<http://cms-dev.github.io/>`_.
 
 RPC protocol
 ============
@@ -19,7 +26,8 @@ cannot be used in the JSON encoding: this is not a problem, since new
 lines inside string represented in the JSON have to be escaped
 anyway).
 
-An RPC request must be of the form::
+An RPC request must be of the form (it is pretty printed here, but it
+is sent in compact form inside CMS)::
 
   {
     "__method": <name of the requested method>,
@@ -63,7 +71,7 @@ terminator.
 Backdoor
 ========
 
-Setting the `backdoor` configuration key to true causes services to
+Setting the ``backdoor`` configuration key to true causes services to
 serve a Python console (accessible with netcat), running in the same
 interpreter instance as the service, allowing to inspect and modify its
 data, live. It will be bound to a local UNIX domain socket, usually at
