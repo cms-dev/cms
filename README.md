@@ -47,6 +47,8 @@ particular we are aware of the following.
       2013;
     - [FARIO 2012](http://orac.amt.edu.au/fario/fario12results.html)
       (French-Australian Regional Informatics Olympiad), March 2012;
+    - [BOI 2014](http://www.boi2014.lmio.lt/) (Baltic Olympiad in
+      Informatics), Palanga, Lithuania, April 2014;
     - [APIO 2014](http://olympiads.kz/apio2014/) (Asia-Pacific
       Informatics Olympiad), Almaty, Kazakhstan, May 2014;
     - [CEOI 2014](http://ceoi2014.informatik-olympiade.de/) (Central
