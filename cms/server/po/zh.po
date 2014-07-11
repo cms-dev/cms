@@ -92,7 +92,7 @@ msgid "Invalid files in submission"
 msgstr "傳送中包含錯誤的檔案"
 
 msgid "Execution completed successfully"
-msgstr ""
+msgstr "評測完成"
 
 msgid "No compilation needed"
 msgstr "略過編譯程序"
@@ -271,13 +271,13 @@ msgid "%(seconds)0.3f s"
 msgstr "%(seconds)0.3f 秒"
 
 msgid "%Y-%m-%d"
-msgstr ""
+msgstr "%Y-%m-%d"
 
 msgid "%H:%M:%S"
-msgstr ""
+msgstr "%H:%M:%S"
 
 msgid "%Y-%m-%d %H:%M:%S"
-msgstr ""
+msgstr "%Y-%m-%d %H:%M:%S"
 
 msgid "loading..."
 msgstr "載入中..."
@@ -338,7 +338,7 @@ msgstr "在本題中, 您沒有任何可用的 %(type_pl)s."
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr ""
+msgstr "本題有無限量的 %(type_pl)s."
 
 #, python-format
 msgid "You start with no %(type_pl)s."
@@ -393,8 +393,8 @@ msgstr[1] "且總共可以使用 %(max_number)d 個 %(type_s)s."
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "每秒可以使用一個 %(type_pl)s."
+msgstr[1] "每隔 %(min_interval)g 秒可以使用一個 %(type_pl)s."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
@@ -403,11 +403,11 @@ msgstr[0] "且一旦產生 %(type_s)s 後將不會再增加."
 msgstr[1] "且一旦產生總共 %(max_number)d 個 %(type_s)s 後將不會再增加."
 
 msgid "You have no limitations on how you use them."
-msgstr ""
+msgstr "使用規則中沒有其他額外的限制."
 
 #, python-format
 msgid "Automatic (%s)"
-msgstr ""
+msgstr "自動偵測 (%s)"
 
 #, python-format
 msgid ""
@@ -565,7 +565,7 @@ msgid "You have an infinite number of tokens."
 msgstr "在本題中有無限量的 Token 可供使用."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
+msgstr "使用 Token 後, 即可看到詳細結果."
 
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
@@ -579,7 +579,7 @@ msgstr "每題的 Token 額度是獨立計算的."
 
 #, python-format
 msgid "You can find the rules for the %(type_pl)s on each task's description page."
-msgstr ""
+msgstr "在題目敘述頁面中, 可以看到該題目 %(type_pl)s 的使用規則."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "您有一些所有題目共用的 Token."
@@ -761,7 +761,7 @@ msgstr "編譯指令"
 
 #, python-format
 msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
-msgstr ""
+msgstr "在<a href=\"%(url_root)s/\">競賽概況</a>中, 可以看到 %(type_pl)s 的使用規則."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
