@@ -1,15 +1,9 @@
 Introduction
 ************
 
-When organizing a programming contest, there are three main stages:
+CMS (Contest Management System) is a software for organizing programming contests similar to well-known international contests like the IOI (International Olympiad in Informatics). It was written and it received contributions by people involved in the organization of similar contests on a local, national and international level, and it is regularly used for such contests in many different countries. It is meant to be secure, extendable, adaptable to different situations and easy to use.
 
-- the first is to develop all the data that the assigned tasks need (i.e., statements, solutions, testcases, information on how to grade submissions, etc.);
-
-- the second, that happens when the contest is onsite, is to properly configure the machines that the contestants are going to use during the contest, in particular with respect to network security;
-
-- the third is to manage the actual contest (accepting and grading submissions, give feedback on them, display a live ranking, etc.).
-
-The aim of the CMS project is to give a good answer to the third problem. Our goal is to develop a contest management system that is secure, extendable, adaptable to different situations, and easy to use.
+CMS is a complete, tested and well proved solution for managing a contest. It does not, however, provide tools for the development of the task data belonging to the contest (task statements, solutions, testcases, etc.) or for configuring machines and network resources that host the contest itself. These are responsibility of the contest administrators, although there are tools that help to automate them.
 
 
 General structure
