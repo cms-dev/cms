@@ -17,7 +17,7 @@ The first decision to chose among these two possibilities:
 #. all contestants will start and end the contest at the same time
    (unless otherwise decided by the admins during the contest for
    fairness reasons);
-#. each contestant will start the contest at the time she decide.
+#. each contestant will start the contest at the time they decide.
 
 The first situation is that we will refer to as a fixed-window
 contest, whereas we will refer to the second situation as
@@ -44,7 +44,7 @@ options.
 
 #. If you set ``extra_time`` to S seconds, the contestant will be able
    to interact with the contest in the first S seconds of it, whereas
-   if you use ``delay_time``, she will not, as in the first case the
+   if you use ``delay_time``, they will not, as in the first case the
    time window is extended, in the second is shifted (if S seconds
    have already passed from the start of the contest, then there is no
    difference).
@@ -68,7 +68,7 @@ In these contests, contestants can use a time window of fixed length
 (``per_user_time``), starting from the first time they log in between
 ``start_time`` and ``end_time``. Moreover, the time window is capped at
 ``end_time`` (so if ``per_user_time`` is 5 hours and a contestant logs
-in for the first time one minute before ``end_time``, she will have
+in for the first time one minute before ``end_time``, they will have
 just one minute).
 
 Again, admins can change the time windows of specific contestants for
@@ -81,7 +81,7 @@ time window (as defined by ``starting_time`` + ``per_user_time``) and
 the contest time window (as defined by ``end_time``) by the value of
 ``extra_time``, but only for that contestant. Therefore, setting
 ``extra_time`` to S seconds effectively allows a contestant to use S
-seconds more than before (regardless of the time she started the
+seconds more than before (regardless of the time they started the
 contest).
 
 Again, delay time is similar, but it shifts both contestant and
