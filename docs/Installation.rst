@@ -14,6 +14,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
   .. We need 9.0 because of pg_largeobject_metadata (in drop_db).
 
+* `GNU compiler collection <https://gcc.gnu.org/>`_ (in particular the C compiler ``gcc``);
+
 * `gettext <http://www.gnu.org/software/gettext/>`_ >= 0.18;
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0;
@@ -50,9 +52,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
 
-* `PHP <http://www.php.net>`_ >= 5 (only if you plan to run a contest allowing PHP);
-
-* `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for Importer);
+* `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for some importers);
 
 * `BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_ >= 3.2 (only for running tests);
 
@@ -64,7 +64,17 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Sphinx <http://sphinx-doc.org/>`_ (only for building documentation).
 
-You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``.
+You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``. It is anyway suggested to use Linux kernel version at least 3.8.
+
+Then you require the compilation and execution environments for the languages you will use in your contest:
+
+* `GNU compiler collection <https://gcc.gnu.org/>`_ (for C, C++ and Java, respectively with executables ``gcc``, ``g++`` and ``gcj``);
+
+* `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
+
+* `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
+
+* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php5``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
@@ -83,7 +93,7 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
     # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
     #      python-yaml python-sphinx
 
-On Arch Linux, the following command will install almost all dependencies (three of them can be found in the AUR):
+On Arch Linux, the following command will install almost all dependencies (two of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -92,12 +102,11 @@ On Arch Linux, the following command will install almost all dependencies (three
          python2-psutil python2-netifaces python2-crypto python2-pytz \
          python2-six iso-codes shared-mime-info python2-beautifulsoup3 \
          python2-mechanize python2-mock python2-requests python2-werkzeug \
-         python2-gevent
+         python2-gevent python2-coverage
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
     # https://aur.archlinux.org/packages/sgi-stl-doc/
-    # https://aur.archlinux.org/packages/python2-coverage/
 
     # Optional.
     # sudo pacman -S nginx php php-fpm phppgadmin python2-yaml python-sphinx
@@ -131,6 +140,9 @@ You can verify to be in the group by issuing the command:
 
     groups
 
+.. warning::
+
+   Users in the group ``cmsuser`` will be able to launch the ``isolate`` program with root permission. They may exploit this to gain root privileges. It is then imperative that no untrusted user is allowed in the group ``cmsuser``.
 
 .. _installation_updatingcms:
 
