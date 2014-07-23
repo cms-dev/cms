@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -106,6 +107,14 @@ class Config(object):
         # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
+
+        # PrintingService
+        self.max_print_length = 10000000
+        self.printer = None
+        self.paper_size = "A4"
+        self.max_pages_per_job = 10
+        self.max_jobs_per_user = 10
+        self.pdf_printing_allowed = False
 
         # Installed or from source?
         self.installed = sys.argv[0].startswith("/usr/") and \

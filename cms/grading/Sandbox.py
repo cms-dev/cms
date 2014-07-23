@@ -40,6 +40,7 @@ from gevent import subprocess
 
 from cms import config
 from cms.io.GeventUtils import copyfileobj, rmtree
+from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import monotonic_time
 
 
@@ -64,21 +65,6 @@ def with_log(func):
         return func(self, *args, **kwargs)
 
     return newfunc
-
-
-def pretty_print_cmdline(cmdline):
-    """Pretty print a command line.
-
-    Take a command line suitable to be passed to a Popen-like call and
-    returns a string that represents it in a way that preserves the
-    structure of arguments and can be passed to bash as is.
-
-    More precisely, delimitate every item of the command line with
-    single apstrophes and join all the arguments separating them with
-    spaces.
-
-    """
-    return " ".join(["'%s'" % (x.replace("'", "'\"'\"'")) for x in cmdline])
 
 
 def wait_without_std(procs):

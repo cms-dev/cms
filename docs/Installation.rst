@@ -64,6 +64,14 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Sphinx <http://sphinx-doc.org/>`_ (only for building documentation).
 
+* `TeX Live <https://www.tug.org/texlive/>`_ (only for printing)
+
+* `pycups <http://pypi.python.org/pypi/pycups>`_ (only for printing)
+
+* `a2ps <https://www.gnu.org/software/a2ps/>`_ (only for printing)
+
+* `PyPDF2 <https://pypi.python.org/pypi/PyPDF2>`_ (only for printing)
+
 You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``. It is anyway suggested to use Linux kernel version at least 3.8.
 
 Then you require the compilation and execution environments for the languages you will use in your contest:
@@ -91,7 +99,8 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
 
     # Optional.
     # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
-    #      python-yaml python-sphinx
+    #      python-yaml python-sphinx texlive-latex-base python-cups a2ps
+    # You can install PyPDF2 using Python Package Index.
 
 On Arch Linux, the following command will install almost all dependencies (two of them can be found in the AUR):
 
@@ -109,7 +118,10 @@ On Arch Linux, the following command will install almost all dependencies (two o
     # https://aur.archlinux.org/packages/sgi-stl-doc/
 
     # Optional.
-    # sudo pacman -S nginx php php-fpm phppgadmin python2-yaml python-sphinx
+    # sudo pacman -S nginx php php-fpm phppgadmin python2-yaml python-sphinx \
+    #      texlive-core python2-pycups a2ps
+    # Optionally install the following from AUR.
+    # https://aur.archlinux.org/packages/python2-pypdf2/
 
 If you prefer using Python Package Index, you can retrieve all Python dependencies with this line:
 
