@@ -25,7 +25,8 @@
         "Worker":            [["localhost", 26000], ["localhost", 26001]],
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]],
-        "ProxyService":      [["localhost", 28600]]
+        "ProxyService":      [["localhost", 28600]],
+        "PrintingService":   [["localhost", 25123]]
         },
 
     "other_services":
@@ -137,6 +138,24 @@
     "_help": "you trust.",
     "rankings": ["http://usern4me:passw0rd@localhost:8890/"],
     "https_certfile": null,
+
+
+
+    "_section": "PrintingService",
+
+    "_help": "Maximum size of a print job in bytes.",
+    "max_print_length": 10000000,
+    "_help": "Printer name (can be found out using 'lpstat -p';",
+    "_help": "if null, printing is disabled)",
+    "printer": null,
+    "_help": "Output paper size (probably A4 or Letter)",
+    "paper_size": "A4",
+    "_help": "Maximum number of pages a user can print per print job",
+    "_help": "(excluding the title page). Text files are cropped to this",
+    "_help": "length. Too long pdf files are rejected.",
+    "max_pages_per_job": 10,
+    "max_jobs_per_user": 10,
+    "pdf_printing_allowed": false,
 
 
 

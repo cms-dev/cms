@@ -34,6 +34,8 @@ CMS is composed of several services, that can be run on a single or on many serv
 
 - ProxyService: sends the computed scores to the rankings;
 
+- PrintingService: processes files submitted for printing and sends them to a printer;
+
 - ContestWebServer: the webserver that the contestants will be interacting with;
 
 - AdminWebServer: the webserver to control and modify the parameters of the contests.
