@@ -180,6 +180,11 @@ $(document).ready(function () {
                             <li{% if request.path == '/testing' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/testing">{{ _("Testing") }}</a>
                             </li>
+        {% if printing_enabled %}
+                            <li{% if request.path == '/printing' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/printing">{{ _("Printing") }}</a>
+                            </li>
+        {% end %}
     {% end %}
                         </ul>
                     </div>

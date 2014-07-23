@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"POT-Creation-Date: 2014-07-23 13:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -272,6 +272,32 @@ msgstr ""
 msgid "%(seconds)0.3f s"
 msgstr ""
 
+msgid "Too many print jobs!"
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr ""
+
+msgid "Invalid format!"
+msgstr ""
+
+msgid "File too big!"
+msgstr ""
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr ""
+
+msgid "Print job storage failed!"
+msgstr ""
+
+msgid "Print job received"
+msgstr ""
+
+msgid "Your print job has been received."
+msgstr ""
+
 msgid "%Y-%m-%d"
 msgstr ""
 
@@ -484,6 +510,9 @@ msgstr ""
 msgid "Testing"
 msgstr ""
 
+msgid "Printing"
+msgstr ""
+
 msgid "Contest Management System"
 msgstr ""
 
@@ -676,6 +705,55 @@ msgstr ""
 msgid "No"
 msgstr ""
 
+msgid "Print"
+msgstr ""
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text or PDF files of up to "
+"%(max_pages)d pages each."
+msgstr ""
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"pages each."
+msgstr ""
+
+msgid "File (text or PDF)"
+msgstr ""
+
+msgid "File (text)"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr ""
+
+msgid "Previous print jobs"
+msgstr ""
+
+msgid "Date and time"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "File name"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "no print jobs yet"
+msgstr ""
+
+msgid "Preparing..."
+msgstr ""
+
 msgid "Compilation output"
 msgstr ""
 
@@ -776,9 +854,6 @@ msgstr ""
 msgid "Submit a solution"
 msgstr ""
 
-msgid "Submit"
-msgstr ""
-
 msgid "submission.zip"
 msgstr ""
 
@@ -811,15 +886,6 @@ msgstr ""
 
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
-msgstr ""
-
-msgid "Date and time"
-msgstr ""
-
-msgid "Time"
-msgstr ""
-
-msgid "Status"
 msgstr ""
 
 msgid "Public score"
