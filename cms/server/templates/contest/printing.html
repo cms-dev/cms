@@ -1,0 +1,93 @@
+{% extends base.html %}
+
+{% block core %}
+
+{% from cms.grading import format_status_text %}
+
+<div class="span9 printing">
+
+<div class="page-header">
+    <h1>{{ _("Printing") }}</h1>
+</div>
+
+<h2 style="margin-bottom: 10px">{{ _("Print") }}</h2>
+
+{% if remaining_jobs > 0 %}
+    {% if pdf_printing_allowed %}
+    {{ _("You can print %(remaining_jobs)d more text or PDF files of up to %(max_pages)d pages each.") % {"remaining_jobs": remaining_jobs, "max_pages": max_pages} }}
+    {% else %}
+    {{ _("You can print %(remaining_jobs)d more text files of up to %(max_pages)d pages each.") % {"remaining_jobs": remaining_jobs, "max_pages": max_pages} }}
+    {% end %}
+
+<div id="print" class="row">
+    <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/printing" method="POST">
+        <fieldset>
+            <div class="control-group">
+                <label class="control-label" for="input">{% if pdf_printing_allowed %}{{ _("File (text or PDF)") }}{% else %}{{ _("File (text)") }}{% end %}</label>
+                <div class="controls">
+                    <input type="file" class="input-xlarge" id="input" name="file"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
+                    <button type="reset" class="btn">{{ _("Reset") }}</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+{% else %}
+    {{ _("You cannot print anything any more as you have used up your printing quota.") }}
+{% end %}
+
+
+<h2 style="margin: 40px 0 10px">{{ _("Previous print jobs") }}</h2>
+
+{% from cmscommon.datetime import utc %}
+{% set show_date = any(p.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for p in printjobs) %}
+
+
+<table id="printjob_list" class="table table-bordered table-striped">
+    <colgroup>
+{% if show_date %}
+        <col class="datetime"/>
+{% else %}
+        <col class="time"/>
+{% end %}
+        <col class="filename"/>
+        <col class="status"/>
+    </colgroup>
+    <thead>
+        <tr>
+{% if show_date %}
+            <th class="datetime">{{ _("Date and time") }}</th>
+{% else %}
+            <th class="time">{{ _("Time") }}</th>
+{% end %}
+            <th class="filename">{{ _("File name") }}</th>
+            <th class="status">{{ _("Status") }}</th>
+        </tr>
+    </thead>
+    <tbody>
+{% if len(printjobs) == 0 %}
+        <tr>
+            <td colspan="3" class="no_printjobs">{{ _("no print jobs yet") }}</td>
+        </tr>
+{% else %}
+    {% for p_idx, p in enumerate(sorted(printjobs, key=lambda p: p.timestamp, reverse=True)) %}
+        <tr>
+        {% if show_date %}
+            <td class="datetime">{{ format_datetime(p.timestamp, timezone, locale=locale) }}</td>
+        {% else %}
+            <td class="time">{{ format_time(p.timestamp, timezone, locale=locale) }}</th>
+        {% end %}
+            <td class="filename">{{ p.filename }}</td>
+            <td class="status">{{ format_status_text(p.status) if p.done else _("Preparing...") }}</td>
+        </tr>
+    {% end %}
+{% end %}
+    </tbody>
+</table>
+
+{% end %}
