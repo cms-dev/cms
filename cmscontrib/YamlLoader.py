@@ -516,24 +516,21 @@ class YamlLoader(Loader):
                     splitted = line.split('#', 1)
 
                     if len(splitted) == 1:
-                        # This line represents a testcase, otherwise it's
-                        # just a blank
+                        # This line represents a testcase, otherwise
+                        # it's just a blank
                         if splitted[0] != '':
                             testcases += 1
 
                     else:
                         testcase, comment = splitted
-                        testcase_detected = False
-                        subtask_detected = False
-                        if testcase.strip() != '':
-                            testcase_detected = True
+                        testcase_detected = testcase.strip() != '' or \
+                            comment.startswith("COPY:")
                         comment = comment.strip()
-                        if comment.startswith('ST:'):
-                            subtask_detected = True
+                        subtask_detected = comment.startswith('ST:')
 
                         if testcase_detected and subtask_detected:
-                            raise Exception("No testcase and subtask in the"
-                                            " same line allowed")
+                            raise Exception("No testcase and subtask in"
+                                            " the same line allowed")
 
                         # This line represents a testcase and contains a
                         # comment, but the comment doesn't start a new
