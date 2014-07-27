@@ -1,0 +1,15 @@
+{% from cmscommon.tex import escape_tex_normal, escape_tex_tt %}
+\documentclass[12pt,oneside,{{ paper_size.lower() }}paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry} % page borders
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+\vspace*{\fill}
+{\Huge \bfseries {{ escape_tex_normal(user.username) }}\\[3mm]({{ escape_tex_normal(user.first_name) }} {{ escape_tex_normal(user.last_name) }})}\\[1cm]
+{\Large {{ escape_tex_normal(timestr) }} }\\[1cm]
+{\Large \tt {{ escape_tex_tt(filename) }} }\\[2cm]
+{\large {{ page_count }} pages}
+\vspace*{\fill}
+\end{center}
+\end{document}
