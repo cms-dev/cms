@@ -1833,7 +1833,7 @@ class PrintingHandler(BaseHandler):
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.user == self.current_user).all()
 
-        remaining_jobs = max(0, config.max_jobs_per_user-len(printjobs))
+        remaining_jobs = max(0, config.max_jobs_per_user - len(printjobs))
 
         self.render("printing.html",
                     printjobs=printjobs,
@@ -1864,19 +1864,9 @@ class PrintingHandler(BaseHandler):
             return
 
         # Ensure that the user did not submit multiple files with the
-        # same name.
-        if any(len(filename) != 1 for filename in self.request.files.values()):
-            self.application.service.add_notification(
-                self.current_user.username,
-                self.timestamp,
-                self._("Invalid format!"),
-                self._("Please select the correct files."),
-                ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/printing")
-            return
-
-        # This ensure that the user sent exactly one file.
-        if set(self.request.files.keys()) != set(["file"]):
+        # same name and that the user sent exactly one file.
+        if any(len(filename) != 1 for filename in self.request.files.values()) \
+                or set(self.request.files.keys()) != set(["file"]):
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1889,7 +1879,7 @@ class PrintingHandler(BaseHandler):
         filename = self.request.files["file"][0]["filename"]
         data = self.request.files["file"][0]["body"]
 
-        # Check if submitted files are small enough.
+        # Check if submitted file is small enough.
         if len(data) > config.max_print_length:
             self.application.service.add_notification(
                 self.current_user.username,
@@ -1901,7 +1891,7 @@ class PrintingHandler(BaseHandler):
             self.redirect("/printing")
             return
 
-        # We now have to send all the files to the destination...
+        # We now have to send the file to the destination...
         try:
             digest = self.application.service.file_cacher.put_file_content(
                 data,
@@ -1921,8 +1911,8 @@ class PrintingHandler(BaseHandler):
             self.redirect("/printing")
             return
 
-        # All the files are stored, ready to submit!
-        logger.info("All files stored for print job sent by %s" %
+        # The file is stored, ready to submit!
+        logger.info("File stored for print job sent by %s" %
                     self.current_user.username)
 
         printjob = PrintJob(timestamp=self.timestamp,
