@@ -21,6 +21,10 @@
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import cups
 import json
 import logging
@@ -41,6 +45,7 @@ from cms.io import Service, rpc_method
 from cms.io.GeventUtils import rmtree
 from cms.db import SessionGen, PrintJob
 from cms.server import format_datetime
+from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import get_timezone
 
 
@@ -50,21 +55,6 @@ logger = logging.getLogger(__name__)
 # Dummy function to mark translatable string.
 def N_(message):
     return message
-
-
-def pretty_print_cmdline(cmdline):
-    """Pretty print a command line.
-
-    Take a command line suitable to be passed to a Popen-like call and
-    returns a string that represents it in a way that preserves the
-    structure of arguments and can be passed to bash as is.
-
-    More precisely, delimitate every item of the command line with
-    single apstrophes and join all the arguments separating them with
-    spaces.
-
-    """
-    return " ".join(["'%s'" % (x) for x in cmdline])
 
 
 class PrintingService(Service):
@@ -81,7 +71,7 @@ class PrintingService(Service):
     """
 
     # How often we look for printing jobs.
-    SWEEPER_TIMEOUT = 347.0
+    SWEEPER_TIMEOUT = 61.0
 
     def __init__(self, shard):
         """Initialize the PrintingService.
@@ -99,7 +89,7 @@ class PrintingService(Service):
                                     "templates", "printing")
         self.template_loader = template.Loader(template_dir, autoescape=None)
 
-        # Set up and spawn the scorer.
+        # Set up and spawn the printer handler.
         # TODO Link to greenlet: when it dies, log CRITICAL and exit.
         self._printer_queue = JoinableQueue()
         gevent.spawn(self._printer_loop)
@@ -115,8 +105,8 @@ class PrintingService(Service):
 
         This is an infinite loop that, at each iteration, gets an item
         from the queue (blocking until there is one, if the queue is
-        empty) and scores it. Any error during the scoring is sent to
-        the logger and then suppressed, because the loop must go on.
+        empty) and prints it. Any error during the printing preparation is sent
+        to the logger and then suppressed, because the loop must go on.
 
         """
         while True:
@@ -153,7 +143,7 @@ class PrintingService(Service):
 
             # Check if it's ready to be printed.
             if printjob.done:
-                logger.info("Print job %d is already sent to the printer.",
+                logger.info("Print job %d was already sent to the printer.",
                             printjob_id)
 
             directory = tempfile.mkdtemp(dir=config.temp_dir)
@@ -192,7 +182,7 @@ class PrintingService(Service):
                         "(error %d)" % (pretty_print_cmdline(cmd), ret))
 
                 if not os.path.exists(source_ps):
-                    logger.info("Invalid print file.")
+                    logger.warning("Unable to convert from text to ps.")
                     printjob.done = True
                     printjob.status = json.dumps([
                         N_("Invalid file")])
@@ -310,7 +300,7 @@ class PrintingService(Service):
 
         with SessionGen() as session:
             for pj in session.query(PrintJob) \
-                    .filter(PrintJob.done == False).all():
+                    .filter(PrintJob.done == False).all():  # noqa
                 self._printer_queue.put(pj.id)
                 counter += 1
 

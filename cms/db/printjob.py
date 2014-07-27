@@ -22,6 +22,8 @@
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Unicode, DateTime, Boolean
