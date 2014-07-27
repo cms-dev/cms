@@ -18,28 +18,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+
+REPLACEMENTS = {"&": r"\&{}",
+                "%": r"\%{}",
+                "$": r"\${}",
+                "#": r"\#{}",
+                "_": r"\_{}",
+                "{": r"\{{}",
+                "}": r"\}{}",
+                "~": r"\textasciitilde{}",
+                "^": r"\textasciicircum{}",
+                "\\": r"\textbackslash{}"}
 
 
 def escape_tex_normal(string):
     """Escape a string for use inside latex.
 
     string (unicode): string to escape
-    returns (unicode): escaped string
+    return (unicode): escaped string
 
     """
     def repc(c):
-        rep = {"&": r"\&{}",
-               "%": r"\%{}",
-               "$": r"\${}",
-               "#": r"\#{}",
-               "_": r"\_{}",
-               "{": r"\{{}",
-               "}": r"\}{}",
-               "~": r"\textasciitilde{}",
-               "^": r"\textasciicircum{}",
-               "\\": r"\textbackslash{}"}
-        if c in rep:
-            return rep[c]
+        if c in REPLACEMENTS:
+            return REPLACEMENTS[c]
         else:
             return c
     return "".join(repc(c) for c in string)
@@ -49,12 +53,11 @@ def escape_tex_tt(string):
     """Escape a string for use inside latex with \texttt.
 
     string (unicode): string to escape
-    returns (unicode): escaped string
+    return (unicode): escaped string
 
     """
     def repc(c):
-        rep = set("&%$#_{}~^\\")
-        if c in rep:
+        if c in REPLACEMENTS:
             return "\\char\"%02X{}" % ord(c)
         else:
             return c
