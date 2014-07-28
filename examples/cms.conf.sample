@@ -145,11 +145,14 @@
 
     "_help": "Maximum size of a print job in bytes.",
     "max_print_length": 10000000,
+
     "_help": "Printer name (can be found out using 'lpstat -p';",
     "_help": "if null, printing is disabled)",
     "printer": null,
+
     "_help": "Output paper size (probably A4 or Letter)",
     "paper_size": "A4",
+
     "_help": "Maximum number of pages a user can print per print job",
     "_help": "(excluding the title page). Text files are cropped to this",
     "_help": "length. Too long pdf files are rejected.",
