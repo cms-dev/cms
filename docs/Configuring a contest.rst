@@ -134,4 +134,17 @@ It is possible to limit the set of programming languages available to contestant
 
 Contestants may be also allowed to use Java, Python and PHP, but these languages have only been tested for Batch tasks, and have not been thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
 
-Java programs are first compiled using ``gcj``, and then run as normal executables. For Python, the contestants' programs are interpreted using Python 2 (you need to have ``/usr/bin/python2``). To use Python 3, you need to modify the CMS code following the instructions in :file:`cms/grading/__init__.py`. For PHP, you need to have ``/usr/bin/php5``.
+Language details
+----------------
+
+* Pascal support is provided by ``fpc``, and submissions are optimized with ``-O2``.
+
+* C/C++ support is provided by the GNU Compiler Collection. Submissions are optimized with ``-O2``. The standards used by default by CMS are gnu90 for C (that is, C90 with the GNU extension, the default for ``gcc``) and C++11 for C++. Note that C++11 support in ``g++`` is still incomplete and experimental. Please refer to the `C++11 Support in GCC <https://gcc.gnu.org/projects/cxx0x.html>`_ page for more information.
+
+* Java programs are first compiled using ``gcj`` (optimized with ``-O3``), and then run as normal executables.
+
+* Python submissions are interpreted using Python 2 (you need to have ``/usr/bin/python2``).
+
+* PHP submissions are interpreted by ``/usr/bin/php5``.
+
+The compilation lines can be inspected and amended in :file:`cms/grading/__init__.py` (there is no way of configuring them apart from changing the source code). Possible amendments are changing the Python version from 2 to 3 (there are instructions in the file on how to do it) or changing the standard used by the GCC.
