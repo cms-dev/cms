@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -51,7 +51,8 @@ from cms.log import root_logger, shell_handler, ServiceFilter, \
     CustomFormatter, LogServiceHandler, FileHandler
 from cmscommon.datetime import monotonic_time
 
-from .rpc import rpc_method, RemoteServiceServer, RemoteServiceClient
+from .rpc import rpc_method, RemoteServiceServer, RemoteServiceClient, \
+    FakeRemoteServiceClient
 
 
 logger = logging.getLogger(__name__)
@@ -172,7 +173,8 @@ class Service(object):
         remote_service = RemoteServiceServer(self, address)
         remote_service.handle(sock)
 
-    def connect_to(self, coord, on_connect=None, on_disconnect=None):
+    def connect_to(self, coord, on_connect=None, on_disconnect=None,
+                   must_be_present=True):
         """Return a proxy to a remote service.
 
         Obtain a communication channel to the remote service at the
@@ -184,12 +186,25 @@ class Service(object):
             connects.
         on_disconnect (function|None): to be called when it
             disconnects.
+        must_be_present (bool): if True, the coord must be present in
+            the configuration; otherwise, it can be missing and in
+            that case the return value is a fake client (that is, a
+            client that never connects and ignores all calls).
 
         return (RemoteServiceClient): a proxy to that service.
 
         """
         if coord not in self.remote_services:
-            service = RemoteServiceClient(coord, auto_retry=0.5)
+            try:
+                service = RemoteServiceClient(coord, auto_retry=0.5)
+            except KeyError as error:
+                # If the coordinates are invalid, raise that error if
+                # the service was needed, or return a dummy client if
+                # the service was optional.
+                if must_be_present:
+                    raise error
+                else:
+                    service = FakeRemoteServiceClient(coord, None)
             service.connect()
             self.remote_services[coord] = service
         else:

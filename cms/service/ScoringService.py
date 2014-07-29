@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -35,7 +35,7 @@ import gevent
 from gevent.queue import JoinableQueue
 from gevent.event import Event
 
-from cms import ServiceCoord
+from cms import ServiceCoord, config
 from cms.io import Service, rpc_method
 from cms.db import SessionGen, Submission, Dataset
 from cms.grading.scoretypes import get_score_type
@@ -77,7 +77,10 @@ class ScoringService(Service):
         Service.__init__(self, shard)
 
         # Set up communication with ProxyService.
-        self.proxy_service = self.connect_to(ServiceCoord("ProxyService", 0))
+        ranking_enabled = len(config.rankings) > 0
+        self.proxy_service = self.connect_to(
+            ServiceCoord("ProxyService", 0),
+            must_be_present=ranking_enabled)
 
         # Set up and spawn the scorer.
         # TODO Link to greenlet: when it dies, log CRITICAL and exit.
