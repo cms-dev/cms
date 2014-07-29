@@ -41,7 +41,7 @@ import requests.exceptions
 from urlparse import urljoin, urlsplit
 
 from cms import config
-from cms.io import Service, rpc_method
+from cms.io import Executor, QueueItem, TriggeredService, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
 from cms.grading.scoretypes import get_score_type
 from cmscommon.datetime import make_timestamp
@@ -101,8 +101,17 @@ def safe_put_data(ranking, resource, data, operation):
         raise CannotSendError(msg)
 
 
-class RankingProxy(object):
+class ProxyOperation(QueueItem):
+    def __init__(self, type_, data):
+        self.type_ = type_
+        self.data = data
 
+    def __str__(self):
+        return "sending data of type %s to ranking" % (
+            self.type_)
+
+
+class ProxyExecutor(Executor):
     """A thread that sends data to one ranking.
 
     The object is used as a thread-local storage and its run method is
@@ -151,10 +160,11 @@ class RankingProxy(object):
             supposed to listen.
 
         """
-        self.ranking = ranking
-        self.data_queue = gevent.queue.Queue()
+        super(ProxyExecutor, self).__init__(batch_executions=True)
 
-    def run(self):
+        self._ranking = ranking
+
+    def execute(self, entries):
         """Consume (i.e. send) the data put in the queue, forever.
 
         Pick all operations found in the queue (if there aren't any,
@@ -168,53 +178,42 @@ class RankingProxy(object):
         (queue fetch, request send, failure wait, etc.). Since the
         queue is joinable, also notify when the fetched jobs are done.
 
+        entries ([QueueEntry]): entries containing the operations to
+            perform.
+
         """
         # The cumulative data that we will try to send to the ranking,
         # built by combining items in the queue.
         data = list(dict() for i in xrange(self.TYPE_COUNT))
 
-        while True:
-            # If we don't have anything left to do, block until we get
-            # something new.
-            if sum(len(data[i]) for i in xrange(self.TYPE_COUNT)) == 0:
-                self.data_queue.peek()
+        for entry in entries:
+            data[entry.item.type_].update(entry.item.data)
 
-            try:
-                while True:
-                    # Get other data if it's immediately available.
-                    item = self.data_queue.get_nowait()
+        try:
+            for i in xrange(self.TYPE_COUNT):
+                # Send entities of type i.
+                if len(data[i]) > 0:
+                    # We abuse the resource path as the English
+                    # (plural) name for the entity type.
+                    name = self.RESOURCE_PATHS[i]
+                    operation = "sending %s to ranking %s" % (name,
+                                                              self._ranking)
 
-                    # Merge this item with the cumulative data.
-                    data[item[0]].update(item[1])
-            except gevent.queue.Empty:
-                pass
+                    logger.debug(operation.capitalize())
+                    safe_put_data(
+                        self._ranking, b"%s/" % name, data[i], operation)
+                    data[i].clear()
 
-            try:
-                for i in xrange(self.TYPE_COUNT):
-                    # Send entities of type i.
-                    if len(data[i]) > 0:
-                        # XXX We abuse the resource path as the english
-                        # (plural) name for the entity type.
-                        name = self.RESOURCE_PATHS[i]
-                        operation = \
-                            "sending %s to ranking %s" % (name, self.ranking)
-
-                        logger.debug(operation.capitalize())
-                        safe_put_data(
-                            self.ranking, b"%s/" % name, data[i], operation)
-                        data[i].clear()
-
-            except CannotSendError:
-                # A log message has already been produced.
-                gevent.sleep(self.FAILURE_WAIT)
-            except:
-                # Whoa! That's unexpected!
-                logger.error("Unexpected error.", exc_info=True)
-                gevent.sleep(self.FAILURE_WAIT)
+        except CannotSendError:
+            # A log message has already been produced.
+            gevent.sleep(self.FAILURE_WAIT)
+        except:
+            # Whoa! That's unexpected!
+            logger.error("Unexpected error.", exc_info=True)
+            gevent.sleep(self.FAILURE_WAIT)
 
 
-class ProxyService(Service):
-
+class ProxyService(TriggeredService):
     """Maintain the information held by rankings up-to-date.
 
     Discover (by receiving notifications and by periodically sweeping
@@ -232,9 +231,6 @@ class ProxyService(Service):
 
     """
 
-    # How often we look for submission not scored/tokened.
-    JOBS_NOT_DONE_CHECK_TIME = 347.0
-
     def __init__(self, shard, contest_id):
         """Start the service with the given parameters.
 
@@ -249,43 +245,31 @@ class ProxyService(Service):
         contest_id (int): the ID of the contest to manage.
 
         """
-        Service.__init__(self, shard)
+        super(ProxyService, self).__init__(shard)
 
         self.contest_id = contest_id
 
-        # Store what data we already sent to rankings. This is to aid
-        # search_jobs_not_done determine what data we didn't send yet.
+        # Store what data we already sent to rankings, to avoid
+        # sending it twice.
         self.scores_sent_to_rankings = set()
         self.tokens_sent_to_rankings = set()
 
-        # Create and spawn threads to send data to rankings.
+        # Create one executor for each ranking.
         self.rankings = list()
         for ranking in config.rankings:
-            proxy = RankingProxy(ranking.encode('utf-8'))
-            gevent.spawn(proxy.run)
-            self.rankings.append(proxy)
+            self.add_executor(ProxyExecutor(ranking.encode('utf-8')))
 
         # Send some initial data to rankings.
         self.initialize()
 
-        self.add_timeout(self.search_jobs_not_done, None,
-                         ProxyService.JOBS_NOT_DONE_CHECK_TIME,
-                         immediately=True)
+    def _sweeper_timeout(self):
+        return 347.0
 
-    @rpc_method
-    def search_jobs_not_done(self):
-        """Sweep the database and search for work to do.
-
-        Iterate over all submissions and look if they are in a suitable
-        status to be sent (scored and not hidden) but, for some reason,
-        haven't been sent yet (that is, their ID doesn't appear in the
-        *_sent_to_rankings sets). In case, arrange for them to be sent.
+    def _missing_operations(self):
+        """Return a generator of data to be sent to the rankings..
 
         """
-        logger.info("Going to search for unsent subchanges.")
-
-        job_count = 0
-
+        counter = 0
         with SessionGen() as session:
             contest = Contest.get_from_id(self.contest_id, session)
 
@@ -295,15 +279,17 @@ class ProxyService(Service):
 
                 if submission.get_result().scored() and \
                         submission.id not in self.scores_sent_to_rankings:
-                    self.send_score(submission)
-                    job_count += 1
+                    for operation in self.operations_for_score(submission):
+                        self.enqueue(operation)
+                        counter += 1
 
                 if submission.tokened() and \
                         submission.id not in self.tokens_sent_to_rankings:
-                    self.send_token(submission)
-                    job_count += 1
+                    for operation in self.operations_for_token(submission):
+                        self.enqueue(operation)
+                        counter += 1
 
-        logger.info("Found %d unsent subchanges." % job_count)
+        return counter
 
     def initialize(self):
         """Send basic data to all the rankings.
@@ -322,7 +308,7 @@ class ProxyService(Service):
 
             if contest is None:
                 logger.error("Received request for unexistent contest "
-                             "id %s." % self.contest_id)
+                             "id %s.", self.contest_id)
                 raise KeyError("Contest not found.")
 
             contest_id = encode_id(contest.name)
@@ -354,13 +340,12 @@ class ProxyService(Service):
                      "extra_headers": score_type.ranking_headers,
                      "score_precision": task.score_precision}
 
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.CONTEST_TYPE,
+        self.enqueue(ProxyOperation(ProxyExecutor.CONTEST_TYPE,
                                     {contest_id: contest_data}))
-            ranking.data_queue.put((ranking.USER_TYPE, users))
-            ranking.data_queue.put((ranking.TASK_TYPE, tasks))
+        self.enqueue(ProxyOperation(ProxyExecutor.USER_TYPE, users))
+        self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks))
 
-    def send_score(self, submission):
+    def operations_for_score(self, submission):
         """Send the score for the given submission to all rankings.
 
         Put the submission and its score subchange in all the proxy
@@ -382,23 +367,22 @@ class ProxyService(Service):
             "submission": submission_id,
             "time": int(make_timestamp(submission.timestamp))}
 
-        # XXX This check is probably useless.
+        # This check is probably useless.
         if submission_result is not None and submission_result.scored():
             # We're sending the unrounded score to RWS
             subchange_data["score"] = submission_result.score
             subchange_data["extra"] = \
                 json.loads(submission_result.ranking_score_details)
 
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {submission_id: submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
-
         self.scores_sent_to_rankings.add(submission.id)
 
-    def send_token(self, submission):
+        return [
+            ProxyOperation(ProxyExecutor.SUBMISSION_TYPE,
+                           {submission_id: submission_data}),
+            ProxyOperation(ProxyExecutor.SUBCHANGE_TYPE,
+                           {subchange_id: subchange_data})]
+
+    def operations_for_token(self, submission):
         """Send the token for the given submission to all rankings.
 
         Put the submission and its token subchange in all the proxy
@@ -419,14 +403,13 @@ class ProxyService(Service):
             "time": int(make_timestamp(submission.token.timestamp)),
             "token": True}
 
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {submission_id: submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
-
         self.tokens_sent_to_rankings.add(submission.id)
+
+        return [
+            ProxyOperation(ProxyExecutor.SUBMISSION_TYPE,
+                           {submission_id: submission_data}),
+            ProxyOperation(ProxyExecutor.SUBCHANGE_TYPE,
+                           {subchange_id: subchange_data})]
 
     @rpc_method
     def reinitialize(self):
@@ -457,16 +440,17 @@ class ProxyService(Service):
 
             if submission is None:
                 logger.error("[submission_scored] Received score request for "
-                             "unexistent submission id %s." % submission_id)
+                             "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
             if submission.user.hidden:
                 logger.info("[submission_scored] Score for submission %d "
-                            "not sent because user is hidden." % submission_id)
+                            "not sent because user is hidden.", submission_id)
                 return
 
             # Update RWS.
-            self.send_score(submission)
+            for operation in self.operations_for_score(submission):
+                self.enqueue(operation)
 
     @rpc_method
     def submission_tokened(self, submission_id):
@@ -484,16 +468,17 @@ class ProxyService(Service):
 
             if submission is None:
                 logger.error("[submission_tokened] Received token request for "
-                             "unexistent submission id %s." % submission_id)
+                             "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
             if submission.user.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
-                            "not sent because user is hidden." % submission_id)
+                            "not sent because user is hidden.", submission_id)
                 return
 
             # Update RWS.
-            self.send_token(submission)
+            for operation in self.operations_for_token(submission):
+                self.enqueue(operation)
 
     @rpc_method
     def dataset_updated(self, task_id):
@@ -513,8 +498,8 @@ class ProxyService(Service):
             task = Task.get_from_id(task_id, session)
             dataset = task.active_dataset
 
-            logger.info("Dataset update for task %d (dataset now is %d)." % (
-                task.id, dataset.id))
+            logger.info("Dataset update for task %d (dataset now is %d).",
+                        task.id, dataset.id)
 
             # max_score and/or extra_headers might have changed.
             self.reinitialize()
@@ -523,4 +508,5 @@ class ProxyService(Service):
                 # Update RWS.
                 if not submission.user.hidden and \
                         submission.get_result().scored():
-                    self.send_score(submission)
+                    for operation in self.operations_for_score(submission):
+                        self.enqueue(operation)
