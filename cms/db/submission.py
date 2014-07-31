@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -86,6 +87,17 @@ class Submission(Base):
     language = Column(
         String,
         nullable=True)
+
+    # Comment from the administrator on the submission.
+    comment = Column(
+        Unicode,
+        nullable=False,
+        default="")
+
+    @property
+    def short_comment(self):
+        """The first line of the comment."""
+        return self.comment.split("\n", 1)[0]
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
