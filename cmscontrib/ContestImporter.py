@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -41,9 +42,6 @@ import io
 import json
 import logging
 import os
-import tarfile
-import tempfile
-import zipfile
 from datetime import timedelta
 
 from sqlalchemy.types import \
@@ -60,6 +58,7 @@ from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.datetime import make_datetime
+from cmscommon.archive import Archive
 
 
 logger = logging.getLogger(__name__)
@@ -116,46 +115,19 @@ class ContestImporter(object):
         """Run the actual import code."""
         logger.info("Starting import.")
 
-        if not os.path.isdir(self.import_source):
-            if self.import_source.endswith(".zip"):
-                archive = zipfile.ZipFile(self.import_source, "r")
-                file_names = archive.namelist()
+        archive = None
+        if Archive.is_supported(self.import_source):
+            archive = Archive(self.import_source)
+            self.import_dir = archive.unpack()
 
-                self.import_dir = tempfile.mkdtemp()
-                archive.extractall(self.import_dir)
-            elif self.import_source.endswith(".tar.gz") \
-                    or self.import_source.endswith(".tgz") \
-                    or self.import_source.endswith(".tar.bz2") \
-                    or self.import_source.endswith(".tbz2") \
-                    or self.import_source.endswith(".tar"):
-                archive = tarfile.open(name=self.import_source)
-                file_names = archive.getnames()
-            elif self.import_source.endswith(".tar.xz") \
-                    or self.import_source.endswith(".txz"):
-                try:
-                    import lzma
-                except ImportError:
-                    logger.critical("LZMA compression format not "
-                                    "supported. Please install package "
-                                    "lzma.")
-                    return False
-                archive = tarfile.open(
-                    fileobj=lzma.LZMAFile(self.import_source))
-                file_names = archive.getnames()
-            else:
-                logger.critical("Unable to import from %s." %
-                                self.import_source)
-                return False
-
-            root = find_root_of_archive(file_names)
-            if root is None:
+            file_names = os.listdir(self.import_dir)
+            if len(file_names) != 1:
                 logger.critical("Cannot find a root directory in %s." %
                                 self.import_source)
+                archive.cleanup()
                 return False
 
-            self.import_dir = tempfile.mkdtemp()
-            archive.extractall(self.import_dir)
-            self.import_dir = os.path.join(self.import_dir, root)
+            self.import_dir = os.path.join(self.import_dir, file_names[0])
 
         if self.drop:
             logger.info("Dropping and recreating the database.")
@@ -311,6 +283,10 @@ class ContestImporter(object):
                                         "from the database." % file_)
                         # TODO: remove contest from the database.
                         return False
+
+        # Clean up, if an archive was used
+        if archive is not None:
+            archive.cleanup()
 
         if contest_id is not None:
             logger.info("Import finished (contest id: %s)." %
