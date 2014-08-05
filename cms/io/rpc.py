@@ -679,9 +679,9 @@ class FakeRemoteServiceClient(RemoteServiceClient):
         """
         RemoteServiceBase.__init__(self, Address("None", 0))
         self.remote_service_coord = remote_service_coord
-        self.auto_retry = auto_retry
         self.pending_outgoing_requests = dict()
         self.pending_outgoing_requests_results = dict()
+        self.auto_retry = auto_retry
 
     def connect(self):
         """Do nothing, as this is a fake client."""
@@ -692,9 +692,7 @@ class FakeRemoteServiceClient(RemoteServiceClient):
         pass
 
     def execute_rpc(self, method, data):
-        """Just return an AsyncResult encoding an error.
-
-        """
+        """Just return an AsyncResult encoding an error."""
         result = gevent.event.AsyncResult()
         result.set_exception(
             RPCError("Called a method of a non-configured service."))

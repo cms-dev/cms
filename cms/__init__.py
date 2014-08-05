@@ -41,13 +41,14 @@ __all__ = [
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
-    "mkdir", "utf8_decoder", "Address", "ServiceCoord", "get_safe_shard",
-    "get_service_address", "get_service_shards", "default_argument_parser",
+    "ConfigError", "mkdir", "utf8_decoder", "Address", "ServiceCoord",
+    "get_safe_shard", "get_service_address", "get_service_shards",
+    "default_argument_parser",
     # conf
-    "ConfigError", "config",
+    "config",
     # plugin
     "plugin_list", "plugin_lookup",
-    ]
+]
 
 
 # Instantiate or import these objects.
@@ -103,8 +104,8 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
 }
 
 
-from .util import Address, ConfigError, ServiceCoord, \
-    mkdir, utf8_decoder, default_argument_parser, \
-    get_safe_shard, get_service_address, get_service_shards
+from .util import ConfigError, mkdir, utf8_decoder, Address, ServiceCoord, \
+    get_safe_shard, get_service_address, get_service_shards, \
+    default_argument_parser
 from .conf import config
 from .plugin import plugin_list, plugin_lookup
