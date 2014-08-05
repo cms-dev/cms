@@ -238,7 +238,7 @@ def build():
     """
     print("compiling isolate...")
     os.chdir("isolate")
-    os.system(os.path.join(".", "compile.sh"))
+    os.system("make")
     os.chdir("..")
 
     print("compiling localization files:")
