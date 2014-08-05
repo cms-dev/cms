@@ -27,6 +27,16 @@ master branch, is intended for developers and everyone interested in
 contributing or just curious to see how the code works and wanting to
 hack on it.
 
+Please note that since the sandbox is contained in a [git submodule]
+(http://git-scm.com/docs/git-submodule) you need to run the following
+commands (from inside the repository, after you have cloned it) to
+obtain it:
+
+```bash
+git submodule init
+git submodule update
+```
+
 
 Support
 -------
