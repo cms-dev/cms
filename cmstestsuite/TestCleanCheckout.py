@@ -59,6 +59,8 @@ def setup_cms():
     info("Checking out code.")
     sh(["git", "clone", CONFIG["GIT_ORIGIN"], CONFIG["TEST_DIR"]])
     os.chdir("%(TEST_DIR)s" % CONFIG)
+    sh(["git", "submodule", "init"])
+    sh(["git", "submodule", "update"])
     sh(["git", "checkout", CONFIG["GIT_REVISION"]])
 
     info("Configuring CMS.")
