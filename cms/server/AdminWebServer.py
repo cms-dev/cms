@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -1356,14 +1357,14 @@ class AddTestcasesHandler(BaseHandler):
                     match = input_re.match(filename)
                     if match:
                         codename = match.group(1)
-                        if not codename in tests:
+                        if codename not in tests:
                             tests[codename] = [None, None]
                         tests[codename][0] = filename
                     else:
                         match = output_re.match(filename)
                         if match:
                             codename = match.group(1)
-                            if not codename in tests:
+                            if codename not in tests:
                                 tests[codename] = [None, None]
                             tests[codename][1] = filename
 
@@ -1433,7 +1434,7 @@ class AddTestcasesHandler(BaseHandler):
                             "")
                         self.redirect("/add_testcases/%s" % dataset_id)
                         return
-                    if not codename in overwritten_tc:
+                    if codename not in overwritten_tc:
                         added_tc.append(codename)
         except zipfile.BadZipfile:
             self.application.service.add_notification(
@@ -1881,6 +1882,36 @@ class SubmissionFileHandler(FileHandler):
         self.fetch(digest, "text/plain", real_filename)
 
 
+class SubmissionCommentHandler(BaseHandler):
+    """Called when the admin comments on a submission.
+
+    """
+    def post(self, submission_id, dataset_id=None):
+        submission = self.safe_get_item(Submission, submission_id)
+
+        try:
+            attrs = {"comment": submission.comment}
+            self.get_string(attrs, "comment")
+            submission.set_attrs(attrs)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            if dataset_id is None:
+                self.redirect("/submission/%s" % submission_id)
+            else:
+                self.redirect("/submission/%s/%s" % (submission_id,
+                                                     dataset_id))
+            return
+
+        try_commit(self.sql_session, self)
+        if dataset_id is None:
+            self.redirect("/submission/%s" % submission_id)
+        else:
+            self.redirect("/submission/%s/%s" % (submission_id,
+                                                 dataset_id))
+
+
 class QuestionsHandler(BaseHandler):
     """Page to see and send messages to all the contestants.
 
@@ -2048,6 +2079,7 @@ _aws_handlers = [
     (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionViewHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
+    (r"/submission_comment/([0-9]+)(?:/([0-9]+))?", SubmissionCommentHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
     (r"/message/([0-9]+)", MessageHandler),
     (r"/question/([0-9]+)", QuestionReplyHandler),

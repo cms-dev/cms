@@ -112,6 +112,16 @@
 
 </div>
 
+<h2 id="title_comment" class="toggling_on">Comment</h2>
+
+<div id="comment">
+  <form enctype="multipart/form-data" action="{{ url_root }}/submission_comment/{{ s.id }}/{{ shown_dataset.id }}" method="POST">
+    <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea></br>
+    <input type="submit"/>
+    <input type="reset" value="Reset" />
+  </form>
+</div>
+
   {% if sr is not None and sr.scored() %}
 
 <h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
