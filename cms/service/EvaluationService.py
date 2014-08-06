@@ -198,11 +198,11 @@ def jqe_check(jqe):
         if jqe.job_type == EvaluationService.JOB_TYPE_COMPILATION:
             submission = Submission.get_from_id(jqe.object_id, session)
             submission_result = submission.get_result_or_create(dataset)
-            return to_compile(submission_result)
+            return submission_to_compile(submission_result)
         elif jqe.job_type == EvaluationService.JOB_TYPE_EVALUATION:
             submission = Submission.get_from_id(jqe.object_id, session)
             submission_result = submission.get_result_or_create(dataset)
-            return to_evaluate(submission_result)
+            return submission_to_evaluate(submission_result)
         elif jqe.job_type == EvaluationService.JOB_TYPE_TEST_COMPILATION:
             user_test = UserTest.get_from_id(jqe.object_id, session)
             user_test_result = user_test.get_result_or_create(dataset)
