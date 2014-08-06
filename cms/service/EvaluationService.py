@@ -721,6 +721,12 @@ class WorkerPool(object):
 
 
 def with_post_finish_lock(func):
+    """Decorator for locking on self.post_finish_lock.
+
+    Ensures that no more than one decorated function is executing at
+    the same time.
+
+    """
     @wraps(func)
     def wrapped(self, *args, **kwargs):
         with self.post_finish_lock:
