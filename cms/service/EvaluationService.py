@@ -110,6 +110,13 @@ def user_test_to_evaluate(user_test_result):
 
 
 def submission_get_jobs(submission):
+    """Iterate over all the jobs that a submission would like to enqueue.
+
+    submission (Submission): a submission.
+
+    ??
+
+    """
     for dataset in get_datasets_to_judge(submission.task):
         submission_result = submission.get_result_or_create(dataset)
         if submission_to_compile(submission_result):
@@ -136,6 +143,13 @@ def submission_get_jobs(submission):
 
 
 def user_test_get_jobs(user_test):
+    """Iterate over all the jobs that a user test would like to enqueue.
+
+    user_test (UserTest): a user test.
+
+    ??
+
+    """
     for dataset in get_datasets_to_judge(user_test.task):
         user_test_result = user_test.get_result_or_create(dataset)
         if user_test_to_compile(user_test_result):
@@ -785,6 +799,15 @@ class EvaluationService(Service):
                          immediately=True)
 
     def submission_enqueue_jobs(self, submission, check_again=False):
+        """Push in queue the jobs required by a submission.
+
+        submission (Submission): a submission.
+        check_again (bool): whether or not to run jqe_check() on the
+            job.
+
+        return (int): the number of actually enqueued jobs.
+
+        """
         new_jobs = 0
         for job, priority, timestamp in submission_get_jobs(submission):
             if self.push_in_queue(job, priority, timestamp,
@@ -794,6 +817,15 @@ class EvaluationService(Service):
         return new_jobs
 
     def user_test_enqueue_jobs(self, user_test, check_again=False):
+        """Push in queue the jobs required by a user test.
+
+        user_test (UserTest): a user test.
+        check_again (bool): whether or not to run jqe_check() on the
+            job.
+
+        return (int): the number of actually enqueued jobs.
+
+        """
         new_jobs = 0
         for job, priority, timestamp in user_test_get_jobs(user_test):
             if self.push_in_queue(job, priority, timestamp,
@@ -1025,7 +1057,8 @@ class EvaluationService(Service):
         job (JobQueueEntry): the job to put in the queue.
         priority (int): the priority of the job.
         timestamp (datetime): the time of the submission.
-        check_again (bool): whether or not to run jqe_check() on the job.
+        check_again (bool): whether or not to run jqe_check() on the
+            job.
 
         return (bool): True if pushed, False if not.
 
