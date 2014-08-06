@@ -510,7 +510,7 @@ class WorkerPool(object):
             assigned to the job otherwise.
 
         """
-        # We look for an available worker
+        # We look for an available worker.
         try:
             shard = self.find_worker(WorkerPool.WORKER_INACTIVE,
                                      require_connection=True,
@@ -518,13 +518,13 @@ class WorkerPool(object):
         except LookupError:
             return None
 
-        # Then we fill the info for future memory
+        # Then we fill the info for future memory.
         self._job[shard] = job
         self._start_time[shard] = make_datetime()
         self._side_data[shard] = side_data
         logger.debug("Worker %s acquired." % shard)
 
-        # And finally we ask the worker to do the job
+        # And finally we ask the worker to do the job.
         job_type, object_id, dataset_id = job
         timestamp = side_data[1]
         queue_time = self._start_time[shard] - timestamp
@@ -1207,7 +1207,7 @@ class EvaluationService(Service):
         """
         submission = submission_result.submission
 
-        # If compilation was ok, we emit a satisfied log message
+        # If compilation was ok, we emit a satisfied log message.
         if submission_result.compilation_succeeded():
             logger.info("Submission %d(%d) was compiled successfully." %
                         (submission_result.submission_id,
@@ -1225,7 +1225,7 @@ class EvaluationService(Service):
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
 
-        # If compilation failed for our fault, we log the error
+        # If compilation failed for our fault, we log the error.
         elif submission_result.compilation_outcome is None:
             logger.warning("Worker failed when compiling submission "
                            "%d(%d)." %
@@ -1269,7 +1269,7 @@ class EvaluationService(Service):
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
 
-        # Evaluation unsuccessful, we log the error
+        # Evaluation unsuccessful, we log the error.
         else:
             logger.warning("Worker failed when evaluating submission "
                            "%d(%d)." %
@@ -1282,7 +1282,7 @@ class EvaluationService(Service):
                              (submission_result.submission_id,
                               submission_result.dataset_id))
 
-        # Enqueue next steps to be done (e.g., if evaluation failed)
+        # Enqueue next steps to be done (e.g., if evaluation failed).
         self.submission_enqueue_jobs(submission)
 
     def user_test_compilation_ended(self, user_test_result):
@@ -1294,19 +1294,19 @@ class EvaluationService(Service):
 
         """
         user_test = user_test_result.user_test
-        # If compilation was ok, we emit a satisfied log message
+        # If compilation was ok, we emit a satisfied log message.
         if user_test_result.compilation_succeeded():
             logger.info("User test %d(%d) was compiled successfully." %
                         (user_test_result.user_test_id,
                          user_test_result.dataset_id))
 
-        # If instead user test failed compilation, we don't evaluatate
+        # If instead user test failed compilation, we don't evaluatate.
         elif user_test_result.compilation_failed():
             logger.info("User test %d(%d) did not compile." %
                         (user_test_result.user_test_id,
                          user_test_result.dataset_id))
 
-        # If compilation failed for our fault, we log the error
+        # If compilation failed for our fault, we log the error.
         elif not user_test_result.compiled():
             logger.warning("Worker failed when compiling user test "
                            "%d(%d)." %
@@ -1337,13 +1337,13 @@ class EvaluationService(Service):
         """
         user_test = user_test_result.user_test
 
-        # Evaluation successful, we emit a satisfied log message
+        # Evaluation successful, we emit a satisfied log message.
         if user_test_result.evaluated():
             logger.info("User test %d(%d) was evaluated successfully." %
                         (user_test_result.user_test_id,
                          user_test_result.dataset_id))
 
-        # Evaluation unsuccessful, we log the error
+        # Evaluation unsuccessful, we log the error.
         else:
             logger.warning("Worker failed when evaluating submission "
                            "%d(%d)." %
@@ -1356,7 +1356,7 @@ class EvaluationService(Service):
                              (user_test_result.user_test_id,
                               user_test_result.dataset_id))
 
-        # Enqueue next steps to be done (e.g., if evaluation failed)
+        # Enqueue next steps to be done (e.g., if evaluation failed).
         self.user_test_enqueue_jobs(user_test)
 
     @rpc_method
