@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -405,6 +405,11 @@ class Dataset(Base):
     # SQLAlchemy.
     # managers (dict of Manager objects indexed by filename)
     # testcases (dict of Testcase objects indexed by codename)
+
+    # Shorthand for detecting if the dataset is active.
+    @property
+    def active(self):
+        return self is self.task.active_dataset
 
 
 class Manager(Base):
