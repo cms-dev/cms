@@ -114,7 +114,9 @@ def submission_get_jobs(submission):
 
     submission (Submission): a submission.
 
-    ??
+    return (iter(JobQueueEntry, int, datetime)): an iterator providing
+        triplets consisting of a JobQueueEntry for a certain job to
+        perform, its priority and its timestamp.
 
     """
     for dataset in get_datasets_to_judge(submission.task):
@@ -151,7 +153,9 @@ def user_test_get_jobs(user_test):
 
     user_test (UserTest): a user test.
 
-    ??
+    return (iter(JobQueueEntry, int, datetime)): an iterator providing
+        triplets consisting of a JobQueueEntry for a certain job to
+        perform, its priority and its timestamp.
 
     """
     for dataset in get_datasets_to_judge(user_test.task):
