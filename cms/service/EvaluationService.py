@@ -123,6 +123,8 @@ def submission_get_jobs(submission):
             priority = EvaluationService.JOB_PRIORITY_HIGH \
                 if submission_result.compilation_tries == 0 \
                 else EvaluationService.JOB_PRIORITY_MEDIUM
+            if not dataset.active:
+                priority = EvaluationService.JOB_PRIORITY_EXTRA_LOW
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_COMPILATION,
                 submission.id,
@@ -134,6 +136,8 @@ def submission_get_jobs(submission):
             priority = EvaluationService.JOB_PRIORITY_MEDIUM \
                 if submission_result.evaluation_tries == 0 \
                 else EvaluationService.JOB_PRIORITY_LOW
+            if not dataset.active:
+                priority = EvaluationService.JOB_PRIORITY_EXTRA_LOW
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_EVALUATION,
                 submission.id,
@@ -156,6 +160,8 @@ def user_test_get_jobs(user_test):
             priority = EvaluationService.JOB_PRIORITY_HIGH \
                 if user_test_result.compilation_tries == 0\
                 else EvaluationService.JOB_PRIORITY_MEDIUM
+            if not dataset.active:
+                priority = EvaluationService.JOB_PRIORITY_EXTRA_LOW
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_TEST_COMPILATION,
                 user_test.id,
@@ -167,6 +173,8 @@ def user_test_get_jobs(user_test):
             priority = EvaluationService.JOB_PRIORITY_MEDIUM \
                 if user_test_result.evaluation_tries == 0 \
                 else EvaluationService.JOB_PRIORITY_LOW
+            if not dataset.active:
+                priority = EvaluationService.JOB_PRIORITY_EXTRA_LOW
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_TEST_EVALUATION,
                 user_test.id,
