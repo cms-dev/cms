@@ -86,6 +86,17 @@ static void chowntree(char *path, uid_t uid, gid_t gid);
 
 static FILE *metafile;
 
+static int
+set_timer(int msec)
+{
+  struct itimerval new, old;
+  new.it_interval.tv_usec = 0;
+  new.it_interval.tv_sec = 0;
+  new.it_value.tv_usec = (msec%1000) * 1000;
+  new.it_value.tv_sec = msec/1000;
+  return setitimer(ITIMER_REAL, &new, &old);
+}
+
 static void
 meta_open(const char *name)
 {
@@ -971,7 +982,6 @@ signal_alarm(int unused UNUSED)
 {
   /* Time limit checks are synchronous, so we only schedule them there. */
   timer_tick = 1;
-  alarm(1);
 }
 
 static void
@@ -1050,9 +1060,11 @@ get_run_time_ms(struct rusage *rus)
 static void
 check_timeout(void)
 {
+  int timer_time = -1000;
   if (wall_timeout)
     {
       int wall_ms = get_wall_time_ms();
+      timer_time = wall_timeout - wall_ms;
       if (wall_ms > wall_timeout)
         err("TO: Time limit exceeded (wall clock)");
       if (verbose > 1)
@@ -1061,11 +1073,14 @@ check_timeout(void)
   if (timeout)
     {
       int ms = get_run_time_ms(NULL);
+      if (timeout - ms < timer_time && timeout >= ms) timer_time = timeout - ms;
       if (verbose > 1)
 	fprintf(stderr, "[time check: %d msec]\n", ms);
       if (ms > timeout && ms > extra_timeout)
 	err("TO: Time limit exceeded");
     }
+  if (timer_tick && timer_time >= 0)
+      set_timer(timer_time + 100);
 }
 
 static void
@@ -1088,7 +1103,7 @@ box_keeper(void)
     {
       sa.sa_handler = signal_alarm;
       sigaction(SIGALRM, &sa, NULL);
-      alarm(1);
+      set_timer((wall_timeout<timeout ? timeout : wall_timeout) + 100);
     }
 
   for(;;)
