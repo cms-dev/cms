@@ -1,0 +1,3 @@
+[submodule "isolate"]
+	path = isolate
+	url = git@github.com:cms-dev/isolate.git
