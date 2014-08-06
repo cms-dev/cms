@@ -406,9 +406,14 @@ class Dataset(Base):
     # managers (dict of Manager objects indexed by filename)
     # testcases (dict of Testcase objects indexed by codename)
 
-    # Shorthand for detecting if the dataset is active.
     @property
     def active(self):
+        """Shorthand for detecting if the dataset is active.
+
+        return (bool): True if this dataset is the active one for its
+            task.
+
+        """
         return self is self.task.active_dataset
 
 
