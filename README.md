@@ -28,13 +28,13 @@ contributing or just curious to see how the code works and wanting to
 hack on it.
 
 Please note that since the sandbox is contained in a [git submodule]
-(http://git-scm.com/docs/git-submodule) you need to run the following
-commands (from inside the repository, after you have cloned it) to
-obtain it:
+(http://git-scm.com/docs/git-submodule) you should append `--recursive`
+to the standard `git clone` command to obtain it. Or, if you have
+already cloned CMS, simply run the following command from inside the
+repository:
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init
 ```
 
 

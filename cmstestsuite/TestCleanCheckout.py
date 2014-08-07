@@ -57,10 +57,9 @@ def setup_cms():
     sh("sudo -u postgres createdb %(DB_NAME)s -O %(DB_USER)s" % CONFIG)
 
     info("Checking out code.")
-    sh(["git", "clone", CONFIG["GIT_ORIGIN"], CONFIG["TEST_DIR"]])
+    sh(["git", "clone", "--recursive", CONFIG["GIT_ORIGIN"],
+        CONFIG["TEST_DIR"]])
     os.chdir("%(TEST_DIR)s" % CONFIG)
-    sh(["git", "submodule", "init"])
-    sh(["git", "submodule", "update"])
     sh(["git", "checkout", CONFIG["GIT_REVISION"]])
 
     info("Configuring CMS.")
