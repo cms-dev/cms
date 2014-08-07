@@ -138,11 +138,11 @@ class Contest(Base):
     start = Column(
         DateTime,
         nullable=False,
-        default=datetime(2000, 01, 01))
+        default=datetime(2000, 1, 1))
     stop = Column(
         DateTime,
         nullable=False,
-        default=datetime(2100, 01, 01))
+        default=datetime(2100, 1, 1))
 
     # Timezone for the contest. All timestamps in CWS will be shown
     # using the timezone associated to the logged-in user or (if it's
@@ -236,7 +236,7 @@ class Contest(Base):
         raise KeyError("Task not found")
 
     # FIXME - Use SQL syntax
-    def get_user(self, username):
+    def get_user(self, username, sql_session):
         """Return the first user in the contest with the given name.
 
         username (string): the name of the user we are interested in.
@@ -246,10 +246,18 @@ class Contest(Base):
         raise (KeyError): if no users with the given name are found.
 
         """
-        for user in self.users:
-            if user.username == username:
-                return user
-        raise KeyError("User not found")
+
+        # Import here to avoid circular dependencies
+        from . import User, Participation
+
+        user = sql_session.query(User).filter(User.username == username)\
+            .filter(User.id.in_(
+                sql_session.query(Participation.user_id)
+                .filter(Participation.contest == self))).first()
+        if user is None:
+            raise KeyError("User not found")
+        else:
+            return user
 
     def enumerate_files(self, skip_submissions=False, skip_user_tests=False,
                         skip_generated=False):
@@ -262,6 +270,7 @@ class Contest(Base):
         """
         # Here we cannot use yield, because we want to detect
         # duplicates
+
         files = set()
         for task in self.tasks:
 

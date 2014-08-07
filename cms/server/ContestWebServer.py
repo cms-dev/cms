@@ -68,7 +68,8 @@ from werkzeug.datastructures import LanguageAccept
 from cms import ConfigError, ServiceCoord, config, filename_to_language
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
-    SubmissionResult, File, UserTest, UserTestFile, UserTestManager, PrintJob
+    SubmissionResult, File, UserTest, UserTestFile, UserTestManager, PrintJob, \
+    Participation
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
@@ -161,8 +162,8 @@ class BaseHandler(CommonRequestHandler):
             return None
 
         # Load the user from DB.
-        user = self.sql_session.query(User)\
-            .filter(User.contest == self.contest)\
+        user = self.sql_session.query(User).join(Participation)\
+            .filter(Participation.contest == self.contest)\
             .filter(User.username == username).first()
 
         # Check if user exists and is allowed to login.
@@ -511,8 +512,8 @@ class LoginHandler(BaseHandler):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
         next_page = self.get_argument("next", "/")
-        user = self.sql_session.query(User)\
-            .filter(User.contest == self.contest)\
+        user = self.sql_session.query(User).join(Participation)\
+            .filter(Participation.contest == self.contest)\
             .filter(User.username == username).first()
 
         filtered_user = filter_ascii(username)
@@ -555,9 +556,12 @@ class StartHandler(BaseHandler):
     @actual_phase_required(-1)
     def post(self):
         user = self.get_current_user()
+        participation = self.sql_session.query(Participation)\
+            .filter(Participation.user_id == user.id)\
+            .filter(Participation.contest == self.contest).first()
 
         logger.info("Starting now for user %s", user.username)
-        user.starting_time = self.timestamp
+        participation.starting_time = self.timestamp
         self.sql_session.commit()
 
         self.redirect("/")
@@ -793,7 +797,10 @@ class NotificationsHandler(BaseHandler):
 
         if self.current_user is not None:
             # Private messages
-            for message in self.current_user.messages:
+            participation = self.sql_session.query(Participation)\
+                .filter(Submission.user == self.current_user)\
+                .filter(Submission.contest == self.contest).first()
+            for message in participation.messages:
                 if message.timestamp > last_notification \
                         and message.timestamp < self.timestamp:
                     res.append({"type": "message",
@@ -802,7 +809,7 @@ class NotificationsHandler(BaseHandler):
                                 "text": message.text})
 
             # Answers to questions
-            for question in self.current_user.questions:
+            for question in participation.questions:
                 if question.reply_timestamp is not None \
                         and question.reply_timestamp > last_notification \
                         and question.reply_timestamp < self.timestamp:
@@ -851,10 +858,13 @@ class QuestionHandler(BaseHandler):
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
 
+        participation = self.sql_session.query(Participation)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.contest == self.contest).first()
         question = Question(self.timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
-                            user=self.current_user)
+                            participation=participation)
         self.sql_session.add(question)
         self.sql_session.commit()
 
@@ -941,6 +951,7 @@ class SubmitHandler(BaseHandler):
             # in case this is a ALLOW_PARTIAL_SUBMISSION task.
             last_submission_t = self.sql_session.query(Submission)\
                 .filter(Submission.task == task)\
+                .filter(Submission.contest == self.contest)\
                 .filter(Submission.user == self.current_user)\
                 .order_by(Submission.timestamp.desc()).first()
             if task.min_submission_interval is not None:
@@ -1147,7 +1158,8 @@ class SubmitHandler(BaseHandler):
         submission = Submission(self.timestamp,
                                 submission_lang,
                                 user=self.current_user,
-                                task=task)
+                                task=task,
+                                contest=self.contest)
 
         for filename, digest in file_digests.items():
             self.sql_session.add(File(filename, digest, submission=submission))

@@ -53,7 +53,7 @@ __all__ = [
     # contest
     "Contest", "Announcement",
     # user
-    "User", "Message", "Question",
+    "User", "Participation", "Message", "Question",
     # task
     "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
     "Manager", "Testcase",
@@ -92,7 +92,7 @@ from .session import Session, ScopedSession, SessionGen, \
 from .types import RepeatedUnicode
 from .base import metadata, Base
 from .contest import Contest, Announcement
-from .user import User, Message, Question
+from .user import User, Participation, Message, Question
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \

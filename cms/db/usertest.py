@@ -31,7 +31,7 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, User, Task, Dataset
+from . import Base, User, Task, Dataset, Contest
 from .smartmappedcollection import smart_mapped_collection
 
 
@@ -69,6 +69,19 @@ class UserTest(Base):
     task = relationship(
         Task,
         backref=backref("user_tests",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Contest (id and object) of the test.
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    contest = relationship(
+        Contest,
+        backref=backref('tests',
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 

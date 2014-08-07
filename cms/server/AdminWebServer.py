@@ -50,8 +50,8 @@ import tornado.locale
 from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
-    Submission, File, Task, Dataset, Attachment, Manager, Testcase, \
-    SubmissionFormatElement, Statement
+    Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
+    Testcase, SubmissionFormatElement, Statement, Participation
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -229,8 +229,8 @@ class BaseHandler(CommonRequestHandler):
             # Keep "== None" in filter arguments. SQLAlchemy does not
             # understand "is None".
             params["unanswered"] = self.sql_session.query(Question)\
-                .join(User)\
-                .filter(User.contest_id == self.contest.id)\
+                .join(User).join(Participation)\
+                .filter(Participation.contest_id == self.contest.id)\
                 .filter(Question.reply_timestamp == None)\
                 .filter(Question.ignored == False)\
                 .count()  # noqa
@@ -483,7 +483,7 @@ class AdminWebServer(WebService):
             must_be_present=ranking_enabled)
 
         self.resource_services = []
-        for i in xrange(get_service_shards("ResourceService")):
+        for i in range(get_service_shards("ResourceService")):
             self.resource_services.append(self.connect_to(
                 ServiceCoord("ResourceService", i)))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
@@ -531,7 +531,7 @@ class ResourcesListHandler(BaseHandler):
         self.r_params = self.render_params()
         self.r_params["resource_addresses"] = {}
         services = get_service_shards("ResourceService")
-        for i in xrange(services):
+        for i in range(services):
             self.r_params["resource_addresses"][i] = get_service_address(
                 ServiceCoord("ResourceService", i)).ip
         self.render("resourceslist.html", **self.r_params)
@@ -553,7 +553,7 @@ class ResourcesHandler(BaseHandler):
             get_service_shards("ResourceService")
         self.r_params["resource_addresses"] = {}
         if shard == "all":
-            for i in xrange(self.r_params["resource_shards"]):
+            for i in range(self.r_params["resource_shards"]):
                 self.r_params["resource_addresses"][i] = get_service_address(
                     ServiceCoord("ResourceService", i)).ip
         else:
@@ -705,7 +705,6 @@ class AddStatementHandler(BaseHandler):
     """
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -713,7 +712,6 @@ class AddStatementHandler(BaseHandler):
 
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         language = self.get_argument("language", None)
         if language is None:
@@ -769,7 +767,6 @@ class DeleteStatementHandler(BaseHandler):
     def get(self, statement_id):
         statement = self.safe_get_item(Statement, statement_id)
         task = statement.task
-        self.contest = task.contest
 
         self.sql_session.delete(statement)
 
@@ -783,7 +780,6 @@ class AddAttachmentHandler(BaseHandler):
     """
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -791,7 +787,6 @@ class AddAttachmentHandler(BaseHandler):
 
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         attachment = self.request.files["attachment"][0]
         task_name = task.name
@@ -814,7 +809,6 @@ class AddAttachmentHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         attachment = Attachment(attachment["filename"], digest, task=task)
         self.sql_session.add(attachment)
@@ -832,7 +826,6 @@ class DeleteAttachmentHandler(BaseHandler):
     def get(self, attachment_id):
         attachment = self.safe_get_item(Attachment, attachment_id)
         task = attachment.task
-        self.contest = task.contest
 
         self.sql_session.delete(attachment)
 
@@ -847,7 +840,6 @@ class AddManagerHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -857,7 +849,6 @@ class AddManagerHandler(BaseHandler):
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         manager = self.request.files["manager"][0]
         task_name = task.name
@@ -878,7 +869,6 @@ class AddManagerHandler(BaseHandler):
         self.sql_session = Session()
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         manager = Manager(manager["filename"], digest, dataset=dataset)
         self.sql_session.add(manager)
@@ -896,7 +886,6 @@ class DeleteManagerHandler(BaseHandler):
     def get(self, manager_id):
         manager = self.safe_get_item(Manager, manager_id)
         task = manager.dataset.task
-        self.contest = task.contest
 
         self.sql_session.delete(manager)
 
@@ -910,7 +899,6 @@ class AddDatasetHandler(BaseHandler):
     """
     def get(self, task_id, dataset_id_to_copy):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         # We can either clone an existing dataset, or '-' for a new one.
         if dataset_id_to_copy == '-':
@@ -936,7 +924,6 @@ class AddDatasetHandler(BaseHandler):
 
     def post(self, task_id, dataset_id_to_copy):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         # We can either clone an existing dataset, or '-' for a new one.
         if dataset_id_to_copy == '-':
@@ -1008,7 +995,6 @@ class RenameDatasetHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -1018,7 +1004,6 @@ class RenameDatasetHandler(BaseHandler):
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         description = self.get_argument("description", "")
 
@@ -1047,7 +1032,6 @@ class DeleteDatasetHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -1057,7 +1041,6 @@ class DeleteDatasetHandler(BaseHandler):
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.sql_session.delete(dataset)
 
@@ -1074,7 +1057,6 @@ class ActivateDatasetHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         changes = compute_changes_for_dataset(task.active_dataset, dataset)
         notify_users = set()
@@ -1099,7 +1081,6 @@ class ActivateDatasetHandler(BaseHandler):
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         task.active_dataset = dataset
 
@@ -1145,8 +1126,6 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
     """
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
-        task = dataset.task
-        self.contest = task.contest
 
         dataset.autojudge = not dataset.autojudge
 
@@ -1170,7 +1149,6 @@ class AddTestcaseHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -1180,7 +1158,6 @@ class AddTestcaseHandler(BaseHandler):
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         codename = self.get_argument("codename")
 
@@ -1219,7 +1196,6 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session = Session()
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         testcase = Testcase(
             codename, public, input_digest, output_digest, dataset=dataset)
@@ -1240,7 +1216,6 @@ class AddTestcasesHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -1251,7 +1226,6 @@ class AddTestcasesHandler(BaseHandler):
         # TODO: this method is quite long, some splitting is needed.
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         try:
             archive = self.request.files["archive"][0]
@@ -1313,7 +1287,6 @@ class AddTestcasesHandler(BaseHandler):
                     # Check, whether current testcase already exists.
                     dataset = self.safe_get_item(Dataset, dataset_id)
                     task = dataset.task
-                    self.contest = task.contest
                     if codename in dataset.testcases:
                         # If we are allowed, remove existing testcase.
                         # If not - skip this testcase.
@@ -1396,7 +1369,6 @@ class DeleteTestcaseHandler(BaseHandler):
     def get(self, testcase_id):
         testcase = self.safe_get_item(Testcase, testcase_id)
         task = testcase.dataset.task
-        self.contest = task.contest
 
         self.sql_session.delete(testcase)
 
@@ -1495,7 +1467,6 @@ class TaskHandler(BaseHandler):
     """
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -1507,7 +1478,6 @@ class TaskHandler(BaseHandler):
 
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
 
         try:
             attrs = task.get_attrs()
@@ -1586,7 +1556,6 @@ class DatasetSubmissionsHandler(BaseHandler):
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
-        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -1699,7 +1668,6 @@ class UserViewHandler(BaseHandler):
     """
     def get(self, user_id):
         user = self.safe_get_item(User, user_id)
-        self.contest = user.contest
 
         self.r_params = self.render_params()
         self.r_params["selected_user"] = user
@@ -1708,7 +1676,6 @@ class UserViewHandler(BaseHandler):
 
     def post(self, user_id):
         user = self.safe_get_item(User, user_id)
-        self.contest = user.contest
 
         try:
             attrs = user.get_attrs()
@@ -1802,7 +1769,6 @@ class SubmissionViewHandler(BaseHandler):
     def get(self, submission_id, dataset_id=None):
         submission = self.safe_get_item(Submission, submission_id)
         task = submission.task
-        self.contest = task.contest
 
         if dataset_id is not None:
             dataset = self.safe_get_item(Dataset, dataset_id)
@@ -1829,7 +1795,6 @@ class SubmissionFileHandler(FileHandler):
     def get(self, file_id):
         sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
-        self.contest = submission.task.contest
 
         real_filename = sub_file.filename
         if submission.language is not None:
@@ -1922,7 +1887,7 @@ class QuestionIgnoreHandler(BaseHandler):
 
         # Fetch form data.
         question = self.safe_get_item(Question, question_id)
-        self.contest = question.user.contest
+        self.contest = question.participation.contest
 
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
