@@ -82,7 +82,7 @@ class Task(Base):
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True)
     contest = relationship(
         Contest,
@@ -95,7 +95,8 @@ class Task(Base):
     # Short name and long human readable title of the task.
     name = Column(
         Unicode,
-        nullable=False)
+        nullable=False,
+        unique=True)
     title = Column(
         Unicode,
         nullable=False)
