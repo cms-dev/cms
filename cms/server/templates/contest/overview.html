@@ -91,7 +91,7 @@
 
 {% if contest.max_user_test_number is not None %}
     <p>
-    {{ _("You can submit no more than %(user_tests)s user tests during this contest.") % {"user_tests": contest.max_user_test_number} }}
+    {{ _("You can submit at most %(user_tests)s user tests during this contest.") % {"user_tests": contest.max_user_test_number} }}
     </p>
 {% end %}
 
