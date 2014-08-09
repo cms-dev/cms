@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -590,6 +590,12 @@ class WorkerPool(object):
             err_msg = "Trying to release worker while it's inactive."
             logger.error(err_msg)
             raise ValueError(err_msg)
+
+        # If the worker has already been disabled, ignore the result
+        # and keep the worker disabled.
+        if self._job[shard] == WorkerPool.WORKER_DISABLED:
+            return True
+
         ret = self._ignore[shard]
         self._start_time[shard] = None
         self._side_data[shard] = None
@@ -1171,6 +1177,7 @@ class EvaluationService(Service):
         # to the queue and perhaps already been reassigned to another
         # worker.
         if self.pool.release_worker(shard):
+            logger.info("Ignored result from worker %s as requested." % shard)
             return
 
         job_success = True
