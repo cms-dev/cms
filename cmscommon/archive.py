@@ -94,8 +94,14 @@ class Archive(object):
             raise Exception("Not implemented yet: you must first call "
                             "the unpack() method.")
         else:
-            for name in os.walk(self.temp_dir):
-                yield name
+            names = []
+            cwd = os.getcwd()
+            os.chdir(self.temp_dir)
+            for level in os.walk("."):
+                for filename in level[2]:
+                    names.append(os.path.join(level[0], filename))
+            os.chdir(cwd)
+            return names
 
     def read(self, file_path):
         """Read a single file and return its file object.
