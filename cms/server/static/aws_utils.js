@@ -570,12 +570,13 @@ CMS.AWSUtils.prototype.show_page = function(item, page) {
     selector.append("Pages: ");
     for (var i = 1; i <= npages; i++) {
         if (i != page) {
-            var j = i;
             selector.append($("<a>").text(i + " ")
-                            .click(function() {
-                                self.show_page('questions', j);
-                                return false;
-                            }));
+                            .click(function(j) {
+                                return function() {
+                                    self.show_page('questions', j);
+                                    return false;
+                                }
+                            }(i)));
         } else {
             selector.append(i + " ");
         }
