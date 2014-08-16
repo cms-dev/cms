@@ -26,6 +26,7 @@ Kento Nikaido (aka snukent) <snukent@gmail.com>
 William Pettersson <william.pettersson@gmail.com>
 Federico Scrinzi (aka volpino) <fox91@anche.no>
 Luca Versari <veluca93@gmail.com>
+Hyungsuk Yoon <youhanmir@gmail.com>
 Kenneth Wong <kenneth@wong.pro>
 
 And many other people that didn't write code, but provided useful
