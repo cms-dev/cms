@@ -36,7 +36,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from cms import config
 from cms.grading import JobException
@@ -63,7 +62,7 @@ def create_sandbox(file_cacher):
         sandbox = Sandbox(file_cacher)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
-        logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
+        logger.error(err_msg, exc_info=True)
         raise JobException(err_msg)
     return sandbox
 
@@ -80,7 +79,7 @@ def delete_sandbox(sandbox):
             sandbox.delete()
         except (IOError, OSError):
             err_msg = "Couldn't delete sandbox."
-            logger.warning("%s\n%s" % (err_msg, traceback.format_exc()))
+            logger.warning(err_msg, exc_info=True)
 
 
 class TaskType(object):

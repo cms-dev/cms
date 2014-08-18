@@ -155,8 +155,8 @@ class ResourceService(Service):
             if not running:
                 # We give contest_id even if the service doesn't need
                 # it, since it causes no trouble.
-                logger.info("Restarting (%s, %s)..." % (service.name,
-                                                        service.shard))
+                logger.info("Restarting (%s, %s)...",
+                            service.name, service.shard)
                 devnull = os.open(os.devnull, os.O_WRONLY)
                 command = "cms%s" % service.name
                 if not config.installed:
@@ -400,7 +400,7 @@ class ResourceService(Service):
         service (string): format: name,shard.
 
         """
-        logger.info("Killing %s as asked." % service)
+        logger.info("Killing %s as asked.", service)
         try:
             idx = service.rindex(",")
         except ValueError:
@@ -442,7 +442,7 @@ class ResourceService(Service):
         service = ServiceCoord(name, shard)
 
         self._will_restart[service] = not self._will_restart[service]
-        logger.info("Will restart %s,%s is now %s." %
-                    (service.name, service.shard, self._will_restart[service]))
+        logger.info("Will restart %s,%s is now %s.",
+                    service.name, service.shard, self._will_restart[service])
 
         return self._will_restart[service]

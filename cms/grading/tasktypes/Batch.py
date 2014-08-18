@@ -148,7 +148,7 @@ class Batch(TaskType):
             job.success = True
             job.compilation_success = False
             job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 1" %
+            logger.error("Submission contains %d files, expecting 1",
                          len(job.files), extra={"operation": job.info})
             return True
 
@@ -329,7 +329,7 @@ class Batch(TaskType):
                                     extract_outcome_and_text(sandbox)
                             except ValueError, e:
                                 logger.error("Invalid output from "
-                                             "comparator: %s" % (e.message,),
+                                             "comparator: %s", e.message,
                                              extra={"operation": job.info})
                                 success = False
 

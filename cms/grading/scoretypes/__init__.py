@@ -76,7 +76,7 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
     try:
         parameters = json.loads(parameters)
     except ValueError as error:
-        logger.error("Cannot decode score type parameters.\n%r." % error)
+        logger.error("Cannot decode score type parameters.\n%r.", error)
         raise
 
     return class_(parameters, public_testcases)

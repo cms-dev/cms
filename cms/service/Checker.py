@@ -58,7 +58,7 @@ class Checker(Service):
         logger.debug("Checker.check")
         for coordinates, service in self.remote_services.iteritems():
             if coordinates in self.waiting_for:
-                logger.info("Service %s timeout, retrying." % (coordinates,))
+                logger.info("Service %s timeout, retrying.", coordinates)
                 del self.waiting_for[coordinates]
 
             if service.connected:
@@ -67,7 +67,7 @@ class Checker(Service):
                 service.echo(string="%s %5.3lf" % (coordinates, now),
                              callback=self.echo_callback)
             else:
-                logger.info("Service %s not connected." % (coordinates,))
+                logger.info("Service %s not connected.", coordinates)
         return True
 
     def echo_callback(self, data, error=None):
@@ -85,13 +85,13 @@ class Checker(Service):
             shard = int(shard)
             service = ServiceCoord(name, shard)
             if service not in self.waiting_for or current - time_ > 10:
-                logger.warning("Got late reply (%5.3lf s) from %s."
-                               % (current - time_, service))
+                logger.warning("Got late reply (%5.3lf s) from %s.",
+                               current - time_, service)
             else:
                 if time_ - self.waiting_for[service] > 0.001:
                     logger.warning("Someone cheated on the timestamp?!")
-                logger.info("Got reply (%5.3lf s) from %s."
-                            % (current - time_, service))
+                logger.info("Got reply (%5.3lf s) from %s.",
+                            current - time_, service)
                 del self.waiting_for[service]
         except KeyError:
             logger.error("Echo answer mis-shapen.")

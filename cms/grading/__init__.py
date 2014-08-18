@@ -206,7 +206,7 @@ def format_status_text(status, translator=None):
         return translator(status[0]) % tuple(status[1:])
     except:
         logger.error("Unexpected error when formatting status "
-                     "text: %r" % status, exc_info=True)
+                     "text: %r", status, exc_info=True)
         return translator("N/A")
 
 
@@ -237,7 +237,7 @@ def compilation_step(sandbox, commands):
         box_success = sandbox.execute_without_std(command, wait=True)
         if not box_success:
             logger.error("Compilation aborted because of "
-                         "sandbox error in `%s'." % sandbox.path)
+                         "sandbox error in `%s'.", sandbox.path)
             return False, None, None, None
 
     # Detect the outcome of the compilation.
@@ -292,7 +292,7 @@ def compilation_step(sandbox, commands):
     # to the user
     elif exit_status == Sandbox.EXIT_SIGNAL:
         signal = sandbox.get_killing_signal()
-        logger.debug("Compilation killed with signal %s." % (signal))
+        logger.debug("Compilation killed with signal %s.", signal)
         success = True
         compilation_success = False
         plus["signal"] = signal
@@ -309,7 +309,7 @@ def compilation_step(sandbox, commands):
     elif exit_status == Sandbox.EXIT_SYSCALL:
         syscall = sandbox.get_killing_syscall()
         logger.error("Compilation aborted "
-                     "because of forbidden syscall `%s'." % syscall)
+                     "because of forbidden syscall `%s'.", syscall)
 
     # Forbidden file access: this could be triggered by the user
     # including a forbidden file or too strict sandbox contraints; the
@@ -317,7 +317,7 @@ def compilation_step(sandbox, commands):
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         filename = sandbox.get_forbidden_file_error()
         logger.error("Compilation aborted "
-                     "because of forbidden access to file `%s'." % filename)
+                     "because of forbidden access to file `%s'.", filename)
 
     # Why the exit status hasn't been captured before?
     else:
@@ -353,7 +353,7 @@ def evaluation_step(sandbox, commands,
 
     success, plus = evaluation_step_after_run(sandbox)
     if not success:
-        logger.debug("Job failed in evaluation_step_after_run: %r" % plus)
+        logger.debug("Job failed in evaluation_step_after_run: %r", plus)
 
     return success, plus
 
@@ -425,7 +425,7 @@ def evaluation_step_after_run(sandbox):
     # the error to the user.
     elif exit_status == Sandbox.EXIT_SIGNAL:
         signal = sandbox.get_killing_signal()
-        logger.debug("Execution killed with signal %d." % signal)
+        logger.debug("Execution killed with signal %d.", signal)
         success = True
         plus["signal"] = signal
 
@@ -440,7 +440,7 @@ def evaluation_step_after_run(sandbox):
     elif exit_status == Sandbox.EXIT_SYSCALL:
         syscall = sandbox.get_killing_syscall()
         logger.debug("Execution killed because of forbidden "
-                     "syscall: `%s'." % syscall)
+                     "syscall: `%s'.", syscall)
         success = True
         plus["syscall"] = syscall
 
@@ -449,7 +449,7 @@ def evaluation_step_after_run(sandbox):
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         filename = sandbox.get_forbidden_file_error()
         logger.debug("Execution killed because of forbidden "
-                     "file access: `%s'." % filename)
+                     "file access: `%s'.", filename)
         success = True
         plus["filename"] = filename
 
@@ -548,19 +548,19 @@ def extract_outcome_and_text(sandbox):
                 outcome = stdout_file.readline().strip()
             except UnicodeDecodeError as error:
                 logger.error("Unable to interpret manager stdout "
-                             "(outcome) as unicode. %r" % error)
+                             "(outcome) as unicode. %r", error)
                 raise ValueError("Cannot decode the outcome.")
             try:
                 text = filter_ansi_escape(stderr_file.readline())
             except UnicodeDecodeError as error:
                 logger.error("Unable to interpret manager stderr "
-                             "(text) as unicode. %r" % error)
+                             "(text) as unicode. %r", error)
                 raise ValueError("Cannot decode the text.")
 
     try:
         outcome = float(outcome)
     except ValueError:
-        logger.error("Wrong outcome `%s' from manager." % outcome)
+        logger.error("Wrong outcome `%s' from manager.", outcome)
         raise ValueError("Outcome is not a float.")
 
     return outcome, [text]

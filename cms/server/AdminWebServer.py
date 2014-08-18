@@ -261,8 +261,8 @@ class BaseHandler(CommonRequestHandler):
                 kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
-                "Uncaught exception (%r) while processing a request: %s" %
-                (exc_info[1], ''.join(traceback.format_exception(*exc_info))))
+                "Uncaught exception (%r) while processing a request: %s",
+                exc_info[1], ''.join(traceback.format_exception(*exc_info)))
 
         # Most of the handlers raise a 404 HTTP error before r_params
         # is defined. If r_params is not defined we try to define it
@@ -1043,7 +1043,7 @@ class AddDatasetHandler(BaseHandler):
             self.sql_session.add(dataset)
 
         except Exception as error:
-            logger.warning("Invalid field: %s" % (traceback.format_exc()))
+            logger.warning("Invalid field.", exc_info=True)
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/add_dataset/%s/%s" % (task_id, dataset_id_to_copy))
@@ -1948,8 +1948,8 @@ class QuestionReplyHandler(BaseHandler):
         question.reply_timestamp = make_datetime()
 
         if try_commit(self.sql_session, self):
-            logger.info("Reply sent to user %s for question with id %s." %
-                        (question.user.username, question_id))
+            logger.info("Reply sent to user %s for question with id %s.",
+                        question.user.username, question_id)
 
         self.redirect(ref)
 
@@ -1971,9 +1971,9 @@ class QuestionIgnoreHandler(BaseHandler):
         # Commit the change.
         question.ignored = should_ignore
         if try_commit(self.sql_session, self):
-            logger.info("Question '%s' by user %s %s" %
-                        (question.subject, question.user.username,
-                         ["unignored", "ignored"][should_ignore]))
+            logger.info("Question '%s' by user %s %s",
+                        question.subject, question.user.username,
+                        ["unignored", "ignored"][should_ignore])
 
         self.redirect(ref)
 
@@ -1993,8 +1993,7 @@ class MessageHandler(BaseHandler):
                           user=user)
         self.sql_session.add(message)
         if try_commit(self.sql_session, self):
-            logger.info("Message submitted to user %s."
-                        % user.username)
+            logger.info("Message submitted to user %s.", user.username)
 
         self.redirect("/user/%s" % user_id)
 

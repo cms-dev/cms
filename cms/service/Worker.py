@@ -84,7 +84,7 @@ class Worker(Service):
         # complete list of files and then download the files; since
         # this is just pre-caching, possible race conditions are not
         # dangerous
-        logger.info("Precaching files for contest %d." % contest_id)
+        logger.info("Precaching files for contest %d.", contest_id)
         with SessionGen() as session:
             contest = Contest.get_from_id(contest_id, session)
             files = contest.enumerate_files(skip_submissions=True,

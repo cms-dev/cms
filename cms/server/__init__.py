@@ -216,8 +216,8 @@ def extract_archive(temp_name, original_filename):
                     "filename": item.filename,
                     "body": zip_object.read(item)})
         except Exception as error:
-            logger.warning("Exception while extracting zip file `%s'. %r" %
-                           (original_filename, error))
+            logger.warning("Exception while extracting zip file `%s'. %r",
+                           original_filename, error)
             return None
     elif original_filename.endswith(".tar.gz") \
             or original_filename.endswith(".tar.bz2") \
@@ -230,14 +230,14 @@ def extract_archive(temp_name, original_filename):
                         "filename": item.name,
                         "body": tar_object.extractfile(item).read()})
         except tarfile.TarError:
-            logger.warning("Exception while extracting tar file `%s'. %r" %
-                           (original_filename, error))
+            logger.warning("Exception while extracting tar file `%s'. %r",
+                           original_filename, error)
             return None
         except IOError:
             return None
     else:
-        logger.warning("Compressed file `%s' not recognized."
-                       % original_filename)
+        logger.warning("Compressed file `%s' not recognized.",
+                       original_filename)
         return None
     return file_list
 
@@ -626,8 +626,8 @@ def file_handler_gen(BaseClass):
                 self.temp_file = \
                     self.application.service.file_cacher.get_file(digest)
             except Exception as error:
-                logger.error("Exception while retrieving file `%s'. %r" %
-                             (filename, error))
+                logger.error("Exception while retrieving file `%s'. %r",
+                             filename, error)
                 self.finish()
                 return
 
@@ -657,8 +657,8 @@ def file_handler_gen(BaseClass):
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
                 duration = time.time() - self.start_time
-                logger.info("%.3lf seconds for %.3lf MB" %
-                            (duration, self.size))
+                logger.info("%.3lf seconds for %.3lf MB",
+                            duration, self.size)
                 self.finish()
                 return False
             return True

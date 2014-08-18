@@ -112,7 +112,7 @@ class TwoSteps(TaskType):
             job.success = True
             job.compilation_success = False
             job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 2" %
+            logger.error("Submission contains %d files, expecting 2",
                          len(job.files), extra={"operation": job.info})
             return True
 

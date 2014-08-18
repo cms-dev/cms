@@ -63,10 +63,10 @@ def submission_to_compile(submission_result):
     return (bool): True if ES wants to compile the submission.
 
     """
-    r = submission_result
-    return r is None or \
-        (not r.compiled() and
-         r.compilation_tries < EvaluationService.MAX_COMPILATION_TRIES)
+    return submission_result is None or \
+        (not submission_result.compiled() and
+         (submission_result.compilation_tries <
+          EvaluationService.MAX_COMPILATION_TRIES))
 
 
 def submission_to_evaluate(submission_result):
@@ -77,10 +77,11 @@ def submission_to_evaluate(submission_result):
     return (bool): True if ES wants to evaluate the submission.
 
     """
-    r = submission_result
-    return r is not None and r.compilation_succeeded() and \
-        not r.evaluated() and \
-        r.evaluation_tries < EvaluationService.MAX_EVALUATION_TRIES
+    return submission_result is not None and \
+        submission_result.compilation_succeeded() and \
+        not submission_result.evaluated() and \
+        (submission_result.evaluation_tries <
+         EvaluationService.MAX_EVALUATION_TRIES)
 
 
 def user_test_to_compile(user_test_result):
@@ -94,8 +95,8 @@ def user_test_to_compile(user_test_result):
     r = user_test_result
     return r is None or \
         (not r.compiled() and
-         r.compilation_tries <
-         EvaluationService.MAX_USER_TEST_COMPILATION_TRIES)
+         (r.compilation_tries <
+          EvaluationService.MAX_USER_TEST_COMPILATION_TRIES))
 
 
 def user_test_to_evaluate(user_test_result):
@@ -320,7 +321,7 @@ class WorkerPool(object):
         self._schedule_disabling[shard] = False
         self._ignore[shard] = False
         self._workers_available_event.set()
-        logger.debug("Worker %s added." % shard)
+        logger.debug("Worker %s added.", shard)
 
     def on_worker_connected(self, worker_coord):
         """To be called when a worker comes alive after being
@@ -332,7 +333,7 @@ class WorkerPool(object):
 
         """
         shard = worker_coord.shard
-        logger.info("Worker %s online again." % shard)
+        logger.info("Worker %s online again.", shard)
         self._worker[shard].precache_files(contest_id=self._service.contest_id)
         # We don't requeue the operation, because a connection lost
         # does not invalidate a potential result given by the worker
@@ -367,15 +368,14 @@ class WorkerPool(object):
         self._operation[shard] = operation
         self._start_time[shard] = make_datetime()
         self._side_data[shard] = side_data
-        logger.debug("Worker %s acquired." % shard)
+        logger.debug("Worker %s acquired.", shard)
 
         # And finally we ask the worker to do the operation.
         timestamp = side_data[1]
         queue_time = self._start_time[shard] - timestamp
         logger.info("Asking worker %s to %s submission/user test %d(%d) "
-                    " (%s after submission)." %
-                    (shard, operation.type_, operation.object_id,
-                     operation.dataset_id, queue_time))
+                    "(%s after submission).", shard, operation.type_,
+                    operation.object_id, operation.dataset_id, queue_time)
 
         with SessionGen() as session:
             if operation.type_ == ESOperation.COMPILATION:
@@ -438,11 +438,11 @@ class WorkerPool(object):
         if self._schedule_disabling[shard]:
             self._operation[shard] = WorkerPool.WORKER_DISABLED
             self._schedule_disabling[shard] = False
-            logger.info("Worker %s released and disabled." % shard)
+            logger.info("Worker %s released and disabled.", shard)
         else:
             self._operation[shard] = WorkerPool.WORKER_INACTIVE
             self._workers_available_event.set()
-            logger.debug("Worker %s released." % shard)
+            logger.debug("Worker %s released.", shard)
         return ret
 
     def find_worker(self, operation, require_connection=False,
@@ -538,8 +538,7 @@ class WorkerPool(object):
                     # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no response "
-                                 "in %s." %
-                                 (shard, active_for))
+                                 "in %s.", shard, active_for)
                     is_busy = (self._operation[shard]
                                != WorkerPool.WORKER_INACTIVE
                                and self._operation[shard]
@@ -598,7 +597,7 @@ class WorkerPool(object):
             self._ignore[shard] = True
             self.release_worker(shard)
 
-        logger.info("Worker %s disabled." % shard)
+        logger.info("Worker %s disabled.", shard)
         return lost_operations
 
     def enable_worker(self, shard):
@@ -617,7 +616,7 @@ class WorkerPool(object):
 
         self._operation[shard] = WorkerPool.WORKER_INACTIVE
         self._workers_available_event.set()
-        logger.info("Worker %s enabled." % shard)
+        logger.info("Worker %s enabled.", shard)
 
     def check_connections(self):
         """Check if a worker we assigned an operation to disconnects. In this
@@ -859,8 +858,8 @@ class EvaluationService(TriggeredService):
         """
         lost_operations = self._executors[0].pool.check_timeouts()
         for priority, timestamp, operation in lost_operations:
-            logger.info("Operation %r put again in the queue because of "
-                        "worker timeout." % (operation,))
+            logger.info("Operation %s put again in the queue because of "
+                        "worker timeout.", operation)
             self.enqueue(operation, priority, timestamp)
         return True
 
@@ -871,8 +870,8 @@ class EvaluationService(TriggeredService):
         """
         lost_operations = self._executors[0].pool.check_connections()
         for priority, timestamp, operation in lost_operations:
-            logger.info("Operation %r put again in the queue because of "
-                        "disconnected worker." % (operation,))
+            logger.info("Operation %s put again in the queue because of "
+                        "disconnected worker.", operation)
             self.enqueue(operation, priority, timestamp)
         return True
 
@@ -983,12 +982,12 @@ class EvaluationService(TriggeredService):
         # operation has returned to the queue and perhaps already been
         # reassigned to another worker.
         if self._executors[0].pool.release_worker(shard):
-            logger.info("Ignored result from worker %s as requested." % shard)
+            logger.info("Ignored result from worker %s as requested.", shard)
             return
 
         job_success = True
         if error is not None:
-            logger.error("Received error from Worker: `%s'." % error)
+            logger.error("Received error from Worker: `%s'.", error)
             job_success = False
 
         else:
@@ -996,19 +995,19 @@ class EvaluationService(TriggeredService):
                 job_group = JobGroup.import_from_dict(data)
             except:
                 logger.error("[action_finished] Couldn't build JobGroup for "
-                             "data %s." % data, exc_info=True)
+                             "data %s.", data, exc_info=True)
                 job_success = False
 
             else:
                 if not job_group.success:
                     logger.error("Worker %s signaled action "
-                                 "not successful." % shard)
+                                 "not successful.", shard)
                     job_success = False
 
         _, timestamp = side_data
 
-        logger.info("Action %s for submission %s completed. Success: %s." %
-                    (type_, object_id, job_success))
+        logger.info("Action %s for submission %s completed. Success: %s.",
+                    type_, object_id, job_success)
 
         # We get the submission from DB and update it.
         with SessionGen() as session:
@@ -1017,8 +1016,8 @@ class EvaluationService(TriggeredService):
                     (object_id, dataset_id), session)
                 if submission_result is None:
                     logger.error("[action_finished] Couldn't find "
-                                 "submission %d(%d) in the database." %
-                                 (object_id, dataset_id))
+                                 "submission %d(%d) in the database.",
+                                 object_id, dataset_id)
                     return
 
                 submission_result.compilation_tries += 1
@@ -1033,8 +1032,8 @@ class EvaluationService(TriggeredService):
                     (object_id, dataset_id), session)
                 if submission_result is None:
                     logger.error("[action_finished] Couldn't find "
-                                 "submission %d(%d) in the database." %
-                                 (object_id, dataset_id))
+                                 "submission %d(%d) in the database.",
+                                 object_id, dataset_id)
                     return
 
                 submission_result.evaluation_tries += 1
@@ -1049,8 +1048,8 @@ class EvaluationService(TriggeredService):
                     (object_id, dataset_id), session)
                 if user_test_result is None:
                     logger.error("[action_finished] Couldn't find "
-                                 "user test %d(%d) in the database." %
-                                 (object_id, dataset_id))
+                                 "user test %d(%d) in the database.",
+                                 object_id, dataset_id)
                     return
 
                 user_test_result.compilation_tries += 1
@@ -1065,8 +1064,8 @@ class EvaluationService(TriggeredService):
                     (object_id, dataset_id), session)
                 if user_test_result is None:
                     logger.error("[action_finished] Couldn't find "
-                                 "user test %d(%d) in the database." %
-                                 (object_id, dataset_id))
+                                 "user test %d(%d) in the database.",
+                                 object_id, dataset_id)
                     return
 
                 user_test_result.evaluation_tries += 1
@@ -1096,17 +1095,17 @@ class EvaluationService(TriggeredService):
 
         # If compilation was ok, we emit a satisfied log message.
         if submission_result.compilation_succeeded():
-            logger.info("Submission %d(%d) was compiled successfully." %
-                        (submission_result.submission_id,
-                         submission_result.dataset_id))
+            logger.info("Submission %d(%d) was compiled successfully.",
+                        submission_result.submission_id,
+                        submission_result.dataset_id)
 
         # If instead submission failed compilation, we inform
         # ScoringService of the new submission. We need to commit
         # before so it has up to date information.
         elif submission_result.compilation_failed():
-            logger.info("Submission %d(%d) did not compile." %
-                        (submission_result.submission_id,
-                         submission_result.dataset_id))
+            logger.info("Submission %d(%d) did not compile.",
+                        submission_result.submission_id,
+                        submission_result.dataset_id)
             submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
@@ -1115,19 +1114,19 @@ class EvaluationService(TriggeredService):
         # If compilation failed for our fault, we log the error.
         elif submission_result.compilation_outcome is None:
             logger.warning("Worker failed when compiling submission "
-                           "%d(%d)." %
-                           (submission_result.submission_id,
-                            submission_result.dataset_id))
+                           "%d(%d).",
+                           submission_result.submission_id,
+                           submission_result.dataset_id)
             if submission_result.compilation_tries >= \
                     EvaluationService.MAX_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the compilation of "
-                             "submission %d(%d)." %
-                             (submission_result.submission_id,
-                              submission_result.dataset_id))
+                             "submission %d(%d).",
+                             submission_result.submission_id,
+                             submission_result.dataset_id)
 
         # Otherwise, error.
         else:
-            logger.error("Compilation outcome %r not recognized." %
+            logger.error("Compilation outcome %r not recognized.",
                          submission_result.compilation_outcome)
 
         # Enqueue next steps to be done
@@ -1148,9 +1147,9 @@ class EvaluationService(TriggeredService):
         # otherwise the ScoringService wouldn't receive the updated
         # submission.
         if submission_result.evaluated():
-            logger.info("Submission %d(%d) was evaluated successfully." %
-                        (submission_result.submission_id,
-                         submission_result.dataset_id))
+            logger.info("Submission %d(%d) was evaluated successfully.",
+                        submission_result.submission_id,
+                        submission_result.dataset_id)
             submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
@@ -1159,15 +1158,15 @@ class EvaluationService(TriggeredService):
         # Evaluation unsuccessful, we log the error.
         else:
             logger.warning("Worker failed when evaluating submission "
-                           "%d(%d)." %
-                           (submission_result.submission_id,
-                            submission_result.dataset_id))
+                           "%d(%d).",
+                           submission_result.submission_id,
+                           submission_result.dataset_id)
             if submission_result.evaluation_tries >= \
                     EvaluationService.MAX_EVALUATION_TRIES:
                 logger.error("Maximum tries reached for the evaluation of "
-                             "submission %d(%d)." %
-                             (submission_result.submission_id,
-                              submission_result.dataset_id))
+                             "submission %d(%d).",
+                             submission_result.submission_id,
+                             submission_result.dataset_id)
 
         # Enqueue next steps to be done (e.g., if evaluation failed).
         self.submission_enqueue_operations(submission)
@@ -1183,32 +1182,32 @@ class EvaluationService(TriggeredService):
         user_test = user_test_result.user_test
         # If compilation was ok, we emit a satisfied log message.
         if user_test_result.compilation_succeeded():
-            logger.info("User test %d(%d) was compiled successfully." %
-                        (user_test_result.user_test_id,
-                         user_test_result.dataset_id))
+            logger.info("User test %d(%d) was compiled successfully.",
+                        user_test_result.user_test_id,
+                        user_test_result.dataset_id)
 
         # If instead user test failed compilation, we don't evaluatate.
         elif user_test_result.compilation_failed():
-            logger.info("User test %d(%d) did not compile." %
-                        (user_test_result.user_test_id,
-                         user_test_result.dataset_id))
+            logger.info("User test %d(%d) did not compile.",
+                        user_test_result.user_test_id,
+                        user_test_result.dataset_id)
 
         # If compilation failed for our fault, we log the error.
         elif not user_test_result.compiled():
             logger.warning("Worker failed when compiling user test "
-                           "%d(%d)." %
-                           (user_test_result.submission_id,
-                            user_test_result.dataset_id))
+                           "%d(%d).",
+                           user_test_result.submission_id,
+                           user_test_result.dataset_id)
             if user_test_result.compilation_tries >= \
                     EvaluationService.MAX_USER_TEST_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the compilation of "
-                             "user test %d(%d)." %
-                             (user_test_result.user_test_id,
-                              user_test_result.dataset_id))
+                             "user test %d(%d).",
+                             user_test_result.user_test_id,
+                             user_test_result.dataset_id)
 
         # Otherwise, error.
         else:
-            logger.error("Compilation outcome %r not recognized." %
+            logger.error("Compilation outcome %r not recognized.",
                          user_test_result.compilation_outcome)
 
         # Enqueue next steps to be done
@@ -1226,22 +1225,22 @@ class EvaluationService(TriggeredService):
 
         # Evaluation successful, we emit a satisfied log message.
         if user_test_result.evaluated():
-            logger.info("User test %d(%d) was evaluated successfully." %
-                        (user_test_result.user_test_id,
-                         user_test_result.dataset_id))
+            logger.info("User test %d(%d) was evaluated successfully.",
+                        user_test_result.user_test_id,
+                        user_test_result.dataset_id)
 
         # Evaluation unsuccessful, we log the error.
         else:
             logger.warning("Worker failed when evaluating submission "
-                           "%d(%d)." %
-                           (user_test_result.submission_id,
-                            user_test_result.dataset_id))
+                           "%d(%d).",
+                           user_test_result.submission_id,
+                           user_test_result.dataset_id)
             if user_test_result.evaluation_tries >= \
                     EvaluationService.MAX_USER_TEST_EVALUATION_TRIES:
                 logger.error("Maximum tries reached for the evaluation of "
-                             "user test %d(%d)." %
-                             (user_test_result.user_test_id,
-                              user_test_result.dataset_id))
+                             "user test %d(%d).",
+                             user_test_result.user_test_id,
+                             user_test_result.dataset_id)
 
         # Enqueue next steps to be done (e.g., if evaluation failed).
         self.user_test_enqueue_operations(user_test)
@@ -1259,7 +1258,7 @@ class EvaluationService(TriggeredService):
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.error("[new_submission] Couldn't find submission "
-                             "%d in the database." % submission_id)
+                             "%d in the database.", submission_id)
                 return
 
             self.submission_enqueue_operations(submission)
@@ -1281,7 +1280,7 @@ class EvaluationService(TriggeredService):
             user_test = UserTest.get_from_id(user_test_id, session)
             if user_test is None:
                 logger.error("[new_user_test] Couldn't find user test %d "
-                             "in the database." % user_test_id)
+                             "in the database.", user_test_id)
                 return
 
             self.user_test_enqueue_operations(user_test)
@@ -1336,8 +1335,8 @@ class EvaluationService(TriggeredService):
                 else None,
                 user_id, task_id, submission_id, dataset_id, session)
 
-            logger.info("Submission results to invalidate %s for: %d." %
-                        (level, len(submission_results)))
+            logger.info("Submission results to invalidate %s for: %d.",
+                        level, len(submission_results))
             if len(submission_results) == 0:
                 return
 
@@ -1384,7 +1383,7 @@ class EvaluationService(TriggeredService):
         returns (bool): True if everything went well.
 
         """
-        logger.info("Received request to disable worker %s." % shard)
+        logger.info("Received request to disable worker %s.", shard)
 
         lost_operations = []
         try:
@@ -1393,8 +1392,8 @@ class EvaluationService(TriggeredService):
             return False
 
         for priority, timestamp, operation in lost_operations:
-            logger.info("Operation %r put again in the queue because "
-                        "the worker was disabled." % (operation,))
+            logger.info("Operation %s put again in the queue because "
+                        "the worker was disabled.", operation)
             self.enqueue(operation, priority, timestamp)
         return True
 
@@ -1407,7 +1406,7 @@ class EvaluationService(TriggeredService):
         returns (bool): True if everything went well.
 
         """
-        logger.info("Received request to enable worker %s." % shard)
+        logger.info("Received request to enable worker %s.", shard)
         try:
             self._executors[0].pool.enable_worker(shard)
         except ValueError:

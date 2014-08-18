@@ -68,7 +68,7 @@ def drop_db():
         logger.error("Couldn't drop schema \"public\", probably you don't "
                      "have the privileges. Please execute as database "
                      "superuser: \"ALTER SCHEMA public OWNER TO %s;\" and "
-                     "run again" % make_url(config.database).username)
+                     "run again", make_url(config.database).username)
         return False
     cursor.execute("CREATE SCHEMA public")
 
@@ -79,11 +79,11 @@ def drop_db():
         logger.error("Couldn't list large objects, probably you don't have "
                      "the privileges. Please execute as database superuser: "
                      "\"GRANT SELECT ON pg_largeobject TO %s;\" and run "
-                     "again" % make_url(config.database).username)
+                     "again", make_url(config.database).username)
         return False
     rows = cursor.fetchall()
     for row in rows:
-        cursor.execute("SELECT lo_unlink(%d)" % (row[0]))
+        cursor.execute("SELECT lo_unlink(%d)" % row[0])
 
     cursor.close()
 

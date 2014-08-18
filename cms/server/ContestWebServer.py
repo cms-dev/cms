@@ -214,7 +214,7 @@ class BaseHandler(CommonRequestHandler):
                 if not any(lang.startswith(prefix) for lang in self.langs)]
             if useless:
                 logger.warning("The following allowed localizations don't "
-                               "match any installed one: %s" %
+                               "match any installed one: %s",
                                ",".join(useless))
 
         # TODO We fallback on any available language if none matches:
@@ -364,7 +364,7 @@ class BaseHandler(CommonRequestHandler):
             try:
                 self.sql_session.close()
             except Exception as error:
-                logger.warning("Couldn't close SQL connection: %r" % error)
+                logger.warning("Couldn't close SQL connection: %r", error)
         try:
             tornado.web.RequestHandler.finish(self, *args, **kwds)
         except IOError:
@@ -378,8 +378,8 @@ class BaseHandler(CommonRequestHandler):
                 kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
-                "Uncaught exception (%r) while processing a request: %s" %
-                (exc_info[1], ''.join(traceback.format_exception(*exc_info))))
+                "Uncaught exception (%r) while processing a request: %s",
+                exc_info[1], ''.join(traceback.format_exception(*exc_info)))
 
         # We assume that if r_params is defined then we have at least
         # the data we need to display a basic template with the error
@@ -517,25 +517,25 @@ class LoginHandler(BaseHandler):
         filtered_user = filter_ascii(username)
         filtered_pass = filter_ascii(password)
         if user is None or user.password != password:
-            logger.info("Login error: user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
+            logger.info("Login error: user=%s pass=%s remote_ip=%s.",
+                        filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
         if config.ip_lock and user.ip is not None \
                 and not check_ip(self.request.remote_ip, user.ip):
-            logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
+            logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s.",
+                        filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
         if user.hidden and config.block_hidden_users:
             logger.info("Hidden user login attempt: "
-                        "user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
+                        "user=%s pass=%s remote_ip=%s.",
+                        filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
 
-        logger.info("User logged in: user=%s remote_ip=%s." %
-                    (filtered_user, self.request.remote_ip))
+        logger.info("User logged in: user=%s remote_ip=%s.",
+                    filtered_user, self.request.remote_ip)
         self.set_secure_cookie("login",
                                pickle.dumps((user.username,
                                              user.password,
@@ -555,7 +555,7 @@ class StartHandler(BaseHandler):
     def post(self):
         user = self.get_current_user()
 
-        logger.info("Starting now for user %s" % user.username)
+        logger.info("Starting now for user %s", user.username)
         user.starting_time = self.timestamp
         self.sql_session.commit()
 
@@ -857,8 +857,8 @@ class QuestionHandler(BaseHandler):
         self.sql_session.add(question)
         self.sql_session.commit()
 
-        logger.info("Question submitted by user %s."
-                    % self.current_user.username)
+        logger.info("Question submitted by user %s.",
+                    self.current_user.username)
 
         # Add "All ok" notification.
         self.application.service.add_notification(
@@ -1128,8 +1128,7 @@ class SubmitHandler(BaseHandler):
                                  task.id,
                                  files), file_)
             except Exception as error:
-                logger.warning("Submission local copy failed - %s" %
-                               traceback.format_exc())
+                logger.warning("Submission local copy failed.", exc_info=True)
 
         # We now have to send all the files to the destination...
         try:
@@ -1143,7 +1142,7 @@ class SubmitHandler(BaseHandler):
 
         # In case of error, the server aborts the submission
         except Exception as error:
-            logger.error("Storage failed! %s" % error)
+            logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1154,7 +1153,7 @@ class SubmitHandler(BaseHandler):
             return
 
         # All the files are stored, ready to submit!
-        logger.info("All files stored for submission sent by %s" %
+        logger.info("All files stored for submission sent by %s",
                     self.current_user.username)
         submission = Submission(self.timestamp,
                                 submission_lang,
@@ -1211,8 +1210,7 @@ class UseTokenHandler(BaseHandler):
             self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token "
-                           "when it shouldn't."
-                           % self.current_user.username)
+                           "when it shouldn't.", self.current_user.username)
             # Add "no luck" notification
             self.application.service.add_notification(
                 self.current_user.username,
@@ -1244,8 +1242,8 @@ class UseTokenHandler(BaseHandler):
         self.application.service.proxy_service.submission_tokened(
             submission_id=submission.id)
 
-        logger.info("Token played by user %s on task %s."
-                    % (self.current_user.username, task.name))
+        logger.info("Token played by user %s on task %s.",
+                    self.current_user.username, task.name)
 
         # Add "All ok" notification.
         self.application.service.add_notification(
@@ -1425,8 +1423,8 @@ class UserTestHandler(BaseHandler):
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
         if not task_type.testable:
-            logger.warning("User %s tried to make test on task %s." %
-                           (self.current_user.username, task_name))
+            logger.warning("User %s tried to make test on task %s.",
+                           self.current_user.username, task_name)
             raise tornado.web.HTTPError(404)
 
         # Alias for easy access
@@ -1676,8 +1674,7 @@ class UserTestHandler(BaseHandler):
                                  task.id,
                                  files), file_)
             except Exception as error:
-                logger.error("Test local copy failed - %s" %
-                             traceback.format_exc())
+                logger.error("Test local copy failed.", exc_info=True)
 
         # We now have to send all the files to the destination...
         try:
@@ -1691,7 +1688,7 @@ class UserTestHandler(BaseHandler):
 
         # In case of error, the server aborts the submission
         except Exception as error:
-            logger.error("Storage failed! %s" % error)
+            logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1702,7 +1699,7 @@ class UserTestHandler(BaseHandler):
             return
 
         # All the files are stored, ready to submit!
-        logger.info("All files stored for test sent by %s" %
+        logger.info("All files stored for test sent by %s",
                     self.current_user.username)
         user_test = UserTest(self.timestamp,
                              submission_lang,
@@ -1971,7 +1968,7 @@ class PrintingHandler(BaseHandler):
 
         # In case of error, the server aborts
         except Exception as error:
-            logger.error("Storage failed! %s" % error)
+            logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1982,7 +1979,7 @@ class PrintingHandler(BaseHandler):
             return
 
         # The file is stored, ready to submit!
-        logger.info("File stored for print job sent by %s" %
+        logger.info("File stored for print job sent by %s",
                     self.current_user.username)
 
         printjob = PrintJob(timestamp=self.timestamp,
