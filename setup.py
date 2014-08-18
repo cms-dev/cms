@@ -116,6 +116,7 @@ def do_setup():
                     "cmsranking",
                     "cmscontrib",
                     "cmscontrib.updaters",
+                    "cmscontrib.loaders",
                     "cmstaskenv",
                     "cmstestsuite",
                     "cmstestsuite.web",
@@ -150,10 +151,10 @@ def do_setup():
 
                   "cmsAddUser=cmscontrib.AddUser:main",
                   "cmsRemoveUser=cmscontrib.RemoveUser:main",
+                  "cmsAddTask=cmscontrib.AddTask:main",
                   "cmsRemoveTask=cmscontrib.RemoveTask:main",
                   "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
-                  "cmsImporter=cmscontrib.Importer:main",
-                  "cmsReimporter=cmscontrib.Reimporter:main",
+                  "cmsAddContest=cmscontrib.AddContest:main",
                   "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
                   "cmsDumpExporter=cmscontrib.DumpExporter:main",
                   "cmsDumpImporter=cmscontrib.DumpImporter:main",
@@ -329,7 +330,7 @@ def install():
         makedir(_dir, cmsuser, 0770)
 
     print("copying Polygon testlib:")
-    path = os.path.join("cmscontrib", "polygon", "testlib.h")
+    path = os.path.join("cmscontrib", "loaders", "polygon", "testlib.h")
     dest_path = os.path.join(USR_ROOT, "include", "cms", "testlib.h")
     copyfile(path, dest_path, root, 0644)
 
