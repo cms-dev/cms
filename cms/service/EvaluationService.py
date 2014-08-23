@@ -94,7 +94,8 @@ def user_test_to_compile(user_test_result):
     r = user_test_result
     return r is None or \
         (not r.compiled() and
-         r.compilation_tries < EvaluationService.MAX_TEST_COMPILATION_TRIES)
+         r.compilation_tries <
+         EvaluationService.MAX_USER_TEST_COMPILATION_TRIES)
 
 
 def user_test_to_evaluate(user_test_result):
@@ -108,7 +109,7 @@ def user_test_to_evaluate(user_test_result):
     r = user_test_result
     return r is not None and r.compilation_outcome == "ok" and \
         not r.evaluated() and \
-        r.evaluation_tries < EvaluationService.MAX_TEST_EVALUATION_TRIES
+        r.evaluation_tries < EvaluationService.MAX_USER_TEST_EVALUATION_TRIES
 
 
 def submission_get_operations(submission):
@@ -169,7 +170,7 @@ def user_test_get_operations(user_test):
             if not dataset.active:
                 priority = PriorityQueue.PRIORITY_EXTRA_LOW
             yield ESOperation(
-                ESOperation.TEST_COMPILATION,
+                ESOperation.USER_TEST_COMPILATION,
                 user_test.id,
                 dataset.id), \
                 priority, \
@@ -182,7 +183,7 @@ def user_test_get_operations(user_test):
             if not dataset.active:
                 priority = PriorityQueue.PRIORITY_EXTRA_LOW
             yield ESOperation(
-                ESOperation.TEST_EVALUATION,
+                ESOperation.USER_TEST_EVALUATION,
                 user_test.id,
                 dataset.id), \
                 priority, \
@@ -193,8 +194,8 @@ class ESOperation(QueueItem):
 
     COMPILATION = "compile"
     EVALUATION = "evaluate"
-    TEST_COMPILATION = "compile_test"
-    TEST_EVALUATION = "evaluate_test"
+    USER_TEST_COMPILATION = "compile_test"
+    USER_TEST_EVALUATION = "evaluate_test"
 
     def __init__(self, type_, object_id, dataset_id):
         self.type_ = type_
@@ -238,11 +239,11 @@ class ESOperation(QueueItem):
                 submission = Submission.get_from_id(self.object_id, session)
                 submission_result = submission.get_result_or_create(dataset)
                 return submission_to_evaluate(submission_result)
-            elif self.type_ == ESOperation.TEST_COMPILATION:
+            elif self.type_ == ESOperation.USER_TEST_COMPILATION:
                 user_test = UserTest.get_from_id(self.object_id, session)
                 user_test_result = user_test.get_result_or_create(dataset)
                 return user_test_to_compile(user_test_result)
-            elif self.type_ == ESOperation.TEST_EVALUATION:
+            elif self.type_ == ESOperation.USER_TEST_EVALUATION:
                 user_test = UserTest.get_from_id(self.object_id, session)
                 user_test_result = user_test.get_result_or_create(dataset)
                 return user_test_to_evaluate(user_test_result)
@@ -389,12 +390,12 @@ class WorkerPool(object):
                 dataset = Dataset.get_from_id(operation.dataset_id, session)
                 job_group = \
                     JobGroup.from_submission_evaluation(submission, dataset)
-            elif operation.type_ == ESOperation.TEST_COMPILATION:
+            elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
                 user_test = UserTest.get_from_id(operation.object_id, session)
                 dataset = Dataset.get_from_id(operation.dataset_id, session)
                 job_group = \
                     JobGroup.from_user_test_compilation(user_test, dataset)
-            elif operation.type_ == ESOperation.TEST_EVALUATION:
+            elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
                 user_test = UserTest.get_from_id(operation.object_id, session)
                 dataset = Dataset.get_from_id(operation.dataset_id, session)
                 job_group = \
@@ -642,7 +643,9 @@ class WorkerPool(object):
 
 class EvaluationExecutor(Executor):
     def __init__(self, evaluation_service):
-        """Create a proxy for the ranking at the given URL.
+        """Create the single executor for ES.
+
+        The executor just delegates work to the worker pool.
 
         """
         super(EvaluationExecutor, self).__init__()
@@ -692,8 +695,8 @@ class EvaluationService(TriggeredService):
 
     MAX_COMPILATION_TRIES = 3
     MAX_EVALUATION_TRIES = 3
-    MAX_TEST_COMPILATION_TRIES = 3
-    MAX_TEST_EVALUATION_TRIES = 3
+    MAX_USER_TEST_COMPILATION_TRIES = 3
+    MAX_USER_TEST_EVALUATION_TRIES = 3
 
     INVALIDATE_COMPILATION = 0
     INVALIDATE_EVALUATION = 1
@@ -898,11 +901,11 @@ class EvaluationService(TriggeredService):
         """
         operations = [
             ESOperation(
-                ESOperation.TEST_COMPILATION,
+                ESOperation.USER_TEST_COMPILATION,
                 user_test_id,
                 dataset_id),
             ESOperation(
-                ESOperation.TEST_EVALUATION,
+                ESOperation.USER_TEST_EVALUATION,
                 user_test_id,
                 dataset_id),
         ]
@@ -920,8 +923,8 @@ class EvaluationService(TriggeredService):
                                ESOperation.EVALUATION):
             return self.submission_busy(operation.object_id,
                                         operation.dataset_id)
-        elif operation.type_ in (ESOperation.TEST_COMPILATION,
-                                 ESOperation.TEST_EVALUATION):
+        elif operation.type_ in (ESOperation.USER_TEST_COMPILATION,
+                                 ESOperation.USER_TEST_EVALUATION):
             return self.user_test_busy(operation.object_id,
                                        operation.dataset_id)
         else:
@@ -1041,7 +1044,7 @@ class EvaluationService(TriggeredService):
 
                 self.evaluation_ended(submission_result)
 
-            elif type_ == ESOperation.TEST_COMPILATION:
+            elif type_ == ESOperation.USER_TEST_COMPILATION:
                 user_test_result = UserTestResult.get_from_id(
                     (object_id, dataset_id), session)
                 if user_test_result is None:
@@ -1057,7 +1060,7 @@ class EvaluationService(TriggeredService):
 
                 self.user_test_compilation_ended(user_test_result)
 
-            elif type_ == ESOperation.TEST_EVALUATION:
+            elif type_ == ESOperation.USER_TEST_EVALUATION:
                 user_test_result = UserTestResult.get_from_id(
                     (object_id, dataset_id), session)
                 if user_test_result is None:
@@ -1197,7 +1200,7 @@ class EvaluationService(TriggeredService):
                            (user_test_result.submission_id,
                             user_test_result.dataset_id))
             if user_test_result.compilation_tries >= \
-                    EvaluationService.MAX_TEST_COMPILATION_TRIES:
+                    EvaluationService.MAX_USER_TEST_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the compilation of "
                              "user test %d(%d)." %
                              (user_test_result.user_test_id,
@@ -1234,7 +1237,7 @@ class EvaluationService(TriggeredService):
                            (user_test_result.submission_id,
                             user_test_result.dataset_id))
             if user_test_result.evaluation_tries >= \
-                    EvaluationService.MAX_TEST_EVALUATION_TRIES:
+                    EvaluationService.MAX_USER_TEST_EVALUATION_TRIES:
                 logger.error("Maximum tries reached for the evaluation of "
                              "user test %d(%d)." %
                              (user_test_result.user_test_id,

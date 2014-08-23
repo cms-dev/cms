@@ -89,7 +89,7 @@ class Executor(object):  # pylint: disable=R0921
         return self._operation_queue.push(item, priority, timestamp)
 
     def dequeue(self, item):
-        """Remove an item to the queue.
+        """Remove an item from the queue.
 
         item (QueueItem): the item to remove.
 
@@ -110,16 +110,11 @@ class Executor(object):  # pylint: disable=R0921
             # Wait for the queue to be non-empty.
             to_execute = [self._operation_queue.pop(wait=True)]
             if self._batch_executions:
-                # TODO: shall we yield to other greenlet? I think that
-                # it is going to be extremely unlikely to have more
-                # than one operations.
-                while True:
-                    try:
-                        to_execute.append(self._operation_queue.pop())
-                    except LookupError:
-                        # Eventually the queue will be empty, this is
-                        # expected.
-                        break
+                # TODO: shall we yield to other greenlets? I think
+                # that it is going to be extremely unlikely to have
+                # more than one operations.
+                while not self._operation_queue.empty():
+                    to_execute.append(self._operation_queue.pop())
 
             assert len(to_execute) > 0, "Expected at least one element."
             if self._batch_executions:
@@ -323,7 +318,7 @@ class TriggeredService(Service):
 
     @rpc_method
     def queue_status(self):
-        """Return a the status of the queues.
+        """Return the status of the queues.
 
         More precisely, a list indexed by each executor, whose
         elements are the list of entries in the executor's queue. The
