@@ -357,7 +357,7 @@ class PriorityQueue(object):
             timestamp.
 
         """
-        return [{'item': str(entry.item),
+        return [{'item': entry.item,
                  'priority': entry.priority,
                  'timestamp': entry.timestamp}
                 for entry in self._queue]

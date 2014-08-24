@@ -1413,3 +1413,11 @@ class EvaluationService(TriggeredService):
             return False
 
         return True
+
+    @rpc_method
+    def queue_status(self):
+        return [{"job": [entry["item"].type_, entry["item"].object_id,
+                         entry["item"].dataset_id],
+                 "priority": entry["priority"],
+                 "timestamp": make_timestamp(entry["timestamp"])}
+                for entry in self._executors[0].get_status()]
