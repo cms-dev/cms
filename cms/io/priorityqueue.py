@@ -45,7 +45,7 @@ from __future__ import unicode_literals
 
 from gevent.event import Event
 
-from cmscommon.datetime import make_datetime
+from cmscommon.datetime import make_datetime, make_timestamp
 
 
 class QueueItem(object):
@@ -56,7 +56,9 @@ class QueueItem(object):
 
     """
 
-    pass
+    def to_dict(self):
+        """Return a dict() representation of the object."""
+        return self.__dict__
 
 
 class QueueEntry(object):
@@ -357,9 +359,9 @@ class PriorityQueue(object):
             timestamp.
 
         """
-        return [{'item': str(entry.item),
+        return [{'item': entry.item.to_dict(),
                  'priority': entry.priority,
-                 'timestamp': entry.timestamp}
+                 'timestamp': make_timestamp(entry.timestamp)}
                 for entry in self._queue]
 
 
