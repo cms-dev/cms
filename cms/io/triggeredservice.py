@@ -324,16 +324,7 @@ class TriggeredService(Service):
         elements are the list of entries in the executor's queue. The
         first item is the top item, the others are not in order.
 
-        The elements of list are represented in the JSON-encodable form.
-
         return ([[QueueEntry]]): the list with the queued elements.
 
         """
-        status = []
-        for executor in self._executors:
-            entries = executor.get_status()
-            for entry in entries:
-                entry["timestamp"] = make_timestamp(entry["timestamp"])
-                entry["item"] = str(entry["item"])
-            status.append(entries)
-        return status
+        return [executor.get_status() for executor in self._executors]
