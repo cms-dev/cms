@@ -347,30 +347,30 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
         return "N/A";
     } else if (job == "disabled") {
         return "Worker disabled";
-    } else if (job[0] == 'compile') {
+    } else if (job["type"] == 'compile') {
         job_type = 'Compiling';
         object_type = 'submission';
-    } else if (job[0] == 'evaluate') {
+    } else if (job["type"] == 'evaluate') {
         job_type = 'Evaluating';
         object_type = 'submission';
-    } else if (job[0] == 'compile_test') {
+    } else if (job["type"] == 'compile_test') {
         job_type = 'Compiling';
         object_type = 'user_test';
-    } else if (job[0] == 'evaluate_test') {
+    } else if (job["type"] == 'evaluate_test') {
         job_type = 'Evaluating';
         object_type = 'user_test';
     }
 
     if (object_type == 'submission') {
         return job_type + ' the <a href="' + this.url_root + '/submission/'
-            + job[1] + '/' + job[2] + '">result</a> of <a href="' + this.url_root
-            + '/submission/' + job[1] + '">submission ' + job[1]
-            + '</a> on <a href="' + this.url_root + '/dataset/' + job[2]
-            + '">dataset ' + job[2] + '</a>';
+            + job["object_id"] + '/' + job["dataset_id"] + '">result</a> of <a href="' + this.url_root
+            + '/submission/' + job["object_id"] + '">submission ' + job["object_id"]
+            + '</a> on <a href="' + this.url_root + '/dataset/' + job["dataset_id"]
+            + '">dataset ' + job["dataset_id"] + '</a>';
     } else {
-        return job_type + ' the result of user_test ' + job[1]
-            + ' on <a href="' + this.url_root + '/dataset/' + job[2]
-            + '">dataset ' + job[2] + '</a>';
+        return job_type + ' the result of user_test ' + job["object_id"]
+            + ' on <a href="' + this.url_root + '/dataset/' + job["dataset_id"]
+            + '">dataset ' + job["dataset_id"] + '</a>';
     }
 };
 
