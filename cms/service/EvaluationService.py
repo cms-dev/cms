@@ -36,6 +36,7 @@ from __future__ import unicode_literals
 
 import logging
 import random
+import json
 from datetime import timedelta
 from functools import wraps
 
@@ -219,6 +220,10 @@ class ESOperation(QueueItem):
     def __str__(self):
         return "performing %s on %d against dataset %d" % (
             self.type_, self.object_id, self.dataset_id)
+
+    def to_dict(self):
+        return {"type":self.type_, "object_id": self.object_id,
+                "dataset_id": self.dataset_id}
 
     def check(self):
         """Check that this operation is actually to be enqueued.
@@ -513,7 +518,10 @@ class WorkerPool(object):
 
             result["%d" % shard] = {
                 'connected': self._worker[shard].connected,
-                'operation': str(self._operation[shard]),
+                'operation':
+                    self._operation[shard]
+                    if not isinstance(self._operation[shard], QueueItem)
+                    else self._operation[shard].to_dict(),
                 'start_time': s_time,
                 'side_data': s_data}
         return result
@@ -1413,3 +1421,16 @@ class EvaluationService(TriggeredService):
             return False
 
         return True
+
+    @rpc_method
+    def queue_status(self):
+        """Return the status of the queue.
+
+        Parent method returns list of queues of each executor, but in
+        EvaluationService we have only one executor, so we cat just return
+        the first queue.
+
+        return ([QueueEntry]): the list with the queued elements.
+
+        """
+        return super(EvaluationService, self).queue_status()[0]
