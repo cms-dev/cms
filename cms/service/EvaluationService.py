@@ -513,7 +513,7 @@ class WorkerPool(object):
 
             result["%d" % shard] = {
                 'connected': self._worker[shard].connected,
-                'operation': self._operation[shard],
+                'operation': str(self._operation[shard]),
                 'start_time': s_time,
                 'side_data': s_data}
         return result
@@ -849,17 +849,7 @@ class EvaluationService(TriggeredService):
         returns (dict): the dict with the workers information.
 
         """
-
-        status = self._executors[0].pool.get_status()
-        for worker in status.itervalues():
-            if worker["operation"]:
-                worker["job"] = [worker["operation"].type_,
-                                 worker["operation"].object_id,
-                                 worker["operation"].dataset_id]
-                del worker["operation"]
-            else:
-                worker["job"] = None
-        return status
+        return self._executors[0].pool.get_status()
 
     def check_workers_timeout(self):
         """We ask WorkerPool for the unresponsive workers, and we put
@@ -1426,11 +1416,6 @@ class EvaluationService(TriggeredService):
 
     @rpc_method
     def queue_status(self):
-        """Returns a list of dicts with description of operations.
-
-        returns (list): the list with the operations information.
-
-        """
         return [{"job": [entry["item"].type_, entry["item"].object_id,
                          entry["item"].dataset_id],
                  "priority": entry["priority"],
