@@ -366,7 +366,9 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
             + job["object_id"] + '/' + job["dataset_id"] + '">result</a> of <a href="' + this.url_root
             + '/submission/' + job["object_id"] + '">submission ' + job["object_id"]
             + '</a> on <a href="' + this.url_root + '/dataset/' + job["dataset_id"]
-            + '">dataset ' + job["dataset_id"] + '</a>';
+            + '">dataset ' + job["dataset_id"] + '</a>'
+            + (job["testcase_codename"] ? " testcase #"
+               + job["testcase_codename"] : "");
     } else {
         return job_type + ' the result of user_test ' + job["object_id"]
             + ' on <a href="' + this.url_root + '/dataset/' + job["dataset_id"]

@@ -40,7 +40,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
-from copy import deepcopy
 
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 
@@ -453,7 +452,7 @@ class JobGroup(object):
     # Evaluation
 
     @staticmethod
-    def from_submission_evaluation(submission, dataset):
+    def from_submission_evaluation(submission, dataset, testcase_codename):
         job = EvaluationJob()
 
         # Job
@@ -474,29 +473,26 @@ class JobGroup(object):
         job.time_limit = dataset.time_limit
         job.memory_limit = dataset.memory_limit
 
-        jobs = dict()
+        testcase = dataset.testcases[testcase_codename]
+        job.input = testcase.input
+        job.output = testcase.output
+        job.info = "evaluate submission %d on testcase %s" % \
+                   (submission.id, testcase.codename)
 
-        for k, testcase in dataset.testcases.iteritems():
-            job2 = deepcopy(job)
-
-            job2.input = testcase.input
-            job2.output = testcase.output
-            job2.info = "evaluate submission %d on testcase %s" % \
-                        (submission.id, testcase.codename)
-
-            jobs[k] = job2
+        jobs = {testcase.codename: job}
 
         return JobGroup(jobs)
 
     def to_submission_evaluation(self, sr):
-        # This should actually be useless.
-        sr.invalidate_evaluation()
+        # Should not invalidate because evaluations will be added one
+        # by one now.
 
         # No need to check self.success or job.success because this
         # method gets called only if the first (and therefore the
         # second!) is True.
 
-        sr.set_evaluation_outcome()
+        # Should not mark evaluation completed, because not all
+        # testcases may be evaluated by this moment
 
         for test_name, job in self.jobs.iteritems():
             assert isinstance(job, EvaluationJob)
