@@ -60,6 +60,9 @@ class PrintingOperation(QueueItem):
     def __str__(self):
         return "printing job %d" % self.printjob_id
 
+    def to_dict(self):
+        return {"printjob_id": self.printjob_id}
+
 
 class PrintingExecutor(Executor):
     def __init__(self, file_cacher):

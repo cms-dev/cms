@@ -110,6 +110,10 @@ class ProxyOperation(QueueItem):
         return "sending data of type %s to ranking" % (
             self.type_)
 
+    def to_dict(self):
+        return {"type": self.type_,
+                "data": self.data}
+
 
 class ProxyExecutor(Executor):
     """A thread that sends data to one ranking.

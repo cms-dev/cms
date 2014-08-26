@@ -36,7 +36,6 @@ from __future__ import unicode_literals
 
 import logging
 import random
-import json
 from datetime import timedelta
 from functools import wraps
 
@@ -222,7 +221,8 @@ class ESOperation(QueueItem):
             self.type_, self.object_id, self.dataset_id)
 
     def to_dict(self):
-        return {"type":self.type_, "object_id": self.object_id,
+        return {"type": self.type_,
+                "object_id": self.object_id,
                 "dataset_id": self.dataset_id}
 
     def check(self):
@@ -518,10 +518,10 @@ class WorkerPool(object):
 
             result["%d" % shard] = {
                 'connected': self._worker[shard].connected,
-                'operation':
-                    self._operation[shard]
-                    if not isinstance(self._operation[shard], QueueItem)
-                    else self._operation[shard].to_dict(),
+                'operation': (self._operation[shard]
+                              if not isinstance(self._operation[shard],
+                                                QueueItem)
+                              else self._operation[shard].to_dict()),
                 'start_time': s_time,
                 'side_data': s_data}
         return result

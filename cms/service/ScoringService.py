@@ -50,6 +50,10 @@ class ScoringOperation(QueueItem):
         return "scoring submission %d on dataset %d" % (
             self.submission_id, self.dataset_id)
 
+    def to_dict(self):
+        return {"submission_id": self.submission_id,
+                "dataset_id": self.dataset_id}
+
 
 class ScoringExecutor(Executor):
     def __init__(self, proxy_service):
