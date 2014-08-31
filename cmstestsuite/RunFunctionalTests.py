@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -115,10 +116,10 @@ def create_or_get_user(contest_id):
     }
     if username in users:
         user_id = users[username]['id']
-        add_existing_user(contest_id, user_id, **user_create_args)
+        add_existing_user(user_id, **user_create_args)
         info("Using existing user with id %d." % user_id)
     else:
-        user_id = add_user(contest_id, **user_create_args)
+        user_id = add_user(**user_create_args)
         info("Created user with id %d." % user_id)
     return user_id
 
