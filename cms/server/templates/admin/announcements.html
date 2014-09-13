@@ -10,7 +10,7 @@
   <div class="notifications">
     <div class="notification communication">
       <div class="notification_msg">
-        <form method="post" action="{{ url_root }}/add_announcement/{{ contest.id }}">
+        <form method="post" action="{{ url_root }}/contest/{{ contest.id }}/announcements/new">
           <div class="notification_subject">
             <label for="new_subject">Subject</label>
             <input name="subject" id="new_subject" style="width: 100%" /></div>
@@ -28,7 +28,7 @@
         <div class="notification_msg">
 
           <div class="announcement_remove">
-            <a href="{{ url_root }}/remove_announcement/{{ msg.id }}">Remove</a>
+            <a href="{{ url_root }}/contest/{{ contest.id }}/announcement/{{ msg.id }}/delete">Remove</a>
           </div>
           <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>

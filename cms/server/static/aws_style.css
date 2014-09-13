@@ -48,7 +48,7 @@ a {
     cursor: pointer;
 }
 
-strong {
+strong, .bold {
     font-weight: bold;
 }
 
@@ -113,9 +113,25 @@ ul.normal_list {
     overflow-y: auto;
 }
 
+#sidebar_header {
+    margin-bottom: 15px;
+}
+
 #sidebar h1 {
     font-size: 1.5em;
-    line-height: 2em;
+    margin-top: 15px;
+}
+
+#sidebar h1.parent::before {
+   content: "• ";
+}
+
+#sidebar h1.child {
+    margin-top: 0px;
+}
+
+#sidebar h1.child::before {
+    content: "└─ ";
 }
 
 #sidebar .sidebar_left {

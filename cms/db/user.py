@@ -80,12 +80,6 @@ class User(Base):
         Unicode,
         nullable=True)
 
-    # A hidden user is used only for debugging purpose.
-    hidden = Column(
-        Boolean,
-        nullable=False,
-        default=False)
-
     # Timezone for the user. All timestamps in CWS will be shown using
     # the timezone associated to the logged-in user or (if it's None
     # or an invalid string) the timezone associated to the contest or
@@ -155,6 +149,13 @@ class Participation(Base):
         Unicode,
         nullable=True)
 
+    # A hidden participation (e.g. does not appear in public rankings), can
+    # also be used for debugging purposes.
+    hidden = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Contest (id and object) to which the user is participating.
     contest_id = Column(
         Integer,
@@ -164,11 +165,11 @@ class Participation(Base):
         index=True)
     contest = relationship(
         Contest,
-        backref=backref("users",
+        backref=backref("participations",
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    # Contest (id and object) to which the user is participating.
+    # User (id and object) which is participating.
     user_id = Column(
         Integer,
         ForeignKey(User.id,

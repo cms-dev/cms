@@ -5,7 +5,7 @@
   <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Delete dataset</h1>
 </div>
 
-<form action="{{ url_root }}/delete_dataset/{{ dataset.id }}" method="POST">
+<form action="{{ url_root }}/dataset/{{ dataset.id }}/delete" method="POST">
 
     Are you sure you want to delete the dataset "{{ dataset.description }}" and all associated managers, test cases, and submission results?<br/>
 

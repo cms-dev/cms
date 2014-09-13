@@ -7,7 +7,7 @@
 <h2 id="title_general_info" class="toggling_on">General information</h2>
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-  <form enctype="multipart/form-data" action="{{ url_root }}/add_user/{{ contest.id }}" method="POST">
+  <form enctype="multipart/form-data" action="{{ url_root }}/users/new" method="POST">
     <table>
       <tr>
         <td>First name</td>
@@ -55,8 +55,8 @@
         <td><input type="checkbox" name="hidden" /></td>
       </tr>
       <tr>
-        <td>Primary statements (JSON-encoded dict whose keys are task names and whose values are lists of language codes)</td>
-        <td><input type="text" name="primary_statements" value="{}"></td>
+        <td>Preferred languages (JSON-encoded list of language codes, from the most to the least preferred)</td>
+        <td><input type="text" name="preferred_languages" value="[]"></td>
       </tr>
     </table>
     <input type="submit"/>

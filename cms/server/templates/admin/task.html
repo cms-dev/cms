@@ -64,14 +64,14 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <tr>
         <td>Statement</td>
         <td>
-          <a href="{{ url_root }}/add_statement/{{ task.id }}">Add statement</a><br/>
+          <a href="{{ url_root }}/task/{{ task.id }}/statements/add">Add statement</a><br/>
           {% if len(task.statements) == 0 %}
           No statements uploaded yet
           {% else %}
           <ul>
             {% for statement in task.statements.values() %}
             <li><a href="{{ url_root }}/file/{{ statement.digest }}/statement.pdf">Statement for language "{{ statement.language }}"</a>
-              - <a href="{{ url_root }}/delete_statement/{{ statement.id }}">Delete</a></li>
+              - <a href="{{ url_root }}/task/{{ task.id }}/statement/{{ statement.id }}/delete">Delete</a></li>
             {% end %}
           </ul>
           {% end %}
@@ -84,14 +84,14 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <tr>
         <td>Attachments</td>
         <td>
-          <a href="{{ url_root }}/add_attachment/{{ task.id }}" >Add attachment</a><br/>
+          <a href="{{ url_root }}/task/{{ task.id }}/attachments/add" >Add attachment</a><br/>
           {% if len(task.attachments) == 0 %}
             No attachments.
           {% else %}
             {% for attachment in task.attachments.values() %}
               <div class="attachment">
                 <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
-                - <a href="{{ url_root }}/delete_attachment/{{ attachment.id }}">Delete</a>
+                - <a href="{{ url_root }}/task/{{ task.id }}/attachment/{{ attachment.id }}/delete">Delete</a>
               </div>
             {% end %}
           {% end %}
@@ -115,7 +115,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if len(task.datasets) == 0 %}
     No datasets have been created for this task.<br/>
 {% end %}
-    <a href="{{ url_root }}/add_dataset/{{ task.id }}/-">Create a new dataset</a><br/>
+    <a href="{{ url_root }}/task/{{ task.id }}/new_dataset">Create a new dataset</a><br/>
     </p>
 
 {% for dataset in sorted(task.datasets, key=lambda d: d.description) %}
@@ -127,17 +127,17 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       {% if dataset is task.active_dataset %}
       [Make Live ...]
       {% else %}
-      <a href="{{ url_root }}/activate_dataset/{{ dataset.id }}">[Make Live ...]</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/activate">[Make Live ...]</a>
       {% end %}
-      <a href="{{ url_root }}/add_dataset/{{ task.id }}/{{ dataset.id }}">[Clone]</a>
-      <a href="{{ url_root }}/rename_dataset/{{ dataset.id }}">[Rename]</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/clone">[Clone]</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/rename">[Rename]</a>
       {% if dataset is task.active_dataset %}
       [Delete]
       {% else %}
-      <a href="{{ url_root }}/delete_dataset/{{ dataset.id }}">[Delete]</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/delete">[Delete]</a>
       {% end %}
       {% if dataset is not task.active_dataset %}
-        <a href="{{ url_root }}/autojudge_dataset/{{ dataset.id }}">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
+        <a href="{{ url_root }}/dataset/{{ dataset.id }}/autojudge">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
       {% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</a>
     </p>
@@ -201,10 +201,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
               {% set parameter_value = parameters[i] if dataset.task_type == task_type.__name__ and parameters is not None and i < len(parameters) else None %}
               <tr>
-                  <td>{{ param_def.name }}</td>
-                  <td>
-                      {% raw param_def.render("TaskTypeOptions_%d_%s_" % (dataset.id, task_type.__name__), parameter_value) %}
-                  </td>
+                <td>{{ param_def.name }}</td>
+                <td>
+                  {% raw param_def.render("TaskTypeOptions_%d_%s_" % (dataset.id, task_type.__name__), parameter_value) %}
+                </td>
               </tr>
             {% end %}
           </table>
@@ -215,14 +215,14 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         <tr>
           <td>Managers</td>
           <td>
-            <a href="{{ url_root }}/add_manager/{{ dataset.id }}">Add a manager</a></br>
+            <a href="{{ url_root }}/dataset/{{ dataset.id }}/managers/add">Add a manager</a></br>
             {% if len(dataset.managers) == 0 %}
               No managers.
             {% else %}
               {% for manager in dataset.managers.values() %}
                 <div class="manager">
                   <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
-                  - <a href="{{ url_root }}/delete_manager/{{ manager.id }}">Delete</a>
+                  - <a href="{{ url_root }}/dataset/{{ dataset.id }}/manager/{{ manager.id }}/delete">Delete</a>
                 </div>
               {% end %}
             {% end %}
@@ -250,8 +250,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
-      <a href="{{ url_root }}/add_testcase/{{ dataset.id }}">Add a testcase</a>
-      <a href="{{ url_root }}/add_testcases/{{ dataset.id }}">Add testcases</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
       <table class="bordered" style="text-align:center">
         <thead>
           <tr>
@@ -276,7 +276,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.output }}/output_{{ testcase.codename }}')">Show output</a>
             </td>
             <td>
-              <a href="{{ url_root }}/delete_testcase/{{ testcase.id }}">Delete</a>
+              <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete">Delete</a>
             </td>
           </tr>
           {% end %}

@@ -66,7 +66,14 @@ $(document).ready(init);
   <body class="admin">
     <div id="global">
       <div id="sidebar">
-        <h1>Administration</h1>
+        <div id="sidebar_header">
+          {% if contest is None %}
+          <h1 class="parent">Administration</h1>
+          {% else %}
+          <h1 class="parent"><a href="{{ url_root }}">Administration</a></h1>
+          <h1 class="child">{{ contest.name }}</h1>
+          {% end %}
+        </div>
         {% if config.secret_key == config.secret_key_default %}
         <div class="secret_notice">
           Change secret_key in cms.conf!<br/>
@@ -75,48 +82,125 @@ $(document).ready(init);
         </div>
         {% end %}
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
-          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/resourceslist{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}contest/{{ contest.id }}/overview{% end %}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is None %}resourceslist{% else %}contest/{{ contest.id }}/resourceslist{% end %}">Resource usage</a></li>
         </ul>
         <div class="hr"></div>
-        <select id="contest_selection_select" onchange="utils.switch_contest()">
-          <option value=null {% if contest is None %} selected {% end %}>Select a contest</option>
-          {% for i in contest_list %}
 
-          <option
-            value="{{ i.id }}"
-            {% if contest is not None and contest.id == i.id %}
-              selected
-            {% end %}
-          >
-            {{ i.name }} ({{ i.id }})
-          </option>
+        {% if contest is None %}
+        <h1>Contests</h1>
+        <ul class="menu">
+          {% if len(contest_list) < 1 %}
+          <li class="menu_entry">
+            No contests available
+          </li>
           {% end %}
-        </select>
-        <a href="{{ url_root }}/contest/add" alt="New contest" style="text-decoration: none;">+</a>
 
-          {% if contest is not None %}
-          <div class="sidebar_left">Contest:</div>
+          {% for c in contest_list[:5] %}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{ url_root }}/contest/{{ c.id }}" title="{{ c.description }}">
+              {{ c.name }}
+            </a>
+          </li>
+          {% end %}
+
+          {% if len(contest_list) > 5 %}
+          <li>
+            <a class="menu_link" href="{{ url_root }}/contests">
+              (show more...)
+            </a>
+          </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/contests/new">
+              (create new contest...)
+            </a>
+          </li>
+        </ul>
+
+        <h1>Tasks</h1>
+        <ul class="menu">
+          {% if len(task_list) < 1 %}
+          <li class="menu_entry">
+            No tasks available
+          </li>
+          {% end %}
+
+          {% for t in task_list[:5] %}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{ url_root }}/task/{{ t.id }}" title="{{ t.title }}">
+              {{ t.name }}
+            </a>
+          </li>
+          {% end %}
+
+          {% if len(task_list) > 5 %}
+          <li>
+            <a class="menu_link" href="{{ url_root }}/tasks">
+              (show more...)
+            </a>
+          </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/tasks/new">
+              (create new task...)
+            </a>
+          </li>
+        </ul>
+
+        <h1>Users</h1>
+        <ul class="menu">
+          {% if len(user_list) < 1 %}
+          <li class="menu_entry">
+            No users available
+          </li>
+          {% end %}
+
+          {% for u in user_list[:5] %}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{ url_root }}/user/{{ u.id }}" title="{{ u.first_name }} {{ u.last_name }}">
+              {{ u.username }}
+            </a>
+          </li>
+          {% end %}
+
+          {% if len(user_list) > 5 %}
+          <li>
+            <a class="menu_link" href="{{ url_root }}/users">
+              (show more...)
+            </a>
+          </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/users/new">
+              (create new user...)
+            </a>
+          </li>
+        </ul>
+        {% else %}
           <ul class="menu">
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/ranking/{{ contest.id }}">Ranking</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/submissions/{{ contest.id }}">Submissions</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/userlist/{{ contest.id }}">Users</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/tasklist/{{ contest.id }}">Tasks</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/announcements/{{ contest.id }}">Announcements</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/ranking">Ranking</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/submissions">Submissions</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/users">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/tasks">Tasks</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/announcements">Announcements</a></li>
             <li class="menu_entry">
               <span id="unanswered_questions" class="unread"
                 {% if unanswered == 0 %} style="display: none;" {% end %}>
                 {{ unanswered }}
               </span>
-              <a class="menu_link" href="{{ url_root }}/questions/{{ contest.id }}">Questions</a>
+              <a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/questions">Questions</a>
             </li>
           </ul>
           <div class="hr"></div>
-            {% if phase != 1 %}
+          {% if phase != 1 %}
           <div class="footer">Time left: <span id="remaining"></span></div>
-            {% end %}
           {% end %}
+        {% end %}
         <div class="cr_notice">CMS <a href="http://github.com/cms-dev/cms/">codebase</a> is released under the<br/><a href="http://www.gnu.org/licenses/agpl.txt">GNU Affero General Public License</a>.</div>
       </div>
 

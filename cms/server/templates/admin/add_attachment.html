@@ -4,7 +4,7 @@
 <div class="core_title">
   <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Upload attachment</h1>
 </div>
-<form enctype="multipart/form-data" action="{{ url_root }}/add_attachment/{{ task.id }}" method="POST">
+<form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}/attachments/add" method="POST">
   <input type="file" name="attachment"/><br/>
   <input type="submit" value="Upload">
   <input type="Reset" >

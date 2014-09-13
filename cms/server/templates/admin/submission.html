@@ -33,7 +33,7 @@
       </tr>
       <tr>
         <td>User</td>
-        <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
+        <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}">{{ s.participation.user.username }}</a></td>
       </tr>
       <tr>
         <td>Files</td>
@@ -115,7 +115,7 @@
 <h2 id="title_comment" class="toggling_on">Comment</h2>
 
 <div id="comment">
-  <form enctype="multipart/form-data" action="{{ url_root }}/submission_comment/{{ s.id }}/{{ shown_dataset.id }}" method="POST">
+  <form enctype="multipart/form-data" action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/comment" method="POST">
     <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea></br>
     <input type="submit"/>
     <input type="reset" value="Reset" />

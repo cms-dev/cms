@@ -57,11 +57,12 @@ class Contest(Base):
         Integer,
         primary_key=True)
 
-    # Short name of the contest, and longer description. Both human
-    # readable.
+    # Short name of the contest.
     name = Column(
         Unicode,
-        nullable=False)
+        nullable=False,
+        unique=True)
+    # Description of the contest (human readable).
     description = Column(
         Unicode,
         nullable=False)
@@ -194,7 +195,7 @@ class Contest(Base):
     # SQLAlchemy.
     # tasks (list of Task objects)
     # announcements (list of Announcement objects)
-    # users (list of User objects)
+    # participations (list of Participation objects)
 
     # Moreover, we have the following methods.
     # get_submissions (defined in __init__.py)
@@ -236,28 +237,22 @@ class Contest(Base):
         raise KeyError("Task not found")
 
     # FIXME - Use SQL syntax
-    def get_user(self, username, sql_session):
-        """Return the first user in the contest with the given name.
+    def get_participation(self, username):
+        """Return the first participation in the contest with the given
+        username.
 
         username (string): the name of the user we are interested in.
 
-        return (User): the corresponding user object.
+        return (Participation): the corresponding participation object.
 
-        raise (KeyError): if no users with the given name are found.
+        raise (KeyError): if no users with the given name participate.
 
         """
 
-        # Import here to avoid circular dependencies
-        from . import User, Participation
-
-        user = sql_session.query(User).filter(User.username == username)\
-            .filter(User.id.in_(
-                sql_session.query(Participation.user_id)
-                .filter(Participation.contest == self))).first()
-        if user is None:
-            raise KeyError("User not found")
-        else:
-            return user
+        for participation in self.participations:
+            if participation.user.username == username:
+                return participation
+        raise KeyError("Participation not found")
 
     def enumerate_files(self, skip_submissions=False, skip_user_tests=False,
                         skip_generated=False):
@@ -511,11 +506,11 @@ class Contest(Base):
         if timestamp is None:
             timestamp = make_datetime()
 
-        user = self.get_user(username)
+        participation = self.get_participation(username)
         task = self.get_task(task_name)
 
         # Take the list of the tokens already played (sorted by time).
-        tokens = user.get_tokens()
+        tokens = participation.get_tokens()
         token_timestamps_contest = sorted([token.timestamp
                                            for token in tokens])
         token_timestamps_task = sorted([
@@ -528,7 +523,7 @@ class Contest(Base):
         # from the start of the contest.
         start = self.start
         if self.per_user_time is not None:
-            start = user.starting_time
+            start = participation.starting_time
 
         # Compute separately for contest-wise and task-wise.
         res_contest = Contest._tokens_available(

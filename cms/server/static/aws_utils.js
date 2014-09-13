@@ -154,7 +154,7 @@ CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
         subject_string = $("<span>").text("Reply to your question. ");
     } else if (type == "new_question") {
         subject_string = $("<a>").text("New question: ")
-            .prop("href", this.url_root + '/questions/' + contest_id);
+            .prop("href", this.url_root + '/contest/' + contest_id + '/questions');
     }
 
     var self = this;
@@ -543,16 +543,6 @@ CMS.AWSUtils.prototype.standard_response = function(response) {
         return msg;
     }
     return "";
-};
-
-
-CMS.AWSUtils.prototype.switch_contest = function() {
-    var value = $("#contest_selection_select").val();
-    if (value == "null") {
-        window.location = this.url_root + "/";
-    } else {
-        window.location = this.url_root + "/contest/" + value;
-    }
 };
 
 

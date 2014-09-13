@@ -1,0 +1,63 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Users list</h1>
+</div>
+
+{% if len(config.contest_listen_port) > 0 %}
+  {% set ratio = round(len(contest.participations) * 1.0 / len(config.contest_listen_port), 2) %}
+  {% if ratio >= 40 %}
+    At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>
+    A CWS can handle 40 simultaneous request. This situation might cause many requests to fail.
+  {% end %}
+{% end %}
+
+<form action="{{ url_root }}/contest/{{ contest.id }}/users/add" method="POST">
+  Add a new user:
+  <select name="user_id">
+    <option value="null" selected>Select a new user</option>
+    {% for u in unassigned_users %}
+    <option value="{{ u.id }}">
+      {{ u.username }}
+    </option>
+    {% end %}
+  </select>
+  <input type="submit" value="Add user" />
+</form>
+
+<form action="{{ url_root }}/contest/{{ contest.id }}/users/edit" method="POST">
+  Edit selected user:
+  <input type="submit" name="operation" value="Remove from contest" />
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Username</th>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Reevaluate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in sorted(contest.participations, cmp = lambda x, y: cmp(x.user.username, y.user.username)) %}
+      <tr>
+        <td>
+          <input type="radio" name="user_id" value="{{ p.user.id }}"/>
+        </td>
+        <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+        <td>{{ p.user.first_name }}</td>
+        <td>{{ p.user.last_name }}</td>
+        <td>
+          {% set reevaluation_par_name = "user" %}
+          {% set reevaluation_par_value = p.user.id %}
+          {% set reevaluation_par_dataset_id = None %}
+          {% include reevaluation_buttons.html %}
+        </td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+</form>
+
+{% end %}

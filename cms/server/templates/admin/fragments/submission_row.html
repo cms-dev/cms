@@ -15,7 +15,7 @@
 {% end %}
 <tr>
   <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
-  <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
+  <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}">{{ s.participation.user.username }}</a></td>
   <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
   <td>
     {% if status == SubmissionResult.COMPILING %}
