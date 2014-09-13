@@ -1,42 +1,19 @@
 {% extends base.html %}
 
 {% block core %}
+
 <div class="core_title">
   <h1>Users list</h1>
 </div>
 
-{% if len(config.contest_listen_port) > 0 %}
-  {% set ratio = round(len(contest.users) * 1.0 / len(config.contest_listen_port), 2) %}
-  {% if ratio >= 40 %}
-    At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>
-    A CWS can handle 40 simultaneous request. This situation might cause many requests to fail.
-  {% end %}
-{% end %}
-
-<a href="{{ url_root }}/add_user/{{ contest.id }}">Add a new user</a>
-<table class="bordered">
-  <thead>
-    <tr>
-      <th>First name</th>
-      <th>Last name</th>
-      <th>Username</th>
-      <th>Reevaluate</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username)) %}
-    <tr>
-      <td>{{ u.first_name }}</td>
-      <td>{{ u.last_name }}</td>
-      <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
-      <td>
-        {% set reevaluation_par_name = "user" %}
-        {% set reevaluation_par_value = u.id %}
-        {% set reevaluation_par_dataset_id = None %}
-        {% include fragments/reevaluation_buttons.html %}
-      </td>
-    </tr>
+<div id="details">
+  <ul>
+    {% for u in user_list %}
+      <li>
+        <a href="{{ url_root}}/user/{{ u.id }}">{{ u.username }}</a> --- {{ u.first_name }} {{ u.last_name }}
+      </li>
     {% end %}
-  </tbody>
-</table>
+  </ul>
+</div>
+
 {% end %}

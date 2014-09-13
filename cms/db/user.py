@@ -164,11 +164,11 @@ class Participation(Base):
         index=True)
     contest = relationship(
         Contest,
-        backref=backref("users",
+        backref=backref("participations",
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    # Contest (id and object) to which the user is participating.
+    # User (id and object) which is participating.
     user_id = Column(
         Integer,
         ForeignKey(User.id,

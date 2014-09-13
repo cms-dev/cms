@@ -58,7 +58,7 @@ below, and wait for it to complete.
     {% include fragments/reevaluation_buttons.html %}
 </p>
 
-<form action="{{ url_root }}/activate_dataset/{{ dataset.id }}" method="POST">
+<form action="{{ url_root }}/dataset/{{ dataset.id }}/activate" method="POST">
 {% if len(changes) == 0 %}
 <p>Good news! At present, switching to this dataset will have no effect on the
 scores. No notifications will be sent.</p>

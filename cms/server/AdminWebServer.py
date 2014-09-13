@@ -50,8 +50,8 @@ import tornado.locale
 from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
-    Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
-    Testcase, SubmissionFormatElement, Statement, Participation
+    Submission, File, Task, Dataset, Attachment, Manager, Testcase, \
+    SubmissionFormatElement, Statement, Participation
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -229,12 +229,14 @@ class BaseHandler(CommonRequestHandler):
             # Keep "== None" in filter arguments. SQLAlchemy does not
             # understand "is None".
             params["unanswered"] = self.sql_session.query(Question)\
-                .join(User).join(Participation)\
+                .join(Participation)\
                 .filter(Participation.contest_id == self.contest.id)\
                 .filter(Question.reply_timestamp == None)\
                 .filter(Question.ignored == False)\
                 .count()  # noqa
         params["contest_list"] = self.sql_session.query(Contest).all()
+        params["task_list"] = self.sql_session.query(Task).all()
+        params["user_list"] = self.sql_session.query(User).all()
         return params
 
     def finish(self, *args, **kwds):
@@ -523,6 +525,330 @@ def SimpleContestHandler(page):
     return Cls
 
 
+class ContestsListHandler(BaseHandler):
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("contestlist.html", **self.r_params)
+
+
+class AssignContestUserHandler(BaseHandler):
+    def post(self, contest_id):
+        fallback_page = "/contest/%s/users" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            user_id = self.get_argument("user_id")
+            assert user_id != "null", "Please select a valid user"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        user = self.safe_get_item(User, user_id)
+
+        # Create the participation.
+        participation = Participation(contest=self.contest, user=user)
+        self.sql_session.add(participation)
+
+        if try_commit(self.sql_session, self):
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another user)
+        self.redirect(fallback_page)
+
+
+class AssignUserContestHandler(BaseHandler):
+    def post(self, user_id):
+        fallback_page = "/user/%s" % user_id
+
+        user = self.safe_get_item(User, user_id)
+
+        try:
+            contest_id = self.get_argument("contest_id")
+            assert contest_id != "null", "Please select a valid contest"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        # Create the participation.
+        participation = Participation(contest=self.contest, user=user)
+        self.sql_session.add(participation)
+
+        if try_commit(self.sql_session, self):
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another contest).
+        self.redirect(fallback_page)
+
+
+class EditUserContestHandler(BaseHandler):
+    def post(self, user_id):
+        fallback_page = "/user/%s" % user_id
+
+        user = self.safe_get_item(User, user_id)
+
+        try:
+            contest_id = self.get_argument("contest_id")
+            operation = self.get_argument("operation")
+            assert contest_id != "null", "Please select a valid contest"
+            assert operation in (
+                "Remove",
+            ), "Please select a valid operation"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        if operation == "Remove":
+            # Remove the participation.
+            participation = self.sql_session.query(Participation)\
+                .filter(Participation.user == user)\
+                .filter(Participation.contest == self.contest)\
+                .first()
+            self.sql_session.delete(participation)
+
+        if try_commit(self.sql_session, self):
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another contest).
+        self.redirect(fallback_page)
+
+
+class AssignContestTaskHandler(BaseHandler):
+    def post(self, contest_id):
+        fallback_page = "/contest/%s/tasks" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            task_id = self.get_argument("task_id")
+            # Check that the admin selected some task.
+            assert task_id != "null", "Please select a valid task"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        task = self.safe_get_item(Task, task_id)
+
+        # Assign the task to the contest.
+        task.num = len(self.contest.tasks)
+        task.contest = self.contest
+
+        if try_commit(self.sql_session, self):
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class ContestTasklistHandler(BaseHandler):
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.r_params["contest"] = self.contest
+        self.r_params["unassigned_tasks"] = \
+            self.sql_session.query(Task)\
+                .filter(Task.contest == None)\
+                .all()
+        self.render("contest_tasklist.html", **self.r_params)
+
+
+class EditContestTaskHandler(BaseHandler):
+    def post(self, contest_id):
+        fallback_page = "/contest/%s/tasks" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            task_id = self.get_argument("task_id")
+            operation = self.get_argument("operation")
+            assert operation in (
+                "Remove from contest",
+                "Move up",
+                "Move down"
+            ), "Please select a valid operation"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        task = self.safe_get_item(Task, task_id)
+        task2 = None
+
+        if operation == "Remove from contest":
+            # Save the current task_num (position in the contest).
+            task_num = task.num
+
+            # Unassign the task to the contest.
+            task.contest = None
+            task.num = None  # not strictly necessary
+
+            # Decrease by 1 the num of every subsequent task.
+            for t in self.sql_session.query(Task)\
+                         .filter(Task.contest == self.contest)\
+                         .filter(Task.num > task_num)\
+                         .all():
+                t.num -= 1
+
+        elif operation == "Move up":
+            task2 = self.sql_session.query(Task)\
+                        .filter(Task.contest == self.contest)\
+                        .filter(Task.num == task.num - 1)\
+                        .first()
+
+        elif operation == "Move down":
+            task2 = self.sql_session.query(Task)\
+                        .filter(Task.contest == self.contest)\
+                        .filter(Task.num == task.num + 1)\
+                        .first()
+
+        # Swap task.num and task2.num, if needed
+        if task2 is not None:
+            task.num, task2.num = task2.num, task.num
+
+        if try_commit(self.sql_session, self):
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class ContestUserlistHandler(BaseHandler):
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        self.r_params["contest"] = self.contest
+        self.r_params["unassigned_users"] = \
+            self.sql_session.query(User)\
+                .filter(User.id.notin_(
+                    self.sql_session.query(Participation.user_id)
+                        .filter(Participation.contest == self.contest)
+                        .all()))\
+                .all()
+        self.render("contest_userlist.html", **self.r_params)
+
+
+class EditContestUserHandler(BaseHandler):
+    def post(self, contest_id):
+        fallback_page = "/contest/%s/users" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            user_id = self.get_argument("user_id")
+            operation = self.get_argument("operation")
+            assert operation in (
+                "Remove from contest",
+            ), "Please select a valid operation"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        user = self.safe_get_item(User, user_id)
+
+        if operation == "Remove from contest":
+            # Unassign the user from the contest.
+            participation = self.sql_session.query(Participation)\
+                .filter(Participation.user == user)\
+                .filter(Participation.contest == self.contest)\
+                .first()
+            self.sql_session.delete(participation)
+
+        if try_commit(self.sql_session, self):
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class TasklistHandler(BaseHandler):
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("tasklist.html", **self.r_params)
+
+
+class UserlistHandler(BaseHandler):
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("userlist.html", **self.r_params)
+
+
+class UserViewHandler(BaseHandler):
+    def get(self, user_id):
+        user = self.safe_get_item(User, user_id)
+
+        self.r_params = self.render_params()
+        self.r_params["user"] = user
+        self.r_params["participations"] = \
+            self.sql_session.query(Participation)\
+                .filter(Participation.user == user)\
+                .all()
+        self.r_params["unassigned_contests"] = \
+            self.sql_session.query(Contest)\
+                .filter(not Contest.id.in_(
+                    self.sql_session.query(Participation.contest_id)
+                        .filter(Participation.user is user)
+                        .all()))\
+                .all()
+        self.render("user.html", **self.r_params)
+
+    def post(self, user_id):
+        fallback_page = "/user/%s" % user_id
+
+        user = self.safe_get_item(User, user_id)
+
+        try:
+            attrs = user.get_attrs()
+
+            self.get_string(attrs, "first_name")
+            self.get_string(attrs, "last_name")
+            self.get_string(attrs, "username", empty=None)
+            self.get_string(attrs, "password")
+            self.get_string(attrs, "email")
+            self.get_bool(attrs, "hidden")
+            self.get_string(attrs, "preferred_languages")
+            self.get_string(attrs, "timezone", empty=None)
+
+            assert attrs.get("username") is not None, \
+                "No username specified."
+
+            # Update the user.
+            user.set_attrs(attrs)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if try_commit(self.sql_session, self):
+            # Update the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+        self.redirect(fallback_page)
+
+
 class ResourcesListHandler(BaseHandler):
     def get(self, contest_id=None):
         if contest_id is not None:
@@ -578,6 +904,8 @@ class AddContestHandler(BaseHandler):
         self.render("add_contest.html", **self.r_params)
 
     def post(self):
+        fallback_page = "/contests/new"
+
         try:
             attrs = dict()
 
@@ -624,7 +952,7 @@ class AddContestHandler(BaseHandler):
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/contest/add")
+            self.redirect(fallback_page)
             return
 
         if try_commit(self.sql_session, self):
@@ -632,7 +960,7 @@ class AddContestHandler(BaseHandler):
             self.application.service.proxy_service.reinitialize()
             self.redirect("/contest/%s" % contest.id)
         else:
-            self.redirect("/contest/add")
+            self.redirect(fallback_page)
 
 
 class ContestHandler(BaseHandler):
@@ -711,6 +1039,8 @@ class AddStatementHandler(BaseHandler):
         self.render("add_statement.html", **self.r_params)
 
     def post(self, task_id):
+        fallback_page = "/task/%s/statements/add" % task_id
+
         task = self.safe_get_item(Task, task_id)
 
         language = self.get_argument("language", None)
@@ -719,7 +1049,7 @@ class AddStatementHandler(BaseHandler):
                 make_datetime(),
                 "No language code specified",
                 "The language code can be any string.")
-            self.redirect("/add_statement/%s" % task_id)
+            self.redirect(fallback_page)
             return
         statement = self.request.files["statement"][0]
         if not statement["filename"].endswith(".pdf"):
@@ -727,7 +1057,7 @@ class AddStatementHandler(BaseHandler):
                 make_datetime(),
                 "Invalid task statement",
                 "The task statement must be a .pdf file.")
-            self.redirect("/add_statement/%s" % task_id)
+            self.redirect(fallback_page)
             return
         task_name = task.name
         self.sql_session.close()
@@ -741,7 +1071,7 @@ class AddStatementHandler(BaseHandler):
                 make_datetime(),
                 "Task statement storage failed",
                 repr(error))
-            self.redirect("/add_statement/%s" % task_id)
+            self.redirect(fallback_page)
             return
 
         # TODO verify that there's no other Statement with that language
@@ -757,16 +1087,20 @@ class AddStatementHandler(BaseHandler):
         if try_commit(self.sql_session, self):
             self.redirect("/task/%s" % task_id)
         else:
-            self.redirect("/add_statement/%s" % task_id)
+            self.redirect(fallback_page)
 
 
 class DeleteStatementHandler(BaseHandler):
     """Delete a statement.
 
     """
-    def get(self, statement_id):
+    def get(self, task_id, statement_id):
         statement = self.safe_get_item(Statement, statement_id)
-        task = statement.task
+        task = self.safe_get_item(Task, task_id)
+
+        # Additional check.
+        if task is not statement.task:
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(statement)
 
@@ -786,6 +1120,8 @@ class AddAttachmentHandler(BaseHandler):
         self.render("add_attachment.html", **self.r_params)
 
     def post(self, task_id):
+        fallback_page = "/task/%s/attachments/add" % task_id
+
         task = self.safe_get_item(Task, task_id)
 
         attachment = self.request.files["attachment"][0]
@@ -801,7 +1137,7 @@ class AddAttachmentHandler(BaseHandler):
                 make_datetime(),
                 "Attachment storage failed",
                 repr(error))
-            self.redirect("/add_attachment/%s" % task_id)
+            self.redirect(fallback_page)
             return
 
         # TODO verify that there's no other Attachment with that filename
@@ -816,16 +1152,20 @@ class AddAttachmentHandler(BaseHandler):
         if try_commit(self.sql_session, self):
             self.redirect("/task/%s" % task_id)
         else:
-            self.redirect("/add_attachment/%s" % task_id)
+            self.redirect(fallback_page)
 
 
 class DeleteAttachmentHandler(BaseHandler):
     """Delete an attachment.
 
     """
-    def get(self, attachment_id):
+    def get(self, task_id, attachment_id):
         attachment = self.safe_get_item(Attachment, attachment_id)
-        task = attachment.task
+        task = self.safe_get_item(Task, task_id)
+
+        # Additional check.
+        if attachment.task is not task:
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(attachment)
 
@@ -847,6 +1187,8 @@ class AddManagerHandler(BaseHandler):
         self.render("add_manager.html", **self.r_params)
 
     def post(self, dataset_id):
+        fallback_page = "/dataset/%s/managers/add" % dataset_id
+
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
 
@@ -863,7 +1205,7 @@ class AddManagerHandler(BaseHandler):
                 make_datetime(),
                 "Manager storage failed",
                 repr(error))
-            self.redirect("/add_manager/%s" % dataset_id)
+            self.redirect(fallback_page)
             return
 
         self.sql_session = Session()
@@ -876,15 +1218,21 @@ class AddManagerHandler(BaseHandler):
         if try_commit(self.sql_session, self):
             self.redirect("/task/%s" % task.id)
         else:
-            self.redirect("/add_manager/%s" % dataset_id)
+            self.redirect(fallback_page)
 
 
 class DeleteManagerHandler(BaseHandler):
     """Delete a manager.
 
     """
-    def get(self, manager_id):
+    def get(self, dataset_id, manager_id):
         manager = self.safe_get_item(Manager, manager_id)
+        dataset = self.safe_get_item(Dataset, dataset_id)
+
+        # Additional check.
+        if manager.dataset is not dataset:
+            raise tornado.web.HTTPError(404)
+
         task = manager.dataset.task
 
         self.sql_session.delete(manager)
@@ -894,46 +1242,27 @@ class DeleteManagerHandler(BaseHandler):
 
 
 class AddDatasetHandler(BaseHandler):
-    """Add a dataset to a task.
+    """Add a new, clean dataset to a task.
 
     """
-    def get(self, task_id, dataset_id_to_copy):
+    def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
 
-        # We can either clone an existing dataset, or '-' for a new one.
-        if dataset_id_to_copy == '-':
-            original_dataset = None
-            description = "Default"
-        else:
-            try:
-                original_dataset = \
-                    self.safe_get_item(Dataset, dataset_id_to_copy)
-                description = "Copy of %s" % original_dataset.description
-            except ValueError:
-                raise tornado.web.HTTPError(404)
+        original_dataset = None
+        description = "Default"
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
-        self.r_params["clone_id"] = dataset_id_to_copy
+        self.r_params["clone_id"] = "new"
         self.r_params["original_dataset"] = original_dataset
-        self.r_params["original_dataset_task_type_parameters"] = \
-            json.loads(original_dataset.task_type_parameters) \
-            if original_dataset is not None else None
+        self.r_params["original_dataset_task_type_parameters"] = None
         self.r_params["default_description"] = description
         self.render("add_dataset.html", **self.r_params)
 
-    def post(self, task_id, dataset_id_to_copy):
-        task = self.safe_get_item(Task, task_id)
+    def post(self, task_id):
+        fallback_page = "/task/%s/new_dataset" % task_id
 
-        # We can either clone an existing dataset, or '-' for a new one.
-        if dataset_id_to_copy == '-':
-            original_dataset = None
-        else:
-            try:
-                original_dataset = \
-                    self.safe_get_item(Dataset, dataset_id_to_copy)
-            except ValueError:
-                raise tornado.web.HTTPError(404)
+        task = self.safe_get_item(Task, task_id)
 
         try:
             attrs = dict()
@@ -947,8 +1276,89 @@ class AddDatasetHandler(BaseHandler):
                     make_datetime(),
                     "Dataset name %r is already taken." % attrs["description"],
                     "Please choose a unique name for this dataset.")
-                self.redirect("/add_dataset/%s/%s" % (task_id,
-                                                      dataset_id_to_copy))
+                self.redirect(fallback_page)
+                return
+
+            self.get_time_limit(attrs, "time_limit")
+            self.get_memory_limit(attrs, "memory_limit")
+            self.get_task_type(attrs, "task_type", "TaskTypeOptions_")
+            self.get_score_type(attrs, "score_type", "score_type_parameters")
+
+            # Create the dataset.
+            attrs["autojudge"] = False
+            attrs["task"] = task
+            dataset = Dataset(**attrs)
+            self.sql_session.add(dataset)
+
+        except Exception as error:
+            logger.warning("Invalid field: %s" % (traceback.format_exc()))
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        # If the task does not yet have an active dataset, make this
+        # one active.
+        if task.active_dataset is None:
+            task.active_dataset = dataset
+
+        if try_commit(self.sql_session, self):
+            # self.application.service.scoring_service.reinitialize()
+            self.redirect("/task/%s" % task_id)
+        else:
+            self.redirect(fallback_page)
+
+
+class CloneDatasetHandler(BaseHandler):
+    """Clone a dataset by duplicating it (on the same task).
+
+    """
+    def get(self, dataset_id_to_copy):
+        dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
+        task = self.safe_get_item(Task, dataset.task_id)
+
+        try:
+            original_dataset = \
+                self.safe_get_item(Dataset, dataset_id_to_copy)
+            description = "Copy of %s" % original_dataset.description
+        except ValueError:
+            raise tornado.web.HTTPError(404)
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.r_params["clone_id"] = dataset_id_to_copy
+        self.r_params["original_dataset"] = original_dataset
+        self.r_params["original_dataset_task_type_parameters"] = \
+            json.loads(original_dataset.task_type_parameters)
+        self.r_params["default_description"] = description
+        self.render("add_dataset.html", **self.r_params)
+
+    def post(self, dataset_id_to_copy):
+        fallback_page = "/dataset/%s/clone" % dataset_id_to_copy
+
+        dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
+        task = self.safe_get_item(Task, dataset.task_id)
+        task_id = task.id
+
+        try:
+            original_dataset = \
+                self.safe_get_item(Dataset, dataset_id_to_copy)
+        except ValueError:
+            raise tornado.web.HTTPError(404)
+
+        try:
+            attrs = dict()
+
+            self.get_string(attrs, "description")
+
+            # Ensure description is unique.
+            if any(attrs["description"] == d.description
+                   for d in task.datasets):
+                self.application.service.add_notification(
+                    make_datetime(),
+                    "Dataset name %r is already taken." % attrs["description"],
+                    "Please choose a unique name for this dataset.")
+                self.redirect(fallback_page)
                 return
 
             self.get_time_limit(attrs, "time_limit")
@@ -966,7 +1376,7 @@ class AddDatasetHandler(BaseHandler):
             logger.warning("Invalid field.", exc_info=True)
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/add_dataset/%s/%s" % (task_id, dataset_id_to_copy))
+            self.redirect(fallback_page)
             return
 
         if original_dataset is not None:
@@ -984,8 +1394,7 @@ class AddDatasetHandler(BaseHandler):
         if try_commit(self.sql_session, self):
             self.redirect("/task/%s" % task_id)
         else:
-            self.redirect("/add_dataset/%s/%s" % (task_id,
-                                                  dataset_id_to_copy))
+            self.redirect(fallback_page)
 
 
 class RenameDatasetHandler(BaseHandler):
@@ -1002,6 +1411,8 @@ class RenameDatasetHandler(BaseHandler):
         self.render("rename_dataset.html", **self.r_params)
 
     def post(self, dataset_id):
+        fallback_page = "/dataset/%s/rename" % dataset_id
+
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
 
@@ -1014,7 +1425,7 @@ class RenameDatasetHandler(BaseHandler):
                 make_datetime(),
                 "Dataset name \"%s\" is already taken." % description,
                 "Please choose a unique name for this dataset.")
-            self.redirect("/rename_dataset/%s" % dataset_id)
+            self.redirect(fallback_page)
             return
 
         dataset.description = description
@@ -1022,7 +1433,7 @@ class RenameDatasetHandler(BaseHandler):
         if try_commit(self.sql_session, self):
             self.redirect("/task/%s" % task.id)
         else:
-            self.redirect("/rename_dataset/%s" % dataset_id)
+            self.redirect(fallback_page)
 
 
 class DeleteDatasetHandler(BaseHandler):
@@ -1156,6 +1567,8 @@ class AddTestcaseHandler(BaseHandler):
         self.render("add_testcase.html", **self.r_params)
 
     def post(self, dataset_id):
+        fallback_page = "/dataset/%s/testcases/add" % dataset_id
+
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
 
@@ -1169,7 +1582,7 @@ class AddTestcaseHandler(BaseHandler):
                 make_datetime(),
                 "Invalid data",
                 "Please fill both input and output.")
-            self.redirect("/add_testcase/%s" % dataset_id)
+            self.redirect(fallback_page)
             return
 
         public = self.get_argument("public", None) is not None
@@ -1190,7 +1603,7 @@ class AddTestcaseHandler(BaseHandler):
                 make_datetime(),
                 "Testcase storage failed",
                 repr(error))
-            self.redirect("/add_testcase/%s" % dataset_id)
+            self.redirect(fallback_page)
             return
 
         self.sql_session = Session()
@@ -1206,7 +1619,7 @@ class AddTestcaseHandler(BaseHandler):
             self.application.service.proxy_service.reinitialize()
             self.redirect("/task/%s" % task.id)
         else:
-            self.redirect("/add_testcase/%s" % dataset_id)
+            self.redirect(fallback_page)
 
 
 class AddTestcasesHandler(BaseHandler):
@@ -1223,6 +1636,8 @@ class AddTestcasesHandler(BaseHandler):
         self.render("add_testcases.html", **self.r_params)
 
     def post(self, dataset_id):
+        fallback_page = "/dataset/%s/testcases/add_multiple" % dataset_id
+
         # TODO: this method is quite long, some splitting is needed.
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -1234,7 +1649,7 @@ class AddTestcasesHandler(BaseHandler):
                 make_datetime(),
                 "Invalid data",
                 "Please choose tests archive.")
-            self.redirect("/add_testcases/%s" % dataset_id)
+            self.redirect(fallback_page)
             return
 
         public = self.get_argument("public", None) is not None
@@ -1311,7 +1726,7 @@ class AddTestcasesHandler(BaseHandler):
                             make_datetime(),
                             "Reading testcase %s failed" % codename,
                             repr(error))
-                        self.redirect("/add_testcases/%s" % dataset_id)
+                        self.redirect(fallback_page)
                         return
                     try:
                         input_digest = self.application.service\
@@ -1327,7 +1742,7 @@ class AddTestcasesHandler(BaseHandler):
                             make_datetime(),
                             "Testcase storage failed",
                             repr(error))
-                        self.redirect("/add_testcases/%s" % dataset_id)
+                        self.redirect(fallback_page)
                         return
                     testcase = Testcase(codename, public, input_digest,
                                         output_digest, dataset=dataset)
@@ -1338,7 +1753,7 @@ class AddTestcasesHandler(BaseHandler):
                             make_datetime(),
                             "Couldn't add test %s" % codename,
                             "")
-                        self.redirect("/add_testcases/%s" % dataset_id)
+                        self.redirect(fallback_page)
                         return
                     if codename not in overwritten_tc:
                         added_tc.append(codename)
@@ -1347,7 +1762,7 @@ class AddTestcasesHandler(BaseHandler):
                 make_datetime(),
                 "The selected file is not a zip file.",
                 "Please select a valid zip file.")
-            self.redirect("/add_testcases/%s" % dataset_id)
+            self.redirect(fallback_page)
             return
 
         self.application.service.add_notification(
@@ -1366,8 +1781,14 @@ class DeleteTestcaseHandler(BaseHandler):
     """Delete a testcase.
 
     """
-    def get(self, testcase_id):
+    def get(self, dataset_id, testcase_id):
         testcase = self.safe_get_item(Testcase, testcase_id)
+        dataset = self.safe_get_item(Dataset, dataset_id)
+
+        # Additional check.
+        if dataset is not testcase.dataset:
+            raise tornado.web.HTTPError(404)
+
         task = testcase.dataset.task
 
         self.sql_session.delete(testcase)
@@ -1379,14 +1800,12 @@ class DeleteTestcaseHandler(BaseHandler):
 
 
 class AddTaskHandler(BaseHandler):
-    def get(self, contest_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
-
+    def get(self):
         self.r_params = self.render_params()
         self.render("add_task.html", **self.r_params)
 
-    def post(self, contest_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
+    def post(self):
+        fallback_page = "/tasks/new"
 
         try:
             attrs = dict()
@@ -1418,15 +1837,13 @@ class AddTaskHandler(BaseHandler):
             self.get_string(attrs, "score_mode")
 
             # Create the task.
-            attrs["num"] = len(self.contest.tasks)
-            attrs["contest"] = self.contest
             task = Task(**attrs)
             self.sql_session.add(task)
 
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/add_task/%s" % contest_id)
+            self.redirect(fallback_page)
             return
 
         try:
@@ -1450,7 +1867,7 @@ class AddTaskHandler(BaseHandler):
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/add_task/%s" % contest_id)
+            self.redirect(fallback_page)
             return
 
         if try_commit(self.sql_session, self):
@@ -1458,7 +1875,7 @@ class AddTaskHandler(BaseHandler):
             self.application.service.proxy_service.reinitialize()
             self.redirect("/task/%s" % task.id)
         else:
-            self.redirect("/add_task/%s" % contest_id)
+            self.redirect(fallback_page)
 
 
 class TaskHandler(BaseHandler):
@@ -1569,7 +1986,7 @@ class DatasetSubmissionsHandler(BaseHandler):
             self.sql_session.query(Submission)\
                             .filter(Submission.task == task)\
                             .options(joinedload(Submission.task))\
-                            .options(joinedload(Submission.user))\
+                            .options(joinedload(Submission.participation))\
                             .options(joinedload(Submission.files))\
                             .options(joinedload(Submission.token))\
                             .options(joinedload(Submission.results))\
@@ -1589,10 +2006,10 @@ class RankingHandler(BaseHandler):
         # to generating the rankings.
         self.contest = self.sql_session.query(Contest)\
             .filter(Contest.id == contest_id)\
-            .options(joinedload('users'))\
-            .options(joinedload('users.submissions'))\
-            .options(joinedload('users.submissions.token'))\
-            .options(joinedload('users.submissions.results'))\
+            .options(joinedload('participations'))\
+            .options(joinedload('participations.submissions'))\
+            .options(joinedload('participations.submissions.token'))\
+            .options(joinedload('participations.submissions.results'))\
             .first()
 
         self.r_params = self.render_params()
@@ -1622,7 +2039,7 @@ class ContestSubmissionsHandler(BaseHandler):
         self.r_params["submissions"] = \
             self.sql_session.query(Submission).join(Task)\
                             .filter(Task.contest == contest)\
-                            .options(joinedload(Submission.user))\
+                            .options(joinedload(Submission.participation))\
                             .options(joinedload(Submission.files))\
                             .options(joinedload(Submission.token))\
                             .options(joinedload(Submission.results))\
@@ -1644,79 +2061,93 @@ class AddAnnouncementHandler(BaseHandler):
                                contest=self.contest)
             self.sql_session.add(ann)
             try_commit(self.sql_session, self)
-        self.redirect("/announcements/%s" % contest_id)
+        self.redirect("/contest/%s/announcements" % contest_id)
 
 
 class RemoveAnnouncementHandler(BaseHandler):
     """Called to remove an announcement.
 
     """
-    def get(self, ann_id):
+    def get(self, contest_id, ann_id):
         ann = self.safe_get_item(Announcement, ann_id)
-        contest_id = ann.contest.id
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        # Additional check.
+        if self.contest is not ann.contest:
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(ann)
 
         try_commit(self.sql_session, self)
-        self.redirect("/announcements/%s" % contest_id)
+        self.redirect("/contest/%s/announcements" % contest_id)
 
 
-class UserViewHandler(BaseHandler):
-    """Shows the details of a single user (submissions, questions,
-    messages), and allows to send the latters.
+class ParticipationHandler(BaseHandler):
+    """Shows the details of a single user in a contest: submissions,
+    questions, messages (and allows to send the latters).
 
     """
-    def get(self, user_id):
-        user = self.safe_get_item(User, user_id)
+    def get(self, contest_id, user_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+        participation = self.sql_session.query(Participation)\
+                            .filter(Participation.contest_id == contest_id)\
+                            .filter(Participation.user_id == user_id)\
+                            .first()
+
+        # Check that the participation is valid.
+        if participation is None:
+            raise tornado.web.HTTPError(404)
 
         self.r_params = self.render_params()
-        self.r_params["selected_user"] = user
-        self.r_params["submissions"] = user.submissions
-        self.render("user.html", **self.r_params)
+        self.r_params["participation"] = participation
+        self.r_params["submissions"] = participation.submissions
+        self.r_params["selected_user"] = participation.user
+        self.render("participation.html", **self.r_params)
 
-    def post(self, user_id):
-        user = self.safe_get_item(User, user_id)
+    def post(self, contest_id, user_id):
+        fallback_page = "/contest/%s/user/%s" % (contest_id, user_id)
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+        participation = self.sql_session.query(Participation)\
+                            .filter(Participation.contest_id == contest_id)\
+                            .filter(Participation.user_id == user_id)\
+                            .first()
+
+        # Check that the participation is valid.
+        if participation is None:
+            raise tornado.web.HTTPError(404)
 
         try:
-            attrs = user.get_attrs()
+            attrs = participation.get_attrs()
 
-            self.get_string(attrs, "first_name")
-            self.get_string(attrs, "last_name")
-            self.get_string(attrs, "username", empty=None)
             self.get_string(attrs, "password")
-            self.get_string(attrs, "email")
-
-            assert attrs.get("username") is not None, \
-                "No username specified."
-
             self.get_ip_address_or_subnet(attrs, "ip")
-
-            self.get_string(attrs, "timezone", empty=None)
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")
 
-            self.get_bool(attrs, "hidden")
-            self.get_string(attrs, "primary_statements")
-
-            # Update the user.
-            user.set_attrs(attrs)
+            # Update the participation.
+            participation.set_attrs(attrs)
 
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/user/%s" % user_id)
+            self.redirect(fallback_page)
             return
 
         if try_commit(self.sql_session, self):
             # Update the user on RWS.
             self.application.service.proxy_service.reinitialize()
-        self.redirect("/user/%s" % user_id)
+        self.redirect(fallback_page)
 
 
-class AddUserHandler(SimpleContestHandler("add_user.html")):
-    def post(self, contest_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
+class AddUserHandler(BaseHandler):
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("add_user.html", **self.r_params)
+
+    def post(self):
+        fallback_page = "/users/new"
 
         try:
             attrs = dict()
@@ -1730,25 +2161,19 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             assert attrs.get("username") is not None, \
                 "No username specified."
 
-            self.get_ip_address_or_subnet(attrs, "ip")
-
             self.get_string(attrs, "timezone", empty=None)
-            self.get_datetime(attrs, "starting_time")
-            self.get_timedelta_sec(attrs, "delay_time")
-            self.get_timedelta_sec(attrs, "extra_time")
 
             self.get_bool(attrs, "hidden")
-            self.get_string(attrs, "primary_statements")
+            self.get_string(attrs, "preferred_languages")
 
             # Create the user.
-            attrs["contest"] = self.contest
             user = User(**attrs)
             self.sql_session.add(user)
 
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/add_user/%s" % contest_id)
+            self.redirect(fallback_page)
             return
 
         if try_commit(self.sql_session, self):
@@ -1756,7 +2181,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             self.application.service.proxy_service.reinitialize()
             self.redirect("/user/%s" % user.id)
         else:
-            self.redirect("/add_user/%s" % contest_id)
+            self.redirect(fallback_page)
 
 
 class SubmissionViewHandler(BaseHandler):
@@ -1840,7 +2265,7 @@ class QuestionsHandler(BaseHandler):
 
         self.r_params = self.render_params()
         self.r_params["questions"] = self.sql_session.query(Question)\
-            .join(User).filter(User.contest_id == contest_id)\
+            .join(Participation).filter(Participation.contest_id == contest_id)\
             .order_by(Question.question_timestamp.desc())\
             .order_by(Question.id).all()
         self.render("questions.html", **self.r_params)
@@ -1850,10 +2275,14 @@ class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
 
     """
-    def post(self, question_id):
+    def post(self, contest_id, question_id):
         ref = self.get_argument("ref", "/")
         question = self.safe_get_item(Question, question_id)
-        self.contest = question.user.contest
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        # Additional check.
+        if self.contest is not question.participation.contest:
+            raise tornado.web.HTTPError(404)
 
         reply_subject_code = self.get_argument("reply_question_quick_answer",
                                                "")
@@ -1871,8 +2300,11 @@ class QuestionReplyHandler(BaseHandler):
         question.reply_timestamp = make_datetime()
 
         if try_commit(self.sql_session, self):
-            logger.info("Reply sent to user %s for question with id %s.",
-                        question.user.username, question_id)
+            logger.info("Reply sent to user %s in contest %s for "
+                        "question with id %s.",
+                        question.participation.user.username,
+                        question.participation.contest.name,
+                        question_id)
 
         self.redirect(ref)
 
@@ -1882,20 +2314,25 @@ class QuestionIgnoreHandler(BaseHandler):
     question.
 
     """
-    def post(self, question_id):
+    def post(self, contest_id, question_id):
         ref = self.get_argument("ref", "/")
-
-        # Fetch form data.
         question = self.safe_get_item(Question, question_id)
-        self.contest = question.participation.contest
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        # Additional check.
+        if self.contest is not question.participation.contest:
+            raise tornado.web.HTTPError(404)
 
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
         # Commit the change.
         question.ignored = should_ignore
         if try_commit(self.sql_session, self):
-            logger.info("Question '%s' by user %s %s",
-                        question.subject, question.user.username,
+            logger.info("Question '%s' by user %s in contest %s has "
+                        "been %s",
+                        question.subject,
+                        question.participation.user.username,
+                        question.participation.contest.name,
                         ["unignored", "ignored"][should_ignore])
 
         self.redirect(ref)
@@ -1906,19 +2343,28 @@ class MessageHandler(BaseHandler):
 
     """
 
-    def post(self, user_id):
+    def post(self, contest_id, user_id):
         user = self.safe_get_item(User, user_id)
-        self.contest = user.contest
+        self.contest = self.safe_get_item(Contest, contest_id)
+        participation = self.sql_session.query(Participation)\
+            .filter(Participation.contest == self.contest)\
+            .filter(Participation.user == user)\
+            .first()
+
+        # check that the participation is valid
+        if participation is None:
+            raise tornado.web.HTTPError(404)
 
         message = Message(make_datetime(),
                           self.get_argument("message_subject", ""),
                           self.get_argument("message_text", ""),
-                          user=user)
+                          participation=participation)
         self.sql_session.add(message)
         if try_commit(self.sql_session, self):
-            logger.info("Message submitted to user %s.", user.username)
+            logger.info("Message submitted to user %s in contest %s.",
+                        user.username, self.contest.name)
 
-        self.redirect("/user/%s" % user_id)
+        self.redirect("/contest/%s/user/%s" % (self.contest.id, user.id))
 
 
 class FileFromDigestHandler(FileHandler):
@@ -1946,12 +2392,13 @@ class NotificationsHandler(BaseHandler):
             .all()  # noqa
 
         for question in questions:
-            res.append({"type": "new_question",
-                        "timestamp":
-                        make_timestamp(question.question_timestamp),
-                        "subject": question.subject,
-                        "text": question.text,
-                        "contest_id": question.user.contest_id})
+            res.append({
+                "type": "new_question",
+                "timestamp": make_timestamp(question.question_timestamp),
+                "subject": question.subject,
+                "text": question.text,
+                "contest_id": question.participation.contest_id
+            })
 
         # Simple notifications
         for notification in self.application.service.notifications:
@@ -1966,48 +2413,92 @@ class NotificationsHandler(BaseHandler):
 
 _aws_handlers = [
     (r"/", MainHandler),
-    (r"/([0-9]+)", MainHandler),
-    (r"/contest/([0-9]+)", ContestHandler),
-    (r"/announcements/([0-9]+)", SimpleContestHandler("announcements.html")),
-    (r"/userlist/([0-9]+)", SimpleContestHandler("userlist.html")),
-    (r"/tasklist/([0-9]+)", SimpleContestHandler("tasklist.html")),
-    (r"/contest/add", AddContestHandler),
-    (r"/ranking/([0-9]+)", RankingHandler),
-    (r"/ranking/([0-9]+)/([a-z]+)", RankingHandler),
-    (r"/submissions/([0-9]+)", ContestSubmissionsHandler),
-    (r"/task/([0-9]+)", TaskHandler),
-    (r"/dataset/([0-9]+)", DatasetSubmissionsHandler),
-    (r"/add_task/([0-9]+)", AddTaskHandler),
-    (r"/add_statement/([0-9]+)", AddStatementHandler),
-    (r"/delete_statement/([0-9]+)", DeleteStatementHandler),
-    (r"/add_attachment/([0-9]+)", AddAttachmentHandler),
-    (r"/delete_attachment/([0-9]+)", DeleteAttachmentHandler),
-    (r"/add_manager/([0-9]+)", AddManagerHandler),
-    (r"/delete_manager/([0-9]+)", DeleteManagerHandler),
-    (r"/add_dataset/([0-9]+)/(-|[0-9]+)", AddDatasetHandler),
-    (r"/rename_dataset/([0-9]+)", RenameDatasetHandler),
-    (r"/delete_dataset/([0-9]+)", DeleteDatasetHandler),
-    (r"/activate_dataset/([0-9]+)", ActivateDatasetHandler),
-    (r"/autojudge_dataset/([0-9]+)", ToggleAutojudgeDatasetHandler),
-    (r"/add_testcase/([0-9]+)", AddTestcaseHandler),
-    (r"/add_testcases/([0-9]+)", AddTestcasesHandler),
-    (r"/delete_testcase/([0-9]+)", DeleteTestcaseHandler),
-    (r"/user/([0-9]+)", UserViewHandler),
-    (r"/add_user/([0-9]+)", AddUserHandler),
-    (r"/add_announcement/([0-9]+)", AddAnnouncementHandler),
-    (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
-    (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionViewHandler),
-    (r"/submission_file/([0-9]+)", SubmissionFileHandler),
-    (r"/submission_comment/([0-9]+)(?:/([0-9]+))?", SubmissionCommentHandler),
-    (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
-    (r"/message/([0-9]+)", MessageHandler),
-    (r"/question/([0-9]+)", QuestionReplyHandler),
-    (r"/ignore_question/([0-9]+)", QuestionIgnoreHandler),
-    (r"/questions/([0-9]+)", QuestionsHandler),
     (r"/resourceslist", ResourcesListHandler),
-    (r"/resourceslist/([0-9]+)", ResourcesListHandler),
     (r"/resources", ResourcesHandler),
     (r"/resources/([0-9]+|all)", ResourcesHandler),
     (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
     (r"/notifications", NotificationsHandler),
+
+    # Contest
+
+    (r"/contests", ContestsListHandler),
+    (r"/contests/new", AddContestHandler),
+    (r"/contest/([0-9]+)", ContestHandler),
+    (r"/contest/([0-9]+)/overview", MainHandler),
+    (r"/contest/([0-9]+)/resourceslist", ResourcesListHandler),
+
+    # Contest's users
+
+    (r"/contest/([0-9]+)/users", ContestUserlistHandler),
+    (r"/contest/([0-9]+)/users/add", AssignContestUserHandler),
+    (r"/contest/([0-9]+)/users/edit", EditContestUserHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)", ParticipationHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
+
+    # Contest's tasks
+
+    (r"/contest/([0-9]+)/tasks", ContestTasklistHandler),
+    (r"/contest/([0-9]+)/tasks/add", AssignContestTaskHandler),
+    (r"/contest/([0-9]+)/tasks/edit", EditContestTaskHandler),
+
+    # Contest's submissions
+
+    (r"/contest/([0-9]+)/submissions", ContestSubmissionsHandler),
+
+    # Contest's announcements
+
+    (r"/contest/([0-9]+)/announcements", SimpleContestHandler("announcements.html")),
+    (r"/contest/([0-9]+)/announcements/new", AddAnnouncementHandler),
+    (r"/contest/([0-9]+)/announcement/([0-9]+)/delete", RemoveAnnouncementHandler),
+
+    # Contest's questions
+
+    (r"/contest/([0-9]+)/questions", QuestionsHandler),
+    (r"/contest/([0-9]+)/question/([0-9]+)/reply", QuestionReplyHandler),
+    (r"/contest/([0-9]+)/question/([0-9]+)/ignore", QuestionIgnoreHandler),
+
+    # Contest's ranking
+
+    (r"/contest/([0-9]+)/ranking", RankingHandler),
+    (r"/contest/([0-9]+)/ranking/([a-z]+)", RankingHandler),
+
+    # Tasks
+
+    (r"/tasks", TasklistHandler),
+    (r"/tasks/new", AddTaskHandler),
+    (r"/task/([0-9]+)", TaskHandler),
+    (r"/task/([0-9]+)/new_dataset", AddDatasetHandler),
+    (r"/task/([0-9]+)/statements/add", AddStatementHandler),
+    (r"/task/([0-9]+)/statement/([0-9]+)/delete", DeleteStatementHandler),
+    (r"/task/([0-9]+)/attachments/add", AddAttachmentHandler),
+    (r"/task/([0-9]+)/attachment/([0-9]+)/delete", DeleteAttachmentHandler),
+
+    # Datasets
+
+    (r"/dataset/([0-9]+)", DatasetSubmissionsHandler),
+    (r"/dataset/([0-9]+)/clone", CloneDatasetHandler),
+    (r"/dataset/([0-9]+)/rename", RenameDatasetHandler),
+    (r"/dataset/([0-9]+)/delete", DeleteDatasetHandler),
+    (r"/dataset/([0-9]+)/activate", ActivateDatasetHandler),
+    (r"/dataset/([0-9]+)/autojudge", ToggleAutojudgeDatasetHandler),
+    (r"/dataset/([0-9]+)/managers/add", AddManagerHandler),
+    (r"/dataset/([0-9]+)/manager/([0-9]+)/delete", DeleteManagerHandler),
+    (r"/dataset/([0-9]+)/testcases/add", AddTestcaseHandler),
+    (r"/dataset/([0-9]+)/testcases/add_multiple", AddTestcasesHandler),
+    (r"/dataset/([0-9]+)/testcase/([0-9]+)/delete", DeleteTestcaseHandler),
+
+    # Users
+
+    (r"/users", UserlistHandler),
+    (r"/users/new", AddUserHandler),
+    (r"/user/([0-9]+)", UserViewHandler),
+    (r"/user/([0-9]+)/add_participation", AssignUserContestHandler),
+    (r"/user/([0-9]+)/edit_participation", EditUserContestHandler),
+
+    # Submissions
+
+    (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionViewHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
+    (r"/submission_file/([0-9]+)", SubmissionFileHandler),
+    (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
 ]

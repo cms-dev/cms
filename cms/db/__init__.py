@@ -201,16 +201,16 @@ def get_submission_results_for_dataset(self, dataset):
 Dataset.get_submission_results = get_submission_results_for_dataset
 
 
-# The following is a method of User that cannot be put in the right
+# The following is a method of Participation that cannot be put in the right
 # file because of circular dependencies.
 
 def get_tokens(self):
-    """Returns a list of tokens used by a user.
+    """Returns a list of tokens used by a user participation.
 
     returns (list): list of tokens.
 
     """
     return self.sa_session.query(Token)\
-               .join(Submission).filter(Submission.user == self).all()
+               .join(Submission).filter(Submission.participation == self).all()
 
-User.get_tokens = get_tokens
+Participation.get_tokens = get_tokens

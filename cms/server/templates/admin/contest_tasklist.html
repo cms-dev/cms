@@ -1,0 +1,54 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Tasks list of <a href="{{ url_root }}/contest/{{ contest.id }}">{{ contest.name }}</a></h1>
+</div>
+
+<form action="{{ url_root }}/contest/{{ contest.id }}/tasks/add" method="POST">
+  Add a new task:
+  <select name="task_id">
+    <option value="null" selected>Select a new task</option>
+    {% for t in unassigned_tasks %}
+    <option value="{{ t.id }}">
+      {{ t.name }}
+    </option>
+    {% end %}
+  </select>
+  <input type="submit" value="Add task" />
+</form>
+
+<form action="{{ url_root }}/contest/{{ contest.id }}/tasks/edit" method="POST">
+  Edit selected task:
+  <input type="submit" name="operation" value="Move up" />
+  <input type="submit" name="operation" value="Move down" />
+  <input type="submit" name="operation" value="Remove from contest" />
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Title</th>
+        <th>Name</th>
+        <th>Reevaluate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in contest.tasks %}
+      <tr>
+        <td>
+          <input type="radio" name="task_id" value="{{ t.id }}"/>
+        </td>
+        <td>{{ t.title }}</td>
+        <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
+        <td>
+          {% set reevaluation_par_name = "dataset" %}
+          {% set reevaluation_par_value = t.active_dataset_id %}
+          {% set reevaluation_par_dataset_id = None %}
+          {% include reevaluation_buttons.html %}
+        </td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+</form>
+{% end %}

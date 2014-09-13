@@ -22,11 +22,12 @@ $("select[name=task_type]").change(showTaskTypeOption);
   <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Create dataset</h1>
 </div>
 
-{% if original_dataset is not None %}
+{% if original_dataset is None %}
+<form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}/new_dataset" method="POST">
+{% else %}
 You are cloning the dataset "{{ original_dataset.description }}".
+<form enctype="multipart/form-data" action="{{ url_root }}/dataset/{{ clone_id }}/clone" method="POST">
 {% end %}
-
-<form enctype="multipart/form-data" action="{{ url_root }}/add_dataset/{{ task.id }}/{{ clone_id }}" method="POST">
   <table>
     <tr>
       <td>Description (each dataset must have a unique description):</td>

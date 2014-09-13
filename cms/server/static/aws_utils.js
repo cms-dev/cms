@@ -546,16 +546,6 @@ CMS.AWSUtils.prototype.standard_response = function(response) {
 };
 
 
-CMS.AWSUtils.prototype.switch_contest = function() {
-    var value = $("#contest_selection_select").val();
-    if (value == "null") {
-        window.location = this.url_root + "/";
-    } else {
-        window.location = this.url_root + "/contest/" + value;
-    }
-};
-
-
 CMS.AWSUtils.prototype.show_page = function(item, page, elements_per_page) {
     elements_per_page = elements_per_page || 5;
 

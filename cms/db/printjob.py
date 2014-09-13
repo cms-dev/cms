@@ -29,7 +29,7 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Unicode, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, User
+from . import Base, Participation
 
 
 class PrintJob(Base):
@@ -43,15 +43,15 @@ class PrintJob(Base):
         Integer,
         primary_key=True)
 
-    # User (id and object) that did the submission.
-    user_id = Column(
+    # Participation (id and object) that did the submission.
+    participation_id = Column(
         Integer,
-        ForeignKey(User.id,
+        ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user = relationship(
-        User,
+    participation = relationship(
+        Participation,
         backref=backref("printjobs",
                         cascade="all, delete-orphan",
                         passive_deletes=True))

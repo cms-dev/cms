@@ -3,14 +3,14 @@
 {% block core %}
 
 <div class="core_title">
-  <h1>Tasks list</h1>
+  <h1>Contests list</h1>
 </div>
 
 <div id="details">
   <ul>
-    {% for t in task_list %}
+    {% for c in contest_list %}
       <li>
-        <a href="{{ url_root}}/task/{{ t.id }}">{{ t.name }}</a> --- {{ t.title }}
+        <a href="{{ url_root}}/contest/{{ c.id }}">{{ c.name }}</a> --- {{ c.description }}
       </li>
     {% end %}
   </ul>

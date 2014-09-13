@@ -35,7 +35,7 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, User, Task, Dataset, Testcase
+from . import Base, Participation, Task, Dataset, Testcase
 from .smartmappedcollection import smart_mapped_collection
 
 from cmscommon.datetime import make_datetime
@@ -52,15 +52,16 @@ class Submission(Base):
         Integer,
         primary_key=True)
 
-    # User (id and object) that did the submission.
-    user_id = Column(
+    # User and Contest, thus Participation (id and object) that did the
+    # submission.
+    participation_id = Column(
         Integer,
-        ForeignKey(User.id,
+        ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user = relationship(
-        User,
+    participation = relationship(
+        Participation,
         backref=backref("submissions",
                         cascade="all, delete-orphan",
                         passive_deletes=True))

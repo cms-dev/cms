@@ -5,7 +5,7 @@
 <div class="core_title">
   <h1>Ranking</h1>
 </div>
-Download as <a href="{{ url_root }}/ranking/{{ contest.id }}/csv">csv</a>, <a href="{{ url_root }}/ranking/{{ contest.id }}/txt">text</a>.
+Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a>, <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/txt">text</a>.
 <table class="bordered">
   <thead>
     <tr>
@@ -18,15 +18,15 @@ Download as <a href="{{ url_root }}/ranking/{{ contest.id }}/csv">csv</a>, <a hr
     </tr>
   </thead>
   <tbody>
-    {% for user in sorted(contest.users, key=lambda u: u.username) %}
-      {% if not user.hidden %}
+    {% for p in sorted(contest.participations, key=lambda u: u.user.username) %}
+      {% if not p.user.hidden %}
     <tr>
       {% set score = 0.0 %}
       {% set partial = False %}
-      <td><a href="{{ url_root }}/user/{{ user.id }}">{{ user.username }}</a></td>
-      <td>{{ "%s %s" % (user.first_name, user.last_name) }}</td>
+      <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+      <td>{{ "%s %s" % (p.user.first_name, p.user.last_name) }}</td>
       {% for task in contest.tasks %}
-        {% set t_score, t_partial = task_score(user, task) %}
+        {% set t_score, t_partial = task_score(p, task) %}
         {% set t_score = round(t_score, task.score_precision) %}
         {% set score += t_score %}
         {% set partial = partial or t_partial %}

@@ -1,57 +1,57 @@
 {% extends base.html %}
 
-{% block js_init %}
-utils.show_page("submissions", 1, 50);
-{% end %}
-
-{% block js %}
-function question_reply_toggle(element, invoker)
-{
-  var obj = document.getElementsByClassName("reply_question")[element];
-  if (obj.style.display != "block")
-    {
-      obj.style.display = "block";
-      invoker.innerHTML = "Hide reply";
-    }
-  else
-    {
-      obj.style.display = "none";
-      invoker.innerHTML = "Reply";
-    }
-  return false;
-}
-
-function update_additional_answer(element, invoker)
-{
-  var obj = document.getElementsByClassName("alternative_answer")[element];
-  if (invoker.selectedIndex == 5)
-    obj.style.display = "block";
-  else
-    obj.style.display = "none";
-}
-{% end %}
-
 {% block core %}
 {% from cms.grading.scoretypes import get_score_type %}
 {% set score_types = {} %}
 
-<h1>{{ selected_user.first_name }} {{ selected_user.last_name }} ({{ selected_user.username }})</h1>
+<h1>{{ user.first_name }} {{ user.last_name }} ({{ user.username }})</h1>
 
-<h2 id="title_submissions" class="toggling_on">Submissions</h2>
-<div id="submissions">
+<h2 id="title_participations" class="toggling_on">Participations</h2>
+<div id="participations">
 
-  {% if submissions != [] %}
-  <p>
-    Reevaluate all {{ len(submissions) }} submissions for this user:
-    {% set reevaluation_par_name = "user" %}
-    {% set reevaluation_par_value = selected_user.id %}
-    {% set reevaluation_par_dataset_id = None %}
-    {% include fragments/reevaluation_buttons.html %}
-  </p>
+  <form action="{{ url_root }}/user/{{ user.id }}/add_participation" method="POST">
+    Add a new participation:
+    <select name="contest_id">
+      <option value="null" selected>Select a contest</option>
+      {% for c in unassigned_contests %}
+      <option value="{{ c.id }}">
+        {{ c.name }}
+      </option>
+      {% end %}
+    </select>
+    <input type="submit" value="Add participation" />
+  </form>
+
+  {% if participations == [] %}
+  <p>No participations found.</p>
+  {% else %}
+  <form action="{{ url_root }}/user/{{ user.id }}/edit_participation" method="POST">
+    Edit selected participation:
+    <input type="submit" name="operation" value="Remove" />
+    <table class="bordered">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Participation</th>
+          <th>Contest</th>
+          <th>Contest description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in participations %}
+        <tr>
+          <td>
+            <input type="radio" name="contest_id" value="{{ p.contest.id }}"/>
+          </td>
+          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}">{{ p.contest.name }}</a></td>
+          <td>{{ p.contest.description }}</td>
+        </tr>
+        {% end %}
+      </tbody>
+    </table>
+  </form>
   {% end %}
-
-  {% include fragments/submission_rows.html %}
-
   <div class="hr"></div>
 </div>
 
@@ -59,154 +59,45 @@ function update_additional_answer(element, invoker)
 <h2 id="title_general_info" class="toggling_on">General Information</h2>
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-  <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ selected_user.id }}" method="POST">
+  <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ user.id }}" method="POST">
     <table>
       <tr>
         <td>First name</td>
-        <td><input type="text" name="first_name" value="{{ selected_user.first_name }}"/></td>
+        <td><input type="text" name="first_name" value="{{ user.first_name }}"/></td>
       </tr>
       <tr>
         <td>Last name</td>
-        <td><input type="text" name="last_name" value="{{ selected_user.last_name }}"/></td>
+        <td><input type="text" name="last_name" value="{{ user.last_name }}"/></td>
       </tr>
       <tr>
         <td>Username</td>
-        <td><input type="text" name="username" value="{{ selected_user.username }}"/></td>
+        <td><input type="text" name="username" value="{{ user.username }}"/></td>
       </tr>
       <tr>
         <td>Password</td>
         <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ selected_user.password }}"/></td>
+        <td><input type="text" name="password" value="{{ user.password }}"/></td>
       </tr>
       <tr>
         <td>Email</td>
-        <td><input type="text" name="email" value="{{ selected_user.email if selected_user.email is not None else "" }}"/></td>
-      </tr>
-      <tr>
-        <td>IP address or subnet</td>
-        <td><input type="text" name="ip" value="{{ selected_user.ip if selected_user.ip is not None else "" }}"/></td>
+        <td><input type="text" name="email" value="{{ user.email if user.email is not None else "" }}"/></td>
       </tr>
       <tr>
         <td>Timezone (like "Europe/Rome", "America/New_York", ...)</td>
-        <td><input type="text" name="timezone" value="{{ selected_user.timezone if selected_user.timezone is not None else "" }}"></td>
-      </tr>
-      <tr>
-        <td>First login time during contest (in UTC)</td>
-        <td><input type="text" name="starting_time" value="{{ str(selected_user.starting_time) if selected_user.starting_time is not None else "" }}"></td>
-      </tr>
-      <tr>
-        <td>Delay (in seconds)</td>
-        <td><input type="text" name="delay_time" value="{{ int(selected_user.delay_time.total_seconds()) }}"></td>
-      </tr>
-      <tr>
-        <td>Extra time (in seconds)</td>
-        <td><input type="text" name="extra_time" value="{{ int(selected_user.extra_time.total_seconds()) }}"></td>
+        <td><input type="text" name="timezone" value="{{ user.timezone if user.timezone is not None else "" }}"></td>
       </tr>
       <tr>
         <td>Hidden?</td>
-        <td><input type="checkbox" name="hidden" {% if selected_user.hidden %}checked{% end %}/></td>
+        <td><input type="checkbox" name="hidden" {% if user.hidden %}checked{% end %}/></td>
       </tr>
       <tr>
-        <td>Primary statements (JSON-encoded dict whose keys are task names and whose values are lists of language codes)</td>
-        <td><input type="text" name="primary_statements" value="{{ selected_user.primary_statements }}"></td>
+        <td>Preferred languages (JSON-encoded list of language codes, from the most to the least preferred)</td>
+        <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages }}"></td>
       </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />
   </form>
-  <div class="hr"></div>
-</div>
-
-
-<h2 id="title_questions" class="toggling_on">Questions</h2>
-<div id="questions">
-  {% if selected_user.questions != [] %}
-  <div class="notifications">
-    {% for msg_i, msg in enumerate(selected_user.questions) %}
-    <div class="notification communication">
-      <div class="notification_msg">
-        <div class="notification_timestamp">{{ str(msg.question_timestamp) }}</div>
-        <div class="notification_subject">{{ msg.subject }}</div>
-        <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
-        {% if msg.reply_timestamp is not None %}
-        <div class="notification_subject">Reply. {{ msg.reply_subject }}</div>
-        <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
-        {% else %}
-        <div class="notification_subject">Not yet replied.</div>
-        {% end %}
-        <div class="reply_question_toggle">
-          <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
-        </div>
-        <div class="reply_question" >
-          <hr/>
-          <form class="reply_question_form" action="{{ url_root }}/question/{{ msg.id }}" method="POST">
-            <input type="hidden" name="ref" value="/user/{{ selected_user.id }}"/>
-            Precompiled answer:
-            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-              <option value="answered">Answered in task description</option>
-              <option value="invalid">Invalid question</option>
-              <option value="nocomment">No comment</option>
-              <option selected value="other">Other</option>
-            </select>
-            <br/>
-            <div class="alternative_answer">
-              Alternative answer:<br/>
-              <textarea name="reply_question_text"></textarea><br/>
-            </div>
-            <input type="submit" value="Send"/>
-          </form>
-        </div>
-      </div>
-    </div>
-    {% end %}
-  </div>
-
-  {% else %}
-  No questions.
-
-  {% end %}
-  <div class="hr"></div>
-</div>
-
-
-<h2 id="title_messages" class="toggling_on">Messages</h2>
-<div id="messages">
-
-  <div class="notifications">
-      <div class="notification communication">
-        <form id="send_message_form" action="{{ url_root }}/message/{{ selected_user.id }}" method="POST">
-          <div class="notification_msg">
-            <div class="notification_subject">
-              Subject:
-              <input id="send_message_subject" type="text" name="message_subject" style="width: 100%" />
-            </div>
-            <div class="notification_text">
-              Text:
-              <textarea name="message_text" style="width: 100%" ></textarea>
-            </div>
-          <input type="submit" value="Send"/>
-          </div>
-        </form>
-      </div>
-
-    {% if selected_user.messages != [] %}
-
-      {% for msg_i, msg in enumerate(reversed(selected_user.messages)) %}
-      <div class="notification communication">
-        <div class="notification_msg">
-          <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
-          <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
-        </div>
-      </div>
-      {% end %}
-
-    {% else %}
-      No messages.
-    {% end %}
-  </div>
   <div class="hr"></div>
 </div>
 
