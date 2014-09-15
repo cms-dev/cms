@@ -1484,10 +1484,28 @@ class EvaluationService(TriggeredService):
         """Return the status of the queue.
 
         Parent method returns list of queues of each executor, but in
-        EvaluationService we have only one executor, so we cat just return
+        EvaluationService we have only one executor, so we can just take
         the first queue.
+
+        As evaluate operations are split by testcases, there are too
+        many entries in the queue to display, so we just take only one
+        operation of each (type, object_id, dataset_id)
+        tuple. Generally, we will see only one evaluate operation for
+        each submission in the queue status with the number of
+        testcase which will be evaluated next.
 
         return ([QueueEntry]): the list with the queued elements.
 
         """
-        return super(EvaluationService, self).queue_status()[0]
+        entries = super(EvaluationService, self).queue_status()[0]
+        already_added = set()
+        filtered_entries = []
+        for entry in entries:
+            key = (str(entry["item"]["type"]) + ":"
+                   + str(entry["item"]["object_id"]) + ":"
+                   + str(entry["item"]["dataset_id"]))
+            if key in already_added:
+                continue
+            filtered_entries.append(entry)
+            already_added.add(key)
+        return filtered_entries
