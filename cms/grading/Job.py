@@ -478,7 +478,7 @@ class JobGroup(object):
         job.input = testcase.input
         job.output = testcase.output
         job.info = "evaluate submission %d on testcase %s" % \
-                    (submission.id, testcase.codename)
+                   (submission.id, testcase.codename)
 
         jobs = {testcase.codename: job}
 

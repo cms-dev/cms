@@ -221,7 +221,7 @@ class ESOperation(QueueItem):
     USER_TEST_EVALUATION = "evaluate_test"
 
     # Testcase codename is only needed for EVALUATION type of operation
-    def __init__(self, type_, object_id, dataset_id, testcase_codename = None):
+    def __init__(self, type_, object_id, dataset_id, testcase_codename=None):
         self.type_ = type_
         self.object_id = object_id
         self.dataset_id = dataset_id
@@ -239,12 +239,14 @@ class ESOperation(QueueItem):
             and self.testcase_codename == other.testcase_codename
 
     def __hash__(self):
-        return hash((self.type_, self.object_id, self.dataset_id, self.testcase_codename))
+        return hash((self.type_, self.object_id, self.dataset_id,
+                     self.testcase_codename))
 
     def __str__(self):
         if self.type_ == ESOperation.EVALUATION:
             return "%s on %d against dataset %d, testcase %s" % (
-                self.type_, self.object_id, self.dataset_id, self.testcase_codename)
+                self.type_, self.object_id, self.dataset_id,
+                self.testcase_codename)
         else:
             return "%s on %d against dataset %d" % (
                 self.type_, self.object_id, self.dataset_id)
@@ -269,7 +271,8 @@ class ESOperation(QueueItem):
         session (Session): the database session to use;
         dataset (Dataset): a dataset for this operation;
         submission (Submission): a submission for this operation;
-        submission_result (SubmissionResult): a submission_result for this operation.
+        submission_result (SubmissionResult): a submission_result for this
+            operation.
 
         return (bool): True if the operation is still to be performed.
 
@@ -281,14 +284,18 @@ class ESOperation(QueueItem):
         result = True
         dataset = dataset or Dataset.get_from_id(self.dataset_id, session)
         if self.type_ == ESOperation.COMPILATION:
-            submission = submission or Submission.get_from_id(self.object_id, session)
-            submission_result = submission_result or submission.get_result_or_create(dataset)
+            submission = submission or \
+                Submission.get_from_id(self.object_id, session)
+            submission_result = submission_result or \
+                submission.get_result_or_create(dataset)
             result = submission_to_compile(submission_result)
         elif self.type_ == ESOperation.EVALUATION:
-            submission = submission or Submission.get_from_id(self.object_id, session)
-            submission_result = submission_result or submission.get_result_or_create(dataset)
+            submission = submission or \
+                Submission.get_from_id(self.object_id, session)
+            submission_result = submission_result or \
+                submission.get_result_or_create(dataset)
             result = submission_to_evaluate_on_testcase(submission_result,
-                self.testcase_codename)
+                                                        self.testcase_codename)
         elif self.type_ == ESOperation.USER_TEST_COMPILATION:
             user_test = UserTest.get_from_id(self.object_id, session)
             user_test_result = user_test.get_result_or_create(dataset)
@@ -439,8 +446,8 @@ class WorkerPool(object):
                                                     session)
                 dataset = Dataset.get_from_id(operation.dataset_id, session)
                 job_group = \
-                    JobGroup.from_submission_evaluation(submission, dataset,
-                        operation.testcase_codename)
+                    JobGroup.from_submission_evaluation(
+                        submission, dataset, operation.testcase_codename)
             elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
                 user_test = UserTest.get_from_id(operation.object_id, session)
                 dataset = Dataset.get_from_id(operation.dataset_id, session)
@@ -806,10 +813,11 @@ class EvaluationService(TriggeredService):
                     "session": session,
                     "dataset": dataset,
                     "submission": submission,
-                    "submission_result": submission.get_result_or_create(dataset)
+                    "submission_result":
+                    submission.get_result_or_create(dataset)
                 }
-                for operation, priority, timestamp in submission_get_operations(
-                        submission, dataset):
+                for operation, priority, timestamp in \
+                    submission_get_operations(submission, dataset):
                     new_operations += \
                         self.enqueue(operation, priority, timestamp,
                                      check_again=check_again, extra=extra)
@@ -840,7 +848,6 @@ class EvaluationService(TriggeredService):
         the queue.
 
         """
-        logger.info("MISSING start")
         counter = 0
         with SessionGen() as session:
             contest = session.query(Contest).\
@@ -853,7 +860,6 @@ class EvaluationService(TriggeredService):
             for user_test in contest.get_user_tests():
                 counter += self.user_test_enqueue_operations(user_test,
                                                              check_again=True)
-        logger.info("MISSING finish %d", counter)
 
         return counter
 
@@ -1028,7 +1034,7 @@ class EvaluationService(TriggeredService):
         else:
             # enqueue() returns the number of successful pushes.
             if super(EvaluationService, self).enqueue(
-                operation, priority, timestamp) > 0:
+               operation, priority, timestamp) > 0:
                 logger.info("ENQUEUE %s", operation)
                 return True
             return False
@@ -1049,10 +1055,12 @@ class EvaluationService(TriggeredService):
         """
         # Unpack the plus tuple. It's built in the RPC call to Worker's
         # execute_job_group method inside WorkerPool.acquire_worker.
-        type_, object_id, dataset_id, testcase_codename, side_data, shard = plus
+        type_, object_id, dataset_id, testcase_codename, side_data, shard = \
+            plus
 
         # Restore operation from it's fields
-        operation = ESOperation(type_, object_id, dataset_id, testcase_codename)
+        operation = ESOperation(type_, object_id, dataset_id,
+                                testcase_codename)
 
         # We notify the pool that the worker is available again for
         # further work (no matter how the current request turned out,
@@ -1124,7 +1132,8 @@ class EvaluationService(TriggeredService):
                 # evaluation for each testcase is available
 
                 dataset = Dataset.get_from_id(dataset_id, session)
-                if len(submission_result.evaluations) == len(dataset.testcases):
+                if len(submission_result.evaluations) == \
+                   len(dataset.testcases):
                     submission_result.set_evaluation_outcome()
                     submission_result.evaluation_tries += 1
                     self.evaluation_ended(submission_result)
@@ -1511,11 +1520,10 @@ class EvaluationService(TriggeredService):
         the first queue.
 
         As evaluate operations are split by testcases, there are too many
-        entries in the queue to display, so we just take only one 
-        operation of each (type, object_id, dataset_id) tuple. Generally,
-        we will see only one evaluate operation for each submission in
-        the queue status with the number of testcase which will be
-        evaluated next.
+        entries in the queue to display, so we just take only one operation
+        of each (type, object_id, dataset_id) tuple. Generally, we will see
+        only one evaluate operation for each submission in the queue status
+        with the number of testcase which will be evaluated next.
 
         return ([QueueEntry]): the list with the queued elements.
 
@@ -1524,7 +1532,9 @@ class EvaluationService(TriggeredService):
         already_added = set()
         filtered_entries = []
         for entry in entries:
-            key = str(entry["item"]["type"]) + ":" + str(entry["item"]["object_id"]) + ":" + str(entry["item"]["dataset_id"])
+            key = str(entry["item"]["type"]) + ":" + \
+                str(entry["item"]["object_id"]) + ":" + \
+                str(entry["item"]["dataset_id"])
             if key in already_added:
                 continue
             filtered_entries.append(entry)
