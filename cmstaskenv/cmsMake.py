@@ -320,9 +320,15 @@ def iter_GEN(name):
     for l in io.open(name, "rt", encoding="utf-8"):
         if l[:4] == "#ST:":
             st += 1
-        l = (" " + l).split("#")[0][1:].strip("\n")
+        if l[:6] == "#COPY:":
+            hardcoded = True
+            l = l[7:]
+        else:
+            hardcoded = False
+            l = (" " + l).split("#")[0][1:]
+        l = l.strip("\n")
         if l != "":
-            yield (l, st)
+            yield (hardcoded, l, st)
 
 
 def build_gen_list(base_dir, task_type):
@@ -372,7 +378,7 @@ def build_gen_list(base_dir, task_type):
     # usually generating inputs is a pretty long thing. Answer:
     # because cmsMake architecture, which is based on file timestamps,
     # doesn't make us able to understand which lines of gen/GEN have
-    # been changed. Douch! We'll have to thing better this thing for
+    # been changed. Douch! We'll have to think better this thing for
     # the new format we're developing.
     def make_input(assume=None):
         n = 0
@@ -380,15 +386,21 @@ def build_gen_list(base_dir, task_type):
             os.makedirs(input_dir)
         except OSError:
             pass
-        for (line, st) in iter_GEN(os.path.join(base_dir, gen_GEN)):
+        for (hardcoded, line, st) in iter_GEN(os.path.join(base_dir, gen_GEN)):
             print("Generating input # %d" % (n), file=sys.stderr)
-            with io.open(os.path.join(input_dir,
-                                      'input%d.txt' % (n)), 'wb') as fout:
-                call(base_dir,
-                     [gen_exe] + line.split(),
-                     stdout=fout)
-            command = [validator_exe, os.path.join(input_dir,
-                                                   'input%d.txt' % (n))]
+            new_input = os.path.join(input_dir, 'input%d.txt' % (n))
+            if hardcoded:
+                # Copy the file
+                print("> Copy input file from:", line)
+                hardcoded_input = os.path.join(base_dir, line)
+                shutil.copyfile(hardcoded_input, new_input)
+            else:
+                # Call the generator
+                with io.open(new_input, 'wb') as fout:
+                    call(base_dir,
+                         [gen_exe] + line.split(),
+                         stdout=fout)
+            command = [validator_exe, new_input]
             if st != 0:
                 command.append("%s" % st)
             call(base_dir, command)
