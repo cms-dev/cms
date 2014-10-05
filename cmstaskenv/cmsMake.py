@@ -411,14 +411,14 @@ def build_gen_list(base_dir, task_type):
             os.makedirs(input_dir)
         except OSError:
             pass
-        for (hardcoded, line, st) in testcases:
+        for (is_copy, line, st) in testcases:
             print("Generating input # %d" % (n), file=sys.stderr)
             new_input = os.path.join(input_dir, 'input%d.txt' % (n))
-            if hardcoded:
+            if is_copy:
                 # Copy the file
                 print("> Copy input file from:", line)
-                hardcoded_input = os.path.join(base_dir, line)
-                shutil.copyfile(hardcoded_input, new_input)
+                copy_input = os.path.join(base_dir, line)
+                shutil.copyfile(copy_input, new_input)
             else:
                 # Call the generator
                 with io.open(new_input, 'wb') as fout:
