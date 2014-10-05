@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -317,18 +317,40 @@ def build_text_list(base_dir, task_type):
 
 def iter_GEN(name):
     st = 0
-    for l in io.open(name, "rt", encoding="utf-8"):
-        if l[:4] == "#ST:":
-            st += 1
-        if l[:6] == "#COPY:":
-            hardcoded = True
-            l = l[7:]
+    for line in io.open(name, "rt", encoding="utf-8"):
+        line = line.strip()
+        splitted = line.split('#', 1)
+
+        if len(splitted) == 1:
+            # This line represents a testcase, otherwise
+            # it's just a blank
+            if splitted[0] != '':
+                yield (False, splitted[0], st)
+
         else:
-            hardcoded = False
-            l = (" " + l).split("#")[0][1:]
-        l = l.strip("\n")
-        if l != "":
-            yield (hardcoded, l, st)
+            testcase, comment = splitted
+            testcase = testcase.strip()
+            comment = comment.strip()
+            testcase_detected = testcase != ''
+            copy_testcase_detected = comment.startswith("COPY:")
+            subtask_detected = comment.startswith('ST:')
+
+            flags = [testcase_detected,
+                     copy_testcase_detected,
+                     subtask_detected]
+            if len([x for x in flags if x]) > 1:
+                raise Exception("No testcase and command in"
+                                " the same line allowed")
+
+            if testcase_detected:
+                yield (False, testcase, st)
+
+            if copy_testcase_detected:
+                yield (True, comment[5:].strip(), st)
+
+            # This line starts a new subtask
+            if subtask_detected:
+                st += 1
 
 
 def build_gen_list(base_dir, task_type):
@@ -358,8 +380,11 @@ def build_gen_list(base_dir, task_type):
 
     sol_exe = os.path.join(SOL_DIRNAME, SOL_FILENAME)
 
-    # Count non-trivial lines in GEN
-    testcase_num = len(list(iter_GEN(os.path.join(base_dir, gen_GEN))))
+    # Count non-trivial lines in GEN and establish which external
+    # files are needed for input generation
+    testcases = list(iter_GEN(os.path.join(base_dir, gen_GEN)))
+    testcase_num = len(testcases)
+    copy_files = [x[1] for x in testcases if x[0]]
 
     def compile_src(src, exe, lang, assume=None):
         if lang in ['cpp', 'c', 'pas']:
@@ -386,7 +411,7 @@ def build_gen_list(base_dir, task_type):
             os.makedirs(input_dir)
         except OSError:
             pass
-        for (hardcoded, line, st) in iter_GEN(os.path.join(base_dir, gen_GEN)):
+        for (hardcoded, line, st) in testcases:
             print("Generating input # %d" % (n), file=sys.stderr)
             new_input = os.path.join(input_dir, 'input%d.txt' % (n))
             if hardcoded:
@@ -428,7 +453,7 @@ def build_gen_list(base_dir, task_type):
                     functools.partial(compile_src, validator_src,
                                       validator_exe, validator_lang),
                     "compile the validator"))
-    actions.append(([gen_GEN, gen_exe, validator_exe],
+    actions.append(([gen_GEN, gen_exe, validator_exe] + copy_files,
                     map(lambda x: os.path.join(INPUT_DIRNAME,
                                                'input%d.txt' % (x)),
                         range(0, testcase_num)),

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -523,19 +523,23 @@ class YamlLoader(Loader):
 
                     else:
                         testcase, comment = splitted
-                        testcase_detected = testcase.strip() != '' or \
-                            comment.startswith("COPY:")
+                        testcase = testcase.strip()
                         comment = comment.strip()
+                        testcase_detected = testcase != ''
+                        copy_testcase_detected = comment.startswith("COPY:")
                         subtask_detected = comment.startswith('ST:')
 
-                        if testcase_detected and subtask_detected:
-                            raise Exception("No testcase and subtask in"
+                        flags = [testcase_detected,
+                                 copy_testcase_detected,
+                                 subtask_detected]
+                        if len([x for x in flags if x]) > 1:
+                            raise Exception("No testcase and command in"
                                             " the same line allowed")
 
                         # This line represents a testcase and contains a
                         # comment, but the comment doesn't start a new
                         # subtask
-                        if testcase_detected:
+                        if testcase_detected or copy_testcase_detected:
                             testcases += 1
 
                         # This line starts a new subtask
