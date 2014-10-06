@@ -39,4 +39,4 @@ Sandbox
 
 - *Symptom.* The Worker fails to evaluate a submission logging about an invalid (empty) output from the manager.
 
-  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```.
+  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```. Also, make sure that the checker was compiled for the architecture of the workers (e.g., 32 or 64 bits).
