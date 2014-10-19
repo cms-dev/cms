@@ -22,7 +22,11 @@ Instead, we provided CMS with tools to import a contest from a custom filesystem
 
 In order to make these tools compatible with your filesystem format, you have to write a simple Python module that converts your filesystem description to the internal CMS representation of the contest. This is not a hard task: you just have to write an extension of the class ``Loader`` in :gh_blob:`cmscontrib/BaseLoader.py`, implementing missing methods as required by the docstrings. You can use the loader for the Italian format at :gh_blob:`cmscontrib/YamlLoader.py` as a template.
 
-You can also use the Italian filesystem format, which is supported out-of-the-box by CMS. This is discouraged, though, because it evolved in a rather messy way and is now full of legacy behaviors and shortcomings. No compatibility in time is guaranteed with this format. If you want to use it anyway, an example of a contest written in this format is in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
+You can also use one of the two formats for which CMS have already a loader.
+
+- The Italian filesystem format supports all the features of CMS, but evolved in a rather messy way and is now full of legacy behaviors and shortcomings. No compatibility in time is guaranteed with this format. If you want to use it anyway, an example of a contest written in this format is in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
+
+- The `Polygon format <https://polygon.codeforces.com/>`_, which is the format used in several contests and by Codeforces. Polygon does not support all of CMS features, but having this importer is especially useful if you have a big repository of tasks in this format.
 
 
 Creating a contest from an exported contest
