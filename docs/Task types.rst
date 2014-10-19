@@ -36,6 +36,7 @@ If the admins want to provide a grader that takes care of reading the input and 
 
 If the output is compared with a diff, the outcome will be a float, 0.0 if the output is not correct, 1.0 if it is. If the output is validated by a comparator, you need to provide a manager called :file:`checker`. It must be an executable that:
 
+- is compiled statically (e.g., with ``-static`` using ``gcc`` or ``g++``);
 - takes three filenames as arguments (input, correct output and contestant's output);
 - writes on standard output the outcome (that is going to be used by the score type, and is usually a float between 0.0 and 1.0);
 - writes on standard error a message to forward to the contestant.
