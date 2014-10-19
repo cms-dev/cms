@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,6 +31,7 @@ from datetime import datetime
 from datetime import timedelta
 import xml.etree.ElementTree as ET
 
+from cms import config
 from cms.db import Contest, User, Task, Statement, \
     SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib.BaseLoader import Loader
@@ -328,10 +330,14 @@ class PolygonLoader(Loader):
             if os.path.exists(checker_src):
                 logger.info("Checker found, compiling")
                 checker_exe = os.path.join(task_path, "files", "checker")
+                testlib_path = "/usr/local/include/cms/testlib.h"
+                if not config.installed:
+                    testlib_path = os.path.join(os.path.dirname(__file__),
+                                                "polygon", "testlib.h")
                 os.system("cat %s | \
-                    sed 's$testlib.h$/usr/local/include/cms/testlib.h$' | \
+                    sed 's$testlib.h$%s$' | \
                     g++ -x c++ -O2 -static -o %s -" %
-                          (checker_src, checker_exe))
+                          (checker_src, testlib_path, checker_exe))
                 digest = self.file_cacher.put_file_from_path(
                     checker_exe,
                     "Manager for task %s" % name)
