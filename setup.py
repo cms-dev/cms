@@ -322,8 +322,8 @@ def install():
         _dir = os.path.join(_dir, "cms")
         makedir(_dir, cmsuser, 0770)
 
-    print("copying testlib:")
-    path = os.path.join("cmscontrib", "testlib.h")
+    print("copying Polygon testlib:")
+    path = os.path.join("cmscontrib", "polygon", "testlib.h")
     dest_path = os.path.join("/", "usr", "local", "include",
                              "cms", "testlib.h")
     copyfile(path, dest_path, root, 0644)

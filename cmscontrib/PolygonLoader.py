@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
@@ -42,8 +43,7 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
-# TODO: add all languages
-
+# TODO: add all languages.
 LANGUAGE_MAP = {'english': 'en', 'russian': 'ru'}
 
 
@@ -99,7 +99,7 @@ class PolygonLoader(Loader):
 
         name = os.path.split(self.path)[1]
 
-        logger.info("Loading parameters for contest %s." % name)
+        logger.info("Loading parameters for contest %s.", name)
 
         args = {}
 
@@ -108,46 +108,49 @@ class PolygonLoader(Loader):
 
         args['name'] = name
 
-        # TODO: find proper way to choose contest primary language
+        # TODO: find proper way to choose contest primary language.
 
         self.primary_language = root.find('names') \
             .find('name').attrib['language']
 
-        # all available contest languages are allowed to be used
+        # All available contest languages are allowed to be used.
 
         self.languages = []
         for alternative_name in root.find('names'):
             self.languages.append(alternative_name.attrib['language'])
 
-        logger.info("Contest languages are %s %s" %
-                    (self.primary_language, str(self.languages)))
+        logger.info("Contest languages are %s %s",
+                    self.primary_language, str(self.languages))
 
         args['description'] = root.find('names') \
             .find("name[@language='%s']" % self.primary_language) \
             .attrib['value']
 
-        logger.info("Contest description is %s" % args['description'])
+        logger.info("Contest description is %s", args['description'])
 
-        # for now Polygon doesn't support custom contest-wide files,
-        # so we need to hardcode some contest settings
+        # For now Polygon doesn't support custom contest-wide files,
+        # so we need to hardcode some contest settings.
 
         args['start'] = datetime(1970, 1, 1)
         args['stop'] = datetime(1970, 1, 1)
 
-#        args['max_submission_number'] = 100
-#        args['max_user_test_number'] = 100
-#        args['min_submission_interval'] = make_timedelta(60)
-#        args['min_user_test_interval'] = make_timedelta(60)
-#        args['max_user_test_number'] = 10
-#        args['min_user_test_interval'] = make_timedelta(60)
+        # Uncomment the following to set specific values for these
+        # options.
 
-#        args['token_mode'] = 'infinite'
-#        args['token_max_number'] = 100
-#        args['token_min_interval'] = make_timedelta(60)
-#        args['token_gen_initial'] = 1
-#        args['token_gen_number'] = 1
-#        args['token_gen_interval'] = make_timedelta(1800)
-#        args['token_gen_max'] = 2
+        # args['max_submission_number'] = 100
+        # args['max_user_test_number'] = 100
+        # args['min_submission_interval'] = make_timedelta(60)
+        # args['min_user_test_interval'] = make_timedelta(60)
+        # args['max_user_test_number'] = 10
+        # args['min_user_test_interval'] = make_timedelta(60)
+
+        # args['token_mode'] = 'infinite'
+        # args['token_max_number'] = 100
+        # args['token_min_interval'] = make_timedelta(60)
+        # args['token_gen_initial'] = 1
+        # args['token_gen_number'] = 1
+        # args['token_gen_interval'] = make_timedelta(1800)
+        # args['token_gen_max'] = 2
 
         logger.info("Contest parameters loaded.")
 
@@ -159,12 +162,12 @@ class PolygonLoader(Loader):
 
         users = []
 
-        # this is not standard Polygon feature, but useful for CMS users
+        # This is not standard Polygon feature, but useful for CMS users
         # we assume contestants.txt contains one line for each user:
         #
         # username;password;first_name;last_name;hidden
         #
-        # for example:
+        # For example:
         #
         # contestant1;123;Cont;Estant;0
         # jury;1234;Ju;Ry;1
@@ -183,7 +186,7 @@ class PolygonLoader(Loader):
         return Contest(**args), tasks, users
 
     def has_changed(self, name):
-        """See docstring in class Loader
+        """See docstring in class Loader.
 
         """
         return True
@@ -192,7 +195,7 @@ class PolygonLoader(Loader):
         """See docstring in class Loader.
 
         """
-        logger.info("Loading parameters for user %s." % username)
+        logger.info("Loading parameters for user %s.", username)
         user = self.users_conf[username]
         args = {}
         args['username'] = user[0]
@@ -214,24 +217,24 @@ class PolygonLoader(Loader):
 
         # Here we expose an undocumented behavior, so that cmsMake can
         # import a task even without the whole contest; this is not to
-        # be relied upon in general
+        # be relied upon in general.
         except AttributeError:
             num = 1
 
         task_path = os.path.join(self.path, "problems", name)
 
-        logger.info("Loading parameters for task %s." % name)
+        logger.info("Loading parameters for task %s.", name)
 
         args = {}
 
-        # Here we update the time of the last import
+        # Here we update the time of the last import.
         touch(os.path.join(task_path, ".itime"))
-        # If this file is not deleted, then the import failed
+        # If this file is not deleted, then the import failed.
         touch(os.path.join(task_path, ".import_error"))
 
         args["num"] = num
 
-        # get alphabetical task index for use in title
+        # Get alphabetical task index for use in title.
 
         index = None
         contest_tree = ET.parse(os.path.join(self.path, "contest.xml"))
@@ -269,27 +272,30 @@ class PolygonLoader(Loader):
             '","'.join(args["primary_statements"])
         args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
 
-#        args['max_submission_number'] = 100
-#        args['max_user_test_number'] = 100
-#        args['min_submission_interval'] = make_timedelta(60)
-#        args['min_user_test_interval'] = make_timedelta(60)
+        # These options cannot be configured in the Polygon format.
+        # Uncomment the following to set specific values for them.
 
-#        args['max_user_test_number'] = 10
-#        args['min_user_test_interval'] = make_timedelta(60)
+        # args['max_submission_number'] = 100
+        # args['max_user_test_number'] = 100
+        # args['min_submission_interval'] = make_timedelta(60)
+        # args['min_user_test_interval'] = make_timedelta(60)
 
-#        args['token_mode'] = 'infinite'
-#        args['token_max_number'] = 100
-#        args['token_min_interval'] = make_timedelta(60)
-#        args['token_gen_initial'] = 1
-#        args['token_gen_number'] = 1
-#        args['token_gen_interval'] = make_timedelta(1800)
-#        args['token_gen_max'] = 2
+        # args['max_user_test_number'] = 10
+        # args['min_user_test_interval'] = make_timedelta(60)
+
+        # args['token_mode'] = 'infinite'
+        # args['token_max_number'] = 100
+        # args['token_min_interval'] = make_timedelta(60)
+        # args['token_gen_initial'] = 1
+        # args['token_gen_number'] = 1
+        # args['token_gen_interval'] = make_timedelta(1800)
+        # args['token_gen_max'] = 2
 
         task_cms_conf_path = os.path.join(task_path, 'files')
         task_cms_conf = None
         if os.path.exists(os.path.join(task_cms_conf_path, 'cms_conf.py')):
             sys.path.append(task_cms_conf_path)
-            logger.info("Found additional CMS options for task %s." % name)
+            logger.info("Found additional CMS options for task %s.", name)
             task_cms_conf = __import__('cms_conf')
             sys.path.pop()
         if task_cms_conf is not None:
@@ -309,7 +315,7 @@ class PolygonLoader(Loader):
                 testset = ts
 
         if testset is None:
-            logger.error("Testset for %s not found " % name)
+            logger.error("Testset for %s not found ", name)
 
         tl = float(testset.find('time-limit').text)
         ml = float(testset.find('memory-limit').text)

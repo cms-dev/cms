@@ -41,6 +41,14 @@
  *
  */
 
+/*
+ * Artem Iglikov
+ *
+ * This software has been modified to make it possible to use it with CMS. More
+ * precisely, at termination it now output the "outcome" to stdout and the
+ * "message" to stderr.
+ */
+
 /* NOTE: This file contains testlib library for C++.
  *
  *   Check, using testlib running format:
