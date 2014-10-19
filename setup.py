@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -39,6 +39,11 @@ import grp
 
 from glob import glob
 from setuptools import setup
+
+
+# Root directories for the /usr and /var trees.
+USR_ROOT = os.path.join("/", "usr", "local")
+VAR_ROOT = os.path.join("/", "var", "local")
 
 
 def do_setup():
@@ -275,15 +280,15 @@ def install():
     cmsuser_grp = grp.getgrnam("cmsuser")
 
     print("copying isolate to /usr/local/bin/.")
-    makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
+    makedir(os.path.join(USR_ROOT, "bin"), root, 0755)
     copyfile(os.path.join(".", "isolate", "isolate"),
-             os.path.join("/", "usr", "local", "bin", "isolate"),
+             os.path.join(USR_ROOT, "bin", "isolate"),
              root, 04750, group=cmsuser_grp)
 
     print("copying configuration to /usr/local/etc/.")
-    makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
+    makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
     for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
-        conf_file = os.path.join("/", "usr", "local", "etc", conf_file_name)
+        conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
         # Skip if destination is a symlink
         if os.path.islink(conf_file):
             continue
@@ -300,7 +305,7 @@ def install():
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
         print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
-        dest_path = os.path.join("/", "usr", "local", "share", "locale",
+        dest_path = os.path.join(USR_ROOT, "share", "locale",
                                  country_code, "LC_MESSAGES")
         makedir(dest_path, root, 0755)
         copyfile(os.path.join(path, "cms.mo"),
@@ -308,12 +313,12 @@ def install():
                  root, 0644)
 
     print("creating directories.")
-    dirs = [os.path.join("/", "var", "local", "log"),
-            os.path.join("/", "var", "local", "cache"),
-            os.path.join("/", "var", "local", "lib"),
-            os.path.join("/", "var", "local", "run"),
-            os.path.join("/", "usr", "local", "include"),
-            os.path.join("/", "usr", "local", "share")]
+    dirs = [os.path.join(VAR_ROOT, "log"),
+            os.path.join(VAR_ROOT, "cache"),
+            os.path.join(VAR_ROOT, "lib"),
+            os.path.join(VAR_ROOT, "run"),
+            os.path.join(USR_ROOT, "include"),
+            os.path.join(USR_ROOT, "share")]
     for _dir in dirs:
         # Skip if destination is a symlink
         if os.path.islink(os.path.join(_dir, "cms")):
@@ -324,8 +329,7 @@ def install():
 
     print("copying Polygon testlib:")
     path = os.path.join("cmscontrib", "polygon", "testlib.h")
-    dest_path = os.path.join("/", "usr", "local", "include",
-                             "cms", "testlib.h")
+    dest_path = os.path.join(USR_ROOT, "include", "cms", "testlib.h")
     copyfile(path, dest_path, root, 0644)
 
     os.umask(old_umask)
