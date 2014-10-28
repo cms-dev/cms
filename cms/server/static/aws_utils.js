@@ -371,7 +371,7 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
                ? " [" + job["multiplicity"] + " time(s) in queue]"
                : "")
             + (job["testcase_codename"]
-               ? " [testcase: `" + job["testcase_codename"] + "']"
+               ? " [testcase: `" + job["testcase_codename"] + "`]"
                : "");
     } else {
         return job_type + ' the result of user_test ' + job["object_id"]
