@@ -538,9 +538,9 @@ class WorkerPool(object):
         try:
             shard = self.find_worker(operation)
         except LookupError:
-            logger.warning("Asked to ignore operation `%s' "
-                           "that cannot be found.", operation)
-            return
+            logger.debug("Asked to ignore operation `%s' "
+                         "that cannot be found.", operation)
+            raise
         self._ignore[shard] = True
         self._worker[shard].ignore_operation()
 
@@ -1526,20 +1526,27 @@ class EvaluationService(TriggeredService):
         operation of each (type, object_id, dataset_id)
         tuple. Generally, we will see only one evaluate operation for
         each submission in the queue status with the number of
-        testcase which will be evaluated next.
+        testcase which will be evaluated next. Moreover, we pass also
+        the number of testcases in the queue.
+
+        The entries are then ordered by priority and timestamp (the
+        same criteria used to look at what to complete next).
 
         return ([QueueEntry]): the list with the queued elements.
 
         """
         entries = super(EvaluationService, self).queue_status()[0]
-        already_added = set()
-        filtered_entries = []
+        entries_by_key = dict()
         for entry in entries:
-            key = (str(entry["item"]["type"]) + ":"
-                   + str(entry["item"]["object_id"]) + ":"
-                   + str(entry["item"]["dataset_id"]))
-            if key in already_added:
-                continue
-            filtered_entries.append(entry)
-            already_added.add(key)
-        return filtered_entries
+            key = (str(entry["item"]["type"]),
+                   str(entry["item"]["object_id"]),
+                   str(entry["item"]["dataset_id"]))
+            if key in entries_by_key:
+                entries_by_key[key]["item"]["multiplicity"] += 1
+            else:
+                entries_by_key[key] = entry
+                entries_by_key[key]["item"]["multiplicity"] = 1
+        return sorted(
+            entries_by_key.values(),
+            lambda x, y: cmp((x["priority"], x["timestamp"]),
+                             (y["priority"], y["timestamp"])))
