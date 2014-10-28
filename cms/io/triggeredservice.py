@@ -64,6 +64,16 @@ class Executor(object):  # pylint: disable=R0921
         self._batch_executions = batch_executions
         self._operation_queue = PriorityQueue()
 
+    def __contains__(self, item):
+        """Return whether the item is in the queue.
+
+        item (QueueItem): the item to look for.
+
+        return (bool): whether operation is in the queue.
+
+        """
+        return item in self._operation_queue
+
     def get_status(self):
         """Return a the status of the queues.
 
@@ -218,6 +228,14 @@ class TriggeredService(Service):
         # TODO: link to greenlet and react to deaths.
         self._executors.append(executor)
         gevent.spawn(executor.run)
+
+    def get_executor(self):
+        """Return the first executor (without checking it is unique).
+
+        return (Executor): the first executor.
+
+        """
+        return self._executors[0]
 
     def enqueue(self, operation, priority=None, timestamp=None):
         """Add an operation to the queue of each executor.

@@ -542,7 +542,7 @@ class WorkerPool(object):
                          "that cannot be found.", operation)
             raise
         self._ignore[shard] = True
-        self._worker[shard].ignore_operation()
+        self._worker[shard].ignore_job()
 
     def get_status(self):
         """Returns a dict with info about the current status of all
@@ -917,14 +917,14 @@ class EvaluationService(TriggeredService):
         returns (dict): the dict with the workers information.
 
         """
-        return self._executors[0].pool.get_status()
+        return self.get_executor().pool.get_status()
 
     def check_workers_timeout(self):
         """We ask WorkerPool for the unresponsive workers, and we put
         again their operations in the queue.
 
         """
-        lost_operations = self._executors[0].pool.check_timeouts()
+        lost_operations = self.get_executor().pool.check_timeouts()
         for priority, timestamp, operation in lost_operations:
             logger.info("Operation %s put again in the queue because of "
                         "worker timeout.", operation)
@@ -936,7 +936,7 @@ class EvaluationService(TriggeredService):
         again their operations in the queue.
 
         """
-        lost_operations = self._executors[0].pool.check_connections()
+        lost_operations = self.get_executor().pool.check_connections()
         for priority, timestamp, operation in lost_operations:
             logger.info("Operation %s put again in the queue because of "
                         "disconnected worker.", operation)
@@ -972,7 +972,8 @@ class EvaluationService(TriggeredService):
                 submission_id,
                 dataset_id,
                 testcase_codename))
-        return any([operation in self._executors[0].pool
+        return any([operation in self.get_executor().pool
+                    or operation in self.get_executor()
                     for operation in operations])
 
     def user_test_busy(self, user_test_id, dataset_id):
@@ -990,7 +991,8 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self._executors[0].pool
+        return any([operations in self.get_executor().pool
+                    or operation in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
@@ -1057,7 +1059,7 @@ class EvaluationService(TriggeredService):
         """
         # Unpack the plus tuple. It's built in the RPC call to Worker's
         # execute_job_group method inside WorkerPool.acquire_worker.
-        type_, object_id, dataset_id, testcase_codename, side_data, \
+        type_, object_id, dataset_id, testcase_codename, _, \
             shard = plus
 
         # Restore operation from it's fields
@@ -1072,7 +1074,7 @@ class EvaluationService(TriggeredService):
         # this method and do nothing because in that case we know the
         # operation has returned to the queue and perhaps already been
         # reassigned to another worker.
-        if self._executors[0].pool.release_worker(shard):
+        if self.get_executor().pool.release_worker(shard):
             logger.info("Ignored result from worker %s as requested.", shard)
             return
 
@@ -1094,8 +1096,6 @@ class EvaluationService(TriggeredService):
                     logger.error("Worker %s signaled action "
                                  "not successful.", shard)
                     job_success = False
-
-        _, timestamp = side_data
 
         logger.info("Operation `%s' for submission %s completed. Success: %s.",
                     operation, object_id, job_success)
@@ -1385,6 +1385,7 @@ class EvaluationService(TriggeredService):
             session.commit()
 
     @rpc_method
+    @with_post_finish_lock
     def invalidate_submission(self,
                               submission_id=None,
                               dataset_id=None,
@@ -1456,7 +1457,7 @@ class EvaluationService(TriggeredService):
                     except KeyError:
                         pass  # Ok, the operation wasn't in the queue.
                     try:
-                        self._executors[0].pool.ignore_operation(operation)
+                        self.get_executor().pool.ignore_operation(operation)
                     except LookupError:
                         pass  # Ok, the operation wasn't in the pool.
 
@@ -1486,7 +1487,7 @@ class EvaluationService(TriggeredService):
 
         lost_operations = []
         try:
-            lost_operations = self._executors[0].pool.disable_worker(shard)
+            lost_operations = self.get_executor().pool.disable_worker(shard)
         except ValueError:
             return False
 
@@ -1507,7 +1508,7 @@ class EvaluationService(TriggeredService):
         """
         logger.info("Received request to enable worker %s.", shard)
         try:
-            self._executors[0].pool.enable_worker(shard)
+            self.get_executor().pool.enable_worker(shard)
         except ValueError:
             return False
 
