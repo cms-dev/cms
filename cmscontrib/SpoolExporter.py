@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@ import time
 from cms import utf8_decoder
 from cms.db import SessionGen, Contest, ask_for_contest
 from cms.db.filecacher import FileCacher
-from cms.grading.scoretypes import get_score_type
+from cms.grading import task_score
 
 
 logger = logging.getLogger(__name__)
@@ -172,7 +172,7 @@ class SpoolExporter(object):
                 res_file.close()
                 res2_file.close()
 
-        print(file=queue_file)
+        print("", file=queue_file)
         queue_file.close()
 
     def export_ranking(self):
@@ -189,52 +189,16 @@ class SpoolExporter(object):
                                           for user in self.contest.users
                                           if not user.hidden))
                            for task in self.contest.tasks)
-        last_scores = dict((task.id, dict((user.username, 0.0)
-                                          for user in self.contest.users
-                                          if not user.hidden))
-                           for task in self.contest.tasks)
 
-        # Make the score type compute the scores.
-        scorers = {}
+        is_partial = False
         for task in self.contest.tasks:
-            scorers[task.id] = get_score_type(dataset=task.active_dataset)
-
-        for submission in self.submissions:
-            active_dataset = submission.task.active_dataset
-            result = submission.get_result(active_dataset)
-            scorers[submission.task_id].add_submission(
-                submission.id, submission.timestamp,
-                submission.user.username,
-                result.evaluated(),
-                dict((ev.codename,
-                      {"outcome": ev.outcome,
-                       "text": ev.text,
-                       "time": ev.execution_time,
-                       "memory": ev.execution_memory})
-                     for ev in result.evaluations),
-                submission.tokened())
-
-        # Put together all the scores.
-        for submission in self.submissions:
-            task_id = submission.task_id
-            username = submission.user.username
-            details = scorers[task_id].pool[submission.id]
-            last_scores[task_id][username] = details["score"]
-            if details["tokened"]:
-                task_scores[task_id][username] = max(
-                    task_scores[task_id][username],
-                    details["score"])
-
-        # Merge tokened and last submissions.
-        for username in scores:
-            for task_id in task_scores:
-                task_scores[task_id][username] = max(
-                    task_scores[task_id][username],
-                    last_scores[task_id][username])
-            # print(username, [task_scores[task_id][username]
-            #                  for task_id in task_scores])
-            scores[username] = sum(task_scores[task_id][username]
-                                   for task_id in task_scores)
+            for user in self.contest.users:
+                score, partial = task_score(user, task)
+                is_partial = is_partial or partial
+                task_scores[task.id][user.username] = score
+                scores[user.username] += score
+        if is_partial:
+            logger.warning("Some of the scores are not definitive.")
 
         sorted_usernames = sorted(scores.keys(),
                                   key=lambda username: (scores[username],
