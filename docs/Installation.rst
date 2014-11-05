@@ -48,6 +48,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `werkzeug <http://werkzeug.pocoo.org/>`_ >= 0.8;
 
+* `patool <http://wummel.github.io/patool>`_ >= 1.7;
+
 * `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
@@ -95,14 +97,14 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
          python-sqlalchemy python-psutil python-netifaces python-crypto \
          python-tz python-six iso-codes shared-mime-info stl-manual \
          python-beautifulsoup python-mechanize python-coverage python-mock \
-         cgroup-lite python-requests python-werkzeug python-gevent
+         cgroup-lite python-requests python-werkzeug python-gevent patool
 
     # Optional.
     # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
     #      python-yaml python-sphinx texlive-latex-base python-cups a2ps
     # You can install PyPDF2 using Python Package Index.
 
-On Arch Linux, the following command will install almost all dependencies (two of them can be found in the AUR):
+On Arch Linux, the following command will install almost all dependencies (some of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -115,6 +117,7 @@ On Arch Linux, the following command will install almost all dependencies (two o
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
+    # https://aur.archlinux.org/packages/patool/
     # https://aur.archlinux.org/packages/sgi-stl-doc/
 
     # Optional.

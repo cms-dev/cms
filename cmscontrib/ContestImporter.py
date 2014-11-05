@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -54,7 +54,6 @@ from cms.db import version as model_version
 from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
     SubmissionResult, UserTestResult, RepeatedUnicode
 from cms.db.filecacher import FileCacher
-from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.datetime import make_datetime
@@ -293,10 +292,6 @@ class ContestImporter(object):
                         ", ".join("%d" % id_ for id_ in contest_id))
         else:
             logger.info("Import finished.")
-
-        # If we extracted an archive, we remove it.
-        if self.import_dir != self.import_source:
-            rmtree(self.import_dir)
 
         return True
 
