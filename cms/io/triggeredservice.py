@@ -258,11 +258,7 @@ class TriggeredService(Service):
     def dequeue(self, operation):
         """Remove an operation from the queue of each executor.
 
-        operation (QueueItem): the operation to enqueue.
-        priority (int|None) the priority, or None to use default.
-        timestamp (datetime|None) the timestamp of the first request
-            for the operation, or None to use now.
-
+        operation (QueueItem): the operation to dequeue.
 
         """
         for executor in self._executors:

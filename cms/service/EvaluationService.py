@@ -47,7 +47,8 @@ from cms.io import Executor, PriorityQueue, QueueItem, TriggeredService, \
     rpc_method
 from cms.db import Session, SessionGen, Contest, Dataset, Submission, \
     SubmissionResult, UserTest, UserTestResult
-from cms.service import get_submission_results, get_datasets_to_judge
+from cms.service import get_submissions, get_submission_results, \
+    get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
 from cms.grading.Job import JobGroup
 
@@ -705,6 +706,14 @@ class EvaluationExecutor(Executor):
         self.evaluation_service = evaluation_service
         self.pool = WorkerPool(self.evaluation_service)
 
+        # QueueItem (ESOperation) we have extracted from the queue,
+        # but not yet finished to execute.
+        self._currently_executing = None
+
+        # Whether execute need to drop the currently executing
+        # operation.
+        self._drop_current = False
+
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
@@ -718,12 +727,36 @@ class EvaluationExecutor(Executor):
         entry (QueueEntry): entry containing the operation to perform.
 
         """
+        self._currently_executing = entry.item
         side_data = (entry.priority, entry.timestamp)
         res = None
-        while res is None:
+        while res is None and not self._drop_current:
             self.pool.wait_for_workers()
+            if self._drop_current:
+                break
             res = self.pool.acquire_worker(entry.item,
                                            side_data=side_data)
+        self._drop_current = False
+        self._currently_executing = None
+
+    def dequeue(self, operation):
+        """Remove an item from the queue.
+
+        We need to override dequeue because in execute we wait for a
+        worker to become available to serve the operation, and if that
+        operation needed to be dequeued, we need to remove it also
+        from there.
+
+        operation (ESOperation)
+
+        """
+        try:
+            super(EvaluationExecutor, self).dequeue(operation)
+        except KeyError:
+            if self._currently_executing == operation:
+                self._drop_current = True
+            else:
+                raise
 
 
 def with_post_finish_lock(func):
@@ -1062,7 +1095,7 @@ class EvaluationService(TriggeredService):
         type_, object_id, dataset_id, testcase_codename, _, \
             shard = plus
 
-        # Restore operation from it's fields
+        # Restore operation from its fields.
         operation = ESOperation(
             type_, object_id, dataset_id, testcase_codename)
 
@@ -1426,41 +1459,40 @@ class EvaluationService(TriggeredService):
                 "Unexpected invalidation level `%s'." % level)
 
         with SessionGen() as session:
+            # First we load all involved submissions.
+            submissions = get_submissions(
+                # Give contest_id only if all others are None.
+                self.contest_id
+                if {user_id, task_id, submission_id} == {None}
+                else None,
+                user_id, task_id, submission_id, session)
+
+            # Then we get all relevant operations, and we remove them
+            # both from the queue and from the pool (i.e., we ignore
+            # the workers involved in those operations).
+            operations = self.get_relevant_operations_(
+                level, submissions, dataset_id)
+            for operation in operations:
+                try:
+                    self.dequeue(operation)
+                except KeyError:
+                    pass  # Ok, the operation wasn't in the queue.
+                try:
+                    self.get_executor().pool.ignore_operation(operation)
+                except LookupError:
+                    pass  # Ok, the operation wasn't in the pool.
+
+            # Then we find all existing results in the database, and
+            # we remove them.
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
                 self.contest_id
                 if {user_id, task_id, submission_id, dataset_id} == {None}
                 else None,
                 user_id, task_id, submission_id, dataset_id, session)
-
             logger.info("Submission results to invalidate %s for: %d.",
                         level, len(submission_results))
-            if len(submission_results) == 0:
-                return
-
             for submission_result in submission_results:
-                operations = [
-                    ESOperation(
-                        ESOperation.COMPILATION,
-                        submission_result.submission_id,
-                        submission_result.dataset_id)
-                ]
-                for evaluation in submission_result.evaluations:
-                    operations.append(ESOperation(
-                        ESOperation.EVALUATION,
-                        submission_result.submission_id,
-                        submission_result.dataset_id,
-                        evaluation.testcase.codename))
-                for operation in operations:
-                    try:
-                        self.dequeue(operation)
-                    except KeyError:
-                        pass  # Ok, the operation wasn't in the queue.
-                    try:
-                        self.get_executor().pool.ignore_operation(operation)
-                    except LookupError:
-                        pass  # Ok, the operation wasn't in the pool.
-
                 # We invalidate the appropriate data and queue the
                 # operations to recompute those data.
                 if level == "compilation":
@@ -1468,11 +1500,54 @@ class EvaluationService(TriggeredService):
                 elif level == "evaluation":
                     submission_result.invalidate_evaluation()
 
-            for submission in set(submission_result.submission
-                                  for submission_result in submission_results):
+            # Finally, we re-enqueue the operations for the
+            # submissions.
+            for submission in submissions:
                 self.submission_enqueue_operations(submission)
 
             session.commit()
+
+    def get_relevant_operations_(self, level, submissions, dataset_id=None):
+        """Return all operations involving the submissions
+
+        level (string): the starting level; if 'compilation', then we
+            return operations for both compilation and evaluation; if
+            'evaluation', we return evaluations only.
+        submissions ([Submission]): submissions we want the operations for.
+        dataset_id (int|None): id of the dataset to select, or None for all
+            datasets
+
+        return ([ESOperation]): list of relevant operations.
+
+        """
+
+        operations = []
+        for submission in submissions:
+            # All involved datasets: all of the task's dataset unless
+            # one was specified.
+            datasets = submission.task.datasets
+            if dataset_id is not None:
+                for dataset in submission.task.datasets:
+                    if dataset.id == dataset_id:
+                        datasets = [dataset]
+                        break
+
+            # For each submission and dataset, the operations are: one
+            # compilation, and one evaluation per testcase.
+            for dataset in datasets:
+                if level == 'compilation':
+                    operations.append(ESOperation(
+                        ESOperation.COMPILATION,
+                        submission.id,
+                        dataset.id))
+                for codename in dataset.testcases:
+                    operations.append(ESOperation(
+                        ESOperation.EVALUATION,
+                        submission.id,
+                        dataset.id,
+                        codename))
+
+        return operations
 
     @rpc_method
     def disable_worker(self, shard):
