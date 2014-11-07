@@ -902,11 +902,13 @@ class IsolateSandbox(SandboxBase):
                       '..', '..', 'isolate', self.exec_name))]
         paths += [self.exec_name]
         for path in paths:
-            # Consider only non-directory, executable files.
+            # Consider only non-directory, executable files with SUID flag on.
             if os.path.exists(path) \
                     and not os.path.isdir(path) \
                     and os.access(path, os.X_OK):
-                return path
+                st = os.stat(path)
+                if st.st_mode & stat.S_ISUID != 0:
+                    return path
 
         # As default, return self.exec_name alone, that means that
         # system path is used.
