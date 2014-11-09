@@ -6,6 +6,7 @@
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,7 +38,10 @@ import time
 import psutil
 
 from gevent import subprocess
-#import gevent_subprocess as subprocess
+try:
+    from subprocess import DEVNULL  # py3k
+except ImportError:
+    DEVNULL = os.open(os.devnull, os.O_WRONLY)
 
 from cms import config, get_safe_shard, ServiceCoord
 from cms.io import Service, rpc_method
@@ -157,7 +161,6 @@ class ResourceService(Service):
                 # it, since it causes no trouble.
                 logger.info("Restarting (%s, %s)...",
                             service.name, service.shard)
-                devnull = os.open(os.devnull, os.O_WRONLY)
                 command = "cms%s" % service.name
                 if not config.installed:
                     command = os.path.join(
@@ -168,7 +171,7 @@ class ResourceService(Service):
                                             "%d" % service.shard,
                                             "-c",
                                             "%d" % self.contest_id],
-                                           stdout=devnull,
+                                           stdout=DEVNULL,
                                            stderr=subprocess.STDOUT
                                            )
                 self._launched_processes.add(process)
