@@ -1064,7 +1064,6 @@ class AddDatasetHandler(BaseHandler):
             task.active_dataset = dataset
 
         if try_commit(self.sql_session, self):
-            # self.application.service.scoring_service.reinitialize()
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect("/add_dataset/%s/%s" % (task_id,
@@ -1174,14 +1173,15 @@ class ActivateDatasetHandler(BaseHandler):
         task.active_dataset = dataset
 
         if try_commit(self.sql_session, self):
-            # self.application.service.scoring_service.reinitialize()
             self.application.service.proxy_service.dataset_updated(
                 task_id=task.id)
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
-            self.application.service.evaluation_service.search_jobs_not_done()
-            self.application.service.scoring_service.search_jobs_not_done()
+            self.application.service\
+                .evaluation_service.search_operations_not_done()
+            self.application.service\
+                .scoring_service.search_operations_not_done()
 
         # Now send notifications to contestants.
         datetime = make_datetime()
@@ -1224,8 +1224,10 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
-            self.application.service.evaluation_service.search_jobs_not_done()
-            self.application.service.scoring_service.search_jobs_not_done()
+            self.application.service\
+                .evaluation_service.search_operations_not_done()
+            self.application.service\
+                .scoring_service.search_operations_not_done()
 
         self.redirect("/task/%s" % dataset.task_id)
 

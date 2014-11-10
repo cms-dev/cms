@@ -225,13 +225,12 @@ class ProxyService(TriggeredService):
     them to the rankings by putting them in the queues of the proxies.
 
     The "entry points" are submission_score, submission_tokened,
-    dataset_updated and search_jobs_not_done. They can all be called
-    via RPC and the latter is also periodically executed (each
-    JOBS_NOT_DONE_CHECK_TIME). These methods fetch objects from the
-    database, check their validity (existence, non-hiddenness, etc.)
-    and status and, if needed, put call initialize, send_score and
-    send_token that construct the data to send to rankings and put it
-    in the queues of all proxies.
+    dataset_updated (and search_operations_not_done, from triggered
+    service, which is also periodically executed). These methods fetch
+    objects from the database, check their validity (existence,
+    non-hiddenness, etc.)  and status and, if needed, put call
+    initialize, send_score and send_token that construct the data to
+    send to rankings and put it in the queues of all proxies.
 
     """
 
