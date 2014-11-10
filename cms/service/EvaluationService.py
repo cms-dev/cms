@@ -957,30 +957,9 @@ class EvaluationService(TriggeredService):
             "invalid": 0}
         with SessionGen() as session:
             contest = Contest.get_from_id(self.contest_id, session)
-            for submission_result in contest.get_submission_results():
-                if submission_result.compilation_failed():
-                    stats["compilation_fail"] += 1
-                elif not submission_result.compiled():
-                    if submission_result.compilation_tries >= \
-                            EvaluationService.MAX_COMPILATION_TRIES:
-                        stats["max_compilations"] += 1
-                    else:
-                        stats["compiling"] += 1
-                elif submission_result.compilation_succeeded():
-                    if submission_result.evaluated():
-                        if submission_result.scored():
-                            stats["scored"] += 1
-                        else:
-                            stats["evaluated"] += 1
-                    else:
-                        if submission_result.evaluation_tries >= \
-                                EvaluationService.MAX_EVALUATION_TRIES:
-                            stats["max_evaluations"] += 1
-                        else:
-                            stats["evaluating"] += 1
-                else:
-                    # Should not happen.
-                    stats["invalid"] += 1
+            stats.update(contest.submissions_statistics(session,
+                         EvaluationService.MAX_COMPILATION_TRIES,
+                         EvaluationService.MAX_EVALUATION_TRIES))
         return stats
 
     @rpc_method
