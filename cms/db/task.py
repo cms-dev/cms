@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -35,7 +35,7 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from . import Base, Contest
@@ -415,6 +415,54 @@ class Dataset(Base):
 
         """
         return self is self.task.active_dataset
+
+    def clone_from(self, old_dataset, clone_managers=True,
+                   clone_testcases=True, clone_results=False):
+        """Overwrite the data with that in dataset.
+
+        old_dataset (Dataset): original dataset to copy from.
+        clone_managers (bool): copy dataset managers.
+        clone_testcases (bool): copy dataset testcases.
+        clone_results (bool): copy submission results (will also copy
+            managers and testcases).
+
+        """
+        new_testcases = dict()
+        if clone_testcases or clone_results:
+            for old_t in old_dataset.testcases.itervalues():
+                new_t = old_t.clone()
+                new_t.dataset = self
+                new_testcases[new_t.codename] = new_t
+
+        if clone_managers or clone_results:
+            for old_m in old_dataset.managers.itervalues():
+                new_m = old_m.clone()
+                new_m.dataset = self
+
+        # TODO: why is this needed?
+        self.sa_session.flush()
+
+        if clone_results:
+            old_results = self.get_submission_results(old_dataset)
+
+            for old_sr in old_results:
+                # Create the submission result.
+                new_sr = old_sr.clone()
+                new_sr.submission = old_sr.submission
+                new_sr.dataset = self
+
+                # Create executables.
+                for old_e in old_sr.executables.itervalues():
+                    new_e = old_e.clone()
+                    new_e.submission_result = new_sr
+
+                # Create evaluations.
+                for old_e in old_sr.evaluations:
+                    new_e = old_e.clone()
+                    new_e.submission_result = new_sr
+                    new_e.testcase = new_testcases[old_e.codename]
+
+        self.sa_session.flush()
 
 
 class Manager(Base):
