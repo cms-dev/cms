@@ -1188,7 +1188,7 @@ class ActivateDatasetHandler(BaseHandler):
 
         r = re.compile('notify_([0-9]+)$')
         count = 0
-        for k, v in self.request.arguments.iteritems():
+        for k in self.request.arguments:
             m = r.match(k)
             if not m:
                 continue

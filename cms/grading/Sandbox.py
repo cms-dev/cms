@@ -175,7 +175,7 @@ class Truncator(io.RawIOBase):
         """See io.IOBase.tell."""
         return self.fobj.tell()
 
-    def write(self, b):
+    def write(self, _):
         """See io.RawIOBase.write."""
         raise io.UnsupportedOperation('write')
 
@@ -709,7 +709,7 @@ class StupidSandbox(SandboxBase):
         else:
             return self.popen
 
-    def translate_box_exitcode(self, exitcode):
+    def translate_box_exitcode(self, _):
         """The stupid box always terminates successfully (or it raises
         an exception).
 

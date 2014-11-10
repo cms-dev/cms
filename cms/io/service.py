@@ -214,6 +214,9 @@ class Service(object):
         if on_connect is not None:
             service.add_on_connect_handler(on_connect)
 
+        if on_disconnect is not None:
+            service.add_on_disconnect_handler(on_disconnect)
+
         return service
 
     def add_timeout(self, func, plus, seconds, immediately=False):

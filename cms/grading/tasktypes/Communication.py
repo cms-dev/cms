@@ -83,7 +83,7 @@ class Communication(TaskType):
             res[language] = commands
         return res
 
-    def get_user_managers(self, submission_format):
+    def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
         return ["stub.%l"]
 
@@ -227,7 +227,7 @@ class Communication(TaskType):
 
         success_user, plus_user = \
             evaluation_step_after_run(sandbox_user)
-        success_mgr, plus_mgr = \
+        success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
         job.sandboxes = [sandbox_user.path,

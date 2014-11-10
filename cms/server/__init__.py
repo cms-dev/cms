@@ -376,7 +376,7 @@ def get_score_class(score, max_score):
 
 
 # Dummy function to mark strings for translation
-def N_(*args, **kwargs):
+def N_(*unused_args, **unused_kwargs):
     pass
 
 # This is a string in task_submissions.html and test_interface.html

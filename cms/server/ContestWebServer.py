@@ -1032,7 +1032,6 @@ class SubmitHandler(BaseHandler):
         # in file_digests (i.e. like they have already been sent to FS).
         submission_lang = None
         file_digests = {}
-        retrieved = 0
         if task_type.ALLOW_PARTIAL_SUBMISSION and \
                 last_submission_t is not None:
             for filename in required.difference(provided):
@@ -1044,7 +1043,6 @@ class SubmitHandler(BaseHandler):
                         submission_lang = last_submission_t.language
                     file_digests[filename] = \
                         last_submission_t.files[filename].digest
-                    retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
         # filenames, the user has the extension of an allowed
@@ -1573,7 +1571,6 @@ class UserTestHandler(BaseHandler):
         # in file_digests (i.e. like they have already been sent to FS).
         submission_lang = None
         file_digests = {}
-        retrieved = 0
         if task_type.ALLOW_PARTIAL_SUBMISSION and last_user_test_t is not None:
             for filename in required.difference(provided):
                 if filename in last_user_test_t.files:
@@ -1584,7 +1581,6 @@ class UserTestHandler(BaseHandler):
                         submission_lang = last_user_test_t.language
                     file_digests[filename] = \
                         last_user_test_t.files[filename].digest
-                    retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
         # filenames, the user has one amongst ".cpp", ".c", or ".pas,

@@ -211,6 +211,48 @@ def user_test_get_operations(user_test, dataset):
             user_test.timestamp
 
 
+def get_relevant_operations_(self, level, submissions, dataset_id=None):
+    """Return all possible operations involving the submissions
+
+    level (string): the starting level; if 'compilation', then we
+        return operations for both compilation and evaluation; if
+        'evaluation', we return evaluations only.
+    submissions ([Submission]): submissions we want the operations for.
+    dataset_id (int|None): id of the dataset to select, or None for all
+        datasets
+
+    return ([ESOperation]): list of relevant operations.
+
+    """
+    operations = []
+    for submission in submissions:
+        # All involved datasets: all of the task's dataset unless
+        # one was specified.
+        datasets = submission.task.datasets
+        if dataset_id is not None:
+            for dataset in submission.task.datasets:
+                if dataset.id == dataset_id:
+                    datasets = [dataset]
+                    break
+
+        # For each submission and dataset, the operations are: one
+        # compilation, and one evaluation per testcase.
+        for dataset in datasets:
+            if level == 'compilation':
+                operations.append(ESOperation(
+                    ESOperation.COMPILATION,
+                    submission.id,
+                    dataset.id))
+            for codename in dataset.testcases:
+                operations.append(ESOperation(
+                    ESOperation.EVALUATION,
+                    submission.id,
+                    dataset.id,
+                    codename))
+
+    return operations
+
+
 class ESOperation(QueueItem):
 
     COMPILATION = "compile"
@@ -1470,7 +1512,7 @@ class EvaluationService(TriggeredService):
             # Then we get all relevant operations, and we remove them
             # both from the queue and from the pool (i.e., we ignore
             # the workers involved in those operations).
-            operations = self.get_relevant_operations_(
+            operations = get_relevant_operations_(
                 level, submissions, dataset_id)
             for operation in operations:
                 try:
@@ -1506,48 +1548,6 @@ class EvaluationService(TriggeredService):
                 self.submission_enqueue_operations(submission)
 
             session.commit()
-
-    def get_relevant_operations_(self, level, submissions, dataset_id=None):
-        """Return all operations involving the submissions
-
-        level (string): the starting level; if 'compilation', then we
-            return operations for both compilation and evaluation; if
-            'evaluation', we return evaluations only.
-        submissions ([Submission]): submissions we want the operations for.
-        dataset_id (int|None): id of the dataset to select, or None for all
-            datasets
-
-        return ([ESOperation]): list of relevant operations.
-
-        """
-
-        operations = []
-        for submission in submissions:
-            # All involved datasets: all of the task's dataset unless
-            # one was specified.
-            datasets = submission.task.datasets
-            if dataset_id is not None:
-                for dataset in submission.task.datasets:
-                    if dataset.id == dataset_id:
-                        datasets = [dataset]
-                        break
-
-            # For each submission and dataset, the operations are: one
-            # compilation, and one evaluation per testcase.
-            for dataset in datasets:
-                if level == 'compilation':
-                    operations.append(ESOperation(
-                        ESOperation.COMPILATION,
-                        submission.id,
-                        dataset.id))
-                for codename in dataset.testcases:
-                    operations.append(ESOperation(
-                        ESOperation.EVALUATION,
-                        submission.id,
-                        dataset.id,
-                        codename))
-
-        return operations
 
     @rpc_method
     def disable_worker(self, shard):

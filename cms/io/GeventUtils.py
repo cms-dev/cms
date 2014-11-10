@@ -199,12 +199,9 @@ def rmtree(path, ignore_errors=False, onerror=None):
     is false and onerror is None, an exception is raised.
 
     """
-    if ignore_errors:
-        def onerror(*args):
+    if ignore_errors or onerror is None:
+        def onerror(*unused_args):
             pass
-    elif onerror is None:
-        def onerror(*args):
-            raise
     try:
         if os.path.islink(path):
             # symlinks to directories are forbidden, see bug #1669

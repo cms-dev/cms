@@ -664,7 +664,7 @@ def white_diff_step(sandbox, output_filename,
     """
     if sandbox.file_exists(output_filename):
         out_file = sandbox.get_file(output_filename)
-        res_file = sandbox.get_file("res.txt")
+        res_file = sandbox.get_file(correct_output_filename)
         if white_diff(out_file, res_file):
             outcome = 1.0
             text = [N_("Output is correct")]

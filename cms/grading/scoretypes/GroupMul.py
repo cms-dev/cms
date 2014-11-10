@@ -39,7 +39,7 @@ class GroupMul(ScoreTypeGroup):
 
     """
 
-    def get_public_outcome(self, outcome, parameter):
+    def get_public_outcome(self, outcome, unused_parameter):
         """See ScoreTypeGroup."""
         if outcome <= 0.0:
             return N_("Not correct")
@@ -48,6 +48,6 @@ class GroupMul(ScoreTypeGroup):
         else:
             return N_("Partially correct")
 
-    def reduce(self, outcomes, parameter):
+    def reduce(self, outcomes, unused_parameter):
         """See ScoreTypeGroup."""
         return reduce(lambda x, y: x * y, outcomes)

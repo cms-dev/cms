@@ -124,7 +124,7 @@ class Batch(TaskType):
             res[language] = commands
         return res
 
-    def get_user_managers(self, submission_format):
+    def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
         return []
 
