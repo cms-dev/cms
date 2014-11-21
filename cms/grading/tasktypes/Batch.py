@@ -319,6 +319,15 @@ class Batch(TaskType):
                                 manager_filename,
                                 job.managers[manager_filename].digest,
                                 executable=True)
+                            # Rewrite input file, since the untrusted
+                            # contestant program may have tampered
+                            # with it; moreover, sometimes the grader
+                            # may destroy the input file in order to
+                            # prevent the contestant's program from
+                            # directly accessing it.
+                            sandbox.create_file_from_storage(
+                                input_filename,
+                                job.input)
                             success, _ = evaluation_step(
                                 sandbox,
                                 [["./%s" % manager_filename,
