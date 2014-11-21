@@ -331,6 +331,21 @@ class Batch(TaskType):
                                 manager_filename,
                                 job.managers[manager_filename].digest,
                                 executable=True)
+                            # Rewrite input file. The untrusted
+                            # contestant program should not be able to
+                            # modify it; however, the grader may
+                            # destroy the input file to prevent the
+                            # contestant's program from directly
+                            # accessing it. Since we cannot create
+                            # files already existing in the sandbox,
+                            # we try removing the file first.
+                            try:
+                                sandbox.remove_file(input_filename)
+                            except OSError as e:
+                                pass
+                            sandbox.create_file_from_storage(
+                                input_filename,
+                                job.input)
                             success, _ = evaluation_step(
                                 sandbox,
                                 [["./%s" % manager_filename,
