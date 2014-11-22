@@ -319,7 +319,7 @@ class Batch(TaskType):
                     elif self.parameters[2] == "comparator":
                         manager_filename = "checker"
 
-                        if not manager_filename in job.managers:
+                        if manager_filename not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named 'checker')",
