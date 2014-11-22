@@ -230,4 +230,9 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
+    Test('delete-write-input',
+         task=batch_fileio_managed, filename='delete-write-input.%l',
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(0, 100)]),
+
 ]
