@@ -223,4 +223,11 @@ ALL_TESTS = [
          languages=(LANG_C),
          checks=[CheckOverallScore(100, 100)]),
 
+    # Rewrite input in the solution.
+
+    Test('rewrite-input',
+         task=batch_fileio_managed, filename='rewrite-input.%l',
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(0, 100)]),
+
 ]
