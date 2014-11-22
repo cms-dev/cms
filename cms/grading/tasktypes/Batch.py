@@ -324,7 +324,12 @@ class Batch(TaskType):
                             # with it; moreover, sometimes the grader
                             # may destroy the input file in order to
                             # prevent the contestant's program from
-                            # directly accessing it.
+                            # directly accessing it. The file is first
+                            # unlinked and then copied again;
+                            # otherwise, if the user running CMS
+                            # cannot write it, this would trigger an
+                            # exception.
+                            sandbox.remove_file(input_filename)
                             sandbox.create_file_from_storage(
                                 input_filename,
                                 job.input)
