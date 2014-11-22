@@ -1319,6 +1319,7 @@ class EvaluationService(TriggeredService):
                          submission_result.compilation_outcome)
 
         # Enqueue next steps to be done
+        submission_result.sa_session.commit()
         self.submission_enqueue_operations(submission)
 
     def evaluation_ended(self, submission_result):
@@ -1358,6 +1359,7 @@ class EvaluationService(TriggeredService):
                              submission_result.dataset_id)
 
         # Enqueue next steps to be done (e.g., if evaluation failed).
+        submission_result.sa_session.commit()
         self.submission_enqueue_operations(submission)
 
     def user_test_compilation_ended(self, user_test_result):
@@ -1400,6 +1402,7 @@ class EvaluationService(TriggeredService):
                          user_test_result.compilation_outcome)
 
         # Enqueue next steps to be done
+        user_test_result.sa_session.commit()
         self.user_test_enqueue_operations(user_test)
 
     def user_test_evaluation_ended(self, user_test_result):
@@ -1432,6 +1435,7 @@ class EvaluationService(TriggeredService):
                              user_test_result.dataset_id)
 
         # Enqueue next steps to be done (e.g., if evaluation failed).
+        user_test_result.sa_session.commit()
         self.user_test_enqueue_operations(user_test)
 
     @rpc_method
