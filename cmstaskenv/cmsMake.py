@@ -59,6 +59,7 @@ GEN_BASENAME = 'generatore'
 GEN_EXTS = ['.py', '.sh', '.cpp', '.c', '.pas']
 VALIDATOR_BASENAME = 'valida'
 GRAD_BASENAME = 'grader'
+STUB_BASENAME = 'stub'
 INPUT_DIRNAME = 'input'
 OUTPUT_DIRNAME = 'output'
 RESULT_DIRNAME = 'result'
@@ -140,7 +141,7 @@ def detect_task_type(base_dir):
         any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
                    os.listdir(sol_dir)))
     stub_present = os.path.exists(sol_dir) and \
-        any(filter(lambda x: x.startswith('stub.'),
+        any(filter(lambda x: x.startswith(STUB_BASENAME + '.'),
                    os.listdir(sol_dir)))
     cor_present = os.path.exists(check_dir) and \
         any(filter(lambda x: x.startswith('correttore.'),
@@ -186,6 +187,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         # Ignore things known to be auxiliary files
         if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
             continue
+        if exe == os.path.join(SOL_DIRNAME, STUB_BASENAME):
+            continue
         if lang == 'pas' and exe.endswith('lib'):
             continue
 
@@ -196,6 +199,9 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 task_type == ['Batch', 'GradComp']:
             srcs.append(os.path.join(SOL_DIRNAME,
                                      GRAD_BASENAME + '.%s' % (lang)))
+        if task_type == ['Communication', '']:
+            srcs.append(os.path.join(SOL_DIRNAME,
+                                     STUB_BASENAME + '.%s' % (lang)))
         srcs.append(src)
 
         test_deps = \
@@ -203,6 +209,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         if task_type == ['Batch', 'Comp'] or \
                 task_type == ['Batch', 'GradComp']:
             test_deps.append('cor/correttore')
+        if task_type == ['Communication', '']:
+            test_deps.append('cor/manager')
 
         def compile_src(srcs, exe, for_evaluation, lang, assume=None):
             if lang != 'pas' or len(srcs) == 1:
@@ -441,7 +449,13 @@ def build_gen_list(base_dir, task_type):
                                   'input%d.txt' % (n)), 'rb') as fin:
             with io.open(os.path.join(output_dir,
                                       'output%d.txt' % (n)), 'wb') as fout:
-                call(base_dir, [sol_exe], stdin=fin, stdout=fout)
+                if task_type != ['Communication', '']:
+                    call(base_dir, [sol_exe], stdin=fin, stdout=fout)
+
+                # If the task of of type Communication, then there is
+                # nothing to put in the output files
+                else:
+                    pass
 
     actions = []
     actions.append(([gen_src],
