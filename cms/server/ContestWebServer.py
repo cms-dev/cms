@@ -1999,14 +1999,25 @@ class PrintingHandler(BaseHandler):
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
     """Handle files which may be gzip-compressed on the filesystem."""
     def validate_absolute_path(self, root, absolute_path):
+        self.is_gzipped = False
         try:
-            return tornado.web.StaticFileHandler.validate_absolute_path(self, root, absolute_path)
+            return tornado.web.StaticFileHandler.validate_absolute_path(
+                self, root, absolute_path)
         except tornado.web.HTTPError as e:
             if e.status_code != 404:
                 raise
-            self.absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(self, root, absolute_path + ".gz")
+            self.is_gzipped = True
+            self.absolute_path = \
+                tornado.web.StaticFileHandler.validate_absolute_path(
+                    self, root, absolute_path + ".gz")
             self.set_header("Content-encoding", "gzip")
             return self.absolute_path
+
+    def get_content_type(self):
+        if self.is_gzipped:
+            return "text/plain"
+        else:
+            return tornado.web.StaticFileHandler.get_content_type(self)
 
 _cws_handlers = [
     (r"/", MainHandler),
