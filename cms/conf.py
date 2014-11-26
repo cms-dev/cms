@@ -41,8 +41,8 @@ logger = logging.getLogger(__name__)
 class Config(object):
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
-    default with some sane data. See cms.conf.sample in the examples
-    for information on the meaning of the fields.
+    default with some sane data. See cms.conf.sample in the config
+    directory for information on the meaning of the fields.
 
     """
     def __init__(self):
@@ -134,11 +134,11 @@ class Config(object):
             self.cache_dir = "cache"
             self.data_dir = "lib"
             self.run_dir = "run"
-            paths = [os.path.join(".", "examples", "cms.conf")]
+            paths = [os.path.join(".", "config", "cms.conf")]
             if '__file__' in globals():
                 paths += [os.path.abspath(os.path.join(
                           os.path.dirname(__file__),
-                          '..', 'examples', 'cms.conf'))]
+                          '..', 'config', 'cms.conf'))]
             paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
                       os.path.join("/", "etc", "cms.conf")]
 
