@@ -13,7 +13,7 @@ To start RWS you have to execute ``cmsRankingWebServer``.
 Configuring it
 --------------
 
-The configuration file is named :file:`cms.ranking.conf` and RWS will search for it in :file:`/usr/local/etc` and in :file:`/etc` (in this order!). In case it's not found in any of these, RWS will use a hard-coded default configuration that can be found in :gh_blob:`cmsranking/Config.py`. If RWS is not installed then the :gh_tree:`examples` directory will also be checked for configuration files (note that for this to work your working directory needs to be root of the repository). In any case, as soon as you start it, RWS will tell you which configuration file it's using.
+The configuration file is named :file:`cms.ranking.conf` and RWS will search for it in :file:`/usr/local/etc` and in :file:`/etc` (in this order!). In case it's not found in any of these, RWS will use a hard-coded default configuration that can be found in :gh_blob:`cmsranking/Config.py`. If RWS is not installed then the :gh_tree:`config` directory will also be checked for configuration files (note that for this to work your working directory needs to be root of the repository). In any case, as soon as you start it, RWS will tell you which configuration file it's using.
 
 The configuration file is a JSON object. The most important parameters are:
 
