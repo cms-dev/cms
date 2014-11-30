@@ -307,7 +307,7 @@ class Batch(TaskType):
                     elif self.parameters[2] == "comparator":
                         manager_filename = "checker"
 
-                        if not manager_filename in job.managers:
+                        if manager_filename not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named 'checker')",
@@ -319,6 +319,20 @@ class Batch(TaskType):
                                 manager_filename,
                                 job.managers[manager_filename].digest,
                                 executable=True)
+                            # Rewrite input file, since the untrusted
+                            # contestant program may have tampered
+                            # with it; moreover, sometimes the grader
+                            # may destroy the input file in order to
+                            # prevent the contestant's program from
+                            # directly accessing it. The file is first
+                            # unlinked and then copied again;
+                            # otherwise, if the user running CMS
+                            # cannot write it, this would trigger an
+                            # exception.
+                            sandbox.remove_file(input_filename)
+                            sandbox.create_file_from_storage(
+                                input_filename,
+                                job.input)
                             success, _ = evaluation_step(
                                 sandbox,
                                 [["./%s" % manager_filename,
