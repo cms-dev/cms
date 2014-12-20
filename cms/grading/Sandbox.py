@@ -282,7 +282,14 @@ class SandboxBase(object):
         else:
             logger.debug("Creating plain file %s in sandbox.", path)
         real_path = self.relative_path(path)
-        file_ = io.open(real_path, "wb")
+        try:
+            file_fd = os.open(real_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            file_ = os.fdopen(file_fd, "wb")
+        except OSError as e:
+            logger.error("Failed create file %s in sandbox. Unable to "
+                         "evalulate this submission. This may be due to "
+                         "cheating. %s", real_path, e, exc_info=True)
+            raise
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
         if executable:
             mod |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
