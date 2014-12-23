@@ -188,4 +188,31 @@ ALL_TESTS = [
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
+    # Writing to files not allowed.
+
+    # Inability to write to a file does not throw a specific error,
+    # just returns a NULL file handler to the caller. So we rely on
+    # the test program to write the correct result only if the
+    # returned handler is valid.
+
+    Test('write-forbidden-fileio',
+         task=batch_fileio, filename='write-forbidden-fileio.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('write-forbidden-stdio',
+         task=batch_stdio, filename='write-forbidden-stdio.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('write-forbidden-managed',
+         task=batch_fileio_managed, filename='write-forbidden-managed.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('write-forbidden-communication',
+         task=communication, filename='write-forbidden-communication.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
 ]

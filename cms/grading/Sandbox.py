@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -787,7 +787,7 @@ class IsolateSandbox(SandboxBase):
         # bite you.
         self.path = self.outer_temp_dir + self.inner_temp_dir
         os.mkdir(self.path)
-        os.chmod(self.path, 0777)
+        self.allow_writing_all()
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
@@ -831,6 +831,40 @@ class IsolateSandbox(SandboxBase):
             raise SandboxInterfaceException(
                 "Failed to initialize sandbox with command: %s "
                 "(error %d)" % (pretty_print_cmdline(box_cmd), ret))
+
+    def allow_writing_all(self):
+        """Set permissions in such a way that any operation is allowed.
+
+        """
+        os.chmod(self.path, 0777)
+        for filename in os.listdir(self.path):
+            os.chmod(os.path.join(self.path, filename), 0777)
+
+    def allow_writing_none(self):
+        """Set permissions in such a way that the user cannot write anything.
+
+        """
+        os.chmod(self.path, 0755)
+        for filename in os.listdir(self.path):
+            os.chmod(os.path.join(self.path, filename), 0755)
+
+    def allow_writing_only(self, paths):
+        """Set permissions in so that the user can write only some paths.
+
+        paths ([string]): the only paths that the user is allowed to
+            write.
+
+        """
+        # If one of the specified file do not exists, we touch it to
+        # assign the correct permissions.
+        for path in (os.path.join(self.path, path) for path in paths):
+            if not os.path.exists(path):
+                open(path, "w")  # Creates the file and closes it.
+
+        # Close everything, then open only the specified.
+        self.allow_writing_none()
+        for path in (os.path.join(self.path, path) for path in paths):
+            os.chmod(path, 0777)
 
     def get_root_path(self):
         """Return the toplevel path of the sandbox.
@@ -1160,8 +1194,12 @@ class IsolateSandbox(SandboxBase):
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: `%s'.",
                      pretty_print_cmdline(args))
+        # Temporarily allow writing new files.
+        prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
+        os.chmod(self.path, 0777)
         with io.open(self.relative_path(self.cmd_file), 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
+        os.chmod(self.path, prev_permissions)
         try:
             p = subprocess.Popen(args,
                                  stdin=stdin, stdout=stdout, stderr=stderr,

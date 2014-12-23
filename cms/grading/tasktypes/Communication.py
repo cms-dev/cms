@@ -200,6 +200,7 @@ class Communication(TaskType):
             job.time_limit,
             0,
             allow_dirs=manager_allow_dirs,
+            writable_files=["output.txt"],
             stdin_redirect="input.txt")
 
         # Second step: we start the user submission compiled with the

@@ -328,7 +328,7 @@ def compilation_step(sandbox, commands):
 
 def evaluation_step(sandbox, commands,
                     time_limit=0.0, memory_limit=0,
-                    allow_dirs=None,
+                    allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute some evaluation commands in the sandbox. Note that in
     some task types, there may be more than one evaluation commands
@@ -338,6 +338,13 @@ def evaluation_step(sandbox, commands,
     commands ([[string]]): the actual evaluation lines.
     time_limit (float): time limit in seconds.
     memory_limit (int): memory limit in MB.
+    allow_dirs ([string]|None): if not None, a list of external
+        directories to map inside the sandbox
+    writable_files ([string]|None): if not None, a list of inner file
+        names (relative to the inner path) on which the command is
+        allow to write; if None, all files are read-only. The
+        redirected output and the standard error are implicitly added
+        to the files allowed, in any case.
 
     return ((bool, dict)): True if the evaluation was successful, or
         False; and additional data.
@@ -345,7 +352,8 @@ def evaluation_step(sandbox, commands,
     """
     for command in commands:
         success = evaluation_step_before_run(
-            sandbox, command, time_limit, memory_limit, allow_dirs,
+            sandbox, command, time_limit, memory_limit,
+            allow_dirs, writable_files,
             stdin_redirect, stdout_redirect, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
@@ -360,7 +368,7 @@ def evaluation_step(sandbox, commands,
 
 def evaluation_step_before_run(sandbox, command,
                                time_limit=0, memory_limit=0,
-                               allow_dirs=None,
+                               allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                wait=False):
     """First part of an evaluation step, until the running.
@@ -369,6 +377,10 @@ def evaluation_step_before_run(sandbox, command,
             process if wait is False.
 
     """
+    # Default parameters handling.
+    allow_dirs = [] if allow_dirs is None else allow_dirs
+    writable_files = [] if writable_files is None else writable_files
+
     # Set sandbox parameters suitable for evaluation.
     if time_limit > 0:
         sandbox.timeout = time_limit
@@ -390,9 +402,12 @@ def evaluation_step_before_run(sandbox, command,
 
     sandbox.stderr_file = "stderr.txt"
 
-    if allow_dirs is not None:
-        for allow_dir in allow_dirs:
-            sandbox.dirs += [(allow_dir, None, "rw")]
+    for allow_dir in allow_dirs:
+        sandbox.dirs.append((allow_dir, None, "rw"))
+    for name in [sandbox.stderr_file, sandbox.stdout_file]:
+        if name is not None:
+            writable_files.append(name)
+    sandbox.allow_writing_only(writable_files)
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")

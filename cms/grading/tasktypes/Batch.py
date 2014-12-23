@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -223,12 +223,15 @@ class Batch(TaskType):
         input_filename, output_filename = self.parameters[1]
         stdin_redirect = None
         stdout_redirect = None
+        files_allowing_write = []
         if input_filename == "":
             input_filename = "input.txt"
             stdin_redirect = input_filename
         if output_filename == "":
             output_filename = "output.txt"
             stdout_redirect = output_filename
+        else:
+            files_allowing_write.append(output_filename)
         files_to_get = {
             input_filename: job.input
             }
@@ -245,6 +248,7 @@ class Batch(TaskType):
             commands,
             job.time_limit,
             job.memory_limit,
+            writable_files=files_allowing_write,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
