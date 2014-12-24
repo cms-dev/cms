@@ -402,8 +402,7 @@ def evaluation_step_before_run(sandbox, command,
 
     sandbox.stderr_file = "stderr.txt"
 
-    for allow_dir in allow_dirs:
-        sandbox.dirs.append((allow_dir, None, "rw"))
+    sandbox.add_mapped_directories(allow_dirs)
     for name in [sandbox.stderr_file, sandbox.stdout_file]:
         if name is not None:
             writable_files.append(name)

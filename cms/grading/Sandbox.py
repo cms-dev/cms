@@ -832,6 +832,15 @@ class IsolateSandbox(SandboxBase):
                 "Failed to initialize sandbox with command: %s "
                 "(error %d)" % (pretty_print_cmdline(box_cmd), ret))
 
+    def add_mapped_directories(self, dirs):
+        """Add dirs to the external dirs visible to the sandboxed command.
+
+        dirs ([string]): list of dirs to make visible.
+
+        """
+        for directory in dirs:
+            self.dirs.append((directory, None, "rw"))
+
     def allow_writing_all(self):
         """Set permissions in such a way that any operation is allowed.
 
