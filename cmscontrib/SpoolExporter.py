@@ -130,7 +130,7 @@ class SpoolExporter(object):
             for filename, file_ in submission.files.iteritems():
                 self.file_cacher.get_file_to_path(
                     file_.digest,
-                    os.path.join(submission_dir, filename))
+                    os.path.join(submission_dir, filename.replace(".%l", "." + submission.language))
             last_submission_dir = os.path.join(
                 self.upload_dir, username, "%s.%s" %
                 (task, submission.language))
@@ -208,22 +208,22 @@ class SpoolExporter(object):
                               key=lambda task: task.num)
 
         ranking_file = io.open(
-            os.path.join(self.spool_dir, "classifica.txt"),
+            os.path.join(self.spool_dir, "ranking.txt"),
             "w", encoding="utf-8")
         ranking_csv = io.open(
-            os.path.join(self.spool_dir, "classifica.csv"),
+            os.path.join(self.spool_dir, "ranking.csv"),
             "w", encoding="utf-8")
 
         # Write rankings' header.
         n_tasks = len(sorted_tasks)
-        print("Classifica finale del contest `%s'" %
+        print("Final ranking of the contest `%s'" %
               self.contest.description, file=ranking_file)
         points_line = " %10s" * n_tasks
         csv_points_line = ",%s" * n_tasks
-        print(("%20s %10s" % ("Utente", "Totale")) +
+        print(("%20s %10s" % ("User", "Total")) +
               (points_line % tuple([t.name for t in sorted_tasks])),
               file=ranking_file)
-        print(("%s,%s" % ("utente", "totale")) +
+        print(("%s,%s" % ("user", "total")) +
               (csv_points_line % tuple([t.name for t in sorted_tasks])),
               file=ranking_csv)
 
