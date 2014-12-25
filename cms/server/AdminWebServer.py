@@ -1527,6 +1527,8 @@ class TaskHandler(BaseHandler):
             self.get_timedelta_min(attrs, "token_gen_interval")
             self.get_int(attrs, "token_gen_max")
 
+            self.get_bool(attrs, "show_partial_results")
+
             self.get_int(attrs, "max_submission_number")
             self.get_int(attrs, "max_user_test_number")
             self.get_timedelta_sec(attrs, "min_submission_interval")

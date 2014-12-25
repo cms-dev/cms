@@ -96,16 +96,15 @@ class ScoringExecutor(Executor):
                                   operation.dataset_id))
 
             # Check if it's ready to be scored.
-            if not submission_result.needs_scoring():
-                if submission_result.scored():
-                    logger.info("Submission result %d(%d) is already scored.",
-                                operation.submission_id, operation.dataset_id)
-                    return
-                else:
-                    raise ValueError("The state of the submission result "
-                                     "%d(%d) doesn't allow scoring." %
-                                     (operation.submission_id,
-                                      operation.dataset_id))
+            if submission_result.scored() and submission_result.evaluated():
+                logger.info("Submission result %d(%d) is already scored.",
+                            operation.submission_id, operation.dataset_id)
+                return
+            if not submission_result.compiled():
+                raise ValueError("The state of the submission result "
+                                 "%d(%d) doesn't allow scoring." %
+                                 (operation.submission_id,
+                                  operation.dataset_id))
 
             # Instantiate the score type.
             score_type = get_score_type(dataset=dataset)

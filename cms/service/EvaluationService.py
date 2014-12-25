@@ -1228,9 +1228,19 @@ class EvaluationService(TriggeredService):
                 dataset = Dataset.get_from_id(dataset_id, session)
                 if len(submission_result.evaluations) == \
                         len(dataset.testcases):
+                    # As scoring is done during the evaluation we need
+                    # to invalidate it after evaluation completed, for
+                    # user not to see partial results as final ones.
+                    if submission_result.scored():
+                        submission_result.invalidate_score()
                     submission_result.set_evaluation_outcome()
                     submission_result.evaluation_tries += 1
                     self.evaluation_ended(submission_result)
+                else:
+                    submission_result.sa_session.commit()
+                    self.scoring_service.new_evaluation(
+                        submission_id=submission_result.submission_id,
+                        dataset_id=submission_result.dataset_id)
 
             elif type_ == ESOperation.USER_TEST_COMPILATION:
                 user_test_result = UserTestResult.get_from_id(

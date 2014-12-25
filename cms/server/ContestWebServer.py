@@ -1287,28 +1287,34 @@ class SubmissionStatusHandler(BaseHandler):
             data["status"] = 2
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Compilation failed"), self._("details"))
-        elif not sr.evaluated():
-            data["status"] = 3
-            data["status_text"] = self._("Evaluating...")
-        elif not sr.scored():
-            data["status"] = 4
-            data["status_text"] = self._("Scoring...")
         else:
-            data["status"] = 5
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
-                self._("Evaluated"), self._("details"))
+            if not sr.evaluated():
+                data["status"] = 3
+                data["status_text"] = self._("Evaluating...")
+            elif not sr.scored():
+                data["status"] = 4
+                data["status_text"] = self._("Scoring...")
+            else:
+                data["status"] = 5
+                data["status_text"] = self._("Evaluated")
 
-            if score_type is not None and score_type.max_public_score != 0:
-                data["max_public_score"] = "%g" % \
-                    round(score_type.max_public_score, task.score_precision)
-            data["public_score"] = "%g" % \
-                round(sr.public_score, task.score_precision)
-            if submission.token is not None:
-                if score_type is not None and score_type.max_score != 0:
-                    data["max_score"] = "%g" % \
-                        round(score_type.max_score, task.score_precision)
-                data["score"] = "%g" % \
-                    round(sr.score, task.score_precision)
+            if sr.scored() and (sr.evaluated() or task.show_partial_results):
+                data["status_text"] += "<a class=\"details\">%s</a>" % \
+                    self._("details")
+                if score_type is not None and score_type.max_public_score != 0:
+                    data["max_public_score"] = "%g" % \
+                        round(score_type.max_public_score,
+                              task.score_precision)
+                data["public_score"] = "%g" % \
+                    round(sr.public_score if sr.public_score is not None
+                          else 0.0, task.score_precision)
+                if submission.token is not None:
+                    if score_type is not None and score_type.max_score != 0:
+                        data["max_score"] = "%g" % \
+                            round(score_type.max_score, task.score_precision)
+                    data["score"] = "%g" % \
+                        round(sr.score if sr.score is not None else 0.0,
+                              task.score_precision)
 
         self.write(data)
 
@@ -1343,7 +1349,7 @@ class SubmissionDetailsHandler(BaseHandler):
             else:
                 details = sr.public_score_details
 
-            if sr.scored():
+            if sr.scored() and (sr.evaluated() or task.show_partial_results):
                 details = score_type.get_html_details(details, self._)
             else:
                 details = None
