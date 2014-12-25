@@ -216,7 +216,7 @@ class SpoolExporter(object):
 
         # Write rankings' header.
         n_tasks = len(sorted_tasks)
-        print("Final ranking of the contest `%s'" %
+        print("Final Ranking of Contest `%s'" %
               self.contest.description, file=ranking_file)
         points_line = " %10s" * n_tasks
         csv_points_line = ",%s" * n_tasks
