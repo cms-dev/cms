@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 import logging
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP
+    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP
 from cms.grading import get_compilation_commands, get_evaluation_commands, \
     compilation_step, evaluation_step, human_evaluation_message, \
     is_evaluation_passed, extract_outcome_and_text, white_diff_step
@@ -175,6 +175,14 @@ class Batch(TaskType):
         for filename in job.managers.iterkeys():
             if any(filename.endswith(header)
                    for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(source)
+                   for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(obj)
+                   for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 

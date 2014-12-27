@@ -134,6 +134,14 @@ class Communication(TaskType):
                    for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
+            elif any(filename.endswith(source)
+                   for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(obj)
+                   for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
