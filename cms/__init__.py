@@ -38,6 +38,7 @@ __all__ = [
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
+    "LANGUAGE_TO_OBJ_EXT_MAP",
     "SCORE_MODE_IOI_MAX", "SCORE_MODE_IOI_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
@@ -102,6 +103,11 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_C: ".h",
     LANG_CPP: ".h",
     LANG_PASCAL: "lib.pas",
+}
+LANGUAGE_TO_OBJ_EXT_MAP = {
+    LANG_C: ".o",
+    LANG_CPP: ".o",
+    LANG_PASCAL: ".o",
 }
 
 # Task score modes.

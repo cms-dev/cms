@@ -29,7 +29,7 @@ import os
 import tempfile
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, config
+    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_commands, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
@@ -128,10 +128,18 @@ class Communication(TaskType):
         files_to_get[source_filenames[-1]] = \
             job.files[format_filename].digest
 
-        # Also copy all *.h and *lib.pas graders
+        # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
             if any(filename.endswith(header)
                    for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(source)
+                     for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(obj)
+                     for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
