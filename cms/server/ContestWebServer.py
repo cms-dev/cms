@@ -9,6 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -53,7 +54,6 @@ import pkg_resources
 import re
 import socket
 import struct
-import tempfile
 import traceback
 from datetime import timedelta
 from urllib import quote
@@ -72,15 +72,16 @@ from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
-from cms.server import file_handler_gen, extract_archive, \
-    actual_phase_required, get_url_root, filter_ascii, \
-    CommonRequestHandler, format_size, compute_actual_phase
+from cms.server import file_handler_gen, actual_phase_required, \
+    get_url_root, filter_ascii, CommonRequestHandler, format_size, \
+    compute_actual_phase
 from cmscommon.isocodes import is_language_code, translate_language_code, \
     is_country_code, translate_country_code, \
     is_language_country_code, translate_language_country_code
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_datetime, make_timestamp, get_timezone
 from cmscommon.mimetypes import get_type_for_file_name
+from cmscommon.archive import Archive
 
 
 logger = logging.getLogger(__name__)
@@ -979,16 +980,10 @@ class SubmitHandler(BaseHandler):
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
-            # Extract the files from the archive.
-            temp_archive_file, temp_archive_filename = \
-                tempfile.mkstemp(dir=config.temp_dir)
-            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
-                temp_archive_file.write(archive_data["body"])
+            # Create the archive.
+            archive = Archive.from_raw_data(archive_data["body"])
 
-            archive_contents = extract_archive(temp_archive_filename,
-                                               archive_data["filename"])
-
-            if archive_contents is None:
+            if archive is None:
                 self.application.service.add_notification(
                     self.current_user.username,
                     self.timestamp,
@@ -999,8 +994,18 @@ class SubmitHandler(BaseHandler):
                                                               safe=''))
                 return
 
-            for item in archive_contents:
-                self.request.files[item["filename"]] = [item]
+            # Extract the archive.
+            unpacked_dir = archive.unpack()
+            for name in archive.namelist():
+                filename = os.path.basename(name)
+                body = open(os.path.join(unpacked_dir, filename), "r").read()
+                self.request.files[filename] = [{
+                    'filename': filename,
+                    'body': body
+                }]
+
+            # Clean up.
+            archive.cleanup()
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
@@ -1518,16 +1523,10 @@ class UserTestHandler(BaseHandler):
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
-            # Extract the files from the archive.
-            temp_archive_file, temp_archive_filename = \
-                tempfile.mkstemp(dir=config.temp_dir)
-            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
-                temp_archive_file.write(archive_data["body"])
+            # Create the archive.
+            archive = Archive.from_raw_data(archive_data["body"])
 
-            archive_contents = extract_archive(temp_archive_filename,
-                                               archive_data["filename"])
-
-            if archive_contents is None:
+            if archive is None:
                 self.application.service.add_notification(
                     self.current_user.username,
                     self.timestamp,
@@ -1537,8 +1536,18 @@ class UserTestHandler(BaseHandler):
                 self.redirect("/testing?%s" % quote(task.name, safe=''))
                 return
 
-            for item in archive_contents:
-                self.request.files[item["filename"]] = [item]
+            # Extract the archive.
+            unpacked_dir = archive.unpack()
+            for name in archive.namelist():
+                filename = os.path.basename(name)
+                body = open(os.path.join(unpacked_dir, filename), "r").read()
+                self.request.files[filename] = [{
+                    'filename': filename,
+                    'body': body
+                }]
+
+            # Clean up.
+            archive.cleanup()
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
