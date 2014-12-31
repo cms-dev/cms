@@ -30,8 +30,6 @@ from __future__ import unicode_literals
 
 import time
 import logging
-import tarfile
-import zipfile
 from datetime import datetime, timedelta
 from urllib import quote
 
@@ -197,49 +195,6 @@ def actual_phase_required(*actual_phases):
                 return func(self, *args, **kwargs)
         return wrapped
     return decorator
-
-
-def extract_archive(temp_name, original_filename):
-    """Obtain a list of files inside the specified archive.
-
-    Returns a list of the files inside the archive located in
-    temp_name, using original_filename to guess the type of the
-    archive.
-
-    """
-    file_list = []
-    if original_filename.endswith(".zip"):
-        try:
-            zip_object = zipfile.ZipFile(temp_name, "r")
-            for item in zip_object.infolist():
-                file_list.append({
-                    "filename": item.filename,
-                    "body": zip_object.read(item)})
-        except Exception as error:
-            logger.warning("Exception while extracting zip file `%s'. %r",
-                           original_filename, error)
-            return None
-    elif original_filename.endswith(".tar.gz") \
-            or original_filename.endswith(".tar.bz2") \
-            or original_filename.endswith(".tar"):
-        try:
-            tar_object = tarfile.open(name=temp_name)
-            for item in tar_object.getmembers():
-                if item.isfile():
-                    file_list.append({
-                        "filename": item.name,
-                        "body": tar_object.extractfile(item).read()})
-        except tarfile.TarError:
-            logger.warning("Exception while extracting tar file `%s'. %r",
-                           original_filename, error)
-            return None
-        except IOError:
-            return None
-    else:
-        logger.warning("Compressed file `%s' not recognized.",
-                       original_filename)
-        return None
-    return file_list
 
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
