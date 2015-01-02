@@ -40,6 +40,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 
 from . import Base, Contest
 from .smartmappedcollection import smart_mapped_collection
+from cms import SCORE_MODE_IOI_MAX, SCORE_MODE_IOI_MAX_TOKENED_LAST
 
 
 class Task(Base):
@@ -192,12 +193,10 @@ class Task(Base):
         default=0)
 
     # Score mode for the task.
-    # - ioi_max_tokened_last: score = max(last_score, max_tokened_score).
-    # - ioi_max: score = max(scores).
     score_mode = Column(
-        Enum("ioi_max_tokened_last", "ioi_max", name="score_mode"),
+        Enum(SCORE_MODE_IOI_MAX_TOKENED_LAST, SCORE_MODE_IOI_MAX, name="score_mode"),
         nullable=False,
-        default="ioi_max_tokened_last")
+        default=SCORE_MODE_IOI_MAX_TOKENED_LAST)
 
     # Active Dataset (id and object) currently being used for scoring.
     # The ForeignKeyConstraint for this column is set at table-level.
