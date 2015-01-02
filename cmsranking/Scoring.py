@@ -26,6 +26,7 @@ import logging
 
 from cmsranking.Submission import store as submission_store
 from cmsranking.Subchange import store as subchange_store
+from cmsranking.Task import store as task_store
 
 
 logger = logging.getLogger(__name__)
@@ -76,7 +77,7 @@ class Score(object):
     # but cms assures that the order in which the subchanges have to
     # be processed is the ascending order of their keys (actually,
     # this is enforced only for suchanges with the same time).
-    def __init__(self):
+    def __init__(self, score_mode="ioi_max_tokened_last"):
         # The submissions in their current status.
         self._submissions = dict()
 
@@ -92,6 +93,8 @@ class Score(object):
         # The history of score changes (the actual "output" of this
         # object).
         self._history = list()
+
+        self._score_mode = score_mode
 
     def append_change(self, change):
         # Remove from released submission (if needed), apply changes,
@@ -114,8 +117,13 @@ class Score(object):
                  self._submissions[s_id].time > self._last.time):
             self._last = self._submissions[s_id]
 
-        score = max(self._released.query(),
-                    self._last.score if self._last is not None else 0.0)
+        if self._score_mode == "ioi_max":
+            score = max([0.0] +
+                        [submission.score
+                         for submission in self._submissions.values()])
+        else:
+            score = max(self._released.query(),
+                        self._last.score if self._last is not None else 0.0)
 
         if score != self.get_score():
             self._history.append((change.time, score))
@@ -208,6 +216,8 @@ class Score(object):
                                    self._changes)
             self.reset_history()
 
+    def update_score_mode(self, score_mode):
+        self._score_mode = score_mode
 
 class ScoringStore(object):
     """A manager for all instances of Scoring.
@@ -260,7 +270,9 @@ class ScoringStore(object):
         if submission.user not in self._scores:
             self._scores[submission.user] = dict()
         if submission.task not in self._scores[submission.user]:
-            self._scores[submission.user][submission.task] = Score()
+            task = task_store.retrieve(submission.task)
+            self._scores[submission.user][submission.task] = \
+                Score(score_mode=task["score_mode"])
 
         score_obj = self._scores[submission.user][submission.task]
         old_score = score_obj.get_score()
@@ -278,9 +290,12 @@ class ScoringStore(object):
             self.create_submission(key, submission)
             return
 
+        task = task_store.retrieve(submission.task)
+
         score_obj = self._scores[submission.user][submission.task]
         old_score = score_obj.get_score()
         score_obj.update_submission(key, submission)
+        score_obj.update_score_mode(task["score_mode"])
         new_score = score_obj.get_score()
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)

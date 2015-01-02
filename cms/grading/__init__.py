@@ -765,11 +765,6 @@ def task_score(user, task):
     # submission_results table.  Doing so means that this function should incur
     # no exta database queries.
 
-    # The score of the last submission (if valid, otherwise 0.0).
-    last_score = 0.0
-    # The maximum score amongst the tokened submissions (invalid
-    # scores count as 0.0).
-    max_tokened_score = 0.0
     # If the score could change due to submission still being compiled
     # / evaluated / scored.
     partial = False
@@ -780,23 +775,52 @@ def task_score(user, task):
     if submissions == []:
         return 0.0, False
 
-    # Last score: if the last submission is scored we use that,
-    # otherwise we use 0.0 (and mark that the score is partial
-    # when the last submission could be scored).
-    last_s = submissions[-1]
-    last_sr = last_s.get_result(task.active_dataset)
+    score = 0.0
 
-    if last_sr is not None and last_sr.scored():
-        last_score = last_sr.score
-    else:
-        partial = True
+    if task.score_mode == "ioi_max":
+        # Modern IOI score mode: maximum score amongst all submissions.
 
-    for s in submissions:
-        sr = s.get_result(task.active_dataset)
-        if s.tokened():
+        # The maximum score amongst all submissions (invalid
+        # scores count as 0.0).
+        max_score = 0.0
+
+        for s in submissions:
+            sr = s.get_result(task.active_dataset)
             if sr is not None and sr.scored():
-                max_tokened_score = max(max_tokened_score, sr.score)
+                max_score = max(max_score, sr.score)
             else:
                 partial = True
 
-    return max(last_score, max_tokened_score), partial
+        score = max_score
+    else:
+        # Legacy IOI score mode: maximum score among all tokened submissions
+        # and the last submission.
+
+        # The score of the last submission (if valid, otherwise 0.0).
+        last_score = 0.0
+        # The maximum score amongst the tokened submissions (invalid
+        # scores count as 0.0).
+        max_tokened_score = 0.0
+
+        # Last score: if the last submission is scored we use that,
+        # otherwise we use 0.0 (and mark that the score is partial
+        # when the last submission could be scored).
+        last_s = submissions[-1]
+        last_sr = last_s.get_result(task.active_dataset)
+
+        if last_sr is not None and last_sr.scored():
+            last_score = last_sr.score
+        else:
+            partial = True
+
+        for s in submissions:
+            sr = s.get_result(task.active_dataset)
+            if s.tokened():
+                if sr is not None and sr.scored():
+                    max_tokened_score = max(max_tokened_score, sr.score)
+                else:
+                    partial = True
+
+        score = max(last_score, max_tokened_score)
+
+    return score, partial
