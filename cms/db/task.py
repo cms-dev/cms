@@ -160,7 +160,7 @@ class Task(Base):
         CheckConstraint("token_gen_max > 0"),
         nullable=True)
 
-    # Whether this contestants allowed to see partial results while evaluation
+    # Whether contestants allowed to see partial results while evaluation
     # is in progress.
     show_partial_results = Column(
         Boolean,

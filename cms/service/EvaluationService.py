@@ -1231,8 +1231,7 @@ class EvaluationService(TriggeredService):
                     # As scoring is done during the evaluation we need
                     # to invalidate it after evaluation completed, for
                     # user not to see partial results as final ones.
-                    if submission_result.scored():
-                        submission_result.invalidate_score()
+                    submission_result.invalidate_score()
                     submission_result.set_evaluation_outcome()
                     submission_result.evaluation_tries += 1
                     self.evaluation_ended(submission_result)
@@ -1292,11 +1291,15 @@ class EvaluationService(TriggeredService):
         """
         submission = submission_result.submission
 
-        # If compilation was ok, we emit a satisfied log message.
+        # If compilation was ok, we emit a satisfied log message
         if submission_result.compilation_succeeded():
             logger.info("Submission %d(%d) was compiled successfully.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
+            submission_result.sa_session.commit()
+            self.scoring_service.new_evaluation(
+                submission_id=submission_result.submission_id,
+                dataset_id=submission_result.dataset_id)
 
         # If instead submission failed compilation, we inform
         # ScoringService of the new submission. We need to commit

@@ -35,14 +35,14 @@
 {% else %}
         {{ _("Evaluated") }}
 {% end %}
-{% if sr.scored() and (sr.evaluated() or task.show_partial_results) %}
+{% if sr.scored() or task.show_partial_results %}
         <a class="details">{{ _("details") }}</a>
 {% end %}
     </td>
 
     {% if score_type is not None and score_type.max_public_score != 0 %}
-        {% if sr.scored() and (sr.evaluated() or task.show_partial_results) %}
-    <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) if sr.evaluated() else "" }}">
+        {% if sr.scored() or task.show_partial_results %}
+    <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) if sr.scored() else "" }}">
             {{ "%g" % round(sr.public_score if sr.public_score is not None else 0.0, task.score_precision) }} / {{ "%g" % round(score_type.max_public_score, task.score_precision) }}
     </td>
         {% else %}
@@ -52,8 +52,8 @@
 
     {% if s.token is not None %}
         {% if score_type is not None and score_type.max_score != 0 %}
-            {% if sr.scored() and (sr.evaluated() or task.show_partial_results) %}
-    <td class="total_score {{ get_score_class(sr.score, score_type.max_score) if sr.evaluated() else "" }}">
+            {% if sr.scored() or task.show_partial_results %}
+    <td class="total_score {{ get_score_class(sr.score, score_type.max_score) if sr.scored() else "" }}">
             {{ "%g" % round(sr.score if sr.score is not None else 0.0, task.score_precision) }} / {{ "%g" % round(score_type.max_score, task.score_precision) }}
     </td>
             {% else %}

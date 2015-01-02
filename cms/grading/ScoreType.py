@@ -284,7 +284,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             tc_end = tc_start + parameter[1]
 
             # If a testcase is in evaluations, then we take it's outcome,
-            # in the oppisite case it has not yet been evaluated, so we
+            # in the opposite case it has not yet been evaluated, so we
             # assume that the outcome is 0.0.
 
             st_score = self.reduce([float(evaluations[idx].outcome)

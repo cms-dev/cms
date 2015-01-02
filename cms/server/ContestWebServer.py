@@ -1298,7 +1298,7 @@ class SubmissionStatusHandler(BaseHandler):
                 data["status"] = 5
                 data["status_text"] = self._("Evaluated")
 
-            if sr.scored() and (sr.evaluated() or task.show_partial_results):
+            if sr.scored() or task.show_partial_results:
                 data["status_text"] += "<a class=\"details\">%s</a>" % \
                     self._("details")
                 if score_type is not None and score_type.max_public_score != 0:
@@ -1349,7 +1349,7 @@ class SubmissionDetailsHandler(BaseHandler):
             else:
                 details = sr.public_score_details
 
-            if sr.scored() and (sr.evaluated() or task.show_partial_results):
+            if sr.scored() or task.show_partial_results:
                 details = score_type.get_html_details(details, self._)
             else:
                 details = None

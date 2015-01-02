@@ -280,8 +280,7 @@ class ProxyService(TriggeredService):
                 if submission.user.hidden:
                     continue
 
-                if submission.get_result().evaluated() and \
-                        submission.get_result().scored() and \
+                if submission.get_result().scored() and \
                         submission.id not in self.scores_sent_to_rankings:
                     for operation in self.operations_for_score(submission):
                         self.enqueue(operation)
@@ -372,9 +371,7 @@ class ProxyService(TriggeredService):
             "time": int(make_timestamp(submission.timestamp))}
 
         # This check is probably useless.
-        if submission_result is not None \
-           and submission_result.evaluated() \
-           and submission_result.scored():
+        if submission_result is not None and submission_result.scored():
             # We're sending the unrounded score to RWS
             subchange_data["score"] = submission_result.score
             subchange_data["extra"] = \
@@ -513,7 +510,6 @@ class ProxyService(TriggeredService):
             for submission in task.submissions:
                 # Update RWS.
                 if not submission.user.hidden and \
-                        submission.get_result().evaluated() and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):
                         self.enqueue(operation)
