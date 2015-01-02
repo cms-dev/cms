@@ -4,7 +4,9 @@ Score types
 Introduction
 ============
 
-For every submission, the score type of a task comes into play after the :doc:`task type <Task types>` produced an outcome for each testcase. Indeed, the most important duty of the score type is to describe how to translate the list of outcomes into a single number: the score of the submission. The score type also produces a more informative output for the contestants, and the same information (score and detail) for contestants that did not use a token on the submission. In CMS, these latter set of information is called public, since the contestant can see them without using any tokens.
+For every submission, the score type of a task comes into play after the :doc:`task type <Task types>` compiled solution and, possibly, produced outcomes for some number of testcases. Indeed, the most important duty of the score type is to describe how to translate the list of outcomes into a single number: the score of the submission. The score type also produces a more informative output for the contestants, and the same information (score and detail) for contestants that did not use a token on the submission. In CMS, these latter set of information is called public, since the contestant can see them without using any tokens.
+
+Note, that CMS will try to calculate score of a submission during evaluation even if not all testcases have been evaluated by this moment. In such case, the outcome for not evaluated testcases is assumed to be "0.0". A task can be configured to show or not to show this partial scoring information to contestants.
 
 
 Standard score types

@@ -113,8 +113,7 @@ class Sum(ScoreTypeAlone):
         See the same method in ScoreType for details.
 
         """
-        # Actually, this means it didn't even compile!
-        if not submission_result.evaluated():
+        if not submission_result.compiled():
             return 0.0, "[]", 0.0, "[]", json.dumps([])
 
         # XXX Lexicographical order by codename
@@ -127,16 +126,21 @@ class Sum(ScoreTypeAlone):
         public_score = 0.0
 
         for idx in indices:
-            this_score = float(evaluations[idx].outcome) * self.parameters
+            this_score = (float(evaluations[idx].outcome)
+                          if idx in evaluations else 0.0) * self.parameters
             tc_outcome = self.get_public_outcome(this_score)
             score += this_score
-            testcases.append({
+            tc = {
                 "idx": idx,
-                "outcome": tc_outcome,
-                "text": evaluations[idx].text,
-                "time": evaluations[idx].execution_time,
-                "memory": evaluations[idx].execution_memory,
-                })
+                "outcome": tc_outcome
+                }
+            if idx in evaluations:
+                tc.update({
+                    "text": evaluations[idx].text,
+                    "time": evaluations[idx].execution_time,
+                    "memory": evaluations[idx].execution_memory,
+                    })
+            testcases.append(tc)
             if self.public_testcases[idx]:
                 public_score += this_score
                 public_testcases.append(testcases[-1])

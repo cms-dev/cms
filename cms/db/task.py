@@ -160,6 +160,13 @@ class Task(Base):
         CheckConstraint("token_gen_max > 0"),
         nullable=True)
 
+    # Whether contestants allowed to see partial results while evaluation
+    # is in progress.
+    show_partial_results = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Maximum number of submissions or user_tests allowed for each user
     # on this task during the whole contest or None to not enforce
     # this limitation.

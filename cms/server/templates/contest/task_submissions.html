@@ -41,11 +41,13 @@ update_submission_row = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").html(data["status_text"]);
-    if (data["status"] == 5) {
+    if (data["status"] >= 3) {
         if (data["public_score"] != undefined) {
             var public_score = data["public_score"];
             if (data["max_public_score"] != undefined) {
-                row.children("td.public_score").addClass(get_score_class(parseFloat(data["public_score"]), parseFloat(data["max_public_score"])));
+                if (data["status"] == 5) {
+                    row.children("td.public_score").addClass(get_score_class(parseFloat(data["public_score"]), parseFloat(data["max_public_score"])));
+                }
                 public_score += " / " + data["max_public_score"];
             }
             row.children("td.public_score").removeClass("undefined").html(public_score);
@@ -53,10 +55,15 @@ update_submission_row = function (submission_id, data) {
         if (data["score"] != undefined) {
             var score = data["score"];
             if (data["max_score"] != undefined) {
-                row.children("td.total_score").addClass(get_score_class(parseFloat(data["score"]), parseFloat(data["max_score"])));
+                if (data["status"] == 5) {
+                    row.children("td.total_score").addClass(get_score_class(parseFloat(data["score"]), parseFloat(data["max_score"])));
+                }
                 score += " / " + data["max_score"];
             }
             row.children("td.total_score").removeClass("undefined").html(score);
+        }
+        if (data["status"] != 5) {
+            schedule_update_submission_row(submission_id);
         }
     } else if (data["status"] != 2) {
         schedule_update_submission_row(submission_id);

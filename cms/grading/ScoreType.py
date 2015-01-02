@@ -266,8 +266,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float): the score
 
         """
-        # Actually, this means it didn't even compile!
-        if not submission_result.evaluated():
+        if not submission_result.compiled():
             return 0.0, "[]", 0.0, "[]", \
                 json.dumps(["%lg" % 0.0 for _ in self.parameters])
 
@@ -283,7 +282,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         for st_idx, parameter in enumerate(self.parameters):
             tc_end = tc_start + parameter[1]
+
+            # If a testcase is in evaluations, then we take it's outcome,
+            # in the opposite case it has not yet been evaluated, so we
+            # assume that the outcome is 0.0.
+
             st_score = self.reduce([float(evaluations[idx].outcome)
+                                    if idx in evaluations else 0.0
                                     for idx in indices[tc_start:tc_end]],
                                    parameter) * parameter[0]
             st_public = all(self.public_testcases[idx]
@@ -291,19 +296,24 @@ class ScoreTypeGroup(ScoreTypeAlone):
             tc_outcomes = dict((
                 idx,
                 self.get_public_outcome(
-                    float(evaluations[idx].outcome), parameter)
-                ) for idx in indices[tc_start:tc_end])
+                    float(evaluations[idx].outcome), parameter
+                ) if idx in evaluations else N_("Not evaluated yet"))
+                for idx in indices[tc_start:tc_end])
 
             testcases = []
             public_testcases = []
             for idx in indices[tc_start:tc_end]:
-                testcases.append({
+                tc = {
                     "idx": idx,
-                    "outcome": tc_outcomes[idx],
-                    "text": evaluations[idx].text,
-                    "time": evaluations[idx].execution_time,
-                    "memory": evaluations[idx].execution_memory,
+                    "outcome": tc_outcomes[idx]
+                    }
+                if idx in evaluations:
+                    tc.update({
+                        "text": evaluations[idx].text,
+                        "time": evaluations[idx].execution_time,
+                        "memory": evaluations[idx].execution_memory,
                     })
+                testcases.append(tc)
                 if self.public_testcases[idx]:
                     public_testcases.append(testcases[-1])
                 else:

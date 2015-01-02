@@ -460,10 +460,11 @@ class SubmissionResult(Base):
         return (bool): True if scored, False otherwise.
 
         """
-        return all(getattr(self, k) is not None for k in [
-            "score", "score_details",
-            "public_score", "public_score_details",
-            "ranking_score_details"])
+        return (self.compilation_failed() or self.evaluated()) and \
+            all(getattr(self, k) is not None for k in [
+                "score", "score_details",
+                "public_score", "public_score_details",
+                "ranking_score_details"])
 
     @staticmethod
     def filter_scored():
@@ -640,6 +641,8 @@ class Evaluation(Base):
     # String containing the outcome of the evaluation (usually 1.0,
     # ...) not necessary the points awarded, that will be computed by
     # the score type.
+    # If the corresponding testcase has not yet been evaluated, we
+    # assume that outcome is "0.0".
     outcome = Column(
         Unicode,
         nullable=True)
