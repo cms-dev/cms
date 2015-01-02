@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,8 @@ import tempfile
 import patoolib
 
 from patoolib.util import PatoolError
+
+from cms import config
 
 
 class ArchiveException(Exception):
@@ -92,14 +94,44 @@ class Archive(object):
         """
         patoolib.extract_archive(archive_path, outdir=to_dir)
 
-    def __init__(self, path):
+    @staticmethod
+    def from_raw_data(raw_data):
+        """Create an Archive object out of raw archive data.
+
+        This method treats the given string as archive data: it dumps it
+        into a temporary file, then creates an Archive object. Since the
+        user did not provide a path, we assume that when cleanup() is
+        called the temporary file should be deleted as well as unpacked
+        data.
+
+        raw_data (bytes): the actual bytes that form the archive.
+
+        return (Archive|None): an object that represents the new archive
+                               or None, if raw_data doesn't represent an
+                               archive.
+
+        """
+        temp_file, temp_filename = tempfile.mkstemp(dir=config.temp_dir)
+        with os.fdopen(temp_file, "w") as temp_file:
+            temp_file.write(raw_data)
+
+        try:
+            return Archive(temp_filename, delete_source=True)
+        except ArchiveException:
+            os.remove(temp_filename)
+            return None
+
+    def __init__(self, path, delete_source=False):
         """Init.
 
         path (string): the path of the archive.
+        delete_source (bool): whether the source archive should be
+                              deleted at cleanup or not.
 
         """
         if not Archive.is_supported(path):
             raise ArchiveException("This type of archive is not supported.")
+        self.delete_source = delete_source
         self.path = path
         self.temp_dir = None
 
@@ -109,7 +141,7 @@ class Archive(object):
         return (string): the path of the temporary directory.
 
         """
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp(dir=config.temp_dir)
         patoolib.extract_archive(self.path, outdir=self.temp_dir)
         return self.temp_dir
 
@@ -131,6 +163,12 @@ class Archive(object):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
         self.temp_dir = None
+        if self.delete_source:
+            try:
+                os.remove(self.path)
+            except OSError:
+                raise ArchiveException("Cannot delete source at: " +
+                                       self.path)
 
     def namelist(self):
         """Returns all pathnames for this archive.
