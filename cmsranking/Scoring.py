@@ -219,6 +219,7 @@ class Score(object):
     def update_score_mode(self, score_mode):
         self._score_mode = score_mode
 
+
 class ScoringStore(object):
     """A manager for all instances of Scoring.
 

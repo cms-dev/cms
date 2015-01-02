@@ -130,7 +130,8 @@ class SpoolExporter(object):
             for filename, file_ in submission.files.iteritems():
                 self.file_cacher.get_file_to_path(
                     file_.digest,
-                    os.path.join(submission_dir, filename.replace(".%l", "." + submission.language))
+                    os.path.join(submission_dir,
+                                 filename.replace("%l", submission.language)))
             last_submission_dir = os.path.join(
                 self.upload_dir, username, "%s.%s" %
                 (task, submission.language))

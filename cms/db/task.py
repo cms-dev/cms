@@ -194,7 +194,8 @@ class Task(Base):
 
     # Score mode for the task.
     score_mode = Column(
-        Enum(SCORE_MODE_IOI_MAX_TOKENED_LAST, SCORE_MODE_IOI_MAX, name="score_mode"),
+        Enum(SCORE_MODE_IOI_MAX_TOKENED_LAST, SCORE_MODE_IOI_MAX,
+             name="score_mode"),
         nullable=False,
         default=SCORE_MODE_IOI_MAX_TOKENED_LAST)
 

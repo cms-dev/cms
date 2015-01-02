@@ -36,7 +36,9 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA
+from cms import \
+    LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
+    SCORE_MODE_IOI_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
