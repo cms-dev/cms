@@ -212,12 +212,10 @@ class TriggeredService(Service):
 
         self._executors = []
 
-        # Set up and spawn the sweeper.
-        #
-        # TODO: link to greenlet and react to its death.
         self._sweeper_start = None
         self._sweeper_event = Event()
-        gevent.spawn(self._sweeper_loop)
+        self._sweeper_started = False
+        self._sweeper_timeout = None
 
     def add_executor(self, executor):
         """Add an executor for the service.
@@ -264,21 +262,27 @@ class TriggeredService(Service):
         for executor in self._executors:
             executor.dequeue(operation)
 
-    def _sweeper_timeout(self):
-        """Return how frequently to run the sweeper loop.
+    def start_sweeper(self, timeout):
+        """Start sweeper loop with given timeout.
 
-        return (float|None): timeout in seconds, or None for no
-            sweeping.
+        timeout (float): timeout in seconds.
 
         """
-        return None
+        if not self._sweeper_started:
+            self._sweeper_started = True
+            self._sweeper_timeout = timeout
+
+            # TODO: link to greenlet and react to its death.
+            gevent.spawn(self._sweeper_loop)
+        else:
+            logger.warning("Service tried to start the sweeper loop twice.")
 
     def _sweeper_loop(self):
         """Regularly check for missed operations.
 
-        Run the sweep once every _sweeper_timeout() seconds but make
+        Run the sweep once every _sweeper_timeout seconds but make
         sure that no two sweeps run simultaneously. That is, start a
-        new sweep _sweeper_timeout() seconds after the previous one
+        new sweep _sweeper_timeout seconds after the previous one
         started or when the previous one finished, whatever comes
         last.
 
@@ -291,10 +295,6 @@ class TriggeredService(Service):
         suppressed, because the loop must go on.
 
         """
-        # If the timeout is None, it means the subclass does not want
-        # a sweeper.
-        if self._sweeper_timeout() is None:
-            return
         while True:
             self._sweeper_start = monotonic_time()
             self._sweeper_event.clear()
@@ -306,7 +306,7 @@ class TriggeredService(Service):
                              "operations.", exc_info=True)
 
             self._sweeper_event.wait(max(self._sweeper_start +
-                                         self._sweeper_timeout() -
+                                         self._sweeper_timeout -
                                          monotonic_time(), 0))
 
     def _sweep(self):
