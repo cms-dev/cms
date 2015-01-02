@@ -104,10 +104,11 @@ class Archive(object):
         called the temporary file should be deleted as well as unpacked
         data.
 
-        raw_data (string): the actual bytes that form the archive.
+        raw_data (bytes): the actual bytes that form the archive.
 
-        return ([Archive]): an object that represents the new archive.
-        return ([None]): if raw_data doesn't represent an archive.
+        return (Archive|None): an object that represents the new archive
+                               or None, if raw_data doesn't represent an
+                               archive.
 
         """
         temp_file, temp_filename = tempfile.mkstemp(dir=config.temp_dir)
@@ -162,8 +163,12 @@ class Archive(object):
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
         self.temp_dir = None
-        if self.delete_source and os.path.exists(self.path):
-            os.remove(self.path)
+        if self.delete_source:
+            try:
+                os.remove(self.path)
+            except OSError:
+                raise ArchiveException("Cannot delete source at: " +
+                                       self.path)
 
     def namelist(self):
         """Returns all pathnames for this archive.

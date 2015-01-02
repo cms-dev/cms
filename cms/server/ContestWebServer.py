@@ -1004,7 +1004,6 @@ class SubmitHandler(BaseHandler):
                     'body': body
                 }]
 
-            # Clean up.
             archive.cleanup()
 
         # This ensure that the user sent one file for every name in
@@ -1546,7 +1545,6 @@ class UserTestHandler(BaseHandler):
                     'body': body
                 }]
 
-            # Clean up.
             archive.cleanup()
 
         # This ensure that the user sent one file for every name in
