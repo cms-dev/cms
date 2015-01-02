@@ -348,6 +348,23 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     </table>
     <div class="hr"></div>
   </div>
+
+  <h2 id="title_score_options" class="toggling_on">Score Options</h2>
+  <div id="score_options">
+    <table>
+      <tr>
+        <td>Score mode</td>
+        <td>
+          <select name="score_mode">
+            <option value="ioi_max_tokened_last" {{ "selected" if task.score_mode == "ioi_max_tokened_last" else "" }}>Legacy IOI (maximum score among all tokened submissions and the last submission)</option>
+            <option value="ioi_max" {{ "selected" if task.score_mode == "ioi_max" else "" }}>Modern IOI (maximum score amongst all submissions)</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
   <input type="submit" value="Update" />
   <input type="reset" value="Reset" />
 </form>

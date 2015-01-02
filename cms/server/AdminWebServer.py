@@ -1443,6 +1443,8 @@ class AddTaskHandler(BaseHandler):
 
             self.get_int(attrs, "score_precision")
 
+            self.get_string(attrs, "score_mode")
+
             # Create the task.
             attrs["num"] = len(self.contest.tasks)
             attrs["contest"] = self.contest
@@ -1534,6 +1536,8 @@ class TaskHandler(BaseHandler):
 
             self.get_int(attrs, "score_precision")
 
+            self.get_string(attrs, "score_mode")
+
             # Update the task.
             task.set_attrs(attrs)
 
@@ -1568,8 +1572,9 @@ class TaskHandler(BaseHandler):
                     "testcase_%s_public" % testcase.id, False))
 
         if try_commit(self.sql_session, self):
-            # Update the task on RWS.
-            self.application.service.proxy_service.reinitialize()
+            # Update the task and score on RWS.
+            self.application.service.proxy_service.dataset_updated(
+                task_id=task.id)
         self.redirect("/task/%s" % task_id)
 
 
