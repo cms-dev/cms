@@ -212,15 +212,13 @@ class TriggeredService(Service):
 
         self._executors = []
 
-        # Set up and spawn the sweeper.
-        #
-        # TODO: link to greenlet and react to its death.
         self._sweeper_start = None
         self._sweeper_event = Event()
-        gevent.spawn(self._sweeper_loop)
+        # We can't spawn the sweeper here, because there are no executors yet.
+        self._sweeper_spawned = False
 
     def add_executor(self, executor):
-        """Add an executor for the service.
+        """Add an executor for the service and spawn the sweeper.
 
         """
         # Set up and spawn the executors.
@@ -228,6 +226,12 @@ class TriggeredService(Service):
         # TODO: link to greenlet and react to deaths.
         self._executors.append(executor)
         gevent.spawn(executor.run)
+
+        if not self._sweeper_spawned:
+            self._sweeper_spawned = True
+
+            # TODO: link to greenlet and react to its death.
+            gevent.spawn(self._sweeper_loop)
 
     def get_executor(self):
         """Return the first executor (without checking it is unique).
