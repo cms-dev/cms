@@ -76,7 +76,7 @@ class Score(object):
     # On the other hand, different subchanges may have the same time
     # but cms assures that the order in which the subchanges have to
     # be processed is the ascending order of their keys (actually,
-    # this is enforced only for suchanges with the same time).
+    # this is enforced only for subchanges with the same time).
     def __init__(self, score_mode="ioi_max_tokened_last"):
         # The submissions in their current status.
         self._submissions = dict()
