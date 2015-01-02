@@ -292,12 +292,12 @@ def install():
         # Skip if destination is a symlink
         if os.path.islink(conf_file):
             continue
-        if os.path.exists(os.path.join(".", "examples", conf_file_name)):
-            copyfile(os.path.join(".", "examples", conf_file_name),
+        if os.path.exists(os.path.join(".", "config", conf_file_name)):
+            copyfile(os.path.join(".", "config", conf_file_name),
                      conf_file, cmsuser, 0660)
         else:
             conf_file_name = "%s.sample" % conf_file_name
-            copyfile(os.path.join(".", "examples", conf_file_name),
+            copyfile(os.path.join(".", "config", conf_file_name),
                      conf_file, cmsuser, 0660)
 
     print("copying localization files:")
