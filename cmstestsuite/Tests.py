@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -214,5 +214,13 @@ ALL_TESTS = [
          task=communication, filename='write-forbidden-communication.%l',
          languages=(LANG_C),
          checks=[CheckOverallScore(0, 100)]),
+
+    # This tests complete successfully only if it is unable to execute
+    # output.txt.
+
+    Test('executing-output',
+         task=batch_fileio, filename='executing-output.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(100, 100)]),
 
 ]

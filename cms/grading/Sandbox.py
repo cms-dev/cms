@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -868,12 +868,12 @@ class IsolateSandbox(SandboxBase):
         # assign the correct permissions.
         for path in (os.path.join(self.path, path) for path in paths):
             if not os.path.exists(path):
-                open(path, "w")  # Creates the file and closes it.
+                open(path, "w").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
         for path in (os.path.join(self.path, path) for path in paths):
-            os.chmod(path, 0777)
+            os.chmod(path, 0722)
 
     def get_root_path(self):
         """Return the toplevel path of the sandbox.
