@@ -153,7 +153,7 @@ class ScoringService(TriggeredService):
             must_be_present=ranking_enabled)
 
         self.add_executor(ScoringExecutor(self.proxy_service))
-        self._start_sweeper(347.0)
+        self.start_sweeper(347.0)
 
     def _missing_operations(self):
         """Return a generator of unscored submission results.

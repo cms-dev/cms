@@ -847,7 +847,7 @@ class EvaluationService(TriggeredService):
             ServiceCoord("ScoringService", 0))
 
         self.add_executor(EvaluationExecutor(self))
-        self._start_sweeper(117.0)
+        self.start_sweeper(117.0)
 
         self.add_timeout(self.check_workers_timeout, None,
                          EvaluationService.WORKER_TIMEOUT_CHECK_TIME

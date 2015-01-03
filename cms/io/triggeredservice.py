@@ -262,7 +262,7 @@ class TriggeredService(Service):
         for executor in self._executors:
             executor.dequeue(operation)
 
-    def _start_sweeper(self, timeout):
+    def start_sweeper(self, timeout):
         """Start sweeper loop with given timeout.
 
         timeout (float): timeout in seconds.

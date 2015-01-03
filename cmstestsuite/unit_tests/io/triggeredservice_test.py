@@ -86,9 +86,6 @@ class FakeTriggeredService(TriggeredService):
     def add_missing_operation(self, operation):
         self._operations.append(operation)
 
-    def _sweeper_timeout(self):
-        return self._timeout
-
     def _missing_operations(self):
         counter = 0
         while self._operations != []:
@@ -114,6 +111,7 @@ class TestTriggeredService(unittest.TestCase):
         self.service = FakeTriggeredService(0, timeout)
         for notifier in self.notifiers:
             self.service.add_executor(FakeExecutor(notifier))
+        self.service.start_sweeper(timeout)
 
     def test_success(self):
         """Test a simple success case."""

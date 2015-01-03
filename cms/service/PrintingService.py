@@ -231,7 +231,7 @@ class PrintingService(TriggeredService):
         self.file_cacher = FileCacher(self)
 
         self.add_executor(PrintingExecutor(self.file_cacher))
-        self._start_sweeper(61.0)
+        self.start_sweeper(61.0)
 
         if config.printer is None:
             logger.info("Printing is disabled, so the PrintingService is "
