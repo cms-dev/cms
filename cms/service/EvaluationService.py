@@ -847,6 +847,7 @@ class EvaluationService(TriggeredService):
             ServiceCoord("ScoringService", 0))
 
         self.add_executor(EvaluationExecutor(self))
+        self._start_sweeper(117.0)
 
         self.add_timeout(self.check_workers_timeout, None,
                          EvaluationService.WORKER_TIMEOUT_CHECK_TIME
@@ -856,9 +857,6 @@ class EvaluationService(TriggeredService):
                          EvaluationService.WORKER_CONNECTION_CHECK_TIME
                          .total_seconds(),
                          immediately=False)
-
-    def _sweeper_timeout(self):
-        return 117.0
 
     def submission_enqueue_operations(self, submission, check_again=False):
         """Push in queue the operations required by a submission.
