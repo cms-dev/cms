@@ -739,7 +739,7 @@ class SubmissionFileHandler(FileHandler):
             else:
                 # We don't recognize this filename. Let's try to 'undo'
                 # the '%l' -> 'c|cpp|pas' replacement before giving up.
-                filename = re.sub('\.%s$' % submission.language, '.%l',
+                filename = re.sub(r'\.%s$' % submission.language, '.%l',
                                   filename)
 
         if filename not in submission.files:

@@ -82,8 +82,8 @@ class Importer(object):
                                     "recreating the database.",
                                     exc_info=True)
                     return False
-            except Exception as error:
-                logger.critical("Unable to access DB.\n%r" % error)
+            except Exception:
+                logger.critical("Unable to access DB.", exc_info=True)
                 return False
         return True
 
@@ -104,7 +104,7 @@ class Importer(object):
             for user in users:
                 contest.users.append(self.loader.get_user(user))
         else:
-            logger.info("Generating %s random users." % self.user_number)
+            logger.info("Generating %s random users.", self.user_number)
             contest.users = [User("User %d" % i,
                                   "Last name %d" % i,
                                   "user%03d" % i)
@@ -129,7 +129,7 @@ class Importer(object):
             session.commit()
             contest_id = contest.id
 
-        logger.info("Import finished (new contest id: %s)." % contest_id)
+        logger.info("Import finished (new contest id: %s).", contest_id)
 
 
 def main():

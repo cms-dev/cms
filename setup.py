@@ -253,7 +253,7 @@ def build():
 
     print("compiling localization files:")
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+        country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
         print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code,
                             "LC_MESSAGES")
@@ -302,7 +302,7 @@ def install():
 
     print("copying localization files:")
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+        country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
         print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
         dest_path = os.path.join(USR_ROOT, "share", "locale",

@@ -117,7 +117,7 @@ class SpoolExporter(object):
         queue_file = io.open(os.path.join(self.spool_dir, "queue"), "w",
                              encoding="utf-8")
         for submission in sorted(self.submissions, key=lambda x: x.timestamp):
-            logger.info("Exporting submission %s." % submission.id)
+            logger.info("Exporting submission %s.", submission.id)
             username = submission.user.username
             task = submission.task.name
             timestamp = time.mktime(submission.timestamp.timetuple())

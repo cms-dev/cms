@@ -121,7 +121,7 @@ class ContestImporter(object):
 
             file_names = os.listdir(self.import_dir)
             if len(file_names) != 1:
-                logger.critical("Cannot find a root directory in %s." %
+                logger.critical("Cannot find a root directory in %s.",
                                 self.import_source)
                 archive.cleanup()
                 return False
@@ -136,8 +136,8 @@ class ContestImporter(object):
                                     "and recreating the database.",
                                     exc_info=True)
                     return False
-            except Exception as error:
-                logger.critical("Unable to access DB.\n%r" % error)
+            except Exception:
+                logger.critical("Unable to access DB.", exc_info=True)
                 return False
 
         with SessionGen() as session:
@@ -168,8 +168,8 @@ class ContestImporter(object):
                         "version %d). It may take a while to adapt it to "
                         "the current data model (which is version %d). You "
                         "can use cmsDumpUpdater to update the on-disk dump "
-                        "and speed up future imports."
-                        % (dump_version, model_version))
+                        "and speed up future imports.",
+                        dump_version, model_version)
 
                 if dump_version > model_version:
                     logger.critical(
@@ -179,7 +179,7 @@ class ContestImporter(object):
                         "way to adapt it to the current data model (which "
                         "is version %d). You probably need to update CMS to "
                         "handle it. It is impossible to proceed with the "
-                        "importation." % (dump_version, model_version))
+                        "importation.", dump_version, model_version)
                     return False
 
                 for version in range(dump_version, model_version):
@@ -279,7 +279,7 @@ class ContestImporter(object):
                     if not self.safe_put_file(file_, desc):
                         logger.critical("Unable to put file `%s' in the DB. "
                                         "Aborting. Please remove the contest "
-                                        "from the database." % file_)
+                                        "from the database.", file_)
                         # TODO: remove contest from the database.
                         return False
 
@@ -288,7 +288,7 @@ class ContestImporter(object):
             archive.cleanup()
 
         if contest_id is not None:
-            logger.info("Import finished (contest id: %s)." %
+            logger.info("Import finished (contest id: %s).",
                         ", ".join("%d" % id_ for id_ in contest_id))
         else:
             logger.info("Import finished.")
@@ -413,14 +413,14 @@ class ContestImporter(object):
             digest = self.file_cacher.put_file_from_path(path, description)
         except Exception as error:
             logger.critical("File %s could not be put to file server (%r), "
-                            "aborting." % (path, error))
+                            "aborting.", path, error)
             return False
 
         # Then check the digest.
         calc_digest = sha1sum(path)
         if digest != calc_digest:
             logger.critical("File %s has hash %s, but the server returned %s, "
-                            "aborting." % (path, calc_digest, digest))
+                            "aborting.", path, calc_digest, digest)
             return False
 
         return True

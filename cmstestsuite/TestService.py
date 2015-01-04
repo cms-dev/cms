@@ -73,8 +73,8 @@ class TestService(Service):
             return True
         elif self.current >= 0 and not self.failed and not self.retry:
             self.total_time += self.delta
-            logger.info("Test #%03d performed in %.2lf seconds." %
-                        (self.current, self.delta))
+            logger.info("Test #%03d performed in %.2lf seconds.",
+                        self.current, self.delta)
 
         if not self.retry:
             self.current += 1
@@ -91,20 +91,20 @@ class TestService(Service):
                 logger.info("Test suite completed.")
                 return False
             else:
-                logger.info(("Test suite completed in %.2f seconds. " +
-                             "Result: %d/%d (%.2f%%).") %
-                            (self.total_time, self.allright, total,
-                             self.allright * 100.0 / total))
+                logger.info("Test suite completed in %.2f seconds. "
+                            "Result: %d/%d (%.2f%%).",
+                            self.total_time, self.allright, total,
+                            self.allright * 100.0 / total)
                 self.exit()
                 return False
 
         if not self.failed:
             self.ongoing = True
-            logger.info("Performing Test #%03d..." % self.current)
+            logger.info("Performing Test #%03d...", self.current)
             self.start = time.time()
             method()
         else:
-            logger.info("Not performing Test #%03d." % self.current)
+            logger.info("Not performing Test #%03d.", self.current)
         return True
 
     def test_end(self, success, message=None, retry=False):
@@ -118,9 +118,9 @@ class TestService(Service):
         """
         if message is not None:
             if success:
-                logger.info("  " + message)
+                logger.info("  %s", message)
             else:
-                logger.error("  " + message)
+                logger.error("  %s", message)
         self.ongoing = False
         if success:
             self.allright += 1

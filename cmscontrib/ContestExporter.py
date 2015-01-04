@@ -132,8 +132,8 @@ class ContestExporter(object):
                     self.contest_id = None
                 else:
                     self.export_target = "dump_%s.tar.gz" % contest.name
-                    logger.warning("export_target not given, using \"%s\""
-                                   % self.export_target)
+                    logger.warning("export_target not given, using \"%s\"",
+                                   self.export_target)
 
         self.file_cacher = FileCacher()
 
@@ -332,16 +332,16 @@ class ContestExporter(object):
         # First get the file
         try:
             self.file_cacher.get_file_to_path(digest, path)
-        except Exception as error:
-            logger.error("File %s could not retrieved from file server (%r)."
-                         % (digest, error))
+        except Exception:
+            logger.error("File %s could not retrieved from file server.",
+                         digest, exc_info=True)
             return False
 
         # Then check the digest
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.critical("File %s has wrong hash %s."
-                            % (digest, calc_digest))
+            logger.critical("File %s has wrong hash %s.",
+                            digest, calc_digest)
             return False
 
         # If applicable, retrieve also the description
