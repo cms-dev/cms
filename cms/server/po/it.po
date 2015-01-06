@@ -8,16 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-01 07:17+0100\n"
-"PO-Revision-Date: 2014-07-01 07:20+0100\n"
-"Last-Translator: Giovanni Mascellani <mascellani@poisson.phc.unipi.it>\n"
+"POT-Creation-Date: 2015-01-06 17:10+0000\n"
+"PO-Revision-Date: 2015-01-06 17:19+0100\n"
+"Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Gtranslator 2.91.6\n"
+"X-Generator: Poedit 1.5.4\n"
 
 msgid "N/A"
 msgstr "N/A"
@@ -285,6 +285,32 @@ msgstr "Eseguito"
 msgid "%(seconds)0.3f s"
 msgstr "%(seconds)0.3f s"
 
+msgid "Too many print jobs!"
+msgstr "Troppe stampe!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Hai raggiunto il limite massimo di %d stampe."
+
+msgid "Invalid format!"
+msgstr "Formato invalido!"
+
+msgid "File too big!"
+msgstr "File troppo grande!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Ogni file deve essere grande al massimo %d byte."
+
+msgid "Print job storage failed!"
+msgstr "Errore nel salvataggio della stampa!"
+
+msgid "Print job received"
+msgstr "Comando di stampa ricevuto"
+
+msgid "Your print job has been received."
+msgstr "Il comando di stampa è stato ricevuto."
+
 msgid "%Y-%m-%d"
 msgstr "%d/%m/%Y"
 
@@ -499,6 +525,9 @@ msgstr "Documentazione"
 msgid "Testing"
 msgstr "Testing"
 
+msgid "Printing"
+msgstr "In stampa"
+
 msgid "Contest Management System"
 msgstr "Contest Management System"
 
@@ -628,6 +657,16 @@ msgstr ""
 "token su di essa, uno di entrambi i tipi."
 
 #, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr ""
+"Puoi sottoporre al massimo %(submissions)s soluzioni durante questa gara."
+
+#, python-format
+msgid "You can submit at most %(user_tests)s user tests during this contest."
+msgstr ""
+"Puoi sottoporre al massimo %(user_tests)s user test durante questa gara."
+
+#, python-format
 msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
@@ -721,6 +760,59 @@ msgstr "Sì"
 
 msgid "No"
 msgstr "No"
+
+msgid "Print"
+msgstr "Stampa"
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text or PDF files of up to "
+"%(max_pages)d pages each."
+msgstr ""
+"Puoi stampare altri %(remaining_jobs)d file PDF, ognuno con al massimo "
+"%(max_pages)d pagine."
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"pages each."
+msgstr ""
+"Puoi stampare altri %(remaining_jobs)d file di testo, ognuno con al massimo "
+"%(max_pages)d pagine."
+
+msgid "File (text or PDF)"
+msgstr "File (testo o PDF)"
+
+msgid "File (text)"
+msgstr "File (testo)"
+
+msgid "Submit"
+msgstr "Sottoponi"
+
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr "Non puoi stampare perché la tua quota è esaurita."
+
+msgid "Previous print jobs"
+msgstr "Stampe precedenti"
+
+msgid "Date and time"
+msgstr "Data e ora"
+
+msgid "Time"
+msgstr "Ora"
+
+msgid "File name"
+msgstr "Nome del file"
+
+msgid "Status"
+msgstr "Stato"
+
+msgid "no print jobs yet"
+msgstr "nessuna stampa ancora"
+
+msgid "Preparing..."
+msgstr "In preparazione..."
 
 msgid "Compilation output"
 msgstr "Output della compilazione"
@@ -828,8 +920,9 @@ msgstr "%(name)s (%(short_name)s) <small>sottoposizioni</small>"
 msgid "Submit a solution"
 msgstr "Sottoponi una soluzione"
 
-msgid "Submit"
-msgstr "Sottoponi"
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr "Puoi sottoporre altre %(submissions_left)s soluzioni."
 
 msgid "submission.zip"
 msgstr "sottoposizione.zip"
@@ -866,15 +959,6 @@ msgstr "In questo momento, non hai token disponibili per questo problema."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Ma dovrai aspettare fino alle %(expiration_time)s per usarlo."
 
-msgid "Date and time"
-msgstr "Data e ora"
-
-msgid "Time"
-msgstr "Ora"
-
-msgid "Status"
-msgstr "Stato"
-
 msgid "Public score"
 msgstr "Punteggio pubblico"
 
@@ -898,6 +982,10 @@ msgstr "Chiudi"
 
 msgid "Submit a test"
 msgstr "Sottoponi un test"
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
+msgstr "Puoi sottoporre altri %(user_tests_left)s user test."
 
 msgid "input"
 msgstr "input"
