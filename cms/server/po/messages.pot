@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-23 13:54+0200\n"
+"POT-Creation-Date: 2015-01-06 17:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -624,6 +624,14 @@ msgid ""
 msgstr ""
 
 #, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr ""
+
+#, python-format
+msgid "You can submit at most %(user_tests)s user tests during this contest."
+msgstr ""
+
+#, python-format
 msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
@@ -854,6 +862,10 @@ msgstr ""
 msgid "Submit a solution"
 msgstr ""
 
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr ""
+
 msgid "submission.zip"
 msgstr ""
 
@@ -910,6 +922,10 @@ msgid "Close"
 msgstr ""
 
 msgid "Submit a test"
+msgstr ""
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
 msgstr ""
 
 msgid "input"
