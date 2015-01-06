@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -342,7 +342,10 @@ class Batch(TaskType):
                             try:
                                 sandbox.remove_file(input_filename)
                             except OSError as e:
-                                pass
+                                # Let us be extra sure that the file
+                                # was actually removed and we did not
+                                # mess up with permissions.
+                                assert not sandbox.file_exists(input_filename)
                             sandbox.create_file_from_storage(
                                 input_filename,
                                 job.input)
