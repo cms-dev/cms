@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -233,6 +233,13 @@ ALL_TESTS = [
     Test('delete-write-input',
          task=batch_fileio_managed, filename='delete-write-input.%l',
          languages=(LANG_C,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    # Write a huge file
+
+    Test('write-big-fileio',
+         task=batch_fileio, filename='write-big-fileio.%l',
+         languages=LANG_C,
          checks=[CheckOverallScore(0, 100)]),
 
 ]
