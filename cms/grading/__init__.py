@@ -391,6 +391,7 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.timeout = 0
         sandbox.wallclock_timeout = 0
     sandbox.address_space = memory_limit * 1024
+    sandbox.fsize = memory_limit * 1024
 
     if stdin_redirect is not None:
         sandbox.stdin_file = stdin_redirect

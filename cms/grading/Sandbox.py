@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -463,6 +463,7 @@ class StupidSandbox(SandboxBase):
         # These parameters are not going to be used, but are here for
         # API compatibility
         self.box_id = 0
+        self.fsize = None
         self.cgroup = False
         self.dirs = []
         self.preserve_env = False
@@ -807,6 +808,7 @@ class IsolateSandbox(SandboxBase):
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
+        self.fsize = None              # -f
         self.stdin_file = None         # -i
         self.stack_space = None        # -k
         self.address_space = None      # -m
@@ -937,6 +939,8 @@ class IsolateSandbox(SandboxBase):
             res += ["--env=%s" % var]
         for var, value in self.set_env.items():
             res += ["--env=%s=%s" % (var, value)]
+        if self.fsize is not None:
+            res += ["--fsize=%d" % self.fsize]
         if self.stdin_file is not None:
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
