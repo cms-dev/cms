@@ -68,6 +68,9 @@ class Config(object):
         self.use_cgroups = True
         self.sandbox_implementation = 'isolate'
 
+        # Sandbox.
+        self.max_file_size = 1048576
+
         # WebServers.
         self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
         self.secret_key = self.secret_key_default

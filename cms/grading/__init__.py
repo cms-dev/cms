@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -36,7 +36,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import \
+from cms import config, \
     LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
     SCORE_MODE_MAX
 from cms.db import Submission
@@ -391,7 +391,7 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.timeout = 0
         sandbox.wallclock_timeout = 0
     sandbox.address_space = memory_limit * 1024
-    sandbox.fsize = memory_limit * 1024
+    sandbox.fsize = config.max_file_size
 
     if stdin_redirect is not None:
         sandbox.stdin_file = stdin_redirect
