@@ -5,6 +5,14 @@
   <h1>Contest information</h1>
 </div>
 
+{% if len(config.contest_listen_port) > 0 %}
+  {% set ratio = round(len(contest.users) * 1.0 / len(config.contest_listen_port), 2) %}
+  {% if ratio >= 40 %}
+    At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>
+    A CWS can handle 40 simultaneous request. This situation might cause many requests to fail.
+  {% end %}
+{% end %}
+
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest">
   <table class="sub_table">
