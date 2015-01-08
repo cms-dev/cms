@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -69,7 +69,8 @@ class Config(object):
         self.sandbox_implementation = 'isolate'
 
         # WebServers.
-        self.secret_key = "8e045a51e4b102ea803c06f92841a1fb"
+        self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
+        self.secret_key = self.secret_key_default
         self.tornado_debug = False
 
         # ContestWebServer.
