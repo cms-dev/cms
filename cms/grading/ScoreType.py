@@ -108,12 +108,11 @@ class ScoreType(object):
         logger.error("Unimplemented method max_scores.")
         raise NotImplementedError("Please subclass this class.")
 
-    def compute_score(self, unused_submission_id):
-        """Computes a score of a single submission. We don't know here
-        how to do it, but our subclasses will.
+    def compute_score(self, unused_submission_result):
+        """Computes a score of a single submission.
 
-        unused_submission_id (int): the id of the submission to
-            evaluate.
+        unused_submission_result (SubmissionResult): the submission
+            result of which we want the score
 
         returns (float, str, float, str, [str]): respectively: the
             score, the HTML string with additional information (e.g.
@@ -235,11 +234,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 {% end %}"""
 
     def max_scores(self):
-        """Compute the maximum score of a submission.
-
-        returns (float, float): maximum score overall and public.
-
-        """
+        """See ScoreType.max_score."""
         score = 0.0
         public_score = 0.0
         headers = list()
@@ -260,12 +255,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         return score, public_score, headers
 
     def compute_score(self, submission_result):
-        """Compute the score of a submission.
-
-        submission_id (int): the submission to evaluate.
-        returns (float): the score
-
-        """
+        """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", \

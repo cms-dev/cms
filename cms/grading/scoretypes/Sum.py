@@ -94,11 +94,7 @@ class Sum(ScoreTypeAlone):
 </table>"""
 
     def max_scores(self):
-        """Compute the maximum score of a submission.
-
-        returns (float, float): maximum score overall and public.
-
-        """
+        """See ScoreType.max_score."""
         public_score = 0.0
         score = 0.0
         for public in self.public_testcases.itervalues():
@@ -108,11 +104,7 @@ class Sum(ScoreTypeAlone):
         return score, public_score, []
 
     def compute_score(self, submission_result):
-        """Compute the score of a submission.
-
-        See the same method in ScoreType for details.
-
-        """
+        """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", json.dumps([])
