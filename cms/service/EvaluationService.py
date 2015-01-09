@@ -52,6 +52,7 @@ from cms.service import get_submissions, get_submission_results, \
     get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
 from cms.grading.Job import JobGroup
+from cms.grading.scoretypes import get_score_type
 
 
 logger = logging.getLogger(__name__)
@@ -843,8 +844,8 @@ class EvaluationService(TriggeredService):
         self.contest_id = contest_id
         self.post_finish_lock = gevent.coros.RLock()
 
-        self.scoring_service = self.connect_to(
-            ServiceCoord("ScoringService", 0))
+        self.proxy_service = self.connect_to(
+            ServiceCoord("ProxyService", 0))
 
         self.add_executor(EvaluationExecutor(self))
         self.start_sweeper(117.0)
@@ -981,10 +982,7 @@ class EvaluationService(TriggeredService):
             queries['max_evaluations'] = not_evaluated.filter(
                 SubmissionResult.evaluation_tries
                 >= EvaluationService.MAX_EVALUATION_TRIES)
-            queries['scoring'] = evaluated.filter(
-                not_(SubmissionResult.filter_scored()))
-            queries['scored'] = evaluated.filter(
-                SubmissionResult.filter_scored())
+            queries['evaluated'] = evaluated
             queries['total'] = base_query
 
             stats = {}
@@ -1234,12 +1232,13 @@ class EvaluationService(TriggeredService):
 
                 # Submission evaluation will be ended only when
                 # evaluation for each testcase is available.
-
                 dataset = Dataset.get_from_id(dataset_id, session)
                 if len(submission_result.evaluations) == \
                         len(dataset.testcases):
                     submission_result.set_evaluation_outcome()
                     submission_result.evaluation_tries += 1
+                    submission_result.compute_score(
+                        get_score_type(dataset=dataset))
                     self.evaluation_ended(submission_result)
 
             elif type_ == ESOperation.USER_TEST_COMPILATION:
@@ -1281,11 +1280,12 @@ class EvaluationService(TriggeredService):
             session.commit()
 
     def compilation_ended(self, submission_result):
-        """Actions to be performed when we have a submission that has
-        ended compilation . In particular: we queue evaluation if
-        compilation was ok, we inform ScoringService if the
-        compilation failed for an error in the submission, or we
-        requeue the compilation if there was an error in CMS.
+        """Action to be performed when we have compiled a submission.
+
+        In particular: we queue evaluation if compilation was ok, we
+        inform ProxyService if the compilation failed for an error in
+        the submission, or we requeue the compilation if there was an
+        error in CMS.
 
         submission_result (SubmissionResult): the submission result.
 
@@ -1299,19 +1299,20 @@ class EvaluationService(TriggeredService):
                         submission_result.dataset_id)
 
         # If instead submission failed compilation, we inform
-        # ScoringService of the new submission. We need to commit
-        # before so it has up to date information.
+        # ProxyService of the new submission. We need to commit before
+        # so it has up to date information.
         elif submission_result.compilation_failed():
             logger.info("Submission %d(%d) did not compile.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
             submission_result.sa_session.commit()
-            self.scoring_service.new_evaluation(
-                submission_id=submission_result.submission_id,
-                dataset_id=submission_result.dataset_id)
+            # If dataset is the active one, update RWS.
+            if submission_result.dataset is submission.task.active_dataset:
+                self.proxy_service.submission_scored(
+                    submission_id=submission.id)
 
         # If compilation failed for our fault, we log the error.
-        elif submission_result.compilation_outcome is None:
+        elif not submission_result.compiled():
             logger.warning("Worker failed when compiling submission "
                            "%d(%d).",
                            submission_result.submission_id,
@@ -1333,27 +1334,28 @@ class EvaluationService(TriggeredService):
         self.submission_enqueue_operations(submission)
 
     def evaluation_ended(self, submission_result):
-        """Actions to be performed when we have a submission that has
-        been evaluated. In particular: we inform ScoringService on
-        success, we requeue on failure.
+        """Action to be performed when we have evaluated a submission.
+
+        In particular: we inform ProxyService on success, we requeue
+        on failure.
 
         submission_result (SubmissionResult): the submission result.
 
         """
         submission = submission_result.submission
 
-        # Evaluation successful, we inform ScoringService so it can
-        # update the score. We need to commit the session beforehand,
-        # otherwise the ScoringService wouldn't receive the updated
-        # submission.
+        # Evaluation successful, we inform ProxyService so it can send
+        # the score to RWS. We need to commit the session beforehand,
+        # otherwise it won't receive the updated submission.
         if submission_result.evaluated():
             logger.info("Submission %d(%d) was evaluated successfully.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
             submission_result.sa_session.commit()
-            self.scoring_service.new_evaluation(
-                submission_id=submission_result.submission_id,
-                dataset_id=submission_result.dataset_id)
+            # If dataset is the active one, update RWS.
+            if submission_result.dataset is submission.task.active_dataset:
+                self.proxy_service.submission_scored(
+                    submission_id=submission.id)
 
         # Evaluation unsuccessful, we log the error.
         else:
@@ -1520,14 +1522,14 @@ class EvaluationService(TriggeredService):
             None.
         user_id (int|None): id of the user to invalidate, or None.
         task_id (int|None): id of the task to invalidate, or None.
-        level (string): 'compilation' or 'evaluation'
+        level (string): 'compilation' or 'evaluation' or 'score'
 
         """
         logger.info("Invalidation request received.")
 
         # Validate arguments
         # TODO Check that all these objects belong to this contest.
-        if level not in ("compilation", "evaluation"):
+        if level not in ("compilation", "evaluation", "score"):
             raise ValueError(
                 "Unexpected invalidation level `%s'." % level)
 
@@ -1572,13 +1574,19 @@ class EvaluationService(TriggeredService):
                     submission_result.invalidate_compilation()
                 elif level == "evaluation":
                     submission_result.invalidate_evaluation()
+                elif level == "score":
+                    submission_result.compute_score(
+                        get_score_type(dataset=submission_result.dataset))
 
             # Finally, we re-enqueue the operations for the
-            # submissions.
-            for submission in submissions:
-                self.submission_enqueue_operations(submission)
+            # submissions, if the level wasn't score (in that case we
+            # recompute it immediately).
+            if level in ("compilation", "evaluation"):
+                for submission in submissions:
+                    self.submission_enqueue_operations(submission)
 
             session.commit()
+        logger.info("Invalidation completed.")
 
     @rpc_method
     def disable_worker(self, shard):

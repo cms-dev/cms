@@ -87,7 +87,7 @@ The score of a user on a certain task is the maximum among the scores of the "to
 
 Note that some "internal" scores used by ScoreTypes (for example the subtask score) are not rounded using this procedure. At the moment the subtask scores are always rounded at two decimal places and there's no way to configure that (note that the score of the submission is the sum of the *unrounded* scores of the subtasks). That will be changed soon. See :gh_issue:`33`.
 
-The unrounded score is stored in the database (and it's rounded only at presentation level) so you can change the ``score_precision`` at any time without having to rescore any submissions. Yet, you have to make sure that these values are also updated on the RankingWebServers. To do that you can either restart ScoringService or update the data manually (see :doc:`RankingWebServer` for further information).
+The unrounded score is stored in the database (and it's rounded only at presentation level) so you can change the ``score_precision`` at any time without having to rescore any submissions. Yet, you have to make sure that these values are also updated on the RankingWebServers. To do that you can either restart ProxyService or update the data manually (see :doc:`RankingWebServer` for further information).
 
 
 Primary statements

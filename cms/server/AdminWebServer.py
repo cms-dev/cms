@@ -474,8 +474,6 @@ class AdminWebServer(WebService):
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
-        self.scoring_service = self.connect_to(
-            ServiceCoord("ScoringService", 0))
 
         ranking_enabled = len(config.rankings) > 0
         self.proxy_service = self.connect_to(
@@ -1111,8 +1109,6 @@ class ActivateDatasetHandler(BaseHandler):
             # unloved, but are now part of an autojudged taskset.
             self.application.service\
                 .evaluation_service.search_operations_not_done()
-            self.application.service\
-                .scoring_service.search_operations_not_done()
 
         # Now send notifications to contestants.
         datetime = make_datetime()
@@ -1157,8 +1153,6 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
             # unloved, but are now part of an autojudged taskset.
             self.application.service\
                 .evaluation_service.search_operations_not_done()
-            self.application.service\
-                .scoring_service.search_operations_not_done()
 
         self.redirect("/task/%s" % dataset.task_id)
 

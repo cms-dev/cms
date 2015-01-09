@@ -126,7 +126,6 @@ def do_setup():
                     "cmscompat"],
           package_data=package_data,
           scripts=["scripts/cmsLogService",
-                   "scripts/cmsScoringService",
                    "scripts/cmsEvaluationService",
                    "scripts/cmsWorker",
                    "scripts/cmsResourceService",

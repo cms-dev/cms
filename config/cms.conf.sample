@@ -19,7 +19,6 @@
     {
         "LogService":        [["localhost", 29000]],
         "ResourceService":   [["localhost", 28000]],
-        "ScoringService":    [["localhost", 28500]],
         "Checker":           [["localhost", 22000]],
         "EvaluationService": [["localhost", 25000]],
         "Worker":            [["localhost", 26000], ["localhost", 26001]],
@@ -137,7 +136,7 @@
 
 
 
-    "_section": "ScoringService",
+    "_section": "ProxyService",
 
     "_help": "List of URLs (with embedded username and password) of the",
     "_help": "RWSs where the scores are to be sent. Don't include the",

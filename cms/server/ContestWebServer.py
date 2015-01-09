@@ -452,8 +452,6 @@ class ContestWebServer(WebService):
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
-        self.scoring_service = self.connect_to(
-            ServiceCoord("ScoringService", 0))
 
         ranking_enabled = len(config.rankings) > 0
         self.proxy_service = self.connect_to(

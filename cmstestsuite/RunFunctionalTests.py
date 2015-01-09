@@ -53,7 +53,6 @@ def start_generic_services():
     start_service("ResourceService")
     start_service("Checker")
     start_service("Worker")
-    start_service("ScoringService")
     start_server("AdminWebServer")
     # Just to verify it starts successfully.
     start_ranking_web_server()

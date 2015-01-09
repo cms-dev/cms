@@ -129,9 +129,8 @@ class Worker(Service):
                     # even if, at the moment, a JobGroup always uses
                     # the same TaskType and the same parameters. Yet,
                     # this could change in the future, so the best
-                    # solution is to keep a cache of TaskTypes objects
-                    # (like ScoringService does with ScoreTypes, except
-                    # that we cannot index by Dataset ID here...).
+                    # solution is to keep a cache of TaskTypes
+                    # objects.
                     task_type = get_task_type(job.task_type,
                                               job.task_type_parameters)
                     task_type.execute_job(job, self.file_cacher)
