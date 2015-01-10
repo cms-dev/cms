@@ -361,10 +361,11 @@ class SubmissionResult(Base):
         """Return the Evaluation of this SR on the given Testcase, if any
 
         testcase (Testcase): the testcase the returned evaluation will
-                             belong to
-        return (Evaluation): the (only!) evaluation of this submission
-                             result on the given testcase, or None if
-                             there isn't any.
+            belong to.
+
+        return (Evaluation|None): the (only!) evaluation of this
+            submission result on the given testcase, or None if there
+            isn't any.
 
         """
         # Use IDs to avoid triggering a lazy-load query.
