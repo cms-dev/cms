@@ -12,7 +12,9 @@
     {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
     {% end %}
+    {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
+    {% end %}
 {% elif sr.compilation_outcome == "fail" %}
 <tr data-submission="{{ s_idx }}" data-status="2">
     {% raw col1 %}
@@ -23,7 +25,9 @@
     {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
     {% end %}
+    {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
+    {% end %}
 {% elif not sr.evaluated() %}
 <tr data-submission="{{ s_idx }}" data-status="3">
     {% raw col1 %}
@@ -33,7 +37,9 @@
     {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
     {% end %}
+    {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
+    {% end %}
 {% elif not sr.scored() %}
 <tr data-submission="{{ s_idx }}" data-status="4">
     {% raw col1 %}
@@ -43,7 +49,9 @@
     {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
     {% end %}
+    {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
+    {% end %}
 {% else %}
 <tr data-submission="{{ s_idx }}" data-status="5">
     {% raw col1 %}
@@ -58,20 +66,22 @@
     </td>
     {% end %}
 
-    {% if s.token is not None %}
-        {% if score_type is not None and score_type.max_score != 0 %}
+    {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
+        {% if s.token is not None %}
+            {% if score_type.max_score != 0 %}
     <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
-            {{ "%g" % round(sr.score, task.score_precision) }} / {{ "%g" % round(score_type.max_score, task.score_precision) }}
+        {{ "%g" % round(sr.score, task.score_precision) }} / {{ "%g" % round(score_type.max_score, task.score_precision) }}
     </td>
-        {% else %}
+            {% else %}
     <td class="total_score">
-            {{ "%g" % round(sr.score, task.score_precision) }}
+        {{ "%g" % round(sr.score, task.score_precision) }}
     </td>
-        {% end %}
-    {% else %}
+            {% end %}
+        {% else %}
     <td class="total_score undefined">
         {{ _("N/A") }}
     </td>
+        {% end %}
     {% end %}
 {% end %}
     <td class="files">

@@ -224,7 +224,7 @@ $(document).ready(function () {
             <th class="time">{{ _("Time") }}</th>
 {% end %}
             <th class="status">{{ _("Status") }}</th>
-{% if score_type is not None and score_type.max_public_score != 0 %}
+{% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
             <th class="public_score">{{ _("Public score") }}</th>
             <th class="total_score">{{ _("Total score") }}</th>
 {% else %}
