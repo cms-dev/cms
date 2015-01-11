@@ -41,7 +41,7 @@ update_submission_row = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").html(data["status_text"]);
-    if (data["status"] == 5) {
+    if (data["status"] == {{ SubmissionResult.EVALUATED }}) {
         if (data["public_score"] != undefined) {
             var public_score = data["public_score"];
             if (data["max_public_score"] != undefined) {
@@ -58,7 +58,7 @@ update_submission_row = function (submission_id, data) {
             }
             row.children("td.total_score").removeClass("undefined").html(score);
         }
-    } else if (data["status"] != 2) {
+    } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
         schedule_update_submission_row(submission_id);
     }
 }
@@ -72,7 +72,7 @@ schedule_update_submission_row = function (submission_id) {
 }
 
 $(document).ready(function () {
-    $('#submission_list tbody tr[data-status][data-status!="2"][data-status!="5"]').each(function (idx, elem) {
+    $('#submission_list tbody tr[data-status][data-status!="{{ SubmissionResult.COMPILATION_FAILED }}"][data-status!="{{ SubmissionResult.EVALUATED }}"]').each(function (idx, elem) {
         schedule_update_submission_row($(this).attr("data-submission"));
     });
 });

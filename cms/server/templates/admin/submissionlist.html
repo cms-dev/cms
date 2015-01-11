@@ -55,7 +55,7 @@
             {% elif not sr.evaluated() %}
             Evaluating...
             <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-            {% elif sr.scored() %}
+            {% else %}
               {% try %}
                 {% set max_score = current_score_type.max_score %}
               {% except %}
@@ -67,34 +67,6 @@
                 {% raw current_score_type.get_html_details(sr.score_details) %}
               {% except %}
               [Cannot get score type - see logs]
-              {% end %}
-            {% else %}
-            Evaluated
-            <div id="evaluation_{{ s.id }}" style="display: none;">
-              {% if sr.evaluated() %}
-              <h3>Testcases</h3>
-              <table class="nested bordered">
-                <thead>
-                  <tr>
-                    <th>Outcome</th>
-                    <th></th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
-                  <tr>
-                    <td>{{ ev.outcome }}</td>
-                    {% if s.token is not None or ev.testcase.public %}
-                    <td style="align: center;">&bullet;</td>
-                    {% else %}
-                    <td></td>
-                    {% end %}
-                    <td>{{ ev.text }}</td>
-                  </tr>
-                  {% end %}
-                </tbody>
-              </table>
               {% end %}
             {% end %}
               <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->

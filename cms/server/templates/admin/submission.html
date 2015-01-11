@@ -68,15 +68,13 @@
           Compilation failed
           {% elif not sr.evaluated() %}
           Evaluating...
-          {% elif sr.scored() %}
+          {% else %}
             {% try %}
               {% set max_score = st.max_score %}
             {% except %}
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% end %}
           Evaluated ({{ sr.score }} / {{ max_score }})
-          {% else %}
-          Evaluated
           {% end %}
         </td>
       </tr>
@@ -122,7 +120,7 @@
   </form>
 </div>
 
-  {% if sr is not None and sr.scored() %}
+  {% if sr is not None and sr.evaluated() %}
 
 <h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
 <div id="evaluation_user">
@@ -135,10 +133,6 @@
     {% end %}
   </div>
 </div>
-
-  {% end %}
-
-  {% if sr is not None and sr.evaluated() %}
 
 <h2 id="title_evaluation_admin" class="toggling_on">Evaluation (as seen by the admin)</h2>
 <div id="evaluation_admin">

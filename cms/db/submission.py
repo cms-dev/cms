@@ -241,6 +241,12 @@ class SubmissionResult(Base):
         UniqueConstraint('submission_id', 'dataset_id'),
     )
 
+    # Possible statuses of a submission result.
+    COMPILING = 1
+    COMPILATION_FAILED = 2
+    EVALUATING = 3
+    EVALUATED = 4
+
     # Primary key is (submission_id, dataset_id).
     submission_id = Column(
         Integer,
@@ -357,6 +363,19 @@ class SubmissionResult(Base):
     # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects)
 
+    def get_status(self):
+        """Return the status of this object.
+
+        """
+        if not self.compiled():
+            return SubmissionResult.COMPILING
+        elif self.compilation_failed():
+            return SubmissionResult.COMPILATION_FAILED
+        elif not self.evaluated():
+            return SubmissionResult.EVALUATING
+        else:
+            return SubmissionResult.EVALUATED
+
     def get_evaluation(self, testcase):
         """Return the Evaluation of this SR on the given Testcase, if any
 
@@ -460,37 +479,6 @@ class SubmissionResult(Base):
 
         """
         return SubmissionResult.evaluation_outcome != None  # noqa
-
-    def needs_scoring(self):
-        """Return whether the submission result needs to be scored.
-
-        return (bool): True if in need of scoring, False otherwise.
-
-        """
-        return (self.compilation_failed() or self.evaluated()) and \
-            not self.scored()
-
-    def scored(self):
-        """Return whether the submission result has been scored.
-
-        return (bool): True if scored, False otherwise.
-
-        """
-        return all(getattr(self, k) is not None for k in [
-            "score", "score_details",
-            "public_score", "public_score_details",
-            "ranking_score_details"])
-
-    @staticmethod
-    def filter_scored():
-        """Return a filtering lambda for scored submission results.
-
-        """
-        return ((SubmissionResult.score != None)
-                & (SubmissionResult.score_details != None)
-                & (SubmissionResult.public_score != None)
-                & (SubmissionResult.public_score_details != None)
-                & (SubmissionResult.ranking_score_details != None))  # noqa
 
     def invalidate_compilation(self):
         """Blank all compilation and evaluation outcomes, and the score.
