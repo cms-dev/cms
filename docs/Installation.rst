@@ -110,7 +110,7 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
 Arch Linux
 ----------
 
-On Arch Linux, the following command will install almost all dependencies (some of them can be found in the AUR):
+On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.org/packages/cms>`_ or `cms-git <http://aur.archlinux.org/packages/cms-git>`_. However, if you don't want to use them, the following command will install almost all dependencies (some of them can be found in the AUR):
 
 .. sourcecode:: bash
 
