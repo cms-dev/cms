@@ -39,7 +39,7 @@ __all__ = [
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
     "LANGUAGE_TO_OBJ_EXT_MAP",
-    "SCORE_MODE_IOI_MAX", "SCORE_MODE_IOI_MAX_TOKENED_LAST",
+    "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
@@ -113,9 +113,9 @@ LANGUAGE_TO_OBJ_EXT_MAP = {
 # Task score modes.
 
 # Maximum score amongst all submissions.
-SCORE_MODE_IOI_MAX = "ioi_max"
+SCORE_MODE_MAX = "max"
 # Maximum score among all tokened submissions and the last submission.
-SCORE_MODE_IOI_MAX_TOKENED_LAST = "ioi_max_tokened_last"
+SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
 
 from .util import ConfigError, mkdir, utf8_decoder, Address, ServiceCoord, \
     get_safe_shard, get_service_address, get_service_shards, \

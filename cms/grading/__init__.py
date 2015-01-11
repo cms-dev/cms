@@ -38,7 +38,7 @@ from sqlalchemy.orm import joinedload
 
 from cms import \
     LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
-    SCORE_MODE_IOI_MAX
+    SCORE_MODE_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -780,8 +780,8 @@ def task_score(user, task):
 
     score = 0.0
 
-    if task.score_mode == SCORE_MODE_IOI_MAX:
-        # Modern IOI score mode: maximum score amongst all submissions.
+    if task.score_mode == SCORE_MODE_MAX:
+        # Like in IOI 2013-: maximum score amongst all submissions.
 
         # The maximum score amongst all submissions (not yet computed
         # scores count as 0.0).
@@ -796,8 +796,8 @@ def task_score(user, task):
 
         score = max_score
     else:
-        # Legacy IOI score mode: maximum score among all tokened submissions
-        # and the last submission.
+        # Like in IOI 2010-2012: maximum score among all tokened
+        # submissions and the last submission.
 
         # The score of the last submission (if computed, otherwise 0.0).
         last_score = 0.0
