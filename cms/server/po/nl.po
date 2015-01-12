@@ -287,33 +287,28 @@ msgstr "Uitgevoerd"
 msgid "%(seconds)0.3f s"
 msgstr "%(seconds)0.3f seconde"
 
-#, fuzzy
 msgid "Too many print jobs!"
-msgstr "Te veel tests!"
+msgstr "Te veel printopdrachten!"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Je hebt de limiet van maximaal %d tests voor deze taak bereikt."
+msgstr "Je hebt de maximumlimiet van %d printopdrachten bereikt."
 
-#, fuzzy
 msgid "Invalid format!"
-msgstr "Ongeldig test formaat!"
+msgstr "Ongeldig formaat!"
 
-#, fuzzy
 msgid "File too big!"
-msgstr "Test te groot!"
+msgstr "Bestand te groot!"
 
-#, fuzzy, python-format
+#, python-format
 msgid "Each file must be at most %d bytes long."
-msgstr "Elk bronbestand mag maximaal %d bytes lang zijn."
+msgstr "Elk bestand mag maximaal %d bytes groot zijn."
 
-#, fuzzy
 msgid "Print job storage failed!"
-msgstr "Kon de test niet opslaan!"
+msgstr "Kon de printopdracht niet registreren!"
 
-#, fuzzy
 msgid "Print job received"
-msgstr "Test ontvangen"
+msgstr "Printopdracht ontvangen"
 
 msgid "Your print job has been received."
 msgstr "Je printopdracht werd ontvangen."
@@ -663,9 +658,9 @@ msgstr ""
 "Je kan het gedetailleerde resultaat van een indiening bekijken door er twee "
 "tokens op te gebruiken, één van elk type."
 
-#, fuzzy, python-format
+#, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr "Je hebt de limiet van maximum %d indieningen voor deze taak bereikt."
+msgstr "Je hebt de maximumlimiet van %d indieningen voor deze wedstrijd bereikt."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
@@ -793,9 +788,8 @@ msgid ""
 msgstr ""
 "Je kunt niks meer afdrukken aangezien je jouw printquota al bereikt hebt."
 
-#, fuzzy
 msgid "Previous print jobs"
-msgstr "Vorige afdrukopdrachten"
+msgstr "Vorige printopdrachten"
 
 msgid "Date and time"
 msgstr "Datum en tijd"
@@ -809,13 +803,11 @@ msgstr ""
 msgid "Status"
 msgstr "Status"
 
-#, fuzzy
 msgid "no print jobs yet"
-msgstr "nog geen tests"
+msgstr "nog geen printopdrachten"
 
-#, fuzzy
 msgid "Preparing..."
-msgstr "Bezig met punten geven..."
+msgstr "Voorbereiden..."
 
 msgid "Compilation output"
 msgstr "Compilatie output"
