@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # Martynas Budriūnas <martynas.budriunas@gmail.com>, 2012.
 # Vytis Banaitis <vytis.banaitis@gmail.com>, 2014.
+# Motiejus Jakštys <desired.mta@gmail.com>, 2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-07-01 07:17+0100\n"
-"PO-Revision-Date: 2014-07-01 07:21+0100\n"
-"Last-Translator: Vytis Banaitis <vytis.banaitis@gmail.com>\n"
+"PO-Revision-Date: 2015-01-06 20:10+0100\n"
+"Last-Translator: Motiejus Jakštys <desired.mta@gmail.com>\n"
 "Language-Team: Lithuanian\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
@@ -35,8 +36,9 @@ msgstr "Kompiliavimas viršijo laiko ribojimą"
 msgid ""
 "Compilation killed with signal %d (could be triggered by violating memory "
 "limits)"
-msgstr "Kompiliavimas nutrauktas signalu %d (tai galėjo įvykti viršijus "
-"atminties ribojimus)"
+msgstr ""
+"Kompiliavimas nutrauktas signalu %d (tai galėjo įvykti viršijus atminties "
+"ribojimus)"
 
 msgid "Execution timed out"
 msgstr "Vykdymas viršijo laiko ribojimą"
@@ -45,8 +47,9 @@ msgstr "Vykdymas viršijo laiko ribojimą"
 msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
 "limits)"
-msgstr "Vykdymas nutrauktas signalu %d (tai galėjo įvykti viršijus "
-"atminties ribojimus)"
+msgstr ""
+"Vykdymas nutrauktas signalu %d (tai galėjo įvykti viršijus atminties "
+"ribojimus)"
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
@@ -283,6 +286,32 @@ msgstr "Įvykdyta"
 msgid "%(seconds)0.3f s"
 msgstr "%(seconds)0.3f sek."
 
+msgid "Too many print jobs!"
+msgstr "Per daug spausdinimo darbų!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Pasiekei %d testų limitą spausdinamų darbų skaičiui."
+
+msgid "Invalid format!"
+msgstr "Netinkamas formatas!"
+
+msgid "File too big!"
+msgstr "Failas per didelis!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Kiekvienas failas turi būti ne didesnis nei %d baitų."
+
+msgid "Print job storage failed!"
+msgstr "Nepavyko išsaugoti spausdinimo darbo!"
+
+msgid "Print job received"
+msgstr "Spausdinimo darbas gautas"
+
+msgid "Your print job has been received."
+msgstr "Tavo spausdinimo darbas gautas."
+
 msgid "%Y-%m-%d"
 msgstr "%Y-%m-%d"
 
@@ -437,11 +466,11 @@ msgstr "Automatiška (%s)"
 
 #, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
+"</em>"
 msgstr ""
-"Prisijungta kaip <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+"Prisijungta kaip <strong>%(first_name)s %(last_name)s</strong> <em>"
+"(%(username)s)</em>"
 
 msgid "Logout"
 msgstr "Atsijungti"
@@ -509,6 +538,9 @@ msgstr "Dokumentacija"
 
 msgid "Testing"
 msgstr "Testavimas"
+
+msgid "Printing"
+msgstr "Spausdinimas"
 
 msgid "Contest Management System"
 msgstr "Varžybų aptarnavimo sistema"
@@ -635,6 +667,14 @@ msgstr ""
 "panaudodamas du žetonus: po vieną abiejų tipų žetoną."
 
 #, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr "Gali pateikti daugiausiai %(submission)s sprendimų šiame konkurse."
+
+#, python-format
+msgid "You can submit at most %(user_tests)s user tests during this contest."
+msgstr "Gali pateikti daugiausiai %(user_tests)s naudotojo testų per šį konkursą."
+
+#, python-format
 msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
@@ -721,6 +761,60 @@ msgstr "Taip"
 
 msgid "No"
 msgstr "Ne"
+
+msgid "Print"
+msgstr "Spausdinti"
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text or PDF files of up to "
+"%(max_pages)d pages each."
+msgstr ""
+"Gali spausdinti dar %(remaining_jobs)d tekstinių arba PDF failų po "
+"ne daugiau nei %(max_pages)d puslapių."
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"pages each."
+msgstr ""
+"Gali spausdinti dar %(remaining_jobs)d tekstinių failų po "
+"ne daugiau nei %(max_pages)d puslapių."
+
+msgid "File (text or PDF)"
+msgstr "Failas (tekstinis arba PDF)"
+
+msgid "File (text)"
+msgstr "Failas (tekstinis)"
+
+msgid "Submit"
+msgstr "Pateikti"
+
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr ""
+"Daugiau spausdinti negali nes jau sunaudojai savo spausdinimo limitą."
+
+msgid "Previous print jobs"
+msgstr "Ankstesni spausdinimo darbai"
+
+msgid "Date and time"
+msgstr "Data ir laikas"
+
+msgid "Time"
+msgstr "Laikas"
+
+msgid "File name"
+msgstr "Failo vardas"
+
+msgid "Status"
+msgstr "Būsena"
+
+msgid "no print jobs yet"
+msgstr "spausdinimo darbų dar nėra"
+
+msgid "Preparing..."
+msgstr "Paruošiama..."
 
 msgid "Compilation output"
 msgstr "Kompiliavimo išvestis"
@@ -827,8 +921,9 @@ msgstr "%(name)s (%(short_name)s) <small>sprendimų pateikimas</small>"
 msgid "Submit a solution"
 msgstr "Pateikti sprendimą"
 
-msgid "Submit"
-msgstr "Pateikti"
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr "Gali pateikti dar %(submissions_left)s sprendimą(-ų)."
 
 msgid "submission.zip"
 msgstr "sprendimas.zip"
@@ -864,15 +959,6 @@ msgstr "Šiuo metu neturi žetonų šiam uždaviniui."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Tačiau turi palaukti iki %(expiration_time)s, kad galėtum jį naudoti."
 
-msgid "Date and time"
-msgstr "Data ir laikas"
-
-msgid "Time"
-msgstr "Laikas"
-
-msgid "Status"
-msgstr "Būsena"
-
 msgid "Public score"
 msgstr "Vieši taškai"
 
@@ -896,6 +982,10 @@ msgstr "Uždaryti"
 
 msgid "Submit a test"
 msgstr "Pateikti testą"
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
+msgstr "Gali pateitki dar %(user_tests_left)s testą(-ų)."
 
 msgid "input"
 msgstr "įvestis"
