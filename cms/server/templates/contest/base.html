@@ -51,7 +51,7 @@ $(document).ready(function () {
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
 {% if len(langs) > 1 %}
                     <p class="navbar-text pull-right">
-                        <select id="lang" class="form-control btn btn-info" onchange="CMS.CWSUtils.switch_lang()">
+                        <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
                             <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }}</option>
                         {% for lang_code, lang_name in sorted(lang_names.iteritems(), key=lambda x: x[1]) %}
                             <option value="{{ lang_code }}"{% if cookie_lang == lang_code %} selected{% end %}>{{ lang_name }}</option>
