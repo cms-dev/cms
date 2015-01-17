@@ -787,8 +787,8 @@ msgstr "Soumettre"
 
 msgid ""
 "You cannot print anything any more as you have used up your printing quota."
-msgstr "Vous ne pouvez plus imprimer car vous avez épuisé votre
-quota d'impression."
+msgstr "Vous ne pouvez plus imprimer car vous avez épuisé votre "
+"quota d'impression."
 
 msgid "Previous print jobs"
 msgstr "Impressions précédentes"
