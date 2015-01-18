@@ -217,23 +217,8 @@ CMS.CWSUtils.prototype.update_time = function() {
     }
 };
 
-CMS.CWSUtils.prototype.join_path = function(base, rel) {
-    var base_list = base.split("/");
-    var rel_list = rel.split("/");
-    base_list.pop();
-    for(var i = 0; i < rel_list.length; ++i) {
-        if(rel_list[i] == ".") {
-        } else if(rel_list[i] == "..") {
-            base_list.pop();
-        } else {
-            base_list.push(rel_list[i]);
-        }
-    }
-    return base_list.join("/");
-};
-
 CMS.CWSUtils.prototype.switch_lang = function() {
-    var cookie_path = this.join_path(location.pathname, this.url_root + "/");
+    var cookie_path = this.url_root + "/";
     var lang = $("#lang").val();
     if (lang === "") {
         document.cookie = "language="
