@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -194,6 +194,8 @@ class SpoolExporter(object):
         is_partial = False
         for task in self.contest.tasks:
             for user in self.contest.users:
+                if user.hidden:
+                    continue
                 score, partial = task_score(user, task)
                 is_partial = is_partial or partial
                 task_scores[task.id][user.username] = score
