@@ -1641,6 +1641,26 @@ class RankingHandler(BaseHandler):
             self.render("ranking.html", **self.r_params)
 
 
+class ContestSubmissionsHandler(BaseHandler):
+    """Shows all submissions for this contest.
+
+    """
+    def get(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+        self.contest = contest
+
+        self.r_params = self.render_params()
+        self.r_params["submissions"] = \
+            self.sql_session.query(Submission).join(Task)\
+                            .filter(Task.contest == contest)\
+                            .options(joinedload(Submission.user))\
+                            .options(joinedload(Submission.files))\
+                            .options(joinedload(Submission.token))\
+                            .options(joinedload(Submission.results))\
+                            .order_by(Submission.timestamp.desc()).all()
+        self.render("contest_submissions.html", **self.r_params)
+
+
 class AddAnnouncementHandler(BaseHandler):
     """Called to actually add an announcement
 
@@ -1989,6 +2009,7 @@ _aws_handlers = [
     (r"/contest/add", AddContestHandler),
     (r"/ranking/([0-9]+)", RankingHandler),
     (r"/ranking/([0-9]+)/([a-z]+)", RankingHandler),
+    (r"/submissions/([0-9]+)", ContestSubmissionsHandler),
     (r"/task/([0-9]+)", TaskHandler),
     (r"/dataset/([0-9]+)", DatasetSubmissionsHandler),
     (r"/add_task/([0-9]+)", AddTaskHandler),

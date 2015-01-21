@@ -556,8 +556,9 @@ CMS.AWSUtils.prototype.switch_contest = function() {
 };
 
 
-CMS.AWSUtils.prototype.show_page = function(item, page) {
-    var elements_per_page = 5;
+CMS.AWSUtils.prototype.show_page = function(item, page, elements_per_page) {
+    elements_per_page = elements_per_page || 5;
+
     var children = $("#paged_content_" + item).children();
     var npages = Math.ceil(children.length / elements_per_page);
     var final_page = Math.min(page, npages) - 1;
@@ -579,7 +580,7 @@ CMS.AWSUtils.prototype.show_page = function(item, page) {
             selector.append($("<a>").text(i + " ")
                             .click(function(j) {
                                 return function() {
-                                    self.show_page('questions', j);
+                                    self.show_page(item, j, elements_per_page);
                                     return false;
                                 }
                             }(i)));
