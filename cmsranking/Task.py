@@ -55,7 +55,7 @@ class Task(Entity):
         self.max_score = None
         self.extra_headers = None
         self.order = None
-        self.score_mode = "ioi_max_tokened_last"
+        self.score_mode = "max_tokened_last"
 
     @staticmethod
     def validate(data):
