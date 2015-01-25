@@ -77,7 +77,7 @@ class Score(object):
     # but cms assures that the order in which the subchanges have to
     # be processed is the ascending order of their keys (actually,
     # this is enforced only for subchanges with the same time).
-    def __init__(self, score_mode="ioi_max_tokened_last"):
+    def __init__(self, score_mode="max_tokened_last"):
         # The submissions in their current status.
         self._submissions = dict()
 
@@ -117,7 +117,7 @@ class Score(object):
                  self._submissions[s_id].time > self._last.time):
             self._last = self._submissions[s_id]
 
-        if self._score_mode == "ioi_max":
+        if self._score_mode == "max":
             score = max([0.0] +
                         [submission.score
                          for submission in self._submissions.values()])
