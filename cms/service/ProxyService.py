@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -278,7 +278,13 @@ class ProxyService(TriggeredService):
                 if submission.user.hidden:
                     continue
 
-                if submission.get_result().scored() and \
+                # The submission result can be None if the dataset has
+                # been just made live.
+                sr = submission.get_result()
+                if sr is None:
+                    continue
+
+                if sr.scored() and \
                         submission.id not in self.scores_sent_to_rankings:
                     for operation in self.operations_for_score(submission):
                         self.enqueue(operation)
@@ -509,6 +515,7 @@ class ProxyService(TriggeredService):
             for submission in task.submissions:
                 # Update RWS.
                 if not submission.user.hidden and \
+                        submission.get_result() is not None and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):
                         self.enqueue(operation)

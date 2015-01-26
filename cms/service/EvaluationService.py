@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -1196,10 +1196,22 @@ class EvaluationService(TriggeredService):
                 submission_result = SubmissionResult.get_from_id(
                     (object_id, dataset_id), session)
                 if submission_result is None:
-                    logger.error("[action_finished] Couldn't find "
-                                 "submission %d(%d) in the database.",
-                                 object_id, dataset_id)
-                    return
+                    logger.info("[action_finished] Couldn't find "
+                                "submission %d(%d) in the database. "
+                                "Creating it.", object_id, dataset_id)
+                    submission = Submission.get_from_id(object_id, session)
+                    dataset = Dataset.get_from_id(dataset_id, session)
+                    if submission is None:
+                        logger.error("[action_finished] Could not find "
+                                     "submission %d in the database.",
+                                     object_id)
+                        return
+                    if dataset is None:
+                        logger.error("[action_finished] Could not find "
+                                     "dataset %d in the database.", dataset_id)
+                        return
+                    submission_result = submission.get_result_or_create(
+                        dataset)
 
                 submission_result.compilation_tries += 1
 
