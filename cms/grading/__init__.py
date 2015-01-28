@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -284,7 +284,8 @@ def compilation_step(sandbox, commands):
         text = [N_("Compilation failed")]
 
     # Timeout: returning the error to the user
-    elif exit_status == Sandbox.EXIT_TIMEOUT:
+    elif exit_status == Sandbox.EXIT_TIMEOUT or \
+            exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         logger.debug("Compilation timed out.")
         success = True
         compilation_success = False
@@ -438,6 +439,11 @@ def evaluation_step_after_run(sandbox):
         logger.debug("Execution timed out.")
         success = True
 
+    # Wall clock timeout: returning the error to the user.
+    elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
+        logger.debug("Execution timed out (wall clock limit exceeded).")
+        success = True
+
     # Suicide with signal (memory limit, segfault, abort): returning
     # the error to the user.
     elif exit_status == Sandbox.EXIT_SIGNAL:
@@ -501,6 +507,8 @@ def human_evaluation_message(plus):
     exit_status = plus['exit_status']
     if exit_status == Sandbox.EXIT_TIMEOUT:
         return [N_("Execution timed out")]
+    elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
+        return [N_("Execution timed out (wall clock limit exceeded)")]
     elif exit_status == Sandbox.EXIT_SIGNAL:
         return [N_("Execution killed with signal %d (could be triggered by "
                    "violating memory limits)"), plus['signal']]

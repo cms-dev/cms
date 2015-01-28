@@ -31,7 +31,7 @@ import cmstestsuite.tasks.communication as communication
 from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
     LANG_PYTHON
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
-    CheckTimeout, CheckNonzeroReturn
+    CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
 
 
 ALL_LANGUAGES = tuple(LANGUAGES)
@@ -111,7 +111,7 @@ ALL_TESTS = [
     Test('timeout-pause',
          task=batch_stdio, filename='timeout-pause.%l',
          languages=(LANG_CPP,),
-         checks=[CheckOverallScore(0, 100), CheckTimeout()]),
+         checks=[CheckOverallScore(0, 100), CheckTimeoutWall()]),
 
     Test('timeout-sleep',
          task=batch_stdio, filename='timeout-sleep.%l',

@@ -190,6 +190,7 @@ class SandboxBase(object):
     EXIT_OK = 'ok'
     EXIT_SIGNAL = 'signal'
     EXIT_TIMEOUT = 'timeout'
+    EXIT_TIMEOUT_WALL = 'wall timeout'
     EXIT_FILE_ACCESS = 'file access'
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
@@ -1118,7 +1119,10 @@ class IsolateSandbox(SandboxBase):
         elif 'FA' in status_list:
             return self.EXIT_FILE_ACCESS
         elif 'TO' in status_list:
-            return self.EXIT_TIMEOUT
+            if 'message' in self.log and 'wall' in self.log['message'][0]:
+                return self.EXIT_TIMEOUT_WALL
+            else:
+                return self.EXIT_TIMEOUT
         elif 'SG' in status_list:
             return self.EXIT_SIGNAL
         elif 'RE' in status_list:
@@ -1147,6 +1151,8 @@ class IsolateSandbox(SandboxBase):
                 % self.get_forbidden_file_error()
         elif status == self.EXIT_TIMEOUT:
             return "Execution timed out"
+        elif status == self.EXIT_TIMEOUT_WALL:
+            return "Execution timed out (wall clock limit exceeded)"
         elif status == self.EXIT_SIGNAL:
             return "Execution killed with signal %d" % \
                 self.get_killing_signal()
