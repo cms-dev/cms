@@ -6,9 +6,47 @@
     <h1>{{ _("Documentation") }}</h1>
 </div>
 
+<h2>Programming languages and libraries</h2>
 
 <a href="{{ url_root }}/stl/index.html">{{ _("Standard Template Library") }}</a>
 
+<h2>Submission details for compilation</h2>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th style="width: 30%;">Message</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for message in COMPILATION_MESSAGES.all() %}
+    <tr>
+      <td><em>{{ message.message }}</em></td>
+      <td>{{ message.help }}</td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
+
+<h2>Submission details for evaluation</h2>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th style="width: 30%;">Message</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for message in EVALUATION_MESSAGES.all() %}
+    <tr>
+      <td><em>{{ message.message }}</em></td>
+      <td>{{ message.help }}</td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
 
 </div>
 {% end %}

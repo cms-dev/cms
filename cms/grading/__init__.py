@@ -58,6 +58,125 @@ def N_(message):
     return message
 
 
+class HumanMessage(object):
+    """Represent a possible outcome message for a grading, to be presented
+    to the contestants.
+
+    """
+
+    def __init__(self, shorthand, message, help):
+        """Initialization.
+
+        shorthand (unicode): what to call this message in the code.
+        message (unicode): the message itself.
+        help (unicode): a longer explanation for the help page.
+
+        """
+        self.shorthand = shorthand
+        self.message = message
+        self.help = help
+
+
+class MessageCollection(object):
+    """Represent a collection of messages, with error checking."""
+
+    def __init__(self, messages=None):
+        self._messages = {}
+        self._ordering = []
+        if messages is not None:
+            for message in messages:
+                self.add(message)
+
+    def add(self, message):
+        if message.shorthand in self._messages:
+            logger.error("Trying to registering duplicate message `%s'.",
+                         message.shorthand)
+            return
+        self._messages[message.shorthand] = message
+        self._ordering.append(message.shorthand)
+
+    def get(self, shorthand):
+        if shorthand not in self._messages:
+            error = "Trying to get a non-existing message `%s'." % \
+                shorthand
+            logger.error(error)
+            raise KeyError(error)
+        return self._messages[shorthand]
+
+    def all(self):
+        ret = []
+        for shorthand in self._ordering:
+            ret.append(self._messages[shorthand])
+        return ret
+
+
+COMPILATION_MESSAGES = MessageCollection([
+    HumanMessage("success",
+                 N_("Compilation succeeded"),
+                 N_("Your submission successfully compiled to an excutable.")),
+    HumanMessage("fail",
+                 N_("Compilation failed"),
+                 N_("Your submission did not compile correctly.")),
+    HumanMessage("timeout",
+                 N_("Compilation timed out"),
+                 N_("Your submission exceeded the time limit while compiling. "
+                    "This might be caused by an excessive use of C++ "
+                    "templates, for example.")),
+    HumanMessage("signal",
+                 N_("Compilation killed with signal %s (could be triggered "
+                    "by violating memory limits)"),
+                 N_("Your submission was killed with the specified signal. "
+                    "Among other things, this might be caused by exceeding "
+                    "the memory limit for the compilation, and in turn by an "
+                    "excessive use of C++ templates, for example.")),
+])
+
+
+EVALUATION_MESSAGES = MessageCollection([
+    HumanMessage("success",
+                 N_("Output is correct"),
+                 N_("Your submission ran and gave the correct answer")),
+    HumanMessage("wrong",
+                 N_("Output isn't correct"),
+                 N_("Your submission ran, but gave the wrong answer")),
+    HumanMessage("nooutput",
+                 N_("Evaluation didn't produce file %s"),
+                 N_("Your submission ran, but did not write on the "
+                    "correct output file")),
+    HumanMessage("timeout",
+                 N_("Execution timed out"),
+                 N_("Your submission used too much CPU time.")),
+    HumanMessage("walltimeout",
+                 N_("Execution timed out (wall clock limit exceeded)"),
+                 N_("Your submission used too much total time. This might "
+                    "be triggered by undefined code, or buffer overflow, "
+                    "for example. Note that in this case the CPU time "
+                    "visible in the submission details might be much smaller "
+                    "than the time limit.")),
+    HumanMessage("signal",
+                 N_("Execution killed with signal %d (could be triggered by "
+                    "violating memory limits)"),
+                 N_("Your submission was killed with the specified signal. "
+                    "Among other things, this might be caused by exceeding "
+                    "the memory limit. Note that if this is the reason, "
+                    "the memory usage visible in the submission details is "
+                    "the usage before the allocation that caused the "
+                    "signal.")),
+    HumanMessage("syscall",
+                 N_("Execution killed because of forbidden syscall %s"),
+                 N_("Your submission was killed because it tried to use "
+                    "the forbidden syscall specified in the message.")),
+    HumanMessage("fileaccess",
+                 N_("Execution killed because of forbidden file access"),
+                 N_("Your submission was killed because it tried to read "
+                    "or write a forbidden file.")),
+    HumanMessage("returncode",
+                 N_("Execution failed because the return code was nonzero"),
+                 N_("Your submission failed because it exited with a return "
+                    "code different from 0.")),
+])
+
+
 class JobException(Exception):
     """Exception raised by a worker doing a job.
 
@@ -273,7 +392,7 @@ def compilation_step(sandbox, commands):
         logger.debug("Compilation successfully finished.")
         success = True
         compilation_success = True
-        text = [N_("Compilation succeeded")]
+        text = [COMPILATION_MESSAGES.get("success").message]
 
     # Error in compilation: returning the error to the user.
     elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
@@ -281,7 +400,7 @@ def compilation_step(sandbox, commands):
         logger.debug("Compilation failed.")
         success = True
         compilation_success = False
-        text = [N_("Compilation failed")]
+        text = [COMPILATION_MESSAGES.get("fail").message]
 
     # Timeout: returning the error to the user
     elif exit_status == Sandbox.EXIT_TIMEOUT or \
@@ -289,7 +408,7 @@ def compilation_step(sandbox, commands):
         logger.debug("Compilation timed out.")
         success = True
         compilation_success = False
-        text = [N_("Compilation timed out")]
+        text = [COMPILATION_MESSAGES.get("timeout").message]
 
     # Suicide with signal (probably memory limit): returning the error
     # to the user
@@ -299,8 +418,7 @@ def compilation_step(sandbox, commands):
         success = True
         compilation_success = False
         plus["signal"] = signal
-        text = [N_("Compilation killed with signal %d (could be triggered "
-                   "by violating memory limits)"), signal]
+        text = [COMPILATION_MESSAGES.get("signal").message, signal]
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment
@@ -497,32 +615,30 @@ def human_evaluation_message(plus):
     """Given the plus object returned by evaluation_step, builds a
     human-readable message about what happened.
 
-    None is returned in cases when the contestant musn't receive any
+    None is returned in cases when the contestant mustn't receive any
     message (for example, if the execution couldn't be performed) or
     when the message will be computed somewhere else (for example, if
-    the execution was successfull, then the comparator is supposed to
+    the execution was successful, then the comparator is supposed to
     write the message).
 
     """
     exit_status = plus['exit_status']
     if exit_status == Sandbox.EXIT_TIMEOUT:
-        return [N_("Execution timed out")]
+        return [EVALUATION_MESSAGES.get("timeout").message]
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
-        return [N_("Execution timed out (wall clock limit exceeded)")]
+        return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [N_("Execution killed with signal %d (could be triggered by "
-                   "violating memory limits)"), plus['signal']]
+        return [EVALUATION_MESSAGES.get("signal").message % plus['signal']]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return None
     elif exit_status == Sandbox.EXIT_SYSCALL:
-        return [N_("Execution killed because of forbidden syscall %s"),
-                plus['syscall']]
+        return [EVALUATION_MESSAGES.get("syscall").message % plus['syscall']]
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         # Don't tell which file: would be too much information!
-        return [N_("Execution killed because of forbidden file access")]
+        return [EVALUATION_MESSAGES.get("fileaccess").message]
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Don't tell which code: would be too much information!
-        return [N_("Execution failed because the return code was nonzero")]
+        return [EVALUATION_MESSAGES.get("returncode").message]
     elif exit_status == Sandbox.EXIT_OK:
         return None
     else:
@@ -692,13 +808,13 @@ def white_diff_step(sandbox, output_filename,
         res_file = sandbox.get_file(correct_output_filename)
         if white_diff(out_file, res_file):
             outcome = 1.0
-            text = [N_("Output is correct")]
+            text = [EVALUATION_MESSAGES.get("success").message]
         else:
             outcome = 0.0
-            text = [N_("Output isn't correct")]
+            text = [EVALUATION_MESSAGES.get("wrong").message]
     else:
         outcome = 0.0
-        text = [N_("Evaluation didn't produce file %s"), output_filename]
+        text = [EVALUATION_MESSAGES.get("nooutput").message, output_filename]
     return outcome, text
 
 
