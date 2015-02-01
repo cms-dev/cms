@@ -96,7 +96,7 @@ def do_setup():
                 os.chmod(file_, 0644)
 
     setup(name="cms",
-          version="1.2.0",
+          version="1.3.0pre",
           author="The CMS development team",
           author_email="contestms@freelists.org",
           url="https://github.com/cms-dev/cms",
