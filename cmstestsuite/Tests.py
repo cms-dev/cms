@@ -101,6 +101,11 @@ ALL_TESTS = [
          languages=COMPILED_LANGUAGES,
          checks=[CheckCompilationFail()]),
 
+    Test('compile-timeout',
+         task=batch_fileio, filename='compile-timeout.%l',
+         languages=(LANG_CPP,),
+         checks=[CheckCompilationFail()]),
+
     # Various timeout conditions.
 
     Test('timeout-cputime',
