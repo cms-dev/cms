@@ -1,15 +1,15 @@
 # Italian translations for PACKAGE package.
 # Copyright (C) 2011 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Stefano Maggiolo <s.maggiolo@gmail.com>, 2011, 2013.
+# Stefano Maggiolo <s.maggiolo@gmail.com>, 2011-2015.
 # Luca Wehrstedt <luca.wehrstedt@gmail.com>, 2012, 2013, 2014.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-06 17:10+0000\n"
-"PO-Revision-Date: 2015-01-06 17:19+0100\n"
+"POT-Creation-Date: 2015-02-02 17:15+0200\n"
+"PO-Revision-Date: 2015-02-07 17:12+0100\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -19,28 +19,89 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.5.4\n"
 
-msgid "N/A"
-msgstr "N/A"
-
 msgid "Compilation succeeded"
 msgstr "Compilazione eseguita con successo"
+
+msgid "Your submission successfully compiled to an excutable."
+msgstr ""
+"La tua sottoposizione è stata compilata correttamente in un eseguibile."
 
 msgid "Compilation failed"
 msgstr "Compilazione fallita"
 
+msgid "Your submission did not compile correctly."
+msgstr "La tua sottoposizione non può essere compilata."
+
 msgid "Compilation timed out"
 msgstr "Compilazione interrotta perché fuori tempo massimo"
 
+msgid ""
+"Your submission exceeded the time limit while compiling. This might be "
+"caused by an excessive use of C++ templates, for example."
+msgstr ""
+"La tua sottoposizione ha superato i limiti di tempo per la compilazione. "
+"Questo può essere causato da un uso eccessivo dei template in C++, per "
+"esempio."
+
 #, python-format
 msgid ""
-"Compilation killed with signal %d (could be triggered by violating memory "
+"Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Compilazione interrotta con segnale %d (può essere dovuto ad una violazione "
+"Compilazione terminata dal segnale %s (può essere dovuto ad una violazione "
 "dei limiti di memoria)"
+
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit for the compilation, and "
+"in turn by an excessive use of C++ templates, for example."
+msgstr ""
+"La tua sottoposizione è stata terminata dal segnale specificato. Questo può "
+"essere causato dal superamento dei limiti di memoria durante la "
+"compilazione, per esempio a causa di un uso eccessivo dei template in C++."
+
+msgid "Output is correct"
+msgstr "L'output è corretto"
+
+msgid "Your submission ran and gave the correct answer"
+msgstr "La tua sottoposizione è stata eseguita, è ha dato la risposta corretta"
+
+msgid "Output isn't correct"
+msgstr "L'output non è corretto"
+
+msgid "Your submission ran, but gave the wrong answer"
+msgstr "La tua sottoposizione è stata eseguita, ma la risposta è sbagliata"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "La valutazione non ha prodotto il file %s"
+
+msgid "Your submission ran, but did not write on the correct output file"
+msgstr ""
+"La tua sottoposizione è stata eseguita, ma non ha scritto sul file di output "
+"corretto"
 
 msgid "Execution timed out"
 msgstr "Esecuzione terminata perché fuori tempo massimo"
+
+msgid "Your submission used too much CPU time."
+msgstr "La tua sottoposizione ha usato troppo tempo CPU."
+
+msgid "Execution timed out (wall clock limit exceeded)"
+msgstr ""
+"Esecuzione terminata perché fuori tempo massimo (superamento del limite di "
+"tempo totale)"
+
+msgid ""
+"Your submission used too much total time. This might be triggered by "
+"undefined code, or buffer overflow, for example. Note that in this case the "
+"CPU time visible in the submission details might be much smaller than the "
+"time limit."
+msgstr ""
+"La tua sottoposizione ha usato troppo tempo totale. Questo può essere "
+"causato da codice con comportamento non definito, per esempio da un buffer "
+"overflow. In questo caso, i dettagli della sottoposizione possono mostrare "
+"un tempo CPU anche molto inferiore al limite."
 
 #, python-format
 msgid ""
@@ -50,25 +111,48 @@ msgstr ""
 "Esecuzione interrotta con segnale %d (può essere dovuto ad una violazione "
 "dei limiti di memoria)"
 
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit. Note that if this is the "
+"reason, the memory usage visible in the submission details is the usage "
+"before the allocation that caused the signal."
+msgstr ""
+"La tua sottoposizione è stata terminata dal segnale specificato. Una delle "
+"possibili cause è il superamento dei limiti di memoria. Se il motivo è "
+"questo, i dettagli della sottoposizione mostreranno la quantità di memoria "
+"usata subito prima dell'allocamento che ha causato il segnale."
+
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
 msgstr "Esecuzione terminata a causa di chiamata di sistema vietata %s"
 
+msgid ""
+"Your submission was killed because it tried to use the forbidden syscall "
+"specified in the message."
+msgstr ""
+"La tua sottoposizione è stata terminata perché ha cercato di usare la "
+"syscall proibita specificata nel messaggio."
+
 msgid "Execution killed because of forbidden file access"
 msgstr "Esecuzione terminata a causa di accesso a file vietato"
+
+msgid ""
+"Your submission was killed because it tried to read or write a forbidden "
+"file."
+msgstr ""
+"La tua sottoposizione è stat terminata perché ha cercato di leggere o "
+"scrivere un file non accessibile."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Esecuzione fallita a causa di codice di ritorno diverso da zero"
 
-msgid "Output is correct"
-msgstr "L'output è corretto"
+msgid ""
+"Your submission failed because it exited with a return code different from 0."
+msgstr ""
+"La tua sottoposizione ha fallito perché il codice di uscita è diverso da 0."
 
-msgid "Output isn't correct"
-msgstr "L'output non è corretto"
-
-#, python-format
-msgid "Evaluation didn't produce file %s"
-msgstr "La valutazione non ha prodotto il file %s"
+msgid "N/A"
+msgstr "N/A"
 
 #, python-format
 msgid "Subtask %d"
@@ -561,8 +645,23 @@ msgstr "nessuna risposta"
 msgid "Messages"
 msgstr "Messaggi"
 
+msgid "Programming languages and libraries"
+msgstr "Linguaggi di programmazione e librerie"
+
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
+
+msgid "Submission details for compilation"
+msgstr "Dettagli della compilazione della sottoposizione"
+
+msgid "Message"
+msgstr "Messaggio"
+
+msgid "Explanation"
+msgstr "Spiegazione"
+
+msgid "Submission details for evaluation"
+msgstr "Dettagli della valutazione della sottoposizione"
 
 #, python-format
 msgid "Error %d"
