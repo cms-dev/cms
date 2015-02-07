@@ -65,7 +65,7 @@ from sqlalchemy import func
 from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, ConfigError, config, ServiceCoord
+from cms import ConfigError, ServiceCoord, config, filename_to_language
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
     File, UserTest, UserTestFile, UserTestManager, PrintJob
@@ -1052,25 +1052,12 @@ class SubmitHandler(BaseHandler):
         # filenames, the user has the extension of an allowed
         # language, and that all these are the same (i.e., no
         # mixed-language submissions).
-        def which_language(user_filename):
-            """Determine the language of user_filename from its
-            extension.
-
-            user_filename (string): the file to test.
-            return (string): the extension of user_filename, or None
-                             if it is not a recognized language.
-
-            """
-            for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
-                if user_filename.endswith(source_ext):
-                    return language
-            return None
 
         error = None
         for our_filename in files:
             user_filename = files[our_filename][0]
             if our_filename.find(".%l") != -1:
-                lang = which_language(user_filename)
+                lang = filename_to_language(user_filename)
                 if lang is None:
                     error = self._("Cannot recognize submission's language.")
                     break
@@ -1593,25 +1580,12 @@ class UserTestHandler(BaseHandler):
         # filenames, the user has one amongst ".cpp", ".c", or ".pas,
         # and that all these are the same (i.e., no mixed-language
         # submissions).
-        def which_language(user_filename):
-            """Determine the language of user_filename from its
-            extension.
-
-            user_filename (string): the file to test.
-            return (string): the extension of user_filename, or None
-                             if it is not a recognized language.
-
-            """
-            for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
-                if user_filename.endswith(source_ext):
-                    return language
-            return None
 
         error = None
         for our_filename in files:
             user_filename = files[our_filename][0]
             if our_filename.find(".%l") != -1:
-                lang = which_language(user_filename)
+                lang = filename_to_language(user_filename)
                 if lang is None:
                     error = self._("Cannot recognize test's language.")
                     break
