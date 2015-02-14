@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -101,6 +102,13 @@ class CheckTimeout(CheckAbstractEvaluationFailure):
     def __init__(self):
         CheckAbstractEvaluationFailure.__init__(
             self, "timed out", "Execution timed out")
+
+
+class CheckTimeoutWall(CheckAbstractEvaluationFailure):
+    def __init__(self):
+        CheckAbstractEvaluationFailure.__init__(
+            self, "wall timed out",
+            "Execution timed out (wall clock limit exceeded)")
 
 
 class CheckForbiddenSyscall(CheckAbstractEvaluationFailure):

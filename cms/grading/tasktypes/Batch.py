@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -27,7 +27,7 @@ from __future__ import unicode_literals
 import logging
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP
+    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP
 from cms.grading import get_compilation_commands, get_evaluation_commands, \
     compilation_step, evaluation_step, human_evaluation_message, \
     is_evaluation_passed, extract_outcome_and_text, white_diff_step
@@ -124,7 +124,7 @@ class Batch(TaskType):
             res[language] = commands
         return res
 
-    def get_user_managers(self, submission_format):
+    def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
         return []
 
@@ -148,7 +148,7 @@ class Batch(TaskType):
             job.success = True
             job.compilation_success = False
             job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 1" %
+            logger.error("Submission contains %d files, expecting 1",
                          len(job.files), extra={"operation": job.info})
             return True
 
@@ -171,10 +171,18 @@ class Batch(TaskType):
             files_to_get["grader%s" % source_ext] = \
                 job.managers["grader%s" % source_ext].digest
 
-        # Also copy all *.h and *lib.pas graders
+        # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
             if any(filename.endswith(header)
                    for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(source)
+                     for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(obj)
+                     for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
@@ -223,12 +231,15 @@ class Batch(TaskType):
         input_filename, output_filename = self.parameters[1]
         stdin_redirect = None
         stdout_redirect = None
+        files_allowing_write = []
         if input_filename == "":
             input_filename = "input.txt"
             stdin_redirect = input_filename
         if output_filename == "":
             output_filename = "output.txt"
             stdout_redirect = output_filename
+        else:
+            files_allowing_write.append(output_filename)
         files_to_get = {
             input_filename: job.input
             }
@@ -245,6 +256,7 @@ class Batch(TaskType):
             commands,
             job.time_limit,
             job.memory_limit,
+            writable_files=files_allowing_write,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
@@ -307,7 +319,7 @@ class Batch(TaskType):
                     elif self.parameters[2] == "comparator":
                         manager_filename = "checker"
 
-                        if not manager_filename in job.managers:
+                        if manager_filename not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named 'checker')",
@@ -319,6 +331,24 @@ class Batch(TaskType):
                                 manager_filename,
                                 job.managers[manager_filename].digest,
                                 executable=True)
+                            # Rewrite input file. The untrusted
+                            # contestant program should not be able to
+                            # modify it; however, the grader may
+                            # destroy the input file to prevent the
+                            # contestant's program from directly
+                            # accessing it. Since we cannot create
+                            # files already existing in the sandbox,
+                            # we try removing the file first.
+                            try:
+                                sandbox.remove_file(input_filename)
+                            except OSError as e:
+                                # Let us be extra sure that the file
+                                # was actually removed and we did not
+                                # mess up with permissions.
+                                assert not sandbox.file_exists(input_filename)
+                            sandbox.create_file_from_storage(
+                                input_filename,
+                                job.input)
                             success, _ = evaluation_step(
                                 sandbox,
                                 [["./%s" % manager_filename,
@@ -329,7 +359,7 @@ class Batch(TaskType):
                                     extract_outcome_and_text(sandbox)
                             except ValueError, e:
                                 logger.error("Invalid output from "
-                                             "comparator: %s" % (e.message,),
+                                             "comparator: %s", e.message,
                                              extra={"operation": job.info})
                                 success = False
 

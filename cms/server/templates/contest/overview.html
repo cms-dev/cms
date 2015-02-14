@@ -83,6 +83,17 @@
     {% end %}
 {% end %}
 
+{% if contest.max_submission_number is not None %}
+    <p>
+    {{ _("You can submit at most %(submissions)s solutions during this contest.") % {"submissions": contest.max_submission_number} }}
+    </p>
+{% end %}
+
+{% if contest.max_user_test_number is not None %}
+    <p>
+    {{ _("You can submit at most %(user_tests)s user tests during this contest.") % {"user_tests": contest.max_user_test_number} }}
+    </p>
+{% end %}
 
     </div>
 {% if contest.per_user_time is not None %}

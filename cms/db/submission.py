@@ -3,10 +3,11 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -86,6 +87,17 @@ class Submission(Base):
     language = Column(
         String,
         nullable=True)
+
+    # Comment from the administrator on the submission.
+    comment = Column(
+        Unicode,
+        nullable=False,
+        default="")
+
+    @property
+    def short_comment(self):
+        """The first line of the comment."""
+        return self.comment.split("\n", 1)[0]
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -349,10 +361,11 @@ class SubmissionResult(Base):
         """Return the Evaluation of this SR on the given Testcase, if any
 
         testcase (Testcase): the testcase the returned evaluation will
-                             belong to
-        return (Evaluation): the (only!) evaluation of this submission
-                             result on the given testcase, or None if
-                             there isn't any.
+            belong to.
+
+        return (Evaluation|None): the (only!) evaluation of this
+            submission result on the given testcase, or None if there
+            isn't any.
 
         """
         # Use IDs to avoid triggering a lazy-load query.
@@ -375,6 +388,13 @@ class SubmissionResult(Base):
         """
         return self.compilation_outcome is not None
 
+    @staticmethod
+    def filter_compiled():
+        """Return a filtering expression for compiled submission results.
+
+        """
+        return SubmissionResult.compilation_outcome != None  # noqa
+
     def compilation_failed(self):
         """Return whether the submission result did not compile.
 
@@ -384,6 +404,14 @@ class SubmissionResult(Base):
 
         """
         return self.compilation_outcome == "fail"
+
+    @staticmethod
+    def filter_compilation_failed():
+        """Return a filtering expression for submission results failing
+        compilation.
+
+        """
+        return SubmissionResult.compilation_outcome == "fail"
 
     def compilation_succeeded(self):
         """Return whether the submission compiled.
@@ -395,6 +423,14 @@ class SubmissionResult(Base):
         """
         return self.compilation_outcome == "ok"
 
+    @staticmethod
+    def filter_compilation_succeeded():
+        """Return a filtering expression for submission results passing
+        compilation.
+
+        """
+        return SubmissionResult.compilation_outcome == "ok"
+
     def evaluated(self):
         """Return whether the submission result has been evaluated.
 
@@ -402,6 +438,13 @@ class SubmissionResult(Base):
 
         """
         return self.evaluation_outcome is not None
+
+    @staticmethod
+    def filter_evaluated():
+        """Return a filtering lambda for evaluated submission results.
+
+        """
+        return SubmissionResult.evaluation_outcome != None  # noqa
 
     def needs_scoring(self):
         """Return whether the submission result needs to be scored.
@@ -422,6 +465,17 @@ class SubmissionResult(Base):
             "score", "score_details",
             "public_score", "public_score_details",
             "ranking_score_details"])
+
+    @staticmethod
+    def filter_scored():
+        """Return a filtering lambda for scored submission results.
+
+        """
+        return ((SubmissionResult.score != None)
+                & (SubmissionResult.score_details != None)
+                & (SubmissionResult.public_score != None)
+                & (SubmissionResult.public_score_details != None)
+                & (SubmissionResult.ranking_score_details != None))  # noqa
 
     def invalidate_compilation(self):
         """Blank all compilation and evaluation outcomes, and the score.

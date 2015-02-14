@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -32,7 +32,8 @@ import sys
 import yaml
 from datetime import timedelta
 
-from cms import LANGUAGES, LANGUAGE_TO_HEADER_EXT_MAP
+from cms import LANGUAGES, LANGUAGE_TO_HEADER_EXT_MAP, \
+    SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.datetime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
     SubmissionFormatElement, Dataset, Manager, Testcase
@@ -139,7 +140,7 @@ class YamlLoader(Loader):
             io.open(os.path.join(self.path, "contest.yaml"),
                     "rt", encoding="utf-8"))
 
-        logger.info("Loading parameters for contest %s." % name)
+        logger.info("Loading parameters for contest %s.", name)
 
         args = {}
 
@@ -280,14 +281,14 @@ class YamlLoader(Loader):
 
         if os.path.exists(os.path.join(path, ".import_error")):
             logger.warning("Last attempt to import task %s failed,"
-                           " I'm not trying again." % name)
+                           " I'm not trying again.", name)
         return False
 
     def get_user(self, username):
         """See docstring in class Loader.
 
         """
-        logger.info("Loading parameters for user %s." % username)
+        logger.info("Loading parameters for user %s.", username)
         conf = self.users_conf[username]
         assert username == conf['username']
 
@@ -339,7 +340,7 @@ class YamlLoader(Loader):
                 io.open(os.path.join(self.path, name + ".yaml"),
                         "rt", encoding="utf-8"))
 
-        logger.info("Loading parameters for task %s." % name)
+        logger.info("Loading parameters for task %s.", name)
 
         # Here we update the time of the last import
         touch(os.path.join(task_path, ".itime"))
@@ -381,6 +382,11 @@ class YamlLoader(Loader):
 
         args["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name)]
+
+        if conf.get("score_mode", None) == SCORE_MODE_MAX:
+            args["score_mode"] = SCORE_MODE_MAX
+        elif conf.get("score_mode", None) == SCORE_MODE_MAX_TOKENED_LAST:
+            args["score_mode"] = SCORE_MODE_MAX_TOKENED_LAST
 
         # Use the new token settings format if detected.
         if "token_mode" in conf:
@@ -473,7 +479,7 @@ class YamlLoader(Loader):
                     args["managers"] += [
                         Manager("grader.%s" % lang, digest)]
                 else:
-                    logger.warning("Grader for language %s not found " % lang)
+                    logger.warning("Grader for language %s not found ", lang)
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(task_path, "sol")):
                 if any(other_filename.endswith(header)
@@ -516,29 +522,30 @@ class YamlLoader(Loader):
                     splitted = line.split('#', 1)
 
                     if len(splitted) == 1:
-                        # This line represents a testcase, otherwise it's
-                        # just a blank
+                        # This line represents a testcase, otherwise
+                        # it's just a blank
                         if splitted[0] != '':
                             testcases += 1
 
                     else:
                         testcase, comment = splitted
-                        testcase_detected = False
-                        subtask_detected = False
-                        if testcase.strip() != '':
-                            testcase_detected = True
+                        testcase = testcase.strip()
                         comment = comment.strip()
-                        if comment.startswith('ST:'):
-                            subtask_detected = True
+                        testcase_detected = testcase != ''
+                        copy_testcase_detected = comment.startswith("COPY:")
+                        subtask_detected = comment.startswith('ST:')
 
-                        if testcase_detected and subtask_detected:
-                            raise Exception("No testcase and subtask in the"
-                                            " same line allowed")
+                        flags = [testcase_detected,
+                                 copy_testcase_detected,
+                                 subtask_detected]
+                        if len([x for x in flags if x]) > 1:
+                            raise Exception("No testcase and command in"
+                                            " the same line allowed")
 
                         # This line represents a testcase and contains a
                         # comment, but the comment doesn't start a new
                         # subtask
-                        if testcase_detected:
+                        if testcase_detected or copy_testcase_detected:
                             testcases += 1
 
                         # This line starts a new subtask
@@ -618,7 +625,7 @@ class YamlLoader(Loader):
                                 Manager("stub.%s" % lang, digest)]
                         else:
                             logger.warning("Stub for language %s not "
-                                           "found." % lang)
+                                           "found.", lang)
                     for other_filename in os.listdir(os.path.join(task_path,
                                                                   "sol")):
                         if any(other_filename.endswith(header) for header in

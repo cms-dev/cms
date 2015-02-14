@@ -74,11 +74,11 @@ class OutputOnly(TaskType):
 
     testable = False
 
-    def get_compilation_commands(self, submission_format):
+    def get_compilation_commands(self, unused_submission_format):
         """See TaskType.get_compilation_commands."""
         return None
 
-    def get_user_managers(self, submission_format):
+    def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
         return []
 

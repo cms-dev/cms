@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -29,7 +29,7 @@ import os
 import tempfile
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, config
+    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_commands, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
@@ -83,7 +83,7 @@ class Communication(TaskType):
             res[language] = commands
         return res
 
-    def get_user_managers(self, submission_format):
+    def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
         return ["stub.%l"]
 
@@ -107,7 +107,7 @@ class Communication(TaskType):
             job.success = True
             job.compilation_success = False
             job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 1" %
+            logger.error("Submission contains %d files, expecting 1",
                          len(job.files), extra={"operation": job.info})
             return True
 
@@ -128,10 +128,18 @@ class Communication(TaskType):
         files_to_get[source_filenames[-1]] = \
             job.files[format_filename].digest
 
-        # Also copy all *.h and *lib.pas graders
+        # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
             if any(filename.endswith(header)
                    for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(source)
+                     for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+                files_to_get[filename] = \
+                    job.managers[filename].digest
+            elif any(filename.endswith(obj)
+                     for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
@@ -200,6 +208,7 @@ class Communication(TaskType):
             job.time_limit,
             0,
             allow_dirs=manager_allow_dirs,
+            writable_files=["output.txt"],
             stdin_redirect="input.txt")
 
         # Second step: we start the user submission compiled with the
@@ -227,7 +236,7 @@ class Communication(TaskType):
 
         success_user, plus_user = \
             evaluation_step_after_run(sandbox_user)
-        success_mgr, plus_mgr = \
+        success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
         job.sandboxes = [sandbox_user.path,
@@ -264,4 +273,5 @@ class Communication(TaskType):
 
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
-        rmtree(fifo_dir)
+        if not config.keep_sandbox:
+            rmtree(fifo_dir)

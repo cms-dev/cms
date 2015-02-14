@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -73,17 +73,17 @@ def get_submissions(contest_id=None, user_id=None, task_id=None,
     if submission_id is not None and user_id is not None:
         raise ValueError("user_id is superfluous if submission_id is given")
 
-    q = session.query(Submission)
+    query = session.query(Submission)
     if submission_id is not None:
-        q = q.filter(Submission.id == submission_id)
+        query = query.filter(Submission.id == submission_id)
     if user_id is not None:
-        q = q.filter(Submission.user_id == user_id)
+        query = query.filter(Submission.user_id == user_id)
     if task_id is not None:
-        q = q.filter(Submission.task_id == task_id)
+        query = query.filter(Submission.task_id == task_id)
     if contest_id is not None:
-        q = q.join(User).filter(User.contest_id == contest_id)\
-             .join(Task).filter(Task.contest_id == contest_id)
-    return q.all()
+        query = query.join(User).filter(User.contest_id == contest_id)\
+            .join(Task).filter(Task.contest_id == contest_id)
+    return query.all()
 
 
 def get_submission_results(contest_id=None, user_id=None, task_id=None,
@@ -133,19 +133,19 @@ def get_submission_results(contest_id=None, user_id=None, task_id=None,
     if dataset_id is not None and contest_id is not None:
         raise ValueError("contest_id is superfluous if dataset_id is given")
 
-    q = session.query(SubmissionResult).join(Submission)
+    query = session.query(SubmissionResult).join(Submission)
     if submission_id is not None:
-        q = q.filter(SubmissionResult.submission_id == submission_id)
+        query = query.filter(SubmissionResult.submission_id == submission_id)
     if dataset_id is not None:
-        q = q.filter(SubmissionResult.dataset_id == dataset_id)
+        query = query.filter(SubmissionResult.dataset_id == dataset_id)
     if user_id is not None:
-        q = q.filter(Submission.user_id == user_id)
+        query = query.filter(Submission.user_id == user_id)
     if task_id is not None:
-        q = q.filter(Submission.task_id == task_id)
+        query = query.filter(Submission.task_id == task_id)
     if contest_id is not None:
-        q = q.join(User).filter(User.contest_id == contest_id)\
-             .join(Task).filter(Task.contest_id == contest_id)
-    return q.all()
+        query = query.join(User).filter(User.contest_id == contest_id)\
+            .join(Task).filter(Task.contest_id == contest_id)
+    return query.all()
 
 
 def get_datasets_to_judge(task):
@@ -165,7 +165,7 @@ def get_datasets_to_judge(task):
     judge = []
 
     for dataset in task.datasets:
-        if dataset is task.active_dataset or dataset.autojudge:
+        if dataset.active or dataset.autojudge:
             judge.append(dataset)
 
     return judge

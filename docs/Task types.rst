@@ -34,7 +34,12 @@ The three choices (standalone or with a grader, standard input and output or fil
 
 If the admins want to provide a grader that takes care of reading the input and writing the output (so that the contestants only need to write one or more functions), they must provide a manager for each allowed language, called :file:`grader.ext`, where ``ext`` is the standard extension of a source file in that language. If header files for C/C++ or Pascal are needed, they can be provided with names :file:`{task_name}.h` or :file:`{task_name}lib.pas`. See the end of the section for specific issues of Java.
 
-If the output is compared with a diff, the outcome will be a float, 0.0 if the output is not correct, 1.0 if it is. If the output is validated by a comparator, you need to provide a manager called :file:`checker` that is an executable taking three arguments: input, correct output and contestant's output and that must write on standard output the outcome (that is going to be used by the score type, usually a float between 0.0 and 1.0), and on standard error a message to forward to the contestant.
+If the output is compared with a diff, the outcome will be a float, 0.0 if the output is not correct, 1.0 if it is. If the output is validated by a comparator, you need to provide a manager called :file:`checker`. It must be an executable that:
+
+- is compiled statically (e.g., with ``-static`` using ``gcc`` or ``g++``);
+- takes three filenames as arguments (input, correct output and contestant's output);
+- writes on standard output the outcome (that is going to be used by the score type, and is usually a float between 0.0 and 1.0);
+- writes on standard error a message to forward to the contestant.
 
 The submission format must contain one filename ending with ``.%l``. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
 

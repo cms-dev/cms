@@ -112,6 +112,16 @@
 
 </div>
 
+<h2 id="title_comment" class="toggling_on">Comment</h2>
+
+<div id="comment">
+  <form enctype="multipart/form-data" action="{{ url_root }}/submission_comment/{{ s.id }}/{{ shown_dataset.id }}" method="POST">
+    <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea></br>
+    <input type="submit"/>
+    <input type="reset" value="Reset" />
+  </form>
+</div>
+
   {% if sr is not None and sr.scored() %}
 
 <h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
@@ -184,7 +194,14 @@
 <h2 id="title_compilation" class="toggling_on">Compilation</h2>
 <div id="compilation">
 
+  <h3>Outcome</h3>
   <pre>{% if sr.compilation_text is not None %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+
+  <h3>Standard output</h3>
+  <pre>{% if sr.compilation_stdout is not None %}{{ sr.compilation_stdout }}{% end %}</pre>
+
+  <h3>Standard error</h3>
+  <pre>{% if sr.compilation_stderr is not None %}{{ sr.compilation_stderr }}{% end %}</pre>
 
 </div>
 

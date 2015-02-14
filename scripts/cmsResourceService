@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,11 +27,15 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import argparse
+import logging
 import sys
 
-from cms import get_safe_shard
-from cms.db import ask_for_contest, is_contest_id
+from cms import ConfigError, get_safe_shard
+from cms.db import ask_for_contest, is_contest_id, test_db_connection
 from cms.service.ResourceService import ResourceService
+
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -51,6 +55,8 @@ def main():
     except ValueError:
         return False
 
+    test_db_connection()
+
     if args.autorestart is not None:
         if args.autorestart == -1:
             ResourceService(args.shard,
@@ -67,4 +73,8 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    try:
+        sys.exit(0 if main() is True else 1)
+    except ConfigError as error:
+        logger.critical(error.message)
+        sys.exit(1)

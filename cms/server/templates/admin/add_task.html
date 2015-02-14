@@ -14,7 +14,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% end %}
 
 {% block core %}
-{% from cms import plugin_list %}
+{% from cms import plugin_list, SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX %}
 {% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
 {% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
 
@@ -188,6 +188,23 @@ $("select[name=task_type]").change(showTaskTypeOption);
     </table>
     <div class="hr"></div>
   </div>
+
+  <h2 id="title_score_options" class="toggling_on">Score Options</h2>
+  <div id="score_options">
+    <table>
+      <tr>
+        <td>Score mode</td>
+        <td>
+          <select name="score_mode">
+            <option value="{{ SCORE_MODE_MAX_TOKENED_LAST }}" selected>Use best among tokened and last submissions (IOI 2010-2012)</option>
+            <option value="{{ SCORE_MODE_MAX }}">Use best among all submissions (IOI 2013-)</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
   <input type="submit"/><input type="reset"/>
 </form>
 {% end %}

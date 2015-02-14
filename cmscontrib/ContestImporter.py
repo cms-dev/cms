@@ -3,10 +3,11 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -41,9 +42,6 @@ import io
 import json
 import logging
 import os
-import tarfile
-import tempfile
-import zipfile
 from datetime import timedelta
 
 from sqlalchemy.types import \
@@ -56,10 +54,10 @@ from cms.db import version as model_version
 from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
     SubmissionResult, UserTestResult, RepeatedUnicode
 from cms.db.filecacher import FileCacher
-from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.datetime import make_datetime
+from cmscommon.archive import Archive
 
 
 logger = logging.getLogger(__name__)
@@ -116,46 +114,19 @@ class ContestImporter(object):
         """Run the actual import code."""
         logger.info("Starting import.")
 
-        if not os.path.isdir(self.import_source):
-            if self.import_source.endswith(".zip"):
-                archive = zipfile.ZipFile(self.import_source, "r")
-                file_names = archive.namelist()
+        archive = None
+        if Archive.is_supported(self.import_source):
+            archive = Archive(self.import_source)
+            self.import_dir = archive.unpack()
 
-                self.import_dir = tempfile.mkdtemp()
-                archive.extractall(self.import_dir)
-            elif self.import_source.endswith(".tar.gz") \
-                    or self.import_source.endswith(".tgz") \
-                    or self.import_source.endswith(".tar.bz2") \
-                    or self.import_source.endswith(".tbz2") \
-                    or self.import_source.endswith(".tar"):
-                archive = tarfile.open(name=self.import_source)
-                file_names = archive.getnames()
-            elif self.import_source.endswith(".tar.xz") \
-                    or self.import_source.endswith(".txz"):
-                try:
-                    import lzma
-                except ImportError:
-                    logger.critical("LZMA compression format not "
-                                    "supported. Please install package "
-                                    "lzma.")
-                    return False
-                archive = tarfile.open(
-                    fileobj=lzma.LZMAFile(self.import_source))
-                file_names = archive.getnames()
-            else:
-                logger.critical("Unable to import from %s." %
+            file_names = os.listdir(self.import_dir)
+            if len(file_names) != 1:
+                logger.critical("Cannot find a root directory in %s.",
                                 self.import_source)
+                archive.cleanup()
                 return False
 
-            root = find_root_of_archive(file_names)
-            if root is None:
-                logger.critical("Cannot find a root directory in %s." %
-                                self.import_source)
-                return False
-
-            self.import_dir = tempfile.mkdtemp()
-            archive.extractall(self.import_dir)
-            self.import_dir = os.path.join(self.import_dir, root)
+            self.import_dir = os.path.join(self.import_dir, file_names[0])
 
         if self.drop:
             logger.info("Dropping and recreating the database.")
@@ -165,8 +136,8 @@ class ContestImporter(object):
                                     "and recreating the database.",
                                     exc_info=True)
                     return False
-            except Exception as error:
-                logger.critical("Unable to access DB.\n%r" % error)
+            except Exception:
+                logger.critical("Unable to access DB.", exc_info=True)
                 return False
 
         with SessionGen() as session:
@@ -197,8 +168,8 @@ class ContestImporter(object):
                         "version %d). It may take a while to adapt it to "
                         "the current data model (which is version %d). You "
                         "can use cmsDumpUpdater to update the on-disk dump "
-                        "and speed up future imports."
-                        % (dump_version, model_version))
+                        "and speed up future imports.",
+                        dump_version, model_version)
 
                 if dump_version > model_version:
                     logger.critical(
@@ -208,7 +179,7 @@ class ContestImporter(object):
                         "way to adapt it to the current data model (which "
                         "is version %d). You probably need to update CMS to "
                         "handle it. It is impossible to proceed with the "
-                        "importation." % (dump_version, model_version))
+                        "importation.", dump_version, model_version)
                     return False
 
                 for version in range(dump_version, model_version):
@@ -308,19 +279,19 @@ class ContestImporter(object):
                     if not self.safe_put_file(file_, desc):
                         logger.critical("Unable to put file `%s' in the DB. "
                                         "Aborting. Please remove the contest "
-                                        "from the database." % file_)
+                                        "from the database.", file_)
                         # TODO: remove contest from the database.
                         return False
 
+        # Clean up, if an archive was used
+        if archive is not None:
+            archive.cleanup()
+
         if contest_id is not None:
-            logger.info("Import finished (contest id: %s)." %
+            logger.info("Import finished (contest id: %s).",
                         ", ".join("%d" % id_ for id_ in contest_id))
         else:
             logger.info("Import finished.")
-
-        # If we extracted an archive, we remove it.
-        if self.import_dir != self.import_source:
-            rmtree(self.import_dir)
 
         return True
 
@@ -442,14 +413,14 @@ class ContestImporter(object):
             digest = self.file_cacher.put_file_from_path(path, description)
         except Exception as error:
             logger.critical("File %s could not be put to file server (%r), "
-                            "aborting." % (path, error))
+                            "aborting.", path, error)
             return False
 
         # Then check the digest.
         calc_digest = sha1sum(path)
         if digest != calc_digest:
             logger.critical("File %s has hash %s, but the server returned %s, "
-                            "aborting." % (path, calc_digest, digest))
+                            "aborting.", path, calc_digest, digest)
             return False
 
         return True

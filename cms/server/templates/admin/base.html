@@ -1,7 +1,8 @@
 {% import time %}
 {% import json %}
-{% from cms import DEFAULT_LANGUAGES, LANGUAGE_NAMES, LANGUAGES %}
+{% from cms import DEFAULT_LANGUAGES, LANGUAGE_NAMES, LANGUAGES, config %}
 {% from cmscommon.datetime import make_timestamp %}
+{% from cmscommon.crypto import get_hex_random_key %}
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -65,6 +66,13 @@ $(document).ready(init);
     <div id="global">
       <div id="sidebar">
         <h1>Administration</h1>
+        {% if config.secret_key == config.secret_key_default %}
+        <div class="secret_notice">
+          Change secret_key in cms.conf!<br/>
+          For example,<br/>
+          {{ get_hex_random_key() }}
+        </div>
+        {% end %}
         <ul class="menu">
           <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
           <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/resourceslist{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>

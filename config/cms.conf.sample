@@ -58,6 +58,14 @@
 
 
 
+    "_section": "Sandbox",
+
+    "_help": "Do not allow contestants' solutions to write files bigger",
+    "_help": "than this size (expressed in KB; defaults to 1 GB).",
+    "max_file_size": 1048576,
+
+
+
     "_section": "WebServers",
 
     "_help": "This key is used to encode information that can be seen",

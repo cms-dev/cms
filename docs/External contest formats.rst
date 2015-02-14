@@ -112,7 +112,7 @@ The following are optional files, that must be present for certain task types or
 
 - :file:`sol/*.h` and :file:`sol/*lib.pas`: if a grader is present, all other files in the :file:`sol` directory that end with ``.h`` or ``lib.pas`` are treated as auxiliary files needed by the compilation of the grader with the submitted solution.
 
-- :file:`check/checker` (also accepted: :file:`cor/correttore`): for tasks of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both the correct and the contestant's output files and assigns the outcome. It must be a statically linked executable (for example, if compiled from a C or C++ source, the :samp:`-static` option must be used) because otherwise the sandbox will prevent it from accessing its dependencies. If instead the file is not present, a simple diff is used to compare the correct and the contestant's output files.
+- :file:`check/checker` (also accepted: :file:`cor/correttore`): for tasks of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both the correct and the contestant's output files and assigns the outcome. It must be a statically linked executable (for example, if compiled from a C or C++ source, the :samp:`-static` option must be used) because otherwise the sandbox will prevent it from accessing its dependencies. It is going to be executed on the workers, so it must be compiled for their architecture. If instead the file is not present, a simple diff is used to compare the correct and the contestant's output files.
 
 - :file:`check/manager`: (also accepted: :file:`cor/manager`) for tasks of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicates with the user solution.
 
@@ -134,7 +134,9 @@ The task YAML files require the following keys.
 
 - ``n_input`` (integer): number of test cases to be evaluated for this task; the actual test cases are retrieved from the :ref:`task directory <externalcontestformats_task-directory>`.
 
-- ``token_mode``: the token mode for the task, as in :ref:`configuringacontest_tokens`; it can be ``disabled``, ``infinite`` or ``finite``; if this is not specified, the loader will try to infer it from the remaining token parameters (in order to retain compatibility with the past), but you are not advised to relay on this behavior..
+- ``score_mode``: the score mode for the task, as in :ref:`configuringacontest_score`; it can be ``max_tokened_last`` (for the legacy behavior), or ``max`` (for the modern behavior).
+
+- ``token_mode``: the token mode for the task, as in :ref:`configuringacontest_tokens`; it can be ``disabled``, ``infinite`` or ``finite``; if this is not specified, the loader will try to infer it from the remaining token parameters (in order to retain compatibility with the past), but you are not advised to relay on this behavior.
 
 The following are optional keys.
 
@@ -158,3 +160,14 @@ The following are optional keys that must be present for some task type or score
 
 - ``primary_language`` (string): the statement will be imported with this language code; defaults to ``it`` (Italian), in order to ensure backward compatibility.
 
+
+Polygon format
+==============
+
+`Polygon <https://polygon.codeforces.com>`_ is a popular platform for the creation of tasks, and a task format, used among others by Codeforces.
+
+Since Polygon doesn't support CMS directly, some task parameters cannot be set using the standard Polygon configuration. The importer reads from an optional file :file:`cms_conf.py` additional configuration specifics to CMS. Additionally, user can add file named contestants.txt to allow importing some set of users.
+
+By default, all tasks are batch files, with custom checker and score type is Sum. Loaders assumes that checker is check.cpp and written with usage of testlib.h. It provides customized version of testlib.h which allows using Polygon checkers with CMS. Checkers will be compiled during importing the contest. This is important in case the architecture where the loading happens is different from the architecture of the workers.
+
+Polygon (by now) doesn't allow custom contest-wide files, so general contest options should be hard-coded in the loader.

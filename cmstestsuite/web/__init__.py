@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -193,9 +193,9 @@ class TestRequest(object):
         print("Outcome: %s" % (self.outcome), file=fd)
         fd.write(self.specific_info())
         if self.exception_data is not None:
-            print(file=fd)
+            print("", file=fd)
             print("EXCEPTION CASTED", file=fd)
-            fd.write(self.exception_data)
+            fd.write(unicode(self.exception_data))
 
     def specific_info(self):
         return ''

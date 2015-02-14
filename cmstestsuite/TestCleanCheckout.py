@@ -57,7 +57,8 @@ def setup_cms():
     sh("sudo -u postgres createdb %(DB_NAME)s -O %(DB_USER)s" % CONFIG)
 
     info("Checking out code.")
-    sh(["git", "clone", CONFIG["GIT_ORIGIN"], CONFIG["TEST_DIR"]])
+    sh(["git", "clone", "--recursive", CONFIG["GIT_ORIGIN"],
+        CONFIG["TEST_DIR"]])
     os.chdir("%(TEST_DIR)s" % CONFIG)
     sh(["git", "checkout", CONFIG["GIT_REVISION"]])
 
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     CONFIG["TEST_DIR"] = tempfile.mkdtemp()
-    CONFIG["CONFIG_PATH"] = "%s/examples/cms.conf" % CONFIG["TEST_DIR"]
+    CONFIG["CONFIG_PATH"] = "%s/config/cms.conf" % CONFIG["TEST_DIR"]
     CONFIG["GIT_ORIGIN"] = subprocess.check_output(
         "git rev-parse --show-toplevel", shell=True).strip()
     if args.revision is None:

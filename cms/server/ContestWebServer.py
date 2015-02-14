@@ -3,12 +3,13 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -53,7 +54,6 @@ import pkg_resources
 import re
 import socket
 import struct
-import tempfile
 import traceback
 from datetime import timedelta
 from urllib import quote
@@ -65,22 +65,23 @@ from sqlalchemy import func
 from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, ServiceCoord
+from cms import ConfigError, ServiceCoord, config, filename_to_language
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
     File, UserTest, UserTestFile, UserTestManager, PrintJob
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
-from cms.server import file_handler_gen, extract_archive, \
-    actual_phase_required, get_url_root, filter_ascii, \
-    CommonRequestHandler, format_size, compute_actual_phase
+from cms.server import file_handler_gen, actual_phase_required, \
+    get_url_root, filter_ascii, CommonRequestHandler, format_size, \
+    compute_actual_phase
 from cmscommon.isocodes import is_language_code, translate_language_code, \
     is_country_code, translate_country_code, \
     is_language_country_code, translate_language_country_code
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_datetime, make_timestamp, get_timezone
 from cmscommon.mimetypes import get_type_for_file_name
+from cmscommon.archive import Archive
 
 
 logger = logging.getLogger(__name__)
@@ -214,7 +215,7 @@ class BaseHandler(CommonRequestHandler):
                 if not any(lang.startswith(prefix) for lang in self.langs)]
             if useless:
                 logger.warning("The following allowed localizations don't "
-                               "match any installed one: %s" %
+                               "match any installed one: %s",
                                ",".join(useless))
 
         # TODO We fallback on any available language if none matches:
@@ -364,7 +365,7 @@ class BaseHandler(CommonRequestHandler):
             try:
                 self.sql_session.close()
             except Exception as error:
-                logger.warning("Couldn't close SQL connection: %r" % error)
+                logger.warning("Couldn't close SQL connection: %r", error)
         try:
             tornado.web.RequestHandler.finish(self, *args, **kwds)
         except IOError:
@@ -378,8 +379,8 @@ class BaseHandler(CommonRequestHandler):
                 kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
-                "Uncaught exception (%r) while processing a request: %s" %
-                (exc_info[1], ''.join(traceback.format_exception(*exc_info))))
+                "Uncaught exception (%r) while processing a request: %s",
+                exc_info[1], ''.join(traceback.format_exception(*exc_info)))
 
         # We assume that if r_params is defined then we have at least
         # the data we need to display a basic template with the error
@@ -410,12 +411,22 @@ class ContestWebServer(WebService):
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
         }
+
+        try:
+            listen_address = config.contest_listen_address[shard]
+            listen_port = config.contest_listen_port[shard]
+        except IndexError:
+            raise ConfigError("Wrong shard number for %s, or missing "
+                              "address/port configuration. Please check "
+                              "contest_listen_address and contest_listen_port "
+                              "in cms.conf." % __name__)
+
         super(ContestWebServer, self).__init__(
-            config.contest_listen_port[shard],
+            listen_port,
             _cws_handlers,
             parameters,
             shard=shard,
-            listen_address=config.contest_listen_address[shard])
+            listen_address=listen_address)
 
         self.contest = contest
 
@@ -443,10 +454,16 @@ class ContestWebServer(WebService):
             ServiceCoord("EvaluationService", 0))
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
+
+        ranking_enabled = len(config.rankings) > 0
         self.proxy_service = self.connect_to(
-            ServiceCoord("ProxyService", 0))
+            ServiceCoord("ProxyService", 0),
+            must_be_present=ranking_enabled)
+
+        printing_enabled = config.printer is not None
         self.printing_service = self.connect_to(
-            ServiceCoord("PrintingService", 0))
+            ServiceCoord("PrintingService", 0),
+            must_be_present=printing_enabled)
 
     NOTIFICATION_ERROR = "error"
     NOTIFICATION_WARNING = "warning"
@@ -501,25 +518,25 @@ class LoginHandler(BaseHandler):
         filtered_user = filter_ascii(username)
         filtered_pass = filter_ascii(password)
         if user is None or user.password != password:
-            logger.info("Login error: user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
+            logger.info("Login error: user=%s pass=%s remote_ip=%s.",
+                        filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
         if config.ip_lock and user.ip is not None \
                 and not check_ip(self.request.remote_ip, user.ip):
-            logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
+            logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s.",
+                        filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
         if user.hidden and config.block_hidden_users:
             logger.info("Hidden user login attempt: "
-                        "user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
+                        "user=%s pass=%s remote_ip=%s.",
+                        filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
 
-        logger.info("User logged in: user=%s remote_ip=%s." %
-                    (filtered_user, self.request.remote_ip))
+        logger.info("User logged in: user=%s remote_ip=%s.",
+                    filtered_user, self.request.remote_ip)
         self.set_secure_cookie("login",
                                pickle.dumps((user.username,
                                              user.password,
@@ -539,7 +556,7 @@ class StartHandler(BaseHandler):
     def post(self):
         user = self.get_current_user()
 
-        logger.info("Starting now for user %s" % user.username)
+        logger.info("Starting now for user %s", user.username)
         user.starting_time = self.timestamp
         self.sql_session.commit()
 
@@ -606,8 +623,35 @@ class TaskSubmissionsHandler(BaseHandler):
             .filter(Submission.user == self.current_user)\
             .filter(Submission.task == task).all()
 
+        submissions_left_contest = None
+        if self.contest.max_submission_number is not None:
+            submissions_c = self.sql_session\
+                .query(func.count(Submission.id))\
+                .join(Submission.task)\
+                .filter(Task.contest == self.contest)\
+                .filter(Submission.user == self.current_user).scalar()
+            submissions_left_contest = \
+                self.contest.max_submission_number - submissions_c
+
+        submissions_left_task = None
+        if task.max_submission_number is not None:
+            submissions_left_task = \
+                task.max_submission_number - len(submissions)
+
+        submissions_left = submissions_left_contest
+        if submissions_left_task is not None and \
+            (submissions_left_contest is None or
+             submissions_left_contest > submissions_left_task):
+            submissions_left = submissions_left_task
+
+        # Make sure we do not show negative value if admins changed
+        # the maximum
+        if submissions_left is not None:
+            submissions_left = max(0, submissions_left)
+
         self.render("task_submissions.html",
-                    task=task, submissions=submissions, **self.r_params)
+                    task=task, submissions=submissions,
+                    submissions_left=submissions_left, **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -695,7 +739,7 @@ class SubmissionFileHandler(FileHandler):
             else:
                 # We don't recognize this filename. Let's try to 'undo'
                 # the '%l' -> 'c|cpp|pas' replacement before giving up.
-                filename = re.sub('\.%s$' % submission.language, '.%l',
+                filename = re.sub(r'\.%s$' % submission.language, '.%l',
                                   filename)
 
         if filename not in submission.files:
@@ -814,8 +858,8 @@ class QuestionHandler(BaseHandler):
         self.sql_session.add(question)
         self.sql_session.commit()
 
-        logger.info("Question submitted by user %s."
-                    % self.current_user.username)
+        logger.info("Question submitted by user %s.",
+                    self.current_user.username)
 
         # Add "All ok" notification.
         self.application.service.add_notification(
@@ -936,16 +980,10 @@ class SubmitHandler(BaseHandler):
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
-            # Extract the files from the archive.
-            temp_archive_file, temp_archive_filename = \
-                tempfile.mkstemp(dir=config.temp_dir)
-            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
-                temp_archive_file.write(archive_data["body"])
+            # Create the archive.
+            archive = Archive.from_raw_data(archive_data["body"])
 
-            archive_contents = extract_archive(temp_archive_filename,
-                                               archive_data["filename"])
-
-            if archive_contents is None:
+            if archive is None:
                 self.application.service.add_notification(
                     self.current_user.username,
                     self.timestamp,
@@ -956,8 +994,17 @@ class SubmitHandler(BaseHandler):
                                                               safe=''))
                 return
 
-            for item in archive_contents:
-                self.request.files[item["filename"]] = [item]
+            # Extract the archive.
+            unpacked_dir = archive.unpack()
+            for name in archive.namelist():
+                filename = os.path.basename(name)
+                body = open(os.path.join(unpacked_dir, filename), "r").read()
+                self.request.files[filename] = [{
+                    'filename': filename,
+                    'body': body
+                }]
+
+            archive.cleanup()
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
@@ -989,7 +1036,6 @@ class SubmitHandler(BaseHandler):
         # in file_digests (i.e. like they have already been sent to FS).
         submission_lang = None
         file_digests = {}
-        retrieved = 0
         if task_type.ALLOW_PARTIAL_SUBMISSION and \
                 last_submission_t is not None:
             for filename in required.difference(provided):
@@ -1001,31 +1047,17 @@ class SubmitHandler(BaseHandler):
                         submission_lang = last_submission_t.language
                     file_digests[filename] = \
                         last_submission_t.files[filename].digest
-                    retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
         # filenames, the user has the extension of an allowed
         # language, and that all these are the same (i.e., no
         # mixed-language submissions).
-        def which_language(user_filename):
-            """Determine the language of user_filename from its
-            extension.
-
-            user_filename (string): the file to test.
-            return (string): the extension of user_filename, or None
-                             if it is not a recognized language.
-
-            """
-            for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
-                if user_filename.endswith(source_ext):
-                    return language
-            return None
 
         error = None
         for our_filename in files:
             user_filename = files[our_filename][0]
             if our_filename.find(".%l") != -1:
-                lang = which_language(user_filename)
+                lang = filename_to_language(user_filename)
                 if lang is None:
                     error = self._("Cannot recognize submission's language.")
                     break
@@ -1085,8 +1117,7 @@ class SubmitHandler(BaseHandler):
                                  task.id,
                                  files), file_)
             except Exception as error:
-                logger.warning("Submission local copy failed - %s" %
-                               traceback.format_exc())
+                logger.warning("Submission local copy failed.", exc_info=True)
 
         # We now have to send all the files to the destination...
         try:
@@ -1100,7 +1131,7 @@ class SubmitHandler(BaseHandler):
 
         # In case of error, the server aborts the submission
         except Exception as error:
-            logger.error("Storage failed! %s" % error)
+            logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1111,7 +1142,7 @@ class SubmitHandler(BaseHandler):
             return
 
         # All the files are stored, ready to submit!
-        logger.info("All files stored for submission sent by %s" %
+        logger.info("All files stored for submission sent by %s",
                     self.current_user.username)
         submission = Submission(self.timestamp,
                                 submission_lang,
@@ -1168,8 +1199,7 @@ class UseTokenHandler(BaseHandler):
             self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token "
-                           "when it shouldn't."
-                           % self.current_user.username)
+                           "when it shouldn't.", self.current_user.username)
             # Add "no luck" notification
             self.application.service.add_notification(
                 self.current_user.username,
@@ -1196,15 +1226,15 @@ class UseTokenHandler(BaseHandler):
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
-        # Inform ScoringService and eventually the ranking that the
+        # Inform ProxyService and eventually the ranking that the
         # token has been played.
         self.application.service.proxy_service.submission_tokened(
             submission_id=submission.id)
 
-        logger.info("Token played by user %s on task %s."
-                    % (self.current_user.username, task.name))
+        logger.info("Token played by user %s on task %s.",
+                    self.current_user.username, task.name)
 
-        # Add "All ok" notification
+        # Add "All ok" notification.
         self.application.service.add_notification(
             self.current_user.username,
             self.timestamp,
@@ -1322,7 +1352,17 @@ class UserTestInterfaceHandler(BaseHandler):
     @actual_phase_required(0)
     def get(self):
         user_tests = dict()
+        user_tests_left = dict()
         default_task = None
+
+        user_tests_left_contest = None
+        if self.contest.max_user_test_number is not None:
+            user_test_c = self.sql_session.query(func.count(UserTest.id))\
+                .join(UserTest.task)\
+                .filter(Task.contest == self.contest)\
+                .filter(UserTest.user == self.current_user).scalar()
+            user_tests_left_contest = \
+                self.contest.max_user_test_number - user_test_c
 
         for task in self.contest.tasks:
             if self.request.query == task.name:
@@ -1330,12 +1370,28 @@ class UserTestInterfaceHandler(BaseHandler):
             user_tests[task.id] = self.sql_session.query(UserTest)\
                 .filter(UserTest.user == self.current_user)\
                 .filter(UserTest.task == task).all()
+            user_tests_left_task = None
+            if task.max_user_test_number is not None:
+                user_tests_left_task = \
+                    task.max_user_test_number - len(user_tests[task.id])
+
+            user_tests_left[task.id] = user_tests_left_contest
+            if user_tests_left_task is not None and \
+                (user_tests_left_contest is None or
+                 user_tests_left_contest > user_tests_left_task):
+                user_tests_left[task.id] = user_tests_left_task
+
+            # Make sure we do not show negative value if admins changed
+            # the maximum
+            if user_tests_left[task.id] is not None:
+                user_tests_left[task.id] = max(0, user_tests_left[task.id])
 
         if default_task is None and len(self.contest.tasks) > 0:
             default_task = self.contest.tasks[0]
 
         self.render("test_interface.html", default_task=default_task,
-                    user_tests=user_tests, **self.r_params)
+                    user_tests=user_tests, user_tests_left=user_tests_left,
+                    **self.r_params)
 
 
 class UserTestHandler(BaseHandler):
@@ -1356,8 +1412,8 @@ class UserTestHandler(BaseHandler):
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
         if not task_type.testable:
-            logger.warning("User %s tried to make test on task %s." %
-                           (self.current_user.username, task_name))
+            logger.warning("User %s tried to make test on task %s.",
+                           self.current_user.username, task_name)
             raise tornado.web.HTTPError(404)
 
         # Alias for easy access
@@ -1453,16 +1509,10 @@ class UserTestHandler(BaseHandler):
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
-            # Extract the files from the archive.
-            temp_archive_file, temp_archive_filename = \
-                tempfile.mkstemp(dir=config.temp_dir)
-            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
-                temp_archive_file.write(archive_data["body"])
+            # Create the archive.
+            archive = Archive.from_raw_data(archive_data["body"])
 
-            archive_contents = extract_archive(temp_archive_filename,
-                                               archive_data["filename"])
-
-            if archive_contents is None:
+            if archive is None:
                 self.application.service.add_notification(
                     self.current_user.username,
                     self.timestamp,
@@ -1472,8 +1522,17 @@ class UserTestHandler(BaseHandler):
                 self.redirect("/testing?%s" % quote(task.name, safe=''))
                 return
 
-            for item in archive_contents:
-                self.request.files[item["filename"]] = [item]
+            # Extract the archive.
+            unpacked_dir = archive.unpack()
+            for name in archive.namelist():
+                filename = os.path.basename(name)
+                body = open(os.path.join(unpacked_dir, filename), "r").read()
+                self.request.files[filename] = [{
+                    'filename': filename,
+                    'body': body
+                }]
+
+            archive.cleanup()
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
@@ -1506,7 +1565,6 @@ class UserTestHandler(BaseHandler):
         # in file_digests (i.e. like they have already been sent to FS).
         submission_lang = None
         file_digests = {}
-        retrieved = 0
         if task_type.ALLOW_PARTIAL_SUBMISSION and last_user_test_t is not None:
             for filename in required.difference(provided):
                 if filename in last_user_test_t.files:
@@ -1517,31 +1575,17 @@ class UserTestHandler(BaseHandler):
                         submission_lang = last_user_test_t.language
                     file_digests[filename] = \
                         last_user_test_t.files[filename].digest
-                    retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
         # filenames, the user has one amongst ".cpp", ".c", or ".pas,
         # and that all these are the same (i.e., no mixed-language
         # submissions).
-        def which_language(user_filename):
-            """Determine the language of user_filename from its
-            extension.
-
-            user_filename (string): the file to test.
-            return (string): the extension of user_filename, or None
-                             if it is not a recognized language.
-
-            """
-            for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
-                if user_filename.endswith(source_ext):
-                    return language
-            return None
 
         error = None
         for our_filename in files:
             user_filename = files[our_filename][0]
             if our_filename.find(".%l") != -1:
-                lang = which_language(user_filename)
+                lang = filename_to_language(user_filename)
                 if lang is None:
                     error = self._("Cannot recognize test's language.")
                     break
@@ -1607,8 +1651,7 @@ class UserTestHandler(BaseHandler):
                                  task.id,
                                  files), file_)
             except Exception as error:
-                logger.error("Test local copy failed - %s" %
-                             traceback.format_exc())
+                logger.error("Test local copy failed.", exc_info=True)
 
         # We now have to send all the files to the destination...
         try:
@@ -1622,7 +1665,7 @@ class UserTestHandler(BaseHandler):
 
         # In case of error, the server aborts the submission
         except Exception as error:
-            logger.error("Storage failed! %s" % error)
+            logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1633,7 +1676,7 @@ class UserTestHandler(BaseHandler):
             return
 
         # All the files are stored, ready to submit!
-        logger.info("All files stored for test sent by %s" %
+        logger.info("All files stored for test sent by %s",
                     self.current_user.username)
         user_test = UserTest(self.timestamp,
                              submission_lang,
@@ -1902,7 +1945,7 @@ class PrintingHandler(BaseHandler):
 
         # In case of error, the server aborts
         except Exception as error:
-            logger.error("Storage failed! %s" % error)
+            logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1913,7 +1956,7 @@ class PrintingHandler(BaseHandler):
             return
 
         # The file is stored, ready to submit!
-        logger.info("File stored for print job sent by %s" %
+        logger.info("File stored for print job sent by %s",
                     self.current_user.username)
 
         printjob = PrintJob(timestamp=self.timestamp,
@@ -1936,24 +1979,26 @@ class PrintingHandler(BaseHandler):
 
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
     """Handle files which may be gzip-compressed on the filesystem."""
-    def get(self, path, *args, **kwargs):
-        # Unless told otherwise, default to text/plain.
-        self.set_header("Content-Type", "text/plain")
+    def validate_absolute_path(self, root, absolute_path):
+        self.is_gzipped = False
         try:
-            # Try an ordinary request.
-            tornado.web.StaticFileHandler.get(self, path, *args, **kwargs)
-        except tornado.web.HTTPError as error:
-            if error.status_code == 404:
-                # If that failed, try servicing it with a .gz extension.
-                path = "%s.gz" % path
-
-                tornado.web.StaticFileHandler.get(self, path, *args, **kwargs)
-
-                # If it succeeded, then mark the encoding as gzip.
-                self.set_header("Content-Encoding", "gzip")
-            else:
+            return tornado.web.StaticFileHandler.validate_absolute_path(
+                self, root, absolute_path)
+        except tornado.web.HTTPError as e:
+            if e.status_code != 404:
                 raise
+            self.is_gzipped = True
+            self.absolute_path = \
+                tornado.web.StaticFileHandler.validate_absolute_path(
+                    self, root, absolute_path + ".gz")
+            self.set_header("Content-encoding", "gzip")
+            return self.absolute_path
 
+    def get_content_type(self):
+        if self.is_gzipped:
+            return "text/plain"
+        else:
+            return tornado.web.StaticFileHandler.get_content_type(self)
 
 _cws_handlers = [
     (r"/", MainHandler),

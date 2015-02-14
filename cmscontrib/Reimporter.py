@@ -238,23 +238,23 @@ class Reimporter(object):
 
                 if old_user is None:
                     # Create a new user.
-                    logger.info("Creating user %s" % username)
+                    logger.info("Creating user %s", username)
                     new_user = self.loader.get_user(username)
                     old_contest.users.append(new_user)
                 elif username in new_users:
                     # Update an existing user.
-                    logger.info("Updating user %s" % username)
+                    logger.info("Updating user %s", username)
                     new_user = self.loader.get_user(username)
                     self._update_object(old_user, new_user)
                 else:
                     # Delete an existing user.
                     if self.force:
-                        logger.info("Deleting user %s" % username)
+                        logger.info("Deleting user %s", username)
                         old_contest.users.remove(old_user)
                     else:
                         logger.critical(
                             "User %s exists in old contest, but "
-                            "not in the new one. Use -f to force." %
+                            "not in the new one. Use -f to force.",
                             username)
                         return False
 
@@ -271,7 +271,7 @@ class Reimporter(object):
 
                 if old_task is None:
                     # Create a new task.
-                    logger.info("Creating task %s" % task)
+                    logger.info("Creating task %s", task)
                     new_task = self.loader.get_task(task)
                     new_task.num = current_num
                     current_num += 1
@@ -279,13 +279,13 @@ class Reimporter(object):
                 elif task in new_tasks:
                     # Update an existing task.
                     if self.full or self.loader.has_changed(task):
-                        logger.info("Updating task %s" % task)
+                        logger.info("Updating task %s", task)
                         new_task = self.loader.get_task(task)
                         new_task.num = current_num
                         current_num += 1
                         self._update_object(old_task, new_task)
                     else:
-                        logger.info("Task %s has not changed" % task)
+                        logger.info("Task %s has not changed", task)
                         # Even unchanged tasks should use a temporary number
                         # to avoid duplicate numbers when we fix them.
                         old_task.num = current_num
@@ -293,12 +293,12 @@ class Reimporter(object):
                 else:
                     # Delete an existing task.
                     if self.force:
-                        logger.info("Deleting task %s" % task)
+                        logger.info("Deleting task %s", task)
                         session.delete(old_task)
                     else:
                         logger.critical(
                             "Task %s exists in old contest, but "
-                            "not in the new one. Use -f to force." %
+                            "not in the new one. Use -f to force.",
                             task)
                         return False
 
@@ -315,7 +315,7 @@ class Reimporter(object):
 
             session.commit()
 
-        logger.info("Reimport finished (contest id: %s)." %
+        logger.info("Reimport finished (contest id: %s).",
                     self.old_contest_id)
 
         return True

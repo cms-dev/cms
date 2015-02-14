@@ -183,7 +183,7 @@ def main():
 
     # Load config from cms.conf.
     CONFIG["TEST_DIR"] = git_root
-    CONFIG["CONFIG_PATH"] = "%s/examples/cms.conf" % CONFIG["TEST_DIR"]
+    CONFIG["CONFIG_PATH"] = "%s/config/cms.conf" % CONFIG["TEST_DIR"]
     if CONFIG["TEST_DIR"] is None:
         CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.conf"
 

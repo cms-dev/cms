@@ -55,6 +55,7 @@ class Task(Entity):
         self.max_score = None
         self.extra_headers = None
         self.order = None
+        self.score_mode = "max_tokened_last"
 
     @staticmethod
     def validate(data):
@@ -80,6 +81,8 @@ class Task(Entity):
                 "Field 'score_precision' is negative"
             assert isinstance(data['extra_headers'], list), \
                 "Field 'extra_headers' isn't a list of strings"
+            assert isinstance(data['score_mode'], six.text_type), \
+                "Field 'score_mode' isn't a string"
             for i in data['extra_headers']:
                 assert isinstance(i, six.text_type), \
                     "Field 'extra_headers' isn't a list of strings"
@@ -99,6 +102,7 @@ class Task(Entity):
         self.score_precision = data['score_precision']
         self.extra_headers = data['extra_headers']
         self.order = data['order']
+        self.score_mode = data['score_mode']
 
     def get(self):
         result = self.__dict__.copy()

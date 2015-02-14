@@ -39,4 +39,12 @@ Sandbox
 
 - *Symptom.* The Worker fails to evaluate a submission logging about an invalid (empty) output from the manager.
 
-  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```.
+  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```. Also, make sure that the checker was compiled for the architecture of the workers (e.g., 32 or 64 bits).
+
+- *Symptom.* The Worker fails to evaluate a submission with a generic failure.
+
+  *Possible cause.* Make sure that the isolate binary that CMS is using has the correct permissions (in particular, its owner is root and it has the suid bit set). Be careful of having multiple isolate binaries in your path. Another reason could be that you are using an old version of isolate.
+
+- *Symptom.* Contestants' solutions fail when trying to write large outputs.
+
+  *Possible cause.* CMS limits the maximum output size from programs being evaluated for security reasons. Currently the limit is 1 GB and can be configured by changing the parameter ``max_file_size`` in :file:`cms.conf`.

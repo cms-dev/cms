@@ -3,8 +3,8 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,7 +31,7 @@ import cmstestsuite.tasks.communication as communication
 from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
     LANG_PYTHON
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
-    CheckTimeout, CheckNonzeroReturn
+    CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
 
 
 ALL_LANGUAGES = tuple(LANGUAGES)
@@ -101,6 +101,11 @@ ALL_TESTS = [
          languages=COMPILED_LANGUAGES,
          checks=[CheckCompilationFail()]),
 
+    Test('compile-timeout',
+         task=batch_fileio, filename='compile-timeout.%l',
+         languages=(LANG_CPP,),
+         checks=[CheckCompilationFail()]),
+
     # Various timeout conditions.
 
     Test('timeout-cputime',
@@ -111,7 +116,7 @@ ALL_TESTS = [
     Test('timeout-pause',
          task=batch_stdio, filename='timeout-pause.%l',
          languages=(LANG_CPP,),
-         checks=[CheckOverallScore(0, 100), CheckTimeout()]),
+         checks=[CheckOverallScore(0, 100), CheckTimeoutWall()]),
 
     Test('timeout-sleep',
          task=batch_stdio, filename='timeout-sleep.%l',
@@ -186,6 +191,60 @@ ALL_TESTS = [
     Test('communication-incorrect',
          task=communication, filename='communication-incorrect.%l',
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(0, 100)]),
+
+    # Writing to files not allowed.
+
+    # Inability to write to a file does not throw a specific error,
+    # just returns a NULL file handler to the caller. So we rely on
+    # the test program to write the correct result only if the
+    # returned handler is valid.
+
+    Test('write-forbidden-fileio',
+         task=batch_fileio, filename='write-forbidden-fileio.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('write-forbidden-stdio',
+         task=batch_stdio, filename='write-forbidden-stdio.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('write-forbidden-managed',
+         task=batch_fileio_managed, filename='write-forbidden-managed.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('write-forbidden-communication',
+         task=communication, filename='write-forbidden-communication.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(0, 100)]),
+
+    # This tests complete successfully only if it is unable to execute
+    # output.txt.
+
+    Test('executing-output',
+         task=batch_fileio, filename='executing-output.%l',
+         languages=(LANG_C),
+         checks=[CheckOverallScore(100, 100)]),
+
+    # Rewrite input in the solution.
+
+    Test('rewrite-input',
+         task=batch_fileio_managed, filename='rewrite-input.%l',
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('delete-write-input',
+         task=batch_fileio_managed, filename='delete-write-input.%l',
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    # Write a huge file
+
+    Test('write-big-fileio',
+         task=batch_fileio, filename='write-big-fileio.%l',
+         languages=LANG_C,
          checks=[CheckOverallScore(0, 100)]),
 
 ]

@@ -30,8 +30,6 @@ from __future__ import unicode_literals
 
 import time
 import logging
-import tarfile
-import zipfile
 from datetime import datetime, timedelta
 from urllib import quote
 
@@ -199,49 +197,6 @@ def actual_phase_required(*actual_phases):
     return decorator
 
 
-def extract_archive(temp_name, original_filename):
-    """Obtain a list of files inside the specified archive.
-
-    Returns a list of the files inside the archive located in
-    temp_name, using original_filename to guess the type of the
-    archive.
-
-    """
-    file_list = []
-    if original_filename.endswith(".zip"):
-        try:
-            zip_object = zipfile.ZipFile(temp_name, "r")
-            for item in zip_object.infolist():
-                file_list.append({
-                    "filename": item.filename,
-                    "body": zip_object.read(item)})
-        except Exception as error:
-            logger.warning("Exception while extracting zip file `%s'. %r" %
-                           (original_filename, error))
-            return None
-    elif original_filename.endswith(".tar.gz") \
-            or original_filename.endswith(".tar.bz2") \
-            or original_filename.endswith(".tar"):
-        try:
-            tar_object = tarfile.open(name=temp_name)
-            for item in tar_object.getmembers():
-                if item.isfile():
-                    file_list.append({
-                        "filename": item.name,
-                        "body": tar_object.extractfile(item).read()})
-        except tarfile.TarError:
-            logger.warning("Exception while extracting tar file `%s'. %r" %
-                           (original_filename, error))
-            return None
-        except IOError:
-            return None
-    else:
-        logger.warning("Compressed file `%s' not recognized."
-                       % original_filename)
-        return None
-    return file_list
-
-
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 DIMS = list(1024 ** x for x in xrange(9))
 
@@ -376,7 +331,7 @@ def get_score_class(score, max_score):
 
 
 # Dummy function to mark strings for translation
-def N_(*args, **kwargs):
+def N_(*unused_args, **unused_kwargs):
     pass
 
 # This is a string in task_submissions.html and test_interface.html
@@ -626,8 +581,8 @@ def file_handler_gen(BaseClass):
                 self.temp_file = \
                     self.application.service.file_cacher.get_file(digest)
             except Exception as error:
-                logger.error("Exception while retrieving file `%s'. %r" %
-                             (filename, error))
+                logger.error("Exception while retrieving file `%s'. %r",
+                             filename, error)
                 self.finish()
                 return
 
@@ -657,8 +612,8 @@ def file_handler_gen(BaseClass):
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
                 duration = time.time() - self.start_time
-                logger.info("%.3lf seconds for %.3lf MB" %
-                            (duration, self.size))
+                logger.info("%.3lf seconds for %.3lf MB",
+                            duration, self.size)
                 self.finish()
                 return False
             return True

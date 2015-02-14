@@ -36,18 +36,21 @@ import cms.log
 __all__ = [
     "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP",
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
-    "SOURCE_EXT_TO_LANGUAGE_MAP",
+    "SOURCE_EXT_TO_LANGUAGE_MAP", "filename_to_language",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
+    "LANGUAGE_TO_OBJ_EXT_MAP",
+    "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
-    "mkdir", "utf8_decoder", "Address", "ServiceCoord", "get_safe_shard",
-    "get_service_address", "get_service_shards", "default_argument_parser",
+    "ConfigError", "mkdir", "utf8_decoder", "Address", "ServiceCoord",
+    "get_safe_shard", "get_service_address", "get_service_shards",
+    "default_argument_parser",
     # conf
     "config",
     # plugin
     "plugin_list", "plugin_lookup",
-    ]
+]
 
 
 # Instantiate or import these objects.
@@ -101,8 +104,37 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_CPP: ".h",
     LANG_PASCAL: "lib.pas",
 }
+LANGUAGE_TO_OBJ_EXT_MAP = {
+    LANG_C: ".o",
+    LANG_CPP: ".o",
+    LANG_PASCAL: ".o",
+}
 
-from .util import mkdir, utf8_decoder, Address, ServiceCoord, get_safe_shard, \
-    get_service_address, get_service_shards, default_argument_parser
+
+def filename_to_language(filename):
+    """Determine the programming language of filename from its extension.
+
+    filename (string): the file to test.
+
+    return (string|None): the extension of filename, or None if it is
+        not a recognized language.
+
+    """
+    for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
+        if filename.endswith(source_ext):
+            return language
+    return None
+
+
+# Task score modes.
+
+# Maximum score amongst all submissions.
+SCORE_MODE_MAX = "max"
+# Maximum score among all tokened submissions and the last submission.
+SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
+
+from .util import ConfigError, mkdir, utf8_decoder, Address, ServiceCoord, \
+    get_safe_shard, get_service_address, get_service_shards, \
+    default_argument_parser
 from .conf import config
 from .plugin import plugin_list, plugin_lookup

@@ -161,6 +161,14 @@ ul.normal_list {
     text-shadow: none;
 }
 
+.secret_notice {
+    font-size: 0.8em;
+    line-height: 1.125em;
+    text-align: center;
+    margin: 20px auto 20px;
+    color: red;
+}
+
 .cr_notice {
     font-size: 0.6em;
     line-height: 1.125em;

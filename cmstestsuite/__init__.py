@@ -5,6 +5,7 @@
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -185,9 +186,10 @@ def configure_cms(options):
     options (dict): mapping from parameter to textual JSON argument.
 
     """
-    f = io.open("%(TEST_DIR)s/examples/cms.conf.sample" % CONFIG,
-                "rt", encoding="utf-8")
-    lines = f.readlines()
+    with io.open("%(TEST_DIR)s/config/cms.conf.sample" % CONFIG,
+                 "rt", encoding="utf-8") as in_f:
+        lines = in_f.readlines()
+
     unset = set(options.keys())
     for i, line in enumerate(lines):
         g = re.match(r'^(\s*)"([^"]+)":', line)
@@ -197,10 +199,9 @@ def configure_cms(options):
                 lines[i] = '%s"%s": %s,\n' % (whitespace, key, options[key])
                 unset.remove(key)
 
-    out_file = io.open("%(CONFIG_PATH)s" % CONFIG, "wt", encoding="utf-8")
-    for l in lines:
-        out_file.write(l)
-    out_file.close()
+    with io.open("%(CONFIG_PATH)s" % CONFIG, "wt", encoding="utf-8") as out_f:
+        for l in lines:
+            out_f.write(l)
 
     if unset:
         print("These configuration items were not set:")

@@ -37,7 +37,7 @@ import gevent.coros
 import gevent.socket
 import gevent.event
 
-from cms import get_service_address
+from cms import Address, get_service_address
 
 
 logger = logging.getLogger(__name__)
@@ -383,7 +383,7 @@ class RemoteServiceServer(RemoteServiceBase):
         try:
             data = json.dumps(response, encoding='utf-8')
         except (TypeError, ValueError):
-            logger.warning("JSON encoding failed.")
+            logger.warning("JSON encoding failed.", exc_info=True)
             return
 
         # Send it.
@@ -417,6 +417,9 @@ class RemoteServiceClient(RemoteServiceBase):
             interval (in seconds) between attempts to reconnect to the
             remote service in case the connection is lost; if not given
             no automatic reconnection attempts will occur.
+
+        raise (KeyError): if the coordinates are not specified in the
+            configuration.
 
         """
         super(RemoteServiceClient, self).__init__(
@@ -651,3 +654,46 @@ class RemoteServiceClient(RemoteServiceBase):
             return result
 
         return remote_method
+
+
+class FakeRemoteServiceClient(RemoteServiceClient):
+    """A RemoteServiceClient not actually connected to anything.
+
+    This is useful for connections to optional services, to avoid
+    having to specify different behaviors in the case the services are
+    or are not available.
+
+    In all aspects, an object of this class behaves exactly like a
+    RemoteServiceClient that will never be able to connect.
+
+    """
+    def __init__(self, remote_service_coord, auto_retry=None):
+        """Initialization.
+
+        This constructor does not call the parent constructor, because
+        it would fail (as the service coord are not in the
+        configuration). This is potentially a problem, but as this
+        client will never connect not many member variable access are
+        performed.
+
+        """
+        RemoteServiceBase.__init__(self, Address("None", 0))
+        self.remote_service_coord = remote_service_coord
+        self.pending_outgoing_requests = dict()
+        self.pending_outgoing_requests_results = dict()
+        self.auto_retry = auto_retry
+
+    def connect(self):
+        """Do nothing, as this is a fake client."""
+        pass
+
+    def disconnect(self):
+        """Do nothing, as this is a fake client."""
+        pass
+
+    def execute_rpc(self, method, data):
+        """Just return an AsyncResult encoding an error."""
+        result = gevent.event.AsyncResult()
+        result.set_exception(
+            RPCError("Called a method of a non-configured service."))
+        return result

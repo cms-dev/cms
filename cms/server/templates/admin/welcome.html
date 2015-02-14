@@ -13,9 +13,9 @@ function update_submissions_status(response)
     }
 
     var strings = []
-    strings.push('<tr><td>Evaluated and scored</td><td>' + response['data']['scored'] + '</td></tr>');
-    if (response['data']['evaluated'] != 0)
-        strings.push('<tr><td>Evaluated</td><td>' + response['data']['evaluated'] + '</td></tr>');
+    strings.push('<tr><td>Scored</td><td>' + response['data']['scored'] + '</td></tr>');
+    if (response['data']['scoring'] != 0)
+        strings.push('<tr><td>Scoring...</td><td>' + response['data']['scoring'] + '</td></tr>');
     if (response['data']['compilation_fail'] != 0)
         strings.push('<tr><td>Compilation failed</td><td>' + response['data']['compilation_fail'] + '</td></tr>');
     if (response['data']['compiling'] != 0)
@@ -52,7 +52,7 @@ function update_queue_status(response)
     var strings = [];
     for (var i = 0; i < l; i++)
     {
-        var job = utils.repr_job(response['data'][i]['job']);
+        var job = utils.repr_job(response['data'][i]['item']);
         var date = utils.repr_time_ago(response['data'][i]['timestamp']);
         strings.push('<tr><td style="text-align: center;">' + (i + 1) + '</td>');
         strings.push('<td>' + job + '</td>');
@@ -62,6 +62,38 @@ function update_queue_status(response)
 
     table.html(strings.join(""));
 };
+
+function enable_worker(shard) {
+    if (confirm("Do you really want to enable worker " + shard + "?")) {
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "enable_worker",
+                       {"shard":shard},
+                       function() {
+                          cmsrpc_request("{{ url_root }}",
+                                         "EvaluationService", 0,
+                                         "workers_status",
+                                         {},
+                                         update_workers_status);
+                       });
+    }
+}
+
+function disable_worker(shard) {
+    if (confirm("Do you really want to disable worker " + shard + "?")) {
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "disable_worker",
+                       {"shard":shard},
+                       function() {
+                          cmsrpc_request("{{ url_root }}",
+                                         "EvaluationService", 0,
+                                         "workers_status",
+                                         {},
+                                         update_workers_status);
+                       });
+    }
+}
 
 function update_workers_status(response)
 {
@@ -83,7 +115,7 @@ function update_workers_status(response)
     var strings = [];
     for (var i in response['data'])
     {
-        var job = utils.repr_job(response['data'][i]['job']);
+        var job = utils.repr_job(response['data'][i]['operation']);
         var start_time = utils.repr_time_ago(response['data'][i]['start_time']);
         var connected = "Yes";
         if (response['data'][i]['connected'] == false)
@@ -91,7 +123,12 @@ function update_workers_status(response)
         strings.push('<tr><td style="text-align: center;">' + i + '</td>');
         strings.push('<td style="text-align: center;">' + connected + '</td>');
         strings.push('<td>' + job + '</td>');
-        strings.push('<td>' + start_time + '</td></tr>');
+        strings.push('<td>' + start_time + '</td>');
+        if (response['data'][i]['operation'] == "disabled") {
+            strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;">Enable</button></td></tr>');
+        } else {
+            strings.push('<td><button onclick="javascript:disable_worker(' + i + '); return true;">Disable</button></td></tr>');
+        }
     }
 
     table.html(strings.join(""));
@@ -230,10 +267,11 @@ update_statuses();
   <table id="workers_status_table" class="sub_table">
     <thead>
       <tr>
-        <th>Shard</th>
-        <th>Connected</th>
-        <th>Current job</th>
-        <th>Since</th>
+        <th style="width:5%">Shard</th>
+        <th style="width:15%">Connected</th>
+        <th style="width:50%">Current job</th>
+        <th style="width:20%">Since</th>
+        <th style="width:10%">Action</th>
       </tr>
     </thead>
     <tbody>

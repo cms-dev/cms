@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -80,16 +80,23 @@ class Worker(Service):
         contest_id (int): the id of the contest
 
         """
-        # Lock is not needed if the admins correctly placed cache and
-        # temp directories in the same filesystem. This is what
-        # usually happens since they are children of the same,
-        # cms-created, directory.
-        logger.info("Precaching files for contest %d." % contest_id)
+        # In order to avoid a long-living connection, first fetch the
+        # complete list of files and then download the files; since
+        # this is just pre-caching, possible race conditions are not
+        # dangerous
+        logger.info("Precaching files for contest %d.", contest_id)
         with SessionGen() as session:
             contest = Contest.get_from_id(contest_id, session)
-            for digest in contest.enumerate_files(skip_submissions=True,
-                                                  skip_user_tests=True):
-                self.file_cacher.load(digest)
+            files = contest.enumerate_files(skip_submissions=True,
+                                            skip_user_tests=True)
+        for digest in files:
+            try:
+                self.file_cacher.load(digest, if_needed=True)
+            except KeyError:
+                # No problem (at this stage) if we cannot find the
+                # file
+                pass
+
         logger.info("Precaching finished.")
 
     @rpc_method

@@ -30,7 +30,27 @@ from __future__ import unicode_literals
 
 import sys
 
+from sqlalchemy.exc import OperationalError
+
+from cms import ConfigError
 from . import SessionGen, Contest
+
+
+def test_db_connection():
+    """Perform an operation that raises if the DB is not reachable.
+
+    raise (sqlalchemy.exc.OperationalError): if the DB cannot be
+        accessed (usually for permission problems).
+
+    """
+    try:
+        # We do not care of the specific query executed here, we just
+        # use it to ensure that the DB is accessible.
+        with SessionGen() as session:
+            session.execute("select 0;")
+    except OperationalError:
+        raise ConfigError("Operational error while talking to the DB. "
+                          "Is the connection string in cms.conf correct?")
 
 
 def get_contest_list(session=None):

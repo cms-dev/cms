@@ -4,6 +4,15 @@
 <div class="core_title">
   <h1>Users list</h1>
 </div>
+
+{% if len(config.contest_listen_port) > 0 %}
+  {% set ratio = round(len(contest.users) * 1.0 / len(config.contest_listen_port), 2) %}
+  {% if ratio >= 40 %}
+    At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>
+    A CWS can handle 40 simultaneous request. This situation might cause many requests to fail.
+  {% end %}
+{% end %}
+
 <a href="{{ url_root }}/add_user/{{ contest.id }}">Add a new user</a>
 <table class="bordered">
   <thead>

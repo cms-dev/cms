@@ -1,0 +1,1026 @@
+# Estonian translations for PACKAGE package.
+# Copyright (C) 2014 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#  <heno@siil.net>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CMS\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-07-23 13:54+0200\n"
+"PO-Revision-Date: 2014-10-28 12:43+0200\n"
+"Last-Translator: Konstantin Tretyakov <kt@ut.ee>\n"
+"Language-Team: Estonian\n"
+"Language: et\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.6.9\n"
+
+msgid "N/A"
+msgstr "-"
+
+msgid "Compilation succeeded"
+msgstr "Kompileerimine õnnestus"
+
+msgid "Compilation failed"
+msgstr "Kompileerimine ebaõnnestus"
+
+msgid "Compilation timed out"
+msgstr "Kompileerimise ajalimiit ületatud"
+
+#, python-format
+msgid ""
+"Compilation killed with signal %d (could be triggered by violating memory "
+"limits)"
+msgstr ""
+"Kompileerimine katkes signaali %d tagajärjel (võib olla tingitud "
+"mälupiirangute ületamisest) "
+
+msgid "Execution timed out"
+msgstr "Programmi täitmise ajalimiit ületatud"
+
+#, python-format
+msgid ""
+"Execution killed with signal %d (could be triggered by violating memory "
+"limits)"
+msgstr ""
+"Programmi täitmine katkes signaali %d tagajärjel (võib olla tingitud "
+"mälupiirangute ületamisest) "
+
+#, python-format
+msgid "Execution killed because of forbidden syscall %s"
+msgstr ""
+"Programmi täitmine peatatud keelatud süsteemifunktsiooni %s kasutamise tõttu"
+
+msgid "Execution killed because of forbidden file access"
+msgstr "Programmi täitmine peatatud lubamatu failipöörduse tõttu"
+
+msgid "Execution failed because the return code was nonzero"
+msgstr "Programmi täitmine ebaõnnestus, nullist erinev veakood"
+
+msgid "Output is correct"
+msgstr "Väljund on korrektne"
+
+msgid "Output isn't correct"
+msgstr "Väljund ei ole korrektne"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "Programmi täitmisel ei tekkinud faili %s"
+
+#, python-format
+msgid "Subtask %d"
+msgstr "Alamülesanne %d"
+
+msgid "Outcome"
+msgstr "Tulemus"
+
+msgid "Details"
+msgstr "Detailid"
+
+msgid "Execution time"
+msgstr "Täitmise aeg"
+
+msgid "Memory used"
+msgstr "Kasutatud mälu"
+
+msgid "Not correct"
+msgstr "Vale vastus"
+
+msgid "Correct"
+msgstr "Õige vastus"
+
+msgid "Partially correct"
+msgstr "Osaliselt õige vastus"
+
+msgid "Invalid files in submission"
+msgstr "Lahendus sisaldab lubamatuid faile"
+
+msgid "Execution completed successfully"
+msgstr "Prorammmi täitmine õnnestus"
+
+msgid "No compilation needed"
+msgstr "Kompileerimine pole vajalik"
+
+msgid "File not submitted"
+msgstr "Faili pole esitatud"
+
+msgid "Question received"
+msgstr "Küsimus on vastuvõetud"
+
+msgid ""
+"Your question has been received, you will be notified when the it will be "
+"answered."
+msgstr "Teie küsimus on vastuvõetud, Teid teavitatakse, kui selle on vastatud."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Te olete ületanud lahenduste esitamise kogulimiidi %d."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr ""
+"Te olete ületanud selle ülesande lahenduste esitamise limiidi (%d lahendust)."
+
+msgid "Too many submissions!"
+msgstr "Liiga palju esitatud lahendusi!"
+
+#, fuzzy, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr ""
+"Saate jälle uue lahenduse esitada (suvalise ülesande jaoks) %d sekundit "
+"pärast viimase lahenduse esitamist."
+
+#, fuzzy, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr ""
+"Saate sellele ülesandele uue lahenduse esitada %d sekundit pärast viimase "
+"lahenduse esitamist."
+
+msgid "Submissions too frequent!"
+msgstr "Lahenduste esitamine on liiga sage!"
+
+msgid "Invalid submission format!"
+msgstr "Esiatud lahenduse vorming on vale!"
+
+msgid "Please select the correct files."
+msgstr "Palun valige õiged failid."
+
+msgid "Invalid archive format!"
+msgstr "Vigases vormingus arhiiv!"
+
+msgid "The submitted archive could not be opened."
+msgstr "Esitatud arhiivi ei õnnestu avada."
+
+msgid "Cannot recognize submission's language."
+msgstr "Lahenduse programmeerimiskeel on tundmatu."
+
+msgid "All sources must be in the same language."
+msgstr "Kogu lähtetekst peab olema samas programmeerimiskeeles."
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "Programmeerimiskeele %s kasutamine ei ole sellel võistlusel lubatud."
+
+msgid "Invalid submission!"
+msgstr "Esitatud lahendus on vigane!"
+
+msgid "Submission too big!"
+msgstr "Esitatud lahendus on liiga suur!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Iga lähteteksti fail võib olla ülimalt %d baiti pikk."
+
+msgid "Submission storage failed!"
+msgstr "Esitatud lahenduse salvestamine ebaõnnestus!"
+
+msgid "Please try again."
+msgstr "Palun proovige uuesti."
+
+msgid "Submission received"
+msgstr "Lahendus on vastuvõetud"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Lahendus on vastuvõetud ja on testimisel."
+
+msgid "Token request discarded"
+msgstr "Pileti tellimus tühistatud"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Päring on tühistatud, kuna pole piletit."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr "Päring on tühistatud, kuna selle jaoks on juba piletit kasutatud."
+
+msgid "Token request received"
+msgstr "Pileti tellimus vastuvõetud"
+
+#, fuzzy
+msgid "Your request has been received and applied to the submission."
+msgstr "Teie päring oli vastuvõetud ning rakendatud lahendusele."
+
+msgid "Compiling..."
+msgstr "Kompileerimine..."
+
+msgid "details"
+msgstr "detailvaade"
+
+msgid "Evaluating..."
+msgstr "Testimine..."
+
+msgid "Scoring..."
+msgstr "Punktide andmine..."
+
+msgid "Evaluated"
+msgstr "Testitud"
+
+#, fuzzy, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "Rohkem kui %d korda testimist kasutada ei ole lubatud."
+
+#, fuzzy, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "Rohkem kui %d korda seda ülesande testida ei ole lubatud."
+
+msgid "Too many tests!"
+msgstr "Liiga palju teste!"
+
+#, fuzzy, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr ""
+"Saate jälle mõnda ülesannet testida alles %d sekundit peale viimast "
+"testimist."
+
+#, fuzzy, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr ""
+"Saate jälle seda ülesannet testida alles %d sekundit peale viimast testimist."
+
+msgid "Tests too frequent!"
+msgstr "Testimine on liiga sage!"
+
+msgid "Invalid test format!"
+msgstr "Vigane testi vorming!"
+
+#, fuzzy
+msgid "Cannot recognize test's language."
+msgstr "Testi programmeerimiskeele tuvastus ebaõnnestus."
+
+msgid "Invalid test!"
+msgstr "Vigane test!"
+
+msgid "Test too big!"
+msgstr "Test on liiga suur!"
+
+msgid "Input too big!"
+msgstr "Sisend on liiga suur!"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "Sisendfaili suurus võib olla kuni %d baiti."
+
+msgid "Test storage failed!"
+msgstr "Testi salvestamine ebaõnnestus!"
+
+msgid "Test received"
+msgstr "Test vastuvõetud"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Test on vastuvõetud ja see käivitatakse."
+
+msgid "Executing..."
+msgstr "Testimine..."
+
+msgid "Executed"
+msgstr "Käivitatud"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f s"
+
+#, fuzzy
+msgid "Too many print jobs!"
+msgstr "Liiga palju teste!"
+
+#, fuzzy, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Rohkem kui %d korda seda ülesande testida ei ole lubatud."
+
+#, fuzzy
+msgid "Invalid format!"
+msgstr "Vigane testi vorming!"
+
+#, fuzzy
+msgid "File too big!"
+msgstr "Test on liiga suur!"
+
+#, fuzzy, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Iga lähteteksti fail võib olla ülimalt %d baiti pikk."
+
+#, fuzzy
+msgid "Print job storage failed!"
+msgstr "Testi salvestamine ebaõnnestus!"
+
+#, fuzzy
+msgid "Print job received"
+msgstr "Test vastuvõetud"
+
+#, fuzzy
+msgid "Your print job has been received."
+msgstr "Teie trükkimispäring oli edukalt saadetud."
+
+msgid "%Y-%m-%d"
+msgstr "%Y-%m-%d"
+
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+msgid "%Y-%m-%d %H:%M:%S"
+msgstr "%Y-%m-%d %H:%M:%S"
+
+msgid "loading..."
+msgstr "laadimine..."
+
+#, python-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekund"
+msgstr[1] "%d sekundit"
+
+#, python-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minut"
+msgstr[1] "%d minutit"
+
+#, python-format
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d tund"
+msgstr[1] "%d tundi"
+
+#, python-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d päev"
+msgstr[1] "%d päeva"
+
+#, python-format
+msgid "%s and %s"
+msgstr "%s ja %s"
+
+#, python-format
+msgid "more than %s"
+msgstr "rohkem kui %s"
+
+msgid "contest-token"
+msgstr "võistluse pilet"
+
+#, fuzzy
+msgid "contest-tokens"
+msgstr "võistluse pileteid"
+
+msgid "task-token"
+msgstr "ülesande pilet"
+
+#, fuzzy
+msgid "task-tokens"
+msgstr "ülesande pileteid"
+
+msgid "token"
+msgstr "pilet"
+
+#, fuzzy
+msgid "tokens"
+msgstr "pileteid"
+
+#, fuzzy, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "Selle ülesande jaoks pole Teil olemas %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "Teil on lõpmata palju %(type_pl)s selle ülesande jaoks."
+
+#, fuzzy, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "Sul ei ole alguses %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "You start with one %(type_s)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
+msgstr[0] "Sul on alguses üks %(type_s)s."
+msgstr[1] "Sul on alguses %(gen_initial)d %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_interval)g minutes "
+msgstr[0] "Iga minut"
+msgstr[1] "Iga %(gen_interval)g minutit "
+
+#, fuzzy, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "tekib veel üks %(type_s)s, "
+msgstr[1] "tekib %(gen_number)d %(type_pl)s,"
+
+#, fuzzy, python-format
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
+msgstr[0] "kuni maksimaalselt on üks %(type_s)s."
+msgstr[1] "kuni maksimaalselt on %(gen_max)d %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "tekib üks %(type_s)s."
+msgstr[1] "tekib veel %(gen_number)d %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Te ei saa rohkem %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
+msgstr[0] "Üks %(type_s)s saab olla kasutatud iga sekund."
+msgstr[1] "Üks %(type_s)s saab olla kasutatud iga %(min_interval)g sekundit "
+
+#, fuzzy, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "kuid mitte rohkem kui üks %(type_s)s kokku."
+msgstr[1] "kuid mitte rohkem kui %(max_number)d %(type_pl)s kokku."
+
+#, fuzzy, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "Üks %(type_s)s saab olla kasutatud iga sekund."
+msgstr[1] "Üks %(type_s)s saab olla kasutatud iga %(min_interval)g sekundit."
+
+#, fuzzy, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "Maksimaalselt üks %(type_s)s saab olla kasutatud."
+msgstr[1] "Maksimaalselt saab kasutada %(max_number)d %(type_pl)s."
+
+#, fuzzy
+msgid "You have no limitations on how you use them."
+msgstr "Teil pole piiranguid nende kasutamisele."
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "Automaatne (%s)"
+
+#, python-format
+msgid ""
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
+msgstr ""
+"Sisselogitud kasutaja: <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
+
+msgid "Logout"
+msgstr "Logi välja"
+
+msgid "Failed to log in."
+msgstr "Sisselogimine ebaõnnestus."
+
+msgid "Welcome"
+msgstr "Teretulemast"
+
+msgid "Please log in"
+msgstr "Palun logi sisse"
+
+msgid "Username"
+msgstr "Kasutajatunnus"
+
+msgid "Password"
+msgstr "Parool"
+
+msgid "Login"
+msgstr "Logi sisse"
+
+msgid "Reset"
+msgstr "Lähtesta"
+
+msgid "New message"
+msgstr "Uus sõnum"
+
+msgid "New announcement"
+msgstr "Uus teavitus"
+
+msgid "New answer"
+msgstr "Uus vastus"
+
+#, python-format
+msgid "%d unread"
+msgstr "%d lugemata"
+
+msgid "Until contest starts:"
+msgstr "Võistluse algus on:"
+
+msgid "Until contest ends:"
+msgstr "Võislus lõpp on"
+
+msgid "Time left:"
+msgstr "Aega jäänud:"
+
+msgid "Server time:"
+msgstr "Serveri kell:"
+
+msgid "Overview"
+msgstr "Ülevaade"
+
+msgid "Communication"
+msgstr "Teated"
+
+msgid "Statement"
+msgstr "Ülesande tekst"
+
+msgid "Submissions"
+msgstr "Esitatud lahendused"
+
+msgid "Documentation"
+msgstr "Dokumentatsioon"
+
+msgid "Testing"
+msgstr "Testimine"
+
+#, fuzzy
+msgid "Printing"
+msgstr "Trükkimine"
+
+msgid "Contest Management System"
+msgstr "Võistluste Korraldamise Süsteem"
+
+msgid "is released under the"
+msgstr "kasutamine on lubatud vastavalt "
+
+msgid "GNU Affero General Public License"
+msgstr ""
+
+msgid "Announcements"
+msgstr "Teavitused"
+
+msgid "(no subject)"
+msgstr "(teemat ei ole)"
+
+msgid "Questions"
+msgstr "Küsimused"
+
+msgid "Subject"
+msgstr "Teema"
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Ask question"
+msgstr "Esita küsimus"
+
+msgid "no answer yet"
+msgstr "küsimusele pole veel vastatud"
+
+msgid "Messages"
+msgstr "Sõnumid"
+
+msgid "Standard Template Library"
+msgstr "Standard Template Library"
+
+#, fuzzy, python-format
+msgid "Error %d"
+msgstr "Viga %d"
+
+#, fuzzy
+msgid "An error occured while the server was handling your request."
+msgstr "Päringutöötlemise käigus esines viga."
+
+#, fuzzy
+msgid ""
+"Note that attempts to tamper with Contest Management System (such as probing "
+"the server with customized URLs) may be considered cheating and may lead to "
+"disqualification."
+msgstr ""
+"Pange tähele, et Võistluste Korraldamise Süsteemi ebaotstarbeline kasutus "
+"(nagu näiteks moonutatud URL-ide katsetamine) võib olla interpreteeritud kui "
+"sohki tegemise katse, ning kaasa tuua diskvalifikatsiooni."
+
+#, fuzzy
+msgid ""
+"If you encountered this error during normal usage, please notify the contest "
+"administrators."
+msgstr ""
+"Kui te avastasite selle vea normaalse kasutuse käigus, palun teatage "
+"võistluse administraatoreid."
+
+msgid "General information"
+msgstr "Üldinfo"
+
+msgid "The contest hasn't started yet."
+msgstr "Võistlus ei ole veel alanud."
+
+#, python-format
+msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "Võistluse algus on %(start_time)s, ja lõpp %(stop_time)s."
+
+msgid "The contest is currently running."
+msgstr "Võistlus käib."
+
+#, python-format
+msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
+msgstr "Võistlus algas %(start_time)s ja lõpp on %(stop_time)s."
+
+msgid "The contest has already ended."
+msgstr "Võistlus on juba lõppenud."
+
+#, python-format
+msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr "Võistluse algus %(start_time)s, lõpp %(stop_time)s."
+
+msgid "You have an infinite number of tokens."
+msgstr "Sul on lõpmatu arv pileteid."
+
+#, fuzzy
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr ""
+"Te saate lahenduse detailsed tulemused näha, rakendades sellele piletit."
+
+#, fuzzy
+msgid ""
+"Your score for each task will be the maximum among the tokened submissions "
+"and the last one."
+msgstr ""
+"Ülesande punktide arvu loetakse kui maksimumi Teie viimasest lahendusest "
+"ning kõigi kasutatud piletitega lahenduste vahel."
+
+#, fuzzy
+msgid "You have a distinct set of tokens for each task."
+msgstr "Teil on iga ülesande jaoks eraldi komplekt pileteid."
+
+#, fuzzy, python-format
+msgid ""
+"You can find the rules for the %(type_pl)s on each task's description page."
+msgstr ""
+"Te saate teada milliste reeglite järgi saab kasutada %(type_pl)s iga "
+"ülesande kirjelduse lehel."
+
+#, fuzzy
+msgid "You have a set of tokens shared among all tasks."
+msgstr ""
+"Teil on ainult üks komplekt pileteid kasutuseks kõigi ülesannete jaoks."
+
+#, fuzzy
+msgid ""
+"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
+"all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr ""
+"Teil on kaks tüüpi pileteid: hulk <em>võistluse pileteid</em>, jagatud kõigi "
+"ülesannete vahel, ning eraldi hulk <em>ülesande pileteid</em> iga ülesande "
+"jaoks."
+
+#, fuzzy
+msgid ""
+"You can see the detailed result of a submission by using two tokens on it, "
+"one of each type."
+msgstr ""
+"Te saate lahenduse detailsed tulemused näha, kui rakendate selle peal kaks "
+"piletit, iga tüüpi ühte."
+
+#, fuzzy, python-format
+msgid ""
+"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
+"time frame of %(per_user_time)s."
+msgstr ""
+"Iga kasutaja saab võistelda (s.t. lahendusi esitada) %(per_user_time)s "
+"jooksul."
+
+#, fuzzy
+msgid "As soon as the contest starts you can choose to start your time frame."
+msgstr ""
+"Niipea kui võistlus algab, saate valida millal alustate Teie lahendamise "
+"perioodi."
+
+#, fuzzy
+msgid ""
+"Once you start, you can submit solutions until the end of the time frame or "
+"until the end of the contest, whatever comes first."
+msgstr ""
+"Alustades, saate esitada lahendusi kuni teie ajaperiood otsa saab või kui "
+"võistlus lõpeb, misiganes juhtub esimesena."
+
+#, fuzzy
+msgid "By clicking on the button below you can start your time frame."
+msgstr "Klikkides alltoodud nuppu, saate alustada teie ajaperioodi."
+
+#, fuzzy, python-format
+msgid "You started your time frame at %(start_time)s."
+msgstr "Te alustasite Teie ajaperioodi kell %(start_time)s."
+
+#, fuzzy
+msgid ""
+"You can submit solutions until the end of the time frame or until the end of "
+"the contest, whatever comes first."
+msgstr ""
+"Saate esitada lahendusi kuni teie ajaperiood otsa saab või kui võistlus "
+"lõpeb, misiganes juhtub esimesena."
+
+#, fuzzy, python-format
+msgid ""
+"You started your time frame at %(start_time)s and you already finished it."
+msgstr "Teie ajaperiood algas kell %(start_time)s ning on juba lõppenud."
+
+#, fuzzy
+msgid "There's nothing you can do now."
+msgstr "Te ei saa enam midagi teha."
+
+#, fuzzy
+msgid "You never started your time frame. Now it's too late."
+msgstr "Te ei ole alustanud Teie ajaperioodi, nüüd on selleks liiga hilja."
+
+msgid "Start!"
+msgstr "Start!"
+
+msgid "Task overview"
+msgstr "Ülesande info"
+
+msgid "Task"
+msgstr "Ülesanne"
+
+msgid "Name"
+msgstr "Nimi"
+
+msgid "Time limit"
+msgstr "Ajalimiit"
+
+msgid "Memory limit"
+msgstr "Mälulimiit"
+
+msgid "Type"
+msgstr "Tüübid"
+
+msgid "Files"
+msgstr "Failid"
+
+msgid "Tokens"
+msgstr "Piletid"
+
+#, python-format
+msgid "%(seconds)g second"
+msgstr "%(seconds)g s"
+
+#, python-format
+msgid "%(seconds)g seconds"
+msgstr "%(seconds)g s"
+
+#, python-format
+msgid "%(mb)d MiB"
+msgstr "%(mb)d MiB"
+
+msgid "Yes"
+msgstr "Jah"
+
+msgid "No"
+msgstr "Ei"
+
+#, fuzzy
+msgid "Print"
+msgstr "Trüki"
+
+#, fuzzy, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text or PDF files of up to "
+"%(max_pages)d pages each."
+msgstr ""
+"Te võite trükkida veel %(remaining_jobs)d teksti või PDF faili, igaüks kuni "
+"%(max_pages)d lehekülge pikk."
+
+#, fuzzy, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"pages each."
+msgstr ""
+"Te võite trükkida veel %(remaining_jobs)d tekstifaili, igaüks kuni "
+"%(max_pages)d lehekülge pikk."
+
+#, fuzzy
+msgid "File (text or PDF)"
+msgstr "Fail (tekst või PDF)"
+
+#, fuzzy
+msgid "File (text)"
+msgstr "Fail (tekst)"
+
+msgid "Submit"
+msgstr "Esita"
+
+#, fuzzy
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr ""
+"Te ei saa rohkem trükkida, kuna kasutasite ära teile lubatud trükkimiskogust."
+
+#, fuzzy
+msgid "Previous print jobs"
+msgstr "Eelmised testid"
+
+msgid "Date and time"
+msgstr "Kuupäev ja kellaaeg"
+
+msgid "Time"
+msgstr "Aeg"
+
+#, fuzzy
+msgid "File name"
+msgstr "Faili nimi"
+
+msgid "Status"
+msgstr "Olek"
+
+#, fuzzy
+msgid "no print jobs yet"
+msgstr "teste ei ole"
+
+#, fuzzy
+msgid "Preparing..."
+msgstr "Punktide andmine..."
+
+msgid "Compilation output"
+msgstr "Kompilaatori väljund"
+
+msgid "Compilation outcome:"
+msgstr "Kompileerimise tulemus:"
+
+msgid "Compilation time:"
+msgstr "Kompileerimise aeg:"
+
+msgid "Memory used:"
+msgstr "Mälukasutus:"
+
+msgid "Standard output"
+msgstr "Standardväljund"
+
+msgid "Standard error"
+msgstr "Veaväljund"
+
+#, fuzzy
+msgid "None"
+msgstr "Puudub"
+
+msgid "Download"
+msgstr "Allalaadimine"
+
+#, fuzzy
+msgid "Played"
+msgstr "Kasutatud"
+
+#, fuzzy
+msgid "Play!"
+msgstr "Kasuta!"
+
+msgid "Wait..."
+msgstr "Oota..."
+
+msgid "No tokens"
+msgstr "Pileteid pole"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>kirjeldus</small>"
+
+msgid "no statement available"
+msgstr "ülesande teksti pole"
+
+msgid "Download task statement"
+msgstr "Laadi ülesande tekst"
+
+msgid ""
+"The statement for this task is available in multiple versions, in different "
+"languages."
+msgstr ""
+"Selle ülesande tekstist on saadaval mitu versiooni, erinevates keeltes."
+
+#, fuzzy
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "Te võite neid näha (ja maha laadida) kasutades nimekirja paremal."
+
+#, fuzzy
+msgid "Some suggested translations follow."
+msgstr "Mõned soovitatud tõlked järgnevad."
+
+#, fuzzy, python-format
+msgid "Statement in <b>%s</b>"
+msgstr "Ülesande tekst, <b>%s</b>"
+
+#, fuzzy, python-format
+msgid "Statement in %s"
+msgstr "Ülesande tekst, %s"
+
+#, python-format
+msgid "<b>%s</b>"
+msgstr "<b>%s</b>"
+
+#, python-format
+msgid "%s"
+msgstr "%s"
+
+msgid "Some details"
+msgstr "Üksikasjad"
+
+msgid "Compilation commands"
+msgstr "Kompileerimise käsurida"
+
+#, fuzzy, python-format
+msgid ""
+"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"\">contest overview page</a>."
+msgstr ""
+"<a href=\"%(url_root)s/\">Võistluse ülevaade lehel</a> leiate reegleid, "
+"mille järgi saab kasutada %(type_pl)s."
+
+#, fuzzy
+msgid ""
+"Remeber that to see the detailed result of a submission you need to use both "
+"a contest-token and a task-token."
+msgstr ""
+"Pane tähele, et esitatud lahenduse tulemuste detailvaate nägemiseks pead "
+"kasutama ühe võistluspileti ja ühe ülesandepileti."
+
+msgid "Attachments"
+msgstr "Manused"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>submissions</small>"
+msgstr "%(name)s (%(short_name)s) <small>esitatud lahendused</small>"
+
+msgid "Submit a solution"
+msgstr "Esita lahendus"
+
+msgid "submission.zip"
+msgstr "lahendus.zip"
+
+msgid "Previous submissions"
+msgstr "Eelmised esitatud lahendused"
+
+msgid "Right now, you have infinite tokens available on this task."
+msgstr ""
+"Praegu on sul selle ülesande lahenduste esitamiseks piiramatult pileteid."
+
+msgid "Right now, you have one token available on this task."
+msgstr "Praegu on sul selle ülesande lahenduste esitamiseks üks pilet."
+
+#, python-format
+msgid "Right now, you have %(tokens)s tokens available on this task."
+msgstr "Praegu on sul selle ülesande lahenduste esitamiseks %(tokens)s pilet."
+
+#, python-format
+msgid "But you have to wait until %(expiration_time)s to use them."
+msgstr "Sa pead ootama kuni %(expiration_time)s et neid kasutada."
+
+#, python-format
+msgid "You will receive a new token at %(gen_time)s."
+msgstr "Sa saad uue pileti kell: %(gen_time)s."
+
+msgid "In the current situation, no more tokens will be generated."
+msgstr "Praeguses olukorras uusi pileteid ei anta."
+
+msgid "Right now, you do not have tokens available for this task."
+msgstr "Praegu pole sul selle ülesande esitamiseks pileteid."
+
+#, python-format
+msgid "But you will have to wait until %(expiration_time)s to use it."
+msgstr "Sa pead ootama kuni %(expiration_time)s, et seda kasutada."
+
+msgid "Public score"
+msgstr "Avalikud punktid"
+
+msgid "Total score"
+msgstr "Punktid kokku"
+
+msgid "Score"
+msgstr "Punktid"
+
+msgid "Token"
+msgstr "Pilet"
+
+msgid "no submissions yet"
+msgstr "lahendusi pole veel esitatud"
+
+msgid "Submission details"
+msgstr "Esitatud lahenduse andmed"
+
+msgid "Close"
+msgstr "Sulge"
+
+msgid "Submit a test"
+msgstr "Sisesta test"
+
+msgid "input"
+msgstr "sisend"
+
+msgid "Previous tests"
+msgstr "Eelmised testid"
+
+msgid "Input"
+msgstr "Sisend"
+
+msgid "Output"
+msgstr "Väljund"
+
+msgid "no tests yet"
+msgstr "teste ei ole"
+
+msgid "Test details"
+msgstr "Testi andmed"
+
+msgid "Evaluation outcome"
+msgstr "Testimise tulemus"
