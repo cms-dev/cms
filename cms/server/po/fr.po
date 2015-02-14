@@ -1,6 +1,6 @@
-# French translations for PACKAGE package.
-# Copyright (C) 2014 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# French translations for CMS.
+# Copyright © 2010-2015 CMS authors
+# This file is distributed under the same license as CMS.
 # Damien Leroy <damien.leroy@be-oi.be>, 2014.
 #
 msgid ""

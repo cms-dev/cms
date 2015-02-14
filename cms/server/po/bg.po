@@ -1,6 +1,6 @@
-# Bulgarian translations for PACKAGE package.
-# Copyright (C) 2015 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Bulgarian translations for CMS.
+# Copyright © 2010-2015 CMS authors
+# This file is distributed under the same license as CMS.
 # Hristo Stoyanov <htstoyanov@gmail.com>, 2015.
 #
 msgid ""

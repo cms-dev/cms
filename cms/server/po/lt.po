@@ -1,6 +1,6 @@
-# Lithuanian translations for PACKAGE package.
-# Copyright (C) 2012 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Lithuanian translations for CMS.
+# Copyright © 2010-2015 CMS authors
+# This file is distributed under the same license as CMS.
 # Martynas Budriūnas <martynas.budriunas@gmail.com>, 2012.
 # Vytis Banaitis <vytis.banaitis@gmail.com>, 2014.
 # Motiejus Jakštys <desired.mta@gmail.com>, 2015.
