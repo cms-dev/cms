@@ -189,7 +189,7 @@ var Scoreboard = new function () {
             }
 
             result += " \
-    <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + contest["name"] + "</th>";
+    <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"><abbr title=\"" + contest["name"]+"\">" + contest["name"] + "</abbr></th>";
         }
 
         result += " \
