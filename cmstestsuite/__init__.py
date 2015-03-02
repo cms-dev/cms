@@ -394,7 +394,7 @@ def get_users(contest_id):
       'username' => { 'id': ..., 'firstname': ..., 'lastname': ... }
 
     '''
-    r = admin_req('/users')
+    r = admin_req('/contest/' + str(contest_id) + '/users')
     groups = re.findall(r'''
         <tr> \s*
         <td> \s* (.*) \s* </td> \s*
@@ -415,7 +415,7 @@ def get_users(contest_id):
 
 
 def add_contest(**kwargs):
-    resp = admin_req('/contest/add', multipart_post=True, args=kwargs)
+    resp = admin_req('/contests/new', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
@@ -439,9 +439,17 @@ def add_task(**kwargs):
     if g:
         task_id = int(g.group(1))
         created_tasks[task_id] = kwargs
-        return task_id
     else:
         raise FrameworkException("Unable to create task.")
+
+    r = admin_req('/contest/' + kwargs["contest_id"] + '/tasks/add',
+                  multipart_post=True,
+                  args={"task_id": str(task_id)})
+    g = re.search('<input type="radio" name="task_id" value="' + str(task_id) + '"/>', r.read())
+    if g:
+        return task_id
+    else:
+        raise FrameworkException("Unable to assign task to contest.")
 
 
 def add_manager(task_id, manager):
@@ -486,12 +494,19 @@ def add_user(**kwargs):
     if g:
         user_id = int(g.group(1))
         created_users[user_id] = kwargs
-        return user_id
     else:
         raise FrameworkException("Unable to create user.")
 
+    kwargs["user_id"] = user_id
+    r = admin_req('/contest/' + kwargs["contest_id"] + '/users/add', args=kwargs)
+    g = re.search('<input type="radio" name="user_id" value="' + str(user_id) + '"/>', r.read())
+    if g:
+        return user_id
+    else:
+        raise FrameworkException("Unable to create participation.")
 
-def add_existing_task(contest_id, task_id, **kwargs):
+
+def add_existing_task(task_id, **kwargs):
     '''Add information about an existing task to our database so that we can
     use it for submitting later.'''
     created_tasks[task_id] = kwargs
