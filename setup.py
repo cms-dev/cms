@@ -155,8 +155,8 @@ def do_setup():
                   "cmsImporter=cmscontrib.Importer:main",
                   "cmsReimporter=cmscontrib.Reimporter:main",
                   "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
-                  "cmsContestExporter=cmscontrib.ContestExporter:main",
-                  "cmsContestImporter=cmscontrib.ContestImporter:main",
+                  "cmsDumpExporter=cmscontrib.DumpExporter:main",
+                  "cmsDumpImporter=cmscontrib.DumpImporter:main",
                   "cmsDumpUpdater=cmscontrib.DumpUpdater:main",
                   "cmsRWSHelper=cmscontrib.RWSHelper:main",
 
