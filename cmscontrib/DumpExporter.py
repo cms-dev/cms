@@ -6,6 +6,7 @@
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,9 +21,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This service exports every data about the contest that CMS
-knows. The process of exporting and importing again should be
-idempotent.
+"""This service exports every data that CMS knows. The process of
+exporting and importing again should be idempotent.
 
 """
 
@@ -48,7 +48,7 @@ from sqlalchemy.types import \
 
 from cms import utf8_decoder
 from cms.db import version as model_version
-from cms.db import SessionGen, Contest, ask_for_contest, \
+from cms.db import SessionGen, Contest, User, Task, \
     Submission, UserTest, SubmissionResult, UserTestResult, \
     RepeatedUnicode
 from cms.db.filecacher import FileCacher
@@ -57,6 +57,7 @@ from cms.io.GeventUtils import rmtree
 from cmscontrib import sha1sum
 from cmscommon.datetime import make_timestamp
 
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -104,18 +105,32 @@ def get_archive_info(file_name):
     return ret
 
 
-class ContestExporter(object):
+class DumpExporter(object):
 
-    """This service exports every data about the contest that CMS
-    knows. The process of exporting and importing again should be
-    idempotent.
+    """This service exports every data that CMS knows. The process of
+    exporting and importing again should be idempotent.
 
     """
 
-    def __init__(self, contest_id, export_target,
+    def __init__(self, contest_ids, export_target,
                  dump_files, dump_model, skip_generated,
                  skip_submissions, skip_user_tests):
-        self.contest_id = contest_id
+        if contest_ids is None:
+            with SessionGen() as session:
+                contests = session.query(Contest).all()
+                self.contests_ids = [contest.id for contest in contests]
+                users = session.query(User).all()
+                self.users_ids = [user.id for user in users]
+                tasks = session.query(Task)\
+                    .filter(Task.contest is None).all()
+                self.tasks_ids = [task.id for task in tasks]
+        else:
+            # FIXME: this is ATM broken, because if you export a contest, you
+            # then export the users who participated in it and then all of the
+            # contests those users participated in.
+            self.contests_ids = contest_ids
+            self.users_ids = []
+            self.tasks_ids = []
         self.dump_files = dump_files
         self.dump_model = dump_model
         self.skip_generated = skip_generated
@@ -125,23 +140,14 @@ class ContestExporter(object):
 
         # If target is not provided, we use the contest's name.
         if export_target == "":
-            with SessionGen() as session:
-                contest = Contest.get_from_id(self.contest_id, session)
-                if contest is None:
-                    logger.critical("Please specify a valid contest id.")
-                    self.contest_id = None
-                else:
-                    self.export_target = "dump_%s.tar.gz" % contest.name
-                    logger.warning("export_target not given, using \"%s\"",
-                                   self.export_target)
+            self.export_target = "dump_%s.tar.gz" % date.today().isoformat()
+            logger.warning("export_target not given, using \"%s\"",
+                           self.export_target)
 
         self.file_cacher = FileCacher()
 
     def do_export(self):
         """Run the actual export code."""
-        if self.contest_id is None:
-            return
-
         logger.info("Starting export.")
 
         export_dir = self.export_target
@@ -170,38 +176,47 @@ class ContestExporter(object):
         os.mkdir(descr_dir)
 
         with SessionGen() as session:
-
-            contest = Contest.get_from_id(self.contest_id, session)
-
             # Export files.
+            logger.info("Exporting files.")
             if self.dump_files:
-                logger.info("Exporting files.")
-                files = contest.enumerate_files(self.skip_submissions,
-                                                self.skip_user_tests,
-                                                self.skip_generated)
-                for file_ in files:
-                    if not self.safe_get_file(file_,
-                                              os.path.join(files_dir, file_),
-                                              os.path.join(descr_dir, file_)):
-                        return False
+                for contest_id in self.contests_ids:
+                    contest = Contest.get_from_id(contest_id, session)
+                    files = contest.enumerate_files(self.skip_submissions,
+                                                    self.skip_user_tests,
+                                                    self.skip_generated)
+                    for file_ in files:
+                        if not self.safe_get_file(file_,
+                                                  os.path.join(files_dir,
+                                                               file_),
+                                                  os.path.join(descr_dir,
+                                                               file_)):
+                            return False
 
-            # Export the contest in JSON format.
+            # Export data in JSON format.
             if self.dump_model:
-                logger.info("Exporting the contest to a JSON file.")
+                logger.info("Exporting data to a JSON file.")
 
                 # We use strings because they'll be the keys of a JSON
-                # object; the contest will have ID 0.
-                self.ids = {contest.sa_identity_key: "0"}
-                self.queue = [contest]
+                # object
+                self.ids = {}
+                self.queue = []
 
                 data = dict()
+
+                for cls, lst in [(Contest, self.contests_ids),
+                                 (User, self.users_ids),
+                                 (Task, self.tasks_ids)]:
+                    for i in lst:
+                        obj = cls.get_from_id(i, session)
+                        self.get_id(obj)
+
+                # Specify the "root" of the data graph
+                data["_objects"] = self.ids.values()
+
                 while len(self.queue) > 0:
                     obj = self.queue.pop(0)
                     data[self.ids[obj.sa_identity_key]] = \
                         self.export_object(obj)
-
-                # Specify the "root" of the data graph
-                data["_objects"] = ["0"]
 
                 data["_version"] = model_version
 
@@ -354,9 +369,9 @@ class ContestExporter(object):
 
 def main():
     """Parse arguments and launch process."""
-    parser = argparse.ArgumentParser(description="Exporter of CMS contests.")
-    parser.add_argument("-c", "--contest-id", action="store", type=int,
-                        help="id of contest to export")
+    parser = argparse.ArgumentParser(description="Exporter of CMS data.")
+    parser.add_argument("-c", "--contest-ids", nargs="+", type=int,
+                        metavar="contest_id", help="id of contest to export")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-f", "--files", action="store_true",
                        help="only export files, ignore database structure")
@@ -375,16 +390,13 @@ def main():
 
     args = parser.parse_args()
 
-    if args.contest_id is None:
-        args.contest_id = ask_for_contest()
-
-    ContestExporter(contest_id=args.contest_id,
-                    export_target=args.export_target,
-                    dump_files=not args.no_files,
-                    dump_model=not args.files,
-                    skip_generated=args.no_generated,
-                    skip_submissions=args.no_submissions,
-                    skip_user_tests=args.no_user_tests).do_export()
+    DumpExporter(contest_ids=args.contest_ids,
+                 export_target=args.export_target,
+                 dump_files=not args.no_files,
+                 dump_model=not args.files,
+                 skip_generated=args.no_generated,
+                 skip_submissions=args.no_submissions,
+                 skip_user_tests=args.no_user_tests).do_export()
 
 
 if __name__ == "__main__":
