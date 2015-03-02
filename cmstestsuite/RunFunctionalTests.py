@@ -113,13 +113,14 @@ def create_or_get_user(contest_id):
         "password": "kamikaze",
         "first_name": "Ms. Test",
         "last_name": "Wabbit the %d%s" % (num_users, enumerify(num_users)),
+        "multipart_post": True,
     }
     if username in users:
         user_id = users[username]['id']
         add_existing_user(user_id, **user_create_args)
         info("Using existing user with id %d." % user_id)
     else:
-        user_id = add_user(**user_create_args)
+        user_id = add_user(contest_id=str(contest_id), **user_create_args)
         info("Created user with id %d." % user_id)
     return user_id
 
@@ -156,11 +157,11 @@ def get_task_id(contest_id, user_id, task_module):
         task = tasks[name]
         task_id = task['id']
         task_id_map[name] = (task_id, task_module)
-        add_existing_task(contest_id, task_id, **task_create_args)
+        add_existing_task(task_id, contest_id=str(contest_id), **task_create_args)
         return task_id
 
     # Otherwise, we need to add the task ourselves.
-    task_id = add_task(contest_id, **task_create_args)
+    task_id = add_task(contest_id=str(contest_id), **task_create_args)
 
     # add any managers
     code_path = os.path.join(
