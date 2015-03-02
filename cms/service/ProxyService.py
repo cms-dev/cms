@@ -327,7 +327,8 @@ class ProxyService(TriggeredService):
 
             users = dict()
 
-            for user in contest.users:
+            for participation in contest.participations:
+                user = participation.user
                 if not user.hidden:
                     users[encode_id(user.username)] = \
                         {"f_name": user.first_name,
