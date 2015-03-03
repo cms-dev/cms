@@ -34,7 +34,7 @@ class BaseLoader(object):
     """
 
     # Short name of this loader, meant to be a unique identifier.
-    name = None
+    short_name = None
 
     # Description of this loader, meant to be human readable.
     description = None
