@@ -253,7 +253,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 shutil.rmtree(tempdir)
 
         def test_src(exe, lang, assume=None):
-            print("Testing solution %s" % (exe))
+            print("Testing solution \033[1m%s\033[0m" % (exe[4:-5]))
             test_testcases(
                 base_dir,
                 exe,
@@ -420,7 +420,7 @@ def build_gen_list(base_dir, task_type):
         except OSError:
             pass
         for (is_copy, line, st) in testcases:
-            print("Generating input # %d" % (n), file=sys.stderr)
+            print("Generating \033[1minput # %d\033[0m" % (n), file=sys.stderr)
             new_input = os.path.join(input_dir, 'input%d.txt' % (n))
             if is_copy:
                 # Copy the file
@@ -438,24 +438,31 @@ def build_gen_list(base_dir, task_type):
                 command.append("%s" % st)
             call(base_dir, command)
             n += 1
+            for i in xrange(3):
+                print("\033[1A\033[K", end='', file=sys.stderr)
+                sys.stderr.flush()
+
 
     def make_output(n, assume=None):
         try:
             os.makedirs(output_dir)
         except OSError:
             pass
-        print("Generating output # %d" % (n), file=sys.stderr)
+        print("Generating \033[1moutput # %d\033[0m" % (n), file=sys.stderr)
         with io.open(os.path.join(input_dir,
                                   'input%d.txt' % (n)), 'rb') as fin:
             with io.open(os.path.join(output_dir,
                                       'output%d.txt' % (n)), 'wb') as fout:
                 if task_type != ['Communication', '']:
                     call(base_dir, [sol_exe], stdin=fin, stdout=fout)
-
+                    print("\033[1A\033[K", end='', file=sys.stderr)
+                    sys.stderr.flush()
                 # If the task of of type Communication, then there is
                 # nothing to put in the output files
                 else:
                     pass
+        print("\033[1A\033[K", end='', file=sys.stderr)
+        sys.stderr.flush()
 
     actions = []
     actions.append(([gen_src],

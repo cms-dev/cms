@@ -24,11 +24,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import atexit
 import json
 import os
 import sys
 
-from cmscontrib.YamlLoader import YamlLoader
+import cmscontrib.YamlLoader
 from cms.db import Executable
 from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
@@ -40,6 +41,16 @@ from cms.grading.tasktypes import get_task_type
 task = None
 file_cacher = None
 
+sols = []
+
+def print_at_exit():
+    if len(sols):
+        print()
+        print()
+    for s in sols:
+        print("\033[1m%30s\033[0m: %3d" % (s[0], s[1]))
+
+atexit.register(print_at_exit)
 
 def usage():
     print("""%s base_dir executable [assume]"
@@ -60,8 +71,15 @@ def mem_human(mem):
         return "%4.3gM" % (float(mem) / (2 ** 20))
     if mem > 2 ** 10:
         return "%4dK" % (mem / (2 ** 10))
-    return "%4d" % mem
+    return " %4d" % mem
 
+class NullLogger(object):
+    def __init__(self):
+        def p(*args):
+            pass
+        self.info = p
+        self.warning = p
+        self.critical = print
 
 def test_testcases(base_dir, soluzione, language, assume=None):
     global task, file_cacher
@@ -71,6 +89,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     if file_cacher is None:
         file_cacher = FileCacher(null=True)
 
+    cmscontrib.YamlLoader.logger = NullLogger()
     # Load the task
     # TODO - This implies copying a lot of data to the FileCacher,
     # which is annoying if you have to do it continuously; it would be
@@ -78,7 +97,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     # filesystem-based instead of database-based) and somehow detect
     # when the task has already been loaded
     if task is None:
-        loader = YamlLoader(
+        loader = cmscontrib.YamlLoader.YamlLoader(
             os.path.realpath(os.path.join(base_dir, "..")),
             file_cacher)
         # Normally we should import the contest before, but YamlLoader
@@ -111,7 +130,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     comments = []
     tcnames = []
     for jobinfo in sorted(jobs):
-        print(jobinfo[0], end='')
+        print("\r", jobinfo[0], end='', sep='')
         sys.stdout.flush()
         job = jobinfo[1]
         # Skip the testcase if we decide to consider everything to
@@ -126,10 +145,8 @@ def test_testcases(base_dir, soluzione, language, assume=None):
         last_status = status
         tasktype.evaluate(job, file_cacher)
         status = job.plus["exit_status"]
-        info.append("Time: %5.3f   Wall: %5.3f   Memory: %s" %
-                   (job.plus["execution_time"],
-                    job.plus["execution_wall_clock_time"],
-                    mem_human(job.plus["execution_memory"])))
+        info.append((job.plus["execution_time"],
+                    job.plus["execution_memory"]))
         points.append(float(job.outcome))
         comments.append(format_status_text(job.text))
         tcnames.append(jobinfo[0])
@@ -150,12 +167,67 @@ def test_testcases(base_dir, soluzione, language, assume=None):
             else:
                 ask_again = False
 
+    # Subtasks scoring
+    try:
+        subtasks = json.loads(dataset.score_type_parameters)
+        subtasks[0]
+    except:
+        subtasks = [[100, len(info)]]
+
+    if dataset.score_type == 'GroupMin':
+        scoreFun = min
+    else:
+        scoreFun = lambda x: sum(x)/len(x)
+
+    pos = 0;
+    sts = []
+    data = zip(tcnames, points, comments, info)
+
+    for i in subtasks:
+        stscores = []
+        stsdata = []
+        worst = [0, 0]
+        try:
+            for _ in xrange(i[1]):
+                stscores.append(points[pos])
+                stsdata.append((tcnames[pos], points[pos], comments[pos], info[pos]))
+                if info[pos][0] > worst[0]:
+                    worst[0] = info[pos][0]
+                if info[pos][1] > worst[1]:
+                    worst[1] = info[pos][1]
+                pos += 1
+            sts.append((scoreFun(stscores)*i[0], i[0], stsdata, worst))
+        except:
+            sts.append((0, i[0], stsdata, [0, 0]))
+
+
     # Result pretty printing
+    soluzione = soluzione[4:-5]
     print()
     clen = max(len(c) for c in comments)
-    ilen = max(len(i) for i in info)
-    for (i, p, c, b) in zip(tcnames, points, comments, info):
-        print("%s) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen)))
+    for st, d in enumerate(sts):
+        print("Subtask %d: %s%5.2f/%d\033[0m" % (
+            st+1,
+            '\033[1;31m' if abs(d[0]-d[1]) > 0.01 else '\033[1;32m',
+            d[0],
+            d[1]
+        ))
+        for (i, p, c, w) in d[2]:
+            print("%s) %s%5.2lf\033[0m --- %s [Time: %s%5.3f\033[0m Memory: %s%s\033[0m] \033[1000C\033[%dD\033[1m%s\033[0m" % (
+                i,
+                '\033[0;31m' if abs(p - 1) > 0.01 else '',
+                p,
+                c.ljust(clen),
+                '\033[0;34m' if w[0] >= 0.95 * d[3][0] else '',
+                w[0],
+                '\033[0;34m' if w[1] >= 0.95 * d[3][1] else '',
+                mem_human(w[1]),
+                len(soluzione),
+                soluzione
+            ))
+    print()
+
+    sols.append((soluzione, sum([st[0] for st in sts])))
 
     return zip(points, comments, info)
 
