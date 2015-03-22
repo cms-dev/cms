@@ -89,6 +89,17 @@ var Overview = new function () {
         $elem.mouseleave(function () {
             set.animate({"opacity": 0}, 1000);
         });
+
+
+        // Load initial data.
+        $.each(DataStore.users, function (u_id, user) {
+            if (user["selected"] > 0)
+            {
+                self.user_list.push(user);
+            }
+        });
+        self.user_list.sort(self.compare_users);
+        self.update_markers(0);
     };
 
 
@@ -351,7 +362,7 @@ var Overview = new function () {
 
         user["markers"] = set;
 
-        user["marker_c_anim"] = Raphael.animation({"opacity": 1}, 1000, function () {
+        user["marker_c_anim"] = Raphael.animation({"opacity": 1}, t, function () {
             delete user["marker_c_anim"];
         });
         set.animate(user["marker_c_anim"]);
@@ -376,7 +387,7 @@ var Overview = new function () {
     };
 
 
-    self.delete_marker = function (user) {
+    self.delete_marker = function (user, t) {
         var markers = user["markers"];
         delete user["markers"];
 
@@ -386,13 +397,13 @@ var Overview = new function () {
             delete user["marker_u_anim"];
         }
 
-        var anim = Raphael.animation({"opacity": 0}, 1000, function () {
+        var anim = Raphael.animation({"opacity": 0}, t, function () {
             markers.remove();
         });
         markers.animate(anim);
 
         self.user_list.splice($.inArray(user, self.user_list), 1);
-        self.update_markers(1000);
+        self.update_markers(t);
     };
 
 
@@ -513,7 +524,7 @@ var Overview = new function () {
 
         self.update_score_chart(1000);
 
-        if (user["selected"]) {
+        if (user["selected"] > 0) {
             self.user_list.sort(self.compare_users);
             self.update_markers(1000);
         }
@@ -521,7 +532,7 @@ var Overview = new function () {
 
 
     self.rank_handler = function (u_id, user, delta) {
-        if (user["selected"]) {
+        if (user["selected"] > 0) {
             self.update_markers(1000);
         }
     };
@@ -529,12 +540,12 @@ var Overview = new function () {
 
     self.select_handler = function (u_id, color) {
         var user = DataStore.users[u_id];
-        if (color) {
+        if (color > 0) {
             self.user_list.push(user);
             self.user_list.sort(self.compare_users);
             self.update_markers(1000);
         } else {
-            self.delete_marker(DataStore.users[u_id]);
+            self.delete_marker(DataStore.users[u_id], 1000);
         }
     };
 
