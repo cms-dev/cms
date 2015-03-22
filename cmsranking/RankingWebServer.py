@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -458,6 +458,13 @@ def main():
         else:
             print("Not removing directory %s." % config.lib_dir)
         return False
+
+    Contest.store.load_from_disk()
+    Task.store.load_from_disk()
+    Team.store.load_from_disk()
+    User.store.load_from_disk()
+    Submission.store.load_from_disk()
+    Subchange.store.load_from_disk()
 
     toplevel_handler = RoutingHandler(DataWatcher(), ImageHandler(
         os.path.join(config.lib_dir, '%(name)s'),

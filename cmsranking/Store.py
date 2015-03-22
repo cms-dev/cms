@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -72,6 +72,10 @@ class Store(object):
         self._update_callbacks = list()
         self._delete_callbacks = list()
 
+    def load_from_disk(self):
+        """Load the initial data for this store from the disk.
+
+        """
         try:
             os.mkdir(self._path)
         except OSError:
