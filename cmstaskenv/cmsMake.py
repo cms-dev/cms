@@ -35,6 +35,7 @@ import functools
 import shutil
 import tempfile
 import yaml
+import logging
 
 from cms import utf8_decoder
 from cms.grading import get_compilation_commands
@@ -221,6 +222,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(base_dir, command)
+                    print("\033[1A\033[K", end='', file=sys.stderr)
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -246,6 +248,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(tempdir, command)
+                    print("\033[1A\033[K", end='', file=sys.stderr)
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
@@ -316,10 +319,20 @@ def build_text_list(base_dir, task_type):
               '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
+    def make_dummy_pdf(assume=None):
+        try:
+            open(text_pdf, 'r')
+        except IOError:
+            logging.getLogger().warning("%s does not exist, creating an empty file..." % text_pdf)
+            open(text_pdf, 'w')
+
     actions = []
     if os.path.exists(text_tex):
         actions.append(([text_tex], [text_pdf, text_aux, text_log],
                         make_pdf, 'compile to PDF'))
+    else:
+        actions.append(([TEXT_DIRNAME], [text_pdf], make_dummy_pdf,
+                        "create empty PDF file"))
     return actions
 
 
@@ -701,6 +714,7 @@ def main():
 
     elif options.all:
         print("Making all targets")
+        print()
         try:
             execute_multiple_targets(base_dir, exec_tree,
                                      generated_list, debug=options.debug,
