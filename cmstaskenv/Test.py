@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2013 Luca Versari <veluca93@gmail.com>
+# Copyright © 2013-2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -28,6 +28,7 @@ import atexit
 import json
 import os
 import sys
+import logging
 
 import cmscontrib.YamlLoader
 from cms.db import Executable
@@ -35,22 +36,17 @@ from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
+from cmstaskenv.Terminal import move_cursor, print_with_color, \
+    colors, directions
 
 
 # TODO - Use a context object instead of global variables
 task = None
 file_cacher = None
+tested_something = False
 
 sols = []
 
-def print_at_exit():
-    if len(sols):
-        print()
-        print()
-    for s in sols:
-        print("\033[1m%30s\033[0m: %3d" % (s[0], s[1]))
-
-atexit.register(print_at_exit)
 
 def usage():
     print("""%s base_dir executable [assume]"
@@ -71,7 +67,8 @@ def mem_human(mem):
         return "%4.3gM" % (float(mem) / (2 ** 20))
     if mem > 2 ** 10:
         return "%4dK" % (mem / (2 ** 10))
-    return " %4d" % mem
+    return "%4d" % mem
+
 
 class NullLogger(object):
     def __init__(self):
@@ -80,6 +77,17 @@ class NullLogger(object):
         self.info = p
         self.warning = p
         self.critical = print
+
+
+def print_at_exit():
+    print()
+    print()
+    for s in sols:
+        print_with_color("%30s:" % s[0], colors.BLACK, end=" ", bold=True)
+        print("%3d" % s[1])
+
+logger = logging.getLogger()
+
 
 def test_testcases(base_dir, soluzione, language, assume=None):
     global task, file_cacher
@@ -130,7 +138,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     comments = []
     tcnames = []
     for jobinfo in sorted(jobs):
-        print("\r", jobinfo[0], end='', sep='')
+        print(jobinfo[0])
         sys.stdout.flush()
         job = jobinfo[1]
         # Skip the testcase if we decide to consider everything to
@@ -139,6 +147,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
             info.append("Time limit exceeded")
             points.append(0.0)
             comments.append("Timeout.")
+            move_cursor(directions.UP, erase=True)
             continue
 
         # Evaluate testcase
@@ -154,7 +163,6 @@ def test_testcases(base_dir, soluzione, language, assume=None):
         # If we saw two consecutive timeouts, ask wether we want to
         # consider everything to timeout
         if ask_again and status == "timeout" and last_status == "timeout":
-            print()
             print("Want to stop and consider everything to timeout? [y/N]",
                   end='')
             if assume is not None:
@@ -166,6 +174,8 @@ def test_testcases(base_dir, soluzione, language, assume=None):
                 stop = True
             else:
                 ask_again = False
+            print()
+        move_cursor(directions.UP, erase=True)
 
     # Subtasks scoring
     try:
@@ -177,12 +187,18 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     if dataset.score_type == 'GroupMin':
         scoreFun = min
     else:
-        scoreFun = lambda x: sum(x)/len(x)
+        if dataset.score_type != 'Sum':
+            logger.warning("Score type %s not yet supported! Using Sum"
+                           % dataset.score_type)
 
-    pos = 0;
+        def scoreFun(x):
+            return sum(x)/len(x)
+
+    pos = 0
     sts = []
-    data = zip(tcnames, points, comments, info)
 
+    # For each subtask generate a list of testcase it owns, the score gained
+    # and the highest time and memory usage.
     for i in subtasks:
         stscores = []
         stsdata = []
@@ -190,7 +206,8 @@ def test_testcases(base_dir, soluzione, language, assume=None):
         try:
             for _ in xrange(i[1]):
                 stscores.append(points[pos])
-                stsdata.append((tcnames[pos], points[pos], comments[pos], info[pos]))
+                stsdata.append((tcnames[pos], points[pos],
+                                comments[pos], info[pos]))
                 if info[pos][0] > worst[0]:
                     worst[0] = info[pos][0]
                 if info[pos][1] > worst[1]:
@@ -200,34 +217,48 @@ def test_testcases(base_dir, soluzione, language, assume=None):
         except:
             sts.append((0, i[0], stsdata, [0, 0]))
 
-
     # Result pretty printing
+    # Strips sol/ and _EVAL from the solution's name
     soluzione = soluzione[4:-5]
     print()
     clen = max(len(c) for c in comments)
     for st, d in enumerate(sts):
-        print("Subtask %d: %s%5.2f/%d\033[0m" % (
-            st+1,
-            '\033[1;31m' if abs(d[0]-d[1]) > 0.01 else '\033[1;32m',
-            d[0],
-            d[1]
-        ))
+        print("Subtask %d:" % st, end=" ")
+        print_with_color(
+            "%5.2f/%d" % (d[0], d[1]),
+            colors.RED if abs(d[0]-d[1]) > 0.01 else colors.GREEN,
+            bold=True
+        )
         for (i, p, c, w) in d[2]:
-            print("%s) %s%5.2lf\033[0m --- %s [Time: %s%5.3f\033[0m Memory: %s%s\033[0m] \033[1000C\033[%dD\033[1m%s\033[0m" % (
-                i,
-                '\033[0;31m' if abs(p - 1) > 0.01 else '',
-                p,
-                c.ljust(clen),
-                '\033[0;34m' if w[0] >= 0.95 * d[3][0] else '',
-                w[0],
-                '\033[0;34m' if w[1] >= 0.95 * d[3][1] else '',
-                mem_human(w[1]),
-                len(soluzione),
-                soluzione
-            ))
+            print("%s)" % i, end=' ')
+            print_with_color(
+                "%5.2lf" % p,
+                colors.RED if abs(p - 1) > 0.01 else colors.BLACK,
+                end=" "
+            )
+            print("--- %s [Time:" % c.ljust(clen), end=" ")
+            print_with_color(
+                "%5.3f" % w[0],
+                colors.BLUE if w[0] >= 0.95 * d[3][0] else colors.BLACK,
+                end=" "
+            )
+            print("Memory:", end=" ")
+            print_with_color(
+                "%5s" % mem_human(w[1]),
+                colors.BLUE if w[1] >= 0.95 * d[3][1] else colors.BLACK,
+                end="]"
+            )
+            move_cursor(directions.RIGHT, 1000)
+            move_cursor(directions.LEFT, len(soluzione) - 1)
+            print_with_color(soluzione, colors.BLACK, bold=True)
     print()
 
     sols.append((soluzione, sum([st[0] for st in sts])))
+
+    global tested_something
+    if not tested_something:
+        tested_something = True
+        atexit.register(print_at_exit)
 
     return zip(points, comments, info)
 

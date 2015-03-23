@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014 Luca Versari <veluca93@gmail.com>
+# Copyright © 2014-2015 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,7 +40,8 @@ import logging
 from cms import utf8_decoder
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
-
+from cmstaskenv.Terminal import move_cursor, print_with_color, \
+    colors, directions
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
@@ -68,12 +69,13 @@ RESULT_DIRNAME = 'result'
 DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'),
              os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
 
+logger = logging.getLogger()
+
 
 def detect_data_dir():
     for _dir in DATA_DIRS:
         if os.path.exists(_dir):
             return os.path.abspath(_dir)
-
 
 DATA_DIR = detect_data_dir()
 
@@ -222,7 +224,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(base_dir, command)
-                    print("\033[1A\033[K", end='', file=sys.stderr)
+                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -248,7 +250,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(tempdir, command)
-                    print("\033[1A\033[K", end='', file=sys.stderr)
+                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
@@ -256,7 +258,9 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 shutil.rmtree(tempdir)
 
         def test_src(exe, lang, assume=None):
-            print("Testing solution \033[1m%s\033[0m" % (exe[4:-5]))
+            # Solution names begin with sol/ and end with _EVAL, we strip that
+            print("Testing solution", end=" ")
+            print_with_color(exe[4:-5], colors.BLACK, bold=True)
             test_testcases(
                 base_dir,
                 exe,
@@ -323,7 +327,9 @@ def build_text_list(base_dir, task_type):
         try:
             open(text_pdf, 'r')
         except IOError:
-            logging.getLogger().warning("%s does not exist, creating an empty file..." % text_pdf)
+            logger.warning(
+                "%s does not exist, creating an empty file..." % text_pdf
+            )
             open(text_pdf, 'w')
 
     actions = []
@@ -433,7 +439,9 @@ def build_gen_list(base_dir, task_type):
         except OSError:
             pass
         for (is_copy, line, st) in testcases:
-            print("Generating \033[1minput # %d\033[0m" % (n), file=sys.stderr)
+            print("Generating", end=" ", file=sys.stderr)
+            print_with_color("input # %d" % (n), colors.BLACK,
+                             stream=sys.stderr, bold=True)
             new_input = os.path.join(input_dir, 'input%d.txt' % (n))
             if is_copy:
                 # Copy the file
@@ -452,30 +460,28 @@ def build_gen_list(base_dir, task_type):
             call(base_dir, command)
             n += 1
             for i in xrange(3):
-                print("\033[1A\033[K", end='', file=sys.stderr)
-                sys.stderr.flush()
-
+                move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     def make_output(n, assume=None):
         try:
             os.makedirs(output_dir)
         except OSError:
             pass
-        print("Generating \033[1moutput # %d\033[0m" % (n), file=sys.stderr)
+        print("Generating", end=" ", file=sys.stderr)
+        print_with_color("output # %d" % (n), colors.BLACK,
+                         stream=sys.stderr, bold=True)
         with io.open(os.path.join(input_dir,
                                   'input%d.txt' % (n)), 'rb') as fin:
             with io.open(os.path.join(output_dir,
                                       'output%d.txt' % (n)), 'wb') as fout:
                 if task_type != ['Communication', '']:
                     call(base_dir, [sol_exe], stdin=fin, stdout=fout)
-                    print("\033[1A\033[K", end='', file=sys.stderr)
-                    sys.stderr.flush()
+                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
                 # If the task of of type Communication, then there is
                 # nothing to put in the output files
                 else:
                     pass
-        print("\033[1A\033[K", end='', file=sys.stderr)
-        sys.stderr.flush()
+        move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     actions = []
     actions.append(([gen_src],
