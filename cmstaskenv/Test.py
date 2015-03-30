@@ -36,7 +36,7 @@ from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
-from cmstaskenv.Terminal import move_cursor, print_with_color, \
+from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
 
 
@@ -83,8 +83,11 @@ def print_at_exit():
     print()
     print()
     for s in sols:
-        print_with_color("%30s:" % s[0], colors.BLACK, end=" ", bold=True)
-        print("%3d" % s[1])
+        print("%s: %3d" % (
+            add_color_to_string("%30s" % s[0], colors.BLACK,
+                                bold=True),
+            s[1])
+        )
 
 logger = logging.getLogger()
 
@@ -223,34 +226,36 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     print()
     clen = max(len(c) for c in comments)
     for st, d in enumerate(sts):
-        print("Subtask %d:" % st, end=" ")
-        print_with_color(
-            "%5.2f/%d" % (d[0], d[1]),
-            colors.RED if abs(d[0]-d[1]) > 0.01 else colors.GREEN,
-            bold=True
+        print(
+            "Subtask %d:" % st,
+            add_color_to_string(
+                "%5.2f/%d" % (d[0], d[1]),
+                colors.RED if abs(d[0]-d[1]) > 0.01 else colors.GREEN,
+                bold=True
+            )
         )
         for (i, p, c, w) in d[2]:
-            print("%s)" % i, end=' ')
-            print_with_color(
-                "%5.2lf" % p,
-                colors.RED if abs(p - 1) > 0.01 else colors.BLACK,
-                end=" "
-            )
-            print("--- %s [Time:" % c.ljust(clen), end=" ")
-            print_with_color(
-                "%5.3f" % w[0],
-                colors.BLUE if w[0] >= 0.95 * d[3][0] else colors.BLACK,
-                end=" "
-            )
-            print("Memory:", end=" ")
-            print_with_color(
-                "%5s" % mem_human(w[1]),
-                colors.BLUE if w[1] >= 0.95 * d[3][1] else colors.BLACK,
+            print(
+                "%s)" % i,
+                add_color_to_string(
+                    "%5.2lf" % p,
+                    colors.RED if abs(p - 1) > 0.01 else colors.BLACK
+                ),
+                "--- %s [Time:" % c.ljust(clen),
+                add_color_to_string(
+                    "%5.3f" % w[0],
+                    colors.BLUE if w[0] >= 0.95 * d[3][0] else colors.BLACK
+                ),
+                "Memory:",
+                add_color_to_string(
+                    "%5s" % mem_human(w[1]),
+                    colors.BLUE if w[1] >= 0.95 * d[3][1] else colors.BLACK,
+                ),
                 end="]"
             )
             move_cursor(directions.RIGHT, 1000)
             move_cursor(directions.LEFT, len(soluzione) - 1)
-            print_with_color(soluzione, colors.BLACK, bold=True)
+            print(add_color_to_string(soluzione, colors.BLACK, bold=True))
     print()
 
     sols.append((soluzione, sum([st[0] for st in sts])))

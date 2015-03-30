@@ -40,7 +40,7 @@ import logging
 from cms import utf8_decoder
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
-from cmstaskenv.Terminal import move_cursor, print_with_color, \
+from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
 
 SOL_DIRNAME = 'sol'
@@ -259,8 +259,10 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         def test_src(exe, lang, assume=None):
             # Solution names begin with sol/ and end with _EVAL, we strip that
-            print("Testing solution", end=" ")
-            print_with_color(exe[4:-5], colors.BLACK, bold=True)
+            print(
+                "Testing solution",
+                add_color_to_string(exe[4:-5], colors.BLACK, bold=True)
+            )
             test_testcases(
                 base_dir,
                 exe,
@@ -439,9 +441,12 @@ def build_gen_list(base_dir, task_type):
         except OSError:
             pass
         for (is_copy, line, st) in testcases:
-            print("Generating", end=" ", file=sys.stderr)
-            print_with_color("input # %d" % (n), colors.BLACK,
-                             stream=sys.stderr, bold=True)
+            print(
+                "Generating",
+                add_color_to_string("input # %d" % n, colors.BLACK,
+                                    stream=sys.stderr, bold=True),
+                file=sys.stderr
+            )
             new_input = os.path.join(input_dir, 'input%d.txt' % (n))
             if is_copy:
                 # Copy the file
@@ -467,9 +472,12 @@ def build_gen_list(base_dir, task_type):
             os.makedirs(output_dir)
         except OSError:
             pass
-        print("Generating", end=" ", file=sys.stderr)
-        print_with_color("output # %d" % (n), colors.BLACK,
-                         stream=sys.stderr, bold=True)
+        print(
+            "Generating",
+            add_color_to_string("output # %d" % n, colors.BLACK,
+                                stream=sys.stderr, bold=True),
+            file=sys.stderr
+        )
         with io.open(os.path.join(input_dir,
                                   'input%d.txt' % (n)), 'rb') as fin:
             with io.open(os.path.join(output_dir,
