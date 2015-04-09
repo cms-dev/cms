@@ -129,6 +129,8 @@ class Communication(TaskType):
             job.files[format_filename].digest
 
         # Also copy all managers that might be useful during compilation.
+        # We likely want to compile with .cpp or .o files, so add them to our
+        # command line
         for filename in job.managers.iterkeys():
             if any(filename.endswith(header)
                    for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
@@ -138,10 +140,14 @@ class Communication(TaskType):
                      for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
+                if filename not in source_filenames:
+                    source_filenames.insert(1, filename)
             elif any(filename.endswith(obj)
                      for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
+                if filename not in source_filenames:
+                    source_filenames.insert(1, filename)
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
