@@ -39,6 +39,8 @@ from cms.service import get_submission_results
 
 from sqlalchemy import asc
 
+import simplejson as json
+
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +135,12 @@ class ScoringExecutor(Executor):
             params = [evaluation.outcome for evaluation in previous_evaluations]
 
             # Instantiate the score type.
-            score_type = get_score_type(dataset=dataset, parameters=params)
+            # We don't want to use the dataset since we have to pass in custom
+            # params. Instead we'll just hardcode the name of the class in,
+            # which is unfortunate.
+            # TODO (bgbn): work out a way to make this more generic.
+            score_type = get_score_type(name="AIOCCodebreakerScoreType",
+                                        parameters=json.dumps(params))
 
             # Compute score and fill it in the database.
             submission_result.score, \
