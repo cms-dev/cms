@@ -141,7 +141,10 @@ class ScoringExecutor(Executor):
             # which is unfortunate.
             # TODO (bgbn): work out a way to make this more generic.
             score_type = get_score_type(name="AIOCCodebreakerScoreType",
-                                        parameters=json.dumps(params))
+                                        parameters=json.dumps(params),
+                                        public_testcases=dict((k, tc.public)
+                                            for k, tc in
+                                            dataset.testcases.iteritems()))
 
             # Compute score and fill it in the database.
             submission_result.score, \
