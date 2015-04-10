@@ -48,7 +48,7 @@ class AIOCCodebreakerScoreType(ScoreType):
 
     def max_scores(self):
         """See ScoreType.max_scores"""
-        return (20., 20.)
+        return (20., 20., [])
 
     def compute_score(self, submission_result):
         """See ScoreType.compute_score"""
