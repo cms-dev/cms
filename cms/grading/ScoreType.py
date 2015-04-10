@@ -355,3 +355,213 @@ class ScoreTypeGroup(ScoreTypeAlone):
         """
         logger.error("Unimplemented method reduce.")
         raise NotImplementedError("Please subclass this class.")
+
+class AIOCScoreTypeGroup(ScoreTypeAlone):
+    """Intermediate class to manage tasks whose testcases are
+    subdivided in groups (or subtasks). The score type parameters must
+    be in the form [[n, m, [t, ...], ...], [...], ...], where n is the
+    name for the subtask, m is the maximum score for the given subtask,
+    and t are the names of the testcases comprising the subtask.
+
+    A subclass must implement the method 'get_public_outcome' and
+    'reduce'.
+
+    """
+    # Mark strings for localization.
+    N_("Subtask %d")
+    N_("Outcome")
+    N_("Details")
+    N_("Execution time")
+    N_("Memory used")
+    N_("N/A")
+    TEMPLATE = """\
+{% from cms.grading import format_status_text %}
+{% from cms.server import format_size %}
+{% for st in details %}
+    {% if "score" in st and "max_score" in st %}
+        {% if st["score"] >= st["max_score"] %}
+<div class="subtask correct">
+        {% elif st["score"] <= 0.0 %}
+<div class="subtask notcorrect">
+        {% else %}
+<div class="subtask partiallycorrect">
+        {% end %}
+    {% else %}
+<div class="subtask undefined">
+    {% end %}
+    <div class="subtask-head">
+        <span class="title">
+            {{ _("%s") % st["idx"] }}
+        </span>
+    {% if "score" in st and "max_score" in st %}
+        <span class="score">
+            {{ '%g' % round(st["score"], 2) }} / {{ st["max_score"] }}
+        </span>
+    {% else %}
+        <span class="score">
+            {{ _("N/A") }}
+        </span>
+    {% end %}
+    </div>
+    <div class="subtask-body">
+        <table class="testcase-list">
+            <thead>
+                <tr>
+                    <th>{{ _("Outcome") }}</th>
+                    <th>{{ _("Details") }}</th>
+                    <th>{{ _("Execution time") }}</th>
+                    <th>{{ _("Memory used") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+    {% for tc in st["testcases"] %}
+        {% if "outcome" in tc and "text" in tc %}
+            {% if tc["outcome"] == "Correct" %}
+                <tr class="correct">
+            {% elif tc["outcome"] == "Not correct" %}
+                <tr class="notcorrect">
+            {% else %}
+                <tr class="partiallycorrect">
+            {% end %}
+                    <td>{{ _(tc["outcome"]) }}</td>
+                    <td>{{ format_status_text(tc["text"], _) }}</td>
+                    <td>
+            {% if "time" in tc and tc["time"] is not None %}
+                        {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
+            {% else %}
+                        {{ _("N/A") }}
+            {% end %}
+                    </td>
+                    <td>
+            {% if "memory" in tc and tc["memory"] is not None %}
+                        {{ format_size(tc["memory"]) }}
+            {% else %}
+                        {{ _("N/A") }}
+            {% end %}
+                    </td>
+        {% else %}
+                <tr class="undefined">
+                    <td colspan="4">
+                        {{ _("N/A") }}
+                    </td>
+                </tr>
+        {% end %}
+    {% end %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% end %}"""
+
+    def max_scores(self):
+        """See ScoreType.max_score."""
+        score = 0.0
+        public_score = 0.0
+        headers = list()
+
+        for i, parameter in enumerate(self.parameters):
+            score += parameter[1]
+            if all(self.public_testcases[idx]
+                   for idx in parameter[2]):
+                public_score += float(parameter[1])
+            headers += ["Subtask %d (%g)" % (i + 1, parameter[1])]
+
+        return score, public_score, headers
+
+    def compute_score(self, submission_result):
+        """See ScoreType.compute_score."""
+        # Actually, this means it didn't even compile!
+        if not submission_result.evaluated():
+            return 0.0, "[]", 0.0, "[]", \
+                json.dumps(["%lg" % 0.0 for _ in self.parameters])
+
+        # XXX Lexicographical order by codename
+        indices = sorted(self.public_testcases.keys())
+        evaluations = dict((ev.codename, ev)
+                           for ev in submission_result.evaluations)
+        subtasks = []
+        public_subtasks = []
+        ranking_details = []
+
+        for st_idx, parameter in enumerate(self.parameters):
+            st_score = self.reduce([float(evaluations[idx].outcome)
+                                    for idx in parameter[2]],
+                                   parameter) * parameter[1]
+            st_public = all(self.public_testcases[idx]
+                            for idx in parameter[2])
+            tc_outcomes = dict((
+                idx,
+                self.get_public_outcome(
+                    float(evaluations[idx].outcome), parameter)
+                ) for idx in parameter[2])
+
+            testcases = []
+            public_testcases = []
+            for idx in parameter[2]:
+                testcases.append({
+                    "idx": idx,
+                    "outcome": tc_outcomes[idx],
+                    "text": evaluations[idx].text,
+                    "time": evaluations[idx].execution_time,
+                    "memory": evaluations[idx].execution_memory,
+                    })
+                if self.public_testcases[idx]:
+                    public_testcases.append(testcases[-1])
+                else:
+                    public_testcases.append({"idx": idx})
+            subtasks.append({
+                "idx": parameter[0],
+                "score": st_score,
+                "max_score": parameter[1],
+                "testcases": testcases,
+                })
+            if st_public:
+                public_subtasks.append(subtasks[-1])
+            else:
+                public_subtasks.append({
+                    "idx": parameter[0],
+                    "testcases": public_testcases,
+                    })
+
+            ranking_details.append("%g" % round(st_score, 2))
+
+
+        score = sum(st["score"] for st in subtasks)
+        public_score = sum(st["score"]
+                           for st in public_subtasks
+                           if "score" in st)
+
+        return score, json.dumps(subtasks), \
+            public_score, json.dumps(public_subtasks), \
+            json.dumps(ranking_details)
+
+    def get_public_outcome(self, unused_outcome, unused_parameter):
+        """Return a public outcome from an outcome.
+
+        The public outcome is shown to the user, and this method
+        return the public outcome associated to the outcome of a
+        submission in a testcase contained in the group identified by
+        parameter.
+
+        unused_outcome (float): the outcome of the submission in the
+            testcase.
+        unused_parameter (list): the parameters of the current group.
+
+        return (float): the public output.
+
+        """
+        logger.error("Unimplemented method get_public_outcome.")
+        raise NotImplementedError("Please subclass this class.")
+
+    def reduce(self, unused_outcomes, unused_parameter):
+        """Return the score of a subtask given the outcomes.
+
+        unused_outcomes ([float]): the outcomes of the submission in
+            the testcases of the group.
+        unused_parameter (list): the parameters of the group.
+
+        return (float): the public output.
+
+        """
+        logger.error("Unimplemented method reduce.")
+        raise NotImplementedError("Please subclass this class.")

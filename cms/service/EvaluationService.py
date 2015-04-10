@@ -1295,8 +1295,8 @@ class EvaluationService(TriggeredService):
         # If compilation was ok, we emit a satisfied log message.
         if submission_result.compilation_succeeded():
             logger.info("Submission %d(%d) was compiled successfully.",
-                        submission_result.submission_id,
-                        submission_result.dataset_id)
+                        submission_result.submission_id if submission_result.submission_id is not None else -1,
+                        submission_result.dataset_id if submission_result.dataset_id is not None else -1)
 
         # If instead submission failed compilation, we inform
         # ScoringService of the new submission. We need to commit
