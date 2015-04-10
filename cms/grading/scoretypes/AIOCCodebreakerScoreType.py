@@ -50,6 +50,12 @@ class AIOCCodebreakerScoreType(ScoreType):
 
     """
 
+    def get_public_outcome(self, score):
+        if score == 1:
+            return "Broken"
+        else:
+            return "Not broken"
+
     def max_scores(self):
         """See ScoreType.max_scores"""
         return (20., 20., [])
@@ -72,6 +78,7 @@ class AIOCCodebreakerScoreType(ScoreType):
             if this_score == 1:
                 correct = True
                 for s in self.parameters:
+                    s = float(s)
                     if s <= -2:
                         score -= 2
                     elif s == -1:
