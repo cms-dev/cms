@@ -25,6 +25,8 @@ from __future__ import unicode_literals
 
 from cms.grading.ScoreType import ScoreType
 
+import simplejson as json
+
 
 # Dummy function to mark translatable string.
 def N_(message):
@@ -37,8 +39,8 @@ class AIOCCodebreakerScoreType(ScoreType):
 
     Parameters are a list of integers, containing the results of previous
     evaluations. The evaluator returns -1 if the provided files do not break the
-    code, -2 if the provided input file is insane, -2 if the provided input file
-    doesn't produce the provided output file, and 1 if the input breaks the
+    code, -2 if the provided input file doesn't produce the provided output
+    file, -3 if the provided input file is insane, and 1 if the input breaks the
     code. These can be used to implement a custom score based on previous
     evaluation results.
 
@@ -48,7 +50,42 @@ class AIOCCodebreakerScoreType(ScoreType):
         """See ScoreType.max_scores"""
         return (20., 20.)
 
-    def compute_score(self, unused_submission_result):
+    def compute_score(self, submission_result):
         """See ScoreType.compute_score"""
-        raise NotImplementedError("Haven't yet implemented compute_score")
+        indices = self.public_testcases.keys()
+        evaluations = dict((ev.codename, ev)
+                           for ev in submission_result.evaluations)
 
+        assert(len(indices) == 1)
+        score = 0
+        public_score = 0
+        testcases = []
+        public_testcases = []
+        correct = False
+
+        for idx in indices:
+            this_score = float(evaluations[idx].outcome)
+            if this_score == 1:
+                correct = True
+                for s in self.parameters:
+                    if s <= -2:
+                        score -= 2
+                    elif s == -1:
+                        score -= 1
+                    elif s == 1:
+                        break
+                score += 20
+            tc_outcome = self.get_public_outcome(this_score)
+            testcases.append({
+                "idx": idx,
+                "outcome": tc_outcome,
+                "text": evaluations[idx].text,
+            })
+            public_testcases.append(testcases[-1])
+        if not correct:
+            score = 0
+        public_score = score
+
+        return score, json.dumps(testcases), \
+            public_score, json.dumps(public_testcases), \
+            json.dumps([])
