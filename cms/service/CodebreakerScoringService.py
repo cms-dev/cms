@@ -33,9 +33,11 @@ import logging
 
 from cms import ServiceCoord, config
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
-from cms.db import SessionGen, Submission, Dataset
+from cms.db import SessionGen, Submission, Dataset, Evaluation
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results
+
+from sqlalchemy import asc
 
 
 logger = logging.getLogger(__name__)
@@ -112,9 +114,26 @@ class ScoringExecutor(Executor):
             previous_submissions = session.Query(Submission)\
                 .filter(Submission.user_id == submission.user_id,
                         Submission.task_id == submission.task_id)\
+                .order_by(asc(Submission.timestamp))
+            # Counterintuitively, because we're nice people, we don't care how
+            # these submissions were scored. We only care about their
+            # evaluations, which will tell us how to score them.
+            # For a codebreaker, this will be in one-to-one correspondence with
+            # previous submissions, since each "task" should only have the one
+            # "testcase".
+            previous_evaluations = [
+                session.Query(Evaluation)
+                .filter(Evaluation.submission_id == sub.id)
+                for sub in previous_submissions]
+
+            assert(len(previous_evaluations) == len(previous_submissions))
+
+            # Now that we have the evaluations, we can pass these as parameters
+            # to our score type
+            params = [evaluation.outcome for evaluation in previous_evaluations]
 
             # Instantiate the score type.
-            score_type = get_score_type(dataset=dataset)
+            score_type = get_score_type(dataset=dataset, parameters=params)
 
             # Compute score and fill it in the database.
             submission_result.score, \
