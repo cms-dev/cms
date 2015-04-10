@@ -26,6 +26,10 @@ from __future__ import unicode_literals
 from cms.grading.ScoreType import ScoreType
 
 import simplejson as json
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable string.
