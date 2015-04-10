@@ -113,26 +113,25 @@ class Codebreaker(TaskType):
         outcome = None
         text = None
 
+        logger.info("Files are %s" % job.files)
+
         # TODO (bgbn) what the hell does this even do.
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
-        if "output_%s.txt" % job._key not in job.files:
+        if "input.txt" not in job.files and "output.txt" not in job.files:
             job.success = True
             job.outcome = "0.0"
             job.text = [N_("File not submitted")]
             return True
 
         # First and only one step: diffing (manual or with manager).
-        output_digest = job.files["output_%s.txt" %
-                                  job._key].digest
+        output_digest = job.files["output.txt"].digest
+        input_digest = job.files["input.txt"].digest
 
         # Put the files into the sandbox
-        # TODO (bgbn): We don't need res.txt. We need input.txt and output.txt.
-        # Need to work out where these files come from.
         sandbox.create_file_from_storage(
             "output.txt",
             output_digest)
-        input_digest = job.input
         sandbox.create_file_from_storage(
             "input.txt",
             input_digest)
