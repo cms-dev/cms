@@ -113,10 +113,11 @@ class ScoringExecutor(Executor):
 
             # For Codebreaker, your score depends on your previous submissions
             # to this task. So, let's get the previous submisisons for this task
-            previous_submissions = session.Query(Submission)\
+            previous_submissions = session.query(Submission)\
                 .filter(Submission.user_id == submission.user_id,
                         Submission.task_id == submission.task_id)\
-                .order_by(asc(Submission.timestamp))
+                .order_by(asc(Submission.timestamp))\
+                .all()
             # Counterintuitively, because we're nice people, we don't care how
             # these submissions were scored. We only care about their
             # evaluations, which will tell us how to score them.
@@ -124,8 +125,8 @@ class ScoringExecutor(Executor):
             # previous submissions, since each "task" should only have the one
             # "testcase".
             previous_evaluations = [
-                session.Query(Evaluation)
-                .filter(Evaluation.submission_id == sub.id)
+                session.query(Evaluation)
+                .filter(Evaluation.submission_id == sub.id).first()
                 for sub in previous_submissions]
 
             assert(len(previous_evaluations) == len(previous_submissions))

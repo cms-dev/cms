@@ -141,7 +141,7 @@ class Codebreaker(TaskType):
         correct_filename = "correct"
         incorrect_filename = "incorrect"
         checker_filename = "checker"
-        if checker_filename not in job.checkers:
+        if checker_filename not in job.managers:
             logger.debug("Using white diff as the checker for this task",
                          extra={"operation": job.info})
             checker_filename = ""
