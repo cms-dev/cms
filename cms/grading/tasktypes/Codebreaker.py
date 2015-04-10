@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Task type for output only tasks.
+"""Task type for Codebreaker tasks, which are very similar to output only tasks.
 
 """
 
@@ -45,32 +45,26 @@ def N_(message):
     return message
 
 
-class OutputOnly(TaskType):
-    """Task type class for output only tasks, with submission composed
-    of testcase_number text files, to be evaluated diffing or using a
-    comparator.
+class Codebreaker(TaskType):
+    """Task type class for codebreaker tasks, with submission composed
+    of exactly two text files, to be evaluated using a comparator. This
+    comparator must validate the student input file for task sanity, then run
+    the `correct` program on the student input file and make sure the output is
+    the same as the student output file, and finally run the `incorrect` program
+    on the student input file and make sure it differs from the student output
+    file.
 
-    Parameters are a list of string with one element (for future
-    possible expansions), which maybe 'diff' or 'comparator', meaning that
-    the evaluation is done via white diff or via a comparator.
+    There are no Parameters provided to this class.
 
     """
-    ALLOW_PARTIAL_SUBMISSION = True
+    ALLOW_PARTIAL_SUBMISSION = False
 
-    _EVALUATION = ParameterTypeChoice(
-        "Output evaluation",
-        "output_eval",
-        "",
-        {"diff": "Outputs compared with white diff",
-         "comparator": "Outputs are compared by a comparator"})
-
-    ACCEPTED_PARAMETERS = [_EVALUATION]
+    ACCEPTED_PARAMETERS = []
 
     @property
     def name(self):
         """See TaskType.name."""
-        # TODO add some details if a comparator is used, etc...
-        return "Output only"
+        return "Codebreaker"
 
     testable = False
 
@@ -106,6 +100,7 @@ class OutputOnly(TaskType):
         outcome = None
         text = None
 
+        # TODO (bgbn) what the hell does this even do.
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
         if "output_%s.txt" % job._key not in job.files:
@@ -119,49 +114,71 @@ class OutputOnly(TaskType):
                                   job._key].digest
 
         # Put the files into the sandbox
-        sandbox.create_file_from_storage(
-            "res.txt",
-            job.output)
+        # TODO (bgbn): We don't need res.txt. We need input.txt and output.txt.
+        # Need to work out where these files come from.
         sandbox.create_file_from_storage(
             "output.txt",
             output_digest)
+        input_digest = job.input
+        sandbox.create_file_from_storage(
+            "input.txt",
+            input_digest)
 
-        if self.parameters[0] == "diff":
-            # No manager: I'll do a white_diff between the submission
-            # file and the correct output res.txt.
-            success = True
-            outcome, text = white_diff_step(
-                sandbox, "output.txt", "res.txt")
 
-        elif self.parameters[0] == "comparator":
-            # Manager present: wonderful, he'll do all the job.
-            manager_filename = "checker"
-            if not manager_filename in job.managers:
-                logger.error("Configuration error: missing or "
-                             "invalid comparator (it must be "
-                             "named `checker')", extra={"operation": job.info})
-                success = False
-            else:
-                sandbox.create_file_from_storage(
-                    manager_filename,
-                    job.managers[manager_filename].digest,
-                    executable=True)
-                input_digest = job.input
-                sandbox.create_file_from_storage(
-                    "input.txt",
-                    input_digest)
-                success, _ = evaluation_step(
-                    sandbox,
-                    [["./%s" % manager_filename,
-                      "input.txt", "res.txt", "output.txt"]])
-                if success:
-                    outcome, text = extract_outcome_and_text(sandbox)
-
+        # TODO (bgbn): checker has a very well-defined static function. We
+        # should have a way to not have to upload it for every task (maybe we
+        # can have a python script embedded in this file that's copied into the
+        # sandbox)
+        manager_filename = "checker"
+        sanity_filename = "sanity"
+        correct_filename = "correct"
+        incorrect_filename = "incorrect"
+        if manager_filename not in job.managers:
+            logger.error("Configuration error: missing or "
+                            "invalid comparator (it must be "
+                            "named `checker')", extra={"operation": job.info})
+            success = False
+        elif sanity_filename not in job.managers:
+            logger.error("Configuration error: missing or "
+                            "invalid sanity binary (it must be "
+                            "named `sanity')", extra={"operation": job.info})
+            success = False
+        elif correct_filename not in job.managers:
+            logger.error("Configuration error: missing or "
+                            "invalid correct binary (it must be "
+                            "named `correct')", extra={"operation": job.info})
+            success = False
+        elif incorrect_filename not in job.managers:
+            logger.error("Configuration error: missing or "
+                            "invalid incorrect binary (it must be "
+                            "named `correct')", extra={"operation": job.info})
+            success = False
         else:
-            raise ValueError("Unrecognized first parameter "
-                             "`%s' for OutputOnly tasktype. "
-                             "Should be `diff' or `comparator'." %
-                             self.parameters[0])
+            sandbox.create_file_from_storage(
+                manager_filename,
+                job.managers[manager_filename].digest,
+                executable=True)
+            sandbox.create_file_from_storage(
+                sanity_filename,
+                job.managers[sanity_filename].digest,
+                executable=True)
+            sandbox.create_file_from_storage(
+                correct_filename,
+                job.managers[correct_filename].digest,
+                executable=True)
+            sandbox.create_file_from_storage(
+                incorrect_filename,
+                job.managers[incorrect_filename].digest,
+                executable=True)
+            success, _ = evaluation_step(
+                sandbox,
+                [["./%s" % manager_filename,
+                    "input.txt", "output.txt",
+                    "%s" % sanity_filename,
+                    "%s" % correct_filename,
+                    "%s" % incorrect_filename]])
+            if success:
+                outcome, text = extract_outcome_and_text(sandbox)
 
         # Whatever happened, we conclude.
         job.success = success
