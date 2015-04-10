@@ -127,6 +127,7 @@ def do_setup():
           package_data=package_data,
           scripts=["scripts/cmsLogService",
                    "scripts/cmsScoringService",
+                   "scripts/cmsCodebreakerScoringService",
                    "scripts/cmsEvaluationService",
                    "scripts/cmsWorker",
                    "scripts/cmsResourceService",
