@@ -107,6 +107,12 @@ class ScoringExecutor(Executor):
                                      (operation.submission_id,
                                       operation.dataset_id))
 
+            # For Codebreaker, your score depends on your previous submissions
+            # to this task. So, let's get the previous submisisons for this task
+            previous_submissions = session.Query(Submission)\
+                .filter(Submission.user_id == submission.user_id,
+                        Submission.task_id == submission.task_id)\
+
             # Instantiate the score type.
             score_type = get_score_type(dataset=dataset)
 
