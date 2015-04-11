@@ -187,7 +187,7 @@ class Codebreaker(TaskType):
             if checker_filename:
                 sandbox.create_file_from_storage(
                     checker_filename,
-                    job.checkers[checker_filename].digest,
+                    job.managers[checker_filename].digest,
                     executable=True)
                 eval_step_command.append("%s" % checker_filename)
             success, _ = evaluation_step(
