@@ -49,6 +49,14 @@ class AIOCCodebreakerScoreType(ScoreType):
     evaluation results.
 
     """
+    TEMPLATE = """\
+{% from cms.grading import format_status_text %}
+{% for st in details %}
+    <div>
+    {{ format_status_text(st['text'], _) }}
+    </div>
+{% end %}
+"""
 
     def get_public_outcome(self, score):
         if score == 1:
