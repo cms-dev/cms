@@ -92,7 +92,7 @@ def print_at_exit():
 logger = logging.getLogger()
 
 
-def test_testcases(base_dir, soluzione, language, assume=None):
+def test_testcases(base_dir, solution, language, assume=None):
     global task, file_cacher
 
     # Use a FileCacher with a NullBackend in order to avoid to fill
@@ -118,8 +118,8 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     # Prepare the EvaluationJob
     dataset = task.active_dataset
     digest = file_cacher.put_file_from_path(
-        os.path.join(base_dir, soluzione),
-        "Solution %s for task %s" % (soluzione, task.name))
+        os.path.join(base_dir, solution),
+        "Solution %s for task %s" % (solution, task.name))
     executables = {task.name: Executable(filename=task.name, digest=digest)}
     jobs = [(t, EvaluationJob(
         language=language,
@@ -222,7 +222,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
 
     # Result pretty printing
     # Strips sol/ and _EVAL from the solution's name
-    soluzione = soluzione[4:-5]
+    solution = solution[4:-5]
     print()
     clen = max(len(c) for c in comments)
     for st, d in enumerate(sts):
@@ -254,11 +254,11 @@ def test_testcases(base_dir, soluzione, language, assume=None):
                 end="]"
             )
             move_cursor(directions.RIGHT, 1000)
-            move_cursor(directions.LEFT, len(soluzione) - 1)
-            print(add_color_to_string(soluzione, colors.BLACK, bold=True))
+            move_cursor(directions.LEFT, len(solution) - 1)
+            print(add_color_to_string(solution, colors.BLACK, bold=True))
     print()
 
-    sols.append((soluzione, sum([st[0] for st in sts])))
+    sols.append((solution, sum([st[0] for st in sts])))
 
     global tested_something
     if not tested_something:
