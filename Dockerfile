@@ -5,7 +5,7 @@ RUN apt-get update
 RUN apt-get -y install build-essential fpc postgresql postgresql-client \
     gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite \
     texlive texlive-latex-extra nano latexmk pypy python-pip supervisor \
-    openssh-server
+    openssh-server libpq-dev
 
 RUN pip install sortedcontainers
 RUN pip install https://github.com/obag/cms-booklet/archive/master.zip
