@@ -112,8 +112,7 @@ msgid "Question received"
 msgstr "Klausimas gautas"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "Tavo klausimas gautas. Kai jis bus atsakytas, pasirodys pranešimas."
 
 #, python-format

@@ -110,8 +110,7 @@ msgid "Question received"
 msgstr "Vraag ontvangen"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr ""
 "Je vraag werd ontvangen, je zal worden verwittigd wanneer ze beantwoord is."
 

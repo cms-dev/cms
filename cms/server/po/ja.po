@@ -111,8 +111,7 @@ msgid "Question received"
 msgstr "質問を受理しました"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "あなたの質問は受理されました。回答があった場合は通知されます。"
 
 #, python-format

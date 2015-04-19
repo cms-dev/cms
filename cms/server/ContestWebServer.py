@@ -866,7 +866,7 @@ class QuestionHandler(BaseHandler):
             self.timestamp,
             self._("Question received"),
             self._("Your question has been received, you will be "
-                   "notified when the it will be answered."),
+                   "notified when it is answered."),
             ContestWebServer.NOTIFICATION_SUCCESS)
 
         self.redirect("/communication")

@@ -177,8 +177,7 @@ msgid "Question received"
 msgstr "질문이 제출되었습니다."
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "질문이 제출되었습니다. 대답이 완료되면 통지될 것입니다."
 
 #, python-format
