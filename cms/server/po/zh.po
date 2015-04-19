@@ -104,8 +104,7 @@ msgid "Question received"
 msgstr "已送出詢問"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "您的詢問已成功送出, 待此詢問得到回覆後將會通知您."
 
 #, python-format

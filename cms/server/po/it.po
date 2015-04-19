@@ -195,8 +195,7 @@ msgid "Question received"
 msgstr "Domanda ricevuta"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr ""
 "La tua domanda è stata inviata, riceverai una notifica quando sarà risposta. "
 

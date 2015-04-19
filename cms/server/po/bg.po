@@ -180,8 +180,7 @@ msgid "Question received"
 msgstr "Въпросът е получен"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "Вашият въпрос беше получен, ще бъдете уведомени, когато имате отговор."
 
 #, python-format

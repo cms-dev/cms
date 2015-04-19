@@ -111,8 +111,7 @@ msgid "Question received"
 msgstr "Küsimus on vastuvõetud"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "Teie küsimus on vastuvõetud, Teid teavitatakse, kui selle on vastatud."
 
 #, python-format

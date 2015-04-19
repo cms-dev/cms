@@ -114,8 +114,7 @@ msgid "Question received"
 msgstr "Вопрос получен"
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr "Ваш вопрос принят, вы будете осведомлены когда на него ответят."
 
 #, python-format

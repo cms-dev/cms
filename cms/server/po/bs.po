@@ -101,7 +101,7 @@ msgstr "Datoteka nije poslana"
 msgid "Question received"
 msgstr "Primljeno pitanje"
 
-msgid "Your question has been received, you will be notified when the it will be answered."
+msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Vaše pitanje je primljeno, bićete obaviješteni kada dobijete odgovor."
 
 #, python-format

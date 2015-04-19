@@ -166,8 +166,7 @@ msgid "Question received"
 msgstr ""
 
 msgid ""
-"Your question has been received, you will be notified when the it will be "
-"answered."
+"Your question has been received, you will be notified when it is answered."
 msgstr ""
 
 #, python-format
