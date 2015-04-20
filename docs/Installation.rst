@@ -185,7 +185,7 @@ If you prefer using Python Package Index, you can retrieve all Python dependenci
 
 .. sourcecode:: bash
 
-    sudo pip install -r REQUIREMENTS.txt
+    sudo pip install -r requirements.txt
 
 
 Installing CMS
