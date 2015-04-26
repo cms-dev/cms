@@ -76,7 +76,7 @@ function update_additional_answer(element, invoker)
             {% elif not sr.evaluated() %}
             Evaluating...
             <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% else %}
+            {% elif sr.scored() %}
               {% try %}
                 {% set max_score = score_type.max_score %}
               {% except %}
@@ -85,6 +85,34 @@ function update_additional_answer(element, invoker)
             Evaluated ({{ sr.score }} / {{ max_score }})
             <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
               {% raw score_type.get_html_details(sr.score_details) %}
+            {% else %}
+            Evaluated
+            <div id="evaluation_{{ s.id }}" style="display: none;">
+              {% if sr.evaluated() %}
+              <h3>Testcases</h3>
+              <table class="nested bordered">
+                <thead>
+                  <tr>
+                    <th>Outcome</th>
+                    <th></th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
+                  <tr>
+                    <td>{{ ev.outcome }}</td>
+                    {% if s.token is not None or ev.testcase.public %}
+                    <td style="align: center;">&bullet;</td>
+                    {% else %}
+                    <td></td>
+                    {% end %}
+                    <td>{{ ev.text }}</td>
+                  </tr>
+                  {% end %}
+                </tbody>
+              </table>
+              {% end %}
             {% end %}
               <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
               <pre>{% if sr.compilation_text is not None %}{{ escape(sr.compilation_text) }}{% end %}</pre>
