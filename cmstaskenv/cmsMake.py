@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014 Luca Versari <veluca93@gmail.com>
+# Copyright © 2014-2015 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,11 +35,13 @@ import functools
 import shutil
 import tempfile
 import yaml
+import logging
 
 from cms import utf8_decoder
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
-
+from cmscommon.terminal import move_cursor, add_color_to_string, \
+    colors, directions
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
@@ -67,12 +69,13 @@ RESULT_DIRNAME = 'result'
 DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'),
              os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
 
+logger = logging.getLogger()
+
 
 def detect_data_dir():
     for _dir in DATA_DIRS:
         if os.path.exists(_dir):
             return os.path.abspath(_dir)
-
 
 DATA_DIR = detect_data_dir()
 
@@ -221,6 +224,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(base_dir, command)
+                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -246,6 +250,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(tempdir, command)
+                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
@@ -253,7 +258,11 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 shutil.rmtree(tempdir)
 
         def test_src(exe, lang, assume=None):
-            print("Testing solution %s" % (exe))
+            # Solution names begin with sol/ and end with _EVAL, we strip that
+            print(
+                "Testing solution",
+                add_color_to_string(exe[4:-5], colors.BLACK, bold=True)
+            )
             test_testcases(
                 base_dir,
                 exe,
@@ -316,10 +325,22 @@ def build_text_list(base_dir, task_type):
               '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
+    def make_dummy_pdf(assume=None):
+        try:
+            open(text_pdf, 'r')
+        except IOError:
+            logger.warning(
+                "%s does not exist, creating an empty file..." % text_pdf
+            )
+            open(text_pdf, 'w')
+
     actions = []
     if os.path.exists(text_tex):
         actions.append(([text_tex], [text_pdf, text_aux, text_log],
                         make_pdf, 'compile to PDF'))
+    else:
+        actions.append(([TEXT_DIRNAME], [text_pdf], make_dummy_pdf,
+                        "create empty PDF file"))
     return actions
 
 
@@ -420,7 +441,12 @@ def build_gen_list(base_dir, task_type):
         except OSError:
             pass
         for (is_copy, line, st) in testcases:
-            print("Generating input # %d" % (n), file=sys.stderr)
+            print(
+                "Generating",
+                add_color_to_string("input # %d" % n, colors.BLACK,
+                                    stream=sys.stderr, bold=True),
+                file=sys.stderr
+            )
             new_input = os.path.join(input_dir, 'input%d.txt' % (n))
             if is_copy:
                 # Copy the file
@@ -438,24 +464,32 @@ def build_gen_list(base_dir, task_type):
                 command.append("%s" % st)
             call(base_dir, command)
             n += 1
+            for i in xrange(3):
+                move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     def make_output(n, assume=None):
         try:
             os.makedirs(output_dir)
         except OSError:
             pass
-        print("Generating output # %d" % (n), file=sys.stderr)
+        print(
+            "Generating",
+            add_color_to_string("output # %d" % n, colors.BLACK,
+                                stream=sys.stderr, bold=True),
+            file=sys.stderr
+        )
         with io.open(os.path.join(input_dir,
                                   'input%d.txt' % (n)), 'rb') as fin:
             with io.open(os.path.join(output_dir,
                                       'output%d.txt' % (n)), 'wb') as fout:
                 if task_type != ['Communication', '']:
                     call(base_dir, [sol_exe], stdin=fin, stdout=fout)
-
+                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
                 # If the task of of type Communication, then there is
                 # nothing to put in the output files
                 else:
                     pass
+        move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     actions = []
     actions.append(([gen_src],
@@ -694,6 +728,7 @@ def main():
 
     elif options.all:
         print("Making all targets")
+        print()
         try:
             execute_multiple_targets(base_dir, exec_tree,
                                      generated_list, debug=options.debug,

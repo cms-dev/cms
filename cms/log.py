@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -47,11 +48,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import curses
 import logging
 import sys
 
 import gevent.coros
+
+from cmscommon.terminal import colors, add_color_to_string, has_color_support
 
 
 class StreamHandler(logging.StreamHandler):
@@ -144,72 +146,27 @@ class LogServiceHandler(logging.Handler):
             self.handleError(record)
 
 
-def has_color_support(stream):
-    """Try to determine if the given stream supports colored output.
-
-    Return True only if the stream declares to be a TTY, if it has a
-    file descriptor on which ncurses can initialize a terminal and if
-    that terminal's entry in terminfo declares support for colors.
-
-    stream (fileobj): a file-like object (that adheres to the API
-        declared in the `io' package).
-
-    return (bool): True if we're sure that colors are supported, False
-        if they aren't or if we can't tell.
-
-    """
-    if stream.isatty():
-        try:
-            curses.setupterm(fd=stream.fileno())
-            # See `man terminfo` for capabilities' names and meanings.
-            if curses.tigetnum("colors") > 0:
-                return True
-        # fileno() can raise IOError or OSError (since Python 3.3).
-        except Exception:
-            pass
-    return False
-
-
 def get_color_hash(string):
     """Deterministically return a color based on the string's content.
 
-    Determine one of curses.COLOR_* using only the data of the given
-    string. The only condition is for the operation to give the same
-    result when repeated.
+    Determine one of colors.* using only the data of the given string.
+    The only condition is for the operation to give the same result when
+    repeated.
 
     string (string): the string.
 
-    return (int): a color, as a curses.COLOR_* constant..
+    return (int): a color, as a colors.* constant.
 
     """
     # We get the default hash of the string and use it to pick a color.
-    return [curses.COLOR_BLACK,
-            curses.COLOR_RED,
-            curses.COLOR_GREEN,
-            curses.COLOR_YELLOW,
-            curses.COLOR_BLUE,
-            curses.COLOR_MAGENTA,
-            curses.COLOR_CYAN,
-            curses.COLOR_WHITE][hash(string) % 8]
-
-
-def add_color_to_string(string, color):
-    """Format the string to be printed with the given color.
-
-    Insert formatting characters that, when printed on a terminal, will
-    make the given string appear with the given foreground color.
-
-    string (string): the string to color.
-    color (int): the color as a curses constant, like
-        curses.COLOR_BLACK.
-
-    return (string): the formatted string.
-
-    """
-    # See `man terminfo` for capabilities' names and meanings.
-    return "%s%s%s%s" % (curses.tparm(curses.tigetstr("setaf"), color),
-                         curses.tparm(curses.tigetstr("bold")), string,
-                         curses.tparm(curses.tigetstr("sgr0")))
+    return [colors.BLACK,
+            colors.RED,
+            colors.GREEN,
+            colors.YELLOW,
+            colors.BLUE,
+            colors.MAGENTA,
+            colors.CYAN,
+            colors.WHITE][hash(string) % 8]
 
 
 class CustomFormatter(logging.Formatter):
@@ -228,11 +185,11 @@ class CustomFormatter(logging.Formatter):
     (this cannot be done with the standard formatter!).
 
     """
-    SEVERITY_COLORS = {logging.CRITICAL: curses.COLOR_RED,
-                       logging.ERROR: curses.COLOR_RED,
-                       logging.WARNING: curses.COLOR_YELLOW,
-                       logging.INFO: curses.COLOR_GREEN,
-                       logging.DEBUG: curses.COLOR_CYAN}
+    SEVERITY_COLORS = {logging.CRITICAL: colors.RED,
+                       logging.ERROR: colors.RED,
+                       logging.WARNING: colors.YELLOW,
+                       logging.INFO: colors.GREEN,
+                       logging.DEBUG: colors.CYAN}
 
     def __init__(self, colors=False):
         """Initialize a formatter.
@@ -307,9 +264,12 @@ class CustomFormatter(logging.Formatter):
 
         # Colorize the strings.
         if self.colors:
-            severity_str = add_color_to_string(severity_str, severity_col)
-            coord_str = add_color_to_string(coord_str, coord_col)
-            operation_str = add_color_to_string(operation_str, operation_col)
+            severity_str = add_color_to_string(severity_str, severity_col,
+                                               bold=True, force=True)
+            coord_str = add_color_to_string(coord_str, coord_col,
+                                            bold=True, force=True)
+            operation_str = add_color_to_string(operation_str, operation_col,
+                                                bold=True, force=True)
 
         # Put them all together.
         fmt = severity_str
