@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -322,7 +322,7 @@ class SubmissionResult(Base):
         nullable=False,
         default=0)
 
-    # Score computed by EvaluationService. Null means not yet scored.
+    # Score as computed by ScoringService. Null means not yet scored.
     score = Column(
         Float,
         nullable=True)
@@ -379,21 +379,6 @@ class SubmissionResult(Base):
             .filter(Evaluation.submission_result == self)\
             .filter(Evaluation.testcase == testcase)\
             .first()
-
-    def compute_score(self, score_type):
-        """Compute the score of this submission result and save the results in
-        the fields of the object.
-
-        score_type (ScoreType): the scoretype of the task containing
-            the submission.
-
-        """
-        score = score_type.compute_score(self)
-        self.score = score[0]
-        self.score_details = score[1]
-        self.public_score = score[2]
-        self.public_score_details = score[3]
-        self.ranking_score_details = score[4]
 
     def compiled(self):
         """Return whether the submission result has been compiled.

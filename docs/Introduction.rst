@@ -26,9 +26,11 @@ CMS is composed of several services, that can be run on a single or on many serv
 
 - Checker: simple heartbeat monitor for all services;
 
-- EvaluationService: organizes the queue of the submissions to compile or evaluate on the testcases, and dispatches these jobs to the workers; when the evaluation is complete, it also assigns a score;
+- EvaluationService: organizes the queue of the submissions to compile or evaluate on the testcases, and dispatches these jobs to the workers;
 
 - Worker: actually runs the jobs in a sandboxed environment;
+
+- ScoringService: collects the outcomes of the submissions and computes the score;
 
 - ProxyService: sends the computed scores to the rankings;
 

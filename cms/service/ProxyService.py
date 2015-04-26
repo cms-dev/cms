@@ -435,10 +435,9 @@ class ProxyService(TriggeredService):
     def submission_scored(self, submission_id):
         """Notice that a submission has been scored.
 
-        Usually called by EvaluationService when it's done with
-        scoring a submission result. Since we don't trust anyone we
-        verify that, and then send data about the score to the
-        rankings.
+        Usually called by ScoringService when it's done with scoring a
+        submission result. Since we don't trust anyone we verify that,
+        and then send data about the score to the rankings.
 
         submission_id (int): the id of the submission that changed.
         dataset_id (int): the id of the dataset to use.
@@ -498,7 +497,7 @@ class ProxyService(TriggeredService):
         update all the scores for the task using the submission results
         on the new active dataset. If some of them are not available
         yet we keep the old scores (we don't delete them!) and wait for
-        EvaluationService to notify us that the new ones are available.
+        ScoringService to notify us that the new ones are available.
 
         task_id (int): the ID of the task whose dataset has changed.
 

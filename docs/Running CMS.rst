@@ -104,7 +104,7 @@ Recommended setup
 
 Of course, the number of servers one needs to run a contest depends on many factors (number of participants, length of the contest, economical issues, more technical matters...). We recommend that, for fairness, each Worker runs an a dedicated machine (i.e., without other CMS services beyond ResourceService).
 
-As for the distribution of services, usually there is one ResourceService for each machine, one instance for each of LogService, Checker, EvaluationService, AdminWebServer, and one or more instances of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different machines.
+As for the distribution of services, usually there is one ResourceService for each machine, one instance for each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more instances of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different machines.
 
 We suggest and support out-of-the-box using CMS over Ubuntu 14.04. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
 
