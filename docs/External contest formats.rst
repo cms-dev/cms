@@ -14,9 +14,14 @@ CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsCo
     cmsContestExporter -h
     cmsContestImporter -h
 
-As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, CMS provides two general-purpose commands, :file:`cmsImporter` (for importing a totally new contest) and :file:`cmsReimporter` (for merging an already existing contest with the one being imported). These two programs have no knowledge of any specific on-disk format, so they must are complemented with a set of "loaders", which actually interpret your files and directories. You can tell the importer or the reimported wich loader to use with the ``-L`` flag, or just rely and their autodetection capabilities. Running with ``-h`` flag will list the available loaders.
+As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, CMS provides general-purpose commands, :file:`cmsAddUser`, :file:`cmsAddTask` and :file:`cmsAddContest`. These programs have no knowledge of any specific on-disk format, so they must be complemented with a set of "loaders", which actually interpret your files and directories. You can tell the importer or the reimported wich loader to use with the ``-L`` flag, or just rely and their autodetection capabilities. Running with ``-h`` flag will list the available loaders.
 
-At the moment, the only loader distributed with CMS understand the format used within Italian Olympiad. It is not particularly suited for general use (see below for some details more), so we encourage you to write a loader for your favorite format and then get in touch with CMS authors to have it accepted in CMS. See files :gh_blob:`cmscontrib/BaseLoader.py` and :gh_blob:`cmscontrib/YamlLoader.py` for some hints.
+At the moment, CMS comes with two loaders pre-installed:
+
+* :file:`italy_yaml`, for tasks/users stored in the "Italian Olympiad" format.
+* :file:`polygon_xml`, for tasks made with `Polygon <https://polygon.codeforces.com/>`_.
+
+The first one is not particularly suited for general use (see below for more details), so, if you don't want to migrate to one of the aforementioned formats then we encourage you to **write a loader** for your favorite format and then get in touch with CMS authors to have it accepted in CMS. See the file :gh_blob:`cmscontrib/loaders/base_loader.py` for some hints.
 
 
 Italian import format
