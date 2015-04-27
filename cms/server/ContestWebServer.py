@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -68,7 +68,7 @@ from werkzeug.datastructures import LanguageAccept
 from cms import ConfigError, ServiceCoord, config, filename_to_language
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
-    File, UserTest, UserTestFile, UserTestManager, PrintJob
+    SubmissionResult, File, UserTest, UserTestFile, UserTestManager, PrintJob
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
@@ -1267,28 +1267,25 @@ class SubmissionStatusHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
-        score_type = get_score_type(dataset=task.active_dataset)
+        if sr is None:
+            raise tornado.web.HTTPError(404)
 
-        # TODO: use some kind of constants to refer to the status.
         data = dict()
-        if sr is None or not sr.compiled():
-            data["status"] = 1
+        data["status"] = sr.get_status()
+        if data["status"] == SubmissionResult.COMPILING:
             data["status_text"] = self._("Compiling...")
-        elif sr.compilation_failed():
-            data["status"] = 2
+        elif data["status"] == SubmissionResult.COMPILATION_FAILED:
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Compilation failed"), self._("details"))
-        elif not sr.evaluated():
-            data["status"] = 3
+        elif data["status"] == SubmissionResult.EVALUATING:
             data["status_text"] = self._("Evaluating...")
-        elif not sr.scored():
-            data["status"] = 4
+        elif data["status"] == SubmissionResult.SCORING:
             data["status_text"] = self._("Scoring...")
-        else:
-            data["status"] = 5
+        elif data["status"] == SubmissionResult.SCORED:
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Evaluated"), self._("details"))
 
+            score_type = get_score_type(dataset=task.active_dataset)
             if score_type is not None and score_type.max_public_score != 0:
                 data["max_public_score"] = "%g" % \
                     round(score_type.max_public_score, task.score_precision)

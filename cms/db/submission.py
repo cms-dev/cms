@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -236,6 +236,20 @@ class SubmissionResult(Base):
     """Class to store the evaluation results of a submission.
 
     """
+    # Possible statuses of a submission result. COMPILING and
+    # EVALUATING do not necessarily imply we are going to schedule
+    # compilation and evalution for these submission results: for
+    # example, they might be for datasets not scheduled for
+    # evaluation, or they might have passed the maximum number of
+    # tries. If a submission result does not exists for a pair
+    # (submission, dataset), its status can be implicitly assumed to
+    # be COMPILING.
+    COMPILING = 1
+    COMPILATION_FAILED = 2
+    EVALUATING = 3
+    SCORING = 4
+    SCORED = 5
+
     __tablename__ = 'submission_results'
     __table_args__ = (
         UniqueConstraint('submission_id', 'dataset_id'),
@@ -356,6 +370,21 @@ class SubmissionResult(Base):
     # SQLAlchemy.
     # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects)
+
+    def get_status(self):
+        """Return the status of this object.
+
+        """
+        if not self.compiled():
+            return SubmissionResult.COMPILING
+        elif self.compilation_failed():
+            return SubmissionResult.COMPILATION_FAILED
+        elif not self.evaluated():
+            return SubmissionResult.EVALUATING
+        elif not self.scored():
+            return SubmissionResult.SCORING
+        else:
+            return SubmissionResult.SCORED
 
     def get_evaluation(self, testcase):
         """Return the Evaluation of this SR on the given Testcase, if any
