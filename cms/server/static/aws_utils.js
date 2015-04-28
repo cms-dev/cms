@@ -98,7 +98,7 @@ CMS.AWSUtils.prototype.file_received = function(response, error) {
                       .prop("class", pre_class));
 
         this.display_subpage(elements);
-        SyntaxHighlighter.highlight()
+        SyntaxHighlighter.highlight();
     }
 };
 
@@ -534,7 +534,7 @@ CMS.AWSUtils.prototype.standard_response = function(response) {
         var msg = "Unexpected reply `" + response['status']
             + "'. This should not happen.";
         if (response['status'] == 'unconnected') {
-            msg = 'Service not connected.'
+            msg = 'Service not connected.';
         } else if (response['status'] == 'not authorized') {
             msg = "You are not authorized to call this method.";
         } else if (response['status'] == 'fail') {
@@ -547,7 +547,7 @@ CMS.AWSUtils.prototype.standard_response = function(response) {
 
 
 CMS.AWSUtils.prototype.switch_contest = function() {
-    var value = $("#contest_selection_select").val()
+    var value = $("#contest_selection_select").val();
     if (value == "null") {
         window.location = this.url_root + "/";
     } else {
@@ -582,7 +582,7 @@ CMS.AWSUtils.prototype.show_page = function(item, page, elements_per_page) {
                                 return function() {
                                     self.show_page(item, j, elements_per_page);
                                     return false;
-                                }
+                                };
                             }(i)));
         } else {
             selector.append(i + " ");
