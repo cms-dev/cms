@@ -55,7 +55,7 @@ below, and wait for it to complete.
     {% set reevaluation_par_name = "dataset" %}
     {% set reevaluation_par_value = dataset.id %}
     {% set reevaluation_par_dataset_id = None %}
-    {% include reevaluation_buttons.html %}
+    {% include fragments/reevaluation_buttons.html %}
 </p>
 
 <form action="{{ url_root }}/activate_dataset/{{ dataset.id }}" method="POST">

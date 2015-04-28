@@ -15,7 +15,7 @@ utils.show_page("submissions", 1, 50);
 </div>
 
 {% set dataset_selector_par_url = "%s/dataset" % (url_root) %}
-{% include dataset_selector.html %}
+{% include fragments/dataset_selector.html %}
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
@@ -26,11 +26,11 @@ utils.show_page("submissions", 1, 50);
     {% set reevaluation_par_name = "dataset" %}
     {% set reevaluation_par_value = shown_dataset.id %}
     {% set reevaluation_par_dataset_id = None %}
-    {% include reevaluation_buttons.html %}
+    {% include fragments/reevaluation_buttons.html %}
   </p>
   {% end %}
 
-  {% include submission_rows.html %}
+  {% include fragments/submission_rows.html %}
 
   <div class="hr"></div>
 </div>

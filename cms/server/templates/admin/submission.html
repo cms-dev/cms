@@ -10,7 +10,7 @@
 </div>
 
 {% set dataset_selector_par_url = "%s/submission/%s" % (url_root, s.id) %}
-{% include dataset_selector.html %}
+{% include fragments/dataset_selector.html %}
 
 <h2 id="title_details" class="toggling_on">Submission details</h2>
 <div id="details">
@@ -104,7 +104,7 @@
           {% set reevaluation_par_name = "submission" %}
           {% set reevaluation_par_value = s.id %}
           {% set reevaluation_par_dataset_id = shown_dataset.id %}
-          {% include reevaluation_buttons.html %}
+          {% include fragments/reevaluation_buttons.html %}
         </td>
       </tr>
     </tbody>

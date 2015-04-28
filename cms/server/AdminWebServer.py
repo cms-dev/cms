@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -1605,7 +1605,7 @@ class DatasetSubmissionsHandler(BaseHandler):
                             .options(joinedload(Submission.token))\
                             .options(joinedload(Submission.results))\
                             .order_by(Submission.timestamp.desc()).all()
-        self.render("submissionlist.html", **self.r_params)
+        self.render("dataset.html", **self.r_params)
 
 
 class RankingHandler(BaseHandler):
