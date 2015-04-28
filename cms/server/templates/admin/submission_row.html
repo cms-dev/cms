@@ -2,6 +2,11 @@
 {% from cms.grading import format_status_text %}
 {% set dataset = s.task.active_dataset %}
 {% set sr = s.get_result(dataset) %}
+{# The submission result might be missing in some cases (e.g., cloned dataset); these cases are equivalent to the compiling state. #}
+{% set status = SubmissionResult.COMPILING %}
+{% if sr is not None %}
+  {% set status = sr.get_status() %}
+{% end %}
 {% if s.task.name in score_types %}
   {% set score_type = score_types[s.task.name] %}
 {% else %}
@@ -13,30 +18,20 @@
   <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
   <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
   <td>
-    {% if sr is None or sr.compilation_outcome is None %}
+    {% if status == SubmissionResult.COMPILING %}
     Compiling...
     {% else %}
     <div id="title_evaluation_{{ s.id }}" class="toggling_off">
-      {% if sr.compilation_outcome == "fail" %}
+
+      {% if status == SubmissionResult.COMPILATION_FAILED %}
       Compilation failed
       <div id="evaluation_{{ s.id }}" style="display: none;">
-      {% elif not sr.evaluated() %}
+
+      {% elif status == SubmissionResult.EVALUATING %}
       Evaluating...
       <div id="evaluation_{{ s.id }}" style="display: none;">
-      {% elif sr.scored() %}
-        {% try %}
-          {% set max_score = score_type.max_score %}
-        {% except %}
-          {% set max_score = "[Cannot get score type - see logs]" %}
-        {% end %}
-      Scored ({{ sr.score }} / {{ max_score }})
-      <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-        {% try %}
-          {% raw score_type.get_html_details(sr.score_details) %}
-        {% except %}
-        [Cannot get score type - see logs]
-        {% end %}
-      {% else %}
+
+      {% elif status == SubmissionResult.SCORING %}
       Scoring...
       <div id="evaluation_{{ s.id }}" style="display: none;">
         {% if sr.evaluated() %}
@@ -64,6 +59,25 @@
           </tbody>
         </table>
         {% end %}
+
+      {% elif status == SubmissionResult.SCORED %}
+        {% try %}
+          {% set max_score = score_type.max_score %}
+        {% except %}
+          {% set max_score = "[Cannot get score type - see logs]" %}
+        {% end %}
+      Scored ({{ sr.score }} / {{ max_score }})
+      <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
+        {% try %}
+          {% raw score_type.get_html_details(sr.score_details) %}
+        {% except %}
+        [Cannot get score type - see logs]
+        {% end %}
+
+      {% else %}
+      [Unknown status]
+      <div id="evaluation_{{ s.id }}" style="display: none;">
+
       {% end %}
         <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
         <pre>{% if sr.compilation_text is not None %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
