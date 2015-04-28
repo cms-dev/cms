@@ -40,6 +40,13 @@ function update_additional_answer(element, invoker)
   <p>No submissions found.</p>
 
   {% else %}
+  <p>
+    Reevaluate all {{ len(submissions) }} submissions for this user:
+    {% set reevaluation_par_name = "user" %}
+    {% set reevaluation_par_value = selected_user.id %}
+    {% set reevaluation_par_dataset_id = None %}
+    {% include reevaluation_buttons.html %}
+  </p>
   <table class="bordered">
     <thead>
       <tr>
@@ -146,13 +153,6 @@ function update_additional_answer(element, invoker)
       {% end %}
     </tbody>
   </table>
-  <p>
-    Reevaluate all {{ len(submissions) }} submissions for this user:
-    {% set reevaluation_par_name = "user" %}
-    {% set reevaluation_par_value = selected_user.id %}
-    {% set reevaluation_par_dataset_id = None %}
-    {% include reevaluation_buttons.html %}
-  </p>
   {% end %}
   <div class="hr"></div>
 </div>

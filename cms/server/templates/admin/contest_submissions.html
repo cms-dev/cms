@@ -16,6 +16,22 @@ utils.show_page("submissions", 1, 50);
   <p>No submissions found.</p>
 
   {% else %}
+  <p>
+    {# TODO: use reevaluation_buttons.html #}
+    Reevaluate all {{ len(submissions) }} submissions:
+  <button onclick="cmsrpc_request('{{ url_root }}', 'EvaluationService', 0,
+                   'invalidate_submission', {'level': 'compilation'},
+                   function(response) { utils.redirect_if_ok('{{ url_root }}/submissions/{{ contest.id }}', response); });"
+          title="Compilation" >C</button>
+  <button onclick="cmsrpc_request('{{ url_root }}', 'EvaluationService', 0,
+                   'invalidate_submission', {'level': 'evaluation'},
+                   function(response) { utils.redirect_if_ok('{{ url_root }}/submissions/{{ contest.id }}', response); });"
+          title="Evaluation" >E</button>
+  <button onclick="cmsrpc_request('{{ url_root }}', 'ScoringService', 0,
+                   'invalidate_submission', {},
+                   function(response) { utils.redirect_if_ok('{{ url_root }}/submissions/{{ contest.id }}', response); });"
+          title="Score" >S</button>
+  </p>
   {# TODO: implement a more useful pagination for a large contest #}
   <div id="page_selector_submissions"></div>
   <table class="bordered">
@@ -124,22 +140,6 @@ utils.show_page("submissions", 1, 50);
       {% end %}
     </tbody>
   </table>
-  <p>
-    {# TODO: use reevaluation_buttons.html #}
-    Reevaluate all {{ len(submissions) }} submissions:
-  <button onclick="cmsrpc_request('{{ url_root }}', 'EvaluationService', 0,
-                   'invalidate_submission', {'level': 'compilation'},
-                   function(response) { utils.redirect_if_ok('{{ url_root }}/submissions/{{ contest.id }}', response); });"
-          title="Compilation" >C</button>
-  <button onclick="cmsrpc_request('{{ url_root }}', 'EvaluationService', 0,
-                   'invalidate_submission', {'level': 'evaluation'},
-                   function(response) { utils.redirect_if_ok('{{ url_root }}/submissions/{{ contest.id }}', response); });"
-          title="Evaluation" >E</button>
-  <button onclick="cmsrpc_request('{{ url_root }}', 'ScoringService', 0,
-                   'invalidate_submission', {},
-                   function(response) { utils.redirect_if_ok('{{ url_root }}/submissions/{{ contest.id }}', response); });"
-          title="Score" >S</button>
-  </p>
   {% end %}
 </div>
 

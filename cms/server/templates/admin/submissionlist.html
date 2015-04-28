@@ -20,6 +20,13 @@
   <p>No submissions found.</p>
 
   {% else %}
+  <p>
+    Reevaluate all {{ len(submissions) }} submissions using this dataset:
+    {% set reevaluation_par_name = "dataset" %}
+    {% set reevaluation_par_value = shown_dataset.id %}
+    {% set reevaluation_par_dataset_id = None %}
+    {% include reevaluation_buttons.html %}
+  </p>
   <table class="bordered">
     <thead>
       <tr>
@@ -135,13 +142,6 @@
       {% end %}
     </tbody>
   </table>
-  <p>
-    Reevaluate all {{ len(submissions) }} submissions using this dataset:
-    {% set reevaluation_par_name = "dataset" %}
-    {% set reevaluation_par_value = shown_dataset.id %}
-    {% set reevaluation_par_dataset_id = None %}
-    {% include reevaluation_buttons.html %}
-  </p>
   {% end %}
   <div class="hr"></div>
 </div>
