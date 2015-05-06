@@ -1094,7 +1094,7 @@ class DeleteStatementHandler(BaseHandler):
         statement = self.safe_get_item(Statement, statement_id)
         task = self.safe_get_item(Task, task_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if task is not statement.task:
             raise tornado.web.HTTPError(404)
 
@@ -1159,7 +1159,7 @@ class DeleteAttachmentHandler(BaseHandler):
         attachment = self.safe_get_item(Attachment, attachment_id)
         task = self.safe_get_item(Task, task_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if attachment.task is not task:
             raise tornado.web.HTTPError(404)
 
@@ -1225,7 +1225,7 @@ class DeleteManagerHandler(BaseHandler):
         manager = self.safe_get_item(Manager, manager_id)
         dataset = self.safe_get_item(Dataset, dataset_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if manager.dataset is not dataset:
             raise tornado.web.HTTPError(404)
 
@@ -1791,7 +1791,7 @@ class DeleteTestcaseHandler(BaseHandler):
         testcase = self.safe_get_item(Testcase, testcase_id)
         dataset = self.safe_get_item(Dataset, dataset_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if dataset is not testcase.dataset:
             raise tornado.web.HTTPError(404)
 
@@ -2078,7 +2078,7 @@ class RemoveAnnouncementHandler(BaseHandler):
         ann = self.safe_get_item(Announcement, ann_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if self.contest is not ann.contest:
             raise tornado.web.HTTPError(404)
 
@@ -2286,7 +2286,7 @@ class QuestionReplyHandler(BaseHandler):
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
             raise tornado.web.HTTPError(404)
 
@@ -2325,7 +2325,7 @@ class QuestionIgnoreHandler(BaseHandler):
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
-        # Additional check.
+        # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
             raise tornado.web.HTTPError(404)
 
