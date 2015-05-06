@@ -515,6 +515,14 @@ class MainHandler(BaseHandler):
         self.render("welcome.html", **self.r_params)
 
 
+def SimpleHandler(page):
+    class Cls(BaseHandler):
+        def get(self):
+            self.r_params = self.render_params()
+            self.render(page, **self.r_params)
+    return Cls
+
+
 def SimpleContestHandler(page):
     class Cls(BaseHandler):
         def get(self, contest_id):
@@ -781,18 +789,6 @@ class EditContestUserHandler(BaseHandler):
 
         # Maybe they'll want to do this again (for another task)
         self.redirect(fallback_page)
-
-
-class TasklistHandler(BaseHandler):
-    def get(self):
-        self.r_params = self.render_params()
-        self.render("tasklist.html", **self.r_params)
-
-
-class UserlistHandler(BaseHandler):
-    def get(self):
-        self.r_params = self.render_params()
-        self.render("userlist.html", **self.r_params)
 
 
 class UserViewHandler(BaseHandler):
@@ -2474,7 +2470,7 @@ _aws_handlers = [
 
     # Tasks
 
-    (r"/tasks", TasklistHandler),
+    (r"/tasks", SimpleHandler("tasklist.html")),
     (r"/tasks/new", AddTaskHandler),
     (r"/task/([0-9]+)", TaskHandler),
     (r"/task/([0-9]+)/new_dataset", AddDatasetHandler),
@@ -2499,7 +2495,7 @@ _aws_handlers = [
 
     # Users
 
-    (r"/users", UserlistHandler),
+    (r"/users", SimpleHandler("userlist.html")),
     (r"/users/new", AddUserHandler),
     (r"/user/([0-9]+)", UserViewHandler),
     (r"/user/([0-9]+)/add_participation", AssignUserContestHandler),
