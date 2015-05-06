@@ -1244,6 +1244,11 @@ class DeleteManagerHandler(BaseHandler):
 class AddDatasetHandler(BaseHandler):
     """Add a new, clean dataset to a task.
 
+    It's equivalent to the old behavior when the dataset_id_to_copy
+    given was equal to the string "-".
+
+    If referred by GET, this handler will return a HTML form.
+    If referred by POST, this handler will create the dataset.
     """
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
@@ -1312,6 +1317,11 @@ class AddDatasetHandler(BaseHandler):
 class CloneDatasetHandler(BaseHandler):
     """Clone a dataset by duplicating it (on the same task).
 
+    It's equivalent to the old behavior of AddDatasetHandler when the
+    dataset_id_to_copy given was the ID of an existing dataset.
+
+    If referred by GET, this handler will return a HTML form.
+    If referred by POST, this handler will create the dataset.
     """
     def get(self, dataset_id_to_copy):
         dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
