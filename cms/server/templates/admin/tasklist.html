@@ -7,13 +7,22 @@
 </div>
 
 <div id="details">
-  <ul>
-    {% for t in task_list %}
-      <li>
-        <a href="{{ url_root}}/task/{{ t.id }}">{{ t.name }}</a> --- {{ t.title }}
-      </li>
-    {% end %}
-  </ul>
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in task_list %}
+      <tr>
+        <td><a href="{{ url_root}}/task/{{ t.id }}">{{ t.name }}</a></td>
+        <td>{{ t.title }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
 </div>
 
 {% end %}

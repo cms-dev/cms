@@ -10,24 +10,17 @@
   <table class="bordered">
     <thead>
       <tr>
+        <th>Username</th>
         <th>First name</th>
         <th>Last name</th>
-        <th>Username</th>
-        <th>Reevaluate</th>
       </tr>
     </thead>
     <tbody>
       {% for u in sorted(user_list, cmp = lambda x, y: cmp(x.username, y.username)) %}
       <tr>
+        <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
         <td>{{ u.first_name }}</td>
         <td>{{ u.last_name }}</td>
-        <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
-        <td>
-          {% set reevaluation_par_name = "user" %}
-          {% set reevaluation_par_value = u.id %}
-          {% set reevaluation_par_dataset_id = None %}
-          {% include reevaluation_buttons.html %}
-        </td>
       </tr>
       {% end %}
     </tbody>

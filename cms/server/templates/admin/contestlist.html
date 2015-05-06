@@ -7,13 +7,22 @@
 </div>
 
 <div id="details">
-  <ul>
-    {% for c in contest_list %}
-      <li>
-        <a href="{{ url_root}}/contest/{{ c.id }}">{{ c.name }}</a> --- {{ c.description }}
-      </li>
-    {% end %}
-  </ul>
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contest_list %}
+      <tr>
+        <td><a href="{{ url_root}}/contest/{{ c.id }}">{{ c.name }}</a></td>
+        <td>{{ c.description }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
 </div>
 
 {% end %}
