@@ -49,7 +49,7 @@ class Task(Base):
     """
     __tablename__ = 'tasks'
     __table_args__ = (
-        #UniqueConstraint('contest_id', 'num'),  # this makes difficult to swap X.num with Y.num
+        UniqueConstraint('contest_id', 'num'),
         UniqueConstraint('contest_id', 'name'),
         ForeignKeyConstraint(
             ("id", "active_dataset_id"),

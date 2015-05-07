@@ -729,7 +729,10 @@ class EditContestTaskHandler(BaseHandler):
 
         # Swap task.num and task2.num, if needed
         if task2 is not None:
-            task.num, task2.num = task2.num, task.num
+            tmp_a, tmp_b = task.num, task2.num
+            task.num, task2.num = None, None
+            self.sql_session.flush()
+            task.num, task2.num = tmp_b, tmp_a
 
         if try_commit(self.sql_session, self):
             # Create the user on RWS.
