@@ -27,8 +27,8 @@
     <thead>
       <tr>
         <th></th>
-        <th>Title</th>
         <th>Name</th>
+        <th>Title</th>
         <th>Reevaluate</th>
       </tr>
     </thead>
@@ -38,8 +38,8 @@
         <td>
           <input type="radio" name="task_id" value="{{ t.id }}"/>
         </td>
-        <td>{{ t.title }}</td>
         <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
+        <td>{{ t.title }}</td>
         <td>
           {% set reevaluation_par_name = "dataset" %}
           {% set reevaluation_par_value = t.active_dataset_id %}
