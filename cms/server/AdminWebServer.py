@@ -173,6 +173,10 @@ class BaseHandler(CommonRequestHandler):
 
     """
 
+    REMOVE_FROM_CONTEST = "Remove from contest"
+    MOVE_UP = "Move up"
+    MOVE_DOWN = "Move down"
+
     def safe_get_item(self, cls, ident, session=None):
         """Get item from database of class cls and id ident, using
         session if given, or self.sql_session if not given. If id is
@@ -687,9 +691,9 @@ class EditContestTaskHandler(BaseHandler):
             task_id = self.get_argument("task_id")
             operation = self.get_argument("operation")
             assert operation in (
-                "Remove from contest",
-                "Move up",
-                "Move down"
+                self.REMOVE_FROM_CONTEST,
+                self.MOVE_UP,
+                self.MOVE_DOWN
             ), "Please select a valid operation"
         except Exception as error:
             self.application.service.add_notification(
@@ -700,7 +704,7 @@ class EditContestTaskHandler(BaseHandler):
         task = self.safe_get_item(Task, task_id)
         task2 = None
 
-        if operation == "Remove from contest":
+        if operation == self.REMOVE_FROM_CONTEST:
             # Save the current task_num (position in the contest).
             task_num = task.num
 
@@ -715,13 +719,13 @@ class EditContestTaskHandler(BaseHandler):
                          .all():
                 t.num -= 1
 
-        elif operation == "Move up":
+        elif operation == self.MOVE_UP:
             task2 = self.sql_session.query(Task)\
                         .filter(Task.contest == self.contest)\
                         .filter(Task.num == task.num - 1)\
                         .first()
 
-        elif operation == "Move down":
+        elif operation == self.MOVE_DOWN:
             task2 = self.sql_session.query(Task)\
                         .filter(Task.contest == self.contest)\
                         .filter(Task.num == task.num + 1)\
@@ -768,7 +772,7 @@ class EditContestUserHandler(BaseHandler):
             user_id = self.get_argument("user_id")
             operation = self.get_argument("operation")
             assert operation in (
-                "Remove from contest",
+                self.REMOVE_FROM_CONTEST,
             ), "Please select a valid operation"
         except Exception as error:
             self.application.service.add_notification(
@@ -778,7 +782,7 @@ class EditContestUserHandler(BaseHandler):
 
         user = self.safe_get_item(User, user_id)
 
-        if operation == "Remove from contest":
+        if operation == self.REMOVE_FROM_CONTEST:
             # Unassign the user from the contest.
             participation = self.sql_session.query(Participation)\
                 .filter(Participation.user == user)\
