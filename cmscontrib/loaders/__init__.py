@@ -21,10 +21,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .italy_yaml import YamlLoader
-from .polygon import PolygonLoader
+from .polygon import PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
 
-LOADERS = dict((loader_class.short_name, loader_class)
-               for loader_class in [YamlLoader, PolygonLoader])
+LOADERS = dict(
+    (loader_class.short_name, loader_class) for loader_class in [
+        YamlLoader, PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
+    ]
+)
 
 
 def choose_loader(arg, path, error_callback):
