@@ -90,6 +90,12 @@ class PolygonTaskLoader(TaskLoader):
 
         """
 
+        logger.info("Checking dos2unix presence")
+        i = os.system('dos2unix -V 2>/dev/null')
+        self.dos2unix_found = (i == 0)
+        if not self.dos2unix_found:
+            logger.error("dos2unix not found - tests will not be converted!")
+
         name = os.path.basename(self.path)
         logger.info("Loading parameters for task %s.", name)
 
