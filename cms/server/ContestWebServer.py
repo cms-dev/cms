@@ -136,14 +136,14 @@ class BaseHandler(CommonRequestHandler):
         self.r_params = self.render_params()
 
     def get_current_user(self):
-        """The name is get_current_user because tornado wants it that way, but
-        this is really a get_current_participation.
+        """The name is get_current_user because tornado wants it that
+        way, but this is really a get_current_participation.
 
         Gets the current participation from cookies.
 
         If a valid cookie is retrieved, return a Participation tuple
-        (specifically: the Participation involving the username specified in the
-        cookie and the current contest).
+        (specifically: the Participation involving the username
+        specified in the cookie and the current contest).
 
         Otherwise (e.g. the user exists but doesn't participate in the
         current contest), return None.
