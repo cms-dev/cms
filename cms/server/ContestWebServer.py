@@ -136,12 +136,14 @@ class BaseHandler(CommonRequestHandler):
         self.r_params = self.render_params()
 
     def get_current_user(self):
-        """Gets the current user and participation from cookies.
+        """The name is get_current_user because tornado wants it that way, but
+        this is really a get_current_participation.
 
-        If a valid cookie is retrieved, return a (User, Participation)
-        tuple (the User object is the User with the username specified
-        in the cookie; the Participation object is the Participation
-        involving that user in the current contest).
+        Gets the current participation from cookies.
+
+        If a valid cookie is retrieved, return a Participation tuple
+        (specifically: the Participation involving the username specified in the
+        cookie and the current contest).
 
         Otherwise (e.g. the user exists but doesn't participate in the
         current contest), return None.
@@ -213,11 +215,11 @@ class BaseHandler(CommonRequestHandler):
         if self.refresh_cookie:
             self.set_secure_cookie("login",
                                    pickle.dumps((user.username,
-                                                 user.password,
+                                                 password,
                                                  make_timestamp())),
                                    expires_days=None)
 
-        return (user, participation)
+        return participation
 
     def get_user_locale(self):
         self.langs = self.application.service.langs
@@ -338,7 +340,7 @@ class BaseHandler(CommonRequestHandler):
         ret["printing_enabled"] = (config.printer is not None)
 
         if self.current_user is not None:
-            user, participation = self.current_user
+            participation = self.current_user
 
             res = compute_actual_phase(
                 self.timestamp, self.contest.start, self.contest.stop,
@@ -353,7 +355,7 @@ class BaseHandler(CommonRequestHandler):
                 ret["phase"] = 0
 
             # set the timezone used to format timestamps
-            ret["timezone"] = get_timezone(user, self.contest)
+            ret["timezone"] = get_timezone(participation.user, self.contest)
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)
@@ -613,9 +615,9 @@ class StartHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(-1)
     def post(self):
-        user, participation = self.get_current_user()
+        participation = self.current_user
 
-        logger.info("Starting now for user %s", user.username)
+        logger.info("Starting now for user %s", participation.user.username)
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
@@ -638,8 +640,6 @@ class TaskDescriptionHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name):
-        user, participation = self.current_user
-
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
@@ -669,7 +669,7 @@ class TaskSubmissionsHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -771,7 +771,7 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, submission_num, filename):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -840,7 +840,7 @@ class NotificationsHandler(BaseHandler):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
 
-        user, participation = self.current_user
+        participation = self.current_user
 
         res = []
         last_notification = make_datetime(
@@ -892,7 +892,7 @@ class NotificationsHandler(BaseHandler):
 
         # Simple notifications
         notifications = self.application.service.notifications
-        username = user.username
+        username = participation.user.username
         if username in notifications:
             for notification in notifications[username]:
                 res.append({"type": "notification",
@@ -911,7 +911,7 @@ class QuestionHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self):
-        user, participation = self.current_user
+        participation = self.current_user
 
         # User can post only if we want.
         if not config.allow_questions:
@@ -924,11 +924,11 @@ class QuestionHandler(BaseHandler):
         self.sql_session.add(question)
         self.sql_session.commit()
 
-        logger.info("Question submitted by user %s.", user.username)
+        logger.info("Question submitted by user %s.", participation.user.username)
 
         # Add "All ok" notification.
         self.application.service.add_notification(
-            user.username,
+            participation.user.username,
             self.timestamp,
             self._("Question received"),
             self._("Your question has been received, you will be "
@@ -945,7 +945,7 @@ class SubmitHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -982,7 +982,7 @@ class SubmitHandler(BaseHandler):
                         task.max_submission_number)
         except ValueError as error:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Too many submissions!"),
                 error.message,
@@ -1024,7 +1024,7 @@ class SubmitHandler(BaseHandler):
                         task.min_submission_interval.total_seconds())
         except ValueError as error:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Submissions too frequent!"),
                 error.message,
@@ -1036,7 +1036,7 @@ class SubmitHandler(BaseHandler):
         # same name.
         if any(len(filename) != 1 for filename in self.request.files.values()):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
@@ -1056,7 +1056,7 @@ class SubmitHandler(BaseHandler):
 
             if archive is None:
                 self.application.service.add_notification(
-                    user.username,
+                    participation.user.username,
                     self.timestamp,
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
@@ -1086,7 +1086,7 @@ class SubmitHandler(BaseHandler):
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
@@ -1144,7 +1144,7 @@ class SubmitHandler(BaseHandler):
                     submission_lang = lang
         if error is not None:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid submission!"),
                 error,
@@ -1156,7 +1156,7 @@ class SubmitHandler(BaseHandler):
         if any([len(f[1]) > config.max_submission_length
                 for f in files.values()]):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Submission too big!"),
                 self._("Each source file must be at most %d bytes long.") %
@@ -1174,7 +1174,7 @@ class SubmitHandler(BaseHandler):
                 path = os.path.join(
                     config.submit_local_copy_path.replace("%s",
                                                           config.data_dir),
-                    user.username)
+                    participation.user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
                 # Pickle in ASCII format produces str, not unicode,
@@ -1184,7 +1184,7 @@ class SubmitHandler(BaseHandler):
                                      "%d" % make_timestamp(self.timestamp)),
                         "wb") as file_:
                     pickle.dump((self.contest.id,
-                                 user.id,
+                                 participation.user.id,
                                  task.id,
                                  files), file_)
             except Exception as error:
@@ -1196,7 +1196,7 @@ class SubmitHandler(BaseHandler):
                 digest = self.application.service.file_cacher.put_file_content(
                     files[filename][1],
                     "Submission file %s sent by %s at %d." % (
-                        filename, user.username,
+                        filename, participation.user.username,
                         make_timestamp(self.timestamp)))
                 file_digests[filename] = digest
 
@@ -1204,7 +1204,7 @@ class SubmitHandler(BaseHandler):
         except Exception as error:
             logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Submission storage failed!"),
                 self._("Please try again."),
@@ -1214,7 +1214,7 @@ class SubmitHandler(BaseHandler):
 
         # All the files are stored, ready to submit!
         logger.info("All files stored for submission sent by %s",
-                    user.username)
+                    participation.user.username)
         submission = Submission(self.timestamp,
                                 submission_lang,
                                 task=task,
@@ -1227,7 +1227,7 @@ class SubmitHandler(BaseHandler):
         self.application.service.evaluation_service.new_submission(
             submission_id=submission.id)
         self.application.service.add_notification(
-            user.username,
+            participation.user.username,
             self.timestamp,
             self._("Submission received"),
             self._("Your submission has been received "
@@ -1249,7 +1249,7 @@ class UseTokenHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name, submission_num):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1268,15 +1268,15 @@ class UseTokenHandler(BaseHandler):
         # Don't trust the user, check again if (s)he can really play
         # the token.
         tokens_available = self.contest.tokens_available(
-            user.username,
+            participation.user.username,
             task.name,
             self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
-            logger.warning("User %s tried to play a token when it "
-                           "shouldn't.", user.username)
+            logger.warning("User %s tried to play a token when they "
+                           "shouldn't.", participation.user.username)
             # Add "no luck" notification
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Token request discarded"),
                 self._("Your request has been discarded because you have no "
@@ -1291,7 +1291,7 @@ class UseTokenHandler(BaseHandler):
             self.sql_session.commit()
         else:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Token request discarded"),
                 self._("Your request has been discarded because you already "
@@ -1306,11 +1306,11 @@ class UseTokenHandler(BaseHandler):
             submission_id=submission.id)
 
         logger.info("Token played by user %s on task %s.",
-                    user.username, task.name)
+                    participation.user.username, task.name)
 
         # Add "All ok" notification.
         self.application.service.add_notification(
-            user.username,
+            participation.user.username,
             self.timestamp,
             self._("Token request received"),
             self._("Your request has been received "
@@ -1327,7 +1327,7 @@ class SubmissionStatusHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, submission_num):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1385,7 +1385,7 @@ class SubmissionDetailsHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, submission_num):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1428,7 +1428,7 @@ class UserTestInterfaceHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self):
-        user, participation = self.current_user
+        participation = self.current_user
 
         user_tests = dict()
         user_tests_left = dict()
@@ -1485,7 +1485,7 @@ class UserTestHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1496,7 +1496,7 @@ class UserTestHandler(BaseHandler):
         task_type = get_task_type(dataset=task.active_dataset)
         if not task_type.testable:
             logger.warning("User %s tried to make test on task %s.",
-                           user.username, task_name)
+                           participation.user.username, task_name)
             raise tornado.web.HTTPError(404)
 
         # Alias for easy access
@@ -1527,7 +1527,7 @@ class UserTestHandler(BaseHandler):
                         task.max_user_test_number)
         except ValueError as error:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Too many tests!"),
                 error.message,
@@ -1569,7 +1569,7 @@ class UserTestHandler(BaseHandler):
                         task.min_user_test_interval.total_seconds())
         except ValueError as error:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Tests too frequent!"),
                 error.message,
@@ -1581,7 +1581,7 @@ class UserTestHandler(BaseHandler):
         # same name.
         if any(len(filename) != 1 for filename in self.request.files.values()):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
@@ -1601,7 +1601,7 @@ class UserTestHandler(BaseHandler):
 
             if archive is None:
                 self.application.service.add_notification(
-                    user.username,
+                    participation.user.username,
                     self.timestamp,
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
@@ -1631,7 +1631,7 @@ class UserTestHandler(BaseHandler):
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
@@ -1684,7 +1684,7 @@ class UserTestHandler(BaseHandler):
                     submission_lang = lang
         if error is not None:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid test!"),
                 error,
@@ -1696,7 +1696,7 @@ class UserTestHandler(BaseHandler):
         if any([len(f[1]) > config.max_submission_length
                 for n, f in files.items() if n != "input"]):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %
@@ -1706,7 +1706,7 @@ class UserTestHandler(BaseHandler):
             return
         if len(files["input"][1]) > config.max_input_length:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Input too big!"),
                 self._("The input file must be at most %d bytes long.") %
@@ -1724,7 +1724,7 @@ class UserTestHandler(BaseHandler):
                 path = os.path.join(
                     config.tests_local_copy_path.replace("%s",
                                                          config.data_dir),
-                    user.username)
+                    participation.user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
                 # Pickle in ASCII format produces str, not unicode,
@@ -1734,7 +1734,7 @@ class UserTestHandler(BaseHandler):
                                      "%d" % make_timestamp(self.timestamp)),
                         "wb") as file_:
                     pickle.dump((self.contest.id,
-                                 user.id,
+                                 participation.user.id,
                                  task.id,
                                  files), file_)
             except Exception as error:
@@ -1746,7 +1746,7 @@ class UserTestHandler(BaseHandler):
                 digest = self.application.service.file_cacher.put_file_content(
                     files[filename][1],
                     "Test file %s sent by %s at %d." % (
-                        filename, user.username,
+                        filename, participation.user.username,
                         make_timestamp(self.timestamp)))
                 file_digests[filename] = digest
 
@@ -1754,7 +1754,7 @@ class UserTestHandler(BaseHandler):
         except Exception as error:
             logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Test storage failed!"),
                 self._("Please try again."),
@@ -1764,7 +1764,7 @@ class UserTestHandler(BaseHandler):
 
         # All the files are stored, ready to submit!
         logger.info("All files stored for test sent by %s",
-                    user.username)
+                    participation.user.username)
         user_test = UserTest(self.timestamp,
                              submission_lang,
                              file_digests["input"],
@@ -1787,7 +1787,7 @@ class UserTestHandler(BaseHandler):
         self.application.service.evaluation_service.new_user_test(
             user_test_id=user_test.id)
         self.application.service.add_notification(
-            user.username,
+            participation.user.username,
             self.timestamp,
             self._("Test received"),
             self._("Your test has been received "
@@ -1803,7 +1803,7 @@ class UserTestStatusHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, user_test_num):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1858,7 +1858,7 @@ class UserTestDetailsHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, user_test_num):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1886,7 +1886,7 @@ class UserTestIOHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, user_test_num, io):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1924,7 +1924,7 @@ class UserTestFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, user_test_num, filename):
-        user, participation = self.current_user
+        participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
@@ -1968,7 +1968,7 @@ class PrintingHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self):
-        user, participation = self.current_user
+        participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
             self.redirect("/")
@@ -1990,7 +1990,7 @@ class PrintingHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self):
-        user, participation = self.current_user
+        participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
             self.redirect("/")
@@ -2002,7 +2002,7 @@ class PrintingHandler(BaseHandler):
         old_count = len(printjobs)
         if config.max_jobs_per_user <= old_count:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Too many print jobs!"),
                 self._("You have reached the maximum limit of "
@@ -2017,7 +2017,7 @@ class PrintingHandler(BaseHandler):
                for filename in self.request.files.values()) \
                 or set(self.request.files.keys()) != set(["file"]):
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Invalid format!"),
                 self._("Please select the correct files."),
@@ -2031,7 +2031,7 @@ class PrintingHandler(BaseHandler):
         # Check if submitted file is small enough.
         if len(data) > config.max_print_length:
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("File too big!"),
                 self._("Each file must be at most %d bytes long.") %
@@ -2045,14 +2045,14 @@ class PrintingHandler(BaseHandler):
             digest = self.application.service.file_cacher.put_file_content(
                 data,
                 "Print job sent by %s at %d." % (
-                    user.username,
+                    participation.user.username,
                     make_timestamp(self.timestamp)))
 
         # In case of error, the server aborts
         except Exception as error:
             logger.error("Storage failed! %s", error)
             self.application.service.add_notification(
-                user.username,
+                participation.user.username,
                 self.timestamp,
                 self._("Print job storage failed!"),
                 self._("Please try again."),
@@ -2062,10 +2062,10 @@ class PrintingHandler(BaseHandler):
 
         # The file is stored, ready to submit!
         logger.info("File stored for print job sent by %s",
-                    user.username)
+                    participation.user.username)
 
         printjob = PrintJob(timestamp=self.timestamp,
-                            user=user,
+                            user=participation.user,
                             filename=filename,
                             digest=digest)
 
@@ -2074,7 +2074,7 @@ class PrintingHandler(BaseHandler):
         self.application.service.printing_service.new_printjob(
             printjob_id=printjob.id)
         self.application.service.add_notification(
-            user.username,
+            participation.user.username,
             self.timestamp,
             self._("Print job received"),
             self._("Your print job has been received."),

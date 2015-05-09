@@ -58,9 +58,9 @@
 </div>
 
 
-{% if len (current_user[1].questions) > 0 %}
+{% if len (current_user.questions) > 0 %}
 <div class="question_list">
-    {% for msg in reversed(current_user[1].questions) %}
+    {% for msg in reversed(current_user.questions) %}
     <div class="question">
         {% if msg.subject != '' %}
         <h4 class="subject">{{ msg.subject }}</h4>
@@ -96,10 +96,10 @@
 {% end %}
 
 
-{% if len (current_user[1].messages) > 0 %}
+{% if len (current_user.messages) > 0 %}
 <h2>{{ _("Messages") }}</h2>
 <div class="message_list">
-    {% for msg in reversed(current_user[1].messages) %}
+    {% for msg in reversed(current_user.messages) %}
     <div class="message">
         {% if msg.subject != '' %}
         <h4 class="subject">{{ msg.subject }}</h4>

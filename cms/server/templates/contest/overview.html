@@ -112,16 +112,16 @@
         {{ _("By clicking on the button below you can start your time frame.") }}
         {{ _("Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.") }}
     {% elif actual_phase == 0 %}
-        {{ _("You started your time frame at %(start_time)s.") % {"start_time": format_datetime_smart(current_user[1].starting_time, timezone, locale=locale)} }}
+        {{ _("You started your time frame at %(start_time)s.") % {"start_time": format_datetime_smart(current_user.starting_time, timezone, locale=locale)} }}
         {{ _("You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.") }}
     {% elif actual_phase == +1 %}
-        {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": format_datetime_smart(current_user[1].starting_time, timezone, locale=locale)} }}
+        {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": format_datetime_smart(current_user.starting_time, timezone, locale=locale)} }}
         {{ _("There's nothing you can do now.") }}
     {% elif actual_phase == +2 %}
-        {% if current_user[1].starting_time is None %}
+        {% if current_user.starting_time is None %}
             {{ _("You never started your time frame. Now it's too late.") }}
         {% else %}
-            {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": format_datetime_smart(current_user[1].starting_time, timezone, locale=locale)} }}
+            {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": format_datetime_smart(current_user.starting_time, timezone, locale=locale)} }}
         {% end %}
         {{ _("There's nothing you can do now.") }}
     {% end %}
