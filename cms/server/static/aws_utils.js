@@ -154,8 +154,7 @@ CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
         subject_string = $("<span>").text("Reply to your question. ");
     } else if (type == "new_question") {
         subject_string = $("<a>").text("New question: ")
-            .prop("href", this.url_root + '/contest/' + contest_id +
-                          '/questions/' + contest_id);
+            .prop("href", this.url_root + '/contest/' + contest_id + '/questions');
     }
 
     var self = this;
