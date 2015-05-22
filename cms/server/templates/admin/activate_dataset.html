@@ -75,16 +75,16 @@ scores. No notifications will be sent.</p>
   </thead>
   <tbody>
 {% set prev_userid = None %}
-{% for c in sorted(changes, key=lambda c: (c.submission.user.id, c.submission.id)) %}
+{% for c in sorted(changes, key=lambda c: (c.submission.participation.user.id, c.submission.id)) %}
     <tr>
       <td style="text-align: right;">
-        {% if c.submission.user.id != prev_userid %}
-        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.user.id in default_notify_users else "off" }}" name="notify_{{ c.submission.user.id}}"/>
+        {% if c.submission.participation.user.id != prev_userid %}
+        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.user.id in default_notify_users else "off" }}" name="notify_{{ c.submission.participation.user.id}}"/>
         {% end %}
       </td>
       <td>
-        {% if c.submission.user.id != prev_userid %}
-        <a href="{{ url_root }}/user/{{ c.submission.user.id }}">{{ c.submission.user.username }}</a>
+        {% if c.submission.participation.user.id != prev_userid %}
+        <a href="{{ url_root }}/user/{{ c.submission.participation.user.id }}">{{ c.submission.participation.user.username }}</a>
         {% end %}
       </td>
       <td><a href="{{ url_root }}/submission/{{ c.submission.id }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
@@ -100,7 +100,7 @@ scores. No notifications will be sent.</p>
         {% end %}
       </td>
     </tr>
-  {% set prev_userid = c.submission.user.id %}
+  {% set prev_userid = c.submission.participation.user.id %}
 {% end %}
   </tbody>
 </table>

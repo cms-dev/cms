@@ -1493,7 +1493,7 @@ class ActivateDatasetHandler(BaseHandler):
                 c.new_public_score is not None
             if public_score_changed or \
                     (c.submission.tokened() and score_changed):
-                notify_users.add(c.submission.user.id)
+                notify_users.add(c.submission.participation.user.id)
 
         self.r_params = self.render_params()
         self.r_params["task"] = task

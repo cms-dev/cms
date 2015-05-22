@@ -179,7 +179,7 @@ def extract_complexity_submission(testcases_lengths, submission):
 
     points_x, points_y = extract_meaningful_points(testcases_lengths,
                                                    submission)
-    print(submission.user.username, len(points_x))
+    print(submission.participation.user.username, len(points_x))
     if len(points_x) <= 6:
         return result
 
@@ -249,7 +249,7 @@ def extract_complexity_submission(testcases_lengths, submission):
             dat.write("%15.8lf %+15.8lf %+15.8lf\n" % (point_x * x_scale,
                                                        point_y * y_scale,
                                                        computed_y * y_scale))
-    print(submission.user.username, result)
+    print(submission.participation.user.username, result)
     return result
 
 
@@ -281,13 +281,13 @@ def extract_complexity(task_id, file_lengther=None):
             for submission in task.contest.get_submissions():
                 if submission.task_id == task_id and \
                         submission.evaluated():
-                    print(submission.user.username)
+                    print(submission.participation.user.username)
                     result = extract_complexity_submission(testcases_lengths,
                                                            submission)
                     if result[1] is None:
                         continue
                     info.write("Submission: %s" % submission.id)
-                    info.write(" - user: %15s" % submission.user.username)
+                    info.write(" - user: %15s" % submission.participation.user.username)
                     info.write(" - task: %s" % task.name)
                     if result[0] is not None:
                         info.write(" - score: %6.2lf" % result[0])
