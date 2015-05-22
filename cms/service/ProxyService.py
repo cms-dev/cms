@@ -276,7 +276,7 @@ class ProxyService(TriggeredService):
             contest = Contest.get_from_id(self.contest_id, session)
 
             for submission in contest.get_submissions():
-                if submission.user.hidden:
+                if submission.participation.hidden:
                     continue
 
                 # The submission result can be None if the dataset has
@@ -367,7 +367,7 @@ class ProxyService(TriggeredService):
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
-            "user": encode_id(submission.user.username),
+            "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
             "time": int(make_timestamp(submission.timestamp))}
 
@@ -402,7 +402,7 @@ class ProxyService(TriggeredService):
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
-            "user": encode_id(submission.user.username),
+            "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
             "time": int(make_timestamp(submission.timestamp))}
 
@@ -482,9 +482,10 @@ class ProxyService(TriggeredService):
                              "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
-            if submission.user.hidden:
+            if submission.participation.user.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
-                            "not sent because user is hidden.", submission_id)
+                            "not sent because participation is hidden.",
+                            submission_id)
                 return
 
             # Update RWS.
@@ -517,7 +518,7 @@ class ProxyService(TriggeredService):
 
             for submission in task.submissions:
                 # Update RWS.
-                if not submission.user.hidden and \
+                if not submission.participation.user.hidden and \
                         submission.get_result() is not None and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):
