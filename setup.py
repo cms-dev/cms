@@ -66,6 +66,7 @@ def do_setup():
             os.path.join("static", "*.*"),
             os.path.join("templates", "contest", "*.*"),
             os.path.join("templates", "admin", "*.*"),
+            os.path.join("templates", "admin", "fragments", "*.*"),
             os.path.join("templates", "ranking", "*.*"),
         ],
         "cms.service": [
