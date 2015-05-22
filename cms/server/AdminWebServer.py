@@ -830,7 +830,6 @@ class UserViewHandler(BaseHandler):
             self.get_string(attrs, "username", empty=None)
             self.get_string(attrs, "password")
             self.get_string(attrs, "email")
-            self.get_bool(attrs, "hidden")
             self.get_string(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
 
@@ -2138,6 +2137,7 @@ class ParticipationHandler(BaseHandler):
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")
+            self.get_bool(attrs, "hidden")
 
             # Update the participation.
             participation.set_attrs(attrs)

@@ -330,7 +330,7 @@ class ProxyService(TriggeredService):
 
             for participation in contest.participations:
                 user = participation.user
-                if not user.hidden:
+                if not participation.hidden:
                     users[encode_id(user.username)] = \
                         {"f_name": user.first_name,
                          "l_name": user.last_name,
@@ -482,7 +482,7 @@ class ProxyService(TriggeredService):
                              "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
-            if submission.participation.user.hidden:
+            if submission.participation.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
                             "not sent because participation is hidden.",
                             submission_id)
@@ -518,7 +518,7 @@ class ProxyService(TriggeredService):
 
             for submission in task.submissions:
                 # Update RWS.
-                if not submission.participation.user.hidden and \
+                if not submission.participation.hidden and \
                         submission.get_result() is not None and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):

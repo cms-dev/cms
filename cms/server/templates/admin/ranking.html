@@ -19,7 +19,7 @@ Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a
   </thead>
   <tbody>
     {% for p in sorted(contest.participations, key=lambda u: u.user.username) %}
-      {% if not p.user.hidden %}
+      {% if not p.hidden %}
     <tr>
       {% set score = 0.0 %}
       {% set partial = False %}

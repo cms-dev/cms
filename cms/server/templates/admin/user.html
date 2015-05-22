@@ -87,10 +87,6 @@
         <td><input type="text" name="timezone" value="{{ user.timezone if user.timezone is not None else "" }}"></td>
       </tr>
       <tr>
-        <td>Hidden?</td>
-        <td><input type="checkbox" name="hidden" {% if user.hidden %}checked{% end %}/></td>
-      </tr>
-      <tr>
         <td>Preferred languages (JSON-encoded list of language codes, from the most to the least preferred)</td>
         <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages }}"></td>
       </tr>

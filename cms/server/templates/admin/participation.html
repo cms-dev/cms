@@ -171,6 +171,10 @@ function update_additional_answer(element, invoker)
         <td><input type="text" name="password" value="{{ participation.password }}"/></td>
       </tr>
       <tr>
+        <td>Hidden?</td>
+        <td><input type="checkbox" name="hidden" {% if participation.hidden %}checked{% end %}/></td>
+      </tr>
+      <tr>
         <td>IP address or subnet</td>
         <td><input type="text" name="ip" value="{{ participation.ip if participation.ip is not None else "" }}"/></td>
       </tr>

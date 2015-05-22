@@ -208,7 +208,7 @@ class BaseHandler(CommonRequestHandler):
             return None
 
         # Check if user is hidden
-        if user.hidden and config.block_hidden_users:
+        if participation.hidden and config.block_hidden_users:
             self.clear_cookie("login")
             return None
 
@@ -589,7 +589,7 @@ class LoginHandler(BaseHandler):
             self.redirect("/?login_error=true")
             return
 
-        if user.hidden and config.block_hidden_users:
+        if participation.hidden and config.block_hidden_users:
             logger.info("Hidden user login attempt: "
                         "user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)
