@@ -589,8 +589,13 @@ class AssignUserContestHandler(BaseHandler):
 
         self.contest = self.safe_get_item(Contest, contest_id)
 
+        attrs = {}
+        self.get_bool(attrs, "hidden")
+
         # Create the participation.
-        participation = Participation(contest=self.contest, user=user)
+        participation = Participation(contest=self.contest,
+                                      user=user,
+                                      hidden=attrs["hidden"])
         self.sql_session.add(participation)
 
         if try_commit(self.sql_session, self):
@@ -677,7 +682,7 @@ class ContestTasklistHandler(BaseHandler):
         self.r_params["unassigned_tasks"] = \
             self.sql_session.query(Task)\
                 .filter(Task.contest == None)\
-                .all()
+                .all()  # noqa
         self.render("contest_tasklist.html", **self.r_params)
 
 
@@ -2176,7 +2181,6 @@ class AddUserHandler(BaseHandler):
 
             self.get_string(attrs, "timezone", empty=None)
 
-            self.get_bool(attrs, "hidden")
             self.get_string(attrs, "preferred_languages")
 
             # Create the user.
@@ -2278,7 +2282,8 @@ class QuestionsHandler(BaseHandler):
 
         self.r_params = self.render_params()
         self.r_params["questions"] = self.sql_session.query(Question)\
-            .join(Participation).filter(Participation.contest_id == contest_id)\
+            .join(Participation)\
+            .filter(Participation.contest_id == contest_id)\
             .order_by(Question.question_timestamp.desc())\
             .order_by(Question.id).all()
         self.render("questions.html", **self.r_params)
@@ -2460,9 +2465,11 @@ _aws_handlers = [
 
     # Contest's announcements
 
-    (r"/contest/([0-9]+)/announcements", SimpleContestHandler("announcements.html")),
+    (r"/contest/([0-9]+)/announcements",
+     SimpleContestHandler("announcements.html")),
     (r"/contest/([0-9]+)/announcements/new", AddAnnouncementHandler),
-    (r"/contest/([0-9]+)/announcement/([0-9]+)/delete", RemoveAnnouncementHandler),
+    (r"/contest/([0-9]+)/announcement/([0-9]+)/delete",
+     RemoveAnnouncementHandler),
 
     # Contest's questions
 

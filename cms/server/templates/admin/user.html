@@ -19,6 +19,7 @@
       </option>
       {% end %}
     </select>
+    <input type="checkbox" name="hidden">Hidden</input>
     <input type="submit" value="Add participation" />
   </form>
 
@@ -33,6 +34,7 @@
         <tr>
           <th></th>
           <th>Participation</th>
+          <th>Hidden?</th>
           <th>Contest</th>
           <th>Contest description</th>
         </tr>
@@ -44,6 +46,7 @@
             <input type="radio" name="contest_id" value="{{ p.contest.id }}"/>
           </td>
           <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+          <td>{{ p.hidden }}</td>
           <td><a href="{{ url_root }}/contest/{{ p.contest.id }}">{{ p.contest.name }}</a></td>
           <td>{{ p.contest.description }}</td>
         </tr>
