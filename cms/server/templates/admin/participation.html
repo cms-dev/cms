@@ -142,7 +142,7 @@ function update_additional_answer(element, invoker)
           {% set reevaluation_par_name = "submission" %}
           {% set reevaluation_par_value = s.id %}
           {% set reevaluation_par_dataset_id = None %}
-          {% include reevaluation_buttons.html %}
+          {% include fragments/reevaluation_buttons.html %}
         </td>
       </tr>
       {% end %}
@@ -153,7 +153,7 @@ function update_additional_answer(element, invoker)
     {% set reevaluation_par_name = "user" %}
     {% set reevaluation_par_value = selected_user.id %}
     {% set reevaluation_par_dataset_id = None %}
-    {% include reevaluation_buttons.html %}
+    {% include fragments/reevaluation_buttons.html %}
   </p>
   {% end %}
   <div class="hr"></div>
