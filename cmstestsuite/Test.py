@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import os
 import re
 
@@ -139,6 +140,8 @@ class Test(object):
         self.filename = filename
         self.languages = languages
         self.checks = checks
+        submission_format = json.loads(task.task_info["submission_format"])
+        self.submission_format_element = submission_format[0]
 
     def run(self, contest_id, task_id, user_id, language):
         # Source files are stored under cmstestsuite/code/.
@@ -151,6 +154,7 @@ class Test(object):
 
         # Submit our code.
         submission_id = cws_submit(contest_id, task_id, user_id,
+                                   self.submission_format_element,
                                    full_path, language)
 
         # Wait for evaluation to complete.
