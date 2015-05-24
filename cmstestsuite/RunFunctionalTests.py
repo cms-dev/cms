@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 
 import io
 import os
+import random
 import sys
 import subprocess
 import datetime
@@ -48,6 +49,10 @@ FAILED_TEST_FILENAME = '.testfailures'
 # This stores a mapping from task name to (task id, task_module)
 task_id_map = {}
 
+# Random bit to append to object's names to avoid collisions.
+global rand
+rand = random.randint(0, 999999999)
+
 
 def start_generic_services():
     start_service("LogService")
@@ -64,8 +69,8 @@ def create_contest():
     start_time = datetime.datetime.utcnow()
     stop_time = start_time + datetime.timedelta(1, 0, 0)
     contest_id = add_contest(
-        name="testcontest1",
-        description="A test contest #1.",
+        name="testcontest" + str(rand),
+        description="A test contest #%s." % rand,
         languages=LANGUAGES,
         start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
         stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
@@ -104,7 +109,7 @@ def create_or_get_user(contest_id):
             return 'th'
         return {1: 'st', 2: 'nd', 3: 'rd'}.get(x % 10, 'th')
 
-    username = "testrabbit%d" % num_users
+    username = "testrabbit_%d_%d" % (rand, num_users)
 
     # Find a user that may already exist (from a previous contest).
     users = get_users(contest_id)
@@ -126,7 +131,7 @@ def create_or_get_user(contest_id):
 
 
 def get_task_id(contest_id, user_id, task_module):
-    name = task_module.task_info['name']
+    name = task_module.task_info['name'] + str(rand)
 
     # Have we done this before? Pull it out of our cache if so.
     if task_module in task_id_map:
@@ -150,14 +155,19 @@ def get_task_id(contest_id, user_id, task_module):
     }
     task_create_args.update(task_module.task_info)
 
-    # Find if the task already exists in the contest.
-    tasks = get_tasks(contest_id)
+    # Update the name with the random bit to avoid conflicts.
+    task_create_args["name"] = name
+
+    # Find if the task already exists (the name make sure that if it
+    # exists, it is already in out contest).
+    tasks = get_tasks()
     if name in tasks:
         # Then just use the existing one.
         task = tasks[name]
         task_id = task['id']
         task_id_map[name] = (task_id, task_module)
-        add_existing_task(task_id, contest_id=str(contest_id), **task_create_args)
+        add_existing_task(task_id, contest_id=str(contest_id),
+                          **task_create_args)
         return task_id
 
     # Otherwise, we need to add the task ourselves.
