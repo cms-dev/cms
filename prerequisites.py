@@ -154,6 +154,7 @@ def compile_l10n():
     """
 
     check_root(False)
+
     print("===== Compiling localization files")
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
         country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
@@ -206,6 +207,7 @@ def compile_isolate():
     """
 
     check_root(False)
+
     print("===== Compiling isolate")
     os.chdir("isolate")
     os.system("make")
@@ -336,6 +338,8 @@ def uninstall_all():
     and so on.
 
     """
+
+    check_root(True)
 
     print("===== Deleting isolate from /usr/local/bin/")
     try_delete(os.path.join(USR_ROOT, "bin", "isolate"))
