@@ -76,7 +76,7 @@ def try_delete(path):
 
     if os.path.isdir(path):
         try:
-            os.remove(path)
+            os.rmdir(path)
         except OSError:
             print("[Warning] Skipping because directory is not empty: ", path)
     else:
