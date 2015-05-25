@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -125,16 +125,18 @@ class SubmitRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """
-    def __init__(self, browser, task, filename, base_url=None):
+    def __init__(self, browser, task, submission_format_element,
+                 filename, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%stasks/%s/submit" % (self.base_url, task[1])
         self.task = task
+        self.submission_format_element = submission_format_element
         self.filename = filename
         self.data = {}
 
     def prepare(self):
         GenericRequest.prepare(self)
-        self.files = [('%s.%%l' % (self.task[1]), self.filename)]
+        self.files = [(self.submission_format_element, self.filename)]
 
     def describe(self):
         return "submit source %s for task %s (ID %d) %s" % \

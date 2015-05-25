@@ -26,16 +26,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
-import sys
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Task, ask_for_contest
+from cms.db import SessionGen, Task
 
 
-def remove_task(contest_id, task_name):
+def remove_task(task_name):
     with SessionGen() as session:
         task = session.query(Task)\
-            .filter(Task.contest_id == contest_id)\
             .filter(Task.name == task_name).first()
         session.delete(task)
         session.commit()
@@ -46,21 +44,19 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        description="Remove a task from a contest in CMS.")
-    parser.add_argument("task_name", action="store", type=utf8_decoder,
-                        help="short name of the task")
-    parser.add_argument("-c", "--contest-id", action="store", type=int,
-                        help="id of contest the task is in")
+        description="Remove a task from the database."
+    )
+
+    parser.add_argument(
+        "task_name",
+        action="store", type=utf8_decoder,
+        help="short name of the task"
+    )
+
     args = parser.parse_args()
 
-    if args.contest_id is None:
-        args.contest_id = ask_for_contest()
-
-    remove_task(contest_id=args.contest_id,
-                task_name=args.task_name)
-
-    return 0
+    remove_task(task_name=args.task_name)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

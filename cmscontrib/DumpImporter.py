@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,8 +23,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This service imports a contest from a directory that has been the
-target of a ContestExport. The process of exporting and importing
+"""This service imports data from a directory that has been the
+target of a DumpExport. The process of exporting and importing
 again should be idempotent.
 
 """
@@ -87,10 +88,10 @@ def find_root_of_archive(file_names):
     return current_root
 
 
-class ContestImporter(object):
+class DumpImporter(object):
 
-    """This service imports a contest from a directory that has been
-    the target of a ContestExport. The process of exporting and
+    """This service imports data from a directory that has been
+    the target of a DumpExport. The process of exporting and
     importing again should be idempotent.
 
     """
@@ -449,13 +450,13 @@ def main():
 
     args = parser.parse_args()
 
-    ContestImporter(drop=args.drop,
-                    import_source=args.import_source,
-                    load_files=not args.no_files,
-                    load_model=not args.files,
-                    skip_generated=args.no_generated,
-                    skip_submissions=args.no_submissions,
-                    skip_user_tests=args.no_user_tests).do_import()
+    DumpImporter(drop=args.drop,
+                 import_source=args.import_source,
+                 load_files=not args.no_files,
+                 load_model=not args.files,
+                 skip_generated=args.no_generated,
+                 skip_submissions=args.no_submissions,
+                 skip_user_tests=args.no_user_tests).do_import()
 
 
 if __name__ == "__main__":

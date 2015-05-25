@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2015 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -275,7 +276,7 @@ class ProxyService(TriggeredService):
             contest = Contest.get_from_id(self.contest_id, session)
 
             for submission in contest.get_submissions():
-                if submission.user.hidden:
+                if submission.participation.hidden:
                     continue
 
                 # The submission result can be None if the dataset has
@@ -327,8 +328,9 @@ class ProxyService(TriggeredService):
 
             users = dict()
 
-            for user in contest.users:
-                if not user.hidden:
+            for participation in contest.participations:
+                user = participation.user
+                if not participation.hidden:
                     users[encode_id(user.username)] = \
                         {"f_name": user.first_name,
                          "l_name": user.last_name,
@@ -365,7 +367,7 @@ class ProxyService(TriggeredService):
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
-            "user": encode_id(submission.user.username),
+            "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
             "time": int(make_timestamp(submission.timestamp))}
 
@@ -400,7 +402,7 @@ class ProxyService(TriggeredService):
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
-            "user": encode_id(submission.user.username),
+            "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
             "time": int(make_timestamp(submission.timestamp))}
 
@@ -451,9 +453,10 @@ class ProxyService(TriggeredService):
                              "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
-            if submission.user.hidden:
+            if submission.participation.hidden:
                 logger.info("[submission_scored] Score for submission %d "
-                            "not sent because user is hidden.", submission_id)
+                            "not sent because the participation is hidden.",
+                            submission_id)
                 return
 
             # Update RWS.
@@ -479,9 +482,10 @@ class ProxyService(TriggeredService):
                              "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
-            if submission.user.hidden:
+            if submission.participation.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
-                            "not sent because user is hidden.", submission_id)
+                            "not sent because participation is hidden.",
+                            submission_id)
                 return
 
             # Update RWS.
@@ -514,7 +518,7 @@ class ProxyService(TriggeredService):
 
             for submission in task.submissions:
                 # Update RWS.
-                if not submission.user.hidden and \
+                if not submission.participation.hidden and \
                         submission.get_result() is not None and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):

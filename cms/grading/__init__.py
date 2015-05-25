@@ -883,10 +883,11 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
 
 ## Computing global scores (for ranking). ##
 
-def task_score(user, task):
-    """Return the score of a user on a task.
+def task_score(participation, task):
+    """Return the score of a contest's user on a task.
 
-    user (User): the user for which to compute the score.
+    participation (Participation): the user and contest for which to
+        compute the score.
     task (Task): the task for which to compute the score.
 
     return ((float, bool)): the score of user on task, and True if the
@@ -905,7 +906,7 @@ def task_score(user, task):
     # / evaluated / scored.
     partial = False
 
-    submissions = [s for s in user.submissions if s.task is task]
+    submissions = [s for s in participation.submissions if s.task is task]
     submissions.sort(key=lambda s: s.timestamp)
 
     if submissions == []:

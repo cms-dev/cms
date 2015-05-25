@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012-2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,8 +29,8 @@ task_info = {
     "memory_limit": "128",
     "official_language": "",
     "task_type": "Communication",
-    "submission_format_choice": "simple",
-    "submission_format": "",
+    "submission_format_choice": "other",
+    "submission_format": "[\"communication.%l\"]",
     "score_type": "Sum",
     "score_type_parameters": "50",
 }

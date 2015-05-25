@@ -75,27 +75,28 @@ class Task(Base):
     # Number of the task for sorting.
     num = Column(
         Integer,
-        nullable=False)
+        nullable=True)
 
     # Contest (id and object) owning the task.
     contest_id = Column(
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True)
     contest = relationship(
         Contest,
         backref=backref('tasks',
                         collection_class=ordering_list('num'),
                         order_by=[num],
-                        cascade="all, delete-orphan",
+                        cascade="all",
                         passive_deletes=True))
 
     # Short name and long human readable title of the task.
     name = Column(
         Unicode,
-        nullable=False)
+        nullable=False,
+        unique=True)
     title = Column(
         Unicode,
         nullable=False)

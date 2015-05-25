@@ -3,8 +3,9 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -362,20 +363,20 @@ def admin_req(path, multipart_post=False, args=None, files=None):
     return cmstestsuite.web.browser_do_request(br, url, args, files)
 
 
-def get_tasks(contest_id):
+def get_tasks():
     '''Return a list of existing tasks, returned as a dictionary of
       'taskname' => { 'id': ..., 'title': ... }
 
     '''
-    r = admin_req('/tasklist/%d' % contest_id)
+    r = admin_req('/tasks')
     groups = re.findall(r'''
-        <tr> \s*
-        <td> \s* (.*) \s* </td> \s*
-        <td><a\s+href="../task/(\d+)">(.*)</a></td>
+        <tr>\s*
+        <td><a\s+href="./task/(\d+)">(.*)</a></td>\s*
+        <td>(.*)</td>\s*
         ''', r.read(), re.X)
     tasks = {}
     for g in groups:
-        title, id, name = g
+        id, name, title = g
         id = int(id)
         tasks[name] = {
             'title': title,
@@ -390,13 +391,13 @@ def get_users(contest_id):
       'username' => { 'id': ..., 'firstname': ..., 'lastname': ... }
 
     '''
-    r = admin_req('/userlist/%d' % contest_id)
+    r = admin_req('/contest/' + str(contest_id) + '/users')
     groups = re.findall(r'''
         <tr> \s*
         <td> \s* (.*) \s* </td> \s*
         <td> \s* (.*) \s* </td> \s*
-        <td><a\s+href="../user/(\d+)">(.*)</a></td>
-        ''', r.read(), re.X)
+        <td><a\s+href="./user/(\d+)">(.*)</a></td>
+    ''', r.read(), re.X)
     users = {}
     for g in groups:
         firstname, lastname, id, username = g
@@ -411,7 +412,7 @@ def get_users(contest_id):
 
 
 def add_contest(**kwargs):
-    resp = admin_req('/contest/add', multipart_post=True, args=kwargs)
+    resp = admin_req('/contests/new', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
@@ -423,21 +424,30 @@ def add_contest(**kwargs):
     return int(match.groups()[0])
 
 
-def add_task(contest_id, **kwargs):
+def add_task(**kwargs):
     # We need to specify token_mode. Why this and no others?
     if 'token_mode' not in kwargs:
         kwargs['token_mode'] = 'disabled'
 
-    r = admin_req('/add_task/%d' % contest_id,
+    r = admin_req('/tasks/new',
                   multipart_post=True,
                   args=kwargs)
     g = re.search(r'/task/([0-9]+)$', r.geturl())
     if g:
         task_id = int(g.group(1))
         created_tasks[task_id] = kwargs
-        return task_id
     else:
         raise FrameworkException("Unable to create task.")
+
+    r = admin_req('/contest/' + kwargs["contest_id"] + '/tasks/add',
+                  multipart_post=True,
+                  args={"task_id": str(task_id)})
+    g = re.search('<input type="radio" name="task_id" value="' +
+                  str(task_id) + '"/>', r.read())
+    if g:
+        return task_id
+    else:
+        raise FrameworkException("Unable to assign task to contest.")
 
 
 def add_manager(task_id, manager):
@@ -446,7 +456,7 @@ def add_manager(task_id, manager):
         ('manager', manager),
     ]
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('/add_manager/%d' % (dataset_id),
+    admin_req('/dataset/%d/managers/add' % dataset_id,
               multipart_post=True, files=files, args=args)
 
 
@@ -472,34 +482,44 @@ def add_testcase(task_id, num, input_file, output_file, public):
     if public:
         args['public'] = '1'
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('/add_testcase/%d' % (dataset_id),
+    admin_req('/dataset/%d/testcases/add' % dataset_id,
               multipart_post=True, files=files, args=args)
 
 
-def add_user(contest_id, **kwargs):
-    r = admin_req('/add_user/%d' % contest_id, args=kwargs)
+def add_user(**kwargs):
+    r = admin_req('/users/new', args=kwargs)
     g = re.search(r'/user/([0-9]+)$', r.geturl())
     if g:
         user_id = int(g.group(1))
         created_users[user_id] = kwargs
-        return user_id
     else:
         raise FrameworkException("Unable to create user.")
 
+    kwargs["user_id"] = user_id
+    r = admin_req('/contest/' + kwargs["contest_id"] + '/users/add',
+                  args=kwargs)
+    g = re.search('<input type="radio" name="user_id" value="' +
+                  str(user_id) + '"/>', r.read())
+    if g:
+        return user_id
+    else:
+        raise FrameworkException("Unable to create participation.")
 
-def add_existing_task(contest_id, task_id, **kwargs):
+
+def add_existing_task(task_id, **kwargs):
     '''Add information about an existing task to our database so that we can
     use it for submitting later.'''
     created_tasks[task_id] = kwargs
 
 
-def add_existing_user(contest_id, user_id, **kwargs):
+def add_existing_user(user_id, **kwargs):
     '''Add information about an existing user to our database so that we can
     use it for submitting later.'''
     created_users[user_id] = kwargs
 
 
-def cws_submit(contest_id, task_id, user_id, filename, language):
+def cws_submit(contest_id, task_id, user_id, submission_format_element,
+               filename, language):
     username = created_users[user_id]['username']
     password = created_users[user_id]['password']
     base_url = 'http://localhost:8888/'
@@ -514,7 +534,9 @@ def cws_submit(contest_id, task_id, user_id, filename, language):
 
     lr = LoginRequest(browser, username, password, base_url=base_url)
     step(lr)
-    sr = SubmitRequest(browser, task, base_url=base_url, filename=filename)
+    sr = SubmitRequest(browser, task, base_url=base_url,
+                       submission_format_element=submission_format_element,
+                       filename=filename)
     step(sr)
 
     submission_id = sr.get_submission_id()
