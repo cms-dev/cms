@@ -213,7 +213,7 @@ Or, if you prefer to use pip:
 
     If you are going to use a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ then you won't need the ``--user`` flag.
 
-Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and use run the install command as root (but it's an arguably bad idea).
+Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but in general that could be a bad idea, because you would be installing files in a system directory bypassing the system package manager).
 
 If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective:
 
