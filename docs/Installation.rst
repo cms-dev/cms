@@ -201,13 +201,19 @@ You can download CMS |release| from :gh_download:`GitHub` and extract it on your
 
 .. sourcecode:: bash
 
-    ./setup.py install
+    ./setup.py install --user
 
 Or, if you prefer to use pip:
 
 .. sourcecode:: bash
 
-    pip install .
+    pip install --user .
+
+.. note::
+
+    If you are going to use a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ then you won't need the ``--user`` flag.
+
+Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and use run the install command as root (but it's an arguably bad idea).
 
 If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective:
 
