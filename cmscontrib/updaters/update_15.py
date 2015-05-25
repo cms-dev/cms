@@ -71,7 +71,7 @@ class Updater(object):
             "submissions", "hidden")
         self.objs[participation_id] = participation_data
 
-        user_data["_class"] = "User"
+        assert user_data["_class"] == "User"
         participation_data["_class"] = "Participation"
 
         participation_data["password"] = None
