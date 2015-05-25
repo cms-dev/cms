@@ -14,13 +14,13 @@ When you change a string in a template or in a web server, you have to generate 
       cms/server/templates/admin/*.html \
       cms/server/templates/contest/*.html
 
-When you have a new translation, or an update of an old translation, you need to update the ``.mo`` files (the compiled versions of the ``.po`` files). You can run ``./setup.py build`` to update all translations (and also do a couple of other things, like compiling the sandbox). Alternatively, run the following inside :gh_tree:`cms/server/`.
+When you have a new translation, or an update of an old translation, you need to update the ``.mo`` files (the compiled versions of the ``.po`` files). You can run ``./prerequisites.py build_l10n`` to update all translations, and ``sudo ./prerequisites.py install_l10n`` to install them. Alternatively, run the following inside :gh_tree:`cms/server/`.
 
 .. sourcecode:: bash
 
     msgfmt po/<code>.po -o mo/<code>/LC_MESSAGES/cms.mo
 
-If needed, create the tree. Note that to have the new strings, you need to restart the web server.
+And then copy the compiled ``.mo`` files to the appropriate folder. You may have to manually create the directory tree. Note that, to have the new strings, you need to restart the web server.
 
 
 For translators

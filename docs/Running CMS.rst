@@ -54,18 +54,13 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 * if you want to run CMS without installing it, you need to change ``process_cmdline`` to reflect that.
 
-If you are organizing a real contest, you must change ``secret_key`` from the default, and also you will need to think about how to distribute your services and change accordingly ``core_services``. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, to use a non-trivial username and password.
+If you are organizing a real contest, you must also change ``secret_key`` to a random key, for example by running ``cmscommon.crypto.get_hex_random_key()``. You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, using non-trivial username and password.
 
 .. warning::
 
    As the name implies, the value of ``secret_key`` must be kept confidential. If a contestant knows it (for example because you are using the default value), they may be easily able to log in as another contestant.
 
-After having modified :file:`cms.conf` and :file:`cms.ranking.conf` in :gh_tree:`config/`, you can reinstall CMS in order to make these changes effective, with
-
-.. sourcecode:: bash
-
-    sudo ./setup.py install
-
+The configuration files get copied automatically by the ``prerequisites.py`` script, so you can either run ``sudo ./prerequisites.py install`` again (answering "Y" when questioned about overwriting old configuration files) or you could simply edit the previously installed configuration files (which are usually found in ``/usr/local/etc/`` or ``/etc/``), if you don't plan on running that command ever again.
 
 Running CMS
 ===========
