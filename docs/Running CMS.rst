@@ -60,7 +60,7 @@ If you are organizing a real contest, you must also change ``secret_key`` to a r
 
    As the name implies, the value of ``secret_key`` must be kept confidential. If a contestant knows it (for example because you are using the default value), they may be easily able to log in as another contestant.
 
-The configuration files get copied by the ``prerequisites.py`` script, so you can either run it again as specified in the Installation page (thus overwriting old configuration files) or you could simply edit the previously installed configuration files (which are usually found in ``/usr/local/etc/`` or ``/etc/``) if you don't plan to run ``prerequisites.py`` ever again.
+The configuration files get copied automatically by the ``prerequisites.py`` script, so you can either run ``sudo ./prerequisites.py install`` again (answering "Y" when questioned about overwriting old configuration files) or you could simply edit the previously installed configuration files (which are usually found in ``/usr/local/etc/`` or ``/etc/``), if you don't plan on running that command ever again.
 
 Running CMS
 ===========
