@@ -191,12 +191,29 @@ If you prefer using Python Package Index, you can retrieve all Python dependenci
 Installing CMS
 ==============
 
+In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
+
+.. sourcecode:: bash
+
+    sudo ./prerequisites.py install
+
 You can download CMS |release| from :gh_download:`GitHub` and extract it on your filesystem. After that, you can install it (recommended, not necessary though):
 
 .. sourcecode:: bash
 
-    ./setup.py build
-    sudo ./setup.py install
+    ./setup.py install --user
+
+Or, if you prefer to use pip:
+
+.. sourcecode:: bash
+
+    pip install --user .
+
+.. note::
+
+    If you are going to use a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ then you won't need the ``--user`` flag.
+
+Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but in general that could be a bad idea, because you would be installing files in a system directory bypassing the system package manager).
 
 If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective:
 
@@ -231,4 +248,3 @@ You can then update CMS and reset the database schema by running:
     cmsInitDB
 
 To load the previous data back into the database you can use ``cmsContestImporter``: it will adapt the data model automatically on-the-fly (you can use ``cmsDumpUpdater`` to store the updated version back on disk and speed up future imports).
-
