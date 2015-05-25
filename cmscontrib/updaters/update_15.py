@@ -78,3 +78,6 @@ class Updater(object):
         user_data["contests"] = [participation_id]
 
         participation_data["user"] = user_id
+
+        # FIXME: information about primary_statements /
+        # preferrend_languages are silently dropped

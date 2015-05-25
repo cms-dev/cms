@@ -90,6 +90,8 @@ class ContestImporter(object):
                 task = session.query(Task) \
                               .filter(Task.name == taskname).first()
                 if task is None:
+                    # FIXME: it would be nice to automatically try to
+                    # import.
                     logger.critical("Task \"%s\" not found in database."
                                     % taskname)
                     return
@@ -107,10 +109,14 @@ class ContestImporter(object):
                 user = session.query(User) \
                               .filter(User.username == username).first()
                 if user is None:
+                    # FIXME: it would be nice to automatically try to
+                    # import.
                     logger.critical("User \"%s\" not found in database."
                                     % username)
                     return
                 # We should tie this user to a new contest
+                # FIXME: there is no way for the loader to specify
+                # hidden users
                 session.add(Participation(
                     user=user,
                     contest=contest

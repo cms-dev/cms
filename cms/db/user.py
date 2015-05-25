@@ -94,6 +94,8 @@ class User(Base):
     # this user (from the "most preferred" to the "least preferred").
     # If in a contest there is a statement available in some of these
     # languages, then the most preferred of them will be highlighted.
+    # FIXME: possibly move it to Participation and change it back to
+    # primary_statements
     preferred_languages = Column(
         String,
         nullable=False,
