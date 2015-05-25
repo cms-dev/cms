@@ -68,7 +68,7 @@ class Updater(object):
             "extra_time", "ip",
             "messages", "usertests",
             "questions", "starting_time",
-            "submissions")
+            "submissions", "hidden")
         self.objs[participation_id] = participation_data
 
         user_data["_class"] = "User"
