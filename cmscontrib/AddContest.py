@@ -86,7 +86,7 @@ class ContestImporter(object):
 
         with SessionGen() as session:
             # Check needed tasks
-            for (taskname, tasknum) in tasks.iteritems():
+            for tasknum, taskname in enumerate(tasks):
                 task = session.query(Task) \
                               .filter(Task.name == taskname).first()
                 if task is None:

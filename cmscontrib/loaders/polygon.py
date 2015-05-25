@@ -162,7 +162,6 @@ class PolygonTaskLoader(TaskLoader):
         if task_cms_conf is not None and hasattr(task_cms_conf, "general"):
             args.update(task_cms_conf.general)
 
-        print(args)
         task = Task(**args)
 
         judging = root.find('judging')

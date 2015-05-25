@@ -206,8 +206,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
-        tasks = enumerate(load(conf, None, ["tasks", "problemi"]))
-        tasks = dict((name, num) for num, name in tasks)
+        tasks = load(conf, None, ["tasks", "problemi"])
 
         users = load(conf, None, ["users", "utenti"])
         users = (user['username'] for user in users)
