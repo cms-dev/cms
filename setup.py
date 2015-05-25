@@ -31,18 +31,13 @@ from __future__ import print_function
 # setuptools doesn't seem to like this:
 # from __future__ import unicode_literals
 
-import sys
 import os
-import shutil
-import re
-import pwd
-import grp
 
 from glob import glob
 from setuptools import setup
 
 
-package_data = {
+PACKAGE_DATA = {
     "cms.io": [
         os.path.join("static", "*"),
     ],
@@ -81,8 +76,8 @@ package_data = {
 # Apparently, pip installs package_data with the permissions they
 # have on the source. We fix the source permissions here. (Though,
 # pip works on a copy, so no changes happen.)
-for package in package_data:
-    for path in package_data[package]:
+for package in PACKAGE_DATA:
+    for path in PACKAGE_DATA[package]:
         for file_ in glob(os.path.join(package.replace(".", "/"), path)):
             os.chmod(file_, 0644)
 
@@ -116,7 +111,7 @@ setup(
               "cmstestsuite.tasks.batch_fileio_managed",
               "cmstestsuite.tasks.communication",
               "cmscompat"],
-    package_data=package_data,
+    package_data=PACKAGE_DATA,
     scripts=["scripts/cmsLogService",
              "scripts/cmsScoringService",
              "scripts/cmsEvaluationService",
