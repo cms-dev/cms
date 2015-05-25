@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2013-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -105,14 +105,29 @@ def main():
     if dump_version == to_version:
         logger.info(
             "The dump you're trying to update is already stored using "
-            "the most recent format supported by this version of CMS.")
+            "the target format (which is version %d).", dump_version)
         return
 
-    if dump_version > to_version:
+    elif dump_version > model_version:
         logger.critical(
-            "The dump you're trying to update is stored using a format "
-            "that's more recent than the one supported by this version "
-            "of CMS. You probably need to update CMS to handle it.")
+            "The dump you're trying to update is stored using data model "
+            "version %d, which is more recent than the one supported by "
+            "this version of CMS (version %d). You probably need to "
+            "update CMS to handle it.", dump_version, model_version)
+        return
+
+    elif to_version > model_version:
+        logger.critical(
+            "The target data model (version %d) you're trying to update "
+            "to is too recent for this version of CMS (which supports up "
+            "to version %d). You probably need to update CMS to handle "
+            "it.", to_version, model_version)
+        return
+
+    elif dump_version > to_version:
+        logger.critical(
+            "Backward updating (from version %d to version %d) is not "
+            "supported.", dump_version, to_version)
         return
 
     for version in range(dump_version, to_version):

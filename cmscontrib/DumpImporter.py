@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -172,7 +172,7 @@ class DumpImporter(object):
                         "and speed up future imports.",
                         dump_version, model_version)
 
-                if dump_version > model_version:
+                elif dump_version > model_version:
                     logger.critical(
                         "The dump you're trying to import has been created "
                         "by a version of CMS newer than this one (it "
@@ -182,6 +182,11 @@ class DumpImporter(object):
                         "handle it. It is impossible to proceed with the "
                         "importation.", dump_version, model_version)
                     return False
+
+                else:
+                    logger.info(
+                        "Importing dump with data model version %d.",
+                        dump_version)
 
                 for version in range(dump_version, model_version):
                     # Update from version to version+1
