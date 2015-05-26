@@ -34,7 +34,7 @@ from __future__ import print_function
 import os
 
 from glob import glob
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 PACKAGE_DATA = {
@@ -90,27 +90,7 @@ setup(
     download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",
     description="A contest management system and grader "
                 "for IOI-like programming competitions",
-    packages=["cms",
-              "cms.db",
-              "cms.server",
-              "cms.service",
-              "cms.io",
-              "cms.grading",
-              "cms.grading.scoretypes",
-              "cms.grading.tasktypes",
-              "cmscommon",
-              "cmsranking",
-              "cmscontrib",
-              "cmscontrib.updaters",
-              "cmstaskenv",
-              "cmstestsuite",
-              "cmstestsuite.web",
-              "cmstestsuite.tasks",
-              "cmstestsuite.tasks.batch_stdio",
-              "cmstestsuite.tasks.batch_fileio",
-              "cmstestsuite.tasks.batch_fileio_managed",
-              "cmstestsuite.tasks.communication",
-              "cmscompat"],
+    packages=find_packages(),
     package_data=PACKAGE_DATA,
     scripts=["scripts/cmsLogService",
              "scripts/cmsScoringService",
