@@ -152,7 +152,7 @@ virtualenv
 A `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ is an isolated Python environment that you can put wherever you like and that can be "activated" and "deactivated" at will. The tool you need in order to create a virtual environment is called ``virtualenv``, and can be installed by looking for ``python-virtualenv`` using your Linux distribution's package manager. For example:
 
 * Ubuntu: `python-virtualenv <https://apps.ubuntu.com/cat/applications/python-virtualenv/>`_.
-* Archlinux: `python-virtualenv <https://www.archlinux.org/packages/extra/any/python-virtualenv/>`_.
+* Arch Linux: `python-virtualenv <https://www.archlinux.org/packages/extra/any/python-virtualenv/>`_.
 
 .. FUTURE FIXME: virtualenv installation is necessary only on python2; when the
    porting to python3 will be complete, the "new" way of creating a virtual
@@ -206,14 +206,14 @@ To install CMS python dependencies on Ubuntu, you can issue:
     # Optional.
     # sudo apt-get install python-yaml python-sphinx python-cups python-pypdf2
 
-Archlinux
----------
+Arch Linux
+----------
 
 .. warning::
 
-  It's usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is especially true for Archlinux, which is a bleeding edge distribution.
+  It's usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is especially true for Arch Linux, which is a bleeding edge distribution.
 
-To install CMS python dependencies on Archlinux (again: assuming you didn't use the aforementioned AUR packages), you can issue:
+To install CMS python dependencies on Arch Linux (again: assuming you didn't use the aforementioned AUR packages), you can issue:
 
 .. sourcecode:: bash
 
