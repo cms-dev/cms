@@ -134,7 +134,7 @@ These are all the python dependencies required to develop CMS:
 .. literalinclude:: ../dev-requirements.txt
    :language: python
 
-There are good reasons to prefer installing Python dependencies via pip (Python Package Index), for example: two different Linux distribution may "offer" two different versions of ``python-sqlalchemy`` but, when using pip, you can install a version that is known to be working correctly with CMS.
+There are good reasons to install Python dependencies via pip (Python Package Index) instead of your package manager, for example: two different Linux distributions may "offer" two different versions of ``python-sqlalchemy`` while, when using pip, you can choose to install a version that is known to be working correctly with CMS.
 
 The quick and dirty way of installing Python dependencies is this:
 
