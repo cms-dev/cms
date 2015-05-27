@@ -133,27 +133,50 @@ def ask(message):
     return "-y" in sys.argv or raw_input(message) in ["Y", "y"]
 
 
-def check_root(yes):
-    """Check if the current user is or isn't root, and exit with an error
-    message if needed.
+def assert_root():
+    """Check if the current user is root, and exit with an error message if
+    needed.
 
     """
 
-    if yes and os.geteuid() != 0:
+    if os.geteuid() != 0:
         print("[Error] You must be root to do this, try using 'sudo'")
         exit(1)
 
-    if not yes and os.geteuid() == 0:
+
+def assert_not_root():
+    """Check if the current user is *not* root, and exit with an error message
+    if needed.
+
+    """
+
+    if os.geteuid() == 0:
         print("[Error] You must *not* be root to do this, try avoiding 'sudo'")
         exit(1)
 
 
-def compile_l10n():
+def get_real_user():
+    """Get the real username (the one who called sudo/su). In the case of a user
+    *actually being root* we return an error.
+
+    """
+
+    name = os.getenv("SUDO_USER")
+    if len(name) < 1:
+        name = os.popen("logname").read().strip()
+
+    if name == "root":
+        print("[Error] You are logged in as root")
+        print("[Error] Log in as a normal user instead, and use 'sudo' or 'su'")
+        exit(1)
+
+
+def build_l10n():
     """This function compiles localization files.
 
     """
 
-    check_root(False)
+    assert_not_root()
 
     print("===== Compiling localization files")
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
@@ -170,26 +193,26 @@ def install_l10n():
 
     """
 
-    check_root(True)
+    assert_root()
     root = pwd.getpwnam("root")
 
     print("===== Copying localization files")
+    locale_list = glob(os.path.join("cms", "server", "po", "*.po"))
 
-    # Check if compile_l10n has been called
-    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+    # Check if build_l10n has been called
+    for locale in locale_list:
         country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-        print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
         compiled_path = os.path.join(path, "cms.mo")
         if not os.path.exists(compiled_path):
             print("[Error] %s not found" % (compiled_path))
-            print("[Error] You must run the compile_l10n command")
+            print("[Error] You must run the %s build_l10n command" % (sys.argv[0]))
             exit(1)
         elif os.path.getmtime(locale) > os.path.getmtime(compiled_path):
             print("[Warning] %s is newer than %s" % (locale, compiled_path))
-            print("[Warning] Are you sure you ran the compile_l10n command?")
+            print("[Warning] Are you sure you ran the %s build_l10n command?" % (sys.argv[0]))
 
-    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+    for locale in locale_list:
         country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
         print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
@@ -201,12 +224,12 @@ def install_l10n():
                  root, 0644)
 
 
-def compile_isolate():
+def build_isolate():
     """This function compiles the isolate sandbox.
 
     """
 
-    check_root(False)
+    assert_not_root()
 
     print("===== Compiling isolate")
     os.chdir("isolate")
@@ -219,7 +242,7 @@ def install_isolate():
 
     """
 
-    check_root(True)
+    assert_root()
     root = pwd.getpwnam("root")
     try:
         cmsuser = pwd.getpwnam("cmsuser")
@@ -231,9 +254,9 @@ def install_isolate():
 
     print("===== Copying isolate to /usr/local/bin/")
 
-    # Check if compile_isolate() has been called
+    # Check if build_isolate() has been called
     if not os.path.exists(os.path.join("isolate", "isolate")):
-        print("[Error] You must run the compile_isolate command first")
+        print("[Error] You must run the build_isolate command first")
         exit(1)
 
     makedir(os.path.join(USR_ROOT, "bin"), root, 0755)
@@ -252,7 +275,7 @@ def install_all():
 
     """
 
-    check_root(True)
+    assert_root()
 
     print("===== Creating user and group cmsuser")
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
@@ -260,10 +283,11 @@ def install_all():
     root = pwd.getpwnam("root")
     cmsuser_grp = grp.getgrnam("cmsuser")
 
-    # Run compile_l10n() and compile_isolate() as *not* root
-    if os.system("sudo -u %s %s compile_l10n" % (os.getenv("SUDO_USER"), sys.argv[0])):
-        exit(1)
-    if os.system("sudo -u %s %s compile_isolate" % (os.getenv("SUDO_USER"), sys.argv[0])):
+    # Get real user to run non-sudo commands
+    real_user = get_real_user()
+
+    # Run build() command as not root
+    if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
         exit(1)
 
     install_l10n()
@@ -339,7 +363,7 @@ def uninstall_all():
 
     """
 
-    check_root(True)
+    assert_root()
 
     print("===== Deleting isolate from /usr/local/bin/")
     try_delete(os.path.join(USR_ROOT, "bin", "isolate"))
@@ -385,8 +409,8 @@ def uninstall_all():
 USAGE = """%s <command>
 
 Available commands:
-- compile_l10n
-- compile_isolate
+- build_l10n
+- build_isolate
 - install_l10n  (requires root)
 - install_isolate  (requires root)
 - install  (requires root)
@@ -395,10 +419,10 @@ Available commands:
 
 
 if __name__ == "__main__":
-    if "compile_l10n" in sys.argv:
-        compile_l10n()
-    elif "compile_isolate" in sys.argv:
-        compile_isolate()
+    if "build_l10n" in sys.argv:
+        build_l10n()
+    elif "build_isolate" in sys.argv:
+        build_isolate()
     elif "install_l10n" in sys.argv:
         install_l10n()
     elif "install_isolate" in sys.argv:
