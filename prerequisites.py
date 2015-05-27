@@ -171,6 +171,8 @@ def get_real_user():
         print("[Error] Log in as a normal user instead, and use 'sudo' or 'su'")
         exit(1)
 
+    return name
+
 
 class CLI(object):
 
@@ -296,8 +298,8 @@ Available commands:
         - build_isolate
         """
 
-        build_l10n()
-        build_isolate()
+        self.build_l10n()
+        self.build_isolate()
 
     def install(self):
         """This function prepares all that's needed to run CMS:
@@ -324,8 +326,8 @@ Available commands:
         if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
             exit(1)
 
-        install_l10n()
-        install_isolate()
+        self.install_l10n()
+        self.install_isolate()
 
         # We set permissions for each manually installed files, so we want
         # max liberty to change them.
