@@ -313,14 +313,14 @@ Available commands:
 
         assert_root()
 
+        # Get real user to run non-sudo commands
+        real_user = get_real_user()
+
         print("===== Creating user and group cmsuser")
         os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
         cmsuser = pwd.getpwnam("cmsuser")
         root = pwd.getpwnam("root")
         cmsuser_grp = grp.getgrnam("cmsuser")
-
-        # Get real user to run non-sudo commands
-        real_user = get_real_user()
 
         # Run build() command as not root
         if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
