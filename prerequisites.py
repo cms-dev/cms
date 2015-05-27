@@ -374,21 +374,36 @@ Available commands:
         copyfile(path, dest_path, root, 0644)
 
         os.umask(old_umask)
+
+        print("===== Adding yourself to the cmsuser group")
+        print("You must now add yourself to the cmsuser group.")
+        if ask("Type Y if you want me to automatically add \"%s\" to the cmsuser group: " % (real_user)):
+            os.system("usermod -a -G cmsuser %s" % (real_user))
+            print("""
+   ###########################################################################
+   ###                                                                     ###
+   ###    Remember that you must now logout in order to make the change    ###
+   ###    effective ("the change" is: being in the cmsuser group).         ###
+   ###                                                                     ###
+   ###########################################################################
+            """)
+        else:
+            print("""
+   ###########################################################################
+   ###                                                                     ###
+   ###    Remember that you must be in the cmsuser group to use CMS:       ###
+   ###                                                                     ###
+   ###       $ sudo usermod -a -G cmsuser <your user>                      ###
+   ###                                                                     ###
+   ###    You must also logout to make the change effective.               ###
+   ###                                                                     ###
+   ###########################################################################
+            """)
+
         print("===== Done")
 
-        print("""
-       ###########################################################################
-       ###                                                                     ###
-       ###    Remember that you must now add yourself to the cmsuser group:    ###
-       ###                                                                     ###
-       ###       $ sudo usermod -a -G cmsuser <your user>                      ###
-       ###                                                                     ###
-       ###    You must also logout to make the change effective.               ###
-       ###                                                                     ###
-       ###########################################################################
-        """)
 
-    def uninstall(self):
+def uninstall(self):
         """This function deletes all that was installed by the install() function:
         - deletion of the cmsuser user
         - deletion of isolate
