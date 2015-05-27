@@ -400,58 +400,57 @@ Available commands:
    ###########################################################################
             """)
 
+    def uninstall(self):
+            """This function deletes all that was installed by the install() function:
+            - deletion of the cmsuser user
+            - deletion of isolate
+            - deletion of localization files
+            - deletion of configuration files
+            and so on.
 
-def uninstall(self):
-        """This function deletes all that was installed by the install() function:
-        - deletion of the cmsuser user
-        - deletion of isolate
-        - deletion of localization files
-        - deletion of configuration files
-        and so on.
+            """
 
-        """
+            assert_root()
 
-        assert_root()
+            print("===== Deleting isolate from /usr/local/bin/")
+            try_delete(os.path.join(USR_ROOT, "bin", "isolate"))
 
-        print("===== Deleting isolate from /usr/local/bin/")
-        try_delete(os.path.join(USR_ROOT, "bin", "isolate"))
+            print("===== Deleting configuration to /usr/local/etc/")
+            if ask("Type Y if you really want to remove configuration files: "):
+                for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+                    try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
 
-        print("===== Deleting configuration to /usr/local/etc/")
-        if ask("Type Y if you really want to remove configuration files: "):
-            for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
-                try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
+            print("===== Deleting localization files")
+            for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+                country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
+                print("  %s" % country_code)
+                dest_path = os.path.join(USR_ROOT, "share", "locale",
+                                         country_code, "LC_MESSAGES")
+                try_delete(os.path.join(dest_path, "cms.mo"))
 
-        print("===== Deleting localization files")
-        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-            country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-            print("  %s" % country_code)
-            dest_path = os.path.join(USR_ROOT, "share", "locale",
-                                     country_code, "LC_MESSAGES")
-            try_delete(os.path.join(dest_path, "cms.mo"))
+            print("===== Deleting empty directories")
+            dirs = [os.path.join(VAR_ROOT, "log"),
+                    os.path.join(VAR_ROOT, "cache"),
+                    os.path.join(VAR_ROOT, "lib"),
+                    os.path.join(VAR_ROOT, "run"),
+                    os.path.join(USR_ROOT, "include"),
+                    os.path.join(USR_ROOT, "share")]
+            for _dir in dirs:
+                if os.listdir(_dir) == []:
+                    try_delete(_dir)
 
-        print("===== Deleting empty directories")
-        dirs = [os.path.join(VAR_ROOT, "log"),
-                os.path.join(VAR_ROOT, "cache"),
-                os.path.join(VAR_ROOT, "lib"),
-                os.path.join(VAR_ROOT, "run"),
-                os.path.join(USR_ROOT, "include"),
-                os.path.join(USR_ROOT, "share")]
-        for _dir in dirs:
-            if os.listdir(_dir) == []:
-                try_delete(_dir)
+            print("===== Deleting Polygon testlib")
+            try_delete(os.path.join(USR_ROOT, "include", "cms", "testlib.h"))
 
-        print("===== Deleting Polygon testlib")
-        try_delete(os.path.join(USR_ROOT, "include", "cms", "testlib.h"))
+            print("===== Deleting user and group cmsuser")
+            try:
+                for user in grp.getgrnam("cmsuser").gr_mem:
+                    os.system("gpasswd -d %s cmsuser" % (user))
+                os.system("userdel cmsuser")
+            except KeyError:
+                print("[Warning] Group cmsuser not found")
 
-        print("===== Deleting user and group cmsuser")
-        try:
-            for user in grp.getgrnam("cmsuser").gr_mem:
-                os.system("gpasswd -d %s cmsuser" % (user))
-            os.system("userdel cmsuser")
-        except KeyError:
-            print("[Warning] Group cmsuser not found")
-
-        print("===== Done")
+            print("===== Done")
 
 
 if __name__ == '__main__':
