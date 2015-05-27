@@ -136,7 +136,7 @@ These are all the python dependencies required to develop CMS:
 
 There are good reasons to install Python dependencies via pip (Python Package Index) instead of your package manager, for example: two different Linux distributions may "offer" two different versions of ``python-sqlalchemy`` while, when using pip, you can choose to install a version that is known to be working correctly with CMS.
 
-The quick and dirty way of installing Python dependencies is this:
+The easy way of installing Python dependencies, assuming you have ``pip`` installed, is this:
 
 .. sourcecode:: bash
 
@@ -172,7 +172,7 @@ To "activate" it:
 
     . ~/cms_venv/bin/activate
 
-After the activation, python commands (python, pip) will refer to their corresponding virtual version, so you can install python dependencies by issuing:
+After the activation, ``pip`` will *always* be available (even if it's not available globally, e.g. because it's not installed) and, in general, every python command (python, pip) will refer to their corresponding virtual version. So, you can install python dependencies by issuing:
 
 .. sourcecode:: bash
 
