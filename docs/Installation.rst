@@ -61,7 +61,7 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
 Arch Linux
 ----------
 
-On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.org/packages/cms>`_ or `cms-git <http://aur.archlinux.org/packages/cms-git>`_. However, if you don't want to use them, the following command will install almost all dependencies (some of them can be found in the AUR):
+On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.org/packages/cms>`_ or `cms-git <http://aur.archlinux.org/packages/cms-git>`_. However, if you do not want to use them, the following command will install almost all dependencies (some of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -157,8 +157,8 @@ A `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ is an isolated 
 .. FUTURE FIXME: virtualenv installation is necessary only on python2; when the
    porting to python3 will be complete, the "new" way of creating a virtual
    environment will be ``pyvenv`` or equivalently ``python -m venv`` (the venv
-   module and the pyvenv script come bundled with python3, so there's no need to
-   install virtualenv anymore).
+   module and the pyvenv script come bundled with python3, so there is no need
+   to install virtualenv anymore).
 
 Once you installed ``virtualenv``, you will need to create a virtual environment somewhere in your filesystem. For example, let's assume that you decided to create it under your home directory (as ``~/cms_venv``):
 
@@ -213,7 +213,7 @@ Arch Linux
 
   It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is especially true for Arch Linux, which is a bleeding edge distribution.
 
-To install CMS python dependencies on Arch Linux (again: assuming you didn't use the aforementioned AUR packages), you can issue:
+To install CMS python dependencies on Arch Linux (again: assuming you did not use the aforementioned AUR packages), you can issue:
 
 .. sourcecode:: bash
 
