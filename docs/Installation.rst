@@ -191,7 +191,7 @@ Ubuntu
 
 .. warning::
 
-  It's usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is generally not the case on Ubuntu (since the package versions are usually stable and quite old).
+  It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is generally not the case on Ubuntu since we try to build on the python packages that are available for the current LTS version.
 
 To install CMS python dependencies on Ubuntu, you can issue:
 
@@ -211,7 +211,7 @@ Arch Linux
 
 .. warning::
 
-  It's usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is especially true for Arch Linux, which is a bleeding edge distribution.
+  It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. This is especially true for Arch Linux, which is a bleeding edge distribution.
 
 To install CMS python dependencies on Arch Linux (again: assuming you didn't use the aforementioned AUR packages), you can issue:
 
@@ -254,7 +254,7 @@ Or, if you prefer to use pip:
 
 .. note::
 
-    If you are going to use a virtual environment then you won't need the ``--user`` flag.
+    If you are going to use a virtual environment then you will not need the ``--user`` flag.
 
 Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but that could be a bad idea depending on your Linux distribution, because you would be installing files in a system directory bypassing the system package manager).
 
