@@ -376,7 +376,6 @@ Available commands:
         os.umask(old_umask)
 
         print("===== Adding yourself to the cmsuser group")
-        print("You must now add yourself to the cmsuser group.")
         if ask("Type Y if you want me to automatically add \"%s\" to the cmsuser group: " % (real_user)):
             os.system("usermod -a -G cmsuser %s" % (real_user))
             print("""
