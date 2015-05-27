@@ -234,12 +234,6 @@ To install CMS python dependencies on Arch Linux (again: assuming you didn't use
 Installing CMS
 ==============
 
-In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
-
-.. sourcecode:: bash
-
-    sudo ./prerequisites.py install
-
 You can download CMS |release| from :gh_download:`GitHub` and extract it on your filesystem. After that, you can install it (recommended, not necessary though):
 
 .. sourcecode:: bash
@@ -255,6 +249,12 @@ Or, if you prefer to use pip:
 .. note::
 
     If you are going to use a virtual environment then you will not need the ``--user`` flag.
+
+In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
+
+.. sourcecode:: bash
+
+    sudo ./prerequisites.py install
 
 Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but that could be a bad idea depending on your Linux distribution, because you would be installing files in a system directory bypassing the system package manager).
 
