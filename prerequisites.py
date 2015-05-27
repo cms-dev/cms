@@ -265,6 +265,16 @@ def install_isolate():
              root, 04750, group=cmsuser_grp)
 
 
+def build_all():
+    """This function builds the prerequisites by calling:
+    - build_l10n
+    - build_isolate
+    """
+
+    build_l10n()
+    build_isolate()
+
+
 def install_all():
     """This function prepares all that's needed to run CMS:
     - creation of cmsuser user
@@ -411,6 +421,7 @@ USAGE = """%s <command>
 Available commands:
 - build_l10n
 - build_isolate
+- build
 - install_l10n  (requires root)
 - install_isolate  (requires root)
 - install  (requires root)
@@ -423,6 +434,8 @@ if __name__ == "__main__":
         build_l10n()
     elif "build_isolate" in sys.argv:
         build_isolate()
+    elif "build" in sys.argv:
+        build_all()
     elif "install_l10n" in sys.argv:
         install_l10n()
     elif "install_isolate" in sys.argv:
