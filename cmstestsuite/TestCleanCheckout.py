@@ -77,8 +77,7 @@ def setup_cms():
     os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
     info("Building cms.")
-    sh("./prerequisites.py compile_l10n")
-    sh("./prerequisites.py compile_isolate")
+    sh("./prerequisites.py build")
     # Add permission bits to isolate.
     sh("sudo chown root:root isolate/isolate")
     sh("sudo chmod 4755 isolate/isolate")
