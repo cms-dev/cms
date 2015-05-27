@@ -73,13 +73,6 @@ PACKAGE_DATA = {
     ],
 }
 
-# Apparently, pip installs package_data with the permissions they
-# have on the source. We fix the source permissions here. (Though,
-# pip works on a copy, so no changes happen.)
-for package in PACKAGE_DATA:
-    for path in PACKAGE_DATA[package]:
-        for file_ in glob(os.path.join(package.replace(".", "/"), path)):
-            os.chmod(file_, 0644)
 
 setup(
     name="cms",
