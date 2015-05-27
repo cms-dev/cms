@@ -163,7 +163,7 @@ def get_real_user():
     """
 
     name = os.getenv("SUDO_USER")
-    if len(name) < 1:
+    if name is None:
         name = os.popen("logname").read().strip()
 
     if name == "root":
