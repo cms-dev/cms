@@ -172,7 +172,7 @@ To "activate" it:
 
     . ~/cms_venv/bin/activate
 
-After the activation, ``pip`` will *always* be available (even if it's not available globally, e.g. because it's not installed) and, in general, every python command (python, pip) will refer to their corresponding virtual version. So, you can install python dependencies by issuing:
+After the activation, ``pip`` will *always* be available (even if it was not available globally, e.g. because you did not install it) and, in general, every python command (python, pip) will refer to their corresponding virtual version. So, you can install python dependencies by issuing:
 
 .. sourcecode:: bash
 
