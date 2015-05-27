@@ -400,8 +400,6 @@ Available commands:
    ###########################################################################
             """)
 
-        print("===== Done")
-
 
 def uninstall(self):
         """This function deletes all that was installed by the install() function:
