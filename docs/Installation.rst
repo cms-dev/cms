@@ -142,7 +142,7 @@ The quick and dirty way of installing Python dependencies is this:
 
     pip install --user -r requirements.txt
 
-This command installs python dependencies in your home folder. If you really want to install them globally then you should remove ``--user`` and run the install command as root (but that could be a bad idea depending on your Linux distribution, because you would be installing files in a system directory bypassing the system package manager).
+This command installs python dependencies in your home folder. If you really want to install them globally then you should remove ``--user`` and run the install command as root (but, depending on your distribution, this might be a bad idea as it might interfere with the system package manager).
 
 There are other ways to manage python dependencies:
 
@@ -256,7 +256,7 @@ In order to run CMS there are some preparation steps to run (like installing the
 
     sudo ./prerequisites.py install
 
-Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but that could be a bad idea depending on your Linux distribution, because you would be installing files in a system directory bypassing the system package manager).
+Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but, depending on your distribution, this might be a bad idea as it might interfere with the system package manager).
 
 If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective:
 
