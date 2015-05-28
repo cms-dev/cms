@@ -54,9 +54,12 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
     sudo apt-get install build-essential fpc postgresql postgresql-client \
          gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
 
-    # Optional.
-    # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
-    #      texlive-latex-base a2ps
+    # Only if you will use pip/virtualenv to install python dependecies
+    sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev
+
+    # Optional
+    sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
+         texlive-latex-base a2ps
 
 Arch Linux
 ----------
@@ -72,8 +75,11 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     # https://aur.archlinux.org/packages/libcgroup/
     # https://aur.archlinux.org/packages/sgi-stl-doc/
 
-    # Optional.
-    # sudo pacman -S nginx php php-fpm phppgadmin texlive-core a2ps
+    # Only if you will use pip/virtualenv to install python dependecies
+    sudo pacman -S postgresql-libs libcups libyaml
+
+    # Optional
+    sudo pacman -S nginx php php-fpm phppgadmin texlive-core a2ps
 
 Debian
 ------
@@ -171,6 +177,12 @@ To "activate" it:
 .. sourcecode:: bash
 
     . ~/cms_venv/bin/activate
+
+Or equivalently:
+
+.. sourcecode:: bash
+
+    source ~/cms_venv/bin/activate
 
 After the activation, ``pip`` will *always* be available (even if it was not available globally, e.g. because you did not install it) and, in general, every python command (python, pip) will refer to their corresponding virtual version. So, you can install python dependencies by issuing:
 
