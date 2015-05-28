@@ -54,7 +54,7 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
     sudo apt-get install build-essential fpc postgresql postgresql-client \
          gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
 
-    # Only if you will use pip/virtualenv to install python dependecies
+    # Only if you will use pip/virtualenv to install python dependencies
     sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev
 
     # Optional
@@ -75,7 +75,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     # https://aur.archlinux.org/packages/libcgroup/
     # https://aur.archlinux.org/packages/sgi-stl-doc/
 
-    # Only if you will use pip/virtualenv to install python dependecies
+    # Only if you will use pip/virtualenv to install python dependencies
     sudo pacman -S postgresql-libs libcups libyaml
 
     # Optional
