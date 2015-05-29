@@ -342,7 +342,7 @@ class TestRPC(unittest.TestCase):
     def test_double_connect_server(self):
         # Check that asking an already-connected server to initialize
         # again its connection causes an error.
-        client = self.get_client(ServiceCoord("Foo", 0))
+        self.get_client(ServiceCoord("Foo", 0))
         gevent.sleep(0.002)
         self.assertRaises(Exception, self.servers[0].initialize, "foo")
 
@@ -358,7 +358,7 @@ class TestRPC(unittest.TestCase):
     def test_double_disconnect_server(self):
         # Check that asking a non-connected server to disconnect is
         # harmless (i.e. disconnection is idempotent).
-        client = self.get_client(ServiceCoord("Foo", 0))
+        self.get_client(ServiceCoord("Foo", 0))
         gevent.sleep(0.002)
         self.servers[0].disconnect()
         gevent.sleep(0.002)

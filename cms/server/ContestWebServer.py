@@ -68,8 +68,8 @@ from werkzeug.datastructures import LanguageAccept
 from cms import ConfigError, ServiceCoord, config, filename_to_language
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
-    SubmissionResult, File, UserTest, UserTestFile, UserTestManager, PrintJob, \
-    Participation
+    SubmissionResult, File, UserTest, UserTestFile, UserTestManager, \
+    PrintJob, Participation
 from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
@@ -118,6 +118,14 @@ class BaseHandler(CommonRequestHandler):
     # this handler is called. Useful to filter asynchronous
     # requests.
     refresh_cookie = True
+
+    def __init__(self, *args, **kwargs):
+        super(BaseHandler, self).__init__(*args, **kwargs)
+        self.timestamp = None
+        self.cookie_lang = None
+        self.browser_lang = None
+        self.langs = None
+        self._ = None
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -924,7 +932,8 @@ class QuestionHandler(BaseHandler):
         self.sql_session.add(question)
         self.sql_session.commit()
 
-        logger.info("Question submitted by user %s.", participation.user.username)
+        logger.info(
+            "Question submitted by user %s.", participation.user.username)
 
         # Add "All ok" notification.
         self.application.service.add_notification(

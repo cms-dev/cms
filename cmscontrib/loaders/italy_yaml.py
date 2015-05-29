@@ -274,11 +274,13 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
         if not conf.get('output_only', False) and \
                 os.path.isdir(os.path.join(self.path, "sol")):
             for lang in LANGUAGES:
-                files.append(os.path.join(self.path, "sol", "grader.%s" % lang))
+                files.append(
+                    os.path.join(self.path, "sol", "grader.%s" % lang))
             for other_filename in os.listdir(os.path.join(self.path, "sol")):
                 if any(other_filename.endswith(header)
                        for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
-                    files.append(os.path.join(self.path, "sol", other_filename))
+                    files.append(
+                        os.path.join(self.path, "sol", other_filename))
 
         # Yaml
         files.append(os.path.join(self.path, "task.yaml"))

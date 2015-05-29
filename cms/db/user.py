@@ -40,6 +40,11 @@ from . import Base, Contest
 
 
 def generate_random_password():
+    """Utility method to generate a random password.
+
+    return (string): a random string.
+
+    """
     import random
     chars = "abcdefghijklmnopqrstuvwxyz"
     return "".join([random.choice(chars) for _ in range(6)])

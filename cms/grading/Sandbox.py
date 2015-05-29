@@ -437,6 +437,8 @@ class StupidSandbox(SandboxBase):
         """
         SandboxBase.__init__(self, file_cacher)
 
+        self.log = None
+
         # Make box directory
         if temp_dir is None:
             temp_dir = config.temp_dir

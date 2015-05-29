@@ -274,7 +274,8 @@ class PolygonUserLoader(UserLoader):
         """See docstring in class Loader.
 
         """
-        return os.path.exists(os.path.join(os.path.dirname(path), "contestants.txt"))
+        return os.path.exists(
+            os.path.join(os.path.dirname(path), "contestants.txt"))
 
     def has_changed(self, name):
         """See docstring in class Loader.
@@ -300,7 +301,8 @@ class PolygonUserLoader(UserLoader):
         # contestant1;123;Cont;Estant;0
         # jury;1234;Ju;Ry;1
 
-        users_path = os.path.join(os.path.dirname(self.path), 'contestants.txt')
+        users_path = os.path.join(
+            os.path.dirname(self.path), 'contestants.txt')
         if os.path.exists(users_path):
             with io.open(users_path, "rt", encoding="utf-8") as users_file:
                 for user in users_file.readlines():
@@ -320,7 +322,8 @@ class PolygonUserLoader(UserLoader):
             logger.info("User parameters loaded.")
             return User(**args)
         else:
-            logger.critical("User %s not found in contestants.txt file.", username)
+            logger.critical(
+                "User %s not found in contestants.txt file.", username)
             return None
 
 
