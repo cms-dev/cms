@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -29,6 +29,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import timedelta
+from string import ascii_lowercase
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
@@ -40,9 +41,13 @@ from . import Base, Contest
 
 
 def generate_random_password():
+    """Utility method to generate a random password.
+
+    return (string): a random string.
+
+    """
     import random
-    chars = "abcdefghijklmnopqrstuvwxyz"
-    return "".join([random.choice(chars) for _ in range(6)])
+    return "".join((random.choice(ascii_lowercase) for _ in range(6)))
 
 
 class User(Base):

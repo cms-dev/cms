@@ -586,7 +586,7 @@ class StupidSandbox(SandboxBase):
         """
         self.exec_time = None
         self.exec_num += 1
-        self.log = None
+
         logger.debug("Executing program in sandbox with command: `%s'.",
                      " ".join(command))
         with io.open(self.relative_path(self.cmd_file), 'at') as commands:

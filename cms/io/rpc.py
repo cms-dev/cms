@@ -431,6 +431,8 @@ class RemoteServiceClient(RemoteServiceBase):
 
         self.auto_retry = auto_retry
 
+        self._loop = None
+
     def _repr_remote(self):
         """See RemoteServiceBase._repr_remote."""
         return "%s:%d (%r)" % (self.remote_address +

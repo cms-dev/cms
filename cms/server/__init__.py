@@ -622,8 +622,13 @@ def file_handler_gen(BaseClass):
 
 
 def get_url_root(request_path):
-    '''Generates a URL relative to request_uri which would point to the root of
-    the website.'''
+    """Return a relative URL pointing to the root of the website.
+
+    request_path (string): the starting point of the relative path.
+
+    return (string): relative URL from request_path to the root.
+
+    """
 
     # Compute the number of levels we would need to ascend.
     path_depth = request_path.count("/") - 1
@@ -636,7 +641,14 @@ def get_url_root(request_path):
 
 class CommonRequestHandler(RequestHandler):
     """Encapsulates shared RequestHandler functionality.
+
     """
+
+    def __init__(self, *args, **kwargs):
+        super(CommonRequestHandler, self).__init__(*args, **kwargs)
+        self.sql_session = None
+        self.r_params = None
+        self.contest = None
 
     def redirect(self, url):
         url = get_url_root(self.request.path) + url

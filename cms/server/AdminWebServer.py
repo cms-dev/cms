@@ -273,16 +273,14 @@ class BaseHandler(CommonRequestHandler):
         # Most of the handlers raise a 404 HTTP error before r_params
         # is defined. If r_params is not defined we try to define it
         # here, and if it fails we simply return a basic textual error notice.
-        if hasattr(self, 'r_params'):
-            self.render("error.html", status_code=status_code, **self.r_params)
-        else:
+        if self.r_params is None:
             try:
                 self.r_params = self.render_params()
-                self.render("error.html", status_code=status_code,
-                            **self.r_params)
             except:
                 self.write("A critical error has occurred :-(")
                 self.finish()
+                return
+        self.render("error.html", status_code=status_code, **self.r_params)
 
     get_string = argument_reader(lambda a: a, empty="")
 

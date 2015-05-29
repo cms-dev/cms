@@ -287,7 +287,8 @@ def extract_complexity(task_id, file_lengther=None):
                     if result[1] is None:
                         continue
                     info.write("Submission: %s" % submission.id)
-                    info.write(" - user: %15s" % submission.participation.user.username)
+                    info.write(" - user: %15s" %
+                               submission.participation.user.username)
                     info.write(" - task: %s" % task.name)
                     if result[0] is not None:
                         info.write(" - score: %6.2lf" % result[0])

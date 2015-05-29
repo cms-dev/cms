@@ -223,7 +223,9 @@ class ParameterTypeArray(ParameterType):
                 self.subparameter.parse_handler(handler, new_prefix))
         return parsed_values
 
-    def render(self, prefix, previous_value=[]):
+    def render(self, prefix, previous_value=None):
+        if previous_value is None:
+            previous_value = []
         elements = []
         for i in range(len(previous_value)):
             subparam_value = previous_value[i]

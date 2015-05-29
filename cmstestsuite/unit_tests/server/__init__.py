@@ -26,7 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import unittest
-from datetime import date, time, datetime, timedelta
+from datetime import datetime, timedelta
 
 from cms.server import compute_actual_phase
 
@@ -52,7 +52,7 @@ def parse_timedelta(value):
     """
     if value is None:
         return None
-    return timedelta(seconds=sum(int(v, 10) * 60**(2-i)
+    return timedelta(seconds=sum(int(v, 10) * 60 ** (2 - i)
                                  for i, v in enumerate(value.split(":"))))
 
 
@@ -111,8 +111,8 @@ def test(contest_start, contest_stop, per_user_time, starting_time,
     parsed.append((-2, None, parse_datetime(intervals[0])))
     for i in range(1, len(intervals), 2):
         status = intervals[i]
-        begin = parse_datetime(intervals[i-1])
-        end = parse_datetime(intervals[i+1])
+        begin = parse_datetime(intervals[i - 1])
+        end = parse_datetime(intervals[i + 1])
 
         parsed.append((status, begin, end))
 
