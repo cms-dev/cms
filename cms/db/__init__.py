@@ -54,6 +54,8 @@ __all__ = [
     "Contest", "Announcement",
     # user
     "User", "Team", "Participation", "Message", "Question",
+    # admin
+    "Admin",
     # task
     "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
     "Manager", "Testcase",
@@ -93,6 +95,7 @@ from .types import RepeatedUnicode
 from .base import metadata, Base
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
+from .admin import Admin
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
