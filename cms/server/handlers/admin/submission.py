@@ -33,7 +33,7 @@ from __future__ import unicode_literals
 from cms.db import Dataset, File, Submission
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, FileHandler, try_commit
+from .base import BaseHandler, FileHandler
 
 
 class SubmissionViewHandler(BaseHandler):
@@ -99,7 +99,7 @@ class SubmissionCommentHandler(BaseHandler):
                 make_datetime(), "Invalid field(s)", repr(error))
 
         else:
-            try_commit(self.sql_session, self)
+            self.try_commit()
 
         if dataset_id is None:
             self.redirect("/submission/%s" % submission_id)

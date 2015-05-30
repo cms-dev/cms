@@ -54,30 +54,6 @@ from cmscommon.datetime import make_datetime, make_timestamp
 logger = logging.getLogger(__name__)
 
 
-def try_commit(session, handler):
-    """Try to commit the session, if not successful display a warning
-    in the webpage.
-
-    session (Session): the session to commit.
-    handler (BaseHandler): just to extract the information about AWS.
-
-    return (bool): True if commit was successful, False otherwise.
-
-    """
-    try:
-        session.commit()
-    except IntegrityError as error:
-        handler.application.service.add_notification(
-            make_datetime(),
-            "Operation failed.", "%s" % error)
-        return False
-    else:
-        handler.application.service.add_notification(
-            make_datetime(),
-            "Operation successful.", "")
-        return True
-
-
 def argument_reader(func, empty=None):
     """Return an helper method for reading and parsing form values.
 
@@ -166,6 +142,27 @@ class BaseHandler(CommonRequestHandler):
     REMOVE_FROM_CONTEST = "Remove from contest"
     MOVE_UP = "Move up"
     MOVE_DOWN = "Move down"
+
+    def try_commit(self):
+        """Try to commit the current session.
+
+        If not successful display a warning in the webpage.
+
+        return (bool): True if commit was successful, False otherwise.
+
+        """
+        try:
+            self.sql_session.commit()
+        except IntegrityError as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Operation failed.", "%s" % error)
+            return False
+        else:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Operation successful.", "")
+            return True
 
     def safe_get_item(self, cls, ident, session=None):
         """Get item from database of class cls and id ident, using

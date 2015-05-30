@@ -45,7 +45,7 @@ from cms.db import Dataset, Manager, Message, Session, Submission, User, \
 from cms.grading import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 logger = logging.getLogger(__name__)
@@ -167,7 +167,7 @@ class CloneDatasetHandler(BaseHandler):
         if task.active_dataset is None:
             task.active_dataset = dataset
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect(fallback_page)
@@ -206,7 +206,7 @@ class RenameDatasetHandler(BaseHandler):
 
         dataset.description = description
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.redirect("/task/%s" % task.id)
         else:
             self.redirect(fallback_page)
@@ -231,7 +231,7 @@ class DeleteDatasetHandler(BaseHandler):
 
         self.sql_session.delete(dataset)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # self.application.service.scoring_service.reinitialize()
             pass
         self.redirect("/task/%s" % task.id)
@@ -271,7 +271,7 @@ class ActivateDatasetHandler(BaseHandler):
 
         task.active_dataset = dataset
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.application.service.proxy_service.dataset_updated(
                 task_id=task.id)
 
@@ -299,7 +299,7 @@ class ActivateDatasetHandler(BaseHandler):
             self.sql_session.add(message)
             count += 1
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.application.service.add_notification(
                 make_datetime(),
                 "Messages sent to %d users." % count, "")
@@ -316,7 +316,7 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
 
         dataset.autojudge = not dataset.autojudge
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # self.application.service.scoring_service.reinitialize()
 
             # This kicks off judging of any submissions which were previously
@@ -371,7 +371,7 @@ class AddManagerHandler(BaseHandler):
         manager = Manager(manager["filename"], digest, dataset=dataset)
         self.sql_session.add(manager)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.redirect("/task/%s" % task.id)
         else:
             self.redirect(fallback_page)
@@ -393,7 +393,7 @@ class DeleteManagerHandler(BaseHandler):
 
         self.sql_session.delete(manager)
 
-        try_commit(self.sql_session, self)
+        self.try_commit()
         self.redirect("/task/%s" % task.id)
 
 
@@ -458,7 +458,7 @@ class AddTestcaseHandler(BaseHandler):
             codename, public, input_digest, output_digest, dataset=dataset)
         self.sql_session.add(testcase)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # max_score and/or extra_headers might have changed.
             self.application.service.proxy_service.reinitialize()
             self.redirect("/task/%s" % task.id)
@@ -553,7 +553,7 @@ class AddTestcasesHandler(BaseHandler):
                             testcase = dataset.testcases[codename]
                             self.sql_session.delete(testcase)
 
-                            if not try_commit(self.sql_session, self):
+                            if not self.try_commit():
                                 skipped_tc.append(codename)
                                 continue
                             overwritten_tc.append(codename)
@@ -592,7 +592,7 @@ class AddTestcasesHandler(BaseHandler):
                                         output_digest, dataset=dataset)
                     self.sql_session.add(testcase)
 
-                    if not try_commit(self.sql_session, self):
+                    if not self.try_commit():
                         self.application.service.add_notification(
                             make_datetime(),
                             "Couldn't add test %s" % codename,
@@ -637,7 +637,7 @@ class DeleteTestcaseHandler(BaseHandler):
 
         self.sql_session.delete(testcase)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # max_score and/or extra_headers might have changed.
             self.application.service.proxy_service.reinitialize()
         self.redirect("/task/%s" % task.id)

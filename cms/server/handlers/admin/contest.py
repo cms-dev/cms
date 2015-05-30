@@ -34,7 +34,7 @@ from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Contest
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 class ContestsListHandler(BaseHandler):
@@ -103,7 +103,7 @@ class AddContestHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the contest on RWS.
             self.application.service.proxy_service.reinitialize()
             self.redirect("/contest/%s" % contest.id)
@@ -169,7 +169,7 @@ class ContestHandler(BaseHandler):
             self.redirect("/contest/%s" % contest_id)
             return
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Update the contest on RWS.
             self.application.service.proxy_service.reinitialize()
         self.redirect("/contest/%s" % contest_id)

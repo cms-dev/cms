@@ -33,7 +33,7 @@ from __future__ import unicode_literals
 from cms.db import Contest, Task
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 class ContestTasklistHandler(BaseHandler):
@@ -71,7 +71,7 @@ class AssignContestTaskHandler(BaseHandler):
         task.num = len(self.contest.tasks)
         task.contest = self.contest
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 
@@ -136,7 +136,7 @@ class EditContestTaskHandler(BaseHandler):
             self.sql_session.flush()
             task.num, task2.num = tmp_b, tmp_a
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 

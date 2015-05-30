@@ -38,7 +38,7 @@ import tornado.web
 from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 logger = logging.getLogger(__name__)
@@ -115,7 +115,7 @@ class AddTaskHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the task on RWS.
             self.application.service.proxy_service.reinitialize()
             self.redirect("/task/%s" % task.id)
@@ -203,7 +203,7 @@ class TaskHandler(BaseHandler):
                 testcase.public = bool(self.get_argument(
                     "testcase_%s_public" % testcase.id, False))
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Update the task and score on RWS.
             self.application.service.proxy_service.dataset_updated(
                 task_id=task.id)
@@ -267,7 +267,7 @@ class AddStatementHandler(BaseHandler):
         statement = Statement(language, digest, task=task)
         self.sql_session.add(statement)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect(fallback_page)
@@ -287,7 +287,7 @@ class DeleteStatementHandler(BaseHandler):
 
         self.sql_session.delete(statement)
 
-        try_commit(self.sql_session, self)
+        self.try_commit()
         self.redirect("/task/%s" % task.id)
 
 
@@ -332,7 +332,7 @@ class AddAttachmentHandler(BaseHandler):
         attachment = Attachment(attachment["filename"], digest, task=task)
         self.sql_session.add(attachment)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect(fallback_page)
@@ -352,7 +352,7 @@ class DeleteAttachmentHandler(BaseHandler):
 
         self.sql_session.delete(attachment)
 
-        try_commit(self.sql_session, self)
+        self.try_commit()
         self.redirect("/task/%s" % task.id)
 
 
@@ -422,7 +422,7 @@ class AddDatasetHandler(BaseHandler):
         if task.active_dataset is None:
             task.active_dataset = dataset
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # self.application.service.scoring_service.reinitialize()
             self.redirect("/task/%s" % task_id)
         else:

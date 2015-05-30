@@ -33,7 +33,7 @@ from __future__ import unicode_literals
 from cms.db import Contest, Participation, User
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 class UserViewHandler(BaseHandler):
@@ -83,7 +83,7 @@ class UserViewHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Update the user on RWS.
             self.application.service.proxy_service.reinitialize()
         self.redirect(fallback_page)
@@ -123,7 +123,7 @@ class AddUserHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
             self.redirect("/user/%s" % user.id)
@@ -157,7 +157,7 @@ class AssignUserContestHandler(BaseHandler):
                                       hidden=attrs["hidden"])
         self.sql_session.add(participation)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 
@@ -194,7 +194,7 @@ class EditUserContestHandler(BaseHandler):
                 .first()
             self.sql_session.delete(participation)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 

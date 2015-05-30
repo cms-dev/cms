@@ -35,7 +35,7 @@ import tornado.web
 from cms.db import Contest, Announcement
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 class AddAnnouncementHandler(BaseHandler):
@@ -51,7 +51,7 @@ class AddAnnouncementHandler(BaseHandler):
             ann = Announcement(make_datetime(), subject, text,
                                contest=self.contest)
             self.sql_session.add(ann)
-            try_commit(self.sql_session, self)
+            self.try_commit()
         self.redirect("/contest/%s/announcements" % contest_id)
 
 
@@ -69,5 +69,5 @@ class RemoveAnnouncementHandler(BaseHandler):
 
         self.sql_session.delete(ann)
 
-        try_commit(self.sql_session, self)
+        self.try_commit()
         self.redirect("/contest/%s/announcements" % contest_id)

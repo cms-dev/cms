@@ -37,7 +37,7 @@ import tornado.web
 from cms.db import Contest, Question, Participation
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class QuestionReplyHandler(BaseHandler):
 
         question.reply_timestamp = make_datetime()
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             logger.info("Reply sent to user %s in contest %s for "
                         "question with id %s.",
                         question.participation.user.username,
@@ -123,7 +123,7 @@ class QuestionIgnoreHandler(BaseHandler):
 
         # Commit the change.
         question.ignored = should_ignore
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             logger.info("Question '%s' by user %s in contest %s has "
                         "been %s",
                         question.subject,

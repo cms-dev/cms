@@ -37,7 +37,7 @@ import tornado.web
 from cms.db import Contest, Message, Participation, User
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, try_commit
+from .base import BaseHandler
 
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class AssignContestUserHandler(BaseHandler):
         participation = Participation(contest=self.contest, user=user)
         self.sql_session.add(participation)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 
@@ -116,7 +116,7 @@ class EditContestUserHandler(BaseHandler):
                 .first()
             self.sql_session.delete(participation)
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 
@@ -178,7 +178,7 @@ class ParticipationHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             # Update the user on RWS.
             self.application.service.proxy_service.reinitialize()
         self.redirect(fallback_page)
@@ -206,7 +206,7 @@ class MessageHandler(BaseHandler):
                           self.get_argument("message_text", ""),
                           participation=participation)
         self.sql_session.add(message)
-        if try_commit(self.sql_session, self):
+        if self.try_commit():
             logger.info("Message submitted to user %s in contest %s.",
                         user.username, self.contest.name)
 
