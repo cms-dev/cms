@@ -437,8 +437,6 @@ class StupidSandbox(SandboxBase):
         """
         SandboxBase.__init__(self, file_cacher)
 
-        self.log = None
-
         # Make box directory
         if temp_dir is None:
             temp_dir = config.temp_dir
@@ -588,7 +586,7 @@ class StupidSandbox(SandboxBase):
         """
         self.exec_time = None
         self.exec_num += 1
-        self.log = None
+
         logger.debug("Executing program in sandbox with command: `%s'.",
                      " ".join(command))
         with io.open(self.relative_path(self.cmd_file), 'at') as commands:
