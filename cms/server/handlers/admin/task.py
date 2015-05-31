@@ -38,17 +38,13 @@ import tornado.web
 from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, SimpleHandler
 
 
 logger = logging.getLogger(__name__)
 
 
-class AddTaskHandler(BaseHandler):
-    def get(self):
-        self.r_params = self.render_params()
-        self.render("add_task.html", **self.r_params)
-
+class AddTaskHandler(SimpleHandler("add_task.html")):
     def post(self):
         fallback_page = "/tasks/add"
 

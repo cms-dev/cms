@@ -34,17 +34,13 @@ from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Contest
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, SimpleContestHandler, SimpleHandler
 
 
-class AddContestHandler(BaseHandler):
+class AddContestHandler(SimpleHandler("add_contest.html")):
     """Adds a new contest.
 
     """
-    def get(self):
-        self.r_params = self.render_params()
-        self.render("add_contest.html", **self.r_params)
-
     def post(self):
         fallback_page = "/contests/add"
 
@@ -105,13 +101,7 @@ class AddContestHandler(BaseHandler):
             self.redirect(fallback_page)
 
 
-class ContestHandler(BaseHandler):
-    def get(self, contest_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        self.r_params = self.render_params()
-        self.render("contest.html", **self.r_params)
-
+class ContestHandler(SimpleContestHandler("contest.html")):
     def post(self, contest_id):
         contest = self.safe_get_item(Contest, contest_id)
 

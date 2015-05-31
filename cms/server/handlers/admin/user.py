@@ -33,7 +33,7 @@ from __future__ import unicode_literals
 from cms.db import Contest, Participation, User
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, SimpleHandler
 
 
 class UserHandler(BaseHandler):
@@ -89,11 +89,7 @@ class UserHandler(BaseHandler):
         self.redirect(fallback_page)
 
 
-class AddUserHandler(BaseHandler):
-    def get(self):
-        self.r_params = self.render_params()
-        self.render("add_user.html", **self.r_params)
-
+class AddUserHandler(SimpleHandler("add_user.html")):
     def post(self):
         fallback_page = "/users/add"
 
