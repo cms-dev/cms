@@ -46,7 +46,7 @@ class AddContestHandler(BaseHandler):
         self.render("add_contest.html", **self.r_params)
 
     def post(self):
-        fallback_page = "/contests/new"
+        fallback_page = "/contests/add"
 
         try:
             attrs = dict()
@@ -169,7 +169,7 @@ class ContestHandler(BaseHandler):
         self.redirect("/contest/%s" % contest_id)
 
 
-class MainHandler(BaseHandler):
+class OverviewHandler(BaseHandler):
     """Home page handler, with queue and workers statuses.
 
     """
@@ -179,7 +179,7 @@ class MainHandler(BaseHandler):
             self.contest = self.safe_get_item(Contest, contest_id)
 
         self.r_params = self.render_params()
-        self.render("welcome.html", **self.r_params)
+        self.render("overview.html", **self.r_params)
 
 
 class ResourcesListHandler(BaseHandler):

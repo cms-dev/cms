@@ -52,14 +52,19 @@ class AddAnnouncementHandler(BaseHandler):
                                contest=self.contest)
             self.sql_session.add(ann)
             self.try_commit()
+        else:
+            self.application.service.add_notification(
+                make_datetime(), "Subject is mandatory.", "")
         self.redirect("/contest/%s/announcements" % contest_id)
 
 
-class RemoveAnnouncementHandler(BaseHandler):
+class AnnouncementHandler(BaseHandler):
     """Called to remove an announcement.
 
     """
-    def get(self, contest_id, ann_id):
+    # No page to show a single attachment.
+
+    def delete(self, contest_id, ann_id):
         ann = self.safe_get_item(Announcement, ann_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -68,6 +73,7 @@ class RemoveAnnouncementHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(ann)
-
         self.try_commit()
-        self.redirect("/contest/%s/announcements" % contest_id)
+
+        # Page to redirect to.
+        self.write("/contest/%s/announcements" % contest_id)

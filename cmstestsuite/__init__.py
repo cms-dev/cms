@@ -412,7 +412,7 @@ def get_users(contest_id):
 
 
 def add_contest(**kwargs):
-    resp = admin_req('/contests/new', multipart_post=True, args=kwargs)
+    resp = admin_req('/contests/add', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
@@ -429,7 +429,7 @@ def add_task(**kwargs):
     if 'token_mode' not in kwargs:
         kwargs['token_mode'] = 'disabled'
 
-    r = admin_req('/tasks/new',
+    r = admin_req('/tasks/add',
                   multipart_post=True,
                   args=kwargs)
     g = re.search(r'/task/([0-9]+)$', r.geturl())
@@ -487,7 +487,7 @@ def add_testcase(task_id, num, input_file, output_file, public):
 
 
 def add_user(**kwargs):
-    r = admin_req('/users/new', args=kwargs)
+    r = admin_req('/users/add', args=kwargs)
     g = re.search(r'/user/([0-9]+)$', r.geturl())
     if g:
         user_id = int(g.group(1))

@@ -26,7 +26,7 @@
   <input type="submit" value="Add user" />
 </form>
 
-<form action="{{ url_root }}/contest/{{ contest.id }}/users/edit" method="POST">
+<form action="{{ url_root }}/contest/{{ contest.id }}/users" method="POST">
   Edit selected user:
   <input type="submit" name="operation" value="Remove from contest" />
   <table class="bordered">

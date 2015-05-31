@@ -50,7 +50,7 @@ class AddTaskHandler(BaseHandler):
         self.render("add_task.html", **self.r_params)
 
     def post(self):
-        fallback_page = "/tasks/new"
+        fallback_page = "/tasks/add"
 
         try:
             attrs = dict()
@@ -273,11 +273,13 @@ class AddStatementHandler(BaseHandler):
             self.redirect(fallback_page)
 
 
-class DeleteStatementHandler(BaseHandler):
+class StatementHandler(BaseHandler):
     """Delete a statement.
 
     """
-    def get(self, task_id, statement_id):
+    # No page for single statements.
+
+    def delete(self, task_id, statement_id):
         statement = self.safe_get_item(Statement, statement_id)
         task = self.safe_get_item(Task, task_id)
 
@@ -286,9 +288,10 @@ class DeleteStatementHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(statement)
-
         self.try_commit()
-        self.redirect("/task/%s" % task.id)
+
+        # Page to redirect to.
+        self.write("/task/%s" % task.id)
 
 
 class AddAttachmentHandler(BaseHandler):
@@ -338,11 +341,13 @@ class AddAttachmentHandler(BaseHandler):
             self.redirect(fallback_page)
 
 
-class DeleteAttachmentHandler(BaseHandler):
+class AttachmentHandler(BaseHandler):
     """Delete an attachment.
 
     """
-    def get(self, task_id, attachment_id):
+    # No page for single attachments.
+
+    def delete(self, task_id, attachment_id):
         attachment = self.safe_get_item(Attachment, attachment_id)
         task = self.safe_get_item(Task, task_id)
 
@@ -351,9 +356,10 @@ class DeleteAttachmentHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(attachment)
-
         self.try_commit()
-        self.redirect("/task/%s" % task.id)
+
+        # Page to redirect to.
+        self.write("/task/%s" % task.id)
 
 
 class AddDatasetHandler(BaseHandler):
@@ -380,7 +386,7 @@ class AddDatasetHandler(BaseHandler):
         self.render("add_dataset.html", **self.r_params)
 
     def post(self, task_id):
-        fallback_page = "/task/%s/new_dataset" % task_id
+        fallback_page = "/task/%s/add_dataset" % task_id
 
         task = self.safe_get_item(Task, task_id)
 

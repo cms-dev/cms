@@ -71,7 +71,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <ul>
             {% for statement in task.statements.values() %}
             <li><a href="{{ url_root }}/file/{{ statement.digest }}/statement.pdf">Statement for language "{{ statement.language }}"</a>
-              - <a href="{{ url_root }}/task/{{ task.id }}/statement/{{ statement.id }}/delete">Delete</a></li>
+              - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/statement/{{ statement.id }}'); ">Delete</a></li>
             {% end %}
           </ul>
           {% end %}
@@ -91,7 +91,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% for attachment in task.attachments.values() %}
               <div class="attachment">
                 <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
-                - <a href="{{ url_root }}/task/{{ task.id }}/attachment/{{ attachment.id }}/delete">Delete</a>
+                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/attachment/{{ attachment.id }}'); ">Delete</a></li>
               </div>
             {% end %}
           {% end %}
@@ -115,7 +115,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if len(task.datasets) == 0 %}
     No datasets have been created for this task.<br/>
 {% end %}
-    <a href="{{ url_root }}/task/{{ task.id }}/new_dataset">Create a new dataset</a><br/>
+    <a href="{{ url_root }}/task/{{ task.id }}/add_dataset">Create a new dataset</a><br/>
     </p>
 
 {% for dataset in sorted(task.datasets, key=lambda d: d.description) %}

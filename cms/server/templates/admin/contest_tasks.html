@@ -18,7 +18,7 @@
   <input type="submit" value="Add task" />
 </form>
 
-<form action="{{ url_root }}/contest/{{ contest.id }}/tasks/edit" method="POST">
+<form action="{{ url_root }}/contest/{{ contest.id }}/tasks" method="POST">
   Edit selected task:
   <input type="submit" name="operation" value="Move up" />
   <input type="submit" name="operation" value="Move down" />

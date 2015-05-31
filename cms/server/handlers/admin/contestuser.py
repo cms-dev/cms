@@ -43,7 +43,7 @@ from .base import BaseHandler
 logger = logging.getLogger(__name__)
 
 
-class ContestUserlistHandler(BaseHandler):
+class ContestUsersHandler(BaseHandler):
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -56,39 +56,8 @@ class ContestUserlistHandler(BaseHandler):
                         .filter(Participation.contest == self.contest)
                         .all()))\
                 .all()
-        self.render("contest_userlist.html", **self.r_params)
+        self.render("contest_users.html", **self.r_params)
 
-
-class AssignContestUserHandler(BaseHandler):
-    def post(self, contest_id):
-        fallback_page = "/contest/%s/users" % contest_id
-
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        try:
-            user_id = self.get_argument("user_id")
-            assert user_id != "null", "Please select a valid user"
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect(fallback_page)
-            return
-
-        user = self.safe_get_item(User, user_id)
-
-        # Create the participation.
-        participation = Participation(contest=self.contest, user=user)
-        self.sql_session.add(participation)
-
-        if self.try_commit():
-            # Create the user on RWS.
-            self.application.service.proxy_service.reinitialize()
-
-        # Maybe they'll want to do this again (for another user)
-        self.redirect(fallback_page)
-
-
-class EditContestUserHandler(BaseHandler):
     def post(self, contest_id):
         fallback_page = "/contest/%s/users" % contest_id
 
@@ -121,6 +90,35 @@ class EditContestUserHandler(BaseHandler):
             self.application.service.proxy_service.reinitialize()
 
         # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class AddContestUserHandler(BaseHandler):
+    def post(self, contest_id):
+        fallback_page = "/contest/%s/users" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            user_id = self.get_argument("user_id")
+            assert user_id != "null", "Please select a valid user"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        user = self.safe_get_item(User, user_id)
+
+        # Create the participation.
+        participation = Participation(contest=self.contest, user=user)
+        self.sql_session.add(participation)
+
+        if self.try_commit():
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another user)
         self.redirect(fallback_page)
 
 

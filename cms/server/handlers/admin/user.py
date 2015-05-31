@@ -36,7 +36,7 @@ from cmscommon.datetime import make_datetime
 from .base import BaseHandler
 
 
-class UserViewHandler(BaseHandler):
+class UserHandler(BaseHandler):
     def get(self, user_id):
         user = self.safe_get_item(User, user_id)
 
@@ -95,7 +95,7 @@ class AddUserHandler(BaseHandler):
         self.render("add_user.html", **self.r_params)
 
     def post(self):
-        fallback_page = "/users/new"
+        fallback_page = "/users/add"
 
         try:
             attrs = dict()
@@ -131,7 +131,7 @@ class AddUserHandler(BaseHandler):
             self.redirect(fallback_page)
 
 
-class AssignUserContestHandler(BaseHandler):
+class AddParticipationHandler(BaseHandler):
     def post(self, user_id):
         fallback_page = "/user/%s" % user_id
 
@@ -165,7 +165,7 @@ class AssignUserContestHandler(BaseHandler):
         self.redirect(fallback_page)
 
 
-class EditUserContestHandler(BaseHandler):
+class EditParticipationHandler(BaseHandler):
     def post(self, user_id):
         fallback_page = "/user/%s" % user_id
 

@@ -36,7 +36,7 @@ from cmscommon.datetime import make_datetime
 from .base import BaseHandler, FileHandler
 
 
-class SubmissionViewHandler(BaseHandler):
+class SubmissionHandler(BaseHandler):
     """Shows the details of a submission. All data is already present
     in the list of the submissions of the task or of the user, but we
     need a place where to link messages like 'Submission 42 failed to

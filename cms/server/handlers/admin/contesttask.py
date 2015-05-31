@@ -36,7 +36,7 @@ from cmscommon.datetime import make_datetime
 from .base import BaseHandler
 
 
-class ContestTasklistHandler(BaseHandler):
+class ContestTasksHandler(BaseHandler):
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -46,40 +46,8 @@ class ContestTasklistHandler(BaseHandler):
             self.sql_session.query(Task)\
                 .filter(Task.contest == None)\
                 .all()  # noqa
-        self.render("contest_tasklist.html", **self.r_params)
+        self.render("contest_tasks.html", **self.r_params)
 
-
-class AssignContestTaskHandler(BaseHandler):
-    def post(self, contest_id):
-        fallback_page = "/contest/%s/tasks" % contest_id
-
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        try:
-            task_id = self.get_argument("task_id")
-            # Check that the admin selected some task.
-            assert task_id != "null", "Please select a valid task"
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect(fallback_page)
-            return
-
-        task = self.safe_get_item(Task, task_id)
-
-        # Assign the task to the contest.
-        task.num = len(self.contest.tasks)
-        task.contest = self.contest
-
-        if self.try_commit():
-            # Create the user on RWS.
-            self.application.service.proxy_service.reinitialize()
-
-        # Maybe they'll want to do this again (for another task)
-        self.redirect(fallback_page)
-
-
-class EditContestTaskHandler(BaseHandler):
     def post(self, contest_id):
         fallback_page = "/contest/%s/tasks" % contest_id
 
@@ -135,6 +103,36 @@ class EditContestTaskHandler(BaseHandler):
             task.num, task2.num = None, None
             self.sql_session.flush()
             task.num, task2.num = tmp_b, tmp_a
+
+        if self.try_commit():
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class AddContestTaskHandler(BaseHandler):
+    def post(self, contest_id):
+        fallback_page = "/contest/%s/tasks" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            task_id = self.get_argument("task_id")
+            # Check that the admin selected some task.
+            assert task_id != "null", "Please select a valid task"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        task = self.safe_get_item(Task, task_id)
+
+        # Assign the task to the contest.
+        task.num = len(self.contest.tasks)
+        task.contest = self.contest
 
         if self.try_commit():
             # Create the user on RWS.

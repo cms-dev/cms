@@ -29,23 +29,21 @@ from .base import \
 from .contest import \
     AddContestHandler, \
     ContestHandler, \
-    MainHandler, \
+    OverviewHandler, \
     ResourcesListHandler
 from .contestuser import \
-    ContestUserlistHandler, \
-    AssignContestUserHandler, \
-    EditContestUserHandler, \
+    ContestUsersHandler, \
+    AddContestUserHandler, \
     ParticipationHandler, \
     MessageHandler
 from .contesttask import \
-    ContestTasklistHandler, \
-    AssignContestTaskHandler, \
-    EditContestTaskHandler
+    ContestTasksHandler, \
+    AddContestTaskHandler
 from .contestsubmission import \
     ContestSubmissionsHandler
 from .contestannouncement import \
     AddAnnouncementHandler, \
-    RemoveAnnouncementHandler
+    AnnouncementHandler
 from .contestquestion import \
     QuestionsHandler, \
     QuestionReplyHandler, \
@@ -57,9 +55,9 @@ from .task import \
     TaskHandler, \
     AddDatasetHandler, \
     AddStatementHandler, \
-    DeleteStatementHandler, \
+    StatementHandler, \
     AddAttachmentHandler, \
-    DeleteAttachmentHandler
+    AttachmentHandler
 from .dataset import \
     DatasetSubmissionsHandler, \
     CloneDatasetHandler, \
@@ -74,18 +72,18 @@ from .dataset import \
     DeleteTestcaseHandler
 from .user import \
     AddUserHandler, \
-    UserViewHandler, \
-    AssignUserContestHandler, \
-    EditUserContestHandler
+    UserHandler, \
+    AddParticipationHandler, \
+    EditParticipationHandler
 from .submission import \
-    SubmissionViewHandler, \
+    SubmissionHandler, \
     SubmissionCommentHandler, \
     SubmissionFileHandler, \
     FileFromDigestHandler
 
 
 HANDLERS = [
-    (r"/", MainHandler),
+    (r"/", OverviewHandler),
     (r"/resourceslist", ResourcesListHandler),
     (r"/resources", ResourcesHandler),
     (r"/resources/([0-9]+|all)", ResourcesHandler),
@@ -94,25 +92,23 @@ HANDLERS = [
 
     # Contest
 
-    (r"/contests", SimpleHandler("contestlist.html")),
-    (r"/contests/new", AddContestHandler),
+    (r"/contests", SimpleHandler("contests.html")),
+    (r"/contests/add", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
-    (r"/contest/([0-9]+)/overview", MainHandler),
+    (r"/contest/([0-9]+)/overview", OverviewHandler),
     (r"/contest/([0-9]+)/resourceslist", ResourcesListHandler),
 
     # Contest's users
 
-    (r"/contest/([0-9]+)/users", ContestUserlistHandler),
-    (r"/contest/([0-9]+)/users/add", AssignContestUserHandler),
-    (r"/contest/([0-9]+)/users/edit", EditContestUserHandler),
+    (r"/contest/([0-9]+)/users", ContestUsersHandler),
+    (r"/contest/([0-9]+)/users/add", AddContestUserHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)", ParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
 
     # Contest's tasks
 
-    (r"/contest/([0-9]+)/tasks", ContestTasklistHandler),
-    (r"/contest/([0-9]+)/tasks/add", AssignContestTaskHandler),
-    (r"/contest/([0-9]+)/tasks/edit", EditContestTaskHandler),
+    (r"/contest/([0-9]+)/tasks", ContestTasksHandler),
+    (r"/contest/([0-9]+)/tasks/add", AddContestTaskHandler),
 
     # Contest's submissions
 
@@ -122,9 +118,8 @@ HANDLERS = [
 
     (r"/contest/([0-9]+)/announcements",
      SimpleContestHandler("announcements.html")),
-    (r"/contest/([0-9]+)/announcements/new", AddAnnouncementHandler),
-    (r"/contest/([0-9]+)/announcement/([0-9]+)/delete",
-     RemoveAnnouncementHandler),
+    (r"/contest/([0-9]+)/announcements/add", AddAnnouncementHandler),
+    (r"/contest/([0-9]+)/announcement/([0-9]+)", AnnouncementHandler),
 
     # Contest's questions
 
@@ -139,14 +134,14 @@ HANDLERS = [
 
     # Tasks
 
-    (r"/tasks", SimpleHandler("tasklist.html")),
-    (r"/tasks/new", AddTaskHandler),
+    (r"/tasks", SimpleHandler("tasks.html")),
+    (r"/tasks/add", AddTaskHandler),
     (r"/task/([0-9]+)", TaskHandler),
-    (r"/task/([0-9]+)/new_dataset", AddDatasetHandler),
+    (r"/task/([0-9]+)/add_dataset", AddDatasetHandler),
     (r"/task/([0-9]+)/statements/add", AddStatementHandler),
-    (r"/task/([0-9]+)/statement/([0-9]+)/delete", DeleteStatementHandler),
+    (r"/task/([0-9]+)/statement/([0-9]+)", StatementHandler),
     (r"/task/([0-9]+)/attachments/add", AddAttachmentHandler),
-    (r"/task/([0-9]+)/attachment/([0-9]+)/delete", DeleteAttachmentHandler),
+    (r"/task/([0-9]+)/attachment/([0-9]+)", AttachmentHandler),
 
     # Datasets
 
@@ -164,15 +159,15 @@ HANDLERS = [
 
     # Users
 
-    (r"/users", SimpleHandler("userlist.html")),
-    (r"/users/new", AddUserHandler),
-    (r"/user/([0-9]+)", UserViewHandler),
-    (r"/user/([0-9]+)/add_participation", AssignUserContestHandler),
-    (r"/user/([0-9]+)/edit_participation", EditUserContestHandler),
+    (r"/users", SimpleHandler("users.html")),
+    (r"/users/add", AddUserHandler),
+    (r"/user/([0-9]+)", UserHandler),
+    (r"/user/([0-9]+)/add_participation", AddParticipationHandler),
+    (r"/user/([0-9]+)/edit_participation", EditParticipationHandler),
 
     # Submissions
 
-    (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionViewHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
