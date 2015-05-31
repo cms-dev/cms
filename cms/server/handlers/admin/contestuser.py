@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 
 
 class ContestUsersHandler(BaseHandler):
+    REMOVE_FROM_CONTEST = "Remove from contest"
+
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 

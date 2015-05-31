@@ -139,10 +139,6 @@ class BaseHandler(CommonRequestHandler):
 
     """
 
-    REMOVE_FROM_CONTEST = "Remove from contest"
-    MOVE_UP = "Move up"
-    MOVE_DOWN = "Move down"
-
     def try_commit(self):
         """Try to commit the current session.
 

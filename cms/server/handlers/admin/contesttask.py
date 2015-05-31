@@ -37,6 +37,10 @@ from .base import BaseHandler
 
 
 class ContestTasksHandler(BaseHandler):
+    REMOVE_FROM_CONTEST = "Remove from contest"
+    MOVE_UP = "Move up"
+    MOVE_DOWN = "Move down"
+
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
