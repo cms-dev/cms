@@ -32,17 +32,15 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import os
 import traceback
 
 from datetime import datetime, timedelta
 
 import tornado.web
-import tornado.locale
 
 from sqlalchemy.exc import IntegrityError
 
-from cms import config, ServiceCoord, get_service_shards, get_service_address
+from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Contest, Participation, Question, Session, \
     SubmissionFormatElement, Task, User
 from cms.grading.tasktypes import get_task_type_class
@@ -192,14 +190,6 @@ class BaseHandler(CommonRequestHandler):
         self.sql_session = Session()
         self.sql_session.expire_all()
         self.contest = None
-
-        if config.installed:
-            localization_dir = os.path.join("/", "usr", "local", "share",
-                                            "locale")
-        else:
-            localization_dir = os.path.join(os.path.dirname(__file__), "mo")
-        if os.path.exists(localization_dir):
-            tornado.locale.load_gettext_translations(localization_dir, "cms")
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
