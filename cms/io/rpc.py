@@ -490,6 +490,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """See RemoteServiceBase.disconnect."""
         super(RemoteServiceClient, self).disconnect()
         self._loop.kill()
+        self._loop = None
 
     def run(self):
         """Start listening for responses, and go on forever.
