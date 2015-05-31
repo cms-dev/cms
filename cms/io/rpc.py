@@ -180,9 +180,11 @@ class RemoteServiceBase(object):
     def disconnect(self):
         """Gracefully close the connection.
 
+        return (bool): True if the service was connected.
+
         """
         if not self.connected:
-            return
+            return False
 
         try:
             self._socket.shutdown(socket.SHUT_RDWR)
@@ -192,6 +194,7 @@ class RemoteServiceBase(object):
                          self._repr_remote(), error)
         finally:
             self.finalize("Disconnection requested.")
+            return True
 
     def _read(self):
         """Receive a message from the socket.
@@ -488,9 +491,9 @@ class RemoteServiceClient(RemoteServiceBase):
 
     def disconnect(self):
         """See RemoteServiceBase.disconnect."""
-        super(RemoteServiceClient, self).disconnect()
-        self._loop.kill()
-        self._loop = None
+        if super(RemoteServiceClient, self).disconnect():
+            self._loop.kill()
+            self._loop = None
 
     def run(self):
         """Start listening for responses, and go on forever.
@@ -695,7 +698,7 @@ class FakeRemoteServiceClient(RemoteServiceClient):
 
     def disconnect(self):
         """Do nothing, as this is a fake client."""
-        pass
+        return True
 
     def execute_rpc(self, method, data):
         """Just return an AsyncResult encoding an error."""
