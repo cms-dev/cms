@@ -37,12 +37,6 @@ from cmscommon.datetime import make_datetime
 from .base import BaseHandler
 
 
-class ContestsListHandler(BaseHandler):
-    def get(self):
-        self.r_params = self.render_params()
-        self.render("contestlist.html", **self.r_params)
-
-
 class AddContestHandler(BaseHandler):
     """Adds a new contest.
 

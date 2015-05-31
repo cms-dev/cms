@@ -27,7 +27,6 @@ from .base import \
     ResourcesHandler, \
     NotificationsHandler
 from .contest import \
-    ContestsListHandler, \
     AddContestHandler, \
     ContestHandler, \
     MainHandler, \
@@ -95,7 +94,7 @@ HANDLERS = [
 
     # Contest
 
-    (r"/contests", ContestsListHandler),
+    (r"/contests", SimpleHandler("contestlist.html")),
     (r"/contests/new", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/overview", MainHandler),
