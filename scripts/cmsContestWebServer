@@ -31,7 +31,7 @@ import sys
 
 from cms import ConfigError, default_argument_parser
 from cms.db import ask_for_contest, test_db_connection
-from cms.server.ContestWebServer import ContestWebServer
+from cms.server.contest import ContestWebServer
 
 
 logger = logging.getLogger(__name__)
