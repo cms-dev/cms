@@ -211,6 +211,7 @@ class BaseHandler(CommonRequestHandler):
                 .filter(Question.reply_timestamp == None)\
                 .filter(Question.ignored == False)\
                 .count()  # noqa
+        # TODO: not all pages require all these data.
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["task_list"] = self.sql_session.query(Task).all()
         params["user_list"] = self.sql_session.query(User).all()
