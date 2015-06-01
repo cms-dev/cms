@@ -40,13 +40,12 @@ import tornado.web
 
 from sqlalchemy.exc import IntegrityError
 
-from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Contest, Participation, Question, Session, \
     SubmissionFormatElement, Task, User
-from cms.grading.tasktypes import get_task_type_class
 from cms.grading.scoretypes import get_score_type_class
+from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
-from cmscommon.datetime import make_datetime, make_timestamp
+from cmscommon.datetime import make_datetime
 
 
 logger = logging.getLogger(__name__)
@@ -431,71 +430,3 @@ def SimpleContestHandler(page):
             self.r_params = self.render_params()
             self.render(page, **self.r_params)
     return Cls
-
-
-class ResourcesHandler(BaseHandler):
-    def get(self, shard=None, contest_id=None):
-        if contest_id is not None:
-            self.contest = self.safe_get_item(Contest, contest_id)
-            contest_address = "/%s" % contest_id
-        else:
-            contest_address = ""
-
-        if shard is None:
-            shard = "all"
-
-        self.r_params = self.render_params()
-        self.r_params["resource_shards"] = \
-            get_service_shards("ResourceService")
-        self.r_params["resource_addresses"] = {}
-        if shard == "all":
-            for i in range(self.r_params["resource_shards"]):
-                self.r_params["resource_addresses"][i] = get_service_address(
-                    ServiceCoord("ResourceService", i)).ip
-        else:
-            shard = int(shard)
-            try:
-                address = get_service_address(
-                    ServiceCoord("ResourceService", shard))
-            except KeyError:
-                self.redirect("/resourceslist%s" % contest_address)
-                return
-            self.r_params["resource_addresses"][shard] = address.ip
-
-        self.render("resources.html", **self.r_params)
-
-
-class NotificationsHandler(BaseHandler):
-    """Displays notifications.
-
-    """
-    def get(self):
-        res = []
-        last_notification = make_datetime(
-            float(self.get_argument("last_notification", "0")))
-
-        # Keep "== None" in filter arguments. SQLAlchemy does not
-        # understand "is None".
-        questions = self.sql_session.query(Question)\
-            .filter(Question.reply_timestamp == None)\
-            .filter(Question.question_timestamp > last_notification)\
-            .all()  # noqa
-
-        for question in questions:
-            res.append({
-                "type": "new_question",
-                "timestamp": make_timestamp(question.question_timestamp),
-                "subject": question.subject,
-                "text": question.text,
-                "contest_id": question.participation.contest_id
-            })
-
-        # Simple notifications
-        for notification in self.application.service.notifications:
-            res.append({"type": "notification",
-                        "timestamp": make_timestamp(notification[0]),
-                        "subject": notification[1],
-                        "text": notification[2]})
-        self.application.service.notifications = []
-
-        self.write(json.dumps(res))
