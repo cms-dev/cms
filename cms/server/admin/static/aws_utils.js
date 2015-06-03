@@ -38,6 +38,11 @@ CMS.AWSUtils = function(url_root, timestamp,
     this.remaining_div = null;
     this.file_asked_name = "";
     this.file_asked_url = "";
+
+    // Ask permission for desktop notifications
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
 };
 
 
@@ -176,6 +181,34 @@ CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
                     .append($("<div>").addClass("notification_text").text(text))
                    );
     outer.append(inner);
+
+    // Trigger a desktop notification as well (but only if it's needed)
+    if (type !== "notification") {
+        this.desktop_notification(type, timestamp, subject, text, contest_id);
+    }
+};
+
+
+CMS.AWSUtils.prototype.desktop_notification = function(type, timestamp,
+                                                       subject, text,
+                                                       contest_id) {
+    // Check desktop notifications support
+    if (!("Notification" in window)) {
+        return;
+    }
+
+    // Ask again, if it was not explicitly denied
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+    }
+
+    // Create notification
+    if (Notification.permission === "granted") {
+        var notification = new Notification(subject, {
+            "body": text,
+            "icon": "/favicon.ico"
+        });
+    }
 };
 
 
