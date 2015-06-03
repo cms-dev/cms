@@ -40,7 +40,9 @@ CMS.AWSUtils = function(url_root, timestamp,
     this.file_asked_url = "";
 
     // Ask permission for desktop notifications
-    Notification.requestPermission();
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
 };
 
 

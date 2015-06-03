@@ -39,7 +39,9 @@ CMS.CWSUtils = function(url_root, timestamp, timezoned_timestamp,
     this.unread_count = 0;
 
     // Ask permission for desktop notifications
-    Notification.requestPermission();
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
 };
 
 
