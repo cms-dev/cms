@@ -68,7 +68,7 @@ class Contest(Base):
         nullable=False)
 
     # The list of language codes of the localizations that contestants
-    # are allowed to use.
+    # are allowed to use (empty means all).
     allowed_localizations = Column(
         RepeatedUnicode(),
         nullable=False,

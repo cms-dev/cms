@@ -335,7 +335,7 @@ def N_(*unused_args, **unused_kwargs):
     pass
 
 # This is a string in task_submissions.html and test_interface.html
-# that for some reason doesn't get included in messages.pot.
+# that for some reason doesn't get included in cms.pot.
 N_("loading...")
 
 N_("%d second", "%d seconds", 0)
