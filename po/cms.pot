@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-02 17:15+0200\n"
+"POT-Creation-Date: 2015-06-07 12:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -162,201 +162,6 @@ msgstr ""
 msgid "File not submitted"
 msgstr ""
 
-msgid "Question received"
-msgstr ""
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr ""
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr ""
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr ""
-
-msgid "Too many submissions!"
-msgstr ""
-
-#, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-
-#, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-
-msgid "Submissions too frequent!"
-msgstr ""
-
-msgid "Invalid submission format!"
-msgstr ""
-
-msgid "Please select the correct files."
-msgstr ""
-
-msgid "Invalid archive format!"
-msgstr ""
-
-msgid "The submitted archive could not be opened."
-msgstr ""
-
-msgid "Cannot recognize submission's language."
-msgstr ""
-
-msgid "All sources must be in the same language."
-msgstr ""
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr ""
-
-msgid "Invalid submission!"
-msgstr ""
-
-msgid "Submission too big!"
-msgstr ""
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr ""
-
-msgid "Submission storage failed!"
-msgstr ""
-
-msgid "Please try again."
-msgstr ""
-
-msgid "Submission received"
-msgstr ""
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr ""
-
-msgid "Token request discarded"
-msgstr ""
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-
-msgid "Token request received"
-msgstr ""
-
-msgid "Your request has been received and applied to the submission."
-msgstr ""
-
-msgid "Compiling..."
-msgstr ""
-
-msgid "details"
-msgstr ""
-
-msgid "Evaluating..."
-msgstr ""
-
-msgid "Scoring..."
-msgstr ""
-
-msgid "Evaluated"
-msgstr ""
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr ""
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr ""
-
-msgid "Too many tests!"
-msgstr ""
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
-
-msgid "Tests too frequent!"
-msgstr ""
-
-msgid "Invalid test format!"
-msgstr ""
-
-msgid "Cannot recognize test's language."
-msgstr ""
-
-msgid "Invalid test!"
-msgstr ""
-
-msgid "Test too big!"
-msgstr ""
-
-msgid "Input too big!"
-msgstr ""
-
-#, python-format
-msgid "The input file must be at most %d bytes long."
-msgstr ""
-
-msgid "Test storage failed!"
-msgstr ""
-
-msgid "Test received"
-msgstr ""
-
-msgid "Your test has been received and is currently being executed."
-msgstr ""
-
-msgid "Executing..."
-msgstr ""
-
-msgid "Executed"
-msgstr ""
-
-#, python-format
-msgid "%(seconds)0.3f s"
-msgstr ""
-
-msgid "Too many print jobs!"
-msgstr ""
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr ""
-
-msgid "Invalid format!"
-msgstr ""
-
-msgid "File too big!"
-msgstr ""
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr ""
-
-msgid "Print job storage failed!"
-msgstr ""
-
-msgid "Print job received"
-msgstr ""
-
-msgid "Your print job has been received."
-msgstr ""
-
 msgid "%Y-%m-%d"
 msgstr ""
 
@@ -490,6 +295,201 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "You have no limitations on how you use them."
+msgstr ""
+
+msgid "Question received"
+msgstr ""
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr ""
+
+msgid "Too many print jobs!"
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr ""
+
+msgid "Invalid format!"
+msgstr ""
+
+msgid "Please select the correct files."
+msgstr ""
+
+msgid "File too big!"
+msgstr ""
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr ""
+
+msgid "Print job storage failed!"
+msgstr ""
+
+msgid "Please try again."
+msgstr ""
+
+msgid "Print job received"
+msgstr ""
+
+msgid "Your print job has been received."
+msgstr ""
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr ""
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr ""
+
+msgid "Too many submissions!"
+msgstr ""
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr ""
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr ""
+
+msgid "Submissions too frequent!"
+msgstr ""
+
+msgid "Invalid submission format!"
+msgstr ""
+
+msgid "Invalid archive format!"
+msgstr ""
+
+msgid "The submitted archive could not be opened."
+msgstr ""
+
+msgid "Cannot recognize submission's language."
+msgstr ""
+
+msgid "All sources must be in the same language."
+msgstr ""
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr ""
+
+msgid "Invalid submission!"
+msgstr ""
+
+msgid "Submission too big!"
+msgstr ""
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr ""
+
+msgid "Submission storage failed!"
+msgstr ""
+
+msgid "Submission received"
+msgstr ""
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr ""
+
+msgid "Compiling..."
+msgstr ""
+
+msgid "details"
+msgstr ""
+
+msgid "Evaluating..."
+msgstr ""
+
+msgid "Scoring..."
+msgstr ""
+
+msgid "Evaluated"
+msgstr ""
+
+msgid "Token request discarded"
+msgstr ""
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr ""
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+
+msgid "Token request received"
+msgstr ""
+
+msgid "Your request has been received and applied to the submission."
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr ""
+
+msgid "Too many tests!"
+msgstr ""
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr ""
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr ""
+
+msgid "Tests too frequent!"
+msgstr ""
+
+msgid "Invalid test format!"
+msgstr ""
+
+msgid "Cannot recognize test's language."
+msgstr ""
+
+msgid "Invalid test!"
+msgstr ""
+
+msgid "Test too big!"
+msgstr ""
+
+msgid "Input too big!"
+msgstr ""
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr ""
+
+msgid "Test storage failed!"
+msgstr ""
+
+msgid "Test received"
+msgstr ""
+
+msgid "Your test has been received and is currently being executed."
+msgstr ""
+
+msgid "Executing..."
+msgstr ""
+
+msgid "Executed"
+msgstr ""
+
+#, python-format
+msgid "%(seconds)0.3f s"
 msgstr ""
 
 #, python-format

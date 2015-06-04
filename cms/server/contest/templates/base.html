@@ -51,7 +51,7 @@ $(document).ready(function () {
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
-{% if len(langs) > 1 %}
+{% if len(lang_names) > 1 %}
                     <p class="navbar-text pull-right">
                         <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
                             <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }}</option>

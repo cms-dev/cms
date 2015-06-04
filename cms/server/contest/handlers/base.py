@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -33,7 +33,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import os
 import pickle
 import socket
 import struct
@@ -41,7 +40,6 @@ import traceback
 
 from datetime import timedelta
 
-import gettext
 import tornado.web
 
 from werkzeug.datastructures import LanguageAccept
@@ -50,7 +48,7 @@ from werkzeug.http import parse_accept_header
 from cms import config
 from cms.db import Contest, Participation, Session, User
 from cms.server import CommonRequestHandler, compute_actual_phase, \
-    file_handler_gen, get_url_root
+    file_handler_gen, get_url_root, filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 from cmscommon.isocodes import translate_language_code, \
     translate_language_country_code
@@ -207,88 +205,29 @@ class BaseHandler(CommonRequestHandler):
 
     def get_user_locale(self):
         self.langs = self.application.service.langs
+        lang_codes = self.langs.keys()
 
-        if self.contest.allowed_localizations:
-            # We just check if a prefix of each language is allowed
-            # because this way one can just type "en" to include also
-            # "en-US" (and similar cases with other languages). It's
-            # the same approach promoted by HTTP in its Accept header
-            # parsing rules.
-            # TODO Be more fussy with prefix checking: validate strings
-            # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
-            # prefix is on the dashes.
-            self.langs = [lang for lang in self.langs if any(
-                lang.startswith(prefix)
-                for prefix in self.contest.allowed_localizations)]
+        if len(self.contest.allowed_localizations) > 0:
+            lang_codes = filter_language_codes(
+                lang_codes, self.contest.allowed_localizations)
 
-        if not self.langs:
-            logger.warning("No allowed localization matches any installed one."
-                           "Resorting to en-US.")
-            self.langs = ["en-US"]
-        else:
-            # TODO Be more fussy with prefix checking: validate strings
-            # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
-            # prefix is on the dashes.
-            useless = [
-                prefix for prefix in self.contest.allowed_localizations
-                if not any(lang.startswith(prefix) for lang in self.langs)]
-            if useless:
-                logger.warning("The following allowed localizations don't "
-                               "match any installed one: %s",
-                               ",".join(useless))
-
-        # TODO We fallback on any available language if none matches:
-        # we could return 406 Not Acceptable instead.
+        # TODO We fallback on "en" if no language matches: we could
+        # return 406 Not Acceptable instead.
         # Select the one the user likes most.
+        http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]
         self.browser_lang = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(self.langs, self.langs[0])
+            LanguageAccept).best_match(http_langs, "en")
 
         self.cookie_lang = self.get_cookie("language", None)
 
-        if self.cookie_lang in self.langs:
-            lang = self.cookie_lang
+        if self.cookie_lang in http_langs:
+            lang_code = self.cookie_lang
         else:
-            lang = self.browser_lang
+            lang_code = self.browser_lang
 
-        self.set_header("Content-Language", lang)
-        lang = lang.replace("-", "_")
-
-        iso_639_locale = gettext.translation(
-            "iso_639",
-            os.path.join(config.iso_codes_prefix, "share", "locale"),
-            [lang],
-            fallback=True)
-        iso_3166_locale = gettext.translation(
-            "iso_3166",
-            os.path.join(config.iso_codes_prefix, "share", "locale"),
-            [lang],
-            fallback=True)
-        shared_mime_info_locale = gettext.translation(
-            "shared-mime-info",
-            os.path.join(
-                config.shared_mime_info_prefix, "share", "locale"),
-            [lang],
-            fallback=True)
-        cms_locale = gettext.translation(
-            "cms",
-            self.application.service.localization_dir,
-            [lang],
-            fallback=True)
-        cms_locale.add_fallback(iso_639_locale)
-        cms_locale.add_fallback(iso_3166_locale)
-        cms_locale.add_fallback(shared_mime_info_locale)
-
-        # Add translate method to simulate tornado.Locale's interface
-        def translate(message, plural_message=None, count=None):
-            if plural_message is not None:
-                assert count is not None
-                return cms_locale.ungettext(message, plural_message, count)
-            else:
-                return cms_locale.ugettext(message)
-        cms_locale.translate = translate
-
-        return cms_locale
+        self.set_header("Content-Language", lang_code)
+        return self.langs[lang_code.replace("-", "_")]
 
     @staticmethod
     def _get_token_status(obj):
@@ -352,20 +291,18 @@ class BaseHandler(CommonRequestHandler):
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
 
-        ret["langs"] = self.langs
-
         # TODO Now all language names are shown in the active language.
         # It would be better to show them in the corresponding one.
         ret["lang_names"] = {}
-        for lang in self.langs:
+        for lang_code, trans in self.langs.iteritems():
             language_name = None
             try:
                 language_name = translate_language_country_code(
-                    lang.replace("-", "_"), self.locale)
+                    lang_code, trans)
             except ValueError:
                 language_name = translate_language_code(
-                    lang.replace("-", "_"), self.locale)
-            ret["lang_names"][lang] = language_name
+                    lang_code, trans)
+            ret["lang_names"][lang_code.replace("_", "-")] = language_name
 
         ret["cookie_lang"] = self.cookie_lang
         ret["browser_lang"] = self.browser_lang

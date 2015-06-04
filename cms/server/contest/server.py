@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -43,14 +43,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
-import glob
 import logging
-import os
 import pkg_resources
 
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.db.filecacher import FileCacher
+from cms.server import get_translations, wrap_translations_for_tornado
 
 from .handlers import HANDLERS
 
@@ -100,16 +99,8 @@ class ContestWebServer(WebService):
         self.notifications = {}
 
         # Retrieve the available translations.
-        if config.installed:
-            self.localization_dir = os.path.join(
-                "/", "usr", "local", "share", "locale")
-        else:
-            self.localization_dir = os.path.join(
-                os.path.dirname(__file__), os.pardir, "mo")
-        self.langs = ["en-US"] + [
-            path.split("/")[-3].replace("_", "-") for path in glob.glob(
-                os.path.join(self.localization_dir,
-                             "*", "LC_MESSAGES", "cms.mo"))]
+        self.langs = {lang_code: wrap_translations_for_tornado(trans)
+                      for lang_code, trans in get_translations().iteritems()}
 
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
