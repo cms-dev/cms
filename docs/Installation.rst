@@ -47,7 +47,7 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 14.04, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 14.10, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 

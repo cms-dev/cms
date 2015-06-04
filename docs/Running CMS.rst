@@ -101,7 +101,7 @@ Of course, the number of servers one needs to run a contest depends on many fact
 
 As for the distribution of services, usually there is one ResourceService for each machine, one instance for each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more instances of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different machines.
 
-We suggest and support out-of-the-box using CMS over Ubuntu 14.04. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
+We suggest and support out-of-the-box using CMS over Ubuntu 14.10. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
 
 You can replicate the service handling the contestant-facing web server, :file:`cmsContestWebServer`; in this case, you need to configure a load balancer in front of them. We suggest to use nginx for that, and provide a sample configuration for it at :gh_blob:`config/nginx.conf.sample` (this file also configures nginx to act as a HTTPS endpoint and to force secure connections, by redirecting HTTP to HTTPS). This file probably needs to be adapted to your distribution if it is not Ubuntu: try to merge it with the file you find installed by default. For additional information see the official nginx `documentation <http://wiki.nginx.org/HttpUpstreamModule>`_ and `examples <http://wiki.nginx.org/LoadBalanceExample>`_. Note that without the ``ip_hash`` option some features might not always work as expected.
 
