@@ -208,8 +208,6 @@ class Task(Base):
     active_dataset = relationship(
         'Dataset',
         foreign_keys=[active_dataset_id],
-        # XXX In SQLAlchemy 0.8 we could remove this:
-        primaryjoin='Task.active_dataset_id == Dataset.id',
         # Use an UPDATE query *after* an INSERT query (and *before* a
         # DELETE query) to set (and unset) the column associated to
         # this relationship.
@@ -364,8 +362,6 @@ class Dataset(Base):
     task = relationship(
         Task,
         foreign_keys=[task_id],
-        # XXX In SQLAlchemy 0.8 we could remove this:
-        primaryjoin='Task.id == Dataset.task_id',
         backref=backref('datasets',
                         cascade="all, delete-orphan",
                         passive_deletes=True))

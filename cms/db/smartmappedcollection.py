@@ -31,12 +31,6 @@ from sqlalchemy.orm.collections import \
     __set as sa_set, __del as sa_del
 
 
-# XXX When dropping support for SQLAlchemy pre-0.7.6, remove these two
-# lines.
-from sqlalchemy.orm.collections import _instrument_class
-_instrument_class(MappedCollection)
-
-
 # XXX When SQLAlchemy will support removal of attribute events, remove
 # the following class and global variable:
 
@@ -85,9 +79,7 @@ class SmartMappedCollection(MappedCollection):
     def __hash__(self):
         return hash(id(self))
 
-    # XXX When dropping support for SQLAlchemy pre-0.8, rename this
-    # decorator to 'collection.linker'.
-    @collection.link
+    @collection.linker
     def _link(self, adapter):
         assert adapter == collection_adapter(self)
 
@@ -132,9 +124,6 @@ class SmartMappedCollection(MappedCollection):
             self._parent_cls = None
             self._child_rel = None
             self._child_cls = None
-
-    # XXX When dropping support for SQLAlchemy pre-0.8, remove this line.
-    _sa_on_link = _link
 
     # The following two methods do all the hard work. Their mission is
     # to keep everything consistent, that is to get from a (hopefully
@@ -230,9 +219,6 @@ class SmartMappedCollection(MappedCollection):
         else:
             raise TypeError("Object '%r' is not dict-like nor iterable" %
                             collection)
-
-    # XXX When dropping support for SQLAlchemy pre-0.8, remove this.
-    _sa_converter = _convert
 
     def __iadd__(self, collection):
         for value in self._convert(collection):
