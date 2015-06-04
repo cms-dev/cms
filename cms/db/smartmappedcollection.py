@@ -21,43 +21,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import weakref
-
 from sqlalchemy import util
 from sqlalchemy import event
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.collections import \
     collection, collection_adapter, MappedCollection, \
     __set as sa_set, __del as sa_del
-
-
-# XXX When SQLAlchemy will support removal of attribute events, remove
-# the following class and global variable:
-
-class _EventManager(object):
-    def __init__(self):
-        self.handlers = dict()
-
-    def listen(self, cls, prp, handler):
-        if (cls, prp) not in self.handlers:
-            self.handlers[(cls, prp)] = weakref.WeakSet()
-            event.listen(class_mapper(cls)._props[prp],
-                         'set', self.make_callback(cls, prp))
-
-        self.handlers[(cls, prp)].add(handler)
-
-    # No need to enable handlers to be removed: they'll automatically
-    # vanish when they are garbage collected, as they are weakrefs.
-
-    def make_callback(self, cls, prp):
-        def callback(target, new_key, old_key, _sa_initiator):
-            for handler in self.handlers[(cls, prp)]:
-                handler._on_column_change(target, new_key, old_key,
-                                          _sa_initiator)
-        return callback
-
-
-_event_manager = _EventManager()
 
 
 class SmartMappedCollection(MappedCollection):
@@ -101,23 +70,16 @@ class SmartMappedCollection(MappedCollection):
             # child_rel_prop = \
             #     class_mapper(self._child_cls)._props[self._child_rel]
 
-            # XXX When SQLAlchemy will support removal of attribute
-            # events, use the following code:
-            #event.listen(class_mapper(self._child_cls)._props[self._column],
-            #             'set', self._on_column_change)
-            # In the meanwhile we have to use this:
-            _event_manager.listen(self._child_cls, self._column, self)
+            event.listen(class_mapper(self._child_cls)._props[self._column],
+                         'set', self._on_column_change)
 
         else:
             # UNLINK
             assert self._linked
             self._linked = False
 
-            # XXX When SQLAlchemy will support removal of attribute
-            # events, use the following code:
-            #event.remove(class_mapper(self._child_cls)._props[self._column],
-            #             'set', self._on_column_change)
-            # In the meanwhile we just rely on EventManager + weakrefs.
+            event.remove(class_mapper(self._child_cls)._props[self._column],
+                         'set', self._on_column_change)
 
             self._parent_rel = None
             self._parent_obj = None
