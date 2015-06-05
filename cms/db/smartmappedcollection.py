@@ -23,9 +23,35 @@ from __future__ import unicode_literals
 
 from sqlalchemy import util
 from sqlalchemy import event
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper, mapper
 from sqlalchemy.orm.collections import \
     collection, collection_adapter, MappedCollection
+
+
+# Workaround to make SmartMappedCollection work with SQLAlchemy 1.0.
+# Until v0.9 detection of a new collection being created and (un)bound
+# to a relationship was done by the @collection.linker decorator on a
+# method. Starting with v1.0 it's done by registering two events on the
+# relationship property.
+def smc_sa10_workaround(prop):
+    def add_event_handlers():
+        # We have the relationship from the child to the parent but we
+        # need the inverse. This is only defined after the mapper has
+        # been configured. That's why this is inside a listener for the
+        # "after_configured" event.
+        parent_prop = getattr(prop.mapper.class_, prop.back_populates)
+
+        def cb_on_init(target, coll, adapter):
+            coll.on_init()
+        event.listen(parent_prop, "init_collection", cb_on_init)
+
+        def cb_on_dispose(target, coll, adapter):
+            coll.on_dispose()
+        event.listen(parent_prop, "dispose_collection", cb_on_dispose)
+
+    event.listen(mapper, "after_configured", add_event_handlers)
+
+    return prop
 
 
 class SmartMappedCollection(MappedCollection):
@@ -50,47 +76,53 @@ class SmartMappedCollection(MappedCollection):
     def __hash__(self):
         return hash(id(self))
 
-    # This method is called when the object starts or stops being used
-    # as a collection for a parent's relationship attribute.
-    # - In the first case we just get some data about the relationship
-    #   and the classes involved therein, and register an event to
-    #   detect when the key of a child gets updated.
-    # - In the second case we basically undo what was done on link and
-    #   restore a pristine state.
+    # Called when the object starts being used as a collection for a
+    # parent's relationship attribute. We just get some data about the
+    # relationship and the classes involved therein, and register an
+    # event to detect when the key of a child gets updated.
+    def on_init(self):
+        assert not self.linked
+        self.linked = True
+
+        adapter = collection_adapter(self)
+
+        self.parent_obj = adapter.owner_state.obj()
+        parent_cls = type(self.parent_obj)
+        parent_rel_name = adapter.attr.key
+        parent_rel_prop = \
+            class_mapper(parent_cls).get_property(parent_rel_name)
+        self.child_cls = parent_rel_prop.mapper.class_
+        self.child_rel_name = parent_rel_prop.back_populates
+        self.child_rel_prop = \
+            class_mapper(self.child_cls).get_property(self.child_key_name)
+
+        event.listen(self.child_rel_prop, 'set', self.on_key_update)
+
+    # Called when the object stops being used. We basically undo what
+    # was done in on_dispose and restore a pristine state.
+    def on_dispose(self):
+        assert self.linked
+        self.linked = False
+
+        event.remove(self.child_rel_prop, 'set', self.on_key_update)
+
+        self.parent_obj = None
+        self.child_cls = None
+        self.child_rel_name = None
+        self.child_rel_prop = None
+
+    # This is the old pre-1.0 interface for detecting when the data
+    # structure was linked to or unlinked from an attribute.
     @collection.linker
     def _link(self, adapter):
         assert adapter == collection_adapter(self)
 
         if adapter is not None:
-            # LINK
-            assert not self.linked
-            self.linked = True
-
-            assert self is adapter.data
-
-            self.parent_obj = adapter.owner_state.obj()
-            parent_cls = type(self.parent_obj)
-            parent_rel_name = adapter.attr.key
-            parent_rel_prop = \
-                class_mapper(parent_cls).get_property(parent_rel_name)
-            self.child_cls = parent_rel_prop.mapper.class_
-            self.child_rel_name = parent_rel_prop.back_populates
-            self.child_rel_prop = \
-                class_mapper(self.child_cls).get_property(self.child_key_name)
-
-            event.listen(self.child_rel_prop, 'set', self.on_key_update)
-
+            # init_collection
+            self.on_init()
         else:
-            # UNLINK
-            assert self.linked
-            self.linked = False
-
-            event.remove(self.child_rel_prop, 'set', self.on_key_update)
-
-            self.parent_obj = None
-            self.child_cls = None
-            self.child_rel_name = None
-            self.child_rel_prop = None
+            # dispose_collection
+            self.on_dispose()
 
     # The following two methods have to maintain consistency, i.e.:
     # - self.values() is equal to all and only those objects of the
