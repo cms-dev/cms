@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,8 +25,7 @@ from sqlalchemy import util
 from sqlalchemy import event
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.collections import \
-    collection, collection_adapter, MappedCollection, \
-    __set as sa_set, __del as sa_del
+    collection, collection_adapter, MappedCollection
 
 
 class SmartMappedCollection(MappedCollection):
@@ -121,10 +120,7 @@ class SmartMappedCollection(MappedCollection):
             if new_key != old_key:
                 dict.__delitem__(self, old_key)
                 if new_key in self:
-                    sa_del(self,
-                           dict.__getitem__(self, new_key),
-                           _sa_initiator)
-                    dict.__delitem__(self, new_key)
+                    MappedCollection.__delitem__(self, new_key)
                 dict.__setitem__(self, new_key, value)
 
     # When this method gets called, the child object may think it's
@@ -156,10 +152,8 @@ class SmartMappedCollection(MappedCollection):
 
             # Remove any old object with this key and add this instead.
             if new_key in self:
-                sa_del(self, dict.__getitem__(self, new_key), _sa_initiator)
-                dict.__delitem__(self, new_key)
-            value = sa_set(self, value, _sa_initiator)
-            dict.__setitem__(self, new_key, value)
+                MappedCollection.__delitem__(self, new_key)
+            MappedCollection.__setitem__(self, new_key, value)
 
     def keyfunc(self, value):
         return getattr(value, self._column)
