@@ -30,16 +30,19 @@ from sqlalchemy.orm.collections import \
 
 class SmartMappedCollection(MappedCollection):
 
-    def __init__(self, column):
-        self._column = column
+    def __init__(self, column_name):
+        # Whether the collection is currently being used for a parent's
+        # relationship attribute or not.
+        self.linked = False
 
-        self._linked = False
+        # Useful references, that will be obtained upon linking.
+        self.parent_obj = None
+        self.child_cls = None
+        self.child_rel_name = None
+        self.child_rel_prop = None
+        self.child_key_name = column_name
 
-        self._parent_rel = None
-        self._parent_obj = None
-        self._parent_cls = None
-        self._child_rel = None
-        self._child_cls = None
+        MappedCollection.__init__(self, lambda x: getattr(x, column_name))
 
     def __eq__(self, other):
         return self is other
@@ -47,104 +50,104 @@ class SmartMappedCollection(MappedCollection):
     def __hash__(self):
         return hash(id(self))
 
+    # This method is called when the object starts or stops being used
+    # as a collection for a parent's relationship attribute.
+    # - In the first case we just get some data about the relationship
+    #   and the classes involved therein, and register an event to
+    #   detect when the key of a child gets updated.
+    # - In the second case we basically undo what was done on link and
+    #   restore a pristine state.
     @collection.linker
     def _link(self, adapter):
         assert adapter == collection_adapter(self)
 
         if adapter is not None:
             # LINK
-            assert not self._linked
-            self._linked = True
+            assert not self.linked
+            self.linked = True
 
             assert self is adapter.data
 
-            self._parent_rel = adapter.attr.key
-            self._parent_obj = adapter.owner_state.obj()
-            self._parent_cls = type(self._parent_obj)
+            self.parent_obj = adapter.owner_state.obj()
+            parent_cls = type(self.parent_obj)
+            parent_rel_name = adapter.attr.key
             parent_rel_prop = \
-                class_mapper(self._parent_cls)._props[self._parent_rel]
-            self._child_rel = parent_rel_prop.back_populates
-            self._child_cls = parent_rel_prop.mapper.class_
-            # This is at the moment not used, but may be in the future.
-            # child_rel_prop = \
-            #     class_mapper(self._child_cls)._props[self._child_rel]
+                class_mapper(parent_cls).get_property(parent_rel_name)
+            self.child_cls = parent_rel_prop.mapper.class_
+            self.child_rel_name = parent_rel_prop.back_populates
+            self.child_rel_prop = \
+                class_mapper(self.child_cls).get_property(self.child_key_name)
 
-            event.listen(class_mapper(self._child_cls)._props[self._column],
-                         'set', self._on_column_change)
+            event.listen(self.child_rel_prop, 'set', self.on_key_update)
 
         else:
             # UNLINK
-            assert self._linked
-            self._linked = False
+            assert self.linked
+            self.linked = False
 
-            event.remove(class_mapper(self._child_cls)._props[self._column],
-                         'set', self._on_column_change)
+            event.remove(self.child_rel_prop, 'set', self.on_key_update)
 
-            self._parent_rel = None
-            self._parent_obj = None
-            self._parent_cls = None
-            self._child_rel = None
-            self._child_cls = None
+            self.parent_obj = None
+            self.child_cls = None
+            self.child_rel_name = None
+            self.child_rel_prop = None
 
-    # The following two methods do all the hard work. Their mission is
-    # to keep everything consistent, that is to get from a (hopefully
-    # consistent) initial state to a consistent final state after
-    # having dome something useful (i.e. what they were written for).
-    # This is what we consider a consistent state:
+    # The following two methods have to maintain consistency, i.e.:
     # - self.values() is equal to all and only those objects of the
-    #   self._child_cls class that have the self._child_rel attribute
-    #   set to self._parent_obj;
-    # - all elements of self.values() are distinct (that is, this is an
-    #   invertible mapping);
+    #   self.child_cls class that have the self.child_rel_name
+    #   attribute set to self.parent_obj;
+    # - all elements of self.values() are distinct;
     # - for each (key, value) in self.items(), key is equal to the
-    #   self._column attribute of value.
+    #   self.child_key_name attribute of value.
 
-    # This method is called before the attribute is really changed, and
-    # trying to change it again from inside this method will cause an
-    # infinte recursion loop. Don't do that! This also means that the
-    # method does actually leave the collection in an inconsistent
-    # state, but SQLAlchemy will fix that immediately after.
-    def _on_column_change(self, value, new_key, old_key, _sa_initiator):
-        assert self._linked
-        if getattr(value, self._child_rel) is self._parent_obj \
+    # This method is called when the key of a child object changes. In
+    # such an event the binding in the dictionary has to change as well
+    # (i.e. del d[old_key] and d[new_key] = value). Actually, we simply
+    # delegate this task to the method just after this one.
+    def on_key_update(self, value, new_key, old_key, _):
+        assert self.linked
+        if getattr(value, self.child_rel_name) is self.parent_obj \
                 and new_key != old_key:
             self.__setitem__(new_key, value)
 
-    # When this method gets called, the child object may think it's
-    # already bound to the collection (i.e. its self._child_rel is set
-    # to self._parent_obj) but it actually isn't (i.e. it's not in
-    # self.values()). This method has to fix that.
+    # This method is called when a binding to a new child is performed.
+    # As the child could come from anywhere we first detach it from its
+    # former parent (if any; note that this could also be ourselves).
+    # Then, as we want to bind it to new_key, we update its key to be
+    # that value. Finally we add it to the dictionary: this operation,
+    # implicitly, removes the old binding of the new key (if any).
     @collection.internally_instrumented
     def __setitem__(self, new_key, value, _sa_initiator=None):
         # TODO We could check if the object's type is correct.
-        assert self._linked
-        setattr(value, self._child_rel, None)
-        setattr(value, self._column, new_key)
-        MappedCollection.__setitem__(self, new_key, value)
+        assert self.linked
+        setattr(value, self.child_rel_name, None)
+        setattr(value, self.child_key_name, new_key)
+        MappedCollection.__setitem__(self, new_key, value, _sa_initiator)
 
-    def keyfunc(self, value):
-        return getattr(value, self._column)
-
+    # This method converts a data structure into an iterable of values.
+    # It allows us to use the syntactic sugar "foo.children = bar"
+    # (where bar is a dict, a list, ...) because it gets translated to
+    # for v in converter(bar): foo.children.set(v)
     @collection.converter
-    def _convert(self, collection):
+    def _convert(self, coll):
         # TODO We could check if the objects' type is correct.
-        type_ = util.duck_type_collection(collection)
+        type_ = util.duck_type_collection(coll)
         if type_ is dict:
-            for key, value in util.dictlike_iteritems(collection):
+            for key, value in util.dictlike_iteritems(coll):
                 if key != self.keyfunc(value):
                     raise TypeError(
                         "Found incompatible key '%r' for value '%r'" %
                         (key, value))
                 yield value
         elif type_ in (list, set):
-            for value in collection:
+            for value in coll:
                 yield value
         else:
-            raise TypeError("Object '%r' is not dict-like nor iterable" %
-                            collection)
+            raise TypeError("Object '%r' is not dict-like nor iterable" % coll)
 
-    def __iadd__(self, collection):
-        for value in self._convert(collection):
+    # This extends the above syntactic sugar to "foo.children += bar".
+    def __iadd__(self, coll):
+        for value in self._convert(coll):
             self.set(value)
         return self
 
