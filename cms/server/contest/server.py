@@ -52,7 +52,7 @@ from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.db.filecacher import FileCacher
 
-from cms.server.handlers.contest import HANDLERS
+from .handlers import HANDLERS
 
 
 logger = logging.getLogger(__name__)
@@ -66,9 +66,9 @@ class ContestWebServer(WebService):
         parameters = {
             "login_url": "/",
             "template_path": pkg_resources.resource_filename(
-                "cms.server", "templates/contest"),
-            "static_path": pkg_resources.resource_filename(
-                "cms.server", "static"),
+                "cms.server.contest", "templates"),
+            "static_files": [("cms.server", "static"),
+                             ("cms.server.contest", "static")],
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
@@ -105,7 +105,7 @@ class ContestWebServer(WebService):
                 "/", "usr", "local", "share", "locale")
         else:
             self.localization_dir = os.path.join(
-                os.path.dirname(__file__), "mo")
+                os.path.dirname(__file__), os.pardir, "mo")
         self.langs = ["en-US"] + [
             path.split("/")[-3].replace("_", "-") for path in glob.glob(
                 os.path.join(self.localization_dir,

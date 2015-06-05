@@ -11,8 +11,8 @@ When you change a string in a template or in a web server, you have to generate 
     xgettext -o cms/server/po/messages.pot --language=Python --no-location \
       --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 --width=79 \
       cms/grading/*.py cms/grading/*/*.py cms/server/*.py \
-      cms/server/templates/admin/*.html \
-      cms/server/templates/contest/*.html
+      cms/server/contest/*.py cms/server/contest/handlers/*.py \
+      cms/server/contest/templates/*.html
 
 When you have a new translation, or an update of an old translation, you need to update the ``.mo`` files (the compiled versions of the ``.po`` files). You can run ``./prerequisites.py build_l10n`` to update all translations, and ``sudo ./prerequisites.py install_l10n`` to install them. Alternatively, run the following inside :gh_tree:`cms/server/`.
 

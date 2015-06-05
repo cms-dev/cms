@@ -37,21 +37,20 @@ from setuptools import setup, find_packages
 
 
 PACKAGE_DATA = {
-    "cms.io": [
-        os.path.join("static", "*"),
-    ],
     "cms.server": [
-        os.path.join("static", "jq", "*.*"),
-        os.path.join("static", "sh", "*.*"),
-        os.path.join("static", "css", "*.*"),
-        os.path.join("static", "js", "*.*"),
-        os.path.join("static", "img", "*.*"),
-        os.path.join("static", "img", "mimetypes", "*.*"),
         os.path.join("static", "*.*"),
-        os.path.join("templates", "contest", "*.*"),
-        os.path.join("templates", "admin", "*.*"),
-        os.path.join("templates", "admin", "fragments", "*.*"),
-        os.path.join("templates", "ranking", "*.*"),
+        os.path.join("static", "jq", "*.*"),
+        os.path.join("admin", "static", "*.*"),
+        os.path.join("admin", "static", "jq", "*.*"),
+        os.path.join("admin", "static", "sh", "*.*"),
+        os.path.join("admin", "templates", "*.*"),
+        os.path.join("admin", "templates", "fragments", "*.*"),
+        os.path.join("contest", "static", "*.*"),
+        os.path.join("contest", "static", "css", "*.*"),
+        os.path.join("contest", "static", "img", "*.*"),
+        os.path.join("contest", "static", "img", "mimetypes", "*.*"),
+        os.path.join("contest", "static", "js", "*.*"),
+        os.path.join("contest", "templates", "*.*"),
     ],
     "cms.service": [
         os.path.join("templates", "printing", "*.*"),
