@@ -106,22 +106,9 @@ class SmartMappedCollection(MappedCollection):
     # state, but SQLAlchemy will fix that immediately after.
     def _on_column_change(self, value, new_key, old_key, _sa_initiator):
         assert self._linked
-        if getattr(value, self._child_rel) is self._parent_obj:
-            # Get the old_key (the parameter may not be reliable) and
-            # do some consistency checks.
-            assert value in self.itervalues()
-            old_key = list(k for k, v in self.iteritems() if v is value)
-            assert len(old_key) == 1
-            old_key = old_key[0]
-            assert old_key == getattr(value, self._column)
-
-            # If necessary, move this object (and remove any old object
-            # with this key).
-            if new_key != old_key:
-                dict.__delitem__(self, old_key)
-                if new_key in self:
-                    MappedCollection.__delitem__(self, new_key)
-                dict.__setitem__(self, new_key, value)
+        if getattr(value, self._child_rel) is self._parent_obj \
+                and new_key != old_key:
+            self.__setitem__(new_key, value)
 
     # When this method gets called, the child object may think it's
     # already bound to the collection (i.e. its self._child_rel is set
@@ -131,29 +118,9 @@ class SmartMappedCollection(MappedCollection):
     def __setitem__(self, new_key, value, _sa_initiator=None):
         # TODO We could check if the object's type is correct.
         assert self._linked
-        if value in self.itervalues():
-            # Just some consistency checks, for extra safety!
-            assert getattr(value, self._child_rel) is self._parent_obj
-            old_key = list(k for k, v in self.iteritems() if v is value)
-            assert len(old_key) == 1
-            old_key = old_key[0]
-            assert old_key == getattr(value, self._column)
-
-            # If needed, we make SQLAlchemy call _on_column_changed to
-            # do the rest of the job (and repeat the above checks).
-            if new_key != getattr(value, self._column):
-                setattr(value, self._column, new_key)
-        else:
-            # We change the attribute before adding it to the collection
-            # to prevent the (unavoidable) call to _on_column_change
-            # from doing any damage.
-            if new_key != getattr(value, self._column):
-                setattr(value, self._column, new_key)
-
-            # Remove any old object with this key and add this instead.
-            if new_key in self:
-                MappedCollection.__delitem__(self, new_key)
-            MappedCollection.__setitem__(self, new_key, value)
+        setattr(value, self._child_rel, None)
+        setattr(value, self._column, new_key)
+        MappedCollection.__setitem__(self, new_key, value)
 
     def keyfunc(self, value):
         return getattr(value, self._column)
