@@ -36,7 +36,7 @@ from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, Participation, Task, Dataset, Testcase
-from .smartmappedcollection import smart_mapped_collection
+from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 
 from cmscommon.datetime import make_datetime
 
@@ -180,12 +180,12 @@ class File(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission = smc_sa10_workaround(relationship(
         Submission,
         backref=backref('files',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the submitted file.
     filename = Column(
@@ -596,12 +596,12 @@ class Executable(Base):
         Dataset)
 
     # SubmissionResult owning the executable.
-    submission_result = relationship(
+    submission_result = smc_sa10_workaround(relationship(
         SubmissionResult,
         backref=backref('executables',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the generated executable.
     filename = Column(

@@ -33,7 +33,8 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.declarative import declarative_base
 
-from cms.db.smartmappedcollection import smart_mapped_collection
+from cms.db.smartmappedcollection import \
+    smart_mapped_collection, smc_sa10_workaround
 
 
 class TestSmartMappedCollection(unittest.TestCase):
@@ -61,14 +62,14 @@ class TestSmartMappedCollection(unittest.TestCase):
                            onupdate="CASCADE", ondelete="CASCADE"),
                 nullable=False,
                 index=True)
-            parent = relationship(
+            parent = smc_sa10_workaround(relationship(
                 FooParent,
                 backref=backref(
                     "children",
                     # collection_class=attribute_mapped_collection("key"),
                     collection_class=smart_mapped_collection("key"),
                     cascade="all, delete-orphan",
-                    passive_deletes=True))
+                    passive_deletes=True)))
             key = Column(
                 Unicode,
                 nullable=False)
