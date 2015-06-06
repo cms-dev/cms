@@ -39,7 +39,7 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from . import Base, Contest
-from .smartmappedcollection import smart_mapped_collection
+from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
 
@@ -208,8 +208,6 @@ class Task(Base):
     active_dataset = relationship(
         'Dataset',
         foreign_keys=[active_dataset_id],
-        # XXX In SQLAlchemy 0.8 we could remove this:
-        primaryjoin='Task.active_dataset_id == Dataset.id',
         # Use an UPDATE query *after* an INSERT query (and *before* a
         # DELETE query) to set (and unset) the column associated to
         # this relationship.
@@ -246,12 +244,12 @@ class Statement(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task = smc_sa10_workaround(relationship(
         Task,
         backref=backref('statements',
                         collection_class=smart_mapped_collection('language'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Code for the language the statement is written in.
     # It can be an arbitrary string, but if it's in the form "en" or "en_US"
@@ -290,12 +288,12 @@ class Attachment(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task = smc_sa10_workaround(relationship(
         Task,
         backref=backref('attachments',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the provided attachment.
     filename = Column(
@@ -364,8 +362,6 @@ class Dataset(Base):
     task = relationship(
         Task,
         foreign_keys=[task_id],
-        # XXX In SQLAlchemy 0.8 we could remove this:
-        primaryjoin='Task.id == Dataset.task_id',
         backref=backref('datasets',
                         cascade="all, delete-orphan",
                         passive_deletes=True))
@@ -496,12 +492,12 @@ class Manager(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset = smc_sa10_workaround(relationship(
         Dataset,
         backref=backref('managers',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the provided manager.
     filename = Column(
@@ -533,12 +529,12 @@ class Testcase(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset = smc_sa10_workaround(relationship(
         Dataset,
         backref=backref('testcases',
                         collection_class=smart_mapped_collection('codename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Codename identifying the testcase.
     codename = Column(
