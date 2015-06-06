@@ -175,4 +175,4 @@ HANDLERS = [
 ]
 
 
-__all__ = [HANDLERS]
+__all__ = ["HANDLERS"]
