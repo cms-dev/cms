@@ -61,6 +61,16 @@ class Task(Base):
             use_alter=True,
             name="fk_active_dataset_id"
         ),
+        ForeignKeyConstraint(
+            ("id", "visualization_dataset_id"),
+            ("datasets.task_id", "datasets.id"),
+            onupdate="SET NULL", ondelete="SET NULL",
+            # Use an ALTER query to set this foreign key after
+            # both tables have been CREATEd, to avoid circular
+            # dependencies.
+            use_alter=True,
+            name="fk_visualization_dataset_id"
+        ),
         CheckConstraint("token_gen_initial <= token_gen_max"),
     )
 
@@ -214,6 +224,26 @@ class Task(Base):
         # DELETE query) to set (and unset) the column associated to
         # this relationship.
         post_update=True)
+
+    # Visualization Dataset (id and object) used.
+    # The ForeignKeyConstraint for this column is set at table-level.
+    visualization_dataset_id = Column(
+        Integer,
+        nullable=True)
+    visualization_dataset = relationship(
+        'Dataset',
+        foreign_keys=[visualization_dataset_id],
+        # XXX In SQLAlchemy 0.8 we could remove this:
+        primaryjoin='Task.visualization_dataset_id == Dataset.id',
+        # Use an UPDATE query *after* an INSERT query (and *before* a
+        # DELETE query) to set (and unset) the column associated to
+        # this relationship.
+        post_update=True)
+
+    # Visualization script used.
+    visualization_script = Column(
+        String,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -424,6 +454,16 @@ class Dataset(Base):
 
         """
         return self is self.task.active_dataset
+
+    @property
+    def visualized(self):
+        """Shorthand for detecting if the dataset is the one visualized.
+
+        return (bool): True if this dataset is the one for the visualization
+            of its task.
+
+        """
+        return self is self.task.visualization_dataset
 
     def clone_from(self, old_dataset, clone_managers=True,
                    clone_testcases=True, clone_results=False):
