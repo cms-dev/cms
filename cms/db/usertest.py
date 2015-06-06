@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -441,7 +441,8 @@ class UserTestExecutable(Base):
         nullable=False,
         index=True)
     user_test = relationship(
-        UserTest)
+        UserTest,
+        viewonly=True)
 
     # Dataset (id and object) owning the executable.
     dataset_id = Column(
@@ -451,7 +452,8 @@ class UserTestExecutable(Base):
         nullable=False,
         index=True)
     dataset = relationship(
-        Dataset)
+        Dataset,
+        viewonly=True)
 
     # UserTestResult owning the executable.
     user_test_result = smc_sa10_workaround(relationship(
