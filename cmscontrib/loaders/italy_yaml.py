@@ -689,6 +689,50 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
         dataset = Dataset(**args)
         task.active_dataset = dataset
 
+        viz = False
+        if os.path.exists(os.path.join(self.path, "viz")):
+            if not os.path.exists(os.path.join(self.path, "viz", "viz")):
+                logger.warning("You need to add a checker-like manager "
+                               "to create JSON from the submission's "
+                               "output!")
+            elif "viz_testcases" not in conf:
+                logger.warning("Please specify in viz_testcases which "
+                               "testcases should be visualized")
+            elif not os.path.exists(os.path.join(self.path, "viz", "viz.js")):
+                logger.warning("File viz/viz.js is missing!")
+            else:
+                viz = True
+
+        if viz:
+            args["description"] = "Visualization"
+            digest = self.file_cacher.put_file_from_path(
+                os.path.join(self.path, "viz", "viz"),
+                "Viz manager for task %s" % name)
+            checker = Manager("checker", digest)
+            for i in xrange(len(args["managers"])):
+                if args["managers"][i].filename == "checker":
+                    args["managers"][i] = checker
+            args["task_type_parameters"] = \
+                args["task_type_parameters"].replace("diff", "comparator")
+            for lang in LANGUAGES:
+                grader_filename = os.path.join(
+                    self.path, "viz", "grader.%s" % lang)
+                if os.path.exists(grader_filename):
+                    digest = self.file_cacher.put_file_from_path(
+                        grader_filename,
+                        "Viz grader for task %s and language %s"
+                        % (name, lang))
+                    args["managers"] += [
+                        Manager("grader.%s" % lang, digest)]
+                else:
+                    logger.warning("Viz grader for language %s not found ",
+                                   lang)
+            args["testcases"] = [args["testcases"][i]
+                                 for i in conf["viz_testcases"]]
+            task.visualization_script = open(
+                os.path.join(self.path, "viz", "viz.js")).read()
+            task.visualization_dataset = Dataset(**args)
+
         # Import was successful
         os.remove(os.path.join(self.path, ".import_error"))
 

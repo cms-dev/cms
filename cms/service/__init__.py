@@ -165,7 +165,7 @@ def get_datasets_to_judge(task):
     judge = []
 
     for dataset in task.datasets:
-        if dataset.active or dataset.autojudge:
+        if dataset.active or dataset.visualized or dataset.autojudge:
             judge.append(dataset)
 
     return judge

@@ -348,7 +348,8 @@ class ProxyService(TriggeredService):
                      "max_score": score_type.max_score,
                      "extra_headers": score_type.ranking_headers,
                      "score_precision": task.score_precision,
-                     "score_mode": task.score_mode}
+                     "score_mode": task.score_mode,
+                     "visualization_script": task.visualization_script}
 
         self.enqueue(ProxyOperation(ProxyExecutor.CONTEST_TYPE,
                                     {contest_id: contest_data}))
@@ -363,13 +364,26 @@ class ProxyService(TriggeredService):
 
         """
         submission_result = submission.get_result()
+        viz_data = []
+        if submission.visualization_dataset is not None:
+            viz_result = submission.get_result(
+                dataset=submission.task.visualization_dataset)
+            for ev in viz_result.evaluations:
+                try:
+                    viz_data.append(json.loads(ev.text))
+                except:
+                    viz_data.append(None)
+                    logger.warning(
+                        "Visualization output for submission %s "
+                        "isn't valid JSON!" % submission.id)
 
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
             "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
-            "time": int(make_timestamp(submission.timestamp))}
+            "time": int(make_timestamp(submission.timestamp)),
+            "viz_data": viz_data}
 
         subchange_id = "%d%ss" % (make_timestamp(submission.timestamp),
                                   submission_id)
