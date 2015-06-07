@@ -38,7 +38,7 @@ __all__ = [
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
-    "LANGUAGE_TO_OBJ_EXT_MAP",
+    "LANGUAGE_TO_OBJ_EXT_MAP", "LANGUAGE_TO_MAX_PROCCESSORS",
     "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
