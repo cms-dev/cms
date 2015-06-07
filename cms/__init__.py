@@ -34,7 +34,7 @@ import cms.log
 # Define what this package will provide.
 
 __all__ = [
-    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP",
+    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP", "LANG_CS"
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
@@ -58,6 +58,7 @@ __all__ = [
 # Shorthand codes for all supported languages.
 LANG_C = "c"
 LANG_CPP = "cpp"
+LANG_CS = "cs"
 LANG_PASCAL = "pas"
 LANG_PYTHON = "py"
 LANG_PHP = "php"
@@ -66,13 +67,14 @@ LANG_JAVA = "java"
 LANGUAGE_NAMES = {
     LANG_C: "C",
     LANG_CPP: "C++",
+    LANG_CS: "C#",
     LANG_PASCAL: "Pascal",
     LANG_PYTHON: "Python",
     LANG_PHP: "PHP",
     LANG_JAVA: "Java",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
+LANGUAGES = [LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # A reference for extension-based automatic language detection.
@@ -84,6 +86,7 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".cc": LANG_CPP,
     ".C": LANG_CPP,
     ".c++": LANG_CPP,
+    ".cs": LANG_CS,
     ".pas": LANG_PASCAL,
     ".py": LANG_PYTHON,
     ".php": LANG_PHP,
@@ -94,6 +97,7 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
 LANGUAGE_TO_SOURCE_EXT_MAP = {
     LANG_C: ".c",
     LANG_CPP: ".cpp",
+    LANG_CS: ".cs",
     LANG_PASCAL: ".pas",
     LANG_PYTHON: ".py",
     LANG_PHP: ".php",

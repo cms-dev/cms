@@ -37,7 +37,7 @@ from collections import namedtuple
 from sqlalchemy.orm import joinedload
 
 from cms import config, \
-    LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
+    LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
     SCORE_MODE_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
@@ -231,6 +231,11 @@ def get_compilation_commands(language, source_filenames, executable_filename,
                     "-o", executable_filename]
         command += source_filenames
         commands.append(command)
+    elif language == LANG_CS:
+    	command = ["/usr/bin/mcs"]
+        command += source_filenames
+    	command += ["-out:%s" % executable_filename]
+    	commands.append(command)
     elif language == LANG_PASCAL:
         command = ["/usr/bin/fpc"]
         if for_evaluation:
@@ -286,6 +291,9 @@ def get_evaluation_commands(language, executable_filename):
         # /usr/bin/python3 %s
         command = ["/usr/bin/python2", executable_filename]
         commands.append(command)
+    elif language == LANG_CS:
+    	command = ["/usr/bin/mono", executable_filename]
+    	commands.append(command)
     elif language == LANG_PHP:
         command = ["/usr/bin/php5", executable_filename]
         commands.append(command)
@@ -532,6 +540,7 @@ def evaluation_step_before_run(sandbox, command,
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")
+    sandbox.max_processes = None;
     return sandbox.execute_without_std(command, wait=wait)
 
 
@@ -541,6 +550,7 @@ def evaluation_step_after_run(sandbox):
     """
     # Detect the outcome of the execution.
     exit_status = sandbox.get_exit_status()
+
 
     # And retrieve some interesting data.
     plus = {
