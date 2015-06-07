@@ -456,7 +456,7 @@ def compilation_step(sandbox, commands):
 
 
 def evaluation_step(sandbox, commands,
-                    time_limit=0.0, memory_limit=0,
+                    time_limit=0.0, memory_limit=0, max_processes=1,
                     allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute some evaluation commands in the sandbox. Note that in
@@ -467,6 +467,7 @@ def evaluation_step(sandbox, commands,
     commands ([[string]]): the actual evaluation lines.
     time_limit (float): time limit in seconds.
     memory_limit (int): memory limit in MB.
+    max_processes (int): maximum number of threads allowed.
     allow_dirs ([string]|None): if not None, a list of external
         directories to map inside the sandbox
     writable_files ([string]|None): if not None, a list of inner file
@@ -481,7 +482,7 @@ def evaluation_step(sandbox, commands,
     """
     for command in commands:
         success = evaluation_step_before_run(
-            sandbox, command, time_limit, memory_limit,
+            sandbox, command, time_limit, memory_limit, max_processes,
             allow_dirs, writable_files,
             stdin_redirect, stdout_redirect, wait=True)
         if not success:
@@ -496,7 +497,7 @@ def evaluation_step(sandbox, commands,
 
 
 def evaluation_step_before_run(sandbox, command,
-                               time_limit=0, memory_limit=0,
+                               time_limit=0, memory_limit=0, max_processes=1,
                                allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                wait=False):
@@ -519,6 +520,7 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.wallclock_timeout = 0
     sandbox.address_space = memory_limit * 1024
     sandbox.fsize = config.max_file_size
+    sandbox.max_processes = max_processes;
 
     if stdin_redirect is not None:
         sandbox.stdin_file = stdin_redirect
@@ -540,7 +542,6 @@ def evaluation_step_before_run(sandbox, command,
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")
-    sandbox.max_processes = None;
     return sandbox.execute_without_std(command, wait=wait)
 
 

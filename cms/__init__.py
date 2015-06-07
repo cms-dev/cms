@@ -77,6 +77,13 @@ LANGUAGE_NAMES = {
 LANGUAGES = [LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
+# Language specific max_processor requirements
+# C# requires a second thread to be able to run a basic program, to be safe we're allowing 20
+LANGUAGE_TO_MAX_PROCCESSORS = {
+    LANG_CS: 20,
+    'default': 1
+}
+
 # A reference for extension-based automatic language detection.
 # (It's more difficult with headers because ".h" is ambiguous.)
 SOURCE_EXT_TO_LANGUAGE_MAP = {

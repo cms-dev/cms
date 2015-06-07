@@ -27,7 +27,8 @@ from __future__ import unicode_literals
 import logging
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP
+    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP, \
+    LANGUAGE_TO_MAX_PROCCESSORS
 from cms.grading import get_compilation_commands, get_evaluation_commands, \
     compilation_step, evaluation_step, human_evaluation_message, \
     is_evaluation_passed, extract_outcome_and_text, white_diff_step
@@ -249,6 +250,8 @@ class Batch(TaskType):
         files_to_get = {
             input_filename: job.input
             }
+        default_processes = LANGUAGE_TO_MAX_PROCCESSORS['default']
+        max_processes = LANGUAGE_TO_MAX_PROCCESSORS.get(language, default_processes)
 
         # Put the required files into the sandbox
         for filename, digest in executables_to_get.iteritems():
@@ -262,6 +265,7 @@ class Batch(TaskType):
             commands,
             job.time_limit,
             job.memory_limit,
+            max_processes,
             writable_files=files_allowing_write,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
