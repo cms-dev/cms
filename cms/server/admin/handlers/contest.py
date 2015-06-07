@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
@@ -61,7 +61,7 @@ class AddContestHandler(SimpleHandler("add_contest.html")):
             else:
                 attrs["allowed_localizations"] = []
 
-            attrs["languages"] = self.get_arguments("languages", [])
+            attrs["languages"] = self.get_arguments("languages")
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")
@@ -122,7 +122,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             else:
                 attrs["allowed_localizations"] = []
 
-            attrs["languages"] = self.get_arguments("languages", [])
+            attrs["languages"] = self.get_arguments("languages")
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")
