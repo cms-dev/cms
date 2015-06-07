@@ -21,8 +21,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from sqlalchemy import util
-from sqlalchemy import event
+from sqlalchemy import event, util, __version__ as sa_version
 from sqlalchemy.orm import class_mapper, mapper
 from sqlalchemy.orm.collections import \
     collection, collection_adapter, MappedCollection
@@ -49,7 +48,8 @@ def smc_sa10_workaround(prop):
             coll.on_dispose()
         event.listen(parent_prop, "dispose_collection", cb_on_dispose)
 
-    event.listen(mapper, "after_configured", add_event_handlers)
+    if sa_version.startswith("1."):
+        event.listen(mapper, "after_configured", add_event_handlers)
 
     return prop
 
