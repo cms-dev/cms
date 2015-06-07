@@ -217,8 +217,18 @@ CMS.CWSUtils.prototype.update_time = function() {
     }
 };
 
+/* Taken from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie#Using_relative_URLs_in_the_path_parameter */
+CMS.CWSUtils.prototype.rel_to_abs = function(sRelPath) {
+    var nUpLn, sDir = "", sPath = location.pathname.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, "$1"));
+    for (var nEnd, nStart = 0; nEnd = sPath.indexOf("/../", nStart), nEnd > -1; nStart = nEnd + nUpLn) {
+        nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
+        sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp("(?:\\\/+[^\\\/]*){0," + ((nUpLn - 1) / 3) + "}$"), "/");
+    }
+    return sDir + sPath.substr(nStart);
+}
+
 CMS.CWSUtils.prototype.switch_lang = function() {
-    var cookie_path = this.url_root + "/";
+    var cookie_path = this.rel_to_abs(this.url_root + "/");
     var lang = $("#lang").val();
     if (lang === "") {
         document.cookie = "language="
