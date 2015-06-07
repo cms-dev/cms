@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-02 17:15+0200\n"
+"POT-Creation-Date: 2015-06-07 12:47+0200\n"
 "PO-Revision-Date: 2015-02-07 17:12+0100\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
@@ -191,209 +191,6 @@ msgstr "Compilazione non necessaria"
 msgid "File not submitted"
 msgstr "File non sottoposto"
 
-msgid "Question received"
-msgstr "Domanda ricevuta"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr ""
-"La tua domanda è stata inviata, riceverai una notifica quando sarà risposta. "
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr ""
-"Hai raggiunto il limite massimo di %d sottoposizioni tra tutti i problemi."
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr ""
-"Hai raggiunto il limite massimo di %d sottoposizioni su questo problema."
-
-msgid "Too many submissions!"
-msgstr "Troppe sottoposizioni!"
-
-#, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Tra tutti i problemi, devi aspettare almeno %d secondi tra due "
-"sottoposizioni."
-
-#, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Su questo problema, devi aspettare almeno %d secondi tra due sottoposizioni."
-
-msgid "Submissions too frequent!"
-msgstr "Sottoposizioni troppo frequenti!"
-
-msgid "Invalid submission format!"
-msgstr "Formato sottoposizione invalido!"
-
-msgid "Please select the correct files."
-msgstr "Seleziona i file corretti."
-
-msgid "Invalid archive format!"
-msgstr "Formato archivio invalido!"
-
-msgid "The submitted archive could not be opened."
-msgstr "Impossibile aprire l'archivio sottoposto."
-
-msgid "Cannot recognize submission's language."
-msgstr "Impossibile riconoscere il linguaggio della sottoposizione"
-
-msgid "All sources must be in the same language."
-msgstr "Tutti i sorgenti devono essere nello stesso linguaggio."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Il linguaggio %s non è consentito in questa gara."
-
-msgid "Invalid submission!"
-msgstr "Sottoposizione invalida!"
-
-msgid "Submission too big!"
-msgstr "Sottoposizione troppo grande!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Ogni file sorgente deve essere grande al massimo %d byte."
-
-msgid "Submission storage failed!"
-msgstr "Errore nel salvataggio della sottoposizione!"
-
-msgid "Please try again."
-msgstr "Riprova."
-
-msgid "Submission received"
-msgstr "Sottoposizione ricevuta"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "La tua sottoposizione è stata ricevuta e verrà valutata."
-
-msgid "Token request discarded"
-msgstr "Richiesta del token rifiutata"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "La tua richiesta è stata rifiutata perché non hai token disponibili."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"La tua richiesta è stata rifiutata perché hai già usato un token su questa "
-"sottoposizione."
-
-msgid "Token request received"
-msgstr "Richiesta del token ricevuta"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
-
-msgid "Compiling..."
-msgstr "Compilazione in corso..."
-
-msgid "details"
-msgstr "dettagli"
-
-msgid "Evaluating..."
-msgstr "Valutazione in corso..."
-
-msgid "Scoring..."
-msgstr "Assegnazione del punteggio in corso..."
-
-msgid "Evaluated"
-msgstr "Valutato"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr "Hai raggiunto il limite massimo di %d test tra tutti i problemi."
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "Hai raggiunto il limite massimo di %d test su questo problema."
-
-msgid "Too many tests!"
-msgstr "Troppi test!"
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "Tra tutti i problemi, devi aspettare almeno %d secondi tra due test."
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr "Su questo problema, devi aspettare almeno %d secondi tra due test."
-
-msgid "Tests too frequent!"
-msgstr "Test troppo frequenti!"
-
-msgid "Invalid test format!"
-msgstr "Formato test invalido!"
-
-msgid "Cannot recognize test's language."
-msgstr "Impossibile riconoscere il linguaggio del test"
-
-msgid "Invalid test!"
-msgstr "Test invalido!"
-
-msgid "Test too big!"
-msgstr "Test troppo grande!"
-
-msgid "Input too big!"
-msgstr "Input troppo grande!"
-
-#, python-format
-msgid "The input file must be at most %d bytes long."
-msgstr "Il file di input deve essere grande al massimo %d byte."
-
-msgid "Test storage failed!"
-msgstr "Errore nel salvataggio del test!"
-
-msgid "Test received"
-msgstr "Test ricevuto"
-
-msgid "Your test has been received and is currently being executed."
-msgstr "Il tuo test è stato ricevuto e verrà valutato."
-
-msgid "Executing..."
-msgstr "Esecuzione in corso..."
-
-msgid "Executed"
-msgstr "Eseguito"
-
-#, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f s"
-
-msgid "Too many print jobs!"
-msgstr "Troppe stampe!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Hai raggiunto il limite massimo di %d stampe."
-
-msgid "Invalid format!"
-msgstr "Formato invalido!"
-
-msgid "File too big!"
-msgstr "File troppo grande!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Ogni file deve essere grande al massimo %d byte."
-
-msgid "Print job storage failed!"
-msgstr "Errore nel salvataggio della stampa!"
-
-msgid "Print job received"
-msgstr "Comando di stampa ricevuto"
-
-msgid "Your print job has been received."
-msgstr "Il comando di stampa è stato ricevuto."
-
 msgid "%Y-%m-%d"
 msgstr "%d/%m/%Y"
 
@@ -528,6 +325,209 @@ msgstr[1] "Non puoi usare più di %(max_number)d %(type_pl)s in totale."
 
 msgid "You have no limitations on how you use them."
 msgstr "Non hai limitazioni sul loro utilizzo."
+
+msgid "Question received"
+msgstr "Domanda ricevuta"
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr ""
+"La tua domanda è stata inviata, riceverai una notifica quando sarà risposta. "
+
+msgid "Too many print jobs!"
+msgstr "Troppe stampe!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Hai raggiunto il limite massimo di %d stampe."
+
+msgid "Invalid format!"
+msgstr "Formato invalido!"
+
+msgid "Please select the correct files."
+msgstr "Seleziona i file corretti."
+
+msgid "File too big!"
+msgstr "File troppo grande!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Ogni file deve essere grande al massimo %d byte."
+
+msgid "Print job storage failed!"
+msgstr "Errore nel salvataggio della stampa!"
+
+msgid "Please try again."
+msgstr "Riprova."
+
+msgid "Print job received"
+msgstr "Comando di stampa ricevuto"
+
+msgid "Your print job has been received."
+msgstr "Il comando di stampa è stato ricevuto."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr ""
+"Hai raggiunto il limite massimo di %d sottoposizioni tra tutti i problemi."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr ""
+"Hai raggiunto il limite massimo di %d sottoposizioni su questo problema."
+
+msgid "Too many submissions!"
+msgstr "Troppe sottoposizioni!"
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr ""
+"Tra tutti i problemi, devi aspettare almeno %d secondi tra due "
+"sottoposizioni."
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr ""
+"Su questo problema, devi aspettare almeno %d secondi tra due sottoposizioni."
+
+msgid "Submissions too frequent!"
+msgstr "Sottoposizioni troppo frequenti!"
+
+msgid "Invalid submission format!"
+msgstr "Formato sottoposizione invalido!"
+
+msgid "Invalid archive format!"
+msgstr "Formato archivio invalido!"
+
+msgid "The submitted archive could not be opened."
+msgstr "Impossibile aprire l'archivio sottoposto."
+
+msgid "Cannot recognize submission's language."
+msgstr "Impossibile riconoscere il linguaggio della sottoposizione"
+
+msgid "All sources must be in the same language."
+msgstr "Tutti i sorgenti devono essere nello stesso linguaggio."
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "Il linguaggio %s non è consentito in questa gara."
+
+msgid "Invalid submission!"
+msgstr "Sottoposizione invalida!"
+
+msgid "Submission too big!"
+msgstr "Sottoposizione troppo grande!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Ogni file sorgente deve essere grande al massimo %d byte."
+
+msgid "Submission storage failed!"
+msgstr "Errore nel salvataggio della sottoposizione!"
+
+msgid "Submission received"
+msgstr "Sottoposizione ricevuta"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "La tua sottoposizione è stata ricevuta e verrà valutata."
+
+msgid "Compiling..."
+msgstr "Compilazione in corso..."
+
+msgid "details"
+msgstr "dettagli"
+
+msgid "Evaluating..."
+msgstr "Valutazione in corso..."
+
+msgid "Scoring..."
+msgstr "Assegnazione del punteggio in corso..."
+
+msgid "Evaluated"
+msgstr "Valutato"
+
+msgid "Token request discarded"
+msgstr "Richiesta del token rifiutata"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "La tua richiesta è stata rifiutata perché non hai token disponibili."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"La tua richiesta è stata rifiutata perché hai già usato un token su questa "
+"sottoposizione."
+
+msgid "Token request received"
+msgstr "Richiesta del token ricevuta"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "Hai raggiunto il limite massimo di %d test tra tutti i problemi."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "Hai raggiunto il limite massimo di %d test su questo problema."
+
+msgid "Too many tests!"
+msgstr "Troppi test!"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "Tra tutti i problemi, devi aspettare almeno %d secondi tra due test."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "Su questo problema, devi aspettare almeno %d secondi tra due test."
+
+msgid "Tests too frequent!"
+msgstr "Test troppo frequenti!"
+
+msgid "Invalid test format!"
+msgstr "Formato test invalido!"
+
+msgid "Cannot recognize test's language."
+msgstr "Impossibile riconoscere il linguaggio del test"
+
+msgid "Invalid test!"
+msgstr "Test invalido!"
+
+msgid "Test too big!"
+msgstr "Test troppo grande!"
+
+msgid "Input too big!"
+msgstr "Input troppo grande!"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "Il file di input deve essere grande al massimo %d byte."
+
+msgid "Test storage failed!"
+msgstr "Errore nel salvataggio del test!"
+
+msgid "Test received"
+msgstr "Test ricevuto"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Il tuo test è stato ricevuto e verrà valutato."
+
+msgid "Executing..."
+msgstr "Esecuzione in corso..."
+
+msgid "Executed"
+msgstr "Eseguito"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f s"
 
 #, python-format
 msgid "Automatic (%s)"
