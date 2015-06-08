@@ -160,7 +160,7 @@ def spawn(cmdline):
         print('$', ' '.join(cmdline))
 
     if CONFIG["TEST_DIR"] is not None:
-        cmdline = ['python-coverage', 'run', '-p', '--source=cms'] + \
+        cmdline = ['python', '-m', 'coverage', 'run', '-p', '--source=cms'] + \
             cmdline
 
     if CONFIG["VERBOSITY"] >= 3:
@@ -347,7 +347,7 @@ def shutdown_services():
 
 def combine_coverage():
     info("Combining coverage results.")
-    sh("python-coverage combine")
+    sh("python -m coverage combine")
 
 
 def admin_req(path, multipart_post=False, args=None, files=None):
