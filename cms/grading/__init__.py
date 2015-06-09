@@ -552,7 +552,6 @@ def evaluation_step_after_run(sandbox):
     # Detect the outcome of the execution.
     exit_status = sandbox.get_exit_status()
 
-
     # And retrieve some interesting data.
     plus = {
         "execution_time": sandbox.get_execution_time(),
