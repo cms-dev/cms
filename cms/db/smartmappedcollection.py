@@ -124,6 +124,14 @@ class SmartMappedCollection(MappedCollection):
             # dispose_collection
             self.on_dispose()
 
+    # We guarantee the values of the dictionary to be unique (because
+    # the key is also stored in the value itself) and this gives us
+    # an invertible mapping. This is the inverse function.
+    def get_key_of_value(self, value):
+        for k, v in self.iteritems():
+            if v == value:
+                return k
+
     # The following two methods have to maintain consistency, i.e.:
     # - self.values() is equal to all and only those objects of the
     #   self.child_cls class that have the self.child_rel_name
@@ -132,27 +140,39 @@ class SmartMappedCollection(MappedCollection):
     # - for each (key, value) in self.items(), key is equal to the
     #   self.child_key_name attribute of value.
 
+    # The general rule here is: don't ever assume anything about the
+    # state of the child, neither about its relationship attribute
+    # (i.e. who it considers its parent) nor on its key attribute.
+
     # This method is called when the key of a child object changes. In
     # such an event the binding in the dictionary has to change as well
-    # (i.e. del d[old_key] and d[new_key] = value). Actually, we simply
-    # delegate this task to the method just after this one.
-    def on_key_update(self, value, new_key, old_key, _):
+    # (i.e. del d[old_key] and d[new_key] = value).
+    def on_key_update(self, value, new_key, unused_old_key,
+                      unused_sa_initiator=None):
         assert self.linked
-        if getattr(value, self.child_rel_name) is self.parent_obj \
-                and new_key != old_key:
-            self.__setitem__(new_key, value)
+        old_key = self.get_key_of_value(value)
+        if value in self.itervalues() and new_key != old_key:
+            if new_key in self.iterkeys():
+                # We use the method of MappedCollection because we want
+                # it to trigger all the necessary Alchemy machinery to
+                # detach the child from the parent.
+                MappedCollection.__delitem__(self, new_key)
+            # We use the methods of dict directly because we want this
+            # to be transparent to Alchemy: the child was and remains
+            # bound, only its key changes, and Alchemy doesn't care
+            # about this.
+            dict.__delitem__(self, old_key)
+            dict.__setitem__(self, new_key, value)
 
     # This method is called when a binding to a new child is performed.
-    # As the child could come from anywhere we first detach it from its
-    # former parent (if any; note that this could also be ourselves).
-    # Then, as we want to bind it to new_key, we update its key to be
-    # that value. Finally we add it to the dictionary: this operation,
-    # implicitly, removes the old binding of the new key (if any).
+    # The only additional feature with respect to the superclass method
+    # is that it enforces the key stored in the child to be equal to
+    # the one that is being used to bind the child to the collection.
     @collection.internally_instrumented
     def __setitem__(self, new_key, value, _sa_initiator=None):
         # TODO We could check if the object's type is correct.
         assert self.linked
-        setattr(value, self.child_rel_name, None)
+        # This is the only difference with the standard behavior.
         setattr(value, self.child_key_name, new_key)
         MappedCollection.__setitem__(self, new_key, value, _sa_initiator)
 
