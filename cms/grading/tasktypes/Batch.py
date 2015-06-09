@@ -250,8 +250,7 @@ class Batch(TaskType):
         files_to_get = {
             input_filename: job.input
             }
-        default_processes = LANGUAGE_TO_MAX_PROCCESSORS['default']
-        max_processes = LANGUAGE_TO_MAX_PROCCESSORS.get(language, default_processes)
+        max_processes = LANGUAGE_TO_MAX_PROCCESSORS.get(language, LANGUAGE_TO_MAX_PROCCESSORS['default'])
 
         # Put the required files into the sandbox
         for filename, digest in executables_to_get.iteritems():

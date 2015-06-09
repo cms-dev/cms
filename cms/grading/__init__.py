@@ -38,7 +38,7 @@ from sqlalchemy.orm import joinedload
 
 from cms import config, \
     LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
-    SCORE_MODE_MAX
+    SCORE_MODE_MAX, LANGUAGE_TO_MAX_PROCCESSORS
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -456,7 +456,7 @@ def compilation_step(sandbox, commands):
 
 
 def evaluation_step(sandbox, commands,
-                    time_limit=0.0, memory_limit=0, max_processes=1,
+                    time_limit=0.0, memory_limit=0, max_processes=LANGUAGE_TO_MAX_PROCCESSORS['default'],
                     allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute some evaluation commands in the sandbox. Note that in
@@ -497,7 +497,7 @@ def evaluation_step(sandbox, commands,
 
 
 def evaluation_step_before_run(sandbox, command,
-                               time_limit=0, memory_limit=0, max_processes=1,
+                               time_limit=0, memory_limit=0, max_processes=LANGUAGE_TO_MAX_PROCCESSORS['default'],
                                allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                wait=False):
