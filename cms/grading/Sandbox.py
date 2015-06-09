@@ -1215,6 +1215,7 @@ class IsolateSandbox(SandboxBase):
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: `%s'.",
                      pretty_print_cmdline(args))
+        print("Isolate:", " ".join(args))
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
         os.chmod(self.path, 0777)

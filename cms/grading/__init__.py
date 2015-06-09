@@ -37,7 +37,7 @@ from collections import namedtuple
 from sqlalchemy.orm import joinedload
 
 from cms import config, \
-    LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
+    LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON2, LANG_PYTHON3, LANG_PHP, LANG_JAVA, \
     SCORE_MODE_MAX, LANGUAGE_TO_MAX_PROCCESSORS
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
@@ -243,16 +243,26 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command += ["-XS", "-O2", "-o%s" % executable_filename]
         command += [source_filenames[0]]
         commands.append(command)
-    elif language == LANG_PYTHON:
+    elif language == LANG_PYTHON2:
+        # The executable name is fixed, and there is no way to specify
+        # the name of the pyc, so we need to bundle together two
+        # commands (compilation and rename).
+        py_command = ["/usr/bin/python2", "-m", "py_compile",
+                      source_filenames[0]]
+        mv_command = ["/bin/mv", "%s.py2c" % os.path.splitext(os.path.basename(
+                      source_filenames[0]))[0], executable_filename]
+        commands.append(py_command)
+        commands.append(mv_command)
+    elif language == LANG_PYTHON3:
         # The executable name is fixed, and there is no way to specify
         # the name of the pyc, so we need to bundle together two
         # commands (compilation and rename).
         # In order to use Python 3 change them to:
         # /usr/bin/python3 -m py_compile %s
         # mv __pycache__/%s.*.pyc %s
-        py_command = ["/usr/bin/python2", "-m", "py_compile",
+        py_command = ["/usr/bin/python3", "-m", "py_compile",
                       source_filenames[0]]
-        mv_command = ["/bin/mv", "%s.pyc" % os.path.splitext(os.path.basename(
+        mv_command = ["/bin/mv", "__pycache__/%s.*.pyc" % os.path.splitext(os.path.basename(
                       source_filenames[0]))[0], executable_filename]
         commands.append(py_command)
         commands.append(mv_command)
@@ -286,10 +296,11 @@ def get_evaluation_commands(language, executable_filename):
     if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
-    elif language == LANG_PYTHON:
-        # In order to use Python 3 change it to:
-        # /usr/bin/python3 %s
+    elif language == LANG_PYTHON2:
         command = ["/usr/bin/python2", executable_filename]
+        commands.append(command)
+    elif language == LANG_PYTHON3:
+        command = ["/usr/bin/python3", executable_filename]
         commands.append(command)
     elif language == LANG_CS:
     	command = ["/usr/bin/mono", executable_filename]
@@ -359,6 +370,7 @@ def compilation_step(sandbox, commands):
     sandbox.address_space = 512 * 1024
     sandbox.stdout_file = "compiler_stdout.txt"
     sandbox.stderr_file = "compiler_stderr.txt"
+    #sandbox.allow_writing_all()
 
     # Actually run the compilation commands.
     logger.debug("Starting compilation step.")
