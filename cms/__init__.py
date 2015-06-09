@@ -65,6 +65,9 @@ LANG_PYTHON3 = "py3"
 LANG_PHP = "php"
 LANG_JAVA = "java"
 
+# Python 3 :(
+PYTHON3_COMPILE_NAME = "cpython-%d%d" % (3, 4)
+
 LANGUAGE_NAMES = {
     LANG_C: "C",
     LANG_CPP: "C++",

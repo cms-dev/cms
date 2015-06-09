@@ -38,7 +38,7 @@ from sqlalchemy.orm import joinedload
 
 from cms import config, \
     LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON2, LANG_PYTHON3, LANG_PHP, LANG_JAVA, \
-    SCORE_MODE_MAX, LANGUAGE_TO_MAX_PROCCESSORS
+    SCORE_MODE_MAX, LANGUAGE_TO_MAX_PROCCESSORS, PYTHON3_COMPILE_NAME
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -262,8 +262,8 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         # mv __pycache__/%s.*.pyc %s
         py_command = ["/usr/bin/python3", "-m", "py_compile",
                       source_filenames[0]]
-        mv_command = ["/bin/mv", "__pycache__/%s.*.pyc" % os.path.splitext(os.path.basename(
-                      source_filenames[0]))[0], executable_filename]
+        mv_command = ["/bin/mv", "__pycache__/%s.%s.pyc" % (os.path.splitext(os.path.basename(
+                      source_filenames[0]))[0], PYTHON3_COMPILE_NAME), executable_filename]
         commands.append(py_command)
         commands.append(mv_command)
     elif language == LANG_PHP:
