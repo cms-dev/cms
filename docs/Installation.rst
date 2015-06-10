@@ -152,8 +152,8 @@ This command installs python dependencies in your home folder. If you really wan
 
 There are other ways to manage python dependencies:
 
-virtualenv
-----------
+Virtual environment
+-------------------
 
 A `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ is an isolated Python environment that you can put wherever you like and that can be "activated" and "deactivated" at will. The tool you need in order to create a virtual environment is called ``virtualenv``, and can be installed by looking for ``python-virtualenv`` using your Linux distribution's package manager. For example:
 
