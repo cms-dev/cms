@@ -35,7 +35,7 @@ import cms.log
 
 __all__ = [
     "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON2", "LANG_PYTHON3", "LANG_PHP", "LANG_CS"
-    "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
+    "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES", "PYTHON3_COMPILE_NAME",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
     "LANGUAGE_TO_OBJ_EXT_MAP", "LANGUAGE_TO_MAX_PROCCESSORS",
@@ -65,7 +65,9 @@ LANG_PYTHON3 = "py3"
 LANG_PHP = "php"
 LANG_JAVA = "java"
 
-# Python 3 :(
+# Python 3 py_compile outputs to __pycache__/filename.<PYTHON3_COMPILE_NAME>.pyc
+# Using a '*' in this place does not appear to work correctly.
+# Format seems standard as cpython-<MAJOR><MINOR> for cpython.
 PYTHON3_COMPILE_NAME = "cpython-%d%d" % (3, 4)
 
 LANGUAGE_NAMES = {
