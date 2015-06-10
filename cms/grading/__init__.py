@@ -257,9 +257,6 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         # The executable name is fixed, and there is no way to specify
         # the name of the pyc, so we need to bundle together two
         # commands (compilation and rename).
-        # In order to use Python 3 change them to:
-        # /usr/bin/python3 -m py_compile %s
-        # mv __pycache__/%s.*.pyc %s
         py_command = ["/usr/bin/python3", "-m", "py_compile",
                       source_filenames[0]]
         mv_command = ["/bin/mv", "__pycache__/%s.%s.pyc" % (os.path.splitext(os.path.basename(
