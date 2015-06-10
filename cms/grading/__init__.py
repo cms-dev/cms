@@ -370,7 +370,6 @@ def compilation_step(sandbox, commands):
     sandbox.address_space = 512 * 1024
     sandbox.stdout_file = "compiler_stdout.txt"
     sandbox.stderr_file = "compiler_stderr.txt"
-    #sandbox.allow_writing_all()
 
     # Actually run the compilation commands.
     logger.debug("Starting compilation step.")
