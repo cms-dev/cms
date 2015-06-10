@@ -81,3 +81,6 @@ class Updater(object):
 
         # FIXME: information about primary_statements /
         # preferrend_languages are silently dropped
+
+        # FIXME: deduplicate repeated names in contests, users and
+        # tasks
