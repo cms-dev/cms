@@ -30,6 +30,7 @@ from __future__ import unicode_literals
 # handlers will be added by services by calling initialize_logging.
 import cms.log
 
+import subprocess
 
 # Define what this package will provide.
 
@@ -68,7 +69,9 @@ LANG_JAVA = "java"
 # Python 3 py_compile outputs to __pycache__/filename.<PYTHON3_COMPILE_NAME>.pyc
 # Using a '*' in this place does not appear to work correctly.
 # Format seems standard as cpython-<MAJOR><MINOR> for cpython.
-PYTHON3_COMPILE_NAME = "cpython-%d%d" % (3, 4)
+# Fetch python3 minor version to make compile PYTHON3_COMPILE_NAME correct for local setup
+# python3 -V returns "Python M.m.p\n"
+PYTHON3_COMPILE_NAME = "cpython-3" + subprocess.check_output(["python3", "-V"]).split()[1].split('.')[1]
 
 LANGUAGE_NAMES = {
     LANG_C: "C",
