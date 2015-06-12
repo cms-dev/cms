@@ -30,12 +30,13 @@ from __future__ import unicode_literals
 # handlers will be added by services by calling initialize_logging.
 import cms.log
 
+import subprocess
 
 # Define what this package will provide.
 
 __all__ = [
-    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP", "LANG_CS"
-    "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
+    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON2", "LANG_PYTHON3", "LANG_PHP", "LANG_CS"
+    "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES", "PYTHON3_COMPILE_NAME",
     "SOURCE_EXT_TO_LANGUAGE_MAP",
     "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
     "LANGUAGE_TO_OBJ_EXT_MAP", "LANGUAGE_TO_MAX_PROCCESSORS",
@@ -60,21 +61,34 @@ LANG_C = "c"
 LANG_CPP = "cpp"
 LANG_CS = "cs"
 LANG_PASCAL = "pas"
-LANG_PYTHON = "py"
+LANG_PYTHON2 = "py2"
+LANG_PYTHON3 = "py3"
 LANG_PHP = "php"
 LANG_JAVA = "java"
+
+# Python 3 py_compile outputs to __pycache__/filename.<PYTHON3_COMPILE_NAME>.pyc
+# Using a '*' in this place does not appear to work correctly.
+# Format seems standard as cpython-<MAJOR><MINOR> for cpython.
+# Fetch python3 minor version to make compile PYTHON3_COMPILE_NAME correct for local setup
+# python3 -V returns "Python M.m.p\n"
+try:
+    PYTHON3_COMPILE_NAME = "cpython-3" + subprocess.check_output(["python3", "-V"]).split()[1].split('.')[1]
+except (subprocess.CalledProcessError, OSError):
+    # Python 3 not installed, no point in handling here as it will fail anyway when trying to submit
+    PYTHON3_COMPILE_NAME = None
 
 LANGUAGE_NAMES = {
     LANG_C: "C",
     LANG_CPP: "C++",
     LANG_CS: "C#",
     LANG_PASCAL: "Pascal",
-    LANG_PYTHON: "Python",
+    LANG_PYTHON2: "Python 2",
+    LANG_PYTHON3: "Python 3",
     LANG_PHP: "PHP",
     LANG_JAVA: "Java",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
+LANGUAGES = [LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON2, LANG_PYTHON3, LANG_PHP, LANG_JAVA]
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # Language specific max_processor requirements
@@ -95,7 +109,8 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".c++": LANG_CPP,
     ".cs": LANG_CS,
     ".pas": LANG_PASCAL,
-    ".py": LANG_PYTHON,
+    ".py2": LANG_PYTHON2,
+    ".py3": LANG_PYTHON3,
     ".php": LANG_PHP,
     ".java": LANG_JAVA,
 }
@@ -106,7 +121,8 @@ LANGUAGE_TO_SOURCE_EXT_MAP = {
     LANG_CPP: ".cpp",
     LANG_CS: ".cs",
     LANG_PASCAL: ".pas",
-    LANG_PYTHON: ".py",
+    LANG_PYTHON2: ".py2",
+    LANG_PYTHON3: ".py3",
     LANG_PHP: ".php",
     LANG_JAVA: ".java",
 }
