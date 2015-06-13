@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -99,10 +99,12 @@ class ScoreType(object):
     def max_scores(self):
         """Returns the maximum score that one could aim to in this
         problem. Also return the maximum score from the point of view
-        of a user that did not play the token. Depend on the subclass.
+        of a user that did not play the token. And the headers of the
+        columns showing extra information (e.g. subtasks) in RWS.
+        Depend on the subclass.
 
-        return (float, float): maximum score and maximum score with
-                               only public testcases.
+        return (float, float, [string]): maximum score and maximum
+            score with only public testcases; ranking headers.
 
         """
         logger.error("Unimplemented method max_scores.")
