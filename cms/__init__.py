@@ -72,7 +72,7 @@ LANG_JAVA = "java"
 # Fetch python3 minor version to make compile PYTHON3_COMPILE_NAME correct for local setup
 # python3 -V returns "Python M.m.p\n"
 try:
-    PYTHON3_COMPILE_NAME = "cpython-3" + subprocess.check_output(["python3", "-V"]).split()[1].split('.')[1]
+    PYTHON3_COMPILE_NAME = "cpython-3" + subprocess.check_output(["python3", "-V"], stderr=subprocess.STDOUT).split()[1].split('.')[1]
 except (subprocess.CalledProcessError, OSError):
     # Python 3 not installed, no point in handling here as it will fail anyway when trying to submit
     PYTHON3_COMPILE_NAME = None
