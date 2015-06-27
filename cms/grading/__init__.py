@@ -349,27 +349,39 @@ def compilation_step(sandbox, commands):
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
     sandbox.address_space = 512 * 1024
-    sandbox.stdout_file = "compiler_stdout.txt"
-    sandbox.stderr_file = "compiler_stderr.txt"
 
     # Actually run the compilation commands, logging stdout and stderr.
     logger.debug("Starting compilation step.")
     stdouts = []
     stderrs = []
+    steps = 0
     for command in commands:
+        # Keep stdout and stderr of each compilation step
+        sandbox.stdout_file = "compiler_stdout_%d.txt" % steps
+        sandbox.stderr_file = "compiler_stderr_%d.txt" % steps
+
         box_success = sandbox.execute_without_std(command, wait=True)
         if not box_success:
             logger.error("Compilation aborted because of "
                          "sandbox error in `%s'.", sandbox.path)
             return False, None, None, None
-        stdout = unicode(sandbox.get_file_to_string("compiler_stdout.txt"),
+        stdout = unicode(sandbox.get_file_to_string("compiler_stdout_%d.txt"
+                         % steps),
                          "utf-8", errors="replace").strip()
         if stdout != "":
             stdouts.append(stdout)
-        stderr = unicode(sandbox.get_file_to_string("compiler_stderr.txt"),
+        stderr = unicode(sandbox.get_file_to_string("compiler_stderr_%d.txt" 
+                         % steps),
                          "utf-8", errors="replace").strip()
         if stderr != "":
             stderrs.append(stderr)
+
+        steps += 1
+        # If some command in the sequence is failed,
+        # there is no reason to continue
+        if sandbox.get_exit_status() != Sandbox.EXIT_OK or \
+            sandbox.get_exit_code() != 0:
+            break
 
     # Detect the outcome of the compilation.
     exit_status = sandbox.get_exit_status()
