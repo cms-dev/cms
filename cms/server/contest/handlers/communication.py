@@ -39,7 +39,7 @@ import tornado.web
 from cms import config
 from cms.db import Question
 
-from .base import BaseHandler, NOTIFICATION_SUCCESS
+from .base import BaseHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
@@ -67,6 +67,21 @@ class QuestionHandler(BaseHandler):
         # User can post only if we want.
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
+
+        subject_length = len(self.get_argument("question_subject", ""))
+        text_length = len(self.get_argument("question_text", ""))
+        if subject_length > 50 or text_length > 2000:
+            logger.warning("Long question (%d, %d) dropped for user %s.",
+                           subject_length, text_length,
+                           self.current_user.user.username)
+            self.application.service.add_notification(
+                self.current_user.user.username,
+                self.timestamp,
+                self._("Question too big!"),
+                self._("You have reached the question length limit."),
+                NOTIFICATION_ERROR)
+            self.redirect("/communication")
+            return
 
         question = Question(self.timestamp,
                             self.get_argument("question_subject", ""),
