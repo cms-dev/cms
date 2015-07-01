@@ -78,6 +78,10 @@ from .user import \
     EditParticipationHandler, \
     AddTeamHandler, \
     TeamHandler
+from .admin import \
+    AddAdminHandler, \
+    AdminsHandler, \
+    AdminHandler
 from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
@@ -170,6 +174,12 @@ HANDLERS = [
     (r"/team/([0-9]+)", TeamHandler),
     (r"/user/([0-9]+)/add_participation", AddParticipationHandler),
     (r"/user/([0-9]+)/edit_participation", EditParticipationHandler),
+
+    # Admins
+
+    (r"/admins", AdminsHandler),
+    (r"/admins/add", AddAdminHandler),
+    (r"/admin/([0-9]+)", AdminHandler),
 
     # Submissions
 

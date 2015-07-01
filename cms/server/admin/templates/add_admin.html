@@ -1,0 +1,19 @@
+{% extends base.html %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1>New admin</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/admins/add" method="post" >
+  <h2>Admin information</h2>
+
+  {% include fragments/admin_form.html %}
+
+  <input type="submit" value="Create" />
+  <input type="reset" value="Reset" />
+</form>
+{% end %}
+
