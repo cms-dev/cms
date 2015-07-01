@@ -1,0 +1,50 @@
+{% extends base.html %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1>Admins list</h1>
+</div>
+
+<div id="details">
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Enabled</th>
+        <th>Username</th>
+        <th>Name</th>
+        <th>All permissions</th>
+        <th>Messaging permissions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in admins %}
+      <tr>
+        <td>{{ a.enabled }}</td>
+        <td><a href="{{ url_root}}/admin/{{ a.id }}">{{ a.username }}</a></td>
+        <td>{{ a.name }}</td>
+        <td>{{ a.permission_all }}</td>
+        <td>{{ a.permission_messaging }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+</div>
+
+<hr/>
+
+<a href="{{ url_root }}/admins/add">Add a new admin</a>
+
+<hr/>
+
+<ul>
+  <li>Disabled admins cannot log in.</li>
+  <li>Admins with the "All permissions" bit set can do any
+    operation, regardless of the status of the other permission
+    bits.</li>
+  <li>The "Messaging" permissions allow the admin to communicate with
+    the contestants, answering questions, sending private messages
+    and announcements.</li>
+</ul>
+
+{% end %}
