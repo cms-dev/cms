@@ -38,7 +38,8 @@ from sqlalchemy.orm import joinedload
 
 from cms import config, \
     LANG_C, LANG_CPP, LANG_CS, LANG_PASCAL, LANG_PYTHON2, LANG_PYTHON3, LANG_PHP, LANG_JAVA, \
-    SCORE_MODE_MAX, LANGUAGE_TO_MAX_PROCCESSORS, PYTHON3_COMPILE_NAME
+    SCORE_MODE_MAX, LANGUAGE_TO_MAX_PROCCESSORS, PYTHON3_COMPILE_NAME, \
+    JAVA_CLASS_NAME
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -267,7 +268,7 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/bin/cp", source_filenames[0], executable_filename]
         commands.append(command)
     elif language == LANG_JAVA:
-        class_name = os.path.splitext(source_filenames[0])[0]
+        class_name = JAVA_CLASS_NAME
         command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
                    executable_filename] + source_filenames
         commands.append(command)
