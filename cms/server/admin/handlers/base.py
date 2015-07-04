@@ -130,14 +130,17 @@ def parse_ip_address_or_subnet(value):
     return value
 
 
-def require_permission(permission="authenticated"):
+def require_permission(permission="authenticated", self_allowed=False):
     """Return a decorator requiring a specific admin permission level
 
     The default value, "authenticated", just checkes that the admin is
     logged in. All other values also implicitly require it. Therefore,
     there is no need to use tornado.web.authenticated if using this.
 
-    permission (string): one of the permission levels
+    permission (string): one of the permission levels.
+    self_allowed (bool): if true, interpret the first argument as the
+       admin id that can execute the method regardless of their
+       permission.
 
     """
     PERMISSION_ALL = "all"
@@ -166,7 +169,13 @@ def require_permission(permission="authenticated"):
             if user.permission_all or user.__getattribute__(permission_key):
                 return func(self, *args, **kwargs)
             else:
-                raise tornado.web.HTTPError(403, "Admin is not authorized")
+                if self_allowed and len(args) > 0 and int(args[0]) == user.id:
+                    # First argument is assumed to be the admin id,
+                    # encoded as a unicode object, and should match
+                    # the current user id.
+                    return func(self, *args, **kwargs)
+                else:
+                    raise tornado.web.HTTPError(403, "Admin is not authorized")
 
         return newfunc
 
