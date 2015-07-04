@@ -350,6 +350,10 @@ class PolygonContestLoader(ContestLoader):
         return os.path.exists(os.path.join(path, "contest.xml")) and \
             os.path.exists(os.path.join(path, "problems"))
 
+    def get_task_loader(self, taskname):
+        taskpath = os.path.join(self.path, "problems", taskname)
+        return PolygonTaskLoader(taskpath, self.file_cacher)
+
     def get_contest(self):
         """See docstring in class Loader.
 
