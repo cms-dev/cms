@@ -15,14 +15,30 @@
     </option>
     {% end %}
   </select>
-  <input type="submit" value="Add task" />
+  <input type="submit"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         value="Add task" />
 </form>
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/tasks" method="POST">
   Edit selected task:
-  <input type="submit" name="operation" value="Move up" />
-  <input type="submit" name="operation" value="Move down" />
-  <input type="submit" name="operation" value="Remove from contest" />
+  <input type="submit" name="operation"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         value="Move up" />
+  <input type="submit" name="operation"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         value="Move down" />
+  <input type="submit" name="operation"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         value="Remove from contest" />
   <table class="bordered">
     <thead>
       <tr>

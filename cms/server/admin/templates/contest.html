@@ -131,7 +131,12 @@
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
   </table>
-  <input type="submit" value="Update">
+  <input type="submit"
+         value="Update"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         >
   <input type="reset" value="Reset">
 </form>
 
