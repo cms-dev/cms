@@ -61,7 +61,8 @@ class ContestImporter(object):
 
     """
 
-    def __init__(self, path, test, zero_time, user_number, import_tasks, loader_class):
+    def __init__(self, path, test, zero_time, user_number, import_tasks,
+                 loader_class):
         self.test = test
         self.zero_time = zero_time
         self.user_number = user_number

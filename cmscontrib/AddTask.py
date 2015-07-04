@@ -75,8 +75,8 @@ class TaskImporter(object):
         with SessionGen() as session:
             # Check whether the task already exists
             task_exists = session.query(Task) \
-                                    .filter(Task.name == task.name) \
-                                    .count() > 0
+                                 .filter(Task.name == task.name) \
+                                 .count() > 0
             if task_exists:
                 logger.critical("Task \"%s\" already exists in database."
                                 % task.name)
