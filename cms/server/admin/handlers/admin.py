@@ -110,6 +110,15 @@ class AdminHandler(BaseHandler):
     """Admin handler, with a POST method to edit the admin.
 
     """
+
+    # Fields that an admin can change themself, regardless of the
+    # permission bits.
+    SELF_MODIFIABLE_FIELDS = [
+        "name",
+        "username",
+        "authentication",
+    ]
+
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, admin_id):
         admin = self.safe_get_item(Admin, admin_id)
@@ -118,19 +127,28 @@ class AdminHandler(BaseHandler):
         self.r_params["admin"] = admin
         self.render("admin.html", **self.r_params)
 
-    @require_permission(BaseHandler.PERMISSION_ALL)
+    @require_permission(BaseHandler.PERMISSION_ALL, self_allowed=True)
     def post(self, admin_id):
-        # TODO: allow admins to edit themselves.
         admin = self.safe_get_item(Admin, admin_id)
 
         try:
-            admin.set_attrs(_admin_attrs(self))
+            new_attrs = _admin_attrs(self)
 
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/admin/%s" % admin_id)
             return
+
+        # If the admin is allowed here because has permission_all,
+        # they can do anything they want, otherwise, if they are
+        # allowed because they are editing their own details, they can
+        # only change a subset of the fields.
+        if not self.current_user.permission_all:
+            for key in new_attrs.keys():
+                if key not in AdminHandler.SELF_MODIFIABLE_FIELDS:
+                    del new_attrs[key]
+        admin.set_attrs(new_attrs)
 
         if self.try_commit():
             logger.info("Admin %s updated.", admin.id)
