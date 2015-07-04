@@ -61,10 +61,12 @@ class ContestImporter(object):
 
     """
 
-    def __init__(self, path, test, zero_time, user_number, loader_class):
+    def __init__(self, path, test, zero_time, user_number, import_tasks,
+                 loader_class):
         self.test = test
         self.zero_time = zero_time
         self.user_number = user_number
+        self.import_tasks = import_tasks
 
         self.file_cacher = FileCacher()
 
@@ -90,11 +92,18 @@ class ContestImporter(object):
                 task = session.query(Task) \
                               .filter(Task.name == taskname).first()
                 if task is None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("Task \"%s\" not found in database."
-                                    % taskname)
-                    return
+                    if self.import_tasks:
+                        task = self.loader.get_task_loader(taskname).get_task()
+                        if task:
+                            session.add(task)
+                        else:
+                            logger.critical("Could not import task \"%s\".",
+                                            taskname)
+                            return
+                    else:
+                        logger.critical("Task \"%s\" not found in database.",
+                                        taskname)
+                        return
                 if task.contest is not None:
                     logger.critical("Task \"%s\" is already tied to a "
                                     "contest." % taskname)
@@ -168,6 +177,11 @@ def main():
         default=None,
         help="use the specified loader (default: autodetect)"
     )
+    group.add_argument(
+        "-i", "--import-tasks",
+        action="store_true",
+        help="import tasks if they do not exist"
+    )
     parser.add_argument(
         "import_directory",
         action="store", type=utf8_decoder,
@@ -187,6 +201,7 @@ def main():
         test=args.test,
         zero_time=args.zero_time,
         user_number=args.user_number,
+        import_tasks=args.import_tasks,
         loader_class=loader_class
     ).do_import()
 
