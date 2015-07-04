@@ -66,6 +66,9 @@ class BaseLoader(object):
         """
         raise NotImplementedError("Please extend Loader")
 
+    def get_task_loader(self, taskname):
+        raise NotImplementedError("Please extend Loader")
+
 
 class TaskLoader(BaseLoader):
     """Base class for deriving task loaders.

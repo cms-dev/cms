@@ -45,7 +45,7 @@ import os
 import os.path
 
 from cms import utf8_decoder
-from cms.db import SessionGen, User, Participation, Task
+from cms.db import SessionGen, User, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -61,10 +61,12 @@ class ContestImporter(object):
 
     """
 
-    def __init__(self, path, test, zero_time, user_number, loader_class):
+    def __init__(self, path, test, zero_time, user_number, import_tasks,
+                 loader_class):
         self.test = test
         self.zero_time = zero_time
         self.user_number = user_number
+        self.import_tasks = import_tasks
 
         self.file_cacher = FileCacher()
 
@@ -85,16 +87,32 @@ class ContestImporter(object):
             contest.stop = datetime.datetime(2100, 1, 1)
 
         with SessionGen() as session:
+            # Check whether the contest already exists
+            contest_exists = session.query(Contest) \
+                                    .filter(Contest.name == contest.name) \
+                                    .count() > 0
+            if contest_exists:
+                logger.critical("Contest \"%s\" already exists in database."
+                                % contest.name)
+                return
+
             # Check needed tasks
             for tasknum, taskname in enumerate(tasks):
                 task = session.query(Task) \
                               .filter(Task.name == taskname).first()
                 if task is None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("Task \"%s\" not found in database."
-                                    % taskname)
-                    return
+                    if self.import_tasks:
+                        task = self.loader.get_task_loader(taskname).get_task()
+                        if task:
+                            session.add(task)
+                        else:
+                            logger.critical("Could not import task \"%s\"."
+                                            % taskname)
+                            return
+                    else:
+                        logger.critical("Task \"%s\" not found in database."
+                                        % taskname)
+                        return
                 if task.contest is not None:
                     logger.critical("Task \"%s\" is already tied to a "
                                     "contest." % taskname)
@@ -168,6 +186,11 @@ def main():
         default=None,
         help="use the specified loader (default: autodetect)"
     )
+    group.add_argument(
+        "-i", "--import-tasks",
+        action="store_true",
+        help="import tasks if they do not exist"
+    )
     parser.add_argument(
         "import_directory",
         action="store", type=utf8_decoder,
@@ -187,6 +210,7 @@ def main():
         test=args.test,
         zero_time=args.zero_time,
         user_number=args.user_number,
+        import_tasks=args.import_tasks,
         loader_class=loader_class
     ).do_import()
 
