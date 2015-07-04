@@ -79,7 +79,7 @@ class PolygonTaskLoader(TaskLoader):
         """
         return os.path.exists(os.path.join(path, "problem.xml"))
 
-    def has_changed(self, name):
+    def task_has_changed(self):
         """See docstring in class Loader.
 
         """
@@ -277,7 +277,7 @@ class PolygonUserLoader(UserLoader):
         return os.path.exists(
             os.path.join(os.path.dirname(path), "contestants.txt"))
 
-    def has_changed(self, name):
+    def user_has_changed(self):
         """See docstring in class Loader.
 
         """
@@ -443,7 +443,7 @@ class PolygonContestLoader(ContestLoader):
 
         return Contest(**args), tasks, users
 
-    def has_changed(self, name):
+    def contest_has_changed(self):
         """See docstring in class Loader.
 
         """
