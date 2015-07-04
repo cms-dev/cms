@@ -35,6 +35,8 @@ def remove_task(task_name):
     with SessionGen() as session:
         task = session.query(Task)\
             .filter(Task.name == task_name).first()
+        if not task:
+            return
         session.delete(task)
         session.commit()
 
