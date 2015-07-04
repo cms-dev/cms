@@ -45,7 +45,7 @@ import os
 import os.path
 
 from cms import utf8_decoder
-from cms.db import SessionGen, User, Participation, Task
+from cms.db import SessionGen, User, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -87,6 +87,15 @@ class ContestImporter(object):
             contest.stop = datetime.datetime(2100, 1, 1)
 
         with SessionGen() as session:
+            # Check whether the contest already exists
+            contest_exists = session.query(Contest) \
+                                    .filter(Contest.name == contest.name) \
+                                    .count() > 0
+            if contest_exists:
+                logger.critical("Contest \"%s\" already exists in database.",
+                                contest.name)
+                return
+
             # Check needed tasks
             for tasknum, taskname in enumerate(tasks):
                 task = session.query(Task) \
