@@ -8,6 +8,7 @@
 <h2 id="title_announcements" class="toggling_on">Announcements</h2>
 <div id="announcements">
   <div class="notifications">
+{% if current_user.permission_all or current_user.permission_messaging %}
     <div class="notification communication">
       <div class="notification_msg">
         <form method="post" action="{{ url_root }}/contest/{{ contest.id }}/announcements/add">
@@ -18,10 +19,12 @@
             <label for="new_text">Text</label>
             <textarea name="text" id="new_text" style="width: 100%" ></textarea>
           </div>
-          <input type="submit" value="Add announcement" />
+          <input type="submit"
+                 value="Add announcement" />
         </form>
       </div>
     </div>
+{% end %}
     {% if contest.announcements != [] %}
       {% for msg in reversed(contest.announcements) %}
       <div class="notification communication">

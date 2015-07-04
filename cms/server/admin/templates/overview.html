@@ -125,10 +125,19 @@ function update_workers_status(response)
         strings.push('<td>' + job + '</td>');
         strings.push('<td>' + start_time + '</td>');
         if (response['data'][i]['operation'] == "disabled") {
-            strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;">Enable</button></td></tr>');
+            strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;"' +
+{% if not current_user.permission_all %}
+                         ' disabled' +
+{% end %}
+                         '>Enable</button></td>');
         } else {
-            strings.push('<td><button onclick="javascript:disable_worker(' + i + '); return true;">Disable</button></td></tr>');
+            strings.push('<td><button onclick="javascript:disable_worker(' + i + '); return true;"' +
+{% if not current_user.permission_all %}
+                         ' disabled' +
+{% end %}
+                         '>Disable</button></td>');
         }
+        strings.push('</tr>');
     }
 
     table.html(strings.join(""));

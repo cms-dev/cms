@@ -115,7 +115,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if len(task.datasets) == 0 %}
     No datasets have been created for this task.<br/>
 {% end %}
+{% if current_user.permission_all %}
     <a href="{{ url_root }}/task/{{ task.id }}/add_dataset">Create a new dataset</a><br/>
+{% end %}
     </p>
 
 {% for dataset in sorted(task.datasets, key=lambda d: d.description) %}
@@ -124,6 +126,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   <div id="dataset_{{ dataset.id }}" class="task_dataset">
 
     <p>
+{% if current_user.permission_all %}
       {% if dataset is task.active_dataset %}
       [Make Live ...]
       {% else %}
@@ -139,6 +142,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       {% if dataset is not task.active_dataset %}
         <a href="{{ url_root }}/dataset/{{ dataset.id }}/autojudge">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
       {% end %}
+{% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</a>
     </p>
 
@@ -215,7 +219,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         <tr>
           <td>Managers</td>
           <td>
+{% if current_user.permission_all %}
             <a href="{{ url_root }}/dataset/{{ dataset.id }}/managers/add">Add a manager</a></br>
+{% end %}
             {% if len(dataset.managers) == 0 %}
               No managers.
             {% else %}
@@ -250,8 +256,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
+{% if current_user.permission_all %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
+{% end %}
       <table class="bordered" style="text-align:center">
         <thead>
           <tr>
@@ -365,7 +373,11 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     <div class="hr"></div>
   </div>
 
-  <input type="submit" value="Update" />
+  <input type="submit"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         value="Update" />
   <input type="reset" value="Reset" />
 </form>
 {% end %}
