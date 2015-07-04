@@ -43,7 +43,7 @@ import logging
 import os
 
 from cms import utf8_decoder
-from cms.db import SessionGen
+from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -73,6 +73,15 @@ class TaskImporter(object):
         # Store
         logger.info("Creating task on the database.")
         with SessionGen() as session:
+            # Check whether the task already exists
+            task_exists = session.query(Task) \
+                                    .filter(Task.name == task.name) \
+                                    .count() > 0
+            if task_exists:
+                logger.critical("Task \"%s\" already exists in database."
+                                % task.name)
+                return
+
             session.add(task)
             session.commit()
             task_id = task.id
