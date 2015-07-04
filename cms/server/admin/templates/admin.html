@@ -10,6 +10,9 @@
 <form enctype="multipart/form-data" action="{{ url_root }}/admin/{{ admin.id }}" method="POST">
   <h2>Admin information</h2>
 
+  {% if not current_user.permission_all %}
+    {% set only_safe_details = True %}
+  {% end %}
   {% include fragments/admin_form.html %}
 
   <input type="submit" value="Update" />
@@ -20,8 +23,10 @@
   Leaving the password field empty will keep the previous password.
 </form>
 
+{% if current_user.permission_all %}
 <hr/>
 
 <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/admin/{{ admin.id }}'); ">Delete this admin</a>
+{% end %}
 
 {% end %}

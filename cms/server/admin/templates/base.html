@@ -121,11 +121,13 @@ $(document).ready(init);
           </li>
           {% end %}
 
+{% if current_user.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url_root }}/contests/add">
               (create new contest...)
             </a>
           </li>
+{% end %}
         </ul>
 
         <h1>Tasks</h1>
@@ -152,11 +154,13 @@ $(document).ready(init);
           </li>
           {% end %}
 
+{% if current_user.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url_root }}/tasks/add">
               (create new task...)
             </a>
           </li>
+{% end %}
         </ul>
 
         <h1>Users</h1>
@@ -202,11 +206,13 @@ $(document).ready(init);
             </li>
           {% end %}
 
+{% if current_user.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url_root }}/teams/add">
               (create new team...)
             </a>
           </li>
+{% end %}
         </ul>
         {% else %}
           <ul class="menu">
