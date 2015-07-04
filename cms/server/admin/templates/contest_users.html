@@ -23,12 +23,22 @@
     </option>
     {% end %}
   </select>
-  <input type="submit" value="Add user" />
+  <input type="submit"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         value="Add user" />
 </form>
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/users" method="POST">
   Edit selected user:
-  <input type="submit" name="operation" value="Remove from contest" />
+  <input type="submit"
+         name="operation"
+         value="Remove from contest"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         />
   <table class="bordered">
     <thead>
       <tr>

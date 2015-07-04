@@ -20,6 +20,9 @@
                   'level': 'compilation'},
                  function(response) { utils.redirect_if_ok('{{ url }}', response); }
                  );"
+{% if not current_user.permission_all %}
+        disabled
+{% end %}
         title="Compilation" >C</button>
 <button onclick="cmsrpc_request('{{ url_root }}',
                  'EvaluationService', 0,
@@ -33,6 +36,9 @@
                   'level': 'evaluation'},
                  function(response) { utils.redirect_if_ok('{{ url }}', response); }
                   );"
+{% if not current_user.permission_all %}
+        disabled
+{% end %}
         title="Evaluation" >E</button>
 <button onclick="cmsrpc_request('{{ url_root }}',
                  'ScoringService', 0,
@@ -46,4 +52,7 @@
                  },
                  function(response) { utils.redirect_if_ok('{{ url }}', response); }
                  );"
+{% if not current_user.permission_all %}
+        disabled
+{% end %}
         title="Score" >S</button>

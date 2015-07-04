@@ -13,6 +13,12 @@
   {% set admin_permission_messaging = False %}
   {% set admin_enabled = True %}
 {% end %}
+
+{% try %}
+  {% set local_only_safe_details = only_safe_details %}
+{% except %}
+  {% set local_only_safe_details = False %}
+{% end %}
 <div>
   <table>
     <tr>
@@ -27,6 +33,7 @@
       <td>Name</td>
       <td><input type="text" name="name" value="{{ admin_name }}"/></td>
     </tr>
+    {% if not local_only_safe_details %}
     <tr>
       <td>All permissions</td>
       <td>
@@ -45,5 +52,6 @@
         <input type="checkbox" name="enabled" {% if admin_enabled %}checked{% end %} />
       </td>
     </tr>
+    {% end %}
   </table>
 </div>

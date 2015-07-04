@@ -56,6 +56,7 @@ utils.show_page("questions", 1);
       {% else %}
       <div class="notification_subject">Not yet replied.</div>
       {% end %}
+{% if current_user.permission_all or current_user.permission_messaging %}
       {% if msg.reply_timestamp is None %}
       <div class="ignore_reply">
         <form class="ignore_question_form" action="{{ url_root }}/contest/{{ contest.id }}/question/{{ msg.id }}/ignore" name="ignore{{ msg.id }}" method="POST">
@@ -94,6 +95,7 @@ utils.show_page("questions", 1);
           <input type="submit" value="Send"/>
         </form>
       </div>
+{% end %}
     </div>
   </div>
   {% end %}
