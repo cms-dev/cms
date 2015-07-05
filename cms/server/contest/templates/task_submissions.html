@@ -211,7 +211,9 @@ $(document).ready(function () {
 {% else %}
         <col class="total_score"/>
 {% end %}
+{% if submissions_download_allowed %}
         <col class="files"/>
+{% end %}
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
         <col class="token"/>
 {% end %}
@@ -230,7 +232,9 @@ $(document).ready(function () {
 {% else %}
             <th class="total_score">{{ _("Score") }}</th>
 {% end %}
+{% if submissions_download_allowed %}
             <th class="files">{{ _("Files") }}</th>
+{% end %}
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <th class="token">{{ _("Token") }}</th>
 {% end %}
