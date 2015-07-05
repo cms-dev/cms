@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -29,7 +29,16 @@ import os
 import random
 
 from cmscommon.crypto import decrypt_number
-from cmstestsuite.web import GenericRequest
+from cmstestsuite.web import GenericRequest, LoginRequest
+
+
+class CWSLoginRequest(LoginRequest):
+    def test_success(self):
+        if not LoginRequest.test_success(self):
+            return False
+        if self.redirected_to != './':
+            return False
+        return True
 
 
 class HomepageRequest(GenericRequest):
@@ -56,35 +65,6 @@ class HomepageRequest(GenericRequest):
             if username_re.search(self.res_data) is not None:
                 return False
         return True
-
-
-class LoginRequest(GenericRequest):
-    """Try to login to CWS with given credentials.
-
-    """
-    def __init__(self, browser, username, password, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
-        self.username = username
-        self.password = password
-        self.url = '%slogin' % self.base_url
-        self.data = {'username': self.username,
-                     'password': self.password,
-                     'next': '/'}
-
-    def describe(self):
-        return "try to login"
-
-    def test_success(self):
-        if not GenericRequest.test_success(self):
-            return False
-        if self.redirected_to != './':
-            return False
-        return True
-
-    def specific_info(self):
-        return 'Username: %s\nPassword: %s\n' % \
-               (self.username, self.password) + \
-            GenericRequest.specific_info(self)
 
 
 class TaskRequest(GenericRequest):

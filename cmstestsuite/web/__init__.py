@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,14 +24,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import codecs
+import datetime
 import io
+import os
 import sys
 import time
-import urllib
-import datetime
 import traceback
-import codecs
-import os
+import urllib
 
 from mechanize import HTMLForm, HTTPError
 
@@ -256,3 +256,31 @@ class GenericRequest(object):
             print("", file=fd)
             print("EXCEPTION CASTED", file=fd)
             fd.write(unicode(self.exception_data))
+
+
+class LoginRequest(GenericRequest):
+    """Try to login to CWS or AWS with the given credentials.
+
+    """
+    def __init__(self, browser, username, password, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.username = username
+        self.password = password
+        self.url = '%slogin' % self.base_url
+        self.data = {'username': self.username,
+                     'password': self.password,
+                     'next': '/'}
+
+    def describe(self):
+        return "try to login"
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+        # Additional checks needs to be done from the subclasses.
+        return True
+
+    def specific_info(self):
+        return 'Username: %s\nPassword: %s\n' % \
+               (self.username, self.password) + \
+            GenericRequest.specific_info(self)
