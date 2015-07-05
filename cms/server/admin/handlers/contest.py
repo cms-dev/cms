@@ -63,6 +63,8 @@ class AddContestHandler(SimpleHandler("add_contest.html")):
 
             attrs["languages"] = self.get_arguments("languages")
 
+            self.get_bool(attrs, "submissions_download_allowed")
+
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")
@@ -123,6 +125,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
                 attrs["allowed_localizations"] = []
 
             attrs["languages"] = self.get_arguments("languages")
+
+            self.get_bool(attrs, "submissions_download_allowed")
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")

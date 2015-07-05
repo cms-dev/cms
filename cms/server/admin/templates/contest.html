@@ -37,6 +37,12 @@
       </td>
     </tr>
     <tr>
+      <td><label for="submissions_download_allowed">Submissions download allowed</label></td>
+      <td>
+        <input type="checkbox" id="submissions_download_allowed" name="submissions_download_allowed" {{ "checked" if contest.submissions_download_allowed else "" }}/>
+      </td>
+    </tr>
+    <tr>
       <td>Token mode</td>
       <td>
         <select name="token_mode">

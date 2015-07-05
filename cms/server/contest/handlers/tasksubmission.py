@@ -413,7 +413,10 @@ class TaskSubmissionsHandler(BaseHandler):
 
         self.render("task_submissions.html",
                     task=task, submissions=submissions,
-                    submissions_left=submissions_left, **self.r_params)
+                    submissions_left=submissions_left,
+                    submissions_download_allowed=
+                    self.contest.submissions_download_allowed,
+                    **self.r_params)
 
 
 class SubmissionStatusHandler(BaseHandler):
@@ -524,6 +527,9 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, submission_num, filename):
+        if not self.contest.submissions_download_allowed:
+            raise tornado.web.HTTPError(404)
+
         participation = self.current_user
 
         try:
