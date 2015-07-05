@@ -34,7 +34,7 @@ from cms import LANGUAGES
 from cmstestsuite import get_cms_config, CONFIG
 from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     add_user, add_task, add_testcase, add_manager, \
-    get_tasks, get_users, start_service, start_server, \
+    get_tasks, get_users, initialize_aws, start_service, start_server, \
     start_ranking_web_server, shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 from cmscommon.datetime import get_system_timezone
@@ -64,6 +64,8 @@ class TestRunner(object):
             os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
         TestRunner.start_generic_services(workers)
+        initialize_aws(self.rand)
+
         if contest_id is None:
             self.contest_id = self.create_contest()
         else:

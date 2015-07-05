@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,20 @@ import re
 
 from BeautifulSoup import BeautifulSoup
 
-from cmstestsuite.web import GenericRequest
+from cmstestsuite.web import GenericRequest, LoginRequest
+
+
+class AWSLoginRequest(LoginRequest):
+    def test_success(self):
+        if not LoginRequest.test_success(self):
+            return False
+        fail_re = re.compile('Failed to log in.')
+        if fail_re.search(self.res_data) is not None:
+            return False
+        username_re = re.compile(self.username)
+        if username_re.search(self.res_data) is None:
+            return False
+        return True
 
 
 class AWSSubmissionViewRequest(GenericRequest):
