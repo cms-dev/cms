@@ -85,7 +85,7 @@ class PolygonTaskLoader(TaskLoader):
         """
         return True
 
-    def get_task(self):
+    def get_task(self, get_statement=True):
         """See docstring in class Loader.
 
         """
@@ -114,21 +114,23 @@ class PolygonTaskLoader(TaskLoader):
         args["name"] = name
         args["title"] = root.find('names').find("name").attrib['value']
 
-        args["statements"] = []
-        args["primary_statements"] = []
-        for language, language_code in LANGUAGE_MAP.iteritems():
-            path = os.path.join(self.path, 'statements',
-                                '.pdf', language, 'problem.pdf')
-            if os.path.exists(path):
-                lang = LANGUAGE_MAP[language]
-                digest = self.file_cacher.put_file_from_path(
-                    path,
-                    "Statement for task %s (lang: %s)" % (name,
-                                                          language))
-                args["statements"].append(Statement(lang, digest))
-                args["primary_statements"].append(lang)
-        args["primary_statements"] = '["%s"]' % \
-            '","'.join(args["primary_statements"])
+        if get_statement:
+            args["statements"] = []
+            args["primary_statements"] = []
+            for language, language_code in LANGUAGE_MAP.iteritems():
+                path = os.path.join(self.path, 'statements',
+                                    '.pdf', language, 'problem.pdf')
+                if os.path.exists(path):
+                    lang = LANGUAGE_MAP[language]
+                    digest = self.file_cacher.put_file_from_path(
+                        path,
+                        "Statement for task %s (lang: %s)" % (name,
+                                                              language))
+                    args["statements"].append(Statement(lang, digest))
+                    args["primary_statements"].append(lang)
+            args["primary_statements"] = \
+                json.dumps(args["primary_statements"]))
+
         args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
 
         # These options cannot be configured in the Polygon format.
