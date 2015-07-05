@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,14 +24,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import codecs
+import datetime
 import io
+import os
+import re
 import sys
 import time
-import urllib
-import datetime
 import traceback
-import codecs
-import os
+import urllib
 
 from mechanize import HTMLForm
 
@@ -265,3 +266,36 @@ class GenericRequest(TestRequest):
     def describe(self):
         raise NotImplementedError("Please subclass this class "
                                   "and actually implement some request")
+
+
+class LoginRequest(GenericRequest):
+    """Try to login to CWS or AWS with the given credentials.
+
+    """
+    def __init__(self, browser, username, password, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.username = username
+        self.password = password
+        self.url = '%slogin' % self.base_url
+        self.data = {'username': self.username,
+                     'password': self.password,
+                     'next': '/'}
+
+    def describe(self):
+        return "try to login"
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+        fail_re = re.compile('Failed to log in.')
+        if fail_re.search(self.res_data) is not None:
+            return False
+        username_re = re.compile(self.username)
+        if username_re.search(self.res_data) is None:
+            return False
+        return True
+
+    def specific_info(self):
+        return 'Username: %s\nPassword: %s\n' % \
+               (self.username, self.password) + \
+            GenericRequest.specific_info(self)

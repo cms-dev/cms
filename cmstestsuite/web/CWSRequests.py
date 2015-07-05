@@ -58,39 +58,6 @@ class HomepageRequest(GenericRequest):
         return True
 
 
-class LoginRequest(GenericRequest):
-    """Try to login to CWS with given credentials.
-
-    """
-    def __init__(self, browser, username, password, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
-        self.username = username
-        self.password = password
-        self.url = '%slogin' % self.base_url
-        self.data = {'username': self.username,
-                     'password': self.password,
-                     'next': '/'}
-
-    def describe(self):
-        return "try to login"
-
-    def test_success(self):
-        if not GenericRequest.test_success(self):
-            return False
-        fail_re = re.compile('Failed to log in.')
-        if fail_re.search(self.res_data) is not None:
-            return False
-        username_re = re.compile(self.username)
-        if username_re.search(self.res_data) is None:
-            return False
-        return True
-
-    def specific_info(self):
-        return 'Username: %s\nPassword: %s\n' % \
-               (self.username, self.password) + \
-            GenericRequest.specific_info(self)
-
-
 class TaskRequest(GenericRequest):
     """Load a task page in CWS.
 

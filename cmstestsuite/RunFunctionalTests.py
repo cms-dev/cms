@@ -37,7 +37,7 @@ from cms import LANGUAGES, utf8_decoder
 from cmstestsuite import get_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     add_user, add_task, add_testcase, add_manager, combine_coverage, \
-    get_tasks, get_users, start_service, start_server, \
+    get_tasks, get_users, initialize_aws, start_service, start_server, \
     start_ranking_web_server, shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 import cmstestsuite.Tests
@@ -450,6 +450,7 @@ def main():
 
     # Fire us up!
     start_generic_services()
+    initialize_aws(rand)
     if args.contest is None:
         contest_id = create_contest()
     else:

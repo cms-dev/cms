@@ -38,8 +38,8 @@ import subprocess
 import time
 from urlparse import urlsplit
 
-import cmstestsuite.web
-from cmstestsuite.web.CWSRequests import LoginRequest, SubmitRequest
+from cmstestsuite.web import LoginRequest, browser_do_request
+from cmstestsuite.web.CWSRequests import SubmitRequest
 from cmstestsuite.web.AWSRequests import AWSSubmissionViewRequest
 
 
@@ -65,6 +65,9 @@ created_users = {}
 
 global created_tasks
 created_tasks = {}
+
+global admin_info
+admin_info = {}
 
 
 class FrameworkException(Exception):
@@ -350,17 +353,36 @@ def combine_coverage():
     sh("python -m coverage combine")
 
 
+def initialize_aws(rand):
+    """Create an admin and logs in
+
+    rand (int): some random bit to add to the admin username.
+
+    """
+    info("Creating admin...")
+    admin_info["username"] = "admin%s" % rand
+    admin_info["password"] = "adminpwd"
+    sh("python cmscontrib/AddAdmin.py %(username)s -p %(password)s"
+       % admin_info)
+
+
 def admin_req(path, multipart_post=False, args=None, files=None):
-    url = 'http://localhost:8889' + path
+    base_url = 'http://localhost:8889/'
     br = mechanize.Browser()
     br.set_handle_robots(False)
+
+    # Logging in.
+    lr = LoginRequest(br, admin_info["username"], admin_info["password"],
+                      base_url=base_url)
+    lr.prepare()
+    lr.execute()
 
     # Some requests must be forced to be multipart.
     # Do this by making files not None.
     if multipart_post and files is None:
         files = []
 
-    return cmstestsuite.web.browser_do_request(br, url, args, files)
+    return browser_do_request(br, base_url + path, args, files)
 
 
 def get_tasks():
@@ -368,7 +390,7 @@ def get_tasks():
       'taskname' => { 'id': ..., 'title': ... }
 
     '''
-    r = admin_req('/tasks')
+    r = admin_req('tasks')
     groups = re.findall(r'''
         <tr>\s*
         <td><a\s+href="./task/(\d+)">(.*)</a></td>\s*
@@ -391,7 +413,7 @@ def get_users(contest_id):
       'username' => { 'id': ..., 'firstname': ..., 'lastname': ... }
 
     '''
-    r = admin_req('/contest/' + str(contest_id) + '/users')
+    r = admin_req('contest/' + str(contest_id) + '/users')
     groups = re.findall(r'''
         <tr> \s*
         <td> \s* (.*) \s* </td> \s*
@@ -412,7 +434,7 @@ def get_users(contest_id):
 
 
 def add_contest(**kwargs):
-    resp = admin_req('/contests/add', multipart_post=True, args=kwargs)
+    resp = admin_req('contests/add', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
@@ -429,7 +451,7 @@ def add_task(**kwargs):
     if 'token_mode' not in kwargs:
         kwargs['token_mode'] = 'disabled'
 
-    r = admin_req('/tasks/add',
+    r = admin_req('tasks/add',
                   multipart_post=True,
                   args=kwargs)
     g = re.search(r'/task/([0-9]+)$', r.geturl())
@@ -439,7 +461,7 @@ def add_task(**kwargs):
     else:
         raise FrameworkException("Unable to create task.")
 
-    r = admin_req('/contest/' + kwargs["contest_id"] + '/tasks/add',
+    r = admin_req('contest/' + kwargs["contest_id"] + '/tasks/add',
                   multipart_post=True,
                   args={"task_id": str(task_id)})
     g = re.search('<input type="radio" name="task_id" value="' +
@@ -456,12 +478,12 @@ def add_manager(task_id, manager):
         ('manager', manager),
     ]
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('/dataset/%d/managers/add' % dataset_id,
+    admin_req('dataset/%d/managers/add' % dataset_id,
               multipart_post=True, files=files, args=args)
 
 
 def get_task_active_dataset_id(task_id):
-    resp = admin_req('/task/%d' % task_id)
+    resp = admin_req('task/%d' % task_id)
     page = resp.read()
     match = re.search(
         r'id="title_dataset_([0-9]+).* \(Live\)</',
@@ -482,12 +504,12 @@ def add_testcase(task_id, num, input_file, output_file, public):
     if public:
         args['public'] = '1'
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('/dataset/%d/testcases/add' % dataset_id,
+    admin_req('dataset/%d/testcases/add' % dataset_id,
               multipart_post=True, files=files, args=args)
 
 
 def add_user(**kwargs):
-    r = admin_req('/users/add', args=kwargs)
+    r = admin_req('users/add', args=kwargs)
     g = re.search(r'/user/([0-9]+)$', r.geturl())
     if g:
         user_id = int(g.group(1))
@@ -496,7 +518,7 @@ def add_user(**kwargs):
         raise FrameworkException("Unable to create user.")
 
     kwargs["user_id"] = user_id
-    r = admin_req('/contest/' + kwargs["contest_id"] + '/users/add',
+    r = admin_req('contest/' + kwargs["contest_id"] + '/users/add',
                   args=kwargs)
     g = re.search('<input type="radio" name="user_id" value="' +
                   str(user_id) + '"/>', r.read())
@@ -560,6 +582,13 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
     num_tries = timeout
     while num_tries > 0:
         num_tries -= 1
+
+        # Logging in.
+        lr = LoginRequest(browser,
+                          admin_info["username"], admin_info["password"],
+                          base_url=base_url)
+        lr.prepare()
+        lr.execute()
 
         sr = AWSSubmissionViewRequest(browser, submission_id,
                                       base_url=base_url)
