@@ -97,6 +97,8 @@ class ContestImporter(BaseImporter):
                     if self.loader.contest_has_changed():
                         self._update_object(old_contest, contest)
                     contest = old_contest
+                elif self.update_tasks:
+                    contest = old_contest
                 else:
                     logger.critical("Contest \"%s\" already exists in database."
                                     % contest.name)
@@ -204,7 +206,7 @@ def main():
         default=None,
         help="use the specified loader (default: autodetect)"
     )
-    group.add_argument(
+    parser.add_argument(
         "-i", "--import-tasks",
         action="store_true",
         help="import tasks if they do not exist"
