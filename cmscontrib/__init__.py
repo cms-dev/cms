@@ -76,12 +76,15 @@ def _is_rel(prp, attr):
 
 class BaseImporter(object):
 
-    def _update_columns(self, old_object, new_object):
+    def _update_columns(self, old_object, new_object, ignore=None):
+        ignore = ignore if ignore is not None else set()
         for prp in old_object._col_props:
+            if prp.key in ignore:
+                continue
             if hasattr(new_object, prp.key):
                 setattr(old_object, prp.key, getattr(new_object, prp.key))
 
-    def _update_object(self, old_object, new_object):
+    def _update_object(self, old_object, new_object, ignore=None):
         # This method copies the scalar column properties from the new
         # object into the old one, and then tries to do the same for
         # relationships too. The data model isn't a tree: for example
@@ -95,9 +98,13 @@ class BaseImporter(object):
         # graph, recursing only on "vector" relationships.
         # TODO Find a better way to handle all of this.
 
-        self._update_columns(old_object, new_object)
+        ignore = ignore if ignore is not None else set()
+        self._update_columns(old_object, new_object, ignore)
 
         for prp in old_object._rel_props:
+            if prp.key in ignore:
+                continue
+
             old_value = getattr(old_object, prp.key)
             new_value = getattr(new_object, prp.key)
 

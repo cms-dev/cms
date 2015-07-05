@@ -59,16 +59,17 @@ class TaskImporter(BaseImporter):
 
     """
 
-    def __init__(self, path, update, loader_class):
+    def __init__(self, path, update, no_statement, loader_class):
         self.file_cacher = FileCacher()
         self.update = update
+        self.no_statement = no_statement
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
     def do_import(self):
         """Get the task from the TaskLoader and store it."""
 
         # Get the task
-        task = self.loader.get_task()
+        task = self.loader.get_task(get_statement=not self.no_statement)
         if task is None:
             return
 
@@ -82,7 +83,11 @@ class TaskImporter(BaseImporter):
             if old_task is not None:
                 if self.update:
                     if self.loader.task_has_changed():
-                        self._update_object(old_task, task)
+                        ignore = set()
+                        if self.no_statement:
+                            ignore = set(("primary_statements",
+                                "statements"))
+                        self._update_object(old_task, task, ignore)
                     task = old_task
                 else:
                     logger.critical("Task \"%s\" already exists in database.",
@@ -117,6 +122,11 @@ def main():
         help="update an existing task"
     )
     parser.add_argument(
+        "-S", "--no-statement",
+        action="store_true",
+        help="do not import / update task statement"
+    )
+    parser.add_argument(
         "target",
         action="store", type=utf8_decoder,
         help="target file/directory from where to import task(s)"
@@ -133,6 +143,7 @@ def main():
     TaskImporter(
         path=args.target,
         update=args.update,
+        no_statement=args.no_statement,
         loader_class=loader_class
     ).do_import()
 

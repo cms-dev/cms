@@ -63,13 +63,14 @@ class ContestImporter(BaseImporter):
     """
 
     def __init__(self, path, test, zero_time, user_number, import_tasks,
-                 update_contest, update_tasks, loader_class):
+                 update_contest, update_tasks, no_statements, loader_class):
         self.test = test
         self.zero_time = zero_time
         self.user_number = user_number
         self.import_tasks = import_tasks
         self.update_contest = update_contest
         self.update_tasks = update_tasks
+        self.no_statements = no_statements
         self.file_cacher = FileCacher()
 
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
@@ -111,7 +112,8 @@ class ContestImporter(BaseImporter):
                               .filter(Task.name == taskname).first()
                 if task is None:
                     if self.import_tasks:
-                        task = self.loader.get_task_loader(taskname).get_task()
+                        task = self.loader.get_task_loader(taskname).get_task(
+                            get_statement=not self.no_statements)
                         if task:
                             session.add(task)
                         else:
@@ -125,9 +127,15 @@ class ContestImporter(BaseImporter):
                 elif self.update_tasks:
                     task_loader = self.loader.get_task_loader(taskname)
                     if task_loader.task_has_changed():
-                        new_task = task_loader.get_task()
+                        new_task = task_loader.get_task(
+                            get_statement=not self.no_statements)
                         if new_task:
-                            self._update_object(task, new_task)
+                            ignore = set()
+                            if self.no_statements:
+                                ignore = set(("primary_statements",
+                                    "statements"))
+                            self._update_object(task, new_task,
+                                ignore=ignore)
                         else:
                             logger.critical("Could not reimport task \"%s\".",
                                             taskname)
@@ -224,6 +232,11 @@ def main():
         help="update existing tasks"
     )
     parser.add_argument(
+        "-S", "--no-statements",
+        action="store_true",
+        help="do not import / update task statements"
+    )
+    parser.add_argument(
         "import_directory",
         action="store", type=utf8_decoder,
         help="source directory from where import"
@@ -245,6 +258,7 @@ def main():
         import_tasks=args.import_tasks,
         update_contest=args.update_contest,
         update_tasks=args.update_tasks,
+        no_statements=args.no_statements,
         loader_class=loader_class
     ).do_import()
 
