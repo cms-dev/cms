@@ -219,7 +219,7 @@ def main():
     parser.add_argument(
         "-U", "--update-tasks",
         action="store_true",
-        help="update existing tasks (implies -i)"
+        help="update existing tasks"
     )
     parser.add_argument(
         "import_directory",
