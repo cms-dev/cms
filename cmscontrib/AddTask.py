@@ -77,23 +77,23 @@ class TaskImporter(BaseImporter):
         with SessionGen() as session:
             # Check whether the task already exists
             old_task = session.query(Task) \
-                                    .filter(Task.name == task.name) \
-                                    .first()
+                              .filter(Task.name == task.name) \
+                              .first()
             if old_task is not None:
                 if self.update:
                     if self.loader.task_has_changed():
                         self._update_object(old_task, task)
                     task = old_task
                 else:
-                    logger.critical("Task \"%s\" already exists in database."
-                                    % task.name)
+                    logger.critical("Task \"%s\" already exists in database.",
+                                    task.name)
                     return
             else:
                 session.add(task)
             session.commit()
             task_id = task.id
 
-        logger.info("Import finished (task id: %s)." % task_id)
+        logger.info("Import finished (task id: %s).", task_id)
 
 
 def main():

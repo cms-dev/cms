@@ -100,8 +100,9 @@ class ContestImporter(BaseImporter):
                 elif self.update_tasks:
                     contest = old_contest
                 else:
-                    logger.critical("Contest \"%s\" already exists in database."
-                                    % contest.name)
+                    logger.critical(
+                        "Contest \"%s\" already exists in database.",
+                        contest.name)
                     return
 
             # Check needed tasks
@@ -122,19 +123,20 @@ class ContestImporter(BaseImporter):
                                         taskname)
                         return
                 elif self.update_tasks:
-                    task_loader = self.loader.get_task_loader(taskname);
+                    task_loader = self.loader.get_task_loader(taskname)
                     if task_loader.task_has_changed():
                         new_task = task_loader.get_task()
                         if new_task:
                             self._update_object(task, new_task)
                         else:
-                            logger.critical("Could not reimport task \"%s\"."
-                                            % taskname)
+                            logger.critical("Could not reimport task \"%s\".",
+                                            taskname)
                             return
 
-                if task.contest is not None and task.contest.name != contest.name:
+                if task.contest is not None \
+                   and task.contest.name != contest.name:
                     logger.critical("Task \"%s\" is already tied to a "
-                                    "contest." % taskname)
+                                    "contest.", taskname)
                     return
                 else:
                     # We should tie this task to the contest
@@ -148,8 +150,8 @@ class ContestImporter(BaseImporter):
                 if user is None:
                     # FIXME: it would be nice to automatically try to
                     # import.
-                    logger.critical("User \"%s\" not found in database."
-                                    % username)
+                    logger.critical("User \"%s\" not found in database.",
+                                    username)
                     return
                 # We should tie this user to a new contest
                 # FIXME: there is no way for the loader to specify
@@ -170,7 +172,7 @@ class ContestImporter(BaseImporter):
 
             # Final commit
             session.commit()
-            logger.info("Import finished (new contest id: %s)." % contest.id)
+            logger.info("Import finished (new contest id: %s).", contest.id)
 
 
 def main():
