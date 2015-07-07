@@ -133,7 +133,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
             os.path.exists(os.path.join(os.path.dirname(path), "contest.yaml"))
 
     def get_task_loader(self, taskname):
-        return YamlLoader(self.path, self.file_cacher)
+        return YamlLoader(os.path.join(self.path, taskname), self.file_cacher)
 
     def get_contest(self):
         """See docstring in class ContestLoader.
