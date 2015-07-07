@@ -34,7 +34,7 @@ import hashlib
 import io
 import os
 
-from cms.db import Contest, User, Task, Submission, Base
+from cms.db import Contest, Task, Submission, Base
 
 def sha1sum(path):
     """Calculates the SHA1 sum of a file, given by its path.
