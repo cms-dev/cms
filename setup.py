@@ -74,7 +74,7 @@ PACKAGE_DATA = {
 
 setup(
     name="cms",
-    version="1.3.0pre",
+    version="1.3.dev0",
     author="The CMS development team",
     author_email="contestms@freelists.org",
     url="https://github.com/cms-dev/cms",
