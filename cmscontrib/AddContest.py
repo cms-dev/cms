@@ -50,11 +50,12 @@ from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
 
+from . import BaseImporter
 
 logger = logging.getLogger(__name__)
 
 
-class ContestImporter(object):
+class ContestImporter(BaseImporter):
 
     """This script creates a contest and all its associations to users
     and tasks.
@@ -62,12 +63,13 @@ class ContestImporter(object):
     """
 
     def __init__(self, path, test, zero_time, user_number, import_tasks,
-                 loader_class):
+                 update_contest, update_tasks, loader_class):
         self.test = test
         self.zero_time = zero_time
         self.user_number = user_number
         self.import_tasks = import_tasks
-
+        self.update_contest = update_contest
+        self.update_tasks = update_tasks
         self.file_cacher = FileCacher()
 
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
@@ -88,13 +90,19 @@ class ContestImporter(object):
 
         with SessionGen() as session:
             # Check whether the contest already exists
-            contest_exists = session.query(Contest) \
-                                    .filter(Contest.name == contest.name) \
-                                    .count() > 0
-            if contest_exists:
-                logger.critical("Contest \"%s\" already exists in database.",
-                                contest.name)
-                return
+            old_contest = session.query(Contest) \
+                                 .filter(Contest.name == contest.name).first()
+            if old_contest is not None:
+                if self.update_contest:
+                    if self.loader.contest_has_changed():
+                        self._update_object(old_contest, contest)
+                    contest = old_contest
+                elif self.update_tasks:
+                    contest = old_contest
+                else:
+                    logger.critical("Contest \"%s\" already exists in database.",
+                                    contest.name)
+                    return
 
             # Check needed tasks
             for tasknum, taskname in enumerate(tasks):
@@ -113,9 +121,20 @@ class ContestImporter(object):
                         logger.critical("Task \"%s\" not found in database.",
                                         taskname)
                         return
-                if task.contest is not None:
+                elif self.update_tasks:
+                    task_loader = self.loader.get_task_loader(taskname);
+                    if task_loader.task_has_changed():
+                        new_task = task_loader.get_task()
+                        if new_task:
+                            self._update_object(task, new_task)
+                        else:
+                            logger.critical("Could not reimport task \"%s\".",
+                                            taskname)
+                            return
+
+                if task.contest is not None and task.contest.name != contest.name:
                     logger.critical("Task \"%s\" is already tied to a "
-                                    "contest." % taskname)
+                                    "contest.", taskname)
                     return
                 else:
                     # We should tie this task to the contest
@@ -129,8 +148,8 @@ class ContestImporter(object):
                 if user is None:
                     # FIXME: it would be nice to automatically try to
                     # import.
-                    logger.critical("User \"%s\" not found in database."
-                                    % username)
+                    logger.critical("User \"%s\" not found in database.",
+                                    username)
                     return
                 # We should tie this user to a new contest
                 # FIXME: there is no way for the loader to specify
@@ -145,12 +164,13 @@ class ContestImporter(object):
             # contest. However, I would like to be able to create it
             # anyway (and later tie to it some tasks and users).
 
-            logger.info("Creating contest on the database.")
-            session.add(contest)
+            if old_contest is None:
+                logger.info("Creating contest on the database.")
+                session.add(contest)
 
             # Final commit
             session.commit()
-            logger.info("Import finished (new contest id: %s)." % contest.id)
+            logger.info("Import finished (new contest id: %s).", contest.id)
 
 
 def main():
@@ -186,10 +206,20 @@ def main():
         default=None,
         help="use the specified loader (default: autodetect)"
     )
-    group.add_argument(
+    parser.add_argument(
         "-i", "--import-tasks",
         action="store_true",
         help="import tasks if they do not exist"
+    )
+    parser.add_argument(
+        "-u", "--update-contest",
+        action="store_true",
+        help="update an existing contest"
+    )
+    parser.add_argument(
+        "-U", "--update-tasks",
+        action="store_true",
+        help="update existing tasks"
     )
     parser.add_argument(
         "import_directory",
@@ -211,6 +241,8 @@ def main():
         zero_time=args.zero_time,
         user_number=args.user_number,
         import_tasks=args.import_tasks,
+        update_contest=args.update_contest,
+        update_tasks=args.update_tasks,
         loader_class=loader_class
     ).do_import()
 

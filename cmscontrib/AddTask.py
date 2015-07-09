@@ -48,18 +48,20 @@ from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
 
+from . import BaseImporter
 
 logger = logging.getLogger(__name__)
 
 
-class TaskImporter(object):
+class TaskImporter(BaseImporter):
 
     """This script creates a task
 
     """
 
-    def __init__(self, path, loader_class):
+    def __init__(self, path, update, loader_class):
         self.file_cacher = FileCacher()
+        self.update = update
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
     def do_import(self):
@@ -74,26 +76,31 @@ class TaskImporter(object):
         logger.info("Creating task on the database.")
         with SessionGen() as session:
             # Check whether the task already exists
-            task_exists = session.query(Task) \
-                                 .filter(Task.name == task.name) \
-                                 .count() > 0
-            if task_exists:
-                logger.critical("Task \"%s\" already exists in database.",
-                                task.name)
-                return
-
-            session.add(task)
+            old_task = session.query(Task) \
+                                    .filter(Task.name == task.name) \
+                                    .first()
+            if old_task is not None:
+                if self.update:
+                    if self.loader.task_has_changed():
+                        self._update_object(old_task, task)
+                    task = old_task
+                else:
+                    logger.critical("Task \"%s\" already exists in database.",
+                                    task.name)
+                    return
+            else:
+                session.add(task)
             session.commit()
             task_id = task.id
 
-        logger.info("Import finished (new task id: %s)." % task_id)
+        logger.info("Import finished (task id: %s).", task_id)
 
 
 def main():
     """Parse arguments and launch process."""
 
     parser = argparse.ArgumentParser(
-        description="Create a new task in CMS.",
+        description="Create a new or update an existing task in CMS.",
         epilog=build_epilog(),
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -103,6 +110,11 @@ def main():
         action="store", type=utf8_decoder,
         default=None,
         help="use the specified loader (default: autodetect)"
+    )
+    parser.add_argument(
+        "-u", "--update",
+        action="store_true",
+        help="update an existing task"
     )
     parser.add_argument(
         "target",
@@ -120,6 +132,7 @@ def main():
 
     TaskImporter(
         path=args.target,
+        update=args.update,
         loader_class=loader_class
     ).do_import()
 
