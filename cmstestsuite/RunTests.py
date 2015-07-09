@@ -47,6 +47,7 @@ def get_test_suite():
     else:
         return ""
 
+
 def main():
     test_suite = get_test_suite()
     try:
@@ -55,7 +56,7 @@ def main():
         if test_suite == FUNCTIONALTESTS or test_suite == "":
             sh(["./cmstestsuite/RunFunctionalTests.py"] + sys.argv[1:])
     except FrameworkException:
-        if (os.path.exists("./log/cms/last.log")):
+        if os.path.exists("./log/cms/last.log"):
             print("\n\n===== START OF LOG DUMP =====\n\n")
             print(open("./log/cms/last.log").read())
             print("\n\n===== END OF LOG DUMP =====\n\n")

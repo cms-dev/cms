@@ -22,8 +22,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .util import \
-    CommonRequestHandler, DIMS, UNITS, actual_phase_required, \
-    compute_actual_phase, encode_for_url, file_handler_gen, filter_ascii, \
+    CommonRequestHandler, DIMS, UNITS, \
+    actual_phase_required, compute_actual_phase, \
+    encode_for_url, file_handler_gen, filter_ascii, \
     format_amount_of_time, format_dataset_attrs, format_date, \
     format_datetime, format_datetime_smart, format_size, format_time, \
     format_token_rules, get_score_class, get_url_root
@@ -34,8 +35,9 @@ from .locale import \
 
 __all__ = [
     # util
-    "CommonRequestHandler", "DIMS", "UNITS", "actual_phase_required",
-    "compute_actual_phase", "encode_for_url", "file_handler_gen", "filter_ascii",
+    "CommonRequestHandler", "DIMS", "UNITS",
+    "actual_phase_required", "compute_actual_phase",
+    "encode_for_url", "file_handler_gen", "filter_ascii",
     "format_amount_of_time", "format_dataset_attrs", "format_date",
     "format_datetime", "format_datetime_smart", "format_size", "format_time",
     "format_token_rules", "get_score_class", "get_url_root",
