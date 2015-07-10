@@ -130,9 +130,9 @@ class ContestImporter(BaseImporter):
                         new_task = task_loader.get_task(
                             get_statement=not self.no_statements)
                         if new_task:
-                            ignore = set()
+                            ignore = set(("num",))
                             if self.no_statements:
-                                ignore = set(("primary_statements",
+                                ignore.update(("primary_statements",
                                     "statements"))
                             self._update_object(task, new_task,
                                 ignore=ignore)

@@ -83,9 +83,9 @@ class TaskImporter(BaseImporter):
             if old_task is not None:
                 if self.update:
                     if self.loader.task_has_changed():
-                        ignore = set()
+                        ignore = set(("num",))
                         if self.no_statement:
-                            ignore = set(("primary_statements",
+                            ignore.update(("primary_statements",
                                 "statements"))
                         self._update_object(old_task, task, ignore)
                     task = old_task
