@@ -56,7 +56,7 @@ class UserTest(Base):
         index=True)
     participation = relationship(
         Participation,
-        backref=backref("usertests",
+        backref=backref("user_tests",
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
