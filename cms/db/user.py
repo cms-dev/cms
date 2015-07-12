@@ -30,7 +30,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import timedelta
-from string import ascii_lowercase
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
@@ -38,17 +37,9 @@ from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
 
+from cmscommon.crypto import generate_random_password
+
 from . import Base, Contest
-
-
-def generate_random_password():
-    """Utility method to generate a random password.
-
-    return (string): a random string.
-
-    """
-    import random
-    return "".join((random.choice(ascii_lowercase) for _ in range(6)))
 
 
 class User(Base):
