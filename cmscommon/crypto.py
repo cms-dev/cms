@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -27,7 +27,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
+import bcrypt
 import binascii
+import random
+
+from string import ascii_lowercase
 
 from Crypto.Cipher import AES
 
@@ -39,6 +43,10 @@ __all__ = [
 
     "encrypt_string", "decrypt_string",
     "encrypt_number", "decrypt_number",
+
+    "generate_random_password",
+
+    "validate_password", "hash_password",
     ]
 
 
@@ -49,7 +57,6 @@ try:
     get_random_bits = Random.new().read
     is_random_secure = True
 except ImportError:
-    import random
     get_random_bits = lambda x: binascii.unhexlify("%032x" %
                                                    random.getrandbits(x * 8))
     is_random_secure = False
@@ -154,3 +161,56 @@ def decrypt_number(enc, key=None):
 
     """
     return int(decrypt_string(enc, key), 16)
+
+
+def generate_random_password():
+    """Utility method to generate a random password.
+
+    return (string): a random string.
+
+    """
+    return "".join((random.choice(ascii_lowercase) for _ in range(6)))
+
+
+def validate_password(authentication, password):
+    """Validate the given password for the required authentication.
+
+    authentication (string): an authentication string as stored in the db.
+    password (string): the password provided by the user.
+
+    return (bool): whether password is correct.
+
+    raise (ValueError): when the authentication string is not valid or
+        the method is not known.
+
+    """
+    if authentication.find(":") == -1:
+        raise ValueError("Authentication string not parsable.")
+
+    method, payload = authentication.split(":", 1)
+    if method == "bcrypt":
+        password = password.encode('utf-8')
+        payload = payload.encode('utf-8')
+        return bcrypt.hashpw(password, payload) == payload
+    else:
+        raise ValueError("Authentication method not known.")
+
+
+def hash_password(password, method="bcrypt"):
+    """Return a hash for password.
+
+    password (string): the password provided by the user.
+    method (string): the hashing method to use.
+
+    return (string): the hashed password.
+
+    raise (ValueError): if the method is not supported.
+
+    """
+    if method == "bcrypt":
+        password = password.encode('utf-8')
+        payload = bcrypt.hashpw(password, bcrypt.gensalt())
+    else:
+        raise ValueError("Authentication method not known.")
+
+    return ":".join((method, payload))
