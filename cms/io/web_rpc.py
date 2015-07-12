@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -68,14 +69,18 @@ class RPCMiddleware(object):
     string describing the error that occured (if any).
 
     """
-    def __init__(self, service):
+    def __init__(self, service, auth=None):
         """Create an HTTP-to-RPC proxy for the given service.
 
         service (Service): the service this application is running for.
             Will usually be the AdminWebServer.
+        auth (function|None): a function taking the environ of a request
+            and returning whether the request is allowed. If not present,
+            all requests are allowed.
 
         """
         self._service = service
+        self._auth = auth
         self._url_map = Map([Rule("/<service>/<int:shard>/<method>",
                                   methods=["POST"], endpoint="rpc")],
                             encoding_errors="strict")
@@ -105,10 +110,16 @@ class RPCMiddleware(object):
 
         assert endpoint == "rpc"
 
+        response = Response()
+
+        if self._auth is not None and not self._auth(environ):
+            response.status_code = 403
+            response.mimetype = "plain/text"
+            response.data = "Request not allowed."
+            return response
+
         request = Request(environ)
         request.encoding_errors = "strict"
-
-        response = Response()
 
         remote_service = ServiceCoord(args['service'], args['shard'])
 

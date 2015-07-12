@@ -44,9 +44,13 @@ from cms.io import WebService
 from cmscommon.datetime import make_timestamp
 
 from .handlers import HANDLERS
-
+from .rpc_authorization import rpc_authorization_checker
 
 logger = logging.getLogger(__name__)
+
+
+AUTHENTICATED_USER_HEADER_IN_ENV = "HTTP_" + \
+    WebService.AUTHENTICATED_USER_HEADER.upper().replace('-', '_')
 
 
 class AdminWebServer(WebService):
@@ -64,6 +68,7 @@ class AdminWebServer(WebService):
             "debug": config.tornado_debug,
             "auth_middleware": AWSAuthMiddleware,
             "rpc_enabled": True,
+            "rpc_auth": rpc_authorization_checker,
         }
         super(AdminWebServer, self).__init__(
             config.admin_listen_port,
@@ -121,9 +126,6 @@ class AWSAuthMiddleware(object):
 
     """
 
-    AUTHENTICATED_USER_HEADER_IN_ENV = "HTTP_" + \
-        WebService.AUTHENTICATED_USER_HEADER.upper().replace('-', '_')
-
     # Header that the underlying WSGI application can set to ask this
     # middleware to create a new cookie, refresh an existing cookie,
     # or delete it.
@@ -144,8 +146,7 @@ class AWSAuthMiddleware(object):
         request = Request(environ)
         admin_id = self._authenticate(request)
         if admin_id is not None:
-            environ[
-                AWSAuthMiddleware.AUTHENTICATED_USER_HEADER_IN_ENV] = admin_id
+            environ[AUTHENTICATED_USER_HEADER_IN_ENV] = admin_id
         response = self._app(
             environ,
             self._build_start_response(environ, start_response, admin_id))

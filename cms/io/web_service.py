@@ -61,11 +61,20 @@ class WebService(Service):
 
         static_files = parameters.pop('static_files', [])
         rpc_enabled = parameters.pop('rpc_enabled', False)
+        rpc_auth = parameters.pop('rpc_auth', None)
         auth_middleware = parameters.pop('auth_middleware', None)
         is_proxy_used = parameters.pop('is_proxy_used', False)
 
         self.wsgi_app = tornado.wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self
+
+        for entry in static_files:
+            self.wsgi_app = SharedDataMiddleware(
+                self.wsgi_app, {"/static": entry})
+
+        if rpc_enabled:
+            self.wsgi_app = DispatcherMiddleware(
+                self.wsgi_app, {"/rpc": RPCMiddleware(self, rpc_auth)})
 
         # Remove any authentication header that a user may try to fake.
         self.wsgi_app = HeaderRewriterFix(
@@ -74,14 +83,6 @@ class WebService(Service):
 
         if auth_middleware is not None:
             self.wsgi_app = auth_middleware(self.wsgi_app)
-
-        for entry in static_files:
-            self.wsgi_app = SharedDataMiddleware(
-                self.wsgi_app, {"/static": entry})
-
-        if rpc_enabled:
-            self.wsgi_app = DispatcherMiddleware(
-                self.wsgi_app, {"/rpc": RPCMiddleware(self)})
 
         # If is_proxy_used is set to True we'll use the content of the
         # X-Forwarded-For HTTP header (if provided) to determine the
