@@ -25,6 +25,8 @@ from .base import \
     SimpleHandler, \
     SimpleContestHandler
 from .main import \
+    LoginHandler, \
+    LogoutHandler, \
     ResourcesHandler, \
     NotificationsHandler
 from .contest import \
@@ -89,6 +91,8 @@ from .submission import \
 
 HANDLERS = [
     (r"/", OverviewHandler),
+    (r"/login", LoginHandler),
+    (r"/logout", LogoutHandler),
     (r"/resourceslist", ResourcesListHandler),
     (r"/resources", ResourcesHandler),
     (r"/resources/([0-9]+|all)", ResourcesHandler),

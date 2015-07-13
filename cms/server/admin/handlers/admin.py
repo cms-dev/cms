@@ -31,7 +31,7 @@ from cms.db import Admin
 from cmscommon.crypto import hash_password
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, SimpleHandler
+from .base import BaseHandler, SimpleHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,7 @@ def _admin_attrs(handler):
 
 
 class AddAdminHandler(SimpleHandler("add_admin.html")):
+    @require_permission("all")
     def post(self):
         fallback_page = "/admins/add"
 
@@ -96,6 +97,7 @@ class AdminsHandler(BaseHandler):
     """Page to see all admins.
 
     """
+    @require_permission("authenticated")
     def get(self):
         self.r_params = self.render_params()
         self.r_params["admins"] = self.sql_session.query(Admin)\
@@ -108,6 +110,7 @@ class AdminHandler(BaseHandler):
     """Admin handler, with a POST method to edit the admin.
 
     """
+    @require_permission("authenticated")
     def get(self, admin_id):
         admin = self.safe_get_item(Admin, admin_id)
 
@@ -115,7 +118,9 @@ class AdminHandler(BaseHandler):
         self.r_params["admin"] = admin
         self.render("admin.html", **self.r_params)
 
+    @require_permission("all")
     def post(self, admin_id):
+        # TODO: allow admins to edit themselves.
         admin = self.safe_get_item(Admin, admin_id)
 
         try:
@@ -133,6 +138,7 @@ class AdminHandler(BaseHandler):
         else:
             self.redirect("/admin/%s" % admin_id)
 
+    @require_permission("all")
     def delete(self, admin_id):
         admin = self.safe_get_item(Admin, admin_id)
 

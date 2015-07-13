@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/aws_style.css">
+    <title>Admin</title>
+  </head>
+  <body class="admin">
+    <div id="login-content">
+
+{% if current_user is None %}
+<h1>Welcome</h1>
+    {% if handler.get_argument("login_error", "") != "" %}
+<h4 class="alert">Failed to log in.</h4>
+    {% end %}
+<p>Please log in:</p>
+<form action="{{ url_root }}/login" method="POST">
+  <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
+  <div class="section">
+    <label>
+      <span>Username</span>
+      <input type="text" name="username">
+    </label>
+  </div>
+  <div class="section">
+    <label class="control-label">
+      <span>Password</span>
+      <input type="password" name="password">
+    </label>
+  </div>
+  <div class="section">
+    <button type="submit">Login</button>
+    <button type="reset">Reset</button>
+  </div>
+</form>
+{% else %}
+
+You are already logged in. <a href="{{ url_root }}/logout">Logout</a>
+or go to the <a href="{{ url_root }}/">overview</a>.
+
+{% end %}
+
+    </div>
+  </body>
+</html>

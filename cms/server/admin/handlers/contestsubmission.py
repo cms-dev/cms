@@ -33,13 +33,15 @@ from __future__ import unicode_literals
 from sqlalchemy.orm import joinedload
 
 from cms.db import Contest, Submission, Task
-from .base import BaseHandler
+
+from .base import BaseHandler, require_permission
 
 
 class ContestSubmissionsHandler(BaseHandler):
     """Shows all submissions for this contest.
 
     """
+    @require_permission("authenticated")
     def get(self, contest_id):
         contest = self.safe_get_item(Contest, contest_id)
         self.contest = contest
