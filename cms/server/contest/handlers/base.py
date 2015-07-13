@@ -88,14 +88,8 @@ class BaseHandler(CommonRequestHandler):
 
     """
 
-    # Whether the login cookie duration has to be refreshed when
-    # this handler is called. Useful to filter asynchronous
-    # requests.
-    refresh_cookie = True
-
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
-        self.timestamp = None
         self.cookie_lang = None
         self.browser_lang = None
         self.langs = None
@@ -105,11 +99,7 @@ class BaseHandler(CommonRequestHandler):
         """This method is executed at the beginning of each request.
 
         """
-        self.timestamp = make_datetime()
-
-        self.set_header("Cache-Control", "no-cache, must-revalidate")
-
-        self.sql_session = Session()
+        super(BaseHandler, self).prepare()
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
