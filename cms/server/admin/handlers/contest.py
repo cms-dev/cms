@@ -34,13 +34,15 @@ from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Contest
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, SimpleContestHandler, SimpleHandler
+from .base import BaseHandler, SimpleContestHandler, SimpleHandler, \
+    require_permission
 
 
 class AddContestHandler(SimpleHandler("add_contest.html")):
     """Adds a new contest.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = "/contests/add"
 
@@ -107,6 +109,7 @@ class AddContestHandler(SimpleHandler("add_contest.html")):
 
 
 class ContestHandler(SimpleContestHandler("contest.html")):
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
         contest = self.safe_get_item(Contest, contest_id)
 
@@ -173,7 +176,7 @@ class OverviewHandler(BaseHandler):
     """Home page handler, with queue and workers statuses.
 
     """
-
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
@@ -183,6 +186,7 @@ class OverviewHandler(BaseHandler):
 
 
 class ResourcesListHandler(BaseHandler):
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)

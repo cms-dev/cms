@@ -35,13 +35,14 @@ import tornado.web
 from cms.db import Contest, Announcement
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, require_permission
 
 
 class AddAnnouncementHandler(BaseHandler):
     """Called to actually add an announcement
 
     """
+    @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -64,6 +65,7 @@ class AnnouncementHandler(BaseHandler):
     """
     # No page to show a single attachment.
 
+    @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def delete(self, contest_id, ann_id):
         ann = self.safe_get_item(Announcement, ann_id)
         self.contest = self.safe_get_item(Contest, contest_id)

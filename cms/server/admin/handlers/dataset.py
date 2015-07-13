@@ -43,7 +43,7 @@ from cms.db import Dataset, Manager, Message, Participation, \
 from cms.grading import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,7 @@ class DatasetSubmissionsHandler(BaseHandler):
     view the results under different datasets.
 
     """
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -81,7 +82,9 @@ class CloneDatasetHandler(BaseHandler):
 
     If referred by GET, this handler will return a HTML form.
     If referred by POST, this handler will create the dataset.
+
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id_to_copy):
         dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
         task = self.safe_get_item(Task, dataset.task_id)
@@ -102,6 +105,7 @@ class CloneDatasetHandler(BaseHandler):
         self.r_params["default_description"] = description
         self.render("add_dataset.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id_to_copy):
         fallback_page = "/dataset/%s/clone" % dataset_id_to_copy
 
@@ -170,6 +174,7 @@ class RenameDatasetHandler(BaseHandler):
     """Rename the descripton of a dataset.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -179,6 +184,7 @@ class RenameDatasetHandler(BaseHandler):
         self.r_params["dataset"] = dataset
         self.render("rename_dataset.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
         fallback_page = "/dataset/%s/rename" % dataset_id
 
@@ -209,6 +215,7 @@ class DeleteDatasetHandler(BaseHandler):
     """Delete a dataset from a task.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -218,6 +225,7 @@ class DeleteDatasetHandler(BaseHandler):
         self.r_params["dataset"] = dataset
         self.render("delete_dataset.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -234,6 +242,7 @@ class ActivateDatasetHandler(BaseHandler):
     """Set a given dataset to be the active one for a task.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -258,6 +267,7 @@ class ActivateDatasetHandler(BaseHandler):
         self.r_params["default_notify_participations"] = notify_participations
         self.render("activate_dataset.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -304,6 +314,7 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
     """Toggle whether a given dataset is judged automatically or not.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
 
@@ -326,6 +337,7 @@ class AddManagerHandler(BaseHandler):
     """Add a manager to a dataset.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -335,6 +347,7 @@ class AddManagerHandler(BaseHandler):
         self.r_params["dataset"] = dataset
         self.render("add_manager.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
         fallback_page = "/dataset/%s/managers/add" % dataset_id
 
@@ -374,6 +387,7 @@ class DeleteManagerHandler(BaseHandler):
     """Delete a manager.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id, manager_id):
         manager = self.safe_get_item(Manager, manager_id)
         dataset = self.safe_get_item(Dataset, dataset_id)
@@ -394,6 +408,7 @@ class AddTestcaseHandler(BaseHandler):
     """Add a testcase to a dataset.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -403,6 +418,7 @@ class AddTestcaseHandler(BaseHandler):
         self.r_params["dataset"] = dataset
         self.render("add_testcase.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
         fallback_page = "/dataset/%s/testcases/add" % dataset_id
 
@@ -463,6 +479,7 @@ class AddTestcasesHandler(BaseHandler):
     """Add several testcases to a dataset.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -472,6 +489,7 @@ class AddTestcasesHandler(BaseHandler):
         self.r_params["dataset"] = dataset
         self.render("add_testcases.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
         fallback_page = "/dataset/%s/testcases/add_multiple" % dataset_id
 
@@ -618,6 +636,7 @@ class DeleteTestcaseHandler(BaseHandler):
     """Delete a testcase.
 
     """
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, dataset_id, testcase_id):
         testcase = self.safe_get_item(Testcase, testcase_id)
         dataset = self.safe_get_item(Dataset, dataset_id)

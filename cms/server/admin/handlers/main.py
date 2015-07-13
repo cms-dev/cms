@@ -31,15 +31,72 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
+import logging
 
 from cms import ServiceCoord, get_service_shards, get_service_address
-from cms.db import Contest
+from cms.db import Admin, Contest, Question
+from cms.server import filter_ascii
+from cmscommon.crypto import validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 
-from .base import BaseHandler, Question
+from .base import BaseHandler, SimpleHandler, require_permission
+
+
+logger = logging.getLogger(__name__)
+
+
+class LoginHandler(SimpleHandler("login.html", authenticated=False)):
+    """Login handler.
+
+    """
+    def post(self):
+        username = self.get_argument("username", "")
+        password = self.get_argument("password", "")
+        next_page = self.get_argument("next", "/")
+        admin = self.sql_session.query(Admin)\
+            .filter(Admin.username == username)\
+            .first()
+
+        if admin is None:
+            logger.warning("Nonexistent admin account: %s", username)
+            self.redirect("/login?login_error=true")
+            return
+
+        try:
+            allowed = validate_password(admin.authentication, password)
+        except ValueError:
+            logger.warning("Unable to validate password for admin %s",
+                           filter_ascii(username), exc_info=True)
+            allowed = False
+
+        if not allowed or not admin.enabled:
+            if not allowed:
+                logger.info("Login error for admin %s from IP %s.",
+                            filter_ascii(username), self.request.remote_ip)
+            elif not admin.enabled:
+                logger.info("Login successful for admin %s from IP %s, "
+                            "but account is disabled.",
+                            filter_ascii(username), self.request.remote_ip)
+            self.redirect("/login?login_error=true")
+            return
+
+        logger.info("Admin logged in: %s from IP %s.",
+                    filter_ascii(username), self.request.remote_ip)
+        self.set_cookie_action("create:%s" % admin.id)
+        self.redirect(next_page)
+
+
+class LogoutHandler(BaseHandler):
+    """Logout handler.
+
+    """
+    def get(self):
+        self.set_cookie_action("delete")
+        self.redirect("/")
 
 
 class ResourcesHandler(BaseHandler):
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, shard=None, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
@@ -75,6 +132,7 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self):
         res = []
         last_notification = make_datetime(

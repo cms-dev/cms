@@ -37,7 +37,7 @@ import tornado.web
 from cms.db import Contest, Question, Participation
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ class QuestionsHandler(BaseHandler):
     """Page to see and send messages to all the contestants.
 
     """
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -71,6 +72,7 @@ class QuestionReplyHandler(BaseHandler):
         "nocomment": "No comment",
     }
 
+    @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
         ref = self.get_argument("ref", "/")
         question = self.safe_get_item(Question, question_id)
@@ -110,6 +112,7 @@ class QuestionIgnoreHandler(BaseHandler):
     question.
 
     """
+    @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
         ref = self.get_argument("ref", "/")
         question = self.safe_get_item(Question, question_id)

@@ -46,7 +46,7 @@ from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
 
 from cms import config
-from cms.db import Contest, Participation, Session, User
+from cms.db import Contest, Participation, User
 from cms.server import CommonRequestHandler, compute_actual_phase, \
     file_handler_gen, get_url_root
 from cms.locale import filter_language_codes

@@ -33,7 +33,7 @@ from __future__ import unicode_literals
 from cms.db import Contest, Task
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler
+from .base import BaseHandler, require_permission
 
 
 class ContestTasksHandler(BaseHandler):
@@ -41,6 +41,7 @@ class ContestTasksHandler(BaseHandler):
     MOVE_UP = "Move up"
     MOVE_DOWN = "Move down"
 
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -52,6 +53,7 @@ class ContestTasksHandler(BaseHandler):
                 .all()  # noqa
         self.render("contest_tasks.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
         fallback_page = "/contest/%s/tasks" % contest_id
 
@@ -117,6 +119,7 @@ class ContestTasksHandler(BaseHandler):
 
 
 class AddContestTaskHandler(BaseHandler):
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
         fallback_page = "/contest/%s/tasks" % contest_id
 

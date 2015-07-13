@@ -35,16 +35,18 @@ import logging
 import traceback
 
 from datetime import datetime, timedelta
+from functools import wraps
 
 import tornado.web
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
-from cms.db import Contest, Participation, Question, Session, \
+from cms.db import Admin, Contest, Participation, Question, \
     Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
+from cms.io import WebService
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
 from cmscommon.datetime import make_datetime
 
@@ -129,6 +131,46 @@ def parse_ip_address_or_subnet(value):
     return value
 
 
+def require_permission(permission="authenticated"):
+    """Return a decorator requiring a specific admin permission level
+
+    The default value, "authenticated", just checkes that the admin is
+    logged in. All other values also implicitly require it. Therefore,
+    there is no need to use tornado.web.authenticated if using this.
+
+    permission (string): one of the permission levels
+
+    """
+    if permission not in [BaseHandler.PERMISSION_ALL,
+                          BaseHandler.PERMISSION_MESSAGING,
+                          BaseHandler.AUTHENTICATED]:
+        raise ValueError("Invalid permission level %s." % permission)
+
+    def decorator(func):
+        """Decorator for requiring a permission level
+
+        """
+        @wraps(func)
+        @tornado.web.authenticated
+        def newfunc(self, *args, **kwargs):
+            """Check if the permission is present before calling the function.
+
+            """
+            if permission == BaseHandler.AUTHENTICATED:
+                return func(self, *args, **kwargs)
+
+            user = self.current_user
+            permission_key = "permission_%s" % permission
+            if user.permission_all or user.__getattribute__(permission_key):
+                return func(self, *args, **kwargs)
+            else:
+                raise tornado.web.HTTPError(403, "Admin is not authorized")
+
+        return newfunc
+
+    return decorator
+
+
 class BaseHandler(CommonRequestHandler):
     """Base RequestHandler for this application.
 
@@ -136,6 +178,9 @@ class BaseHandler(CommonRequestHandler):
     child of this class.
 
     """
+    PERMISSION_ALL = "all"
+    PERMISSION_MESSAGING = "messaging"
+    AUTHENTICATED = "authenticated"
 
     def try_commit(self):
         """Try to commit the current session.
@@ -157,6 +202,43 @@ class BaseHandler(CommonRequestHandler):
                 make_datetime(),
                 "Operation successful.", "")
             return True
+
+    def get_current_user(self):
+        """Gets the current admin from cookies.
+
+        return (Admin|None): if a valid cookie is retrieved, return
+            the Admin object, otherwise None.
+
+        """
+        admin_id = self.request.headers.get(
+            WebService.AUTHENTICATED_USER_HEADER, None)
+        if admin_id is None:
+            self.set_cookie_action("delete")
+            return None
+
+        # Load admin.
+        admin = self.sql_session.query(Admin)\
+            .filter(Admin.id == admin_id)\
+            .filter(Admin.enabled.is_(True))\
+            .first()
+        if admin is None:
+            self.set_cookie_action("delete")
+            return None
+
+        # Maybe refresh the cookie.
+        if self.refresh_cookie:
+            self.set_cookie_action("refresh")
+
+        return admin
+
+    def set_cookie_action(self, action):
+        """Set the header to inform the upper WSGI layer to do the specified
+        action on the login cookie.
+
+        action (unicode): the value of the cookie.
+
+        """
+        self.set_header(WebService.AUTHENTICATED_COOKIE_HEADER, action)
 
     def safe_get_item(self, cls, ident, session=None):
         """Get item from database of class cls and id ident, using
@@ -183,12 +265,7 @@ class BaseHandler(CommonRequestHandler):
         """This method is executed at the beginning of each request.
 
         """
-        # Attempt to update the contest and all its references
-        # If this fails, the request terminates.
-        self.set_header("Cache-Control", "no-cache, must-revalidate")
-
-        self.sql_session = Session()
-        self.sql_session.expire_all()
+        super(BaseHandler, self).prepare()
         self.contest = None
 
     def render_params(self):
@@ -451,16 +528,24 @@ class BaseHandler(CommonRequestHandler):
 FileHandler = file_handler_gen(BaseHandler)
 
 
-def SimpleHandler(page):
-    class Cls(BaseHandler):
-        def get(self):
-            self.r_params = self.render_params()
-            self.render(page, **self.r_params)
+def SimpleHandler(page, authenticated=True):
+    if authenticated:
+        class Cls(BaseHandler):
+            @require_permission(BaseHandler.AUTHENTICATED)
+            def get(self):
+                self.r_params = self.render_params()
+                self.render(page, **self.r_params)
+    else:
+        class Cls(BaseHandler):
+            def get(self):
+                self.r_params = self.render_params()
+                self.render(page, **self.r_params)
     return Cls
 
 
 def SimpleContestHandler(page):
     class Cls(BaseHandler):
+        @require_permission(BaseHandler.AUTHENTICATED)
         def get(self, contest_id):
             self.contest = self.safe_get_item(Contest, contest_id)
 
