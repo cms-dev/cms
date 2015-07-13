@@ -131,6 +131,10 @@
     "admin_listen_address": "",
     "admin_listen_port":    8889,
 
+    "_help": "Login cookie duration for admins in seconds.",
+    "_help": "The duration is refreshed on every manual request.",
+    "admin_cookie_duration": 36000,
+
 
 
     "_section": "ScoringService",
