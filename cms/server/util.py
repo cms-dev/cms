@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -39,6 +39,7 @@ import tornado.locale
 
 import gevent
 
+from cms.db import Session
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_datetime, utc
 
@@ -647,11 +648,27 @@ class CommonRequestHandler(RequestHandler):
 
     """
 
+    # Whether the login cookie duration has to be refreshed when
+    # this handler is called. Useful to filter asynchronous
+    # requests.
+    refresh_cookie = True
+
     def __init__(self, *args, **kwargs):
         super(CommonRequestHandler, self).__init__(*args, **kwargs)
+        self.timestamp = None
         self.sql_session = None
         self.r_params = None
         self.contest = None
+
+    def prepare(self):
+        """This method is executed at the beginning of each request.
+
+        """
+        super(CommonRequestHandler, self).prepare()
+        self.timestamp = make_datetime()
+        self.set_header("Cache-Control", "no-cache, must-revalidate")
+        self.sql_session = Session()
+        self.sql_session.expire_all()
 
     def redirect(self, url):
         url = get_url_root(self.request.path) + url
