@@ -33,10 +33,11 @@ from __future__ import unicode_literals
 from cms.db import Contest, Participation, User, Team
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, SimpleHandler
+from .base import BaseHandler, SimpleHandler, require_permission
 
 
 class UserHandler(BaseHandler):
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, user_id):
         user = self.safe_get_item(User, user_id)
 
@@ -55,6 +56,7 @@ class UserHandler(BaseHandler):
                 .all()
         self.render("user.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
         fallback_page = "/user/%s" % user_id
 
@@ -163,6 +165,7 @@ class AddTeamHandler(SimpleHandler("add_team.html")):
 
 
 class AddUserHandler(SimpleHandler("add_user.html")):
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = "/users/add"
 
@@ -201,6 +204,7 @@ class AddUserHandler(SimpleHandler("add_user.html")):
 
 
 class AddParticipationHandler(BaseHandler):
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
         fallback_page = "/user/%s" % user_id
 
@@ -235,6 +239,7 @@ class AddParticipationHandler(BaseHandler):
 
 
 class EditParticipationHandler(BaseHandler):
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
         fallback_page = "/user/%s" % user_id
 
