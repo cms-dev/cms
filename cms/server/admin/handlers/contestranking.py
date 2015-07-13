@@ -40,13 +40,14 @@ from sqlalchemy.orm import joinedload
 from cms.db import Contest
 from cms.grading import task_score
 
-from .base import BaseHandler
+from .base import BaseHandler, require_permission
 
 
 class RankingHandler(BaseHandler):
     """Shows the ranking for a contest.
 
     """
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id, format="online"):
         # This validates the contest id.
         self.safe_get_item(Contest, contest_id)
