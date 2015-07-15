@@ -2,10 +2,18 @@
 {% if reevaluation_par_dataset_id is not None %}
     {% set url = "%s/%s" % (url, reevaluation_par_dataset_id) %}
 {% end %}
+{% if reevaluation_par_name == "user" %}
+    {% set url = "%s/contest/%s/%s/%s" % (url_root, contest.id, reevaluation_par_name, reevaluation_par_value) %}
+{% end %}
+{% if reevaluation_par_name == "submissions" %}
+    {% set url = "%s/contest/%s/%s" % (url_root, contest.id, reevaluation_par_name) %}
+{% end %}
 <button onclick="cmsrpc_request('{{ url_root }}',
                  'EvaluationService', 0,
-                 'invalidate_submission',
-                 {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
+                 'invalidate_submission', {
+                 {% if reevaluation_par_value is not None %}
+                 '{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
+                 {% end %}
                  {% if reevaluation_par_dataset_id is not None %}
                   'dataset_id': {{ reevaluation_par_dataset_id }},
                  {% end %}
@@ -15,8 +23,10 @@
         title="Compilation" >C</button>
 <button onclick="cmsrpc_request('{{ url_root }}',
                  'EvaluationService', 0,
-                 'invalidate_submission',
-                 {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
+                 'invalidate_submission', {
+                 {% if reevaluation_par_value is not None %}
+                 '{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
+                 {% end %}
                  {% if reevaluation_par_dataset_id is not None %}
                   'dataset_id': {{ reevaluation_par_dataset_id }},
                  {% end %}
@@ -26,8 +36,10 @@
         title="Evaluation" >E</button>
 <button onclick="cmsrpc_request('{{ url_root }}',
                  'ScoringService', 0,
-                 'invalidate_submission',
-                 {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
+                 'invalidate_submission', {
+                 {% if reevaluation_par_value is not None %}
+                 '{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
+                 {% end %}
                  {% if reevaluation_par_dataset_id is not None %}
                   'dataset_id': {{ reevaluation_par_dataset_id }},
                  {% end %}
