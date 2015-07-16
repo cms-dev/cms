@@ -209,12 +209,35 @@ class SubmitRandomRequest(SubmitRequest):
         self.data = {}
 
     def prepare(self):
+        """Select a random solution and prepare it for submission.
+
+        If task/ is the task directory, it might contain files (only
+        if the submission format is with a single file) and
+        directory. If it contains a file, it is assumed that it is the
+        only element in the submission format, and is the basename
+        without extension of the file. If it is a directory, all files
+        inside are assumed to be part of the submission format with
+        their basenames without extension.
+
+        """
         GenericRequest.prepare(self)
+
+        # Select a random directory or file inside the task directory.
         task_path = os.path.join(self.submissions_path, self.task[1])
         sources = os.listdir(task_path)
         source = random.choice(sources)
         self.source_path = os.path.join(task_path, source)
-        self.files = [('%s.%%l' % (self.task[1]), self.source_path)]
+
+        # Compose the submission format
+        self.files = []
+        if os.path.isdir(self.source_path):
+            submission_formats = os.listdir(self.source_path)
+            self.files = [('%s.%%l' % (os.path.splitext(sf)[0]),
+                           os.path.join(self.source_path, sf))
+                          for sf in submission_formats]
+        else:
+            submission_format = os.path.splitext(source)[0]
+            self.files = [('%s.%%l' % (submission_format), self.source_path)]
 
     def describe(self):
         return "submit source %s for task %s (ID %d) %s" % \
