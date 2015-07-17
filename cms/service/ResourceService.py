@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -247,7 +247,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._find_proc")
-        for proc in psutil.get_process_list():
+        for proc in psutil.process_iter():
             try:
                 proc_info = proc.as_dict(attrs=PSUTIL_PROC_ATTRS)
                 if ResourceService._is_service_proc(
