@@ -62,7 +62,6 @@ class SmartMappedCollection(MappedCollection):
         self.linked = False
 
         # Useful references, that will be obtained upon linking.
-        self.parent_obj = None
         self.child_cls = None
         self.child_rel_name = None
         self.child_rel_prop = None
@@ -86,8 +85,7 @@ class SmartMappedCollection(MappedCollection):
 
         adapter = collection_adapter(self)
 
-        self.parent_obj = adapter.owner_state.obj()
-        parent_cls = type(self.parent_obj)
+        parent_cls = type(adapter.owner_state.obj())
         parent_rel_name = adapter.attr.key
         parent_rel_prop = \
             class_mapper(parent_cls).get_property(parent_rel_name)
@@ -106,7 +104,6 @@ class SmartMappedCollection(MappedCollection):
 
         event.remove(self.child_rel_prop, 'set', self.on_key_update)
 
-        self.parent_obj = None
         self.child_cls = None
         self.child_rel_name = None
         self.child_rel_prop = None
@@ -135,7 +132,7 @@ class SmartMappedCollection(MappedCollection):
     # The following two methods have to maintain consistency, i.e.:
     # - self.values() is equal to all and only those objects of the
     #   self.child_cls class that have the self.child_rel_name
-    #   attribute set to self.parent_obj;
+    #   attribute set to the parent object;
     # - all elements of self.values() are distinct;
     # - for each (key, value) in self.items(), key is equal to the
     #   self.child_key_name attribute of value.
