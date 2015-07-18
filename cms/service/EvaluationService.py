@@ -487,13 +487,14 @@ class WorkerPool(object):
                 dataset = Dataset.get_from_id(operation.dataset_id, session)
                 job_group = \
                     JobGroup.from_user_test_evaluation(user_test, dataset)
+            job_group_dict = job_group.export_to_dict()
 
-            self._worker[shard].execute_job_group(
-                job_group_dict=job_group.export_to_dict(),
-                callback=self._service.action_finished,
-                plus=(operation.type_, operation.object_id,
-                      operation.dataset_id, operation.testcase_codename,
-                      side_data, shard))
+        self._worker[shard].execute_job_group(
+            job_group_dict=job_group_dict,
+            callback=self._service.action_finished,
+            plus=(operation.type_, operation.object_id,
+                  operation.dataset_id, operation.testcase_codename,
+                  side_data, shard))
         return shard
 
     def release_worker(self, shard):
