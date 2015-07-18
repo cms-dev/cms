@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -46,7 +46,7 @@ from sqlalchemy import func, not_
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, PriorityQueue, QueueItem, TriggeredService, \
     rpc_method
-from cms.db import Session, SessionGen, Contest, Dataset, Submission, \
+from cms.db import SessionGen, Contest, Dataset, Submission, \
     SubmissionResult, Task, UserTest, UserTestResult
 from cms.service import get_submissions, get_submission_results, \
     get_datasets_to_judge
@@ -298,41 +298,27 @@ class ESOperation(QueueItem):
                 "dataset_id": self.dataset_id,
                 "testcase_codename": self.testcase_codename}
 
-    def check(self, session=None, dataset=None, submission=None,
-              submission_result=None):
+    def check(self, session):
         """Check that this operation is actually to be enqueued.
 
         I.e., check that the associated action has not been performed
         yet. It is used in cases when the status of the underlying object
         may have changed since last check.
 
-        Additional parameters can be supplied in order to reduce the
-        number of database queries.
-
-        session (Session): the database session to use;
-        dataset (Dataset): a dataset for this operation;
-        submission (Submission): a submission for this operation;
-        submission_result (SubmissionResult): a submission_result for
-            this operation.
+        session (Session): the database session to use.
 
         return (bool): True if the operation is still to be performed.
 
         """
-        if session is None:
-            session = Session()
         result = True
-        dataset = dataset or Dataset.get_from_id(self.dataset_id, session)
+        dataset = Dataset.get_from_id(self.dataset_id, session)
         if self.type_ == ESOperation.COMPILATION:
-            submission = submission \
-                or Submission.get_from_id(self.object_id, session)
-            submission_result = submission_result \
-                or submission.get_result_or_create(dataset)
+            submission = Submission.get_from_id(self.object_id, session)
+            submission_result = submission.get_result_or_create(dataset)
             result = submission_to_compile(submission_result)
         elif self.type_ == ESOperation.EVALUATION:
-            submission = submission \
-                or Submission.get_from_id(self.object_id, session)
-            submission_result = submission_result \
-                or submission.get_result_or_create(dataset)
+            submission = Submission.get_from_id(self.object_id, session)
+            submission_result = submission.get_result_or_create(dataset)
             result = submission_to_evaluate_on_testcase(
                 submission_result, self.testcase_codename)
         elif self.type_ == ESOperation.USER_TEST_COMPILATION:
@@ -868,25 +854,13 @@ class EvaluationService(TriggeredService):
 
         """
         new_operations = 0
-        with SessionGen() as session:
-            for dataset in get_datasets_to_judge(submission.task):
-                # Here and in the user test evaluation, we have multiple
-                # evaluate operations for a submission. It is not
-                # efficient to access the database multiple times to get
-                # the same objects, so we pass them from here to all
-                # evaluate operations of this submission.
-                extra = {
-                    "session": session,
-                    "dataset": dataset,
-                    "submission": submission,
-                    "submission_result":
-                    submission.get_result_or_create(dataset)
-                }
-                for operation, priority, timestamp in \
-                        submission_get_operations(submission, dataset):
-                    new_operations += \
-                        self.enqueue(operation, priority, timestamp,
-                                     check_again=check_again, extra=extra)
+        for dataset in get_datasets_to_judge(submission.task):
+            for operation, priority, timestamp in \
+                    submission_get_operations(submission, dataset):
+                if self.enqueue(operation, priority, timestamp,
+                                check_again=check_again):
+                    new_operations += 1
+
         return new_operations
 
     def user_test_enqueue_operations(self, user_test, check_again=False):
@@ -1105,8 +1079,7 @@ class EvaluationService(TriggeredService):
             raise Exception("Wrong operation type %s" % operation.type_)
 
     @with_post_finish_lock
-    def enqueue(self, operation, priority, timestamp, check_again=False,
-                extra=None):
+    def enqueue(self, operation, priority, timestamp, check_again=False):
         """Check an operation and push it in the queue.
 
         Push an operation in the operation queue if the submission is
@@ -1118,20 +1091,22 @@ class EvaluationService(TriggeredService):
         priority (int): the priority of the operation.
         timestamp (datetime): the time of the submission.
         check_again (bool): whether or not to run check() on the
-            operation;
-        extra (dict): contains cached entities, if any, to use in check().
+            operation.
 
         return (bool): True if pushed, False if not.
 
         """
         if self.operation_busy(operation):
             return False
-        elif check_again and not operation.check(**extra):
-            return False
-        else:
-            # enqueue() returns the number of successful pushes.
-            return super(EvaluationService, self).enqueue(
-                operation, priority, timestamp) > 0
+
+        if check_again:
+            with SessionGen() as session:
+                if not operation.check(session):
+                    return False
+
+        # enqueue() returns the number of successful pushes.
+        return super(EvaluationService, self).enqueue(
+            operation, priority, timestamp) > 0
 
     @with_post_finish_lock
     def action_finished(self, data, plus, error=None):
