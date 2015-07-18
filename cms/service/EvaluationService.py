@@ -148,11 +148,13 @@ def submission_get_operations(submission, dataset):
     """
     submission_result = submission.get_result_or_create(dataset)
     if submission_to_compile(submission_result):
-        priority = PriorityQueue.PRIORITY_HIGH \
-            if submission_result.compilation_tries == 0 \
-            else PriorityQueue.PRIORITY_MEDIUM
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif submission_result.compilation_tries == 0:
+            priority = PriorityQueue.PRIORITY_HIGH
+        else:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+
         yield ESOperation(ESOperation.COMPILATION,
                           submission.id,
                           dataset.id), \
@@ -160,11 +162,13 @@ def submission_get_operations(submission, dataset):
             submission.timestamp
 
     elif submission_to_evaluate(submission_result):
-        priority = PriorityQueue.PRIORITY_MEDIUM \
-            if submission_result.evaluation_tries == 0 \
-            else PriorityQueue.PRIORITY_LOW
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif submission_result.evaluation_tries == 0:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+        else:
+            priority = PriorityQueue.PRIORITY_LOW
+
         for testcase_codename in sorted(dataset.testcases.iterkeys()):
             yield ESOperation(ESOperation.EVALUATION,
                               submission.id,
@@ -188,11 +192,13 @@ def user_test_get_operations(user_test, dataset):
     """
     user_test_result = user_test.get_result_or_create(dataset)
     if user_test_to_compile(user_test_result):
-        priority = PriorityQueue.PRIORITY_HIGH \
-            if user_test_result.compilation_tries == 0\
-            else PriorityQueue.PRIORITY_MEDIUM
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif user_test_result.compilation_tries == 0:
+            priority = PriorityQueue.PRIORITY_HIGH
+        else:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+
         yield ESOperation(ESOperation.USER_TEST_COMPILATION,
                           user_test.id,
                           dataset.id), \
@@ -200,11 +206,13 @@ def user_test_get_operations(user_test, dataset):
             user_test.timestamp
 
     elif user_test_to_evaluate(user_test_result):
-        priority = PriorityQueue.PRIORITY_MEDIUM \
-            if user_test_result.evaluation_tries == 0 \
-            else PriorityQueue.PRIORITY_LOW
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif user_test_result.evaluation_tries == 0:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+        else:
+            priority = PriorityQueue.PRIORITY_LOW
+
         yield ESOperation(ESOperation.USER_TEST_EVALUATION,
                           user_test.id,
                           dataset.id), \
@@ -1188,10 +1196,10 @@ class EvaluationService(TriggeredService):
                     submission_result = submission.get_result_or_create(
                         dataset)
 
-                submission_result.compilation_tries += 1
-
                 if job_success:
                     job_group.to_submission_compilation(submission_result)
+
+                submission_result.compilation_tries += 1
 
                 self.compilation_ended(submission_result)
 
@@ -1226,10 +1234,10 @@ class EvaluationService(TriggeredService):
                                  object_id, dataset_id)
                     return
 
-                user_test_result.compilation_tries += 1
-
                 if job_success:
                     job_group.to_user_test_compilation(user_test_result)
+
+                user_test_result.compilation_tries += 1
 
                 self.user_test_compilation_ended(user_test_result)
 
@@ -1242,10 +1250,10 @@ class EvaluationService(TriggeredService):
                                  object_id, dataset_id)
                     return
 
-                user_test_result.evaluation_tries += 1
-
                 if job_success:
                     job_group.to_user_test_evaluation(user_test_result)
+
+                user_test_result.evaluation_tries += 1
 
                 self.user_test_evaluation_ended(user_test_result)
 
