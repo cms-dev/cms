@@ -47,7 +47,7 @@ from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, PriorityQueue, QueueItem, TriggeredService, \
     rpc_method
 from cms.db import SessionGen, Contest, Dataset, Submission, \
-    SubmissionResult, Task, UserTest, UserTestResult
+    SubmissionResult, Task, UserTest
 from cms.service import get_submissions, get_submission_results, \
     get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
@@ -339,6 +339,36 @@ class ESOperation(QueueItem):
             result = user_test_to_evaluate(user_test_result)
         return result
 
+    def build_job_group(self, session):
+        """Produce the JobGroup for this operation.
+
+        Return the JobGroup object that has to be sent to Workers to
+        have them perform the operation this object describes.
+
+        session (Session): the database session to use to fetch objects
+            if necessary.
+
+        return (JobGroup): the job group encoding of the operation, as
+            understood by Workers and TaskTypes.
+
+        """
+        result = None
+        dataset = Dataset.get_from_id(self.dataset_id, session)
+        if self.type_ == ESOperation.COMPILATION:
+            submission = Submission.get_from_id(self.object_id, session)
+            result = JobGroup.from_submission_compilation(submission, dataset)
+        elif self.type_ == ESOperation.EVALUATION:
+            submission = Submission.get_from_id(self.object_id, session)
+            result = JobGroup.from_submission_evaluation(
+                submission, dataset, self.testcase_codename)
+        elif self.type_ == ESOperation.USER_TEST_COMPILATION:
+            user_test = UserTest.get_from_id(self.object_id, session)
+            result = JobGroup.from_user_test_compilation(user_test, dataset)
+        elif self.type_ == ESOperation.USER_TEST_EVALUATION:
+            user_test = UserTest.get_from_id(self.object_id, session)
+            result = JobGroup.from_user_test_evaluation(user_test, dataset)
+        return result
+
 
 class WorkerPool(object):
     """This class keeps the state of the workers attached to ES, and
@@ -465,28 +495,7 @@ class WorkerPool(object):
                     shard, operation, queue_time)
 
         with SessionGen() as session:
-            if operation.type_ == ESOperation.COMPILATION:
-                submission = Submission.get_from_id(operation.object_id,
-                                                    session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_submission_compilation(submission, dataset)
-            elif operation.type_ == ESOperation.EVALUATION:
-                submission = Submission.get_from_id(operation.object_id,
-                                                    session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = JobGroup.from_submission_evaluation(
-                    submission, dataset, operation.testcase_codename)
-            elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
-                user_test = UserTest.get_from_id(operation.object_id, session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_user_test_compilation(user_test, dataset)
-            elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
-                user_test = UserTest.get_from_id(operation.object_id, session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_user_test_evaluation(user_test, dataset)
+            job_group = operation.build_job_group(session)
             job_group_dict = job_group.export_to_dict()
 
         self._worker[shard].execute_job_group(
@@ -1176,26 +1185,31 @@ class EvaluationService(TriggeredService):
 
         # We get the submission from DB and update it.
         with SessionGen() as session:
+            dataset = Dataset.get_from_id(dataset_id, session)
+            if dataset is None:
+                logger.error("[action_finished] Could not find "
+                             "dataset %d in the database.",
+                             dataset_id)
+                return
+
+            # TODO Try to move this 4-cases if-clause into a method of
+            # ESOperation: I'd really like ES itself not to care about
+            # which type of operation it's handling.
             if type_ == ESOperation.COMPILATION:
-                submission_result = SubmissionResult.get_from_id(
-                    (object_id, dataset_id), session)
+                submission = Submission.get_from_id(object_id, session)
+                if submission is None:
+                    logger.error("[action_finished] Could not find "
+                                 "submission %d in the database.",
+                                 object_id)
+                    return
+
+                submission_result = submission.get_result(dataset)
                 if submission_result is None:
                     logger.info("[action_finished] Couldn't find "
                                 "submission %d(%d) in the database. "
                                 "Creating it.", object_id, dataset_id)
-                    submission = Submission.get_from_id(object_id, session)
-                    dataset = Dataset.get_from_id(dataset_id, session)
-                    if submission is None:
-                        logger.error("[action_finished] Could not find "
-                                     "submission %d in the database.",
-                                     object_id)
-                        return
-                    if dataset is None:
-                        logger.error("[action_finished] Could not find "
-                                     "dataset %d in the database.", dataset_id)
-                        return
-                    submission_result = submission.get_result_or_create(
-                        dataset)
+                    submission_result = \
+                        submission.get_result_or_create(dataset)
 
                 if job_success:
                     job_group.to_submission_compilation(submission_result)
@@ -1205,8 +1219,14 @@ class EvaluationService(TriggeredService):
                 self.compilation_ended(submission_result)
 
             elif type_ == ESOperation.EVALUATION:
-                submission_result = SubmissionResult.get_from_id(
-                    (object_id, dataset_id), session)
+                submission = Submission.get_from_id(object_id, session)
+                if submission is None:
+                    logger.error("[action_finished] Could not find "
+                                 "submission %d in the database.",
+                                 object_id)
+                    return
+
+                submission_result = submission.get_result(dataset)
                 if submission_result is None:
                     logger.error("[action_finished] Couldn't find "
                                  "submission %d(%d) in the database.",
@@ -1218,8 +1238,6 @@ class EvaluationService(TriggeredService):
 
                 # Submission evaluation will be ended only when
                 # evaluation for each testcase is available.
-
-                dataset = Dataset.get_from_id(dataset_id, session)
                 if len(submission_result.evaluations) == \
                         len(dataset.testcases):
                     submission_result.set_evaluation_outcome()
@@ -1227,13 +1245,20 @@ class EvaluationService(TriggeredService):
                     self.evaluation_ended(submission_result)
 
             elif type_ == ESOperation.USER_TEST_COMPILATION:
-                user_test_result = UserTestResult.get_from_id(
-                    (object_id, dataset_id), session)
+                user_test = UserTest.get_from_id(object_id, session)
+                if user_test is None:
+                    logger.error("[action_finished] Could not find "
+                                 "user test %d in the database.",
+                                 object_id)
+                    return
+
+                user_test_result = user_test.get_result(dataset)
                 if user_test_result is None:
                     logger.error("[action_finished] Couldn't find "
-                                 "user test %d(%d) in the database.",
-                                 object_id, dataset_id)
-                    return
+                                 "user test %d(%d) in the database. "
+                                 "Creating it.", object_id, dataset_id)
+                    user_test_result = \
+                        user_test.get_result_or_create(dataset)
 
                 if job_success:
                     job_group.to_user_test_compilation(user_test_result)
@@ -1243,8 +1268,14 @@ class EvaluationService(TriggeredService):
                 self.user_test_compilation_ended(user_test_result)
 
             elif type_ == ESOperation.USER_TEST_EVALUATION:
-                user_test_result = UserTestResult.get_from_id(
-                    (object_id, dataset_id), session)
+                user_test = UserTest.get_from_id(object_id, session)
+                if user_test is None:
+                    logger.error("[action_finished] Could not find "
+                                 "user test %d in the database.",
+                                 object_id)
+                    return
+
+                user_test_result = user_test.get_result(dataset)
                 if user_test_result is None:
                     logger.error("[action_finished] Couldn't find "
                                  "user test %d(%d) in the database.",
