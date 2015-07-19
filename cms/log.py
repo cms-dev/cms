@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
@@ -52,6 +52,8 @@ import logging
 import sys
 
 import gevent.coros
+
+from threading import current_thread
 
 from cmscommon.terminal import colors, add_color_to_string, has_color_support
 
@@ -253,6 +255,7 @@ class CustomFormatter(logging.Formatter):
             coord_str = "%s,%d" % (record.service_name, record.service_shard)
         else:
             coord_str = "None"
+        coord_str += "," + current_thread().name
         coord_col = get_color_hash(coord_str)
 
         # Determine the third part (operation) and its color.

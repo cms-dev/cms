@@ -496,8 +496,8 @@ class EvaluationService(TriggeredService):
                                  "not successful.", shard)
                     job_success = False
 
-        logger.info("Operation `%s' for submission %s completed. Success: %s.",
-                    operation, object_id, job_success)
+        logger.info("[action_finished] `%s' completed. Success: %s.",
+                    operation, job_success)
 
         # We get the submission from DB and update it.
         with SessionGen() as session:
