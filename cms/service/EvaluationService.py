@@ -51,7 +51,7 @@ from cms.db import SessionGen, Contest, Dataset, Submission, \
 from cms.service import get_submissions, get_submission_results, \
     get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
-from cms.grading.Job import JobGroup
+from cms.grading.Job import Job, CompilationJob, EvaluationJob
 
 
 logger = logging.getLogger(__name__)
@@ -339,34 +339,34 @@ class ESOperation(QueueItem):
             result = user_test_to_evaluate(user_test_result)
         return result
 
-    def build_job_group(self, session):
-        """Produce the JobGroup for this operation.
+    def build_job(self, session):
+        """Produce the Job for this operation.
 
-        Return the JobGroup object that has to be sent to Workers to
-        have them perform the operation this object describes.
+        Return the Job object that has to be sent to Workers to have
+        them perform the operation this object describes.
 
         session (Session): the database session to use to fetch objects
             if necessary.
 
-        return (JobGroup): the job group encoding of the operation, as
-            understood by Workers and TaskTypes.
+        return (Job): the job encoding of the operation, as understood
+            by Workers and TaskTypes.
 
         """
         result = None
         dataset = Dataset.get_from_id(self.dataset_id, session)
         if self.type_ == ESOperation.COMPILATION:
             submission = Submission.get_from_id(self.object_id, session)
-            result = JobGroup.from_submission_compilation(submission, dataset)
+            result = CompilationJob.from_submission(submission, dataset)
         elif self.type_ == ESOperation.EVALUATION:
             submission = Submission.get_from_id(self.object_id, session)
-            result = JobGroup.from_submission_evaluation(
+            result = EvaluationJob.from_submission(
                 submission, dataset, self.testcase_codename)
         elif self.type_ == ESOperation.USER_TEST_COMPILATION:
             user_test = UserTest.get_from_id(self.object_id, session)
-            result = JobGroup.from_user_test_compilation(user_test, dataset)
+            result = CompilationJob.from_user_test(user_test, dataset)
         elif self.type_ == ESOperation.USER_TEST_EVALUATION:
             user_test = UserTest.get_from_id(self.object_id, session)
-            result = JobGroup.from_user_test_evaluation(user_test, dataset)
+            result = EvaluationJob.from_user_test(user_test, dataset)
         return result
 
 
@@ -495,11 +495,11 @@ class WorkerPool(object):
                     shard, operation, queue_time)
 
         with SessionGen() as session:
-            job_group = operation.build_job_group(session)
-            job_group_dict = job_group.export_to_dict()
+            job = operation.build_job(session)
+            job_dict = job.export_to_dict()
 
-        self._worker[shard].execute_job_group(
-            job_group_dict=job_group_dict,
+        self._worker[shard].execute_job(
+            job_dict=job_dict,
             callback=self._service.action_finished,
             plus=(operation.type_, operation.object_id,
                   operation.dataset_id, operation.testcase_codename,
@@ -1131,7 +1131,7 @@ class EvaluationService(TriggeredService):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
 
-        data (dict): a dictionary that describes a JobGroup instance.
+        data (dict): a dictionary that describes a Job instance.
         plus (tuple): the tuple (type_,
                                  object_id,
                                  dataset_id,
@@ -1141,7 +1141,7 @@ class EvaluationService(TriggeredService):
 
         """
         # Unpack the plus tuple. It's built in the RPC call to Worker's
-        # execute_job_group method inside WorkerPool.acquire_worker.
+        # execute_job method inside WorkerPool.acquire_worker.
         type_, object_id, dataset_id, testcase_codename, _, \
             shard = plus
 
@@ -1168,14 +1168,14 @@ class EvaluationService(TriggeredService):
 
         else:
             try:
-                job_group = JobGroup.import_from_dict(data)
+                job = Job.import_from_dict_with_type(data)
             except:
-                logger.error("[action_finished] Couldn't build JobGroup for "
+                logger.error("[action_finished] Couldn't build Job for "
                              "data %s.", data, exc_info=True)
                 job_success = False
 
             else:
-                if not job_group.success:
+                if not job.success:
                     logger.error("Worker %s signaled action "
                                  "not successful.", shard)
                     job_success = False
@@ -1212,9 +1212,11 @@ class EvaluationService(TriggeredService):
                         submission.get_result_or_create(dataset)
 
                 if job_success:
-                    job_group.to_submission_compilation(submission_result)
+                    job.to_submission(submission_result)
 
                 submission_result.compilation_tries += 1
+
+                session.commit()
 
                 self.compilation_ended(submission_result)
 
@@ -1234,14 +1236,24 @@ class EvaluationService(TriggeredService):
                     return
 
                 if job_success:
-                    job_group.to_submission_evaluation(submission_result)
+                    job.to_submission(submission_result)
 
                 # Submission evaluation will be ended only when
                 # evaluation for each testcase is available.
+                # TODO This check makes little sense: failed jobs will
+                # be attempted again by evaluation_ended, which will be
+                # called only in case of equality, which will hold only
+                # if the evaluations for all testcases are present. But
+                # as an evaluation will be stored only if the job was
+                # successful failed jobs will never be attempted again.
                 if len(submission_result.evaluations) == \
                         len(dataset.testcases):
                     submission_result.set_evaluation_outcome()
                     submission_result.evaluation_tries += 1
+
+                session.commit()
+
+                if submission_result.evaluated():
                     self.evaluation_ended(submission_result)
 
             elif type_ == ESOperation.USER_TEST_COMPILATION:
@@ -1261,9 +1273,11 @@ class EvaluationService(TriggeredService):
                         user_test.get_result_or_create(dataset)
 
                 if job_success:
-                    job_group.to_user_test_compilation(user_test_result)
+                    job.to_user_test(user_test_result)
 
                 user_test_result.compilation_tries += 1
+
+                session.commit()
 
                 self.user_test_compilation_ended(user_test_result)
 
@@ -1283,17 +1297,17 @@ class EvaluationService(TriggeredService):
                     return
 
                 if job_success:
-                    job_group.to_user_test_evaluation(user_test_result)
+                    job.to_user_test(user_test_result)
 
                 user_test_result.evaluation_tries += 1
+
+                session.commit()
 
                 self.user_test_evaluation_ended(user_test_result)
 
             else:
                 logger.error("Invalid operation type %r.", type_)
                 return
-
-            session.commit()
 
     def compilation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
@@ -1320,7 +1334,6 @@ class EvaluationService(TriggeredService):
             logger.info("Submission %d(%d) did not compile.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
-            submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
@@ -1344,7 +1357,6 @@ class EvaluationService(TriggeredService):
                          submission_result.compilation_outcome)
 
         # Enqueue next steps to be done
-        submission_result.sa_session.commit()
         self.submission_enqueue_operations(submission)
 
     def evaluation_ended(self, submission_result):
@@ -1365,7 +1377,6 @@ class EvaluationService(TriggeredService):
             logger.info("Submission %d(%d) was evaluated successfully.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
-            submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
@@ -1384,7 +1395,6 @@ class EvaluationService(TriggeredService):
                              submission_result.dataset_id)
 
         # Enqueue next steps to be done (e.g., if evaluation failed).
-        submission_result.sa_session.commit()
         self.submission_enqueue_operations(submission)
 
     def user_test_compilation_ended(self, user_test_result):
@@ -1396,6 +1406,7 @@ class EvaluationService(TriggeredService):
 
         """
         user_test = user_test_result.user_test
+
         # If compilation was ok, we emit a satisfied log message.
         if user_test_result.compilation_succeeded():
             logger.info("User test %d(%d) was compiled successfully.",
@@ -1427,7 +1438,6 @@ class EvaluationService(TriggeredService):
                          user_test_result.compilation_outcome)
 
         # Enqueue next steps to be done
-        user_test_result.sa_session.commit()
         self.user_test_enqueue_operations(user_test)
 
     def user_test_evaluation_ended(self, user_test_result):
@@ -1460,7 +1470,6 @@ class EvaluationService(TriggeredService):
                              user_test_result.dataset_id)
 
         # Enqueue next steps to be done (e.g., if evaluation failed).
-        user_test_result.sa_session.commit()
         self.user_test_enqueue_operations(user_test)
 
     @rpc_method

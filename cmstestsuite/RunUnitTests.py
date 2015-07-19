@@ -54,7 +54,7 @@ def run_unittests(test_list):
             i + 1, num_tests_to_execute,
             path, filename))
         try:
-            sh('python -m coverage run -p --source=cms %s' %
+            sh('python2 -m coverage run -p --source=cms %s' %
                os.path.join(path, filename))
         except FrameworkException:
             info("  (FAILED: %s)" % filename)
