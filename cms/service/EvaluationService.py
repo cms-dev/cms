@@ -640,10 +640,10 @@ class WorkerPool(object):
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no response "
                                  "in %s.", shard, active_for)
-                    is_busy = (self._operation[shard]
-                               != WorkerPool.WORKER_INACTIVE
-                               and self._operation[shard]
-                               != WorkerPool.WORKER_DISABLED)
+                    is_busy = (self._operation[shard] !=
+                               WorkerPool.WORKER_INACTIVE and
+                               self._operation[shard] !=
+                               WorkerPool.WORKER_DISABLED)
                     assert is_busy
 
                     # We return the operation so ES can do what it needs.
@@ -960,19 +960,19 @@ class EvaluationService(TriggeredService):
 
             queries = {}
             queries['compiling'] = not_compiled.filter(
-                SubmissionResult.compilation_tries
-                < EvaluationService.MAX_COMPILATION_TRIES)
+                SubmissionResult.compilation_tries <
+                EvaluationService.MAX_COMPILATION_TRIES)
             queries['max_compilations'] = not_compiled.filter(
-                SubmissionResult.compilation_tries
-                >= EvaluationService.MAX_COMPILATION_TRIES)
+                SubmissionResult.compilation_tries >=
+                EvaluationService.MAX_COMPILATION_TRIES)
             queries['compilation_fail'] = base_query.filter(
                 SubmissionResult.filter_compilation_failed())
             queries['evaluating'] = not_evaluated.filter(
-                SubmissionResult.evaluation_tries
-                < EvaluationService.MAX_EVALUATION_TRIES)
+                SubmissionResult.evaluation_tries <
+                EvaluationService.MAX_EVALUATION_TRIES)
             queries['max_evaluations'] = not_evaluated.filter(
-                SubmissionResult.evaluation_tries
-                >= EvaluationService.MAX_EVALUATION_TRIES)
+                SubmissionResult.evaluation_tries <=
+                EvaluationService.MAX_EVALUATION_TRIES)
             queries['scoring'] = evaluated.filter(
                 not_(SubmissionResult.filter_scored()))
             queries['scored'] = evaluated.filter(
@@ -1054,8 +1054,8 @@ class EvaluationService(TriggeredService):
                 submission_id,
                 dataset_id,
                 testcase_codename))
-        return any([operation in self.get_executor().pool
-                    or operation in self.get_executor()
+        return any([operation in self.get_executor().pool or
+                    operation in self.get_executor()
                     for operation in operations])
 
     def user_test_busy(self, user_test_id, dataset_id):
@@ -1073,8 +1073,8 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self.get_executor().pool
-                    or operation in self.get_executor()
+        return any([operations in self.get_executor().pool or
+                    operation in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
