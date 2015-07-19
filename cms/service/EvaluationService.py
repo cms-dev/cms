@@ -524,25 +524,23 @@ class EvaluationService(TriggeredService):
             try:
                 job = Job.import_from_dict_with_type(data)
             except:
-                logger.error("[action_finished] Couldn't build Job for "
-                             "data %s.", data, exc_info=True)
+                logger.error("Couldn't build Job for data %s.", data,
+                             exc_info=True)
                 job_success = False
 
             else:
                 if not job.success:
-                    logger.error("Worker %s signaled action "
-                                 "not successful.", shard)
+                    logger.error("Worker %s signaled action not successful.",
+                                 shard)
                     job_success = False
 
-        logger.info("Operation `%s' for submission %s completed. Success: %s.",
-                    operation, object_id, job_success)
+        logger.info("`%s' completed. Success: %s.", operation, job_success)
 
         # We get the submission from DB and update it.
         with SessionGen() as session:
             dataset = Dataset.get_from_id(dataset_id, session)
             if dataset is None:
-                logger.error("[action_finished] Could not find "
-                             "dataset %d in the database.",
+                logger.error("Could not find dataset %d in the database.",
                              dataset_id)
                 return
 
@@ -552,16 +550,15 @@ class EvaluationService(TriggeredService):
             if type_ == ESOperation.COMPILATION:
                 submission = Submission.get_from_id(object_id, session)
                 if submission is None:
-                    logger.error("[action_finished] Could not find "
-                                 "submission %d in the database.",
-                                 object_id)
+                    logger.error("Could not find submission %d "
+                                 "in the database.", object_id)
                     return
 
                 submission_result = submission.get_result(dataset)
                 if submission_result is None:
-                    logger.info("[action_finished] Couldn't find "
-                                "submission %d(%d) in the database. "
-                                "Creating it.", object_id, dataset_id)
+                    logger.info("Couldn't find submission %d(%d) "
+                                "in the database. Creating it.",
+                                object_id, dataset_id)
                     submission_result = \
                         submission.get_result_or_create(dataset)
 
@@ -577,16 +574,14 @@ class EvaluationService(TriggeredService):
             elif type_ == ESOperation.EVALUATION:
                 submission = Submission.get_from_id(object_id, session)
                 if submission is None:
-                    logger.error("[action_finished] Could not find "
-                                 "submission %d in the database.",
-                                 object_id)
+                    logger.error("Could not find submission %d "
+                                 "in the database.", object_id)
                     return
 
                 submission_result = submission.get_result(dataset)
                 if submission_result is None:
-                    logger.error("[action_finished] Couldn't find "
-                                 "submission %d(%d) in the database.",
-                                 object_id, dataset_id)
+                    logger.error("Couldn't find submission %d(%d) "
+                                 "in the database.", object_id, dataset_id)
                     return
 
                 if job_success:
@@ -609,16 +604,15 @@ class EvaluationService(TriggeredService):
             elif type_ == ESOperation.USER_TEST_COMPILATION:
                 user_test = UserTest.get_from_id(object_id, session)
                 if user_test is None:
-                    logger.error("[action_finished] Could not find "
-                                 "user test %d in the database.",
-                                 object_id)
+                    logger.error("Could not find user test %d "
+                                 "in the database.", object_id)
                     return
 
                 user_test_result = user_test.get_result(dataset)
                 if user_test_result is None:
-                    logger.error("[action_finished] Couldn't find "
-                                 "user test %d(%d) in the database. "
-                                 "Creating it.", object_id, dataset_id)
+                    logger.error("Couldn't find user test %d(%d) "
+                                 "in the database. Creating it.",
+                                 object_id, dataset_id)
                     user_test_result = \
                         user_test.get_result_or_create(dataset)
 
@@ -634,16 +628,14 @@ class EvaluationService(TriggeredService):
             elif type_ == ESOperation.USER_TEST_EVALUATION:
                 user_test = UserTest.get_from_id(object_id, session)
                 if user_test is None:
-                    logger.error("[action_finished] Could not find "
-                                 "user test %d in the database.",
-                                 object_id)
+                    logger.error("Could not find user test %d "
+                                 "in the database.", object_id)
                     return
 
                 user_test_result = user_test.get_result(dataset)
                 if user_test_result is None:
-                    logger.error("[action_finished] Couldn't find "
-                                 "user test %d(%d) in the database.",
-                                 object_id, dataset_id)
+                    logger.error("Couldn't find user test %d(%d) "
+                                 "in the database.", object_id, dataset_id)
                     return
 
                 if job_success:
