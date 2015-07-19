@@ -1,10 +1,27 @@
 {# This snippet shows a table using the list submissions as input #}
-{% if submissions == [] %}
+{% if submission_count == 0 %}
 <p>No submissions found.</p>
 
 {% else %}
-{# TODO: implement a more useful pagination for a large contest #}
-<div id="page_selector_submissions"></div>
+
+<p>
+  {{ reevaluation_par_msg % submission_count }}
+  {% include reevaluation_buttons.html %}
+</p>
+
+{% if submission_count > len(submissions) %}
+<div>
+Pages:
+{% for i in range(submission_pages) %}
+  {% if i != submission_page %}
+<a href="{{ url_root }}{{ page_url }}?page={{ i }}">{{ i + 1 }}</a>
+  {% else %}
+{{ i + 1 }}
+  {% end %}
+{% end %}
+{% end %}
+</div>
+
 <table class="bordered">
   <thead>
     <tr>
@@ -18,7 +35,7 @@
       <th>Reevaluate</th>
     </tr>
   </thead>
-  <tbody id="paged_content_submissions">
+  <tbody>
     {% from cms.grading.scoretypes import get_score_type %}
     {% set score_types = {} %}
     {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}

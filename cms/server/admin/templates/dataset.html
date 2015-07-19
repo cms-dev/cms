@@ -1,9 +1,5 @@
 {% extends base.html %}
 
-{% block js_init %}
-utils.show_page("submissions", 1, 50);
-{% end %}
-
 {% block core %}
 {% from cms import plugin_list %}
 {% from cms.grading import format_status_text %}
@@ -19,17 +15,11 @@ utils.show_page("submissions", 1, 50);
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
-
-  {% if len(submissions) != 0 %}
-  <p>
-    Reevaluate all {{ len(submissions) }} submissions using this dataset:
-    {% set reevaluation_par_name = "dataset" %}
-    {% set reevaluation_par_value = shown_dataset.id %}
-    {% set reevaluation_par_dataset_id = None %}
-    {% include fragments/reevaluation_buttons.html %}
-  </p>
-  {% end %}
-
+  {% set reevaluation_par_msg = "Reevaluate all %s submissions for this dataset" %}
+  {% set reevaluation_par_name = "dataset" %}
+  {% set reevaluation_par_value = shown_dataset.id %}
+  {% set reevaluation_par_dataset_id = None %}
+  {% set page_url = "/dataset/%s" % shown_dataset.id %}
   {% include fragments/submission_rows.html %}
 
   <div class="hr"></div>
