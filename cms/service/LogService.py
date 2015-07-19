@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -34,7 +34,7 @@ import logging
 from collections import deque
 
 from cms import config, mkdir
-from cms.log import root_logger, shell_handler, FileHandler, CustomFormatter
+from cms.log import root_logger, shell_handler, FileHandler, DetailedFormatter
 from cms.io import Service, rpc_method
 
 
@@ -64,7 +64,7 @@ class LogService(Service):
         self.file_handler = FileHandler(os.path.join(log_dir, log_filename),
                                         mode='w', encoding='utf-8')
         self.file_handler.setLevel(logging.DEBUG)
-        self.file_handler.setFormatter(CustomFormatter(False))
+        self.file_handler.setFormatter(DetailedFormatter(False))
         root_logger.addHandler(self.file_handler)
 
         # Provide a symlink to the latest log file.
