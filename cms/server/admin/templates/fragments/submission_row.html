@@ -1,7 +1,14 @@
 {# This snippet shows a row of a submission table using the variable s as input #}
 {% from cms.grading import format_status_text %}
-{% set dataset = s.task.active_dataset %}
+
+{% try %}
+  {% set dataset = shown_dataset %}
+{% except %}
+  {% set dataset = s.task.active_dataset %}
+{% end %}
+
 {% set sr = s.get_result(dataset) %}
+
 {# The submission result might be missing in some cases (e.g., cloned dataset); these cases are equivalent to the compiling state. #}
 {% set status = SubmissionResult.COMPILING %}
 {% if sr is not None %}
@@ -104,7 +111,7 @@
   <td>
     {% set reevaluation_par_name = "submission" %}
     {% set reevaluation_par_value = s.id %}
-    {% set reevaluation_par_dataset_id = None %}
+    {% set reevaluation_par_dataset_id = dataset.id %}
     {% include reevaluation_buttons.html %}
   </td>
 </tr>

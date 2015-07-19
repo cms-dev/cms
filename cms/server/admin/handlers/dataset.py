@@ -38,8 +38,6 @@ import zipfile
 from StringIO import StringIO
 import tornado.web
 
-from sqlalchemy.orm import joinedload
-
 from cms.db import Dataset, Manager, Message, Session, Submission, User, \
     Task, Testcase
 from cms.grading import compute_changes_for_dataset
@@ -60,7 +58,11 @@ class DatasetSubmissionsHandler(BaseHandler):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
 
-        self.r_params = self.render_params()
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.task == task)
+        page = int(self.get_query_argument("page", 0))
+        self.render_params_for_submissions(submission_query, page)
+
         self.r_params["task"] = task
         self.r_params["active_dataset"] = task.active_dataset
         self.r_params["shown_dataset"] = dataset
@@ -68,15 +70,6 @@ class DatasetSubmissionsHandler(BaseHandler):
             self.sql_session.query(Dataset)\
                             .filter(Dataset.task == task)\
                             .order_by(Dataset.description).all()
-        self.r_params["submissions"] = \
-            self.sql_session.query(Submission)\
-                            .filter(Submission.task == task)\
-                            .options(joinedload(Submission.task))\
-                            .options(joinedload(Submission.participation))\
-                            .options(joinedload(Submission.files))\
-                            .options(joinedload(Submission.token))\
-                            .options(joinedload(Submission.results))\
-                            .order_by(Submission.timestamp.desc()).all()
         self.render("dataset.html", **self.r_params)
 
 
