@@ -37,125 +37,13 @@ function update_additional_answer(element, invoker)
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
+  {% set reevaluation_par_msg = "Reevaluate all %s submissions for this user (for all datasets)" %}
+  {% set reevaluation_par_name = "user" %}
+  {% set reevaluation_par_value = selected_user.id %}
+  {% set reevaluation_par_dataset_id = None %}
+  {% set submission_url = "/contest/%s/user/%s" % (contest.id, selected_user.id) %}
+  {% include fragments/submission_rows.html %}
 
-  {% if submissions == [] %}
-  <p>No submissions found.</p>
-
-  {% else %}
-  <table class="bordered">
-    <thead>
-      <tr>
-        <th>Time</th>
-        <th>Task</th>
-        <th>Status</th>
-        <th>Files</th>
-        <th>Token</th>
-        <th>Comment</th>
-        <th>Reevaluate</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
-        {% set dataset = s.task.active_dataset %}
-        {% set sr = s.get_result(dataset) %}
-        {% if s.task.name in score_types %}
-          {% set score_type = score_types[s.task.name] %}
-        {% else %}
-          {% set score_type = get_score_type(dataset=dataset) %}
-          {% set score_types[s.task.name] = score_type %}
-        {% end %}
-      <tr>
-        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
-        <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
-        <td>
-          {% if sr is None or sr.compilation_outcome is None %}
-          Compiling...
-          {% else %}
-          <div id="title_evaluation_{{ s.id }}" class="toggling_off">
-            {% if sr.compilation_outcome == "fail" %}
-            Compilation failed
-            <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% elif not sr.evaluated() %}
-            Evaluating...
-            <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% elif sr.scored() %}
-              {% try %}
-                {% set max_score = score_type.max_score %}
-              {% except %}
-                {% set max_score = "[Cannot get score type - see logs]" %}
-              {% end %}
-            Evaluated ({{ sr.score }} / {{ max_score }})
-            <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-              {% raw score_type.get_html_details(sr.score_details) %}
-            {% else %}
-            Evaluated
-            <div id="evaluation_{{ s.id }}" style="display: none;">
-              {% if sr.evaluated() %}
-              <h3>Testcases</h3>
-              <table class="nested bordered">
-                <thead>
-                  <tr>
-                    <th>Outcome</th>
-                    <th></th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
-                  <tr>
-                    <td>{{ ev.outcome }}</td>
-                    {% if s.token is not None or ev.testcase.public %}
-                    <td style="align: center;">&bullet;</td>
-                    {% else %}
-                    <td></td>
-                    {% end %}
-                    <td>{{ ev.text }}</td>
-                  </tr>
-                  {% end %}
-                </tbody>
-              </table>
-              {% end %}
-            {% end %}
-              <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-              <pre>{% if sr.compilation_text is not None %}{{ escape(sr.compilation_text) }}{% end %}</pre>
-            </div>
-          </div>
-
-          {% end %}
-        </td>
-        <td>
-          {% for filename, sub_file in s.files.items() %}
-          <a href="javascript:void(0);" onclick="utils.show_file('{{ filename.replace("%l", s.language) if s.language else filename }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) if s.language else filename }}<br/>
-          {% end %}
-        </td>
-        <td>
-          {% if s.token is None %}
-          No
-          {% else %}
-          Yes
-          {% end %}
-        </td>
-        <td>
-          {{ s.short_comment }}
-        </td>
-        <td>
-          {% set reevaluation_par_name = "submission" %}
-          {% set reevaluation_par_value = s.id %}
-          {% set reevaluation_par_dataset_id = None %}
-          {% include fragments/reevaluation_buttons.html %}
-        </td>
-      </tr>
-      {% end %}
-    </tbody>
-  </table>
-  <p>
-    Reevaluate all {{ len(submissions) }} submissions for this user:
-    {% set reevaluation_par_name = "user" %}
-    {% set reevaluation_par_value = selected_user.id %}
-    {% set reevaluation_par_dataset_id = None %}
-    {% include fragments/reevaluation_buttons.html %}
-  </p>
-  {% end %}
   <div class="hr"></div>
 </div>
 

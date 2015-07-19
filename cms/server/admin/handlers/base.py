@@ -39,9 +39,10 @@ from datetime import datetime, timedelta
 import tornado.web
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from cms.db import Contest, Participation, Question, Session, \
-    SubmissionFormatElement, Task, User
+    Submission, SubmissionFormatElement, Task, User
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
@@ -409,6 +410,40 @@ class BaseHandler(CommonRequestHandler):
             raise ValueError("Score type parameters not found.")
         dest["score_type"] = name
         dest["score_type_parameters"] = params
+
+    def render_params_for_submissions(self, query, page, page_size=50):
+        """Add data about the requested submissions to r_params.
+
+        submission_query (sqlalchemy.orm.query.Query): the query
+            giving back all interesting submissions.
+        page (int): the index of the page to display.
+        page_size(int): the number of submissions per page.
+
+        """
+        query = query\
+            .options(joinedload(Submission.task))\
+            .options(joinedload(Submission.participation))\
+            .options(joinedload(Submission.files))\
+            .options(joinedload(Submission.token))\
+            .options(joinedload(Submission.results))\
+            .order_by(Submission.timestamp.desc())
+
+        offset = page * page_size
+        count = query.count()
+
+        if self.r_params is None:
+            self.r_params = self.render_params()
+
+        # A page showing paginated submissions can use these
+        # parameters: total number of submissions, submissions to
+        # display in this page, index of the current page, total
+        # number of pages.
+        self.r_params["submission_count"] = count
+        self.r_params["submissions"] = \
+            query.slice(offset, offset + page_size).all()
+        self.r_params["submission_page"] = page
+        self.r_params["submission_pages"] = \
+            (count + page_size - 1) // page_size
 
 
 FileHandler = file_handler_gen(BaseHandler)
