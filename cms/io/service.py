@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -48,7 +48,7 @@ from gevent.backdoor import BackdoorServer
 from cms import ConfigError, config, mkdir, ServiceCoord, Address, \
     get_service_address
 from cms.log import root_logger, shell_handler, ServiceFilter, \
-    CustomFormatter, LogServiceHandler, FileHandler
+    DetailedFormatter, LogServiceHandler, FileHandler
 from cmscommon.datetime import monotonic_time
 
 from .rpc import rpc_method, RemoteServiceServer, RemoteServiceClient, \
@@ -137,7 +137,7 @@ class Service(object):
         else:
             file_log_level = logging.INFO
         file_handler.setLevel(file_log_level)
-        file_handler.setFormatter(CustomFormatter(False))
+        file_handler.setFormatter(DetailedFormatter(False))
         file_handler.addFilter(filter_)
         root_logger.addHandler(file_handler)
 

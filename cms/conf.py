@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -32,6 +32,7 @@ import logging
 import os
 import sys
 
+from .log import set_detailed_logs
 from .util import ServiceCoord, Address, async_config
 
 
@@ -57,6 +58,7 @@ class Config(object):
         self.temp_dir = "/tmp"
         self.backdoor = False
         self.file_log_debug = False
+        self.stream_log_detailed = False
 
         # Database.
         self.database = "postgresql+psycopg2://cmsuser@localhost/cms"
@@ -152,6 +154,10 @@ class Config(object):
 
         # Attempt to load a config file.
         self._load(paths)
+
+        # If the configuration says to print detailed log on stdout,
+        # change the log configuration.
+        set_detailed_logs(self.stream_log_detailed)
 
     def _load(self, paths):
         """Try to load the config files one at a time, until one loads

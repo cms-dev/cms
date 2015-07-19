@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
@@ -198,7 +198,7 @@ class CustomFormatter(logging.Formatter):
             not.
 
         """
-        logging.Formatter.__init__(self, "", "%Y/%m/%d %H:%M:%S")
+        logging.Formatter.__init__(self, "")
         self.colors = colors
 
     # Taken from CPython and adapted to remove assumptions that there
@@ -243,42 +243,83 @@ class CustomFormatter(logging.Formatter):
         return (string): the formatted log message.
 
         """
-        # Determine the first part (time and severity) and its color.
-        severity_str = record.asctime + " - " + record.levelname
-        severity_col = self.SEVERITY_COLORS[record.levelno]
-
-        # Determine the second part (service coords) and its color.
-        if hasattr(record, "service_name") and \
-                hasattr(record, "service_shard"):
-            coord_str = "%s,%d" % (record.service_name, record.service_shard)
-        else:
-            coord_str = "None"
-        coord_col = get_color_hash(coord_str)
-
-        # Determine the third part (operation) and its color.
-        if hasattr(record, "operation"):
-            operation_str = record.operation
-        else:
-            operation_str = ""
-        operation_col = get_color_hash(operation_str)
-
-        # Colorize the strings.
+        severity = self.get_severity(record)
+        coordinates = self.get_coordinates(record)
+        operation = self.get_operation(record)
+        message = record.message
         if self.colors:
-            severity_str = add_color_to_string(severity_str, severity_col,
-                                               bold=True, force=True)
-            coord_str = add_color_to_string(coord_str, coord_col,
-                                            bold=True, force=True)
-            operation_str = add_color_to_string(operation_str, operation_col,
+            severity_col = self.SEVERITY_COLORS[record.levelno]
+            severity = add_color_to_string(severity, severity_col,
+                                           bold=True, force=True)
+            coordinates_col = get_color_hash(coordinates)
+            if coordinates != "":
+                coordinates = add_color_to_string(coordinates, coordinates_col,
+                                                  bold=True, force=True)
+            operation_col = get_color_hash(operation)
+            if operation != "":
+                operation = add_color_to_string(operation, operation_col,
                                                 bold=True, force=True)
 
-        # Put them all together.
-        fmt = severity_str
-        fmt += " [" + coord_str
-        if hasattr(record, "operation"):
-            fmt += "/" + operation_str
-        fmt += "] " + record.message
-
+        fmt = severity
+        if coordinates.strip() != "":
+            fmt += " [%s]" % (coordinates.strip())
+        if operation.strip() != "":
+            fmt += " [%s]" % (operation.strip())
+        fmt += " %s" % message
         return fmt
+
+    def get_severity(self, record):
+        """Return the severity part of the log for the given record."""
+        severity = record.asctime + " - " + record.levelname
+        return severity
+
+    def get_coordinates(self, record):
+        """Return the coordinates part of the log for the given record.
+
+        It contains information on what originates the log. For the
+        non detailed log, it only contains service coordinates.
+
+        """
+        if hasattr(record, "service_name") and \
+                hasattr(record, "service_shard"):
+            service = record.service_name\
+                .replace("Service", "").replace("WebServer", "")
+            coordinates = "%s,%d" % (service, record.service_shard)
+        else:
+            coordinates = "<unknown>"
+        return coordinates
+
+    def get_operation(self, record):
+        """Return the operation part of the log for the given record.
+
+        The operation is a string explicitly passed in the logger call.
+
+        """
+        return record.operation if hasattr(record, "operation") else ""
+
+
+class DetailedFormatter(CustomFormatter):
+    """A version of custom formatter showing more information."""
+
+    def get_coordinates(self, record):
+        """See CustomFormatter.get_coordinates
+
+        The detailed log contains the service coordinate, the thread
+        name, file and function name, in addition to the operation, if
+        present.
+
+        """
+        coordinates = super(DetailedFormatter, self).get_coordinates(record)
+
+        # Thread name, trying to shorten it removing useless values.
+        coordinates += " %s" % (
+            record.threadName.replace("Thread", "").replace("Dummy-", ""))
+
+        # File and function name.
+        coordinates += " %s::%s" % (
+            record.filename.replace(".py", ""), record.funcName)
+
+        return coordinates
 
 
 class ServiceFilter(logging.Filter):
@@ -355,8 +396,18 @@ class OperationAdapter(logging.LoggerAdapter):
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
 
+
 # Install a shell handler.
 shell_handler = StreamHandler(sys.stdout)
 shell_handler.setLevel(logging.INFO)
 shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
 root_logger.addHandler(shell_handler)
+
+
+def set_detailed_logs(detailed):
+    """Set or unset the shell logs to detailed."""
+    global shell_handler
+    color = has_color_support(sys.stdout)
+    formatter = DetailedFormatter(color) \
+        if detailed else CustomFormatter(color)
+    shell_handler.setFormatter(formatter)
