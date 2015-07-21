@@ -864,7 +864,7 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
     submissions = \
         task.sa_session.query(Submission)\
             .filter(Submission.task == task)\
-            .options(joinedload(Submission.user))\
+            .options(joinedload(Submission.participation))\
             .options(joinedload(Submission.token))\
             .options(joinedload(Submission.results)).all()
 

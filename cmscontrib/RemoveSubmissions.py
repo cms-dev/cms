@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,7 +29,8 @@ import argparse
 import sys
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Submission, Task, User, ask_for_contest
+from cms.db import Participation, SessionGen, Submission, Task, User, \
+    ask_for_contest
 
 
 def ask_and_remove(session, submissions):
@@ -48,13 +49,20 @@ def ask_and_remove(session, submissions):
 def remove_submissions_for_user(contest_id, username):
     with SessionGen() as session:
         user = session.query(User)\
-            .filter(User.contest_id == contest_id)\
-            .filter(User.username == username).first()
+            .filter(User.username == username)\
+            .first()
         if user is None:
             print("Unable to find user.")
             return
+        participation = session.query(Participation)\
+            .filter(Participation.user_id == user.id)\
+            .filter(Participation.contest_id == contest_id)\
+            .first()
+        if participation is None:
+            print("User %s is not in the contest." % username)
+            return
         submissions = session.query(Submission)\
-            .filter(Submission.user_id == user.id)\
+            .filter(Submission.participation_id == participation.id)\
             .all()
         ask_and_remove(session, submissions)
 

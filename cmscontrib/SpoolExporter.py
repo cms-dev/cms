@@ -90,13 +90,14 @@ class SpoolExporter(object):
             self.submissions = sorted(
                 (submission
                  for submission in self.contest.get_submissions()
-                 if not submission.user.hidden),
+                 if not submission.participation.hidden),
                 key=lambda submission: submission.timestamp)
 
             # Creating users' directory.
-            for user in self.contest.users:
-                if not user.hidden:
-                    os.mkdir(os.path.join(self.upload_dir, user.username))
+            for participation in self.contest.participations:
+                if not participation.hidden:
+                    os.mkdir(os.path.join(
+                        self.upload_dir, participation.user.username))
 
             try:
                 self.export_submissions()
@@ -120,7 +121,7 @@ class SpoolExporter(object):
                              encoding="utf-8")
         for submission in sorted(self.submissions, key=lambda x: x.timestamp):
             logger.info("Exporting submission %s.", submission.id)
-            username = submission.user.username
+            username = submission.participation.user.username
             task = submission.task.name
             timestamp = time.mktime(submission.timestamp.timetuple())
 
@@ -185,23 +186,24 @@ class SpoolExporter(object):
         logger.info("Exporting ranking.")
 
         # Create the structure to store the scores.
-        scores = dict((user.username, 0.0)
-                      for user in self.contest.users
-                      if not user.hidden)
-        task_scores = dict((task.id, dict((user.username, 0.0)
-                                          for user in self.contest.users
-                                          if not user.hidden))
-                           for task in self.contest.tasks)
+        scores = dict((participation.user.username, 0.0)
+                      for participation in self.contest.participations
+                      if not participation.hidden)
+        task_scores = dict(
+            (task.id, dict((participation.user.username, 0.0)
+                           for participation in self.contest.participations
+                           if not participation.hidden))
+            for task in self.contest.tasks)
 
         is_partial = False
         for task in self.contest.tasks:
-            for user in self.contest.users:
-                if user.hidden:
+            for participation in self.contest.participations:
+                if participation.hidden:
                     continue
-                score, partial = task_score(user, task)
+                score, partial = task_score(participation, task)
                 is_partial = is_partial or partial
-                task_scores[task.id][user.username] = score
-                scores[user.username] += score
+                task_scores[task.id][participation.user.username] = score
+                scores[participation.user.username] += score
         if is_partial:
             logger.warning("Some of the scores are not definitive.")
 
