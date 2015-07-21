@@ -21,6 +21,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import weakref
+
 from sqlalchemy import event, util, __version__ as sa_version
 from sqlalchemy.orm import class_mapper, mapper
 from sqlalchemy.orm.collections import \
@@ -54,12 +56,67 @@ def smc_sa10_workaround(prop):
     return prop
 
 
+class SAEventWeakWrapperToMethod(object):
+    """Forward SA events to a method of a weakly-referenced object.
+
+    """
+    def __init__(self, target, event_name, object_, method_name):
+        """Add listener to given event, to forward to given method.
+
+        Setup an SQLAlchemy listener for the given event on the given
+        target. When an event is received it's forwarded verbatim to
+        the given method of the given object, if the object still
+        exists. When the object gets deleted, the listener is removed.
+
+        As long as this wrapper is registered as an event listener
+        SQLAlchemy keeps a (strong) reference to it and prevents it
+        from being destroyed. Thus if the wrapper didn't store a weak
+        reference to the wrapped object it would keep it alive as well,
+        possibly causing a memory leak.
+
+        target (object): an object on which one can listen for
+            SQLAlchemy events.
+        event_name (string): the name of an event on such object.
+        object_ (object): an instance of a class that will receive
+            these events.
+        method_name (string): the name of the method of such class that
+            will be called.
+
+        """
+        self.target = target
+        self.event_name = event_name
+        self.object = weakref.ref(object_, self._death_callback)
+        self.method_name = method_name
+        self.attached = True
+
+        event.listen(self.target, self.event_name, self._event_callback)
+
+    def detach(self):
+        """Remove the SQLAlchemy listener."""
+        if self.attached:
+            event.remove(self.target, self.event_name, self._event_callback)
+            self.attached = False
+
+    def _event_callback(self, *args, **kwargs):
+        """Called by SQLAlchemy to alert us of an event."""
+        object_ = self.object()
+        if object_ is not None:
+            getattr(object_, self.method_name)(*args, **kwargs)
+
+    def _death_callback(self, ref):
+        """Called when the object we're forwarding to is deleted."""
+        assert ref is self.object
+        self.detach()
+
+
 class SmartMappedCollection(MappedCollection):
 
     def __init__(self, column_name):
         # Whether the collection is currently being used for a parent's
         # relationship attribute or not.
         self.linked = False
+
+        self.event_wrapper = None
 
         # Useful references, that will be obtained upon linking.
         self.child_cls = None
@@ -94,7 +151,8 @@ class SmartMappedCollection(MappedCollection):
         self.child_rel_prop = \
             class_mapper(self.child_cls).get_property(self.child_key_name)
 
-        event.listen(self.child_rel_prop, 'set', self.on_key_update)
+        self.event_wrapper = SAEventWeakWrapperToMethod(
+            self.child_rel_prop, 'set', self, 'on_key_update')
 
     # Called when the object stops being used. We basically undo what
     # was done in on_dispose and restore a pristine state.
@@ -102,7 +160,8 @@ class SmartMappedCollection(MappedCollection):
         assert self.linked
         self.linked = False
 
-        event.remove(self.child_rel_prop, 'set', self.on_key_update)
+        self.event_wrapper.detach()
+        self.event_wrapper = None
 
         self.child_cls = None
         self.child_rel_name = None
