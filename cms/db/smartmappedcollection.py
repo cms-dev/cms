@@ -116,6 +116,12 @@ class SmartMappedCollection(MappedCollection):
         # relationship attribute or not.
         self.linked = False
 
+        # Map the id() of values to their key. This is well defined
+        # because we ensure uniqueness of values (as the key is a
+        # function of the value: the attribute we're mapping from).
+        # This speeds up key retrieval.
+        self.inverse_map = dict()
+
         self.event_wrapper = None
 
         # Useful references, that will be obtained upon linking.
@@ -180,14 +186,6 @@ class SmartMappedCollection(MappedCollection):
             # dispose_collection
             self.on_dispose()
 
-    # We guarantee the values of the dictionary to be unique (because
-    # the key is also stored in the value itself) and this gives us
-    # an invertible mapping. This is the inverse function.
-    def get_key_of_value(self, value):
-        for k, v in self.iteritems():
-            if v == value:
-                return k
-
     # The following two methods have to maintain consistency, i.e.:
     # - self.values() is equal to all and only those objects of the
     #   self.child_cls class that have the self.child_rel_name
@@ -206,9 +204,11 @@ class SmartMappedCollection(MappedCollection):
     def on_key_update(self, value, new_key, unused_old_key,
                       unused_sa_initiator=None):
         assert self.linked
-        old_key = self.get_key_of_value(value)
-        if value in self.itervalues() and new_key != old_key:
-            if new_key in self.iterkeys():
+        old_key = self.inverse_map.get(id(value), None)
+        if old_key is not None and new_key != old_key:
+            if dict.__contains__(self, new_key):
+                other_value = dict.__getitem__(self, new_key)
+                del self.inverse_map[id(other_value)]
                 # We use the method of MappedCollection because we want
                 # it to trigger all the necessary Alchemy machinery to
                 # detach the child from the parent.
@@ -217,6 +217,7 @@ class SmartMappedCollection(MappedCollection):
             # to be transparent to Alchemy: the child was and remains
             # bound, only its key changes, and Alchemy doesn't care
             # about this.
+            self.inverse_map[id(value)] = new_key
             dict.__delitem__(self, old_key)
             dict.__setitem__(self, new_key, value)
 
@@ -230,6 +231,7 @@ class SmartMappedCollection(MappedCollection):
         assert self.linked
         # This is the only difference with the standard behavior.
         setattr(value, self.child_key_name, new_key)
+        self.inverse_map[id(value)] = new_key
         MappedCollection.__setitem__(self, new_key, value, _sa_initiator)
 
     # This method converts a data structure into an iterable of values.
