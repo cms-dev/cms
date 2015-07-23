@@ -36,7 +36,6 @@
         <th>Username</th>
         <th>First name</th>
         <th>Last name</th>
-        <th>Reevaluate</th>
       </tr>
     </thead>
     <tbody>
@@ -48,12 +47,6 @@
         <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
         <td>{{ p.user.first_name }}</td>
         <td>{{ p.user.last_name }}</td>
-        <td>
-          {% set reevaluation_par_name = "user" %}
-          {% set reevaluation_par_value = p.user.id %}
-          {% set reevaluation_par_dataset_id = None %}
-          {% include fragments/reevaluation_buttons.html %}
-        </td>
       </tr>
       {% end %}
     </tbody>

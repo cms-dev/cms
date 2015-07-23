@@ -101,10 +101,10 @@
       <tr>
         <td>Reevaluate</td>
         <td>
-          {% set reevaluation_par_name = "submission" %}
-          {% set reevaluation_par_value = s.id %}
-          {% set reevaluation_par_dataset_id = shown_dataset.id %}
-          {% include fragments/reevaluation_buttons.html %}
+          {% module ReevaluationButtons(
+                 url_root,
+                 submission_id=s.id,
+                 dataset_id=shown_dataset.id) %}
         </td>
       </tr>
     </tbody>
