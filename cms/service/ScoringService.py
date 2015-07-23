@@ -189,13 +189,15 @@ class ScoringService(TriggeredService):
 
     @rpc_method
     def invalidate_submission(self, submission_id=None, dataset_id=None,
-                              user_id=None, task_id=None, contest_id=None):
+                              participation_id=None, task_id=None,
+                              contest_id=None):
         """Invalidate (and re-score) some submission results.
 
         Invalidate the scores of the submission results that:
         - belong to submission_id or, if None, to any submission of
-          user_id and/or task_id or, if both None, to any submission
-          of contest_id or, if None, to any submission in the database.
+          participation_id and/or task_id or, if both None, to any
+          submission of contest_id or, if None, to any submission in
+          the database.
         - belong to dataset_id or, if None, to any dataset of task_id
           or, if None, to any dataset of contest_id or, if None, to any
           dataset in the database.
@@ -204,8 +206,8 @@ class ScoringService(TriggeredService):
             should be invalidated, or None.
         dataset_id (int|None): id of the dataset whose results should
             be invalidated, or None.
-        user_id (int|None): id of the user whose results should be
-            invalidated, or None.
+        participation_id (int|None): id of the participation whose results
+            should be invalidated, or None.
         task_id (int|None): id of the task whose results should be
             invalidated, or None.
         contest_id (int|None): id of the contest whose results should
@@ -221,7 +223,8 @@ class ScoringService(TriggeredService):
 
         with SessionGen() as session:
             submission_results = \
-                get_submission_results(contest_id, user_id, task_id,
+                get_submission_results(contest_id,
+                                       participation_id, task_id,
                                        submission_id, dataset_id,
                                        session=session)
 
@@ -240,4 +243,4 @@ class ScoringService(TriggeredService):
         for item, timestamp in temp_queue:
             self.enqueue(item, timestamp=timestamp)
 
-        logger.info("Invalidated %d submissions.", len(temp_queue))
+        logger.info("Invalidated %d submission results.", len(temp_queue))

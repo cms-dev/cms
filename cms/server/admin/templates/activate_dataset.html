@@ -51,11 +51,10 @@ below, and wait for it to complete.
 </p>
 
 <p>
-    Reevaluate all submissions using the dataset "{{ dataset.description }}":
-    {% set reevaluation_par_name = "dataset" %}
-    {% set reevaluation_par_value = dataset.id %}
-    {% set reevaluation_par_dataset_id = None %}
-    {% include fragments/reevaluation_buttons.html %}
+    Reevaluate all submissions for the dataset "{{ dataset.description }}":
+    {% module ReevaluationButtons(
+           url_root,
+           dataset_id = dataset.id) %}
 </p>
 
 <form action="{{ url_root }}/dataset/{{ dataset.id }}/activate" method="POST">

@@ -50,6 +50,7 @@ PACKAGE_DATA = {
         os.path.join("admin", "static", "sh", "*.*"),
         os.path.join("admin", "templates", "*.*"),
         os.path.join("admin", "templates", "fragments", "*.*"),
+        os.path.join("admin", "templates", "views", "*.*"),
         os.path.join("contest", "static", "*.*"),
         os.path.join("contest", "static", "css", "*.*"),
         os.path.join("contest", "static", "img", "*.*"),

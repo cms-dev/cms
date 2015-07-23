@@ -37,10 +37,15 @@ function update_additional_answer(element, invoker)
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
-  {% set reevaluation_par_msg = "Reevaluate all %s submissions for this user (for all datasets)" %}
-  {% set reevaluation_par_name = "user" %}
-  {% set reevaluation_par_value = selected_user.id %}
-  {% set reevaluation_par_dataset_id = None %}
+  <p>
+    Reevaluate all {{ submission_count }} submissions for this user in this contest (for all datasets)
+    {% module ReevaluationButtons(
+           url_root,
+           contest.id,
+           participation_id=participation.id,
+           user_id=participation.user_id) %}
+  </p>
+
   {% set submission_url = "/contest/%s/user/%s" % (contest.id, selected_user.id) %}
   {% include fragments/submission_rows.html %}
 
