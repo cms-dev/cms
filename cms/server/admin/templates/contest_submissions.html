@@ -7,10 +7,14 @@
 <h1>All Submissions</h1>
 
 <div id="submissions">
-  {% set reevaluation_par_msg = "Reevaluate all %s submissions in this contest (for all datasets)" %}
-  {% set reevaluation_par_name = "submissions" %}
-  {% set reevaluation_par_value = None %}
-  {% set reevaluation_par_dataset_id = None %}
+
+  <p>
+    Reevaluate all {{ submission_count }} submissions in this contest (for all datasets)
+    {% module ReevaluationButtons(
+           url_root,
+           contest.id) %}
+  </p>
+
   {% set page_url = "/contest/%s/submissions" % contest.id %}
   {% include fragments/submission_rows.html %}
 </div>

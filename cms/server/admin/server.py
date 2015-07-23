@@ -39,6 +39,7 @@ from cms.io import WebService
 from cms.db.filecacher import FileCacher
 
 from .handlers import HANDLERS
+from .handlers import views
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,7 @@ class AdminWebServer(WebService):
     """
     def __init__(self, shard):
         parameters = {
+            "ui_modules": views,
             "login_url": "/",
             "template_path": pkg_resources.resource_filename(
                 "cms.server.admin", "templates"),

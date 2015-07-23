@@ -15,10 +15,14 @@
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
-  {% set reevaluation_par_msg = "Reevaluate all %s submissions for this dataset" %}
-  {% set reevaluation_par_name = "dataset" %}
-  {% set reevaluation_par_value = shown_dataset.id %}
-  {% set reevaluation_par_dataset_id = None %}
+  <p>
+    Reevaluate all {{ submission_count }} submissions for this dataset
+    {% module ReevaluationButtons(
+           url_root,
+           shown_dataset.task.contest.id,
+           dataset_id=shown_dataset.id) %}
+  </p>
+
   {% set page_url = "/dataset/%s" % shown_dataset.id %}
   {% include fragments/submission_rows.html %}
 
