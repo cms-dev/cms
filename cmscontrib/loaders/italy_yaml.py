@@ -344,7 +344,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
 
         return User(**args)
 
-    def get_task(self):
+    def get_task(self, get_statement):
         """See docstring in class Loader.
 
         """
@@ -387,21 +387,23 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
         primary_language = load(conf, None, "primary_language")
         if primary_language is None:
             primary_language = 'it'
-        paths = [os.path.join(self.path, "statement", "statement.pdf"),
-                 os.path.join(self.path, "testo", "testo.pdf")]
-        for path in paths:
-            if os.path.exists(path):
-                digest = self.file_cacher.put_file_from_path(
-                    path,
-                    "Statement for task %s (lang: %s)" % (name,
-                                                          primary_language))
-                break
-        else:
-            logger.critical("Couldn't find any task statement, aborting...")
-            sys.exit(1)
-        args["statements"] = [Statement(primary_language, digest)]
 
-        args["primary_statements"] = '["%s"]' % (primary_language)
+        if get_statement:
+            paths = [os.path.join(self.path, "statement", "statement.pdf"),
+                     os.path.join(self.path, "testo", "testo.pdf")]
+            for path in paths:
+                if os.path.exists(path):
+                    digest = self.file_cacher.put_file_from_path(
+                        path,
+                        "Statement for task %s (lang: %s)" % (name,
+                                                              primary_language))
+                    break
+            else:
+                logger.critical("Couldn't find any task statement, aborting...")
+                sys.exit(1)
+            args["statements"] = [Statement(primary_language, digest)]
+
+            args["primary_statements"] = '["%s"]' % (primary_language)
 
         args["attachments"] = []  # FIXME Use auxiliary
 
