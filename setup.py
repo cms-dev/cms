@@ -36,6 +36,11 @@ import os
 from setuptools import setup, find_packages
 
 
+# Retrieve all cms.mo files
+DATA_FILES = [(root, [os.path.join(root, files[0])])
+              for root, subdirs, files in os.walk("mo")
+              if subdirs == []]
+
 PACKAGE_DATA = {
     "cms.server": [
         os.path.join("static", "*.*"),
@@ -83,6 +88,7 @@ setup(
                 "for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
+    data_files=DATA_FILES,
     scripts=["scripts/cmsLogService",
              "scripts/cmsScoringService",
              "scripts/cmsEvaluationService",
