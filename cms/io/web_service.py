@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,7 +32,7 @@ import tornado.wsgi
 
 from gevent.pywsgi import WSGIServer
 
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.wsgi import DispatcherMiddleware, SharedDataMiddleware
 from werkzeug.contrib.fixers import ProxyFix
 
 from .service import Service
@@ -50,10 +50,18 @@ class WebService(Service):
                  listen_address=""):
         super(WebService, self).__init__(shard)
 
+        static_files = parameters.pop('static_files', [])
+        rpc_enabled = parameters.pop('rpc_enabled', False)
+        is_proxy_used = parameters.pop('is_proxy_used', False)
+
         self.wsgi_app = tornado.wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self
 
-        if parameters.get('rpc_enabled', False):
+        for entry in static_files:
+            self.wsgi_app = SharedDataMiddleware(
+                self.wsgi_app, {"/static": entry})
+
+        if rpc_enabled:
             self.wsgi_app = DispatcherMiddleware(
                 self.wsgi_app, {"/rpc": RPCMiddleware(self)})
 
@@ -64,7 +72,7 @@ class WebService(Service):
         # only if all requests come from a trusted source (if clients
         # were allowed to directlty communicate with the server they
         # could fake their IP and compromise the security of IP lock).
-        if parameters.get('is_proxy_used', False):
+        if is_proxy_used:
             self.wsgi_app = ProxyFix(self.wsgi_app)
 
         self.web_server = WSGIServer((listen_address, listen_port),

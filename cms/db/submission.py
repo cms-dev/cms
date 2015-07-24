@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
@@ -36,7 +36,7 @@ from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, Participation, Task, Dataset, Testcase
-from .smartmappedcollection import smart_mapped_collection
+from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 
 from cmscommon.datetime import make_datetime
 
@@ -180,12 +180,12 @@ class File(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission = smc_sa10_workaround(relationship(
         Submission,
         backref=backref('files',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the submitted file.
     filename = Column(
@@ -583,7 +583,8 @@ class Executable(Base):
         nullable=False,
         index=True)
     submission = relationship(
-        Submission)
+        Submission,
+        viewonly=True)
 
     # Dataset (id and object) owning the executable.
     dataset_id = Column(
@@ -593,15 +594,16 @@ class Executable(Base):
         nullable=False,
         index=True)
     dataset = relationship(
-        Dataset)
+        Dataset,
+        viewonly=True)
 
     # SubmissionResult owning the executable.
-    submission_result = relationship(
+    submission_result = smc_sa10_workaround(relationship(
         SubmissionResult,
         backref=backref('executables',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the generated executable.
     filename = Column(
@@ -639,7 +641,8 @@ class Evaluation(Base):
         nullable=False,
         index=True)
     submission = relationship(
-        Submission)
+        Submission,
+        viewonly=True)
 
     # Dataset (id and object) owning the evaluation.
     dataset_id = Column(
@@ -649,7 +652,8 @@ class Evaluation(Base):
         nullable=False,
         index=True)
     dataset = relationship(
-        Dataset)
+        Dataset,
+        viewonly=True)
 
     # SubmissionResult owning the evaluation.
     submission_result = relationship(

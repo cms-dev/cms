@@ -47,7 +47,7 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 14.04, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 14.10, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
@@ -152,8 +152,8 @@ This command installs python dependencies in your home folder. If you really wan
 
 There are other ways to manage python dependencies:
 
-virtualenv
-----------
+Virtual environment
+-------------------
 
 A `virtual environment <https://virtualenv.pypa.io/en/latest/>`_ is an isolated Python environment that you can put wherever you like and that can be "activated" and "deactivated" at will. The tool you need in order to create a virtual environment is called ``virtualenv``, and can be installed by looking for ``python-virtualenv`` using your Linux distribution's package manager. For example:
 
@@ -262,15 +262,15 @@ Or, if you prefer to use pip:
 
     If you are going to use a virtual environment then you will not need the ``--user`` flag.
 
+Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but again, depending on your distribution, this might be a bad idea as it might interfere with the system package manager).
+
 In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
 
 .. sourcecode:: bash
 
     sudo ./prerequisites.py install
 
-Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but, depending on your distribution, this might be a bad idea as it might interfere with the system package manager).
-
-If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective:
+If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective. The ``prerequisites.py`` script is able to automatically add you to the group (if you answer ``Y`` when asked) but, if instead you want to handle your groups manually, answer ``N`` and then run:
 
 .. sourcecode:: bash
 
@@ -281,6 +281,8 @@ You can verify to be in the group by issuing the command:
 .. sourcecode:: bash
 
     groups
+
+Remember to logout, to make the change effective.
 
 .. warning::
 

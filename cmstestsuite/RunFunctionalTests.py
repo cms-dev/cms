@@ -446,7 +446,7 @@ def main():
 
         # Clear out any old coverage data.
         info("Clearing old coverage data.")
-        sh("python-coverage erase")
+        sh("python -m coverage erase")
 
     # Fire us up!
     start_generic_services()

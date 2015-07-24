@@ -45,27 +45,32 @@ import os
 import os.path
 
 from cms import utf8_decoder
-from cms.db import SessionGen, User, Participation, Task
+from cms.db import SessionGen, User, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
 
+from . import BaseImporter
 
 logger = logging.getLogger(__name__)
 
 
-class ContestImporter(object):
+class ContestImporter(BaseImporter):
 
     """This script creates a contest and all its associations to users
     and tasks.
 
     """
 
-    def __init__(self, path, test, zero_time, user_number, loader_class):
+    def __init__(self, path, test, zero_time, user_number, import_tasks,
+                 update_contest, update_tasks, no_statements, loader_class):
         self.test = test
         self.zero_time = zero_time
         self.user_number = user_number
-
+        self.import_tasks = import_tasks
+        self.update_contest = update_contest
+        self.update_tasks = update_tasks
+        self.no_statements = no_statements
         self.file_cacher = FileCacher()
 
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
@@ -85,19 +90,61 @@ class ContestImporter(object):
             contest.stop = datetime.datetime(2100, 1, 1)
 
         with SessionGen() as session:
+            # Check whether the contest already exists
+            old_contest = session.query(Contest) \
+                                 .filter(Contest.name == contest.name).first()
+            if old_contest is not None:
+                if self.update_contest:
+                    if self.loader.contest_has_changed():
+                        self._update_object(old_contest, contest)
+                    contest = old_contest
+                elif self.update_tasks:
+                    contest = old_contest
+                else:
+                    logger.critical(
+                        "Contest \"%s\" already exists in database.",
+                        contest.name)
+                    return
+
             # Check needed tasks
             for tasknum, taskname in enumerate(tasks):
                 task = session.query(Task) \
                               .filter(Task.name == taskname).first()
                 if task is None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("Task \"%s\" not found in database."
-                                    % taskname)
-                    return
-                if task.contest is not None:
+                    if self.import_tasks:
+                        task = self.loader.get_task_loader(taskname).get_task(
+                            get_statement=not self.no_statements)
+                        if task:
+                            session.add(task)
+                        else:
+                            logger.critical("Could not import task \"%s\".",
+                                            taskname)
+                            return
+                    else:
+                        logger.critical("Task \"%s\" not found in database.",
+                                        taskname)
+                        return
+                elif self.update_tasks:
+                    task_loader = self.loader.get_task_loader(taskname)
+                    if task_loader.task_has_changed():
+                        new_task = task_loader.get_task(
+                            get_statement=not self.no_statements)
+                        if new_task:
+                            ignore = set(("num",))
+                            if self.no_statements:
+                                ignore.update(("primary_statements",
+                                    "statements"))
+                            self._update_object(task, new_task,
+                                ignore=ignore)
+                        else:
+                            logger.critical("Could not reimport task \"%s\".",
+                                            taskname)
+                            return
+
+                if task.contest is not None \
+                   and task.contest.name != contest.name:
                     logger.critical("Task \"%s\" is already tied to a "
-                                    "contest." % taskname)
+                                    "contest.", taskname)
                     return
                 else:
                     # We should tie this task to the contest
@@ -111,8 +158,8 @@ class ContestImporter(object):
                 if user is None:
                     # FIXME: it would be nice to automatically try to
                     # import.
-                    logger.critical("User \"%s\" not found in database."
-                                    % username)
+                    logger.critical("User \"%s\" not found in database.",
+                                    username)
                     return
                 # We should tie this user to a new contest
                 # FIXME: there is no way for the loader to specify
@@ -127,12 +174,13 @@ class ContestImporter(object):
             # contest. However, I would like to be able to create it
             # anyway (and later tie to it some tasks and users).
 
-            logger.info("Creating contest on the database.")
-            session.add(contest)
+            if old_contest is None:
+                logger.info("Creating contest on the database.")
+                session.add(contest)
 
             # Final commit
             session.commit()
-            logger.info("Import finished (new contest id: %s)." % contest.id)
+            logger.info("Import finished (new contest id: %s).", contest.id)
 
 
 def main():
@@ -169,6 +217,26 @@ def main():
         help="use the specified loader (default: autodetect)"
     )
     parser.add_argument(
+        "-i", "--import-tasks",
+        action="store_true",
+        help="import tasks if they do not exist"
+    )
+    parser.add_argument(
+        "-u", "--update-contest",
+        action="store_true",
+        help="update an existing contest"
+    )
+    parser.add_argument(
+        "-U", "--update-tasks",
+        action="store_true",
+        help="update existing tasks"
+    )
+    parser.add_argument(
+        "-S", "--no-statements",
+        action="store_true",
+        help="do not import / update task statements"
+    )
+    parser.add_argument(
         "import_directory",
         action="store", type=utf8_decoder,
         help="source directory from where import"
@@ -187,6 +255,10 @@ def main():
         test=args.test,
         zero_time=args.zero_time,
         user_number=args.user_number,
+        import_tasks=args.import_tasks,
+        update_contest=args.update_contest,
+        update_tasks=args.update_tasks,
+        no_statements=args.no_statements,
         loader_class=loader_class
     ).do_import()
 

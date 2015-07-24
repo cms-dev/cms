@@ -200,6 +200,10 @@ class TestRequest(object):
     def specific_info(self):
         return ''
 
+    def step(self):
+        self.prepare()
+        self.execute()
+
 
 class GenericRequest(TestRequest):
     """Docstring TODO.

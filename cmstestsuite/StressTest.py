@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -248,7 +248,8 @@ def harvest_contest_data(contest_id):
     tasks = []
     with SessionGen() as session:
         contest = Contest.get_from_id(contest_id, session)
-        for user in contest.users:
+        for participation in contest.participations:
+            user = participation.user
             users[user.username] = {'password': user.password}
         for task in contest.tasks:
             tasks.append((task.id, task.name, task.statements.keys()))

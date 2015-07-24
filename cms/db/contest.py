@@ -32,7 +32,8 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
-from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum
+from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
+    Boolean
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, RepeatedUnicode
@@ -68,7 +69,7 @@ class Contest(Base):
         nullable=False)
 
     # The list of language codes of the localizations that contestants
-    # are allowed to use.
+    # are allowed to use (empty means all).
     allowed_localizations = Column(
         RepeatedUnicode(),
         nullable=False,
@@ -80,6 +81,12 @@ class Contest(Base):
         RepeatedUnicode(),
         nullable=False,
         default=DEFAULT_LANGUAGES)
+
+    # Whether contestants allowed to download their submissions.
+    submissions_download_allowed = Column(
+        Boolean,
+        nullable=False,
+        default=True)
 
     # The parameters that control contest-tokens follow. Note that
     # their effect during the contest depends on the interaction with

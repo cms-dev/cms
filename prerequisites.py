@@ -207,11 +207,10 @@ Available commands:
         assert_not_root()
 
         print("===== Compiling localization files")
-        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+        for locale in glob(os.path.join("po", "*.po")):
             country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
             print("  %s" % country_code)
-            path = os.path.join("cms", "server", "mo", country_code,
-                                "LC_MESSAGES")
+            path = os.path.join("mo", country_code, "LC_MESSAGES")
             makedir(path)
             os.system(
                 "msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
@@ -224,13 +223,12 @@ Available commands:
         root = pwd.getpwnam("root")
 
         print("===== Copying localization files")
-        locale_list = glob(os.path.join("cms", "server", "po", "*.po"))
+        locale_list = glob(os.path.join("po", "*.po"))
 
         # Check if build_l10n has been called
         for locale in locale_list:
             country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-            path = os.path.join(
-                "cms", "server", "mo", country_code, "LC_MESSAGES")
+            path = os.path.join("mo", country_code, "LC_MESSAGES")
             compiled_path = os.path.join(path, "cms.mo")
             if not os.path.exists(compiled_path):
                 print("[Error] %s not found" % (compiled_path))
@@ -245,8 +243,7 @@ Available commands:
         for locale in locale_list:
             country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
             print("  %s" % country_code)
-            path = os.path.join(
-                "cms", "server", "mo", country_code, "LC_MESSAGES")
+            path = os.path.join("mo", country_code, "LC_MESSAGES")
             dest_path = os.path.join(USR_ROOT, "share", "locale",
                                      country_code, "LC_MESSAGES")
             makedir(dest_path, root, 0755)
@@ -418,7 +415,7 @@ Available commands:
                 try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
 
         print("===== Deleting localization files")
-        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+        for locale in glob(os.path.join("po", "*.po")):
             country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
             print("  %s" % country_code)
             dest_path = os.path.join(USR_ROOT, "share", "locale",

@@ -1,0 +1,31 @@
+{% extends base.html %}
+
+{% block js_init %}
+utils.show_page("submissions", 1, 50);
+{% end %}
+
+{% block core %}
+{% from cms.grading.scoretypes import get_score_type %}
+{% set score_types = {} %}
+
+<h1>All Submissions</h1>
+
+<div id="submissions">
+
+  {% if submissions != [] %}
+  <p>
+    {# TODO: restrict reevaluation to this contest and live datasets #}
+    Reevaluate all {{ len(submissions) }} submissions:
+
+    {% set reevaluation_par_name = "submissions" %}
+    {% set reevaluation_par_value = None %}
+    {% set reevaluation_par_dataset_id = None %}
+    {% include fragments/reevaluation_buttons.html %}
+
+  </p>
+  {% end %}
+
+  {% include fragments/submission_rows.html %}
+</div>
+
+{% end %}

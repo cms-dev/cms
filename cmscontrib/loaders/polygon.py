@@ -22,13 +22,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import io
 import logging
 import os
-import os.path
 import sys
+
 from datetime import datetime
 from datetime import timedelta
+
 import xml.etree.ElementTree as ET
 
 from cms import config
@@ -79,13 +81,13 @@ class PolygonTaskLoader(TaskLoader):
         """
         return os.path.exists(os.path.join(path, "problem.xml"))
 
-    def has_changed(self, name):
+    def task_has_changed(self):
         """See docstring in class Loader.
 
         """
         return True
 
-    def get_task(self):
+    def get_task(self, get_statement=True):
         """See docstring in class Loader.
 
         """
@@ -114,21 +116,22 @@ class PolygonTaskLoader(TaskLoader):
         args["name"] = name
         args["title"] = root.find('names').find("name").attrib['value']
 
-        args["statements"] = []
-        args["primary_statements"] = []
-        for language, language_code in LANGUAGE_MAP.iteritems():
-            path = os.path.join(self.path, 'statements',
-                                '.pdf', language, 'problem.pdf')
-            if os.path.exists(path):
-                lang = LANGUAGE_MAP[language]
-                digest = self.file_cacher.put_file_from_path(
-                    path,
-                    "Statement for task %s (lang: %s)" % (name,
-                                                          language))
-                args["statements"].append(Statement(lang, digest))
-                args["primary_statements"].append(lang)
-        args["primary_statements"] = '["%s"]' % \
-            '","'.join(args["primary_statements"])
+        if get_statement:
+            args["statements"] = []
+            args["primary_statements"] = []
+            for language, language_code in LANGUAGE_MAP.iteritems():
+                path = os.path.join(self.path, 'statements',
+                                    '.pdf', language, 'problem.pdf')
+                if os.path.exists(path):
+                    lang = LANGUAGE_MAP[language]
+                    digest = self.file_cacher.put_file_from_path(
+                        path,
+                        "Statement for task %s (lang: %s)" % (name,
+                                                              language))
+                    args["statements"].append(Statement(lang, digest))
+                    args["primary_statements"].append(lang)
+            args["primary_statements"] = json.dumps(args["primary_statements"])
+
         args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
 
         # These options cannot be configured in the Polygon format.
@@ -277,7 +280,7 @@ class PolygonUserLoader(UserLoader):
         return os.path.exists(
             os.path.join(os.path.dirname(path), "contestants.txt"))
 
-    def has_changed(self, name):
+    def user_has_changed(self):
         """See docstring in class Loader.
 
         """
@@ -349,6 +352,10 @@ class PolygonContestLoader(ContestLoader):
         """
         return os.path.exists(os.path.join(path, "contest.xml")) and \
             os.path.exists(os.path.join(path, "problems"))
+
+    def get_task_loader(self, taskname):
+        taskpath = os.path.join(self.path, "problems", taskname)
+        return PolygonTaskLoader(taskpath, self.file_cacher)
 
     def get_contest(self):
         """See docstring in class Loader.
@@ -439,7 +446,7 @@ class PolygonContestLoader(ContestLoader):
 
         return Contest(**args), tasks, users
 
-    def has_changed(self, name):
+    def contest_has_changed(self):
         """See docstring in class Loader.
 
         """

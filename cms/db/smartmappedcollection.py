@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,61 +23,114 @@ from __future__ import unicode_literals
 
 import weakref
 
-from sqlalchemy import util
-from sqlalchemy import event
-from sqlalchemy.orm import class_mapper
+from sqlalchemy import event, util, __version__ as sa_version
+from sqlalchemy.orm import class_mapper, mapper
 from sqlalchemy.orm.collections import \
-    collection, collection_adapter, MappedCollection, \
-    __set as sa_set, __del as sa_del
+    collection, collection_adapter, MappedCollection
 
 
-# XXX When dropping support for SQLAlchemy pre-0.7.6, remove these two
-# lines.
-from sqlalchemy.orm.collections import _instrument_class
-_instrument_class(MappedCollection)
+# Workaround to make SmartMappedCollection work with SQLAlchemy 1.0.
+# Until v0.9 detection of a new collection being created and (un)bound
+# to a relationship was done by the @collection.linker decorator on a
+# method. Starting with v1.0 it's done by registering two events on the
+# relationship property.
+def smc_sa10_workaround(prop):
+    def add_event_handlers():
+        # We have the relationship from the child to the parent but we
+        # need the inverse. This is only defined after the mapper has
+        # been configured. That's why this is inside a listener for the
+        # "after_configured" event.
+        parent_prop = getattr(prop.mapper.class_, prop.back_populates)
+
+        def cb_on_init(target, coll, adapter):
+            coll.on_init()
+        event.listen(parent_prop, "init_collection", cb_on_init)
+
+        def cb_on_dispose(target, coll, adapter):
+            coll.on_dispose()
+        event.listen(parent_prop, "dispose_collection", cb_on_dispose)
+
+    if sa_version.startswith("1."):
+        event.listen(mapper, "after_configured", add_event_handlers)
+
+    return prop
 
 
-# XXX When SQLAlchemy will support removal of attribute events, remove
-# the following class and global variable:
+class SAEventWeakWrapperToMethod(object):
+    """Forward SA events to a method of a weakly-referenced object.
 
-class _EventManager(object):
-    def __init__(self):
-        self.handlers = dict()
+    """
+    def __init__(self, target, event_name, object_, method_name):
+        """Add listener to given event, to forward to given method.
 
-    def listen(self, cls, prp, handler):
-        if (cls, prp) not in self.handlers:
-            self.handlers[(cls, prp)] = weakref.WeakSet()
-            event.listen(class_mapper(cls)._props[prp],
-                         'set', self.make_callback(cls, prp))
+        Setup an SQLAlchemy listener for the given event on the given
+        target. When an event is received it's forwarded verbatim to
+        the given method of the given object, if the object still
+        exists. When the object gets deleted, the listener is removed.
 
-        self.handlers[(cls, prp)].add(handler)
+        As long as this wrapper is registered as an event listener
+        SQLAlchemy keeps a (strong) reference to it and prevents it
+        from being destroyed. Thus if the wrapper didn't store a weak
+        reference to the wrapped object it would keep it alive as well,
+        possibly causing a memory leak.
 
-    # No need to enable handlers to be removed: they'll automatically
-    # vanish when they are garbage collected, as they are weakrefs.
+        target (object): an object on which one can listen for
+            SQLAlchemy events.
+        event_name (string): the name of an event on such object.
+        object_ (object): an instance of a class that will receive
+            these events.
+        method_name (string): the name of the method of such class that
+            will be called.
 
-    def make_callback(self, cls, prp):
-        def callback(target, new_key, old_key, _sa_initiator):
-            for handler in self.handlers[(cls, prp)]:
-                handler._on_column_change(target, new_key, old_key,
-                                          _sa_initiator)
-        return callback
+        """
+        self.target = target
+        self.event_name = event_name
+        self.object = weakref.ref(object_, self._death_callback)
+        self.method_name = method_name
+        self.attached = True
 
+        event.listen(self.target, self.event_name, self._event_callback)
 
-_event_manager = _EventManager()
+    def detach(self):
+        """Remove the SQLAlchemy listener."""
+        if self.attached:
+            event.remove(self.target, self.event_name, self._event_callback)
+            self.attached = False
+
+    def _event_callback(self, *args, **kwargs):
+        """Called by SQLAlchemy to alert us of an event."""
+        object_ = self.object()
+        if object_ is not None:
+            getattr(object_, self.method_name)(*args, **kwargs)
+
+    def _death_callback(self, ref):
+        """Called when the object we're forwarding to is deleted."""
+        assert ref is self.object
+        self.detach()
 
 
 class SmartMappedCollection(MappedCollection):
 
-    def __init__(self, column):
-        self._column = column
+    def __init__(self, column_name):
+        # Whether the collection is currently being used for a parent's
+        # relationship attribute or not.
+        self.linked = False
 
-        self._linked = False
+        # Map the id() of values to their key. This is well defined
+        # because we ensure uniqueness of values (as the key is a
+        # function of the value: the attribute we're mapping from).
+        # This speeds up key retrieval.
+        self.inverse_map = dict()
 
-        self._parent_rel = None
-        self._parent_obj = None
-        self._parent_cls = None
-        self._child_rel = None
-        self._child_cls = None
+        self.event_wrapper = None
+
+        # Useful references, that will be obtained upon linking.
+        self.child_cls = None
+        self.child_rel_name = None
+        self.child_rel_prop = None
+        self.child_key_name = column_name
+
+        MappedCollection.__init__(self, lambda x: getattr(x, column_name))
 
     def __eq__(self, other):
         return self is other
@@ -85,157 +138,126 @@ class SmartMappedCollection(MappedCollection):
     def __hash__(self):
         return hash(id(self))
 
-    # XXX When dropping support for SQLAlchemy pre-0.8, rename this
-    # decorator to 'collection.linker'.
-    @collection.link
+    # Called when the object starts being used as a collection for a
+    # parent's relationship attribute. We just get some data about the
+    # relationship and the classes involved therein, and register an
+    # event to detect when the key of a child gets updated.
+    def on_init(self):
+        assert not self.linked
+        self.linked = True
+
+        adapter = collection_adapter(self)
+
+        parent_cls = type(adapter.owner_state.obj())
+        parent_rel_name = adapter.attr.key
+        parent_rel_prop = \
+            class_mapper(parent_cls).get_property(parent_rel_name)
+        self.child_cls = parent_rel_prop.mapper.class_
+        self.child_rel_name = parent_rel_prop.back_populates
+        self.child_rel_prop = \
+            class_mapper(self.child_cls).get_property(self.child_key_name)
+
+        self.event_wrapper = SAEventWeakWrapperToMethod(
+            self.child_rel_prop, 'set', self, 'on_key_update')
+
+    # Called when the object stops being used. We basically undo what
+    # was done in on_dispose and restore a pristine state.
+    def on_dispose(self):
+        assert self.linked
+        self.linked = False
+
+        self.event_wrapper.detach()
+        self.event_wrapper = None
+
+        self.child_cls = None
+        self.child_rel_name = None
+        self.child_rel_prop = None
+
+    # This is the old pre-1.0 interface for detecting when the data
+    # structure was linked to or unlinked from an attribute.
+    @collection.linker
     def _link(self, adapter):
         assert adapter == collection_adapter(self)
 
         if adapter is not None:
-            # LINK
-            assert not self._linked
-            self._linked = True
-
-            assert self is adapter.data
-
-            self._parent_rel = adapter.attr.key
-            self._parent_obj = adapter.owner_state.obj()
-            self._parent_cls = type(self._parent_obj)
-            parent_rel_prop = \
-                class_mapper(self._parent_cls)._props[self._parent_rel]
-            self._child_rel = parent_rel_prop.back_populates
-            self._child_cls = parent_rel_prop.mapper.class_
-            # This is at the moment not used, but may be in the future.
-            # child_rel_prop = \
-            #     class_mapper(self._child_cls)._props[self._child_rel]
-
-            # XXX When SQLAlchemy will support removal of attribute
-            # events, use the following code:
-            #event.listen(class_mapper(self._child_cls)._props[self._column],
-            #             'set', self._on_column_change)
-            # In the meanwhile we have to use this:
-            _event_manager.listen(self._child_cls, self._column, self)
-
+            # init_collection
+            self.on_init()
         else:
-            # UNLINK
-            assert self._linked
-            self._linked = False
+            # dispose_collection
+            self.on_dispose()
 
-            # XXX When SQLAlchemy will support removal of attribute
-            # events, use the following code:
-            #event.remove(class_mapper(self._child_cls)._props[self._column],
-            #             'set', self._on_column_change)
-            # In the meanwhile we just rely on EventManager + weakrefs.
-
-            self._parent_rel = None
-            self._parent_obj = None
-            self._parent_cls = None
-            self._child_rel = None
-            self._child_cls = None
-
-    # XXX When dropping support for SQLAlchemy pre-0.8, remove this line.
-    _sa_on_link = _link
-
-    # The following two methods do all the hard work. Their mission is
-    # to keep everything consistent, that is to get from a (hopefully
-    # consistent) initial state to a consistent final state after
-    # having dome something useful (i.e. what they were written for).
-    # This is what we consider a consistent state:
+    # The following two methods have to maintain consistency, i.e.:
     # - self.values() is equal to all and only those objects of the
-    #   self._child_cls class that have the self._child_rel attribute
-    #   set to self._parent_obj;
-    # - all elements of self.values() are distinct (that is, this is an
-    #   invertible mapping);
+    #   self.child_cls class that have the self.child_rel_name
+    #   attribute set to the parent object;
+    # - all elements of self.values() are distinct;
     # - for each (key, value) in self.items(), key is equal to the
-    #   self._column attribute of value.
+    #   self.child_key_name attribute of value.
 
-    # This method is called before the attribute is really changed, and
-    # trying to change it again from inside this method will cause an
-    # infinte recursion loop. Don't do that! This also means that the
-    # method does actually leave the collection in an inconsistent
-    # state, but SQLAlchemy will fix that immediately after.
-    def _on_column_change(self, value, new_key, old_key, _sa_initiator):
-        assert self._linked
-        if getattr(value, self._child_rel) is self._parent_obj:
-            # Get the old_key (the parameter may not be reliable) and
-            # do some consistency checks.
-            assert value in self.itervalues()
-            old_key = list(k for k, v in self.iteritems() if v is value)
-            assert len(old_key) == 1
-            old_key = old_key[0]
-            assert old_key == getattr(value, self._column)
+    # The general rule here is: don't ever assume anything about the
+    # state of the child, neither about its relationship attribute
+    # (i.e. who it considers its parent) nor on its key attribute.
 
-            # If necessary, move this object (and remove any old object
-            # with this key).
-            if new_key != old_key:
-                dict.__delitem__(self, old_key)
-                if new_key in self:
-                    sa_del(self,
-                           dict.__getitem__(self, new_key),
-                           _sa_initiator)
-                    dict.__delitem__(self, new_key)
-                dict.__setitem__(self, new_key, value)
+    # This method is called when the key of a child object changes. In
+    # such an event the binding in the dictionary has to change as well
+    # (i.e. del d[old_key] and d[new_key] = value).
+    def on_key_update(self, value, new_key, unused_old_key,
+                      unused_sa_initiator=None):
+        assert self.linked
+        old_key = self.inverse_map.get(id(value), None)
+        if old_key is not None and new_key != old_key:
+            if dict.__contains__(self, new_key):
+                other_value = dict.__getitem__(self, new_key)
+                del self.inverse_map[id(other_value)]
+                # We use the method of MappedCollection because we want
+                # it to trigger all the necessary Alchemy machinery to
+                # detach the child from the parent.
+                MappedCollection.__delitem__(self, new_key)
+            # We use the methods of dict directly because we want this
+            # to be transparent to Alchemy: the child was and remains
+            # bound, only its key changes, and Alchemy doesn't care
+            # about this.
+            self.inverse_map[id(value)] = new_key
+            dict.__delitem__(self, old_key)
+            dict.__setitem__(self, new_key, value)
 
-    # When this method gets called, the child object may think it's
-    # already bound to the collection (i.e. its self._child_rel is set
-    # to self._parent_obj) but it actually isn't (i.e. it's not in
-    # self.values()). This method has to fix that.
+    # This method is called when a binding to a new child is performed.
+    # The only additional feature with respect to the superclass method
+    # is that it enforces the key stored in the child to be equal to
+    # the one that is being used to bind the child to the collection.
     @collection.internally_instrumented
     def __setitem__(self, new_key, value, _sa_initiator=None):
         # TODO We could check if the object's type is correct.
-        assert self._linked
-        if value in self.itervalues():
-            # Just some consistency checks, for extra safety!
-            assert getattr(value, self._child_rel) is self._parent_obj
-            old_key = list(k for k, v in self.iteritems() if v is value)
-            assert len(old_key) == 1
-            old_key = old_key[0]
-            assert old_key == getattr(value, self._column)
+        assert self.linked
+        # This is the only difference with the standard behavior.
+        setattr(value, self.child_key_name, new_key)
+        self.inverse_map[id(value)] = new_key
+        MappedCollection.__setitem__(self, new_key, value, _sa_initiator)
 
-            # If needed, we make SQLAlchemy call _on_column_changed to
-            # do the rest of the job (and repeat the above checks).
-            if new_key != getattr(value, self._column):
-                setattr(value, self._column, new_key)
-        else:
-            # We change the attribute before adding it to the collection
-            # to prevent the (unavoidable) call to _on_column_change
-            # from doing any damage.
-            if new_key != getattr(value, self._column):
-                setattr(value, self._column, new_key)
-
-            # Remove any old object with this key and add this instead.
-            if new_key in self:
-                sa_del(self, dict.__getitem__(self, new_key), _sa_initiator)
-                dict.__delitem__(self, new_key)
-            value = sa_set(self, value, _sa_initiator)
-            dict.__setitem__(self, new_key, value)
-
-    def keyfunc(self, value):
-        return getattr(value, self._column)
-
+    # This method converts a data structure into an iterable of values.
+    # It allows us to use the syntactic sugar "foo.children = bar"
+    # (where bar is a dict, a list, ...) because it gets translated to
+    # for v in converter(bar): foo.children.set(v)
     @collection.converter
-    def _convert(self, collection):
+    def _convert(self, coll):
         # TODO We could check if the objects' type is correct.
-        type_ = util.duck_type_collection(collection)
+        type_ = util.duck_type_collection(coll)
         if type_ is dict:
-            for key, value in util.dictlike_iteritems(collection):
+            for key, value in util.dictlike_iteritems(coll):
                 if key != self.keyfunc(value):
                     raise TypeError(
                         "Found incompatible key '%r' for value '%r'" %
                         (key, value))
                 yield value
         elif type_ in (list, set):
-            for value in collection:
+            for value in coll:
                 yield value
         else:
-            raise TypeError("Object '%r' is not dict-like nor iterable" %
-                            collection)
+            raise TypeError("Object '%r' is not dict-like nor iterable" % coll)
 
-    # XXX When dropping support for SQLAlchemy pre-0.8, remove this.
-    _sa_converter = _convert
-
-    def __iadd__(self, collection):
-        for value in self._convert(collection):
+    # This extends the above syntactic sugar to "foo.children += bar".
+    def __iadd__(self, coll):
+        for value in self._convert(coll):
             self.set(value)
         return self
 

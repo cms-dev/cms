@@ -1,0 +1,115 @@
+{% extends base.html %}
+
+{% block js %}
+
+{% end %}
+
+{% block core %}
+<div class="core_title">
+  <h1>New contest</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/contests/add" method="POST" name="add_contest">
+  <table class="sub_table">
+    <tr>
+      <td>Name</td>
+      <td><input type="text" name="name"></td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td><textarea name="description"></textarea></td>
+    </tr>
+    <tr>
+      <td>Allowed web interface localization (list of language codes, leave empty for all available languages)</td>
+      <td><input type="text" name="allowed_localizations" value=""/></td>
+    </tr>
+    <tr>
+      <td>Languages allowed</td>
+      <td>
+        {% for lang in LANGUAGES %}
+          <label><input type="checkbox" name="languages" value="{{ lang }}" {{ "checked" if lang in DEFAULT_LANGUAGES else "" }}>{{ LANGUAGE_NAMES[lang] }}</label>
+        {% end %}
+      </td>
+    </tr>
+    <tr>
+      <td>Token mode</td>
+      <td>
+        <select name="token_mode">
+          <option value="disabled">Disabled</option>
+          <option value="finite">Finite</option>
+          <option value="infinite" selected>Infinite</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td><label for="submissions_download_allowed">Submissions download allowed</label></td>
+      <td>
+        <input type="checkbox" id="submissions_download_allowed" name="submissions_download_allowed" checked/>
+      </td>
+    </tr>
+    <tr>
+      <td>[only if finite] Maximum number of tokens a contestant can use</td>
+      <td><input type="text" name="token_max_number" size="3" value=""></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Minimum interval a contestant has to wait between two token uses (in seconds)</td>
+      <td><input type="text" name="token_min_interval" size="3" value="0"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Initial number of tokens</td>
+      <td><input type="text" name="token_gen_initial" size="3" value="2"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Token generation number</td>
+      <td><input type="text" name="token_gen_number" size="3" value="2"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Token generation period (in minutes)</td>
+      <td><input type="text" name="token_gen_interval" size="3" value="30"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Maximum accumulated tokens</td>
+      <td><input type="text" name="token_gen_max" size="3" value=""></td>
+    </tr>
+    <tr>
+      <td>Start (in UTC)</td>
+      <td><input type="text" name="start" value="{{ str(timestamp) }}"></td>
+    </tr>
+    <tr>
+      <td>End (in UTC)</td>
+      <td><input type="text" name="stop" value="{{ str(timestamp) }}"></td>
+    </tr>
+    <tr>
+      <td>Timezone (like "Europe/Rome", "America/New_York", ...)</td>
+      <td><input type="text" name="timezone" value=""></td>
+    </tr>
+    <tr>
+      <td>Maximum length of the contest for a user (in seconds)</td>
+      <td><input type="text" name="per_user_time" value=""></td>
+    </tr>
+    <tr>
+      <td>Maximum number of submissions for each user (for the whole contest)</td>
+      <td><input type="text" name="max_submission_number" value=""></td>
+    </tr>
+    <tr>
+      <td>Maximum number of user_tests for each user (for the whole contest)</td>
+      <td><input type="text" name="max_user_test_number" value=""></td>
+    </tr>
+    <tr>
+      <td>Minimum interval between two submissions of each user (for the whole contest, in seconds)</td>
+      <td><input type="text" name="min_submission_interval" value=""></td>
+    </tr>
+    <tr>
+      <td>Minimum interval between two user_tests of each user (for the whole contest, in seconds)</td>
+      <td><input type="text" name="min_user_test_interval" value=""></td>
+    </tr>
+    <tr>
+      <td>The number of decimal places the scores will be rounded to</td>
+      <td><input type="text" name="score_precision" value="0"></td>
+    </tr>
+  </table>
+  <input type="submit"><input type="reset" value="Reset">
+</form>
+{% end %}
+

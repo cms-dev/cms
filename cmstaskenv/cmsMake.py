@@ -96,8 +96,8 @@ def basename2(string, suffixes):
     try:
         idx = map(lambda x: string.endswith(x), suffixes).index(True)
     except ValueError:
-        return None
-    return (string[:-len(suffixes[idx])], string[-len(suffixes[idx]):])
+        return None, None
+    return string[:-len(suffixes[idx])], string[-len(suffixes[idx]):]
 
 
 def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):

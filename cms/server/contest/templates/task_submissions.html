@@ -1,0 +1,277 @@
+{% extends base.html %}
+
+{% block js %}
+
+$(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
+    var submission_id = $(this).parent().parent().attr("data-submission");
+    var modal = $("#submission_detail");
+    var modal_body = modal.children(".modal-body");
+    modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>');
+    modal_body.load("{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id + "/details", function() {
+        $(".score_details .subtask .subtask-head").each(function () {
+            $(this).prepend("<i class=\"icon-chevron-right\"></i>");
+        });
+        $(".score_details .subtask .subtask-head").click(function () {
+            $(this).parent().toggleClass("open");
+            if ($(this).parent().hasClass("open")) {
+                $(this).children("i").removeClass("icon-chevron-right").addClass("icon-chevron-down");
+            } else {
+                $(this).children("i").removeClass("icon-chevron-down").addClass("icon-chevron-right");
+            }
+        });
+        $(".score_details table.testcase-list").addClass("table table-bordered table-striped");
+        $(".score_details table.testcase-list tbody tr:not(.undefined) td:nth-child(1)").each(function () {
+            $(this).html("<span class=\"outcome\">" + $(this).text() + "</span>");
+        });
+    });
+    modal.modal("show");
+});
+
+function get_score_class (score, max_score) {
+    if (score <= 0) {
+        return "score_0";
+    } else if (score >= max_score) {
+        return "score_100";
+    } else {
+        return "score_0_100";
+    }
+}
+
+update_submission_row = function (submission_id, data) {
+    var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
+    row.attr("data-status", data["status"]);
+    row.children("td.status").html(data["status_text"]);
+    if (data["status"] == {{ SubmissionResult.SCORED }}) {
+        if (data["public_score"] != undefined) {
+            var public_score = data["public_score"];
+            if (data["max_public_score"] != undefined) {
+                row.children("td.public_score").addClass(get_score_class(parseFloat(data["public_score"]), parseFloat(data["max_public_score"])));
+                public_score += " / " + data["max_public_score"];
+            }
+            row.children("td.public_score").removeClass("undefined").html(public_score);
+        }
+        if (data["score"] != undefined) {
+            var score = data["score"];
+            if (data["max_score"] != undefined) {
+                row.children("td.total_score").addClass(get_score_class(parseFloat(data["score"]), parseFloat(data["max_score"])));
+                score += " / " + data["max_score"];
+            }
+            row.children("td.total_score").removeClass("undefined").html(score);
+        }
+    } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
+        schedule_update_submission_row(submission_id);
+    }
+}
+
+schedule_update_submission_row = function (submission_id) {
+    setTimeout(function () {
+        $.get("{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id, function (data) {
+            update_submission_row(submission_id, data);
+        });
+    }, 2000);
+}
+
+$(document).ready(function () {
+    $('#submission_list tbody tr[data-status][data-status!="{{ SubmissionResult.COMPILATION_FAILED }}"][data-status!="{{ SubmissionResult.SCORED }}"]').each(function (idx, elem) {
+        schedule_update_submission_row($(this).attr("data-submission"));
+    });
+});
+
+{% end %}
+
+{% block core %}
+
+{% if actual_phase == 0 %}
+
+<div class="span9 task_submissions">
+
+<div class="page-header">
+    <h1>{% raw _("%(name)s (%(short_name)s) <small>submissions</small>") % {"name": task.title, "short_name": task.name} %}</small></h1>
+</div>
+
+
+<h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
+
+{% if submissions_left is not None %}
+    <div class="span5">
+        <p>
+        {{ _("You can submit %(submissions_left)s more solution(s).") % {"submissions_left": submissions_left} }}
+        </p>
+    </div>
+{% end %}
+
+<div id="submit_solution" class="row">
+    <div class="span5">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+            <fieldset>
+{% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
+                <div class="control-group">
+                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input{{ idx }}" name="{{ filename }}"/>
+                    </div>
+                </div>
+{% end %}
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
+                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% if len(task.submission_format) > 1 %}
+    <div class="span4">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
+                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% end %}
+</div>
+
+
+<h2 style="margin: 40px 0 10px">{{ _("Previous submissions") }}</h2>
+
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+<div style="padding-bottom:10px">
+    {% set tokens_info = contest.tokens_available(current_user.user.username, task.name, timestamp) %}
+    {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}
+    {% set need_to_wait = tokens_info[2] is not None %}
+    {% if can_play_token %}
+        {% if tokens_info[0] == -1 %}
+            {{ _("Right now, you have infinite tokens available on this task.") }}
+        {% elif tokens_info[0] == 1 %}
+            {{ _("Right now, you have one token available on this task.") }}
+        {% else %}
+            {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
+        {% end %}
+        {% if need_to_wait %}
+            {% set t = format_datetime_smart(tokens_info[2], timezone, locale=locale) %}
+            {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
+        {% end %}
+        {% if tokens_info[1] is not None %}
+            {% set t = format_datetime_smart(tokens_info[1], timezone, locale=locale) %}
+            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
+        {% else %}
+            {{ _("In the current situation, no more tokens will be generated.") }}
+        {% end %}
+    {% else %}
+        {{ _("Right now, you do not have tokens available for this task.") }}
+        {% if tokens_info[1] is not None %}
+            {% set t = format_datetime_smart(tokens_info[1], timezone, locale=locale) %}
+            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
+            {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
+                {% set t = format_datetime_smart(tokens_info[2], timezone, locale=locale) %}
+                {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
+            {% end %}
+        {% else %}
+            {{ _("In the current situation, no more tokens will be generated.") }}
+        {% end %}
+    {% end %}
+</div>
+{% end %}
+
+
+{% from cms.grading.scoretypes import get_score_type %}
+{% try %}
+    {% set score_type = get_score_type(dataset=task.active_dataset) %}
+{% except %}
+    {% set score_type = None %}
+{% end %}
+
+{% from cmscommon.datetime import utc %}
+{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
+
+
+<table id="submission_list" class="table table-bordered table-striped">
+    <colgroup>
+{% if show_date %}
+        <col class="datetime"/>
+{% else %}
+        <col class="time"/>
+{% end %}
+        <col class="status"/>
+{% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+        <col class="public_score"/>
+        <col class="total_score"/>
+{% else %}
+        <col class="total_score"/>
+{% end %}
+{% if submissions_download_allowed %}
+        <col class="files"/>
+{% end %}
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+        <col class="token"/>
+{% end %}
+    </colgroup>
+    <thead>
+        <tr>
+{% if show_date %}
+            <th class="datetime">{{ _("Date and time") }}</th>
+{% else %}
+            <th class="time">{{ _("Time") }}</th>
+{% end %}
+            <th class="status">{{ _("Status") }}</th>
+{% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+            <th class="public_score">{{ _("Public score") }}</th>
+            <th class="total_score">{{ _("Total score") }}</th>
+{% else %}
+            <th class="total_score">{{ _("Score") }}</th>
+{% end %}
+{% if submissions_download_allowed %}
+            <th class="files">{{ _("Files") }}</th>
+{% end %}
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+            <th class="token">{{ _("Token") }}</th>
+{% end %}
+        </tr>
+    </thead>
+    <tbody>
+    {% if len(submissions) == 0 %}
+        <tr>
+        {% if tokens_contest != 0 and tokens_tasks != 0 %}
+            <td colspan="6" class="no_submissions">{{ _("no submissions yet") }}</td>
+        {% else %}
+            <td colspan="5" class="no_submissions">{{ _("no submissions yet") }}</td>
+        {% end %}
+        </tr>
+    {% else %}
+        {% for s_idx, s in enumerate(sorted(submissions, key=lambda s: s.timestamp, reverse=True)) %}
+            {% set s_idx = len(submissions) - s_idx %}
+            {% set sr = s.get_result(s.task.active_dataset) %}
+            {% include submission_row.html %}
+        {% end %}
+    {% end %}
+    </tbody>
+</table>
+
+<div class="modal fade hide wide" id="submission_detail">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+        <h3>{{ _("Submission details") }}</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
+    </div>
+</div>
+
+</div>
+{% end %}
+
+{% end %}

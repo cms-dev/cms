@@ -21,16 +21,45 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import sys
 
 from cmstestsuite import FrameworkException, sh
 
 
+UNITTESTS = "unittests"
+FUNCTIONALTESTS = "functionaltests"
+TESTS = set([UNITTESTS, FUNCTIONALTESTS])
+
+
+def get_test_suite():
+    """Return the test suite to run based on the env variable
+
+    return (string): either "functionaltests" or "unittests" or an
+        empty string to mean "run both".
+
+    """
+    test_suite = ""
+    if "TEST_SUITE" in os.environ:
+        test_suite = os.environ["TEST_SUITE"]
+    if test_suite in TESTS:
+        return test_suite
+    else:
+        return ""
+
+
 def main():
+    test_suite = get_test_suite()
     try:
-        sh(["./cmstestsuite/RunUnitTests.py"] + sys.argv[1:])
-        sh(["./cmstestsuite/RunFunctionalTests.py"] + sys.argv[1:])
+        if test_suite == UNITTESTS or test_suite == "":
+            sh(["./cmstestsuite/RunUnitTests.py"] + sys.argv[1:])
+        if test_suite == FUNCTIONALTESTS or test_suite == "":
+            sh(["./cmstestsuite/RunFunctionalTests.py"] + sys.argv[1:])
     except FrameworkException:
+        if os.path.exists("./log/cms/last.log"):
+            print("\n\n===== START OF LOG DUMP =====\n\n")
+            print(open("./log/cms/last.log").read())
+            print("\n\n===== END OF LOG DUMP =====\n\n")
         return 1
     return 0
 

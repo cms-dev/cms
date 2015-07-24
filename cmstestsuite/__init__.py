@@ -48,23 +48,25 @@ CONFIG = {
     'VERBOSITY': 0,
 }
 
+
 # cms_config holds the decoded-JSON of the cms.conf configuration file.
-global cms_config
 cms_config = None
+
 
 # We store a list of all services that are running so that we can cleanly shut
 # them down.
-global running_services
 running_services = {}
-
-global running_servers
 running_servers = {}
 
-global created_users
-created_users = {}
 
-global created_tasks
+# List of users and tasks we created as part of the test.
+created_users = {}
 created_tasks = {}
+
+
+# Persistent browsers to access AWS and CWS.
+aws_browser = None
+cws_browser = None
 
 
 class FrameworkException(Exception):
@@ -160,7 +162,7 @@ def spawn(cmdline):
         print('$', ' '.join(cmdline))
 
     if CONFIG["TEST_DIR"] is not None:
-        cmdline = ['python-coverage', 'run', '-p', '--source=cms'] + \
+        cmdline = ['python', '-m', 'coverage', 'run', '-p', '--source=cms'] + \
             cmdline
 
     if CONFIG["VERBOSITY"] >= 3:
@@ -347,20 +349,22 @@ def shutdown_services():
 
 def combine_coverage():
     info("Combining coverage results.")
-    sh("python-coverage combine")
+    sh("python -m coverage combine")
 
 
 def admin_req(path, multipart_post=False, args=None, files=None):
-    url = 'http://localhost:8889' + path
-    br = mechanize.Browser()
-    br.set_handle_robots(False)
+    global aws_browser
+    if aws_browser is None:
+        aws_browser = mechanize.Browser()
+        aws_browser.set_handle_robots(False)
 
     # Some requests must be forced to be multipart.
     # Do this by making files not None.
     if multipart_post and files is None:
         files = []
 
-    return cmstestsuite.web.browser_do_request(br, url, args, files)
+    return cmstestsuite.web.browser_do_request(
+        aws_browser, 'http://localhost:8889' + path, args, files)
 
 
 def get_tasks():
@@ -525,19 +529,17 @@ def cws_submit(contest_id, task_id, user_id, submission_format_element,
     base_url = 'http://localhost:8888/'
     task = (task_id, created_tasks[task_id]['name'])
 
-    def step(request):
-        request.prepare()
-        request.execute()
+    global cws_browser
+    if cws_browser is None:
+        cws_browser = mechanize.Browser()
+        cws_browser.set_handle_robots(False)
+        lr = LoginRequest(cws_browser, username, password, base_url=base_url)
+        lr.step()
 
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
-
-    lr = LoginRequest(browser, username, password, base_url=base_url)
-    step(lr)
-    sr = SubmitRequest(browser, task, base_url=base_url,
+    sr = SubmitRequest(cws_browser, task, base_url=base_url,
                        submission_format_element=submission_format_element,
                        filename=filename)
-    step(sr)
+    sr.step()
 
     submission_id = sr.get_submission_id()
 
@@ -548,8 +550,10 @@ def cws_submit(contest_id, task_id, user_id, submission_format_element,
 
 
 def get_evaluation_result(contest_id, submission_id, timeout=30):
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
+    global aws_browser
+    if aws_browser is None:
+        aws_browser = mechanize.Browser()
+        aws_browser.set_handle_robots(False)
     base_url = 'http://localhost:8889/'
 
     WAITING_STATUSES = re.compile(
@@ -557,14 +561,14 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
     COMPLETED_STATUS = re.compile(
         r'Compilation failed|Evaluated \(')
 
-    num_tries = timeout
-    while num_tries > 0:
-        num_tries -= 1
+    sleep_interval = 0.1
+    while timeout > 0:
+        timeout -= sleep_interval
 
-        sr = AWSSubmissionViewRequest(browser, submission_id,
+        sr = AWSSubmissionViewRequest(aws_browser,
+                                      submission_id,
                                       base_url=base_url)
-        sr.prepare()
-        sr.execute()
+        sr.step()
 
         result = sr.get_submission_info()
         status = result['status']
@@ -573,7 +577,7 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
             return result
 
         if WAITING_STATUSES.search(status):
-            time.sleep(1)
+            time.sleep(sleep_interval)
             continue
 
         raise FrameworkException("Unknown submission status: %s" % status)

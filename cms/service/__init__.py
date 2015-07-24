@@ -27,7 +27,8 @@ from __future__ import unicode_literals
 
 import logging
 
-from cms.db import SessionGen, User, Task, Submission, SubmissionResult
+from cms.db import SessionGen, Participation, Submission, SubmissionResult, \
+    Task
 
 
 logger = logging.getLogger(__name__)
@@ -77,11 +78,13 @@ def get_submissions(contest_id=None, user_id=None, task_id=None,
     if submission_id is not None:
         query = query.filter(Submission.id == submission_id)
     if user_id is not None:
-        query = query.filter(Submission.user_id == user_id)
+        query = query.join(Participation) \
+            .filter(Participation.user_id == user_id)
     if task_id is not None:
         query = query.filter(Submission.task_id == task_id)
     if contest_id is not None:
-        query = query.join(User).filter(User.contest_id == contest_id)\
+        query = query.join(Participation) \
+            .filter(Participation.contest_id == contest_id) \
             .join(Task).filter(Task.contest_id == contest_id)
     return query.all()
 
@@ -139,11 +142,13 @@ def get_submission_results(contest_id=None, user_id=None, task_id=None,
     if dataset_id is not None:
         query = query.filter(SubmissionResult.dataset_id == dataset_id)
     if user_id is not None:
-        query = query.filter(Submission.user_id == user_id)
+        query = query.join(Participation) \
+            .filter(Participation.user_id == user_id)
     if task_id is not None:
         query = query.filter(Submission.task_id == task_id)
     if contest_id is not None:
-        query = query.join(User).filter(User.contest_id == contest_id)\
+        query = query.join(Participation) \
+            .filter(Participation.contest_id == contest_id)\
             .join(Task).filter(Task.contest_id == contest_id)
     return query.all()
 
