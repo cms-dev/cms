@@ -86,8 +86,10 @@ class TaskLoader(BaseLoader):
     def __init__(self, path, file_cacher):
         super(TaskLoader, self).__init__(path, file_cacher)
 
-    def get_task(self):
+    def get_task(self, get_statement):
         """Produce a Task object.
+
+        get_statement (boolean): whether the statement should be imported.
 
         return (Task): the Task object.
 
