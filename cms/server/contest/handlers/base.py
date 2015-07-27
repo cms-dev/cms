@@ -131,6 +131,20 @@ class BaseHandler(CommonRequestHandler):
         current contest), return None.
 
         """
+        remote_ip = self.request.remote_ip
+        if self.contest.ip_autologin:
+            participations = self.sql_session.query(Participation)\
+                .filter(Participation.contest == self.contest)\
+                .filter(Participation.ip == remote_ip)\
+                .all()
+            if len(participations) == 1:
+                return participations[0]
+
+            if len(participations) > 1:
+                logger.error("Multiple users have IP %s." % (remote_ip))
+            else:
+                logger.error("No user has IP %s" % (remote_ip))
+
         if self.get_secure_cookie("login") is None:
             return None
 
