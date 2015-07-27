@@ -43,6 +43,12 @@
       </td>
     </tr>
     <tr>
+      <td><label for="ip_autologin">IP based autologin</label></td>
+      <td>
+        <input type="checkbox" id="ip_autologin" name="ip_autologin" {{ "checked" if contest.ip_autologin else "" }}/>
+      </td>
+    </tr>
+    <tr>
       <td>Token mode</td>
       <td>
         <select name="token_mode">
