@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -29,6 +29,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import time
 
 import gevent.coros
 
@@ -59,6 +60,10 @@ class Worker(Service):
         self.file_cacher = FileCacher(self)
 
         self.work_lock = gevent.coros.RLock()
+        self._last_end_time = None
+        self._total_free_time = 0
+        self._total_busy_time = 0
+        self._number_execution = 0
 
     @rpc_method
     def precache_files(self, contest_id):
@@ -94,6 +99,7 @@ class Worker(Service):
         job_dict (dict): a dictionary suitable to be imported from Job.
 
         """
+        start_time = time.time()
         job = Job.import_from_dict_with_type(job_dict)
 
         if self.work_lock.acquire(False):
@@ -119,6 +125,7 @@ class Worker(Service):
                 raise JobException(err_msg)
 
             finally:
+                self._finalize(start_time)
                 self.work_lock.release()
 
         else:
@@ -127,4 +134,28 @@ class Worker(Service):
                 "not happen: check if there are more than one ES running, " \
                 "or for bugs in ES."
             logger.warning(err_msg)
+            self._finalize(start_time)
             raise JobException(err_msg)
+
+    def _finalize(self, start_time):
+        end_time = time.time()
+        busy_time = end_time - start_time
+        free_time = 0.0
+        if self._last_end_time is not None:
+            free_time = start_time - self._last_end_time
+        self._last_end_time = end_time
+        self._total_busy_time += busy_time
+        self._total_free_time += free_time
+        ratio = self._total_busy_time * 100.0 / \
+            (self._total_busy_time + self._total_free_time)
+        avg_free_time = 0.0
+        if self._number_execution > 0:
+            avg_free_time = self._total_free_time / self._number_execution
+        avg_busy_time = 0.0
+        if self._number_execution > 0:
+            avg_busy_time = self._total_busy_time / self._number_execution
+        self._number_execution += 1
+        logger.info("Executed in %.3lf after free for %.3lf; "
+                    "busyness is %.1lf%%; avg free time is %.3lf "
+                    "avg busy time is %.3lf ",
+                    busy_time, free_time, ratio, avg_free_time, avg_busy_time)
