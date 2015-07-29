@@ -146,11 +146,12 @@ def submission_get_operations(submission, dataset):
         perform, its priority and its timestamp.
 
     """
-    submission_result = submission.get_result_or_create(dataset)
+    submission_result = submission.get_result(dataset)
     if submission_to_compile(submission_result):
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
-        elif submission_result.compilation_tries == 0:
+        elif submission_result is None or \
+                submission_result.compilation_tries == 0:
             priority = PriorityQueue.PRIORITY_HIGH
         else:
             priority = PriorityQueue.PRIORITY_MEDIUM
@@ -190,11 +191,12 @@ def user_test_get_operations(user_test, dataset):
         perform, its priority and its timestamp.
 
     """
-    user_test_result = user_test.get_result_or_create(dataset)
+    user_test_result = user_test.get_result(dataset)
     if user_test_to_compile(user_test_result):
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
-        elif user_test_result.compilation_tries == 0:
+        elif user_test_result is None or \
+                user_test_result.compilation_tries == 0:
             priority = PriorityQueue.PRIORITY_HIGH
         else:
             priority = PriorityQueue.PRIORITY_MEDIUM
@@ -322,20 +324,20 @@ class ESOperation(QueueItem):
         dataset = Dataset.get_from_id(self.dataset_id, session)
         if self.type_ == ESOperation.COMPILATION:
             submission = Submission.get_from_id(self.object_id, session)
-            submission_result = submission.get_result_or_create(dataset)
+            submission_result = submission.get_result(dataset)
             result = submission_to_compile(submission_result)
         elif self.type_ == ESOperation.EVALUATION:
             submission = Submission.get_from_id(self.object_id, session)
-            submission_result = submission.get_result_or_create(dataset)
+            submission_result = submission.get_result(dataset)
             result = submission_to_evaluate_on_testcase(
                 submission_result, self.testcase_codename)
         elif self.type_ == ESOperation.USER_TEST_COMPILATION:
             user_test = UserTest.get_from_id(self.object_id, session)
-            user_test_result = user_test.get_result_or_create(dataset)
+            user_test_result = user_test.get_result(dataset)
             result = user_test_to_compile(user_test_result)
         elif self.type_ == ESOperation.USER_TEST_EVALUATION:
             user_test = UserTest.get_from_id(self.object_id, session)
-            user_test_result = user_test.get_result_or_create(dataset)
+            user_test_result = user_test.get_result(dataset)
             result = user_test_to_evaluate(user_test_result)
         return result
 
