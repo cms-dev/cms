@@ -30,7 +30,7 @@ import os
 import sys
 import logging
 
-import cmscontrib.YamlLoader
+import cmscontrib.loaders
 from cms.db import Executable
 from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
@@ -100,7 +100,7 @@ def test_testcases(base_dir, solution, language, assume=None):
     if file_cacher is None:
         file_cacher = FileCacher(null=True)
 
-    cmscontrib.YamlLoader.logger = NullLogger()
+    cmscontrib.loaders.italy_yaml.logger = NullLogger()
     # Load the task
     # TODO - This implies copying a lot of data to the FileCacher,
     # which is annoying if you have to do it continuously; it would be
@@ -108,12 +108,9 @@ def test_testcases(base_dir, solution, language, assume=None):
     # filesystem-based instead of database-based) and somehow detect
     # when the task has already been loaded
     if task is None:
-        loader = cmscontrib.YamlLoader.YamlLoader(
-            os.path.realpath(os.path.join(base_dir, "..")),
-            file_cacher)
-        # Normally we should import the contest before, but YamlLoader
-        # accepts get_task() even without previous get_contest() calls
-        task = loader.get_task(os.path.split(os.path.realpath(base_dir))[1])
+        loader = cmscontrib.loaders.italy_yaml.YamlLoader(base_dir,
+                                                          file_cacher)
+        task = loader.get_task(get_statement=False)
 
     # Prepare the EvaluationJob
     dataset = task.active_dataset

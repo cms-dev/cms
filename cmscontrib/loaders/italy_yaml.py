@@ -344,7 +344,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
 
         return User(**args)
 
-    def get_task(self, get_statement):
+    def get_task(self, get_statement=True):
         """See docstring in class Loader.
 
         """
@@ -384,11 +384,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
             logger.warning("Short name equals long name (title). "
                            "Please check.")
 
-        primary_language = load(conf, None, "primary_language")
-        if primary_language is None:
-            primary_language = 'it'
-
         if get_statement:
+            primary_language = load(conf, None, "primary_language")
+            if primary_language is None:
+                primary_language = 'it'
             paths = [os.path.join(self.path, "statement", "statement.pdf"),
                      os.path.join(self.path, "testo", "testo.pdf")]
             for path in paths:

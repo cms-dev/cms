@@ -207,8 +207,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                      STUB_BASENAME + '.%s' % (lang)))
         srcs.append(src)
 
-        test_deps = \
-            [exe_EVAL, os.path.join(TEXT_DIRNAME, TEXT_PDF)] + in_out_files
+        test_deps = [exe_EVAL] + in_out_files
         if task_type == ['Batch', 'Comp'] or \
                 task_type == ['Batch', 'GradComp']:
             test_deps.append('cor/correttore')
@@ -325,22 +324,11 @@ def build_text_list(base_dir, task_type):
               '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
-    def make_dummy_pdf(assume=None):
-        try:
-            open(text_pdf, 'r')
-        except IOError:
-            logger.warning(
-                "%s does not exist, creating an empty file..." % text_pdf
-            )
-            open(text_pdf, 'w')
-
     actions = []
     if os.path.exists(text_tex):
         actions.append(([text_tex], [text_pdf, text_aux, text_log],
                         make_pdf, 'compile to PDF'))
-    else:
-        actions.append(([TEXT_DIRNAME], [text_pdf], make_dummy_pdf,
-                        "create empty PDF file"))
+
     return actions
 
 
