@@ -7,7 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -190,6 +190,7 @@ class CLI(object):
 Available commands:
    build_l10n        Build localization files
    build_isolate     Build "isolate" sandbox
+   build_npm         Build front-end dependencies
    build             Build everything
    install_isolate   Install "isolate" sandbox (requires root)
    install           Install everything (requires root)
@@ -211,6 +212,20 @@ Options:
             exit(1)
         # use dispatch pattern to invoke method with same name
         getattr(self, args.command)()
+
+    def build_npm(self):
+        """This function downloads the required front-end dependencies
+        like jQuery, Bootstrap, and so on. It basically just runs:
+          $ npm install
+
+        """
+        assert_not_root()
+
+        print("===== Running \"npm install\" to get front-end dependencies")
+        os.chdir(os.path.join("cms", "server"))
+        os.system("npm install")
+        os.chdir(os.path.join("..", "..", "cmsranking", "static"))
+        os.system("npm install")
 
     def build_l10n(self):
         """This function compiles localization files.
@@ -275,6 +290,7 @@ Options:
         """
         self.build_l10n()
         self.build_isolate()
+        self.build_npm()
 
     def install_conf(self):
         """Install configuration files"""
