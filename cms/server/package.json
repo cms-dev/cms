@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "as-jqplot": "^1.0.8",
+    "bootstrap": "github:twbs/bootstrap#v2.0.4"
+  }
+}

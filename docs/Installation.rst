@@ -20,6 +20,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0;
 
+* `npm <https://www.npmjs.com/>`_ (to manage front-ent dependencies)
+
 * `libcg <http://libcg.sourceforge.net/>`_;
 
 * `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
@@ -52,7 +54,8 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
 .. sourcecode:: bash
 
     sudo apt-get install build-essential fpc postgresql postgresql-client \
-         gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
+         gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite \
+         npm
 
     # Only if you will use pip/virtualenv to install python dependencies
     sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev
@@ -69,7 +72,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 .. sourcecode:: bash
 
     sudo pacman -S base-devel fpc postgresql postgresql-client python2 \
-         iso-codes shared-mime-info
+         iso-codes shared-mime-info npm
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
@@ -264,7 +267,7 @@ Or, if you prefer to use pip:
 
 Both commands will install CMS in your home folder. If you really want to install it globally then you should remove ``--user`` and run the install command as root (but again, depending on your distribution, this might be a bad idea as it might interfere with the system package manager).
 
-In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
+In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, downloading the front-end dependencies, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
 
 .. sourcecode:: bash
 
