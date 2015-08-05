@@ -7,11 +7,12 @@
         <title>{% block title %}{% endblock title %}</title>
 
         <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
-        <link rel="stylesheet" href="{{ url("static", "css", "bootstrap.css") }}">
+        <link rel="stylesheet" href="{{ url("static", "bootstrap", "css", "bootstrap.css") }}">
+        <link rel="stylesheet" href="{{ url("static", "bootstrap", "css", "bootstrap-responsive.css") }}">
         <link rel="stylesheet" href="{{ url("static", "cws_style.css") }}">
 
-        <script src="{{ url("static", "jq", "jquery-1.7.1.min.js") }}"></script>
-        <script src="{{ url("static", "js", "bootstrap.js") }}"></script>
+        <script src="{{ url("static", "jquery", "jquery.min.js") }}"></script>
+        <script src="{{ url("static", "bootstrap", "js", "bootstrap.min.js") }}"></script>
         <script src="{{ url("static", "cws_utils.js") }}"></script>
 
         {% block js %}{% endblock js %}
