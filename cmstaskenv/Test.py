@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013-2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -153,9 +153,9 @@ def test_testcases(base_dir, solution, language, assume=None):
         # Evaluate testcase
         last_status = status
         tasktype.evaluate(job, file_cacher)
-        status = job.plus["exit_status"]
-        info.append((job.plus["execution_time"],
-                    job.plus["execution_memory"]))
+        status = job.plus.get("exit_status")
+        info.append((job.plus.get("execution_time"),
+                     job.plus.get("execution_memory")))
         points.append(float(job.outcome))
         comments.append(format_status_text(job.text))
         tcnames.append(jobinfo[0])
@@ -192,7 +192,7 @@ def test_testcases(base_dir, solution, language, assume=None):
                            % dataset.score_type)
 
         def scoreFun(x):
-            return sum(x)/len(x)
+            return sum(x) / len(x)
 
     pos = 0
     sts = []
@@ -213,7 +213,7 @@ def test_testcases(base_dir, solution, language, assume=None):
                 if info[pos][1] > worst[1]:
                     worst[1] = info[pos][1]
                 pos += 1
-            sts.append((scoreFun(stscores)*i[0], i[0], stsdata, worst))
+            sts.append((scoreFun(stscores) * i[0], i[0], stsdata, worst))
         except:
             sts.append((0, i[0], stsdata, [0, 0]))
 
@@ -227,7 +227,7 @@ def test_testcases(base_dir, solution, language, assume=None):
             "Subtask %d:" % st,
             add_color_to_string(
                 "%5.2f/%d" % (d[0], d[1]),
-                colors.RED if abs(d[0]-d[1]) > 0.01 else colors.GREEN,
+                colors.RED if abs(d[0] - d[1]) > 0.01 else colors.GREEN,
                 bold=True
             )
         )
@@ -240,13 +240,15 @@ def test_testcases(base_dir, solution, language, assume=None):
                 ),
                 "--- %s [Time:" % c.ljust(clen),
                 add_color_to_string(
-                    "%5.3f" % w[0],
-                    colors.BLUE if w[0] >= 0.95 * d[3][0] else colors.BLACK
+                    ("%5.3f" % w[0]) if w[0] is not None else "N/A",
+                    colors.BLUE if w[0] is not None and w[0] >= 0.95 * d[3][0]
+                    else colors.BLACK
                 ),
                 "Memory:",
                 add_color_to_string(
-                    "%5s" % mem_human(w[1]),
-                    colors.BLUE if w[1] >= 0.95 * d[3][1] else colors.BLACK,
+                    "%5s" % mem_human(w[1]) if w[1] is not None else "N/A",
+                    colors.BLUE if w[1] is not None and w[1] >= 0.95 * d[3][1]
+                    else colors.BLACK,
                 ),
                 end="]"
             )

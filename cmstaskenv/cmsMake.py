@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 Luca Versari <veluca93@gmail.com>
@@ -370,7 +370,7 @@ def iter_GEN(name):
                 st += 1
 
 
-def build_gen_list(base_dir, task_type):
+def build_gen_list(base_dir, task_type, yaml_conf):
     input_dir = os.path.join(base_dir, INPUT_DIRNAME)
     output_dir = os.path.join(base_dir, OUTPUT_DIRNAME)
     gen_dir = os.path.join(base_dir, GEN_DIRNAME)
@@ -466,17 +466,44 @@ def build_gen_list(base_dir, task_type):
                                 stream=sys.stderr, bold=True),
             file=sys.stderr
         )
-        with io.open(os.path.join(input_dir,
-                                  'input%d.txt' % (n)), 'rb') as fin:
-            with io.open(os.path.join(output_dir,
-                                      'output%d.txt' % (n)), 'wb') as fout:
-                if task_type != ['Communication', '']:
-                    call(base_dir, [sol_exe], stdin=fin, stdout=fout)
-                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
-                # If the task of of type Communication, then there is
-                # nothing to put in the output files
-                else:
-                    pass
+
+        temp_dir = tempfile.mkdtemp(prefix=os.path.join(base_dir, "tmp"))
+        use_stdin = yaml_conf.get("infile") in {None, ""}
+        use_stdout = yaml_conf.get("outfile") in {None, ""}
+
+        # Names of the actual source and destination.
+        infile = os.path.join(input_dir, 'input%d.txt' % (n))
+        outfile = os.path.join(output_dir, 'output%d.txt' % (n))
+
+        # Names of the input and output in temp directory.
+        copied_infile = os.path.join(
+            temp_dir,
+            "input.txt" if use_stdin else yaml_conf.get("infile"))
+        copied_outfile = os.path.join(
+            temp_dir,
+            "output.txt" if use_stdout else yaml_conf.get("outfile"))
+
+        os.symlink(infile, copied_infile)
+        fin = io.open(copied_infile, "rb") if use_stdin else None
+        fout = io.open(copied_outfile, 'wb') if use_stdout else None
+
+        shutil.copy(sol_exe, temp_dir)
+
+        # If the task of of type Communication, then there is
+        # nothing to put in the output files
+        if task_type != ['Communication', '']:
+            call(temp_dir, [os.path.join(temp_dir, SOL_FILENAME)],
+                 stdin=fin, stdout=fout)
+            move_cursor(directions.UP, erase=True, stream=sys.stderr)
+
+        if fin is not None:
+            fin.close()
+        if fout is not None:
+            fout.close()
+
+        os.rename(copied_outfile, outfile)
+        shutil.rmtree(temp_dir)
+
         move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     actions = []
@@ -529,7 +556,7 @@ def build_action_list(base_dir, task_type, yaml_conf):
 
     """
     actions = []
-    gen_actions, in_out_files = build_gen_list(base_dir, task_type)
+    gen_actions, in_out_files = build_gen_list(base_dir, task_type, yaml_conf)
     actions += gen_actions
     actions += build_sols_list(base_dir, task_type, in_out_files, yaml_conf)
     actions += build_checker_list(base_dir, task_type)
