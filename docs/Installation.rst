@@ -18,6 +18,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Python <http://www.python.org/>`_ >= 3.6;
 
+* `npm <https://www.npmjs.com/>`_ (to manage front-ent dependencies)
+
 * `libcg <http://libcg.sourceforge.net/>`_;
 
 * `TeX Live <https://www.tug.org/texlive/>`_ (only for printing);
@@ -56,7 +58,7 @@ On Ubuntu 18.04, one will need to run the following script to satisfy all depend
     # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-8-jdk-headless fp-compiler \
         postgresql postgresql-client python3.6 cppreference-doc-en-html \
-        cgroup-lite libcap-dev zip
+        cgroup-lite libcap-dev zip npm
 
     # Only if you are going to use pip/venv to install python dependencies
     sudo apt-get install python3.6-dev libpq-dev libcups2-dev libyaml-dev \
@@ -77,7 +79,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 .. sourcecode:: bash
 
     sudo pacman -S base-devel jdk8-openjdk fpc postgresql postgresql-client \
-        python libcap
+        python libcap npm
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
@@ -103,7 +105,7 @@ Download :gh_download:`CMS` |release| from GitHub as an archive, then extract it
 
         git submodule update --init
 
-In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
+In order to run CMS there are some preparation steps to run (like installing the sandbox, compiling localization files, downloading the front-end dependencies, creating the ``cmsuser``, and so on). You can either do all these steps by hand or you can run the following command:
 
 .. sourcecode:: bash
 

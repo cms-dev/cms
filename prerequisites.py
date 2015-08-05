@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -231,12 +231,28 @@ def install_isolate():
              root, 0o640, group=cmsuser_grp)
 
 
+def build_frontend():
+    """This function downloads the required front-end dependencies
+    like jQuery, Bootstrap, and so on. It basically just runs:
+      $ npm install
+    """
+    assert_not_root()
+
+    print("===== Running \"npm install\" to get front-end dependencies")
+    os.chdir(os.path.join("cms", "server"))
+    os.system("npm install")
+    os.chdir(os.path.join("..", "..", "cmsranking", "static"))
+    os.system("npm install")
+
+
 def build():
     """This function builds all the prerequisites by calling:
     - build_isolate
+    - build_frontend
 
     """
     build_isolate()
+    build_frontend()
 
 
 def install_conf():
@@ -445,6 +461,9 @@ if __name__ == '__main__':
     subparsers.add_parser("build_isolate",
                           help="Build \"isolate\" sandbox") \
         .set_defaults(func=build_isolate)
+    subparsers.add_parser("build_frontend",
+                          help="Fetch frontend dependencies") \
+        .set_defaults(func=build_frontend)
     subparsers.add_parser("build",
                           help="Build everything") \
         .set_defaults(func=build)

@@ -180,9 +180,9 @@
             <li>
                 <a href="{{ contest_url("tasks", task.name, "attachments", filename) }}" class="btn">
             {% if type_icon is not none %}
-                    <img src="{{ url("static", "img", "mimetypes", "%s.png"|format(type_icon)) }}" alt="{{ mime_type }}" />
+                    <img src="{{ url("static", "mimetypes", "%s.png"|format(type_icon)) }}" alt="{{ mime_type }}" />
             {% else %}
-                    <img src="{{ url("static", "img", "mimetypes", "unknown.png") }}" alt="{% trans %}unknown{% endtrans %}" />
+                    <img src="{{ url("static", "mimetypes", "unknown.png") }}" alt="{% trans %}unknown{% endtrans %}" />
             {% endif %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
