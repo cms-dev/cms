@@ -243,6 +243,16 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
     # Optionally install the following from AUR.
     # https://aur.archlinux.org/packages/python2-pypdf2/
 
+Front end dependencies
+======================
+
+CMS uses several front end dependencies (like Bootstrap, jQuery, and so on). In order to install them, you must `install bower <http://bower.io/#install-bower>`_ first. Once you have that, you must ``cd`` to the ``cms/server`` directory (where a ``bower.json`` file can be located), and then install the dependencies by issuing:
+
+.. sourcecode:: bash
+
+    bower install
+
+
 Installing CMS
 ==============
 

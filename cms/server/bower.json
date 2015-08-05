@@ -1,0 +1,12 @@
+{
+  "name": "cms-web",
+  "version": "0.1",
+  "homepage": "https://github.com/cms-dev/cms",
+  "description": "The web-facing part of CMS",
+  "license": "AGPL3",
+  "dependencies": {
+    "bootstrap": "2.0.4",
+    "jqplot-bower": "1.0.8"
+  },
+  "private": true
+}
