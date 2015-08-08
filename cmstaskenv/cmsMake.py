@@ -467,7 +467,7 @@ def build_gen_list(base_dir, task_type, yaml_conf):
             file=sys.stderr
         )
 
-        temp_dir = tempfile.mkdtemp()
+        temp_dir = tempfile.mkdtemp(prefix=os.path.join(base_dir, "tmp"))
         use_stdin = yaml_conf.get("infile") in {None, ""}
         use_stdout = yaml_conf.get("outfile") in {None, ""}
 
@@ -483,7 +483,7 @@ def build_gen_list(base_dir, task_type, yaml_conf):
             temp_dir,
             "output.txt" if use_stdout else yaml_conf.get("outfile"))
 
-        shutil.copy(infile, copied_infile)
+        os.symlink(infile, copied_infile)
         fin = io.open(copied_infile, "rb") if use_stdin else None
         fout = io.open(copied_outfile, 'wb') if use_stdout else None
 
@@ -501,7 +501,7 @@ def build_gen_list(base_dir, task_type, yaml_conf):
         if fout is not None:
             fout.close()
 
-        shutil.copy(copied_outfile, outfile)
+        os.rename(copied_outfile, outfile)
         shutil.rmtree(temp_dir)
 
         move_cursor(directions.UP, erase=True, stream=sys.stderr)
