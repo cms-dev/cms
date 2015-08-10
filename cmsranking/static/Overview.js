@@ -263,7 +263,7 @@ var Overview = new function () {
 
     self.MARKER_PADDING = 2;
     self.MARKER_RADIUS = 2.5;
-    self.MARKER_LABEL_WIDTH = 30;
+    self.MARKER_LABEL_WIDTH = 50;
     self.MARKER_LABEL_HEIGHT = 20;
     self.MARKER_ARROW_WIDTH = 20;
     self.MARKER_STROKE_WIDTH = 2;
@@ -346,7 +346,7 @@ var Overview = new function () {
         // Place the text inside the label, with a padding-right equal to its
         // padding-top and padding-bottom.
         var t_x = self.width - self.PAD_R - self.MARKER_ARROW_WIDTH - (self.MARKER_LABEL_HEIGHT - 12) / 2;
-        self.paper.text(t_x, u_h, user["key"]).attr({
+        self.paper.text(t_x, u_h, self.transform_key(user)).attr({
             "fill": "#ffffff",
             "stroke": "none",
             "font-family": "sans-serif",
@@ -366,6 +366,22 @@ var Overview = new function () {
             delete user["marker_c_anim"];
         });
         set.animate(user["marker_c_anim"]);
+    };
+
+    self.transform_key = function(user) {
+      var s = user['f_name'] + ' ' + user['l_name'];
+      var sl = s.split(' ');
+      var out = '';
+      for (var i = 0; i < sl.length; i++) {
+          if (sl[i].length > 0) {
+              out += sl[i][0];
+          }
+      }
+      if (user["team"] != null && user["team"] != undefined) {
+          return user['team'] + '-' + out;
+      } else {
+          return out;
+      }
     };
 
 
