@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -52,8 +52,9 @@ import cms.db as class_hook
 
 from cms import utf8_decoder
 from cms.db import version as model_version
-from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
-    SubmissionResult, UserTestResult, RepeatedUnicode
+from cms.db import Contest, RepeatedUnicode, SessionGen, \
+    Submission, SubmissionResult, UserTest, UserTestResult, \
+    init_db, drop_db
 from cms.db.filecacher import FileCacher
 
 from cmscontrib import sha1sum
@@ -224,23 +225,22 @@ class DumpImporter(object):
                 contest_id = list()
                 contest_files = set()
 
-                # Add each base object and all its dependencies
+                # We add explicitly only the top-level objects:
+                # contests, and tasks and users not contained in any
+                # contest. This will add on cascade all dependent
+                # objects, and not add orphaned objects (like those
+                # that depended on submissions or user tests that we
+                # might have removed above).
                 for id_ in self.datas["_objects"]:
-                    contest = self.objs[id_]
-
-                    # We explictly add only the contest since all child
-                    # objects will be automatically added by cascade.
-                    # Adding each object individually would also add
-                    # orphaned objects like the ones that depended on
-                    # submissions or user_tests that we (possibly)
-                    # removed above.
-                    session.add(contest)
+                    obj = self.objs[id_]
+                    session.add(obj)
                     session.flush()
 
-                    contest_id += [contest.id]
-                    contest_files |= contest.enumerate_files(
-                        self.skip_submissions, self.skip_user_tests,
-                        self.skip_generated)
+                    if isinstance(obj, Contest):
+                        contest_id += [obj.id]
+                        contest_files |= obj.enumerate_files(
+                            self.skip_submissions, self.skip_user_tests,
+                            self.skip_generated)
 
                 session.commit()
             else:
