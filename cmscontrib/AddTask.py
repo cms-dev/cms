@@ -47,9 +47,9 @@ from cms import utf8_decoder
 from cms.db import Contest, SessionGen, Task
 from cms.db.filecacher import FileCacher
 
+from cmscontrib import BaseImporter
 from cmscontrib.loaders import choose_loader, build_epilog
 
-from . import BaseImporter
 
 logger = logging.getLogger(__name__)
 
