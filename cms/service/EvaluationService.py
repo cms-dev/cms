@@ -170,13 +170,20 @@ def submission_get_operations(submission, dataset):
         else:
             priority = PriorityQueue.PRIORITY_LOW
 
+        evaluated_testcase_ids = set(
+            evaluation.testcase_id
+            for evaluation in submission_result.evaluations)
         for testcase_codename in dataset.testcases.iterkeys():
-            yield ESOperation(ESOperation.EVALUATION,
-                              submission.id,
-                              dataset.id,
-                              testcase_codename), \
-                priority, \
-                submission.timestamp
+            testcase_id = dataset.testcases[testcase_codename].id
+            if testcase_id not in evaluated_testcase_ids:
+                yield ESOperation(ESOperation.EVALUATION,
+                                  submission.id,
+                                  dataset.id,
+                                  testcase_codename), \
+                    priority, \
+                    submission.timestamp
+        # TODO: if we arrive here and we don't have any operation, it
+        # means we need to set the submission result to evaluated.
 
 
 def user_test_get_operations(user_test, dataset):
