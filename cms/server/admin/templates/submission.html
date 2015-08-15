@@ -5,6 +5,10 @@
 {% from cms.grading.scoretypes import get_score_type %}
 {% set st = get_score_type(dataset=shown_dataset) %}
 {% set sr = s.get_result(shown_dataset) %}
+{% set status = SubmissionResult.COMPILING %}
+{% if sr is not None %}
+  {% set status = sr.get_status() %}
+{% end %}
 <div class="core_title">
   <h1>Submission {{ s.id }} (Task: <a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a>)</h1>
 </div>
@@ -62,21 +66,23 @@
       <tr>
         <td>Status</td>
         <td id="submission_status">
-          {% if sr is None or sr.compilation_outcome is None %}
+          {% if status == SubmissionResult.COMPILING %}
           Compiling...
-          {% elif sr.compilation_outcome == "fail" %}
+          {% elif status == SubmissionResult.COMPILATION_FAILED %}
           Compilation failed
-          {% elif not sr.evaluated() %}
+          {% elif status == SubmissionResult.EVALUATING %}
           Evaluating...
-          {% elif sr.scored() %}
+          {% elif status == SubmissionResult.SCORING %}
+          Scoring...
+          {% elif status == SubmissionResult.SCORED %}
             {% try %}
               {% set max_score = st.max_score %}
             {% except %}
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% end %}
-          Evaluated ({{ sr.score }} / {{ max_score }})
+          Scored ({{ sr.score }} / {{ max_score }})
           {% else %}
-          Evaluated
+          N/A
           {% end %}
         </td>
       </tr>

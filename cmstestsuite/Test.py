@@ -40,10 +40,10 @@ class Check(object):
 
 class CheckOverallScore(Check):
     # This check searches for a string such :
-    #   Evaluated (100.0 / 100.0)
+    #   Scored (100.0 / 100.0)
     # in status and checks the score.
 
-    score_re = re.compile(r'^Evaluated \(([0-9.]+) / ([0-9/.]+)\)')
+    score_re = re.compile(r'^Scored \(([0-9.]+) / ([0-9/.]+)\)')
 
     def __init__(self, expected_score, expected_total):
         self.expected_score = expected_score
@@ -83,7 +83,7 @@ class CheckAbstractEvaluationFailure(Check):
         self.failure_string = failure_string
 
     def check(self, result_info):
-        if 'Evaluated' not in result_info['status']:
+        if 'Scored' not in result_info['status']:
             raise TestFailure("Expected a successful evaluation, got: %s" %
                               result_info['status'])
         if not result_info['evaluations']:
