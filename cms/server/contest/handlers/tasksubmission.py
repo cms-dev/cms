@@ -69,7 +69,6 @@ class SubmitHandler(BaseHandler):
     @actual_phase_required(0)
     def post(self, task_name):
         participation = self.current_user
-
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
