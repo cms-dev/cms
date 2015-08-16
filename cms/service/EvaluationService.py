@@ -970,7 +970,7 @@ class EvaluationService(TriggeredService):
                 SubmissionResult.evaluation_tries <
                 EvaluationService.MAX_EVALUATION_TRIES)
             queries['max_evaluations'] = not_evaluated.filter(
-                SubmissionResult.evaluation_tries <=
+                SubmissionResult.evaluation_tries >=
                 EvaluationService.MAX_EVALUATION_TRIES)
             queries['scoring'] = evaluated.filter(
                 not_(SubmissionResult.filter_scored()))
