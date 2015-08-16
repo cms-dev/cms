@@ -170,7 +170,7 @@ def submission_get_operations(submission, dataset):
         else:
             priority = PriorityQueue.PRIORITY_LOW
 
-        for testcase_codename in sorted(dataset.testcases.iterkeys()):
+        for testcase_codename in dataset.testcases.iterkeys():
             yield ESOperation(ESOperation.EVALUATION,
                               submission.id,
                               dataset.id,
