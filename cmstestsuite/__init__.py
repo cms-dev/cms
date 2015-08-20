@@ -557,9 +557,9 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
     base_url = 'http://localhost:8889/'
 
     WAITING_STATUSES = re.compile(
-        r'Compiling\.\.\.|Evaluating\.\.\.|Evaluated')
+        r'Compiling\.\.\.|Evaluating\.\.\.|Scoring\.\.\.|Evaluated')
     COMPLETED_STATUS = re.compile(
-        r'Compilation failed|Evaluated \(')
+        r'Compilation failed|Evaluated \(|Scored \(')
 
     sleep_interval = 0.1
     while timeout > 0:
