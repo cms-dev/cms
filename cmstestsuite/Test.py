@@ -143,7 +143,9 @@ class Test(object):
         submission_format = json.loads(task.task_info["submission_format"])
         self.submission_format_element = submission_format[0]
 
-    def run(self, contest_id, task_id, user_id, language):
+        self.submission_id = {}
+
+    def submit(self, contest_id, task_id, user_id, language):
         # Source files are stored under cmstestsuite/code/.
         path = os.path.join(os.path.dirname(__file__), 'code')
 
@@ -153,12 +155,19 @@ class Test(object):
         full_path = os.path.join(path, filename)
 
         # Submit our code.
-        submission_id = cws_submit(contest_id, task_id, user_id,
-                                   self.submission_format_element,
-                                   full_path, language)
+        self.submission_id[language] = cws_submit(
+            contest_id, task_id, user_id, self.submission_format_element,
+            full_path, language)
+
+    def wait(self, contest_id, language):
+        # This means we were not able to submit, hence the error
+        # should have been already noted.
+        if self.submission_id[language] is None:
+            return
 
         # Wait for evaluation to complete.
-        result_info = get_evaluation_result(contest_id, submission_id)
+        result_info = get_evaluation_result(
+            contest_id, self.submission_id[language])
 
         # Run checks.
         for check in self.checks:
