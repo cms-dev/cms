@@ -23,7 +23,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import datetime
 import io
 import logging
 import os
@@ -148,15 +147,6 @@ def write_test_case_list(test_list, filename):
             f.write('%s %s\n' % (test.name, lang))
 
 
-def time_difference(start_time, end_time):
-    secs = int((end_time - start_time).total_seconds())
-    mins = secs / 60
-    secs = secs % 60
-    hrs = mins / 60
-    mins = mins % 60
-    return "Time elapsed: %02d:%02d:%02d" % (hrs, mins, secs)
-
-
 def main():
     parser = ArgumentParser(description="Runs the CMS functional test suite.")
     parser.add_argument(
@@ -217,7 +207,6 @@ def main():
     sh("python -m coverage erase")
 
     # Startup the test runner.
-    start_time = datetime.datetime.now()
     runner = TestRunner(test_list, contest_id=args.contest)
     runner.startup()
 
@@ -230,8 +219,7 @@ def main():
 
     # And good night!
     runner.shutdown()
-    end_time = datetime.datetime.now()
-    logger.info(time_difference(start_time, end_time))
+    runner.log_elapsed_time()
     combine_coverage()
 
     logger.info("Executed: %s", tests)

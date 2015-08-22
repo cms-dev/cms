@@ -45,6 +45,8 @@ logger = logging.getLogger(__name__)
 
 class TestRunner(object):
     def __init__(self, test_list, contest_id=None):
+        self.start_time = datetime.datetime.now()
+
         # Map from task name to (task id, task_module).
         self.task_id_map = {}
 
@@ -88,6 +90,15 @@ class TestRunner(object):
         if CONFIG["TEST_DIR"] is None:
             CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.conf"
         return get_cms_config()
+
+    def log_elapsed_time(self):
+        end_time = datetime.datetime.now()
+        secs = int((end_time - self.start_time).total_seconds())
+        mins = secs / 60
+        secs = secs % 60
+        hrs = mins / 60
+        mins = mins % 60
+        logger.info("Time elapsed: %02d:%02d:%02d", hrs, mins, secs)
 
     # Service management.
 
