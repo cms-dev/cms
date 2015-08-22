@@ -1,0 +1,142 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+task_info = {
+    "name": "batch",
+    "title": "Test Batch Task",
+    "time_limit": "0.2",
+    "memory_limit": "128",
+    "official_language": "",
+    "task_type": "Batch",
+    "TaskTypeOptions_Batch_compilation": "alone",
+    "TaskTypeOptions_Batch_io_0_inputfile": "",
+    "TaskTypeOptions_Batch_io_1_outputfile": "",
+    "TaskTypeOptions_Batch_output_eval": "diff",
+    "submission_format_choice": "other",
+    "submission_format": "[\"batch.%l\"]",
+    "score_type": "Sum",
+    "score_type_parameters": "1",
+}
+
+test_cases = [
+    ("0.in", "0.out", True),
+    ("1.in", "1.out", True),
+    ("2.in", "2.out", True),
+    ("3.in", "3.out", True),
+    ("4.in", "4.out", True),
+    ("5.in", "5.out", True),
+    ("6.in", "6.out", True),
+    ("7.in", "7.out", True),
+    ("8.in", "8.out", True),
+    ("9.in", "9.out", True),
+    ("10.in", "10.out", True),
+    ("11.in", "11.out", True),
+    ("12.in", "12.out", True),
+    ("13.in", "13.out", True),
+    ("14.in", "14.out", True),
+    ("15.in", "15.out", True),
+    ("16.in", "16.out", True),
+    ("17.in", "17.out", True),
+    ("18.in", "18.out", True),
+    ("19.in", "19.out", True),
+    ("20.in", "20.out", True),
+    ("21.in", "21.out", True),
+    ("22.in", "22.out", True),
+    ("23.in", "23.out", True),
+    ("24.in", "24.out", True),
+    ("25.in", "25.out", True),
+    ("26.in", "26.out", True),
+    ("27.in", "27.out", True),
+    ("28.in", "28.out", True),
+    ("29.in", "29.out", True),
+    ("30.in", "30.out", True),
+    ("31.in", "31.out", True),
+    ("32.in", "32.out", True),
+    ("33.in", "33.out", True),
+    ("34.in", "34.out", True),
+    ("35.in", "35.out", True),
+    ("36.in", "36.out", True),
+    ("37.in", "37.out", True),
+    ("38.in", "38.out", True),
+    ("39.in", "39.out", True),
+    ("40.in", "40.out", True),
+    ("41.in", "41.out", True),
+    ("42.in", "42.out", True),
+    ("43.in", "43.out", True),
+    ("44.in", "44.out", True),
+    ("45.in", "45.out", True),
+    ("46.in", "46.out", True),
+    ("47.in", "47.out", True),
+    ("48.in", "48.out", True),
+    ("49.in", "49.out", True),
+    # ("50.in", "50.out", True),
+    # ("51.in", "51.out", True),
+    # ("52.in", "52.out", True),
+    # ("53.in", "53.out", True),
+    # ("54.in", "54.out", True),
+    # ("55.in", "55.out", True),
+    # ("56.in", "56.out", True),
+    # ("57.in", "57.out", True),
+    # ("58.in", "58.out", True),
+    # ("59.in", "59.out", True),
+    # ("60.in", "60.out", True),
+    # ("61.in", "61.out", True),
+    # ("62.in", "62.out", True),
+    # ("63.in", "63.out", True),
+    # ("64.in", "64.out", True),
+    # ("65.in", "65.out", True),
+    # ("66.in", "66.out", True),
+    # ("67.in", "67.out", True),
+    # ("68.in", "68.out", True),
+    # ("69.in", "69.out", True),
+    # ("70.in", "70.out", True),
+    # ("71.in", "71.out", True),
+    # ("72.in", "72.out", True),
+    # ("73.in", "73.out", True),
+    # ("74.in", "74.out", True),
+    # ("75.in", "75.out", True),
+    # ("76.in", "76.out", True),
+    # ("77.in", "77.out", True),
+    # ("78.in", "78.out", True),
+    # ("79.in", "79.out", True),
+    # ("80.in", "80.out", True),
+    # ("81.in", "81.out", True),
+    # ("82.in", "82.out", True),
+    # ("83.in", "83.out", True),
+    # ("84.in", "84.out", True),
+    # ("85.in", "85.out", True),
+    # ("86.in", "86.out", True),
+    # ("87.in", "87.out", True),
+    # ("88.in", "88.out", True),
+    # ("89.in", "89.out", True),
+    # ("90.in", "90.out", True),
+    # ("91.in", "91.out", True),
+    # ("92.in", "92.out", True),
+    # ("93.in", "93.out", True),
+    # ("94.in", "94.out", True),
+    # ("95.in", "95.out", True),
+    # ("96.in", "96.out", True),
+    # ("97.in", "97.out", True),
+    # ("98.in", "98.out", True),
+    # ("99.in", "99.out", True),
+]
