@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -122,7 +122,7 @@ class DumpExporter(object):
                 users = session.query(User).all()
                 self.users_ids = [user.id for user in users]
                 tasks = session.query(Task)\
-                    .filter(Task.contest is None).all()
+                    .filter(Task.contest.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
         else:
             # FIXME: this is ATM broken, because if you export a contest, you
