@@ -168,7 +168,7 @@ function update_additional_answer(element, invoker)
       <tr>
         <td>Password (if not specified, the user's main password is used)</td>
         <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ participation.password }}"/></td>
+        <td><input type="text" name="password" value="{{ participation.password if participation.password is not None else "" }}"/></td>
       </tr>
       <tr>
         <td>Hidden?</td>
