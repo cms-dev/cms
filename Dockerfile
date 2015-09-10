@@ -30,7 +30,7 @@ EXPOSE 22 8888 8889 8890
 RUN apt-get -y install python-dev libpq-dev libcups2-dev libyaml-dev
 
 ADD . /cms
-RUN cd /cms && pip install -r REQUIREMENTS.txt && \
+RUN cd /cms && pip install -r requirements.txt && \
     ./setup.py build && ./setup.py install && rm -rf /cms
 
 # See above about python wheels
