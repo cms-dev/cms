@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,8 +33,8 @@ task_info = {
     "TaskTypeOptions_Batch_io_0_inputfile": "",
     "TaskTypeOptions_Batch_io_1_outputfile": "",
     "TaskTypeOptions_Batch_output_eval": "diff",
-    "submission_format_choice": "simple",
-    "submission_format": "",
+    "submission_format_choice": "other",
+    "submission_format": "[\"batchstdio.%l\"]",
     "score_type": "Sum",
     "score_type_parameters": "50",
 }

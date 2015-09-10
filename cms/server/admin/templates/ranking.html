@@ -1,0 +1,41 @@
+{% extends base.html %}
+
+{% block core %}
+{% from cms.grading import task_score %}
+<div class="core_title">
+  <h1>Ranking</h1>
+</div>
+Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a>, <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/txt">text</a>.
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>User</th>
+      {% for task in contest.tasks %}
+      <th><a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a></th>
+      {% end %}
+      <th>Global</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in sorted(contest.participations, key=lambda u: u.user.username) %}
+      {% if not p.hidden %}
+    <tr>
+      {% set score = 0.0 %}
+      {% set partial = False %}
+      <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+      <td>{{ "%s %s" % (p.user.first_name, p.user.last_name) }}</td>
+      {% for task in contest.tasks %}
+        {% set t_score, t_partial = task_score(p, task) %}
+        {% set t_score = round(t_score, task.score_precision) %}
+        {% set score += t_score %}
+        {% set partial = partial or t_partial %}
+      <td>{{ t_score }}{% if t_partial %}*{% end %}</td>
+      {% end %}
+      <td>{{ round(score, contest.score_precision) }}{% if partial %}*{% end %}</td>
+    </tr>
+      {% end %}
+    {% end %}
+  </tbody>
+</table>
+{% end %}

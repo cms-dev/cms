@@ -3,9 +3,9 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
@@ -35,8 +35,8 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, User, Task, Dataset, Testcase
-from .smartmappedcollection import smart_mapped_collection
+from . import Base, Participation, Task, Dataset, Testcase
+from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 
 from cmscommon.datetime import make_datetime
 
@@ -52,15 +52,16 @@ class Submission(Base):
         Integer,
         primary_key=True)
 
-    # User (id and object) that did the submission.
-    user_id = Column(
+    # User and Contest, thus Participation (id and object) that did the
+    # submission.
+    participation_id = Column(
         Integer,
-        ForeignKey(User.id,
+        ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user = relationship(
-        User,
+    participation = relationship(
+        Participation,
         backref=backref("submissions",
                         cascade="all, delete-orphan",
                         passive_deletes=True))
@@ -179,12 +180,12 @@ class File(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission = smc_sa10_workaround(relationship(
         Submission,
         backref=backref('files',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the submitted file.
     filename = Column(
@@ -236,6 +237,20 @@ class SubmissionResult(Base):
     """Class to store the evaluation results of a submission.
 
     """
+    # Possible statuses of a submission result. COMPILING and
+    # EVALUATING do not necessarily imply we are going to schedule
+    # compilation and evalution for these submission results: for
+    # example, they might be for datasets not scheduled for
+    # evaluation, or they might have passed the maximum number of
+    # tries. If a submission result does not exists for a pair
+    # (submission, dataset), its status can be implicitly assumed to
+    # be COMPILING.
+    COMPILING = 1
+    COMPILATION_FAILED = 2
+    EVALUATING = 3
+    SCORING = 4
+    SCORED = 5
+
     __tablename__ = 'submission_results'
     __table_args__ = (
         UniqueConstraint('submission_id', 'dataset_id'),
@@ -357,14 +372,30 @@ class SubmissionResult(Base):
     # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects)
 
+    def get_status(self):
+        """Return the status of this object.
+
+        """
+        if not self.compiled():
+            return SubmissionResult.COMPILING
+        elif self.compilation_failed():
+            return SubmissionResult.COMPILATION_FAILED
+        elif not self.evaluated():
+            return SubmissionResult.EVALUATING
+        elif not self.scored():
+            return SubmissionResult.SCORING
+        else:
+            return SubmissionResult.SCORED
+
     def get_evaluation(self, testcase):
         """Return the Evaluation of this SR on the given Testcase, if any
 
         testcase (Testcase): the testcase the returned evaluation will
-                             belong to
-        return (Evaluation): the (only!) evaluation of this submission
-                             result on the given testcase, or None if
-                             there isn't any.
+            belong to.
+
+        return (Evaluation|None): the (only!) evaluation of this
+            submission result on the given testcase, or None if there
+            isn't any.
 
         """
         # Use IDs to avoid triggering a lazy-load query.
@@ -387,6 +418,13 @@ class SubmissionResult(Base):
         """
         return self.compilation_outcome is not None
 
+    @staticmethod
+    def filter_compiled():
+        """Return a filtering expression for compiled submission results.
+
+        """
+        return SubmissionResult.compilation_outcome != None  # noqa
+
     def compilation_failed(self):
         """Return whether the submission result did not compile.
 
@@ -396,6 +434,14 @@ class SubmissionResult(Base):
 
         """
         return self.compilation_outcome == "fail"
+
+    @staticmethod
+    def filter_compilation_failed():
+        """Return a filtering expression for submission results failing
+        compilation.
+
+        """
+        return SubmissionResult.compilation_outcome == "fail"
 
     def compilation_succeeded(self):
         """Return whether the submission compiled.
@@ -407,6 +453,14 @@ class SubmissionResult(Base):
         """
         return self.compilation_outcome == "ok"
 
+    @staticmethod
+    def filter_compilation_succeeded():
+        """Return a filtering expression for submission results passing
+        compilation.
+
+        """
+        return SubmissionResult.compilation_outcome == "ok"
+
     def evaluated(self):
         """Return whether the submission result has been evaluated.
 
@@ -414,6 +468,13 @@ class SubmissionResult(Base):
 
         """
         return self.evaluation_outcome is not None
+
+    @staticmethod
+    def filter_evaluated():
+        """Return a filtering lambda for evaluated submission results.
+
+        """
+        return SubmissionResult.evaluation_outcome != None  # noqa
 
     def needs_scoring(self):
         """Return whether the submission result needs to be scored.
@@ -434,6 +495,17 @@ class SubmissionResult(Base):
             "score", "score_details",
             "public_score", "public_score_details",
             "ranking_score_details"])
+
+    @staticmethod
+    def filter_scored():
+        """Return a filtering lambda for scored submission results.
+
+        """
+        return ((SubmissionResult.score != None)
+                & (SubmissionResult.score_details != None)
+                & (SubmissionResult.public_score != None)
+                & (SubmissionResult.public_score_details != None)
+                & (SubmissionResult.ranking_score_details != None))  # noqa
 
     def invalidate_compilation(self):
         """Blank all compilation and evaluation outcomes, and the score.
@@ -511,7 +583,8 @@ class Executable(Base):
         nullable=False,
         index=True)
     submission = relationship(
-        Submission)
+        Submission,
+        viewonly=True)
 
     # Dataset (id and object) owning the executable.
     dataset_id = Column(
@@ -521,15 +594,16 @@ class Executable(Base):
         nullable=False,
         index=True)
     dataset = relationship(
-        Dataset)
+        Dataset,
+        viewonly=True)
 
     # SubmissionResult owning the executable.
-    submission_result = relationship(
+    submission_result = smc_sa10_workaround(relationship(
         SubmissionResult,
         backref=backref('executables',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the generated executable.
     filename = Column(
@@ -567,7 +641,8 @@ class Evaluation(Base):
         nullable=False,
         index=True)
     submission = relationship(
-        Submission)
+        Submission,
+        viewonly=True)
 
     # Dataset (id and object) owning the evaluation.
     dataset_id = Column(
@@ -577,7 +652,8 @@ class Evaluation(Base):
         nullable=False,
         index=True)
     dataset = relationship(
-        Dataset)
+        Dataset,
+        viewonly=True)
 
     # SubmissionResult owning the evaluation.
     submission_result = relationship(

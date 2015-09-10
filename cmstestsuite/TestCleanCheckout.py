@@ -77,7 +77,7 @@ def setup_cms():
     os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
     info("Building cms.")
-    sh("./setup.py build")
+    sh("./prerequisites.py build")
     # Add permission bits to isolate.
     sh("sudo chown root:root isolate/isolate")
     sh("sudo chmod 4755 isolate/isolate")
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     CONFIG["TEST_DIR"] = tempfile.mkdtemp()
-    CONFIG["CONFIG_PATH"] = "%s/examples/cms.conf" % CONFIG["TEST_DIR"]
+    CONFIG["CONFIG_PATH"] = "%s/config/cms.conf" % CONFIG["TEST_DIR"]
     CONFIG["GIT_ORIGIN"] = subprocess.check_output(
         "git rev-parse --show-toplevel", shell=True).strip()
     if args.revision is None:

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -36,7 +36,9 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA
+from cms import config, \
+    LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
+    SCORE_MODE_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -54,6 +56,125 @@ SubmissionScoreDelta = namedtuple(
 # Dummy function to mark translatable string.
 def N_(message):
     return message
+
+
+class HumanMessage(object):
+    """Represent a possible outcome message for a grading, to be presented
+    to the contestants.
+
+    """
+
+    def __init__(self, shorthand, message, help):
+        """Initialization.
+
+        shorthand (unicode): what to call this message in the code.
+        message (unicode): the message itself.
+        help (unicode): a longer explanation for the help page.
+
+        """
+        self.shorthand = shorthand
+        self.message = message
+        self.help = help
+
+
+class MessageCollection(object):
+    """Represent a collection of messages, with error checking."""
+
+    def __init__(self, messages=None):
+        self._messages = {}
+        self._ordering = []
+        if messages is not None:
+            for message in messages:
+                self.add(message)
+
+    def add(self, message):
+        if message.shorthand in self._messages:
+            logger.error("Trying to registering duplicate message `%s'.",
+                         message.shorthand)
+            return
+        self._messages[message.shorthand] = message
+        self._ordering.append(message.shorthand)
+
+    def get(self, shorthand):
+        if shorthand not in self._messages:
+            error = "Trying to get a non-existing message `%s'." % \
+                shorthand
+            logger.error(error)
+            raise KeyError(error)
+        return self._messages[shorthand]
+
+    def all(self):
+        ret = []
+        for shorthand in self._ordering:
+            ret.append(self._messages[shorthand])
+        return ret
+
+
+COMPILATION_MESSAGES = MessageCollection([
+    HumanMessage("success",
+                 N_("Compilation succeeded"),
+                 N_("Your submission successfully compiled to an excutable.")),
+    HumanMessage("fail",
+                 N_("Compilation failed"),
+                 N_("Your submission did not compile correctly.")),
+    HumanMessage("timeout",
+                 N_("Compilation timed out"),
+                 N_("Your submission exceeded the time limit while compiling. "
+                    "This might be caused by an excessive use of C++ "
+                    "templates, for example.")),
+    HumanMessage("signal",
+                 N_("Compilation killed with signal %s (could be triggered "
+                    "by violating memory limits)"),
+                 N_("Your submission was killed with the specified signal. "
+                    "Among other things, this might be caused by exceeding "
+                    "the memory limit for the compilation, and in turn by an "
+                    "excessive use of C++ templates, for example.")),
+])
+
+
+EVALUATION_MESSAGES = MessageCollection([
+    HumanMessage("success",
+                 N_("Output is correct"),
+                 N_("Your submission ran and gave the correct answer")),
+    HumanMessage("wrong",
+                 N_("Output isn't correct"),
+                 N_("Your submission ran, but gave the wrong answer")),
+    HumanMessage("nooutput",
+                 N_("Evaluation didn't produce file %s"),
+                 N_("Your submission ran, but did not write on the "
+                    "correct output file")),
+    HumanMessage("timeout",
+                 N_("Execution timed out"),
+                 N_("Your submission used too much CPU time.")),
+    HumanMessage("walltimeout",
+                 N_("Execution timed out (wall clock limit exceeded)"),
+                 N_("Your submission used too much total time. This might "
+                    "be triggered by undefined code, or buffer overflow, "
+                    "for example. Note that in this case the CPU time "
+                    "visible in the submission details might be much smaller "
+                    "than the time limit.")),
+    HumanMessage("signal",
+                 N_("Execution killed with signal %d (could be triggered by "
+                    "violating memory limits)"),
+                 N_("Your submission was killed with the specified signal. "
+                    "Among other things, this might be caused by exceeding "
+                    "the memory limit. Note that if this is the reason, "
+                    "the memory usage visible in the submission details is "
+                    "the usage before the allocation that caused the "
+                    "signal.")),
+    HumanMessage("syscall",
+                 N_("Execution killed because of forbidden syscall %s"),
+                 N_("Your submission was killed because it tried to use "
+                    "the forbidden syscall specified in the message.")),
+    HumanMessage("fileaccess",
+                 N_("Execution killed because of forbidden file access"),
+                 N_("Your submission was killed because it tried to read "
+                    "or write a forbidden file.")),
+    HumanMessage("returncode",
+                 N_("Execution failed because the return code was nonzero"),
+                 N_("Your submission failed because it exited with a return "
+                    "code different from 0.")),
+])
 
 
 class JobException(Exception):
@@ -228,25 +349,42 @@ def compilation_step(sandbox, commands):
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
     sandbox.address_space = 512 * 1024
-    sandbox.stdout_file = "compiler_stdout.txt"
-    sandbox.stderr_file = "compiler_stderr.txt"
 
-    # Actually run the compilation commands.
+    # Actually run the compilation commands, logging stdout and stderr.
     logger.debug("Starting compilation step.")
-    for command in commands:
+    stdouts = []
+    stderrs = []
+    for step, command in enumerate(commands):
+        # Keep stdout and stderr of each compilation step
+        sandbox.stdout_file = "compiler_stdout_%d.txt" % step
+        sandbox.stderr_file = "compiler_stderr_%d.txt" % step
+
         box_success = sandbox.execute_without_std(command, wait=True)
         if not box_success:
             logger.error("Compilation aborted because of "
                          "sandbox error in `%s'.", sandbox.path)
             return False, None, None, None
+        stdout = unicode(sandbox.get_file_to_string(sandbox.stdout_file),
+                         "utf-8", errors="replace").strip()
+        if stdout != "":
+            stdouts.append(stdout)
+        stderr = unicode(sandbox.get_file_to_string(sandbox.stderr_file),
+                         "utf-8", errors="replace").strip()
+        if stderr != "":
+            stderrs.append(stderr)
+
+        # If some command in the sequence is failed,
+        # there is no reason to continue
+        if (sandbox.get_exit_status() != Sandbox.EXIT_OK or
+                sandbox.get_exit_code() != 0):
+            break
 
     # Detect the outcome of the compilation.
     exit_status = sandbox.get_exit_status()
     exit_code = sandbox.get_exit_code()
-    stdout = sandbox.get_file_to_string("compiler_stdout.txt")
-    stdout = unicode(stdout, 'utf-8', errors='replace')
-    stderr = sandbox.get_file_to_string("compiler_stderr.txt")
-    stderr = unicode(stderr, 'utf-8', errors='replace')
+
+    stdout = '\n===\n'.join(stdouts)
+    stderr = '\n===\n'.join(stderrs)
 
     # And retrieve some interesting data.
     plus = {
@@ -271,7 +409,7 @@ def compilation_step(sandbox, commands):
         logger.debug("Compilation successfully finished.")
         success = True
         compilation_success = True
-        text = [N_("Compilation succeeded")]
+        text = [COMPILATION_MESSAGES.get("success").message]
 
     # Error in compilation: returning the error to the user.
     elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
@@ -279,14 +417,15 @@ def compilation_step(sandbox, commands):
         logger.debug("Compilation failed.")
         success = True
         compilation_success = False
-        text = [N_("Compilation failed")]
+        text = [COMPILATION_MESSAGES.get("fail").message]
 
     # Timeout: returning the error to the user
-    elif exit_status == Sandbox.EXIT_TIMEOUT:
+    elif exit_status == Sandbox.EXIT_TIMEOUT or \
+            exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         logger.debug("Compilation timed out.")
         success = True
         compilation_success = False
-        text = [N_("Compilation timed out")]
+        text = [COMPILATION_MESSAGES.get("timeout").message]
 
     # Suicide with signal (probably memory limit): returning the error
     # to the user
@@ -296,8 +435,7 @@ def compilation_step(sandbox, commands):
         success = True
         compilation_success = False
         plus["signal"] = signal
-        text = [N_("Compilation killed with signal %d (could be triggered "
-                   "by violating memory limits)"), signal]
+        text = [COMPILATION_MESSAGES.get("signal").message, signal]
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment
@@ -328,7 +466,7 @@ def compilation_step(sandbox, commands):
 
 def evaluation_step(sandbox, commands,
                     time_limit=0.0, memory_limit=0,
-                    allow_dirs=None,
+                    allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute some evaluation commands in the sandbox. Note that in
     some task types, there may be more than one evaluation commands
@@ -338,6 +476,13 @@ def evaluation_step(sandbox, commands,
     commands ([[string]]): the actual evaluation lines.
     time_limit (float): time limit in seconds.
     memory_limit (int): memory limit in MB.
+    allow_dirs ([string]|None): if not None, a list of external
+        directories to map inside the sandbox
+    writable_files ([string]|None): if not None, a list of inner file
+        names (relative to the inner path) on which the command is
+        allow to write; if None, all files are read-only. The
+        redirected output and the standard error are implicitly added
+        to the files allowed, in any case.
 
     return ((bool, dict)): True if the evaluation was successful, or
         False; and additional data.
@@ -345,7 +490,8 @@ def evaluation_step(sandbox, commands,
     """
     for command in commands:
         success = evaluation_step_before_run(
-            sandbox, command, time_limit, memory_limit, allow_dirs,
+            sandbox, command, time_limit, memory_limit,
+            allow_dirs, writable_files,
             stdin_redirect, stdout_redirect, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
@@ -360,7 +506,7 @@ def evaluation_step(sandbox, commands,
 
 def evaluation_step_before_run(sandbox, command,
                                time_limit=0, memory_limit=0,
-                               allow_dirs=None,
+                               allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                wait=False):
     """First part of an evaluation step, until the running.
@@ -369,6 +515,10 @@ def evaluation_step_before_run(sandbox, command,
             process if wait is False.
 
     """
+    # Default parameters handling.
+    allow_dirs = [] if allow_dirs is None else allow_dirs
+    writable_files = [] if writable_files is None else writable_files
+
     # Set sandbox parameters suitable for evaluation.
     if time_limit > 0:
         sandbox.timeout = time_limit
@@ -377,6 +527,7 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.timeout = 0
         sandbox.wallclock_timeout = 0
     sandbox.address_space = memory_limit * 1024
+    sandbox.fsize = config.max_file_size
 
     if stdin_redirect is not None:
         sandbox.stdin_file = stdin_redirect
@@ -390,9 +541,11 @@ def evaluation_step_before_run(sandbox, command,
 
     sandbox.stderr_file = "stderr.txt"
 
-    if allow_dirs is not None:
-        for allow_dir in allow_dirs:
-            sandbox.dirs += [(allow_dir, None, "rw")]
+    sandbox.add_mapped_directories(allow_dirs)
+    for name in [sandbox.stderr_file, sandbox.stdout_file]:
+        if name is not None:
+            writable_files.append(name)
+    sandbox.allow_writing_only(writable_files)
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")
@@ -419,6 +572,11 @@ def evaluation_step_after_run(sandbox):
     # Timeout: returning the error to the user.
     if exit_status == Sandbox.EXIT_TIMEOUT:
         logger.debug("Execution timed out.")
+        success = True
+
+    # Wall clock timeout: returning the error to the user.
+    elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
+        logger.debug("Execution timed out (wall clock limit exceeded).")
         success = True
 
     # Suicide with signal (memory limit, segfault, abort): returning
@@ -474,30 +632,30 @@ def human_evaluation_message(plus):
     """Given the plus object returned by evaluation_step, builds a
     human-readable message about what happened.
 
-    None is returned in cases when the contestant musn't receive any
+    None is returned in cases when the contestant mustn't receive any
     message (for example, if the execution couldn't be performed) or
     when the message will be computed somewhere else (for example, if
-    the execution was successfull, then the comparator is supposed to
+    the execution was successful, then the comparator is supposed to
     write the message).
 
     """
     exit_status = plus['exit_status']
     if exit_status == Sandbox.EXIT_TIMEOUT:
-        return [N_("Execution timed out")]
+        return [EVALUATION_MESSAGES.get("timeout").message]
+    elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
+        return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [N_("Execution killed with signal %d (could be triggered by "
-                   "violating memory limits)"), plus['signal']]
+        return [EVALUATION_MESSAGES.get("signal").message % plus['signal']]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return None
     elif exit_status == Sandbox.EXIT_SYSCALL:
-        return [N_("Execution killed because of forbidden syscall %s"),
-                plus['syscall']]
+        return [EVALUATION_MESSAGES.get("syscall").message % plus['syscall']]
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         # Don't tell which file: would be too much information!
-        return [N_("Execution killed because of forbidden file access")]
+        return [EVALUATION_MESSAGES.get("fileaccess").message]
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Don't tell which code: would be too much information!
-        return [N_("Execution failed because the return code was nonzero")]
+        return [EVALUATION_MESSAGES.get("returncode").message]
     elif exit_status == Sandbox.EXIT_OK:
         return None
     else:
@@ -664,16 +822,16 @@ def white_diff_step(sandbox, output_filename,
     """
     if sandbox.file_exists(output_filename):
         out_file = sandbox.get_file(output_filename)
-        res_file = sandbox.get_file("res.txt")
+        res_file = sandbox.get_file(correct_output_filename)
         if white_diff(out_file, res_file):
             outcome = 1.0
-            text = [N_("Output is correct")]
+            text = [EVALUATION_MESSAGES.get("success").message]
         else:
             outcome = 0.0
-            text = [N_("Output isn't correct")]
+            text = [EVALUATION_MESSAGES.get("wrong").message]
     else:
         outcome = 0.0
-        text = [N_("Evaluation didn't produce file %s"), output_filename]
+        text = [EVALUATION_MESSAGES.get("nooutput").message, output_filename]
     return outcome, text
 
 
@@ -706,7 +864,7 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
     submissions = \
         task.sa_session.query(Submission)\
             .filter(Submission.task == task)\
-            .options(joinedload(Submission.user))\
+            .options(joinedload(Submission.participation))\
             .options(joinedload(Submission.token))\
             .options(joinedload(Submission.results)).all()
 
@@ -733,10 +891,11 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
 
 ## Computing global scores (for ranking). ##
 
-def task_score(user, task):
-    """Return the score of a user on a task.
+def task_score(participation, task):
+    """Return the score of a contest's user on a task.
 
-    user (User): the user for which to compute the score.
+    participation (Participation): the user and contest for which to
+        compute the score.
     task (Task): the task for which to compute the score.
 
     return ((float, bool)): the score of user on task, and True if the
@@ -751,38 +910,62 @@ def task_score(user, task):
     # submission_results table.  Doing so means that this function should incur
     # no exta database queries.
 
-    # The score of the last submission (if valid, otherwise 0.0).
-    last_score = 0.0
-    # The maximum score amongst the tokened submissions (invalid
-    # scores count as 0.0).
-    max_tokened_score = 0.0
     # If the score could change due to submission still being compiled
     # / evaluated / scored.
     partial = False
 
-    submissions = [s for s in user.submissions if s.task is task]
+    submissions = [s for s in participation.submissions if s.task is task]
     submissions.sort(key=lambda s: s.timestamp)
 
     if submissions == []:
         return 0.0, False
 
-    # Last score: if the last submission is scored we use that,
-    # otherwise we use 0.0 (and mark that the score is partial
-    # when the last submission could be scored).
-    last_s = submissions[-1]
-    last_sr = last_s.get_result(task.active_dataset)
+    score = 0.0
 
-    if last_sr is not None and last_sr.scored():
-        last_score = last_sr.score
-    else:
-        partial = True
+    if task.score_mode == SCORE_MODE_MAX:
+        # Like in IOI 2013-: maximum score amongst all submissions.
 
-    for s in submissions:
-        sr = s.get_result(task.active_dataset)
-        if s.tokened():
+        # The maximum score amongst all submissions (not yet computed
+        # scores count as 0.0).
+        max_score = 0.0
+
+        for s in submissions:
+            sr = s.get_result(task.active_dataset)
             if sr is not None and sr.scored():
-                max_tokened_score = max(max_tokened_score, sr.score)
+                max_score = max(max_score, sr.score)
             else:
                 partial = True
 
-    return max(last_score, max_tokened_score), partial
+        score = max_score
+    else:
+        # Like in IOI 2010-2012: maximum score among all tokened
+        # submissions and the last submission.
+
+        # The score of the last submission (if computed, otherwise 0.0).
+        last_score = 0.0
+        # The maximum score amongst the tokened submissions (not yet computed
+        # scores count as 0.0).
+        max_tokened_score = 0.0
+
+        # Last score: if the last submission is scored we use that,
+        # otherwise we use 0.0 (and mark that the score is partial
+        # when the last submission could be scored).
+        last_s = submissions[-1]
+        last_sr = last_s.get_result(task.active_dataset)
+
+        if last_sr is not None and last_sr.scored():
+            last_score = last_sr.score
+        else:
+            partial = True
+
+        for s in submissions:
+            sr = s.get_result(task.active_dataset)
+            if s.tokened():
+                if sr is not None and sr.scored():
+                    max_tokened_score = max(max_tokened_score, sr.score)
+                else:
+                    partial = True
+
+        score = max(last_score, max_tokened_score)
+
+    return score, partial

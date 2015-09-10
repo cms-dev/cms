@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Sphinx extension to add roles for some GitHub features
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,7 +35,7 @@ def gh_issue(typ, rawtext, text, lineno, inliner, options={}, content=[]):
 def make_gh_download(app):
     def gh_download(typ, rawtext, text, lineno, inliner, options={}, content=[]):
         title = utils.unescape(text)
-        full_url = 'https://github.com/cms-dev/cms/archive/v%s.tar.gz' % app.config.release
+        full_url = 'https://github.com/cms-dev/cms/releases/download/v%(ver)s/v%(ver)s.tar.gz' % {"ver": app.config.release}
 
         retnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
         return [retnode], []

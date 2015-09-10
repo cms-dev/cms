@@ -58,16 +58,6 @@ The response is of the form::
 The value of ``__id`` must of course be the same as in the request.
 If ``__error`` is not null, then ``__data`` is expected to be null.
 
-Historical notes
-----------------
-
-In the past the RPC protocol used to be a bit more powerful, having
-the ability of complement the JSON message with a blob of binary
-data. This feature has been removed now, both because it was unused
-and because its implementation actually has a subtle bug that caused
-messages of a specific length to mess around with the ``\r\n``
-terminator.
-
 Backdoor
 ========
 

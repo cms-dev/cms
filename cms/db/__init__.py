@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -32,7 +32,7 @@ from __future__ import unicode_literals
 import logging
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import joinedload, configure_mappers
+from sqlalchemy.orm import configure_mappers, joinedload, subqueryload
 
 from cms import config
 
@@ -53,7 +53,7 @@ __all__ = [
     # contest
     "Contest", "Announcement",
     # user
-    "User", "Message", "Question",
+    "User", "Participation", "Message", "Question",
     # task
     "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
     "Manager", "Testcase",
@@ -79,11 +79,11 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 13
+version = 16
 
 
 engine = create_engine(config.database, echo=config.database_debug,
-                       pool_size=20, pool_recycle=120)
+                       pool_size=20, max_overflow=20, pool_recycle=120)
 
 
 from .session import Session, ScopedSession, SessionGen, \
@@ -92,7 +92,7 @@ from .session import Session, ScopedSession, SessionGen, \
 from .types import RepeatedUnicode
 from .base import metadata, Base
 from .contest import Contest, Announcement
-from .user import User, Message, Question
+from .user import User, Participation, Message, Question
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
@@ -116,7 +116,7 @@ configure_mappers()
 # file because of circular dependencies.
 
 def get_submissions(self):
-    """Returns a list of submissions (with the information about the
+    """Return a list of submissions (with the information about the
     corresponding task) referring to the contest.
 
     returns (list): list of submissions.
@@ -129,11 +129,11 @@ def get_submissions(self):
 
 
 def get_submission_results(self):
-    """Returns a list of submission results for all submissions in
+    """Return a list of submission results for all submissions in
     the current contest, as evaluated against the active dataset
     for each task.
 
-    returns (list): list of submission results.
+    returns ([SubmissionResult]): list of submission results.
 
     """
     return self.sa_session.query(SubmissionResult)\
@@ -143,7 +143,7 @@ def get_submission_results(self):
 
 
 def get_user_tests(self):
-    """Returns a list of user tests (with the information about the
+    """Return a list of user tests (with the information about the
     corresponding user) referring to the contest.
 
     return (list): list of user tests.
@@ -173,16 +173,44 @@ Contest.get_user_tests = get_user_tests
 Contest.get_user_test_results = get_user_test_results
 
 
-# The following is a method of User that cannot be put in the right
+# The following is a method of Dataset that cannot be put in the right
+# file because of circular dependencies.
+
+def get_submission_results_for_dataset(self, dataset):
+    """Return a list of all submission results against the specified
+    dataset.
+
+    Also preloads the executable and evaluation objects relative to
+    the submission results.
+
+    returns ([SubmissionResult]): list of submission results.
+
+    """
+    # We issue this query manually to optimize it: we load all
+    # executables and evaluations at once instead of having SA
+    # lazy-load them when we access them for each SubmissionResult,
+    # one at a time.
+    return self.sa_session\
+        .query(SubmissionResult)\
+        .filter(SubmissionResult.dataset == dataset)\
+        .options(joinedload(SubmissionResult.submission))\
+        .options(subqueryload(SubmissionResult.executables))\
+        .options(subqueryload(SubmissionResult.evaluations))\
+        .all()
+
+Dataset.get_submission_results = get_submission_results_for_dataset
+
+
+# The following is a method of Participation that cannot be put in the right
 # file because of circular dependencies.
 
 def get_tokens(self):
-    """Returns a list of tokens used by a user.
+    """Returns a list of tokens used by a user participation.
 
     returns (list): list of tokens.
 
     """
     return self.sa_session.query(Token)\
-               .join(Submission).filter(Submission.user == self).all()
+               .join(Submission).filter(Submission.participation == self).all()
 
-User.get_tokens = get_tokens
+Participation.get_tokens = get_tokens

@@ -1,0 +1,37 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Upload testcase</h1>
+</div>
+<form enctype="multipart/form-data" action="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add" method="POST">
+  <table>
+    <tr>
+      <td>Codename:</td>
+      <td>
+        <input type="text" name="codename"/>
+      </td>
+    </tr>
+    <tr>
+      <td>Input:</td>
+      <td>
+        <input type="file" name="input"/>
+      </td>
+    </tr>
+    <tr>
+      <td>Output:</td>
+      <td>
+        <input type="file" name="output"/>
+      </td>
+    </tr>
+    <tr>
+      <td>Public</td>
+      <td>
+        <input type="checkbox" name="public">
+      </td>
+    </tr>
+  </table>
+  <input type="submit" value="Upload">
+  <input type="Reset" >
+</form>
+{% end %}

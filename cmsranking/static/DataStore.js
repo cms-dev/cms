@@ -722,7 +722,7 @@ var DataStore = new function () {
         });
 
         self.create_event_source();
-        self.init_callback();
+        self.init_selections();
     };
 
     self.update_rank = function (u_id, user) {
@@ -784,9 +784,10 @@ var DataStore = new function () {
        - when the requests end their data is processed and then, respectively,
          init_tasks() and init_users() are called
        - they also start an AJAX request and process its data
-       - when BOTH requests finished init_scores() is called
-       - it does again an AJAX request and process its data
-       - at the end it calls init_ranks() which calls init_callback()
+       - when BOTH requests finish init_scores() is called
+       - it does again an AJAX request and processes its data
+       - at the end it calls init_ranks() which calls init_selections() which,
+         in turn, calls init_callback()
      */
 
     self.init = function (callback) {
@@ -1122,12 +1123,54 @@ var DataStore = new function () {
         return min_idx+1;
     }
 
-    self.set_selected = function (u_id, flag) {
+    self.init_selections = function () {
+        $.each(self.users, function (u_id) {
+            var color_idx = parseInt(localStorage.getItem("cms.rws.selection.users." + u_id));
+            if (color_idx > 0)
+            {
+                self.set_selected(u_id, true, color_idx);
+            }
+        });
+
+        $(window).on("storage", function (event) {
+            event = event.originalEvent;
+            if (event.storageArea == localStorage)
+            {
+                if (event.key === null)
+                {
+                    // Triggered by a .clear().
+                    $.each(self.users, function (u_id) {
+                        self.set_selected(u_id, false);
+                    });
+                }
+                else if (event.key.lastIndexOf("cms.rws.selection.users.", 0) === 0)
+                {
+                    var u_id = event.key.substr(24);
+                    if (event.oldValue === null && event.newValue !== null)
+                    {
+                        self.set_selected(u_id, true, parseInt(event.newValue));
+                    }
+                    else if (event.oldValue !== null && event.newValue === null)
+                    {
+                        self.set_selected(u_id, false);
+                    }
+                }
+            }
+        });
+
+        self.init_callback();
+    };
+
+    self.set_selected = function (u_id, flag, color_idx) {
         if (self.users[u_id]["selected"] == 0 && flag) {
             // We have to assign a color
-            var color_idx = self.choose_color();
+            if (!(color_idx > 0))
+            {
+                color_idx = self.choose_color();
+            }
             self.users[u_id]["selected"] = color_idx;
-            self.colors[color_idx-1] += 1
+            self.colors[color_idx-1] += 1;
+            localStorage.setItem("cms.rws.selection.users." + u_id, color_idx);
             self.select_events.fire(u_id, color_idx);
         }
         else if (self.users[u_id]["selected"] != 0 && !flag) {
@@ -1135,6 +1178,7 @@ var DataStore = new function () {
             var color_idx = self.users[u_id]["selected"];
             self.users[u_id]["selected"] = 0;
             self.colors[color_idx-1] -= 1;
+            localStorage.removeItem("cms.rws.selection.users." + u_id);
             self.select_events.fire(u_id, 0);
         }
     };

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,8 +31,8 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, User, Task, Dataset
-from .smartmappedcollection import smart_mapped_collection
+from . import Base, Participation, Task, Dataset
+from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 
 
 class UserTest(Base):
@@ -46,15 +46,16 @@ class UserTest(Base):
         Integer,
         primary_key=True)
 
-    # User (id and object) that requested the test.
-    user_id = Column(
+    # User and Contest, thus Participation (id and object) that did the
+    # submission.
+    participation_id = Column(
         Integer,
-        ForeignKey(User.id,
+        ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user = relationship(
-        User,
+    participation = relationship(
+        Participation,
         backref=backref("user_tests",
                         cascade="all, delete-orphan",
                         passive_deletes=True))
@@ -159,12 +160,12 @@ class UserTestFile(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = relationship(
+    user_test = smc_sa10_workaround(relationship(
         UserTest,
         backref=backref('files',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the submitted file.
     filename = Column(
@@ -197,12 +198,12 @@ class UserTestManager(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = relationship(
+    user_test = smc_sa10_workaround(relationship(
         UserTest,
         backref=backref('managers',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the submitted manager.
     filename = Column(
@@ -440,7 +441,8 @@ class UserTestExecutable(Base):
         nullable=False,
         index=True)
     user_test = relationship(
-        UserTest)
+        UserTest,
+        viewonly=True)
 
     # Dataset (id and object) owning the executable.
     dataset_id = Column(
@@ -450,15 +452,16 @@ class UserTestExecutable(Base):
         nullable=False,
         index=True)
     dataset = relationship(
-        Dataset)
+        Dataset,
+        viewonly=True)
 
     # UserTestResult owning the executable.
-    user_test_result = relationship(
+    user_test_result = smc_sa10_workaround(relationship(
         UserTestResult,
         backref=backref('executables',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the generated executable.
     filename = Column(

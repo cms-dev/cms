@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -35,11 +35,12 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from . import Base, Contest
-from .smartmappedcollection import smart_mapped_collection
+from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
+from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
 
 class Task(Base):
@@ -74,27 +75,28 @@ class Task(Base):
     # Number of the task for sorting.
     num = Column(
         Integer,
-        nullable=False)
+        nullable=True)
 
     # Contest (id and object) owning the task.
     contest_id = Column(
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True)
     contest = relationship(
         Contest,
         backref=backref('tasks',
                         collection_class=ordering_list('num'),
                         order_by=[num],
-                        cascade="all, delete-orphan",
+                        cascade="all",
                         passive_deletes=True))
 
     # Short name and long human readable title of the task.
     name = Column(
         Unicode,
-        nullable=False)
+        nullable=False,
+        unique=True)
     title = Column(
         Unicode,
         nullable=False)
@@ -191,6 +193,13 @@ class Task(Base):
         nullable=False,
         default=0)
 
+    # Score mode for the task.
+    score_mode = Column(
+        Enum(SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX,
+             name="score_mode"),
+        nullable=False,
+        default=SCORE_MODE_MAX_TOKENED_LAST)
+
     # Active Dataset (id and object) currently being used for scoring.
     # The ForeignKeyConstraint for this column is set at table-level.
     active_dataset_id = Column(
@@ -199,8 +208,6 @@ class Task(Base):
     active_dataset = relationship(
         'Dataset',
         foreign_keys=[active_dataset_id],
-        # XXX In SQLAlchemy 0.8 we could remove this:
-        primaryjoin='Task.active_dataset_id == Dataset.id',
         # Use an UPDATE query *after* an INSERT query (and *before* a
         # DELETE query) to set (and unset) the column associated to
         # this relationship.
@@ -237,12 +244,12 @@ class Statement(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task = smc_sa10_workaround(relationship(
         Task,
         backref=backref('statements',
                         collection_class=smart_mapped_collection('language'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Code for the language the statement is written in.
     # It can be an arbitrary string, but if it's in the form "en" or "en_US"
@@ -281,12 +288,12 @@ class Attachment(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task = smc_sa10_workaround(relationship(
         Task,
         backref=backref('attachments',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the provided attachment.
     filename = Column(
@@ -355,8 +362,6 @@ class Dataset(Base):
     task = relationship(
         Task,
         foreign_keys=[task_id],
-        # XXX In SQLAlchemy 0.8 we could remove this:
-        primaryjoin='Task.id == Dataset.task_id',
         backref=backref('datasets',
                         cascade="all, delete-orphan",
                         passive_deletes=True))
@@ -416,6 +421,54 @@ class Dataset(Base):
         """
         return self is self.task.active_dataset
 
+    def clone_from(self, old_dataset, clone_managers=True,
+                   clone_testcases=True, clone_results=False):
+        """Overwrite the data with that in dataset.
+
+        old_dataset (Dataset): original dataset to copy from.
+        clone_managers (bool): copy dataset managers.
+        clone_testcases (bool): copy dataset testcases.
+        clone_results (bool): copy submission results (will also copy
+            managers and testcases).
+
+        """
+        new_testcases = dict()
+        if clone_testcases or clone_results:
+            for old_t in old_dataset.testcases.itervalues():
+                new_t = old_t.clone()
+                new_t.dataset = self
+                new_testcases[new_t.codename] = new_t
+
+        if clone_managers or clone_results:
+            for old_m in old_dataset.managers.itervalues():
+                new_m = old_m.clone()
+                new_m.dataset = self
+
+        # TODO: why is this needed?
+        self.sa_session.flush()
+
+        if clone_results:
+            old_results = self.get_submission_results(old_dataset)
+
+            for old_sr in old_results:
+                # Create the submission result.
+                new_sr = old_sr.clone()
+                new_sr.submission = old_sr.submission
+                new_sr.dataset = self
+
+                # Create executables.
+                for old_e in old_sr.executables.itervalues():
+                    new_e = old_e.clone()
+                    new_e.submission_result = new_sr
+
+                # Create evaluations.
+                for old_e in old_sr.evaluations:
+                    new_e = old_e.clone()
+                    new_e.submission_result = new_sr
+                    new_e.testcase = new_testcases[old_e.codename]
+
+        self.sa_session.flush()
+
 
 class Manager(Base):
     """Class to store additional files needed to compile or evaluate a
@@ -439,12 +492,12 @@ class Manager(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset = smc_sa10_workaround(relationship(
         Dataset,
         backref=backref('managers',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Filename and digest of the provided manager.
     filename = Column(
@@ -476,12 +529,12 @@ class Testcase(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset = smc_sa10_workaround(relationship(
         Dataset,
         backref=backref('testcases',
                         collection_class=smart_mapped_collection('codename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True))
+                        passive_deletes=True)))
 
     # Codename identifying the testcase.
     codename = Column(

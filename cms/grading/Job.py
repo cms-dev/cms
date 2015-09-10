@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A JobGroup is an abstraction of an "atomic" action of a Worker.
+"""A Job is an abstraction of an "atomic" action of a Worker.
 
 Jobs play a major role in the interface with TaskTypes: they are a
 data structure containing all information about what the TaskTypes
@@ -28,10 +28,9 @@ should do. They are mostly used in the communication between ES and
 the Workers, hence they contain only serializable data (for example,
 the name of the task type, not the task type object itself).
 
-A JobGroup represents an indivisible action of a Worker, that is, a
-compilation or an evaluation. It contains one or more Jobs, for
-example "compile the submission" or "evaluate the submission on a
-certain testcase".
+A Job represents an indivisible action of a Worker, for example
+"compile the submission" or "evaluate the submission on a certain
+testcase".
 
 """
 
@@ -40,7 +39,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
-from copy import deepcopy
 
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 
@@ -194,6 +192,97 @@ class CompilationJob(Job):
             (k, Executable(k, v)) for k, v in data['executables'].iteritems())
         return cls(**data)
 
+    @staticmethod
+    def from_submission(submission, dataset):
+        job = CompilationJob()
+
+        # Job
+        job.task_type = dataset.task_type
+        job.task_type_parameters = dataset.task_type_parameters
+
+        # CompilationJob; dict() is required to detach the dictionary
+        # that gets added to the Job from the control of SQLAlchemy
+        job.language = submission.language
+        job.files = dict(submission.files)
+        job.managers = dict(dataset.managers)
+        job.info = "compile submission %d" % (submission.id)
+
+        return job
+
+    def to_submission(self, sr):
+        # This should actually be useless.
+        sr.invalidate_compilation()
+
+        # No need to check self.success because this method gets called
+        # only if it is True.
+
+        sr.set_compilation_outcome(self.compilation_success)
+        sr.compilation_text = json.dumps(self.text, encoding='utf-8')
+        sr.compilation_stdout = self.plus.get('stdout')
+        sr.compilation_stderr = self.plus.get('stderr')
+        sr.compilation_time = self.plus.get('execution_time')
+        sr.compilation_wall_clock_time = \
+            self.plus.get('execution_wall_clock_time')
+        sr.compilation_memory = self.plus.get('execution_memory')
+        sr.compilation_shard = self.shard
+        sr.compilation_sandbox = ":".join(self.sandboxes)
+        for executable in self.executables.itervalues():
+            sr.executables += [executable]
+
+    @staticmethod
+    def from_user_test(user_test, dataset):
+        job = CompilationJob()
+
+        # Job
+        job.task_type = dataset.task_type
+        job.task_type_parameters = dataset.task_type_parameters
+
+        # CompilationJob; dict() is required to detach the dictionary
+        # that gets added to the Job from the control of SQLAlchemy
+        job.language = user_test.language
+        job.files = dict(user_test.files)
+        job.managers = dict(user_test.managers)
+        job.info = "compile user test %d" % (user_test.id)
+
+        # Add the managers to be got from the Task; get_task_type must
+        # be imported here to avoid circular dependencies
+        from cms.grading.tasktypes import get_task_type
+        task_type = get_task_type(dataset=dataset)
+        auto_managers = task_type.get_auto_managers()
+        if auto_managers is not None:
+            for manager_filename in auto_managers:
+                job.managers[manager_filename] = \
+                    dataset.managers[manager_filename]
+        else:
+            for manager_filename in dataset.managers:
+                if manager_filename not in job.managers:
+                    job.managers[manager_filename] = \
+                        dataset.managers[manager_filename]
+
+        return job
+
+    def to_user_test(self, ur):
+        # This should actually be useless.
+        ur.invalidate_compilation()
+
+        # No need to check self.success because this method gets called
+        # only if it is True.
+
+        ur.set_compilation_outcome(self.compilation_success)
+        ur.compilation_text = json.dumps(self.text, encoding='utf-8')
+        ur.compilation_stdout = self.plus.get('stdout')
+        ur.compilation_stderr = self.plus.get('stderr')
+        ur.compilation_time = self.plus.get('execution_time')
+        ur.compilation_wall_clock_time = \
+            self.plus.get('execution_wall_clock_time')
+        ur.compilation_memory = self.plus.get('execution_memory')
+        ur.compilation_shard = self.shard
+        ur.compilation_sandbox = ":".join(self.sandboxes)
+        for executable in self.executables.itervalues():
+            u_executable = UserTestExecutable(
+                executable.filename, executable.digest)
+            ur.executables += [u_executable]
+
 
 class EvaluationJob(Job):
     """Job representing an evaluation on a testcase.
@@ -201,16 +290,18 @@ class EvaluationJob(Job):
     Can represent either the evaluation of a user test, or of a
     submission, or of an arbitrary source (as used in cmsMake).
 
-    Input data (usually filled by ES): language, files, managers,
-    executables, input, output, time_limit, memory_limit. Output data
-    (filled by the Worker): success, outcome, text, user_output,
-    executables, text, plus. Metadata: only_execution, get_output.
+    Input data (usually filled by ES): testcase_codename, language,
+    files, managers, executables, input, output, time_limit,
+    memory_limit. Output data (filled by the Worker): success,
+    outcome, text, user_output, executables, text, plus. Metadata:
+    only_execution, get_output.
 
     """
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
-                 language=None, files=None, managers=None,
-                 executables=None, input=None, output=None,
+                 testcase_codename=None, language=None,
+                 files=None, managers=None, executables=None,
+                 input=None, output=None,
                  time_limit=None, memory_limit=None,
                  success=None, outcome=None, text=None,
                  user_output=None, plus=None,
@@ -219,7 +310,10 @@ class EvaluationJob(Job):
 
         See base class for the remaining arguments.
 
-        language (string|None): the language of the submission / user test.
+        testcase_codename (string|None): the codename of the testcase
+            this is an evaluation for.
+        language (string|None): the language of the submission or user
+            test.
         files ({string: File}|None): files submitted by the user.
         managers ({string: Manager}|None): managers provided by the
             admins.
@@ -257,6 +351,7 @@ class EvaluationJob(Job):
 
         Job.__init__(self, task_type, task_type_parameters,
                      shard, sandboxes, info)
+        self.testcase_codename = testcase_codename
         self.language = language
         self.files = files
         self.managers = managers
@@ -277,6 +372,7 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
             'type': 'evaluation',
+            'testcase_codename': self.testcase_codename,
             'language': self.language,
             'files': dict((k, v.digest)
                           for k, v in self.files.iteritems()),
@@ -308,152 +404,8 @@ class EvaluationJob(Job):
             (k, Executable(k, v)) for k, v in data['executables'].iteritems())
         return cls(**data)
 
-
-class JobGroup(object):
-    """A collection of jobs.
-
-    This is the minimal unit of action for a Worker.
-
-    """
-
-    def __init__(self, jobs=None, success=None):
-        """Initialization.
-
-        jobs ({string: Job}|None): the jobs composing the group, or
-            None for no jobs.
-        success (bool|None): whether all jobs succeded.
-
-        """
-        if jobs is None:
-            jobs = {}
-
-        self.jobs = jobs
-        self.success = success
-
-    def export_to_dict(self):
-        res = {
-            'jobs': dict((k, v.export_to_dict())
-                         for k, v in self.jobs.iteritems()),
-            'success': self.success,
-            }
-        return res
-
-    @classmethod
-    def import_from_dict(cls, data):
-        data['jobs'] = dict(
-            (k, Job.import_from_dict_with_type(v))
-            for k, v in data['jobs'].iteritems())
-        return cls(**data)
-
-    # Compilation
-
     @staticmethod
-    def from_submission_compilation(submission, dataset):
-        job = CompilationJob()
-
-        # Job
-        job.task_type = dataset.task_type
-        job.task_type_parameters = dataset.task_type_parameters
-
-        # CompilationJob; dict() is required to detach the dictionary
-        # that gets added to the Job from the control of SQLAlchemy
-        job.language = submission.language
-        job.files = dict(submission.files)
-        job.managers = dict(dataset.managers)
-        job.info = "compile submission %d" % (submission.id)
-
-        jobs = {"": job}
-
-        return JobGroup(jobs)
-
-    def to_submission_compilation(self, sr):
-        # This should actually be useless.
-        sr.invalidate_compilation()
-
-        job = self.jobs[""]
-        assert isinstance(job, CompilationJob)
-
-        # No need to check self.success or job.success because this
-        # method gets called only if the first (and therefore the
-        # second!) is True.
-
-        sr.set_compilation_outcome(job.compilation_success)
-        sr.compilation_text = json.dumps(job.text, encoding='utf-8')
-        sr.compilation_stdout = job.plus.get('stdout')
-        sr.compilation_stderr = job.plus.get('stderr')
-        sr.compilation_time = job.plus.get('execution_time')
-        sr.compilation_wall_clock_time = \
-            job.plus.get('execution_wall_clock_time')
-        sr.compilation_memory = job.plus.get('execution_memory')
-        sr.compilation_shard = job.shard
-        sr.compilation_sandbox = ":".join(job.sandboxes)
-        for executable in job.executables.itervalues():
-            sr.executables += [executable]
-
-    @staticmethod
-    def from_user_test_compilation(user_test, dataset):
-        job = CompilationJob()
-
-        # Job
-        job.task_type = dataset.task_type
-        job.task_type_parameters = dataset.task_type_parameters
-
-        # CompilationJob; dict() is required to detach the dictionary
-        # that gets added to the Job from the control of SQLAlchemy
-        job.language = user_test.language
-        job.files = dict(user_test.files)
-        job.managers = dict(user_test.managers)
-        job.info = "compile user test %d" % (user_test.id)
-
-        # Add the managers to be got from the Task; get_task_type must
-        # be imported here to avoid circular dependencies
-        from cms.grading.tasktypes import get_task_type
-        task_type = get_task_type(dataset=dataset)
-        auto_managers = task_type.get_auto_managers()
-        if auto_managers is not None:
-            for manager_filename in auto_managers:
-                job.managers[manager_filename] = \
-                    dataset.managers[manager_filename]
-        else:
-            for manager_filename in dataset.managers:
-                if manager_filename not in job.managers:
-                    job.managers[manager_filename] = \
-                        dataset.managers[manager_filename]
-
-        jobs = {"": job}
-
-        return JobGroup(jobs)
-
-    def to_user_test_compilation(self, ur):
-        # This should actually be useless.
-        ur.invalidate_compilation()
-
-        job = self.jobs[""]
-        assert isinstance(job, CompilationJob)
-
-        # No need to check self.success or job.success because this
-        # method gets called only if the first (and therefore the
-        # second!) is True.
-
-        ur.set_compilation_outcome(job.compilation_success)
-        ur.compilation_text = json.dumps(job.text, encoding='utf-8')
-        ur.compilation_stdout = job.plus.get('stdout')
-        ur.compilation_stderr = job.plus.get('stderr')
-        ur.compilation_time = job.plus.get('execution_time')
-        ur.compilation_wall_clock_time = \
-            job.plus.get('execution_wall_clock_time')
-        ur.compilation_memory = job.plus.get('execution_memory')
-        ur.compilation_shard = job.shard
-        ur.compilation_sandbox = ":".join(job.sandboxes)
-        for executable in job.executables.itervalues():
-            ut_executable = UserTestExecutable(
-                executable.filename, executable.digest)
-            ur.executables += [ut_executable]
-
-    # Evaluation
-
-    @staticmethod
-    def from_submission_evaluation(submission, dataset):
+    def from_submission(submission, dataset, testcase_codename):
         job = EvaluationJob()
 
         # Job
@@ -467,6 +419,7 @@ class JobGroup(object):
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
+        job.testcase_codename = testcase_codename
         job.language = submission.language
         job.files = dict(submission.files)
         job.managers = dict(dataset.managers)
@@ -474,46 +427,34 @@ class JobGroup(object):
         job.time_limit = dataset.time_limit
         job.memory_limit = dataset.memory_limit
 
-        jobs = dict()
+        testcase = dataset.testcases[testcase_codename]
+        job.input = testcase.input
+        job.output = testcase.output
+        job.info = "evaluate submission %d on testcase %s" % \
+                   (submission.id, testcase.codename)
 
-        for k, testcase in dataset.testcases.iteritems():
-            job2 = deepcopy(job)
+        return job
 
-            job2.input = testcase.input
-            job2.output = testcase.output
-            job2.info = "evaluate submission %d on testcase %s" % \
-                        (submission.id, testcase.codename)
+    def to_submission(self, sr):
+        # Should not invalidate because evaluations will be added one
+        # by one now.
 
-            jobs[k] = job2
+        # No need to check self.success because this method gets called
+        # only if it is True.
 
-        return JobGroup(jobs)
-
-    def to_submission_evaluation(self, sr):
-        # This should actually be useless.
-        sr.invalidate_evaluation()
-
-        # No need to check self.success or job.success because this
-        # method gets called only if the first (and therefore the
-        # second!) is True.
-
-        sr.set_evaluation_outcome()
-
-        for test_name, job in self.jobs.iteritems():
-            assert isinstance(job, EvaluationJob)
-
-            sr.evaluations += [Evaluation(
-                text=json.dumps(job.text, encoding='utf-8'),
-                outcome=job.outcome,
-                execution_time=job.plus.get('execution_time'),
-                execution_wall_clock_time=job.plus.get(
-                    'execution_wall_clock_time'),
-                execution_memory=job.plus.get('execution_memory'),
-                evaluation_shard=job.shard,
-                evaluation_sandbox=":".join(job.sandboxes),
-                testcase=sr.dataset.testcases[test_name])]
+        sr.evaluations += [Evaluation(
+            text=json.dumps(self.text, encoding='utf-8'),
+            outcome=self.outcome,
+            execution_time=self.plus.get('execution_time'),
+            execution_wall_clock_time=self.plus.get(
+                'execution_wall_clock_time'),
+            execution_memory=self.plus.get('execution_memory'),
+            evaluation_shard=self.shard,
+            evaluation_sandbox=":".join(self.sandboxes),
+            testcase=sr.dataset.testcases[self.testcase_codename])]
 
     @staticmethod
-    def from_user_test_evaluation(user_test, dataset):
+    def from_user_test(user_test, dataset):
         job = EvaluationJob()
 
         # Job
@@ -527,6 +468,7 @@ class JobGroup(object):
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
+        job.testcase_codename = None
         job.language = user_test.language
         job.files = dict(user_test.files)
         job.managers = dict(user_test.managers)
@@ -554,27 +496,21 @@ class JobGroup(object):
         job.get_output = True
         job.only_execution = True
 
-        jobs = {"": job}
+        return job
 
-        return JobGroup(jobs)
-
-    def to_user_test_evaluation(self, ur):
+    def to_user_test(self, ur):
         # This should actually be useless.
         ur.invalidate_evaluation()
 
-        job = self.jobs[""]
-        assert isinstance(job, EvaluationJob)
+        # No need to check self.success because this method gets called
+        # only if it is True.
 
-        # No need to check self.success or job.success because this
-        # method gets called only if the first (and therefore the
-        # second!) is True.
-
-        ur.evaluation_text = json.dumps(job.text, encoding='utf-8')
-        ur.set_evaluation_outcome()  # FIXME use job.outcome
-        ur.execution_time = job.plus.get('execution_time')
+        ur.evaluation_text = json.dumps(self.text, encoding='utf-8')
+        ur.set_evaluation_outcome()
+        ur.execution_time = self.plus.get('execution_time')
         ur.execution_wall_clock_time = \
-            job.plus.get('execution_wall_clock_time')
-        ur.execution_memory = job.plus.get('execution_memory')
-        ur.evaluation_shard = job.shard
-        ur.evaluation_sandbox = ":".join(job.sandboxes)
-        ur.output = job.user_output
+            self.plus.get('execution_wall_clock_time')
+        ur.execution_memory = self.plus.get('execution_memory')
+        ur.evaluation_shard = self.shard
+        ur.evaluation_sandbox = ":".join(self.sandboxes)
+        ur.output = self.user_output

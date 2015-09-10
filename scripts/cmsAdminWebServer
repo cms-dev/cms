@@ -31,7 +31,7 @@ import sys
 
 from cms import ConfigError, default_argument_parser
 from cms.db import test_db_connection
-from cms.server.AdminWebServer import AdminWebServer
+from cms.server.admin import AdminWebServer
 
 
 logger = logging.getLogger(__name__)

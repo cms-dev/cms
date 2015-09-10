@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import os
 import re
 
@@ -103,6 +105,13 @@ class CheckTimeout(CheckAbstractEvaluationFailure):
             self, "timed out", "Execution timed out")
 
 
+class CheckTimeoutWall(CheckAbstractEvaluationFailure):
+    def __init__(self):
+        CheckAbstractEvaluationFailure.__init__(
+            self, "wall timed out",
+            "Execution timed out (wall clock limit exceeded)")
+
+
 class CheckForbiddenSyscall(CheckAbstractEvaluationFailure):
     def __init__(self, syscall_name=''):
         CheckAbstractEvaluationFailure.__init__(
@@ -131,6 +140,8 @@ class Test(object):
         self.filename = filename
         self.languages = languages
         self.checks = checks
+        submission_format = json.loads(task.task_info["submission_format"])
+        self.submission_format_element = submission_format[0]
 
     def run(self, contest_id, task_id, user_id, language):
         # Source files are stored under cmstestsuite/code/.
@@ -143,6 +154,7 @@ class Test(object):
 
         # Submit our code.
         submission_id = cws_submit(contest_id, task_id, user_id,
+                                   self.submission_format_element,
                                    full_path, language)
 
         # Wait for evaluation to complete.

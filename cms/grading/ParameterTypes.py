@@ -100,7 +100,7 @@ class ParameterTypeString(ParameterType):
 class ParameterTypeFloat(ParameterType):
     """Numeric parameter type."""
 
-    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}} \"" \
+    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
         "value=\"{{parameter_value}}\" />"
 
     def parse_string(self, value):
@@ -118,7 +118,7 @@ class ParameterTypeFloat(ParameterType):
 class ParameterTypeInt(ParameterType):
     """Numeric parameter type."""
 
-    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}} \"" \
+    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
         "value=\"{{parameter_value}}\" />"
 
     def parse_string(self, value):
@@ -137,7 +137,7 @@ class ParameterTypeBoolean(ParameterType):
     """Boolean parameter type.
     """
 
-    TEMPLATE = "<input type=\"checkbox\" name=\"{{parameter_name}} \"" \
+    TEMPLATE = "<input type=\"checkbox\" name=\"{{parameter_name}}\" " \
         "{% if checked %}checked{% end %} />"
 
     def parse_string(self, value):
@@ -223,7 +223,9 @@ class ParameterTypeArray(ParameterType):
                 self.subparameter.parse_handler(handler, new_prefix))
         return parsed_values
 
-    def render(self, prefix, previous_value=[]):
+    def render(self, prefix, previous_value=None):
+        if previous_value is None:
+            previous_value = []
         elements = []
         for i in range(len(previous_value)):
             subparam_value = previous_value[i]

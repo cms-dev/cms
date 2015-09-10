@@ -152,7 +152,7 @@ class TaskType(object):
 
         """
         # de-CamelCase the name, capitalize it and return it
-        return re.sub("([A-Z])", " \g<1>",
+        return re.sub("([A-Z])", r" \g<1>",
                       self.__class__.__name__).strip().capitalize()
 
     testable = True

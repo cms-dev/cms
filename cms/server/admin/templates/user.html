@@ -1,0 +1,104 @@
+{% extends base.html %}
+
+{% block core %}
+{% from cms.grading.scoretypes import get_score_type %}
+{% set score_types = {} %}
+
+<h1>{{ user.first_name }} {{ user.last_name }} ({{ user.username }})</h1>
+
+<h2 id="title_participations" class="toggling_on">Participations</h2>
+<div id="participations">
+
+  <form action="{{ url_root }}/user/{{ user.id }}/add_participation" method="POST">
+    Add a new participation:
+    <select name="contest_id">
+      <option value="null" selected>Select a contest</option>
+      {% for c in unassigned_contests %}
+      <option value="{{ c.id }}">
+        {{ c.name }}
+      </option>
+      {% end %}
+    </select>
+    <input type="checkbox" name="hidden">Hidden</input>
+    <input type="submit" value="Add participation" />
+  </form>
+
+  {% if participations == [] %}
+  <p>No participations found.</p>
+  {% else %}
+  <form action="{{ url_root }}/user/{{ user.id }}/edit_participation" method="POST">
+    Edit selected participation:
+    <input type="submit" name="operation" value="Remove" />
+    <table class="bordered">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Participation</th>
+          <th>Hidden?</th>
+          <th>Contest</th>
+          <th>Contest description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in participations %}
+        <tr>
+          <td>
+            <input type="radio" name="contest_id" value="{{ p.contest.id }}"/>
+          </td>
+          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+          <td>{{ p.hidden }}</td>
+          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}">{{ p.contest.name }}</a></td>
+          <td>{{ p.contest.description }}</td>
+        </tr>
+        {% end %}
+      </tbody>
+    </table>
+  </form>
+  {% end %}
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_general_info" class="toggling_on">General Information</h2>
+<div id="general_info">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ user.id }}" method="POST">
+    <table>
+      <tr>
+        <td>First name</td>
+        <td><input type="text" name="first_name" value="{{ user.first_name }}"/></td>
+      </tr>
+      <tr>
+        <td>Last name</td>
+        <td><input type="text" name="last_name" value="{{ user.last_name }}"/></td>
+      </tr>
+      <tr>
+        <td>Username</td>
+        <td><input type="text" name="username" value="{{ user.username }}"/></td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <!-- FIXME: Plain text? -->
+        <td><input type="text" name="password" value="{{ user.password }}"/></td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td><input type="text" name="email" value="{{ user.email if user.email is not None else "" }}"/></td>
+      </tr>
+      <tr>
+        <td>Timezone (like "Europe/Rome", "America/New_York", ...)</td>
+        <td><input type="text" name="timezone" value="{{ user.timezone if user.timezone is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>Preferred languages (JSON-encoded list of language codes, from the most to the least preferred)</td>
+        <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages }}"></td>
+      </tr>
+    </table>
+    <input type="submit" value="Update" />
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+
+{% end %}

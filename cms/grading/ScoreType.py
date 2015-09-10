@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -99,20 +99,22 @@ class ScoreType(object):
     def max_scores(self):
         """Returns the maximum score that one could aim to in this
         problem. Also return the maximum score from the point of view
-        of a user that did not play the token. Depend on the subclass.
+        of a user that did not play the token. And the headers of the
+        columns showing extra information (e.g. subtasks) in RWS.
+        Depend on the subclass.
 
-        return (float, float): maximum score and maximum score with
-                               only public testcases.
+        return (float, float, [string]): maximum score and maximum
+            score with only public testcases; ranking headers.
 
         """
         logger.error("Unimplemented method max_scores.")
         raise NotImplementedError("Please subclass this class.")
 
-    def compute_score(self, submission_result):
-        """Computes a score of a single submission. We don't know here
-        how to do it, but our subclasses will.
+    def compute_score(self, unused_submission_result):
+        """Computes a score of a single submission.
 
-        submission_id (int): the submission to evaluate.
+        unused_submission_result (SubmissionResult): the submission
+            result of which we want the score
 
         returns (float, str, float, str, [str]): respectively: the
             score, the HTML string with additional information (e.g.
@@ -234,11 +236,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 {% end %}"""
 
     def max_scores(self):
-        """Compute the maximum score of a submission.
-
-        returns (float, float): maximum score overall and public.
-
-        """
+        """See ScoreType.max_score."""
         score = 0.0
         public_score = 0.0
         headers = list()
@@ -259,12 +257,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         return score, public_score, headers
 
     def compute_score(self, submission_result):
-        """Compute the score of a submission.
-
-        submission_id (int): the submission to evaluate.
-        returns (float): the score
-
-        """
+        """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", \
@@ -334,7 +327,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             public_score, json.dumps(public_subtasks), \
             json.dumps(ranking_details)
 
-    def get_public_outcome(self, outcome, parameter):
+    def get_public_outcome(self, unused_outcome, unused_parameter):
         """Return a public outcome from an outcome.
 
         The public outcome is shown to the user, and this method
@@ -342,9 +335,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
         submission in a testcase contained in the group identified by
         parameter.
 
-        outcome (float): the outcome of the submission in the
-                         testcase.
-        parameter (list): the parameters of the current group.
+        unused_outcome (float): the outcome of the submission in the
+            testcase.
+        unused_parameter (list): the parameters of the current group.
 
         return (float): the public output.
 
@@ -352,12 +345,12 @@ class ScoreTypeGroup(ScoreTypeAlone):
         logger.error("Unimplemented method get_public_outcome.")
         raise NotImplementedError("Please subclass this class.")
 
-    def reduce(self, outcomes, parameter):
+    def reduce(self, unused_outcomes, unused_parameter):
         """Return the score of a subtask given the outcomes.
 
-        outcomes ([float]): the outcomes of the submission in the
-                            testcases of the group.
-        parameter (list): the parameters of the group.
+        unused_outcomes ([float]): the outcomes of the submission in
+            the testcases of the group.
+        unused_parameter (list): the parameters of the group.
 
         return (float): the public output.
 

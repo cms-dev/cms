@@ -1,0 +1,210 @@
+{% extends base.html %}
+
+{% block core %}
+{% from cms.grading import format_status_text %}
+{% from cms.grading.scoretypes import get_score_type %}
+{% set st = get_score_type(dataset=shown_dataset) %}
+{% set sr = s.get_result(shown_dataset) %}
+<div class="core_title">
+  <h1>Submission {{ s.id }} (Task: <a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a>)</h1>
+</div>
+
+{% set dataset_selector_par_url = "%s/submission/%s" % (url_root, s.id) %}
+{% include fragments/dataset_selector.html %}
+
+<h2 id="title_details" class="toggling_on">Submission details</h2>
+<div id="details">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Id</td>
+        <td>{{ s.id }}</td>
+      </tr>
+      <tr>
+        <td>Task</td>
+        <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+      </tr>
+      <tr>
+        <td>User</td>
+        <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}">{{ s.participation.user.username }}</a></td>
+      </tr>
+      <tr>
+        <td>Files</td>
+        <td>
+          {% for filename in [x.filename for x in s.task.submission_format] %}
+            {% if filename in s.files %}
+              {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+          <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ s.files[filename].id }}')">
+            {{ real_filename }}
+          </a>
+          <br/>
+            {% end %}
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <td>Token</td>
+        <td>
+          {% if s.token is None %}
+          No
+          {% else %}
+          Yes
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td id="submission_status">
+          {% if sr is None or sr.compilation_outcome is None %}
+          Compiling...
+          {% elif sr.compilation_outcome == "fail" %}
+          Compilation failed
+          {% elif not sr.evaluated() %}
+          Evaluating...
+          {% elif sr.scored() %}
+            {% try %}
+              {% set max_score = st.max_score %}
+            {% except %}
+              {% set max_score = "[Cannot get score type - see logs]" %}
+            {% end %}
+          Evaluated ({{ sr.score }} / {{ max_score }})
+          {% else %}
+          Evaluated
+          {% end %}
+        </td>
+      </tr>
+      {% if sr is not None %}
+      <tr>
+        <td>Compilation attempts</td>
+        <td>{{ sr.compilation_tries }}</td>
+      </tr>
+      <tr>
+        <td>Compilation shard</td>
+        <td>{{ sr.compilation_shard }}</td>
+      </tr>
+      <tr>
+        <td>Compilation sandbox</td>
+        <td>{{ sr.compilation_sandbox }}</td>
+      </tr>
+      <tr>
+        <td>Evaluation attempts</td>
+        <td>{{ sr.evaluation_tries }}</td>
+      </tr>
+      {% end %}
+      <tr>
+        <td>Reevaluate</td>
+        <td>
+          {% set reevaluation_par_name = "submission" %}
+          {% set reevaluation_par_value = s.id %}
+          {% set reevaluation_par_dataset_id = shown_dataset.id %}
+          {% include fragments/reevaluation_buttons.html %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<h2 id="title_comment" class="toggling_on">Comment</h2>
+
+<div id="comment">
+  <form enctype="multipart/form-data" action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/comment" method="POST">
+    <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea></br>
+    <input type="submit"/>
+    <input type="reset" value="Reset" />
+  </form>
+</div>
+
+  {% if sr is not None and sr.scored() %}
+
+<h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
+<div id="evaluation_user">
+
+  <div class="score_details" id="evaluation_{{ s.id }}">
+    {% if s.tokened() %}
+      {% raw st.get_html_details(sr.score_details) %}
+    {% else %}
+      {% raw st.get_html_details(sr.public_score_details) %}
+    {% end %}
+  </div>
+</div>
+
+  {% end %}
+
+  {% if sr is not None and sr.evaluated() %}
+
+<h2 id="title_evaluation_admin" class="toggling_on">Evaluation (as seen by the admin)</h2>
+<div id="evaluation_admin">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Codename</th>
+        <th>Outcome</th>
+        <th></th>
+        <th>Details</th>
+        <th>Shard</th>
+        <th>Resources</th>
+        <th>Sandbox</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
+      <tr>
+        <td id="eval_codename_{{ idx }}">{{ ev.codename }}</td>
+        <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
+        {% if s.token is not None or ev.testcase.public %}
+        <td style="align: center;">&bullet;</td>
+        {% else %}
+        <td></td>
+        {% end %}
+        <td id="eval_text_{{ idx }}">{{ format_status_text(ev.text) }}</td>
+        <td>{{ ev.evaluation_shard }}</td>
+        <td>
+          {% if ev.execution_time is not None %}
+          ({{ ev.execution_time }} s)
+          {% end %}
+          {% if ev.execution_wall_clock_time is not None %}
+          ({{ ev.execution_wall_clock_time }} s)
+          {% end %}
+          {% if ev.execution_memory is not None %}
+          ({{ (ev.execution_memory // 1024) // 1024 }} MB)
+          {% end %}
+        </td>
+        <td>{{ ev.evaluation_sandbox }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+
+</div>
+
+
+  {% end %}
+
+  {% if sr is not None and sr.compiled() %}
+
+<h2 id="title_compilation" class="toggling_on">Compilation</h2>
+<div id="compilation">
+
+  <h3>Outcome</h3>
+  <pre>{% if sr.compilation_text is not None %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+
+  <h3>Standard output</h3>
+  <pre>{% if sr.compilation_stdout is not None %}{{ sr.compilation_stdout }}{% end %}</pre>
+
+  <h3>Standard error</h3>
+  <pre>{% if sr.compilation_stderr is not None %}{{ sr.compilation_stderr }}{% end %}</pre>
+
+</div>
+
+  {% end %}
+
+{% end %}

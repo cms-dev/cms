@@ -1,0 +1,110 @@
+{# This snippet shows a row of a submission table using the variable s as input #}
+{% from cms.grading import format_status_text %}
+{% set dataset = s.task.active_dataset %}
+{% set sr = s.get_result(dataset) %}
+{# The submission result might be missing in some cases (e.g., cloned dataset); these cases are equivalent to the compiling state. #}
+{% set status = SubmissionResult.COMPILING %}
+{% if sr is not None %}
+  {% set status = sr.get_status() %}
+{% end %}
+{% if s.task.name in score_types %}
+  {% set score_type = score_types[s.task.name] %}
+{% else %}
+  {% set score_type = get_score_type(dataset=dataset) %}
+  {% set score_types[s.task.name] = score_type %}
+{% end %}
+<tr>
+  <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
+  <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}">{{ s.participation.user.username }}</a></td>
+  <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+  <td>
+    {% if status == SubmissionResult.COMPILING %}
+    Compiling...
+    {% else %}
+    <div id="title_evaluation_{{ s.id }}" class="toggling_off">
+
+      {% if status == SubmissionResult.COMPILATION_FAILED %}
+      Compilation failed
+      <div id="evaluation_{{ s.id }}" style="display: none;">
+
+      {% elif status == SubmissionResult.EVALUATING %}
+      Evaluating...
+      <div id="evaluation_{{ s.id }}" style="display: none;">
+
+      {% elif status == SubmissionResult.SCORING %}
+      Scoring...
+      <div id="evaluation_{{ s.id }}" style="display: none;">
+        {% if sr.evaluated() %}
+        <h3>Testcases</h3>
+        <table class="nested bordered">
+          <thead>
+            <tr>
+              <th>Outcome</th>
+              <th></th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
+            <tr>
+              <td>{{ ev.outcome }}</td>
+              {% if s.token is not None or ev.testcase.public %}
+              <td style="align: center;">&bullet;</td>
+              {% else %}
+              <td></td>
+              {% end %}
+              <td>{{ ev.text }}</td>
+            </tr>
+            {% end %}
+          </tbody>
+        </table>
+        {% end %}
+
+      {% elif status == SubmissionResult.SCORED %}
+        {% try %}
+          {% set max_score = score_type.max_score %}
+        {% except %}
+          {% set max_score = "[Cannot get score type - see logs]" %}
+        {% end %}
+      Scored ({{ sr.score }} / {{ max_score }})
+      <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
+        {% try %}
+          {% raw score_type.get_html_details(sr.score_details) %}
+        {% except %}
+        [Cannot get score type - see logs]
+        {% end %}
+
+      {% else %}
+      [Unknown status]
+      <div id="evaluation_{{ s.id }}" style="display: none;">
+
+      {% end %}
+        <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
+        <pre>{% if sr.compilation_text is not None %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+      </div>
+    </div>
+
+    {% end %}
+  </td>
+  <td>
+    {% for filename, sub_file in s.files.items() %}
+    <a href="javascript:void(0);" onclick="utils.show_file('{{ filename.replace("%l", s.language) if s.language else filename }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) if s.language else filename }}<br/>
+    {% end %}
+  </td>
+  <td>
+    {% if s.token is None %}
+    No
+    {% else %}
+    Yes
+    {% end %}
+  </td>
+  <td>
+    {{ s.short_comment }}
+  </td>
+  <td>
+    {% set reevaluation_par_name = "submission" %}
+    {% set reevaluation_par_value = s.id %}
+    {% set reevaluation_par_dataset_id = None %}
+    {% include reevaluation_buttons.html %}
+  </td>
+</tr>

@@ -131,8 +131,8 @@ def main():
 
     if args.verbose:
         verb = args.action[:4] + 'ting'
-        logger.info("%s entity '%ss/%s'" % (verb.capitalize(),
-                                            args.entity_type, args.entity_id))
+        logger.info("%s entity '%ss/%s'", verb.capitalize(),
+                    args.entity_type, args.entity_id)
 
     if args.rankings is not None:
         shards = args.rankings
@@ -149,9 +149,8 @@ def main():
         auth = urlsplit(url)
 
         if args.verbose:
-            logger.info(
-                "Preparing %s request to %s" %
-                (ACTION_METHODS[args.action], url))
+            logger.info("Preparing %s request to %s",
+                        ACTION_METHODS[args.action], url)
 
         if hasattr(args, 'file'):
             if args.verbose:
@@ -169,9 +168,8 @@ def main():
 
         try:
             res = s.send(req, verify=config.https_certfile)
-        except RequestException as error:
-            logger.error("Failed")
-            logger.info(repr(error))
+        except RequestException:
+            logger.error("Failed", exc_info=True)
             had_error = True
             continue
 
@@ -179,7 +177,7 @@ def main():
             logger.info("Response received")
 
         if 400 <= res.status_code < 600:
-            logger.error("Unexpected status code: %d" % res.status_code)
+            logger.error("Unexpected status code: %d", res.status_code)
             had_error = True
             continue
 

@@ -40,8 +40,9 @@ from __future__ import unicode_literals
 
 import io
 import os
-import shutil
 import json
+import logging
+import shutil
 import sys
 import tempfile
 import time
@@ -50,10 +51,13 @@ from argparse import ArgumentParser
 from mechanize import Browser
 from threading import Thread, RLock
 
-from cms import config, logger, utf8_decoder
+from cms import config, utf8_decoder
 from cmscontrib.ContestImporter import ContestImporter
 from cmstestsuite.web.CWSRequests import \
     LoginRequest, SubmitRequest, TokenRequest
+
+
+logger = logging.getLogger(__name__)
 
 
 def to_time(seconds):
@@ -204,8 +208,8 @@ class ContestReplayer(object):
         language (string): the extension the files should have.
 
         """
-        logger.info("%s - Submitting for %s on task %s."
-                    % (to_time(timestamp), username, t_short))
+        logger.info("%s - Submitting for %s on task %s.",
+                    to_time(timestamp), username, t_short)
         if len(files) != 1:
             logger.error("We cannot submit more than one file.")
             return
@@ -247,8 +251,8 @@ class ContestReplayer(object):
         submission_num (string): id of the submission to release test.
 
         """
-        logger.info("%s - Playing token for %s on task %s"
-                    % (to_time(timestamp), username, t_short))
+        logger.info("%s - Playing token for %s on task %s",
+                    to_time(timestamp), username, t_short)
         browser = Browser()
         browser.set_handle_robots(False)
         step(LoginRequest(browser, username, password,
@@ -279,7 +283,7 @@ class ContestReplayer(object):
             to_wait = (timestamp / self.speed - (time.time() - self.start))
             while to_wait > .5:
                 if 0 < to_wait % 10 <= .5:
-                    logger.info("Next event in %d seconds." % int(to_wait))
+                    logger.info("Next event in %d seconds.", to_wait)
                 time.sleep(.5)
                 to_wait = (timestamp / self.speed - (time.time() - self.start))
             if to_wait > 0:
@@ -302,7 +306,7 @@ class ContestReplayer(object):
                            t_short=task_name,
                            submission_num=data)
             else:
-                logger.warning("Unexpected type `%s', ignoring." % type_)
+                logger.warning("Unexpected type `%s', ignoring.", type_)
 
             index += 1
 
@@ -326,8 +330,8 @@ def main():
                 int(args.resume[3:5]) * 60 + \
                 int(args.resume[0:2]) * 3600
         except:
-            logger.critical("Invalid resume time %s, format is %%H:%%M:%%S"
-                            % args.resume)
+            msg = "Invalid resume time %s, format is %%H:%%M:%%S" % args.resume
+            logger.critical(msg)
             return 1
 
     if not os.path.isdir(args.import_source):

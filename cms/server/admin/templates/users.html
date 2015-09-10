@@ -1,0 +1,30 @@
+{% extends base.html %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1>Users list</h1>
+</div>
+
+<div id="details">
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>First name</th>
+        <th>Last name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in sorted(user_list, cmp = lambda x, y: cmp(x.username, y.username)) %}
+      <tr>
+        <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
+        <td>{{ u.first_name }}</td>
+        <td>{{ u.last_name }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+</div>
+
+{% end %}

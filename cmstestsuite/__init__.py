@@ -3,8 +3,10 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Luca Versari <veluca93@gmail.com>
+# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,23 +48,25 @@ CONFIG = {
     'VERBOSITY': 0,
 }
 
+
 # cms_config holds the decoded-JSON of the cms.conf configuration file.
-global cms_config
 cms_config = None
+
 
 # We store a list of all services that are running so that we can cleanly shut
 # them down.
-global running_services
 running_services = {}
-
-global running_servers
 running_servers = {}
 
-global created_users
-created_users = {}
 
-global created_tasks
+# List of users and tasks we created as part of the test.
+created_users = {}
 created_tasks = {}
+
+
+# Persistent browsers to access AWS and CWS.
+aws_browser = None
+cws_browser = None
 
 
 class FrameworkException(Exception):
@@ -158,7 +162,7 @@ def spawn(cmdline):
         print('$', ' '.join(cmdline))
 
     if CONFIG["TEST_DIR"] is not None:
-        cmdline = ['python-coverage', 'run', '-p', '--source=cms'] + \
+        cmdline = ['python', '-m', 'coverage', 'run', '-p', '--source=cms'] + \
             cmdline
 
     if CONFIG["VERBOSITY"] >= 3:
@@ -185,9 +189,10 @@ def configure_cms(options):
     options (dict): mapping from parameter to textual JSON argument.
 
     """
-    f = io.open("%(TEST_DIR)s/examples/cms.conf.sample" % CONFIG,
-                "rt", encoding="utf-8")
-    lines = f.readlines()
+    with io.open("%(TEST_DIR)s/config/cms.conf.sample" % CONFIG,
+                 "rt", encoding="utf-8") as in_f:
+        lines = in_f.readlines()
+
     unset = set(options.keys())
     for i, line in enumerate(lines):
         g = re.match(r'^(\s*)"([^"]+)":', line)
@@ -197,10 +202,9 @@ def configure_cms(options):
                 lines[i] = '%s"%s": %s,\n' % (whitespace, key, options[key])
                 unset.remove(key)
 
-    out_file = io.open("%(CONFIG_PATH)s" % CONFIG, "wt", encoding="utf-8")
-    for l in lines:
-        out_file.write(l)
-    out_file.close()
+    with io.open("%(CONFIG_PATH)s" % CONFIG, "wt", encoding="utf-8") as out_f:
+        for l in lines:
+            out_f.write(l)
 
     if unset:
         print("These configuration items were not set:")
@@ -345,36 +349,38 @@ def shutdown_services():
 
 def combine_coverage():
     info("Combining coverage results.")
-    sh("python-coverage combine")
+    sh("python -m coverage combine")
 
 
 def admin_req(path, multipart_post=False, args=None, files=None):
-    url = 'http://localhost:8889' + path
-    br = mechanize.Browser()
-    br.set_handle_robots(False)
+    global aws_browser
+    if aws_browser is None:
+        aws_browser = mechanize.Browser()
+        aws_browser.set_handle_robots(False)
 
     # Some requests must be forced to be multipart.
     # Do this by making files not None.
     if multipart_post and files is None:
         files = []
 
-    return cmstestsuite.web.browser_do_request(br, url, args, files)
+    return cmstestsuite.web.browser_do_request(
+        aws_browser, 'http://localhost:8889' + path, args, files)
 
 
-def get_tasks(contest_id):
+def get_tasks():
     '''Return a list of existing tasks, returned as a dictionary of
       'taskname' => { 'id': ..., 'title': ... }
 
     '''
-    r = admin_req('/tasklist/%d' % contest_id)
+    r = admin_req('/tasks')
     groups = re.findall(r'''
-        <tr> \s*
-        <td> \s* (.*) \s* </td> \s*
-        <td><a\s+href="../task/(\d+)">(.*)</a></td>
+        <tr>\s*
+        <td><a\s+href="./task/(\d+)">(.*)</a></td>\s*
+        <td>(.*)</td>\s*
         ''', r.read(), re.X)
     tasks = {}
     for g in groups:
-        title, id, name = g
+        id, name, title = g
         id = int(id)
         tasks[name] = {
             'title': title,
@@ -389,13 +395,13 @@ def get_users(contest_id):
       'username' => { 'id': ..., 'firstname': ..., 'lastname': ... }
 
     '''
-    r = admin_req('/userlist/%d' % contest_id)
+    r = admin_req('/contest/' + str(contest_id) + '/users')
     groups = re.findall(r'''
         <tr> \s*
         <td> \s* (.*) \s* </td> \s*
         <td> \s* (.*) \s* </td> \s*
-        <td><a\s+href="../user/(\d+)">(.*)</a></td>
-        ''', r.read(), re.X)
+        <td><a\s+href="./user/(\d+)">(.*)</a></td>
+    ''', r.read(), re.X)
     users = {}
     for g in groups:
         firstname, lastname, id, username = g
@@ -410,7 +416,7 @@ def get_users(contest_id):
 
 
 def add_contest(**kwargs):
-    resp = admin_req('/contest/add', multipart_post=True, args=kwargs)
+    resp = admin_req('/contests/add', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
@@ -422,21 +428,30 @@ def add_contest(**kwargs):
     return int(match.groups()[0])
 
 
-def add_task(contest_id, **kwargs):
+def add_task(**kwargs):
     # We need to specify token_mode. Why this and no others?
     if 'token_mode' not in kwargs:
         kwargs['token_mode'] = 'disabled'
 
-    r = admin_req('/add_task/%d' % contest_id,
+    r = admin_req('/tasks/add',
                   multipart_post=True,
                   args=kwargs)
     g = re.search(r'/task/([0-9]+)$', r.geturl())
     if g:
         task_id = int(g.group(1))
         created_tasks[task_id] = kwargs
-        return task_id
     else:
         raise FrameworkException("Unable to create task.")
+
+    r = admin_req('/contest/' + kwargs["contest_id"] + '/tasks/add',
+                  multipart_post=True,
+                  args={"task_id": str(task_id)})
+    g = re.search('<input type="radio" name="task_id" value="' +
+                  str(task_id) + '"/>', r.read())
+    if g:
+        return task_id
+    else:
+        raise FrameworkException("Unable to assign task to contest.")
 
 
 def add_manager(task_id, manager):
@@ -445,7 +460,7 @@ def add_manager(task_id, manager):
         ('manager', manager),
     ]
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('/add_manager/%d' % (dataset_id),
+    admin_req('/dataset/%d/managers/add' % dataset_id,
               multipart_post=True, files=files, args=args)
 
 
@@ -471,50 +486,60 @@ def add_testcase(task_id, num, input_file, output_file, public):
     if public:
         args['public'] = '1'
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('/add_testcase/%d' % (dataset_id),
+    admin_req('/dataset/%d/testcases/add' % dataset_id,
               multipart_post=True, files=files, args=args)
 
 
-def add_user(contest_id, **kwargs):
-    r = admin_req('/add_user/%d' % contest_id, args=kwargs)
+def add_user(**kwargs):
+    r = admin_req('/users/add', args=kwargs)
     g = re.search(r'/user/([0-9]+)$', r.geturl())
     if g:
         user_id = int(g.group(1))
         created_users[user_id] = kwargs
-        return user_id
     else:
         raise FrameworkException("Unable to create user.")
 
+    kwargs["user_id"] = user_id
+    r = admin_req('/contest/' + kwargs["contest_id"] + '/users/add',
+                  args=kwargs)
+    g = re.search('<input type="radio" name="user_id" value="' +
+                  str(user_id) + '"/>', r.read())
+    if g:
+        return user_id
+    else:
+        raise FrameworkException("Unable to create participation.")
 
-def add_existing_task(contest_id, task_id, **kwargs):
+
+def add_existing_task(task_id, **kwargs):
     '''Add information about an existing task to our database so that we can
     use it for submitting later.'''
     created_tasks[task_id] = kwargs
 
 
-def add_existing_user(contest_id, user_id, **kwargs):
+def add_existing_user(user_id, **kwargs):
     '''Add information about an existing user to our database so that we can
     use it for submitting later.'''
     created_users[user_id] = kwargs
 
 
-def cws_submit(contest_id, task_id, user_id, filename, language):
+def cws_submit(contest_id, task_id, user_id, submission_format_element,
+               filename, language):
     username = created_users[user_id]['username']
     password = created_users[user_id]['password']
     base_url = 'http://localhost:8888/'
     task = (task_id, created_tasks[task_id]['name'])
 
-    def step(request):
-        request.prepare()
-        request.execute()
+    global cws_browser
+    if cws_browser is None:
+        cws_browser = mechanize.Browser()
+        cws_browser.set_handle_robots(False)
+        lr = LoginRequest(cws_browser, username, password, base_url=base_url)
+        lr.step()
 
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
-
-    lr = LoginRequest(browser, username, password, base_url=base_url)
-    step(lr)
-    sr = SubmitRequest(browser, task, base_url=base_url, filename=filename)
-    step(sr)
+    sr = SubmitRequest(cws_browser, task, base_url=base_url,
+                       submission_format_element=submission_format_element,
+                       filename=filename)
+    sr.step()
 
     submission_id = sr.get_submission_id()
 
@@ -525,8 +550,10 @@ def cws_submit(contest_id, task_id, user_id, filename, language):
 
 
 def get_evaluation_result(contest_id, submission_id, timeout=30):
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
+    global aws_browser
+    if aws_browser is None:
+        aws_browser = mechanize.Browser()
+        aws_browser.set_handle_robots(False)
     base_url = 'http://localhost:8889/'
 
     WAITING_STATUSES = re.compile(
@@ -534,14 +561,14 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
     COMPLETED_STATUS = re.compile(
         r'Compilation failed|Evaluated \(')
 
-    num_tries = timeout
-    while num_tries > 0:
-        num_tries -= 1
+    sleep_interval = 0.1
+    while timeout > 0:
+        timeout -= sleep_interval
 
-        sr = AWSSubmissionViewRequest(browser, submission_id,
+        sr = AWSSubmissionViewRequest(aws_browser,
+                                      submission_id,
                                       base_url=base_url)
-        sr.prepare()
-        sr.execute()
+        sr.step()
 
         result = sr.get_submission_info()
         status = result['status']
@@ -550,7 +577,7 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
             return result
 
         if WAITING_STATUSES.search(status):
-            time.sleep(1)
+            time.sleep(sleep_interval)
             continue
 
         raise FrameworkException("Unknown submission status: %s" % status)

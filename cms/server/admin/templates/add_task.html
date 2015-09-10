@@ -1,0 +1,211 @@
+{% extends base.html %}
+
+{% block js_init %}
+
+function showTaskTypeOption() {
+    var selector = $("select[name=task_type]")[0];
+    $(".TaskTypeOptions:visible").hide("fast");
+    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options").show("fast")
+};
+
+showTaskTypeOption();
+$("select[name=task_type]").change(showTaskTypeOption);
+
+{% end %}
+
+{% block core %}
+{% from cms import plugin_list, SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX %}
+{% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
+{% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
+
+<div class="core_title">
+  <h1>New task</h1>
+</div>
+
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/tasks/add" method="post" >
+  <h2 id="title_task_information" class="toggling_on">Task information</h2>
+
+  <div id="task_information">
+    <table>
+      <tr>
+        <td>Name</td>
+        <td><input type="text" name="name"/></td>
+      </tr>
+      <tr>
+        <td>Title</td>
+        <td><input type="text" name="title"/></td>
+      </tr>
+      <tr>
+        <td>Primary statements (JSON-encoded list of language codes)</td>
+        <td><input type="text" name="primary_statements" value="[]"/></td>
+      </tr>
+      <tr>
+        <td>Submission format</td>
+        <td>
+          <table>
+            <tr>
+              <td>
+                <input type="radio" name="submission_format_choice" value="simple" checked/>
+              </td>
+              <td>task_name.%l</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="submission_format_choice" value="other">
+              </td>
+              <td>
+                Other: <input type="text" name="submission_format"/></td>
+              </td>
+            </tr>
+          </table>
+      </tr>
+      <tr>
+        <td>Time limit</td>
+        <td><input type="text" name="time_limit" value="1"/> second(s)</td>
+      </tr>
+      <tr>
+        <td>Memory limit</td>
+        <td><input type="text" name="memory_limit" value="512"/> MiB</td>
+      </tr>
+
+    </table>
+    <div class="hr"></div>
+  </div>
+
+<!-- Task type settings -->
+
+  <h2 id="title_task_type" class="toggling_on">Task type settings</h2>
+
+  <div id="task_type">
+    <table>
+      <tr>
+        <td>Task type</td>
+        <td>
+
+          <select name="task_type">
+            {% for task_type in task_type_list %}
+            <option value="{{ task_type.__name__}}">{{task_type.__name__}}</option>
+            {% end %}
+          </select>
+
+        {% for task_type in task_type_list %}
+        <table class="TaskTypeOptions bordered" id="TaskType{{ task_type.__name__ }}Options" style="display: none;">
+          {% for i in range(len(task_type.ACCEPTED_PARAMETERS)) %}
+            {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
+            <tr>
+                <td>{{ param_def.name }}</td>
+                <td>
+                    {% raw param_def.render("TaskTypeOptions_%s_" % task_type.__name__) %}
+                </td>
+            </tr>
+          {% end %}
+        </table>
+        {% end %}
+
+
+        </td>
+      </tr>
+
+      <tr>
+        <td>Score Type</td>
+        <td>
+          <select name="score_type">
+            {% for score_type in score_type_list %}
+            <option value="{{ score_type.__name__}}">{{ score_type.__name__ }}</option>
+            {% end %}
+          </select>
+
+        </td>
+      </tr>
+      <tr>
+        <td>Score Parameters</td>
+        <td><textarea name="score_type_parameters"></textarea></td>
+      </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
+<!-- Token settings -->
+
+  <h2 id="title_tokens" class="toggling_on">Tokens</h2>
+
+  <div id="tokens">
+    <table>
+      <tr>
+        <td>Token mode</td>
+        <td>
+          <select name="token_mode">
+            <option value="disabled" selected>Disabled</option>
+            <option value="finite">Finite</option>
+            <option value="infinite">Infinite</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>[only if finite] Maximum number of tokens a contestant can use</td>
+        <td><input type="text" name="token_max_number" value="" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Minimum interval a contestant has to wait between two token uses (in seconds)</td>
+        <td><input type="text" name="token_min_interval" value="0" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Initial number of tokens</td>
+        <td><input type="text" name="token_gen_initial" value="2" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Token generation number</td>
+        <td><input type="text" name="token_gen_number" value="2" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Token generation period (in minutes)</td>
+        <td><input type="text" name="token_gen_interval" value="30" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Maximum number of tokens</td>
+        <td><input type="text" name="token_gen_max" value="" /></td>
+      </tr>
+      <tr>
+        <td>Maximum number of submissions for each user (for this task)</td>
+        <td><input type="text" name="max_submission_number" value=""></td>
+      </tr>
+      <tr>
+        <td>Maximum number of user_tests for each user (for this task)</td>
+        <td><input type="text" name="max_user_test_number" value=""></td>
+      </tr>
+      <tr>
+        <td>Minimum interval between two submissions of each user (for this task, in seconds)</td>
+        <td><input type="text" name="min_submission_interval" value=""></td>
+      </tr>
+      <tr>
+        <td>Minimum interval between two user_tests of each user (for this task, in seconds)</td>
+        <td><input type="text" name="min_user_test_interval" value=""></td>
+      </tr>
+      <tr>
+        <td>The number of decimal places the scores will be rounded to</td>
+        <td><input type="text" name="score_precision" value="0"></td>
+      </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
+  <h2 id="title_score_options" class="toggling_on">Score Options</h2>
+  <div id="score_options">
+    <table>
+      <tr>
+        <td>Score mode</td>
+        <td>
+          <select name="score_mode">
+            <option value="{{ SCORE_MODE_MAX_TOKENED_LAST }}" selected>Use best among tokened and last submissions (IOI 2010-2012)</option>
+            <option value="{{ SCORE_MODE_MAX }}">Use best among all submissions (IOI 2013-)</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
+  <input type="submit"/><input type="reset"/>
+</form>
+{% end %}
+

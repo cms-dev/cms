@@ -14,9 +14,14 @@ CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsCo
     cmsContestExporter -h
     cmsContestImporter -h
 
-As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, CMS provides two general-purpose commands, :file:`cmsImporter` (for importing a totally new contest) and :file:`cmsReimporter` (for merging an already existing contest with the one being imported). These two programs have no knowledge of any specific on-disk format, so they must are complemented with a set of "loaders", which actually interpret your files and directories. You can tell the importer or the reimported wich loader to use with the ``-L`` flag, or just rely and their autodetection capabilities. Running with ``-h`` flag will list the available loaders.
+As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, CMS provides general-purpose commands, :file:`cmsAddUser`, :file:`cmsAddTask` and :file:`cmsAddContest`. These programs have no knowledge of any specific on-disk format, so they must be complemented with a set of "loaders", which actually interpret your files and directories. You can tell the importer or the reimported wich loader to use with the ``-L`` flag, or just rely and their autodetection capabilities. Running with ``-h`` flag will list the available loaders.
 
-At the moment, the only loader distributed with CMS understand the format used within Italian Olympiad. It is not particularly suited for general use (see below for some details more), so we encourage you to write a loader for your favorite format and then get in touch with CMS authors to have it accepted in CMS. See files :gh_blob:`cmscontrib/BaseLoader.py` and :gh_blob:`cmscontrib/YamlLoader.py` for some hints.
+At the moment, CMS comes with two loaders pre-installed:
+
+* :file:`italy_yaml`, for tasks/users stored in the "Italian Olympiad" format.
+* :file:`polygon_xml`, for tasks made with `Polygon <https://polygon.codeforces.com/>`_.
+
+The first one is not particularly suited for general use (see below for more details), so, if you don't want to migrate to one of the aforementioned formats then we encourage you to **write a loader** for your favorite format and then get in touch with CMS authors to have it accepted in CMS. See the file :gh_blob:`cmscontrib/loaders/base_loader.py` for some hints.
 
 
 Italian import format
@@ -134,7 +139,9 @@ The task YAML files require the following keys.
 
 - ``n_input`` (integer): number of test cases to be evaluated for this task; the actual test cases are retrieved from the :ref:`task directory <externalcontestformats_task-directory>`.
 
-- ``token_mode``: the token mode for the task, as in :ref:`configuringacontest_tokens`; it can be ``disabled``, ``infinite`` or ``finite``; if this is not specified, the loader will try to infer it from the remaining token parameters (in order to retain compatibility with the past), but you are not advised to relay on this behavior..
+- ``score_mode``: the score mode for the task, as in :ref:`configuringacontest_score`; it can be ``max_tokened_last`` (for the legacy behavior), or ``max`` (for the modern behavior).
+
+- ``token_mode``: the token mode for the task, as in :ref:`configuringacontest_tokens`; it can be ``disabled``, ``infinite`` or ``finite``; if this is not specified, the loader will try to infer it from the remaining token parameters (in order to retain compatibility with the past), but you are not advised to relay on this behavior.
 
 The following are optional keys.
 
@@ -158,3 +165,14 @@ The following are optional keys that must be present for some task type or score
 
 - ``primary_language`` (string): the statement will be imported with this language code; defaults to ``it`` (Italian), in order to ensure backward compatibility.
 
+
+Polygon format
+==============
+
+`Polygon <https://polygon.codeforces.com>`_ is a popular platform for the creation of tasks, and a task format, used among others by Codeforces.
+
+Since Polygon doesn't support CMS directly, some task parameters cannot be set using the standard Polygon configuration. The importer reads from an optional file :file:`cms_conf.py` additional configuration specifics to CMS. Additionally, user can add file named contestants.txt to allow importing some set of users.
+
+By default, all tasks are batch files, with custom checker and score type is Sum. Loaders assumes that checker is check.cpp and written with usage of testlib.h. It provides customized version of testlib.h which allows using Polygon checkers with CMS. Checkers will be compiled during importing the contest. This is important in case the architecture where the loading happens is different from the architecture of the workers.
+
+Polygon (by now) doesn't allow custom contest-wide files, so general contest options should be hard-coded in the loader.

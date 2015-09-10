@@ -1,0 +1,29 @@
+{# This snippet shows a table using the list submissions as input #}
+{% if submissions == [] %}
+<p>No submissions found.</p>
+
+{% else %}
+{# TODO: implement a more useful pagination for a large contest #}
+<div id="page_selector_submissions"></div>
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Task</th>
+      <th>Status</th>
+      <th>Files</th>
+      <th>Token</th>
+      <th>Comment</th>
+      <th>Reevaluate</th>
+    </tr>
+  </thead>
+  <tbody id="paged_content_submissions">
+    {% from cms.grading.scoretypes import get_score_type %}
+    {% set score_types = {} %}
+    {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+      {% include submission_row.html %}
+    {% end %}
+  </tbody>
+</table>
+{% end %}

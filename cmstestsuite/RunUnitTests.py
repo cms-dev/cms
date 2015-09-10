@@ -54,7 +54,7 @@ def run_unittests(test_list):
             i + 1, num_tests_to_execute,
             path, filename))
         try:
-            sh('python-coverage run -p --source=cms %s' %
+            sh('python2 -m coverage run -p --source=cms %s' %
                os.path.join(path, filename))
         except FrameworkException:
             info("  (FAILED: %s)" % filename)
@@ -183,7 +183,7 @@ def main():
 
     # Load config from cms.conf.
     CONFIG["TEST_DIR"] = git_root
-    CONFIG["CONFIG_PATH"] = "%s/examples/cms.conf" % CONFIG["TEST_DIR"]
+    CONFIG["CONFIG_PATH"] = "%s/config/cms.conf" % CONFIG["TEST_DIR"]
     if CONFIG["TEST_DIR"] is None:
         CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.conf"
 
@@ -194,7 +194,7 @@ def main():
 
         # Clear out any old coverage data.
         info("Clearing old coverage data.")
-        sh("python-coverage erase")
+        sh("python -m coverage erase")
 
     # Run all of our test cases.
     passed, test_results = run_unittests(test_list)

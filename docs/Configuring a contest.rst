@@ -19,23 +19,27 @@ Contest administrators can limit the ability of users to submit submissions and 
 
 - ``min_submission_interval`` / ``min_user_test_interval``
 
-  These set, respectively, the minimum amount of time the user is required to wait after a submission or user test has been submitted before they are allowed to send in new ones. Any attempt to submit a submission or user test before this timeout has expired will fail.
+  These set, respectively, the minimum amount of time, in minutes, the user is required to wait after a submission or user test has been submitted before they are allowed to send in new ones. Any attempt to submit a submission or user test before this timeout has expired will fail.
 
 The limits can be set both for individual tasks and for the whole contest. A submission or user test is accepted if it verifies the conditions on both the task *and* the contest. This means that a submission or user test will be accepted if the number of submissions or user tests received so far for that task is strictly less that the task's maximum number *and* the number of submissions or user tests received so far for the whole contest (i.e. in all tasks) is strictly less than the contest's maximum number. The same holds for the minimum interval too: a submission or user test will be accepted if the time passed since the last submission or user test for that task is greater than the task's minimum interval *and* the time passed since the last submission or user test received for the whole contest (i.e. in any of the tasks) is greater than the contest's minimum interval.
 
 Each of these fields can be left unset to prevent the corresponding limitation from being enforced.
 
 
+Feedback to contestants
+=======================
+
+Each testcase can be marked as public or private. After sending a submission, a contestant can always see its results on the public testcases: a brief passed / partial / not passed status for each testcase, and the partial score that is computable from the public testcases only. Note that input and output data are always hidden.
+
+Tokens were introduced to provide contestants with limited access to the detailed results of their submissions on the private testcases as well. If a contestant uses a token on a submission, then they will be able to see its result on all testcases, and the global score.
+
+
 .. _configuringacontest_tokens:
 
-Feedback and tokens
-===================
+Tokens rules
+------------
 
-Each testcase can be marked as public or private. During the contest, contestants can see the result of their submissions on the public testcases (the content of the input and output data themselves remain hidden, though). Tokens are a concept introduced to provide contestants with limited access to the detailed results of their submissions on the private testcases as well.
-
-For every submission sent in for evaluation, a contestant is always able to see if it succesfully compiled. They are also able to see its scores on the public testcases of the task, if any. All information about the other so-called private testcases is kept hidden. Yet, a contestant can choose to use one of its tokens to "unlock" a certain submission of their choice. After they do so, detailed results are available for all testcases, as if they were all public. A token, once used, is consumed and lost forever. Contestants have a set of available tokens at their disposal, where the ones they use are picked from. These sets are managed by CMS according to rules defined by the contest administrators, as explained later in this section. For all official :doc:`score types <Score types>`, the public score is the score on public testcases, whereas the detailed score is the score on all testcases. This is not necessarily true for custom score types, as they can implement arbitrary logics to compute those values.
-
-Tokens also affect the score computation. That is, all "tokened" submissions will be considered, together with the last submitted one, when computing the score for a task. See also :ref:`configuringacontest_score-rounding`.
+Each contestant have a set of available tokens at their disposal; when they use a token it is taken from this set, and cannot be use again. These sets are managed by CMS according to rules defined by the contest administrators, as explained later in this section.
 
 There are two types of tokens: contest-tokens and task-tokens. When a contestant uses a token to unlock a submission, they are really using one token of each type, and therefore needs to have both available. As the names suggest, contest-tokens are bound to the contest while task-tokens are bound to a specific task. That means that there is just one set of contest-tokens but there can be many sets of task-tokens (precisely one for every task). These sets are controlled independently by rules defined either on the contest or on the task.
 
@@ -49,16 +53,33 @@ Having a finite set of both contest- and task-tokens can be very confusing, for 
 
 Note that "token sets" are "intangible": they're just a counter shown to the user, computed dynamically every time. Yet, once a token is used, a Token object will be created, stored in the database and associated with the submission it was used on.
 
-.. note::
-   The full-feedback mode introduced in IOI 2013 has not been ported upstream yet (see :gh_issue:`246`). Note that although disabling tokens and making all testcases public would give full feedback, the final scores would be computed differently: the one of the latest submission would be used instead of the maximum among all submissions. To achieve the correct scoring behavior, get in touch with the developers or check `the ML archives <http://www.freelists.org/post/contestms/applying-tokens-automatically,1>`_.
-
 Changing token rules during a contest may lead to inconsistencies. Do so at your own risk!
 
 
-.. _configuringacontest_score-rounding:
+.. _configuringacontest_score:
+
+Computation of the score
+========================
+
+
+Released submissions
+--------------------
+
+The score of a contestant for the contest is always the sum of the score for each task. The score for a task is the best score among the set of "released" submissions.
+
+Admins can use the configuration "Score mode" in AdminWebServer to change the way CMS defines the set of released submission. There are two ways, corresponding to the rules of IOI 2010-2012 and IOI 2013-.
+
+In the first mode, used in IOI from 2010 to 2012, the released submissions are those on which the contestant used a token, plus the latest one submitted.
+
+In the second mode, used since 2013, the released submissions are all submissions.
+
+Usually, a task using the first mode will have a certain number of private testcases, and a limited sets of tokens. In this situation, you can think that contestants are required to "choose" the submission they want to use for grading, by submitting it last, or by using a token on it.
+
+On the other hand, a task using the second mode usually has all testcases public, and therefore it would be silly to ask contestants to choose the submission (as they would always choose the one with the best score).
+
 
 Score rounding
-==============
+--------------
 
 Based on the ScoreTypes in use and on how they are configured, some submissions may be given a floating-point score. Contest administrators will probably want to show only a small number of these decimal places in the scoreboard. This can be achieved with the ``score_precision`` fields on the contest and tasks.
 
@@ -92,7 +113,7 @@ When CWS needs to show a timestamp to the user it first tries to show it accordi
 User login
 ==========
 
-Users log into CWS using a username and a password. These have to be specified, respectively, in the ``username`` and ``password`` fields (in cleartext!). These credentials need to be inserted (i.e. there's no way to have an automatic login, a "guest" session, etc.) and, if they match, the login (usually) succeeds. The user needs to login again if they do not navigate the site for ``cookie_duration`` seconds (specified in the :file:`cms.conf` file).
+Users log into CWS using a username and a password. These have to be specified, respectively, in the ``username`` and ``password`` fields (in cleartext!). These credentials need to be inserted by the admins (i.e. there's no way to have an automatic login, a "guest" session, etc.). The user needs to login again if they do not navigate the site for ``cookie_duration`` seconds (specified in the :file:`cms.conf` file).
 
 In fact, there are other reasons that can cause the login to fail. If the ``ip_lock`` option (in :file:`cms.conf`) is set to ``true`` then the login will fail if the IP address that attempted it doesn't match the address or subnet in the ``ip`` field of the specified user. If ``ip`` is not set then this check is skipped, even if ``ip_lock`` is ``true``. Note that if a reverse-proxy (like nginx) is in use then it is necessary to set ``is_proxy_used`` (in :file:`cms.conf`) to ``true`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`).
 
@@ -141,7 +162,7 @@ Language details
 
 * C/C++ support is provided by the GNU Compiler Collection. Submissions are optimized with ``-O2``. The standards used by default by CMS are gnu90 for C (that is, C90 with the GNU extension, the default for ``gcc``) and C++11 for C++. Note that C++11 support in ``g++`` is still incomplete and experimental. Please refer to the `C++11 Support in GCC <https://gcc.gnu.org/projects/cxx0x.html>`_ page for more information.
 
-* Java programs are first compiled using ``gcj`` (optimized with ``-O3``), and then run as normal executables.
+* Java programs are first compiled using ``gcj`` (optimized with ``-O3``), and then run as normal executables. Proper Java support using a JVM will most probably come in the next CMS version.
 
 * Python submissions are interpreted using Python 2 (you need to have ``/usr/bin/python2``).
 

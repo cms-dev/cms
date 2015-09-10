@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -150,11 +151,15 @@ class TestRPC(unittest.TestCase):
             if client.connected:
                 client.disconnect()
 
+    def sleep(self):
+        """Pause the greenlet so other work can be done."""
+        gevent.sleep(0.005)
+
     def tearDown(self):
         self.kill_listener()
         self.disconnect_clients()
         self.disconnect_servers()
-        gevent.sleep(0.002)
+        self.sleep()
 
     def test_method_not_existent(self):
         client = self.get_client(ServiceCoord("Foo", 0))
@@ -224,41 +229,41 @@ class TestRPC(unittest.TestCase):
 
     def test_autoreconnect1(self):
         client = self.get_client(ServiceCoord("Foo", 0), 0.002)
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_servers()
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(client.connected, "Autoreconnect didn't kick in "
                                           "after server disconnected")
 
     def test_autoreconnect2(self):
         client = self.get_client(ServiceCoord("Foo", 0), 0.002)
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_servers()
         self.kill_listener()
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertFalse(client.connected)
         self.spawn_listener(port=self.port)
-        gevent.sleep(0.002)
+        gevent.sleep(0.005)
         self.assertTrue(client.connected, "Autoreconnect didn't kick in "
                                           "after server came back online")
 
     def test_autoreconnect3(self):
         client = self.get_client(ServiceCoord("Foo", 0), 0.002)
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_clients()
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertFalse(client.connected, "Autoreconnect still active "
                                            "after explicit disconnection")
 
     def test_concurrency(self):
         client = self.get_client(ServiceCoord("Foo", 0))
         result1 = client.infinite()
-        gevent.sleep(0.002)
+        self.sleep()
         result2 = client.echo(value=True)
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(result2.successful())
         self.assertIs(result2.value, True)
         self.assertFalse(result1.ready())
@@ -270,7 +275,7 @@ class TestRPC(unittest.TestCase):
     def test_callbacks(self):
         coord = ServiceCoord("Foo", 0)
         client = self.get_client(coord)
-        gevent.sleep(0.002)
+        self.sleep()
         client.disconnect()
         on_connect_handler = Mock()
         client.add_on_connect_handler(on_connect_handler)
@@ -278,21 +283,21 @@ class TestRPC(unittest.TestCase):
         client.add_on_disconnect_handler(on_disconnect_handler)
 
         client.connect()
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(client.connected)
         on_connect_handler.assert_called_once_with(coord)
         on_connect_handler.reset_mock()
         self.assertFalse(on_disconnect_handler.called)
 
         client.disconnect()
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertFalse(client.connected)
         self.assertFalse(on_connect_handler.called)
         on_disconnect_handler.assert_called_once_with()
         on_disconnect_handler.reset_mock()
 
         client.connect()
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(client.connected)
         on_connect_handler.assert_called_once_with(coord)
         on_connect_handler.reset_mock()
@@ -321,14 +326,14 @@ class TestRPC(unittest.TestCase):
             self.assertEqual(result.value, 42)
             self.assertTrue(client.connected)
 
-            gevent.sleep(0.002)
+            self.sleep()
             client.disconnect()
             self.assertFalse(client.connected)
-            gevent.sleep(0.002)
+            self.sleep()
             client.connect()
             self.assertTrue(client.connected)
 
-        gevent.sleep(0.002)
+        self.sleep()
 
         self.assertEqual(on_connect_handler.call_count, 10)
         self.assertEqual(on_disconnect_handler.call_count, 10)
@@ -342,8 +347,8 @@ class TestRPC(unittest.TestCase):
     def test_double_connect_server(self):
         # Check that asking an already-connected server to initialize
         # again its connection causes an error.
-        client = self.get_client(ServiceCoord("Foo", 0))
-        gevent.sleep(0.002)
+        self.get_client(ServiceCoord("Foo", 0))
+        self.sleep()
         self.assertRaises(Exception, self.servers[0].initialize, "foo")
 
     def test_double_disconnect_client(self):
@@ -351,24 +356,24 @@ class TestRPC(unittest.TestCase):
         # harmless (i.e. disconnection is idempotent).
         client = self.get_client(ServiceCoord("Foo", 0))
         client.disconnect()
-        gevent.sleep(0.002)
+        self.sleep()
         client.disconnect()
-        gevent.sleep(0.002)
+        self.sleep()
 
     def test_double_disconnect_server(self):
         # Check that asking a non-connected server to disconnect is
         # harmless (i.e. disconnection is idempotent).
-        client = self.get_client(ServiceCoord("Foo", 0))
-        gevent.sleep(0.002)
+        self.get_client(ServiceCoord("Foo", 0))
+        self.sleep()
         self.servers[0].disconnect()
-        gevent.sleep(0.002)
+        self.sleep()
         self.servers[0].disconnect()
-        gevent.sleep(0.002)
+        self.sleep()
 
     def test_send_invalid_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall("foo\r\n")
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(self.servers[0].connected)
         # Verify the server resumes normal operation.
         self.test_method_return_int()
@@ -376,7 +381,7 @@ class TestRPC(unittest.TestCase):
     def test_send_incomplete_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall('{"__id": "foo"}\r\n')
-        gevent.sleep(0.002)
+        self.sleep()
         self.assertTrue(self.servers[0].connected)
         # Verify the server resumes normal operation.
         self.test_method_return_int()

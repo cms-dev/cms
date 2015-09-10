@@ -1,0 +1,28 @@
+{% extends base.html %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1>Tasks list</h1>
+</div>
+
+<div id="details">
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in task_list %}
+      <tr>
+        <td><a href="{{ url_root}}/task/{{ t.id }}">{{ t.name }}</a></td>
+        <td>{{ t.title }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+</div>
+
+{% end %}

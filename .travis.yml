@@ -1,0 +1,5 @@
+dist: trusty
+sudo: true
+env:
+  - TEST_SUITE=functionaltests
+script: ./.travis.sh

@@ -1,0 +1,869 @@
+# Traditional Chinese (Taiwan) translations for CMS.
+# Copyright © 2010-2015 CMS authors
+# This file is distributed under the same license as CMS.
+# magrady24 <b01902110@csie.ntu.edu.tw>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"PO-Revision-Date: 2014-07-01 07:24+0100\n"
+"Last-Translator: magrady24 <b01902110@csie.ntu.edu.tw>\n"
+"Language-Team: Traditional Chinese (Taiwan)\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "N/A"
+msgstr "(空)"
+
+msgid "Compilation succeeded"
+msgstr "編譯成功"
+
+msgid "Compilation failed"
+msgstr "編譯失敗"
+
+msgid "Compilation timed out"
+msgstr "編譯逾時"
+
+#, python-format
+msgid ""
+"Compilation killed with signal %d (could be triggered by violating memory "
+"limits)"
+msgstr "編譯程式因記憶體違規存取而強制終止 (信號 %d)"
+
+msgid "Execution timed out"
+msgstr "超過時間限制"
+
+#, python-format
+msgid ""
+"Execution killed with signal %d (could be triggered by violating memory "
+"limits)"
+msgstr "測試程式因記憶體違規存取而強制終止 (信號 %d)"
+
+#, python-format
+msgid "Execution killed because of forbidden syscall %s"
+msgstr "測試程式因違規存取系統函數 %s 而強制終止"
+
+msgid "Execution killed because of forbidden file access"
+msgstr "測試程式因違規存取檔案系統而強制終止"
+
+msgid "Execution failed because the return code was nonzero"
+msgstr "執行失敗: 程式回傳值非零"
+
+msgid "Output is correct"
+msgstr "輸出正確"
+
+msgid "Output isn't correct"
+msgstr "輸出錯誤"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "執行後並未產生檔案 %s"
+
+#, python-format
+msgid "Subtask %d"
+msgstr "子問題 %d"
+
+msgid "Outcome"
+msgstr "評測結果"
+
+msgid "Details"
+msgstr "詳細資訊"
+
+msgid "Execution time"
+msgstr "執行時間"
+
+msgid "Memory used"
+msgstr "記憶體使用量"
+
+msgid "Not correct"
+msgstr "無法得分"
+
+msgid "Correct"
+msgstr "全部正確"
+
+msgid "Partially correct"
+msgstr "部分正確"
+
+msgid "Invalid files in submission"
+msgstr "傳送中包含錯誤的檔案"
+
+msgid "Execution completed successfully"
+msgstr "評測完成"
+
+msgid "No compilation needed"
+msgstr "略過編譯程序"
+
+msgid "File not submitted"
+msgstr "檔案未送出"
+
+msgid "Question received"
+msgstr "已送出詢問"
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr "您的詢問已成功送出, 待此詢問得到回覆後將會通知您."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "您在本競賽之傳送次數已達上限 (%d 次)"
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr "您在本題目之傳送次數已達上限 (%d 次)"
+
+msgid "Too many submissions!"
+msgstr "傳送次數超出限制!"
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "在本競賽的最後一次傳送過後 %d 秒始可再次傳送."
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr "在本題的最後一次傳送過後 %d 秒始可再次傳送."
+
+msgid "Submissions too frequent!"
+msgstr "傳送過於頻繁"
+
+msgid "Invalid submission format!"
+msgstr "檔案格式錯誤"
+
+msgid "Please select the correct files."
+msgstr "請選擇正確的檔案"
+
+msgid "Invalid archive format!"
+msgstr "封裝檔案格式錯誤"
+
+msgid "The submitted archive could not be opened."
+msgstr "封裝檔案無法正常開啟"
+
+msgid "Cannot recognize submission's language."
+msgstr "無法辨識本次傳送所使用的程式語言"
+
+msgid "All sources must be in the same language."
+msgstr "所有程式碼需使用相同的程式語言"
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr ""
+
+msgid "Invalid submission!"
+msgstr "檔案不正確"
+
+msgid "Submission too big!"
+msgstr "傳送檔案過大"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "個別程式碼檔案容量不得超過 %d bytes."
+
+msgid "Submission storage failed!"
+msgstr "本傳送發生檔案存取錯誤"
+
+msgid "Please try again."
+msgstr "請再試一次"
+
+msgid "Submission received"
+msgstr "已收到本次傳送"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "已收到您的傳送, 等待評測中."
+
+msgid "Token request discarded"
+msgstr "Token 已繳交"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Token 已經用光囉"
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr "本次傳送已使用過 Token"
+
+msgid "Token request received"
+msgstr "Token 使用成功"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "請觀看本次傳送之完整評測結果"
+
+msgid "Compiling..."
+msgstr "編譯中..."
+
+msgid "details"
+msgstr "詳細資料"
+
+msgid "Evaluating..."
+msgstr "執行中..."
+
+msgid "Scoring..."
+msgstr "評分中..."
+
+msgid "Evaluated"
+msgstr "已評測"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "在競賽中, 您最多可以進行 %d 次測試."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "在本題中, 您最多可以進行 %d 次測試."
+
+msgid "Too many tests!"
+msgstr "測試次數超出限制"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "在競賽中, 兩次測試之間必須間隔至少 %d 秒."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "在本題中, 兩次測試之間必須間隔至少 %d 秒."
+
+msgid "Tests too frequent!"
+msgstr "測試過於頻繁"
+
+msgid "Invalid test format!"
+msgstr "錯誤的測試檔案格式"
+
+msgid "Cannot recognize test's language."
+msgstr "無法辨識本次測試的語言"
+
+msgid "Invalid test!"
+msgstr "錯誤的測試"
+
+msgid "Test too big!"
+msgstr "測試檔案過大"
+
+msgid "Input too big!"
+msgstr "輸入檔案過大"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "輸入檔案不得超過 %d bytes"
+
+msgid "Test storage failed!"
+msgstr "測試檔案儲存失敗"
+
+msgid "Test received"
+msgstr "已收到測試"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "請靜待測試結果出爐"
+
+msgid "Executing..."
+msgstr "執行中..."
+
+msgid "Executed"
+msgstr "已評測"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f 秒"
+
+msgid "%Y-%m-%d"
+msgstr "%Y-%m-%d"
+
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+msgid "%Y-%m-%d %H:%M:%S"
+msgstr "%Y-%m-%d %H:%M:%S"
+
+msgid "loading..."
+msgstr "載入中..."
+
+#, python-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d 秒"
+msgstr[1] "%d 秒"
+
+#, python-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d 分鐘"
+msgstr[1] "%d 分鐘"
+
+#, python-format
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d 小時"
+msgstr[1] "%d 小時"
+
+#, python-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d 天"
+msgstr[1] "%d 天"
+
+#, python-format
+msgid "%s and %s"
+msgstr "%s 與 %s"
+
+#, python-format
+msgid "more than %s"
+msgstr "超過 %s"
+
+msgid "contest-token"
+msgstr "競賽-Token"
+
+msgid "contest-tokens"
+msgstr "競賽-Token"
+
+msgid "task-token"
+msgstr "題目-Token"
+
+msgid "task-tokens"
+msgstr "題目-Token"
+
+msgid "token"
+msgstr "Token"
+
+msgid "tokens"
+msgstr "Token"
+
+#, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "在本題中, 您沒有任何可用的 %(type_pl)s."
+
+#, python-format
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "本題有無限量的 %(type_pl)s."
+
+#, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "競賽開始時沒有任何 %(type_pl)s."
+
+#, python-format
+msgid "You start with one %(type_s)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
+msgstr[0] "競賽開始時有一個 %(type_pl)s."
+msgstr[1] "競賽開始時有 %(gen_initial)d 個 %(type_pl)s."
+
+#, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_interval)g minutes "
+msgstr[0] "接著每分鐘"
+msgstr[1] "接著每 %(gen_interval)g 分鐘"
+
+#, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "會產生一個額外的 %(type_s)s, "
+msgstr[1] "會產生 %d 個額外的 %(type_s)s, "
+
+#, python-format
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
+msgstr[0] "至多只能擁有一個未使用的 %(type_pl)s."
+msgstr[1] "至多可以同時擁有 %(gen_max)d 個未使用的 %(type_pl)s."
+
+#, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "會產生一個額外的 %(type_s)s."
+msgstr[1] "會產生 %d 個額外的 %(type_s)s."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "並不再產生新的 %(type_pl)s."
+
+#, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
+msgstr[0] "每秒可以使用一個 %(type_s)s, "
+msgstr[1] "兩次 %(type_s)s 的使用間必須間隔至少 %(min_interval)g 秒, "
+
+#, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "且總共至多只能使用一個 %(type_s)s."
+msgstr[1] "且總共可以使用 %(max_number)d 個 %(type_s)s."
+
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "每秒可以使用一個 %(type_pl)s."
+msgstr[1] "每隔 %(min_interval)g 秒可以使用一個 %(type_pl)s."
+
+#, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "且一旦產生 %(type_s)s 後將不會再增加."
+msgstr[1] "且一旦產生總共 %(max_number)d 個 %(type_s)s 後將不會再增加."
+
+msgid "You have no limitations on how you use them."
+msgstr "使用規則中沒有其他額外的限制."
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "自動偵測 (%s)"
+
+#, python-format
+msgid ""
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
+"</em>"
+msgstr ""
+"使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+
+msgid "Logout"
+msgstr "登出"
+
+msgid "Failed to log in."
+msgstr "無法登入"
+
+msgid "Welcome"
+msgstr ""
+
+msgid "Please log in"
+msgstr "請登入後參與競賽"
+
+msgid "Username"
+msgstr "帳號"
+
+msgid "Password"
+msgstr "密碼"
+
+msgid "Login"
+msgstr "登入"
+
+msgid "Reset"
+msgstr "重設"
+
+msgid "New message"
+msgstr "新訊息"
+
+msgid "New announcement"
+msgstr "新公告"
+
+msgid "New answer"
+msgstr "新回覆"
+
+#, python-format
+msgid "%d unread"
+msgstr "%d 則訊息未讀"
+
+msgid "Until contest starts:"
+msgstr "距離競賽開始:"
+
+msgid "Until contest ends:"
+msgstr "距離競賽結束:"
+
+msgid "Time left:"
+msgstr "剩餘時間:"
+
+msgid "Server time:"
+msgstr "現在時刻:"
+
+msgid "Overview"
+msgstr "競賽概況"
+
+msgid "Communication"
+msgstr "訊息詢問"
+
+msgid "Statement"
+msgstr "題目敘述"
+
+msgid "Submissions"
+msgstr "評測頁面"
+
+msgid "Documentation"
+msgstr "參考資料"
+
+msgid "Testing"
+msgstr "線上測試"
+
+msgid "Contest Management System"
+msgstr "本系統"
+
+msgid "is released under the"
+msgstr "遵循"
+
+msgid "GNU Affero General Public License"
+msgstr "GNU AGPL 通用公共許可證"
+
+msgid "Announcements"
+msgstr "公告訊息"
+
+msgid "(no subject)"
+msgstr "(無標題)"
+
+msgid "Questions"
+msgstr "詢問列表"
+
+msgid "Subject"
+msgstr "標題"
+
+msgid "Text"
+msgstr "內容"
+
+msgid "Ask question"
+msgstr "詢問新問題"
+
+msgid "no answer yet"
+msgstr "尚未回覆"
+
+msgid "Messages"
+msgstr "訊息"
+
+msgid "Standard Template Library"
+msgstr "STL 標準樣板函數庫"
+
+#, python-format
+msgid "Error %d"
+msgstr "錯誤 %d"
+
+msgid "An error occured while the server was handling your request."
+msgstr "競賽系統伺服器發生錯誤."
+
+msgid ""
+"Note that attempts to tamper with Contest Management System (such as probing "
+"the server with customized URLs) may be considered cheating and may lead to "
+"disqualification."
+msgstr "擅自以非正當方式操作本系統將導致取消競賽資格."
+
+msgid ""
+"If you encountered this error during normal usage, please notify the contest "
+"administrators."
+msgstr "若在正常使用的情況下發生錯誤, 請聯絡管理員."
+
+msgid "General information"
+msgstr "競賽資訊"
+
+msgid "The contest hasn't started yet."
+msgstr "競賽尚未開始"
+
+#, python-format
+msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "競賽時間將於 %(start_time)s 開始, 至 %(stop_time)s 結束."
+
+msgid "The contest is currently running."
+msgstr "競賽進行中"
+
+#, python-format
+msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
+msgstr "競賽時間為 %(start_time)s 至 %(stop_time)s."
+
+msgid "The contest has already ended."
+msgstr "競賽已經結束"
+
+#, python-format
+msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr "競賽時間於 %(start_time)s 開始, 並已於 %(stop_time)s 結束."
+
+msgid "You have an infinite number of tokens."
+msgstr "在本題中有無限量的 Token 可供使用."
+
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr "使用 Token 後, 即可看到詳細結果."
+
+msgid ""
+"Your score for each task will be the maximum among the tokened submissions "
+"and the last one."
+msgstr ""
+"本題的最終得分將以所有使用 Token 的傳送或最後一次傳送 (無論是否使用 Token) 所"
+"得的最高總分計算."
+
+msgid "You have a distinct set of tokens for each task."
+msgstr "每題的 Token 額度是獨立計算的."
+
+#, python-format
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "在題目敘述頁面中, 可以看到該題目 %(type_pl)s 的使用規則."
+
+msgid "You have a set of tokens shared among all tasks."
+msgstr "您有一些所有題目共用的 Token."
+
+msgid ""
+"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
+"all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr ""
+"Token 分為兩類: 競賽-Token (競賽共用的 Token), 與題目-Token (每題各自獨立的 "
+"Token)."
+
+msgid ""
+"You can see the detailed result of a submission by using two tokens on it, "
+"one of each type."
+msgstr "對於每次傳送而言, 使用兩類 Token 各一枚即可觀看該次詳細的評測結果."
+
+#, python-format
+msgid ""
+"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
+"time frame of %(per_user_time)s."
+msgstr "每位參賽者可以選擇連續的 %(per_user_time)s 參加本次計時競賽."
+
+msgid "As soon as the contest starts you can choose to start your time frame."
+msgstr "當競賽開啟時, 您就可以參加競賽並開始計時."
+
+msgid ""
+"Once you start, you can submit solutions until the end of the time frame or "
+"until the end of the contest, whatever comes first."
+msgstr ""
+"開始計時後即可開始作答. 此外, 若整體競賽已終止, 即使您自己的競賽計時器尚未結"
+"束, 您也必須停止作答."
+
+msgid "By clicking on the button below you can start your time frame."
+msgstr "點擊以下按鈕確認開始參加競賽並開始計時."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s."
+msgstr "您已在 %(start_time)s 開始競賽計時."
+
+msgid ""
+"You can submit solutions until the end of the time frame or until the end of "
+"the contest, whatever comes first."
+msgstr "您可以作答到整體競賽終止或您的競賽計時器結束為止."
+
+#, python-format
+msgid ""
+"You started your time frame at %(start_time)s and you already finished it."
+msgstr "您已在 %(start_time)s 開始競賽計時, 而現在時間已結束."
+
+msgid "There's nothing you can do now."
+msgstr "目前無法進行任何操作."
+
+msgid "You never started your time frame. Now it's too late."
+msgstr "您尚未開始競賽, 但現在已超過允許時間."
+
+msgid "Start!"
+msgstr "開始!"
+
+msgid "Task overview"
+msgstr "題目列表"
+
+msgid "Task"
+msgstr "簡稱"
+
+msgid "Name"
+msgstr "標題"
+
+msgid "Time limit"
+msgstr "時間限制"
+
+msgid "Memory limit"
+msgstr "記憶體限制"
+
+msgid "Type"
+msgstr "作答形式"
+
+msgid "Files"
+msgstr "傳送檔案"
+
+msgid "Tokens"
+msgstr ""
+
+#, python-format
+msgid "%(seconds)g second"
+msgstr "%(seconds)g 秒"
+
+#, python-format
+msgid "%(seconds)g seconds"
+msgstr "%(seconds)g 秒"
+
+#, python-format
+msgid "%(mb)d MiB"
+msgstr ""
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
+msgid "Compilation output"
+msgstr "編譯訊息"
+
+msgid "Compilation outcome:"
+msgstr "編譯結果:"
+
+msgid "Compilation time:"
+msgstr "編譯時間:"
+
+msgid "Memory used:"
+msgstr "記憶體使用量:"
+
+msgid "Standard output"
+msgstr "編譯輸出 (stdout)"
+
+msgid "Standard error"
+msgstr "編譯錯誤訊息 (stderr)"
+
+msgid "None"
+msgstr "無"
+
+msgid "Download"
+msgstr "下載"
+
+msgid "Played"
+msgstr "已使用"
+
+msgid "Play!"
+msgstr "現在使用"
+
+msgid "Wait..."
+msgstr "等待中..."
+
+msgid "No tokens"
+msgstr "Token 已用盡"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>題目敘述</small>"
+
+msgid "no statement available"
+msgstr "本題沒有敘述"
+
+msgid "Download task statement"
+msgstr "下載題目敘述"
+
+msgid ""
+"The statement for this task is available in multiple versions, in different "
+"languages."
+msgstr "本題之題目敘述有多種翻譯版本."
+
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "您可以觀看右側之所有翻譯版本."
+
+msgid "Some suggested translations follow."
+msgstr "推薦翻譯版本如下."
+
+#, python-format
+msgid "Statement in <b>%s</b>"
+msgstr "題目敘述 in <b>%s</b>"
+
+#, python-format
+msgid "Statement in %s"
+msgstr "題目敘述 in %s"
+
+#, python-format
+msgid "<b>%s</b>"
+msgstr ""
+
+#, python-format
+msgid "%s"
+msgstr ""
+
+msgid "Some details"
+msgstr "詳細資訊"
+
+msgid "Compilation commands"
+msgstr "編譯指令"
+
+#, python-format
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
+msgstr "在<a href=\"%(url_root)s/\">競賽概況</a>中, 可以看到 %(type_pl)s 的使用規則."
+
+msgid ""
+"Remeber that to see the detailed result of a submission you need to use both "
+"a contest-token and a task-token."
+msgstr "請注意: 欲觀看詳細的評測結果, 須使用競賽-Token 與題目-Token 各一枚."
+
+msgid "Attachments"
+msgstr "附件"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>submissions</small>"
+msgstr "%(name)s (%(short_name)s) <small>評測頁面</small>"
+
+msgid "Submit a solution"
+msgstr "傳送作答"
+
+msgid "Submit"
+msgstr "傳送"
+
+msgid "submission.zip"
+msgstr ""
+
+msgid "Previous submissions"
+msgstr "評測記錄"
+
+msgid "Right now, you have infinite tokens available on this task."
+msgstr "您擁有無限量供應的 Token 可供使用於本題."
+
+msgid "Right now, you have one token available on this task."
+msgstr "目前擁有一個 Token 可供使用於本題."
+
+#, python-format
+msgid "Right now, you have %(tokens)s tokens available on this task."
+msgstr "目前擁有 %(tokens)s 個 Token 可供使用於本題."
+
+#, python-format
+msgid "But you have to wait until %(expiration_time)s to use them."
+msgstr "但需等待至 %(expiration_time)s 後才可再次使用 Token."
+
+#, python-format
+msgid "You will receive a new token at %(gen_time)s."
+msgstr "在 %(gen_time)s 可以獲得一個新的 Token."
+
+msgid "In the current situation, no more tokens will be generated."
+msgstr "將不會再有新的 Token 產生."
+
+msgid "Right now, you do not have tokens available for this task."
+msgstr "本題 Token 已用盡."
+
+#, python-format
+msgid "But you will have to wait until %(expiration_time)s to use it."
+msgstr "但需等待至 %(expiration_time)s 後才可再次使用 Token."
+
+msgid "Date and time"
+msgstr "日期與時間"
+
+msgid "Time"
+msgstr "時間"
+
+msgid "Status"
+msgstr "狀態"
+
+msgid "Public score"
+msgstr "公開得分"
+
+msgid "Total score"
+msgstr "總得分"
+
+msgid "Score"
+msgstr "得分"
+
+msgid "Token"
+msgstr ""
+
+msgid "no submissions yet"
+msgstr "尚未傳送"
+
+msgid "Submission details"
+msgstr "傳送詳細資料"
+
+msgid "Close"
+msgstr "關閉"
+
+msgid "Submit a test"
+msgstr "傳送測試"
+
+msgid "input"
+msgstr ""
+
+msgid "Previous tests"
+msgstr "測試記錄"
+
+msgid "Input"
+msgstr "輸入"
+
+msgid "Output"
+msgstr "輸出"
+
+msgid "no tests yet"
+msgstr "尚未測試"
+
+msgid "Test details"
+msgstr "測試詳細資料"
+
+msgid "Evaluation outcome"
+msgstr "測試訊息"

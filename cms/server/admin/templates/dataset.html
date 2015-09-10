@@ -1,0 +1,38 @@
+{% extends base.html %}
+
+{% block js_init %}
+utils.show_page("submissions", 1, 50);
+{% end %}
+
+{% block core %}
+{% from cms import plugin_list %}
+{% from cms.grading import format_status_text %}
+{% from cms.grading.scoretypes import get_score_type %}
+{% set score_types = {} %}
+
+<div class="core_title">
+  <h1>{{ task.title }} (<a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a>)</h1>
+</div>
+
+{% set dataset_selector_par_url = "%s/dataset" % (url_root) %}
+{% include fragments/dataset_selector.html %}
+
+<h2 id="title_submissions" class="toggling_on">Submissions</h2>
+<div id="submissions">
+
+  {% if len(submissions) != 0 %}
+  <p>
+    Reevaluate all {{ len(submissions) }} submissions using this dataset:
+    {% set reevaluation_par_name = "dataset" %}
+    {% set reevaluation_par_value = shown_dataset.id %}
+    {% set reevaluation_par_dataset_id = None %}
+    {% include fragments/reevaluation_buttons.html %}
+  </p>
+  {% end %}
+
+  {% include fragments/submission_rows.html %}
+
+  <div class="hr"></div>
+</div>
+
+{% end %}

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2013 Luca Versari <veluca93@gmail.com>
+# Copyright © 2013-2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -24,21 +24,28 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import atexit
 import json
 import os
 import sys
+import logging
 
-from cmscontrib.YamlLoader import YamlLoader
+import cmscontrib.loaders
 from cms.db import Executable
 from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
+from cmscommon.terminal import move_cursor, add_color_to_string, \
+    colors, directions
 
 
 # TODO - Use a context object instead of global variables
 task = None
 file_cacher = None
+tested_something = False
+
+sols = []
 
 
 def usage():
@@ -63,7 +70,29 @@ def mem_human(mem):
     return "%4d" % mem
 
 
-def test_testcases(base_dir, soluzione, language, assume=None):
+class NullLogger(object):
+    def __init__(self):
+        def p(*args):
+            pass
+        self.info = p
+        self.warning = p
+        self.critical = print
+
+
+def print_at_exit():
+    print()
+    print()
+    for s in sols:
+        print("%s: %3d" % (
+            add_color_to_string("%30s" % s[0], colors.BLACK,
+                                bold=True),
+            s[1])
+        )
+
+logger = logging.getLogger()
+
+
+def test_testcases(base_dir, solution, language, assume=None):
     global task, file_cacher
 
     # Use a FileCacher with a NullBackend in order to avoid to fill
@@ -71,6 +100,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     if file_cacher is None:
         file_cacher = FileCacher(null=True)
 
+    cmscontrib.loaders.italy_yaml.logger = NullLogger()
     # Load the task
     # TODO - This implies copying a lot of data to the FileCacher,
     # which is annoying if you have to do it continuously; it would be
@@ -78,18 +108,15 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     # filesystem-based instead of database-based) and somehow detect
     # when the task has already been loaded
     if task is None:
-        loader = YamlLoader(
-            os.path.realpath(os.path.join(base_dir, "..")),
-            file_cacher)
-        # Normally we should import the contest before, but YamlLoader
-        # accepts get_task() even without previous get_contest() calls
-        task = loader.get_task(os.path.split(os.path.realpath(base_dir))[1])
+        loader = cmscontrib.loaders.italy_yaml.YamlLoader(base_dir,
+                                                          file_cacher)
+        task = loader.get_task(get_statement=False)
 
     # Prepare the EvaluationJob
     dataset = task.active_dataset
     digest = file_cacher.put_file_from_path(
-        os.path.join(base_dir, soluzione),
-        "Solution %s for task %s" % (soluzione, task.name))
+        os.path.join(base_dir, solution),
+        "Solution %s for task %s" % (solution, task.name))
     executables = {task.name: Executable(filename=task.name, digest=digest)}
     jobs = [(t, EvaluationJob(
         language=language,
@@ -111,7 +138,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     comments = []
     tcnames = []
     for jobinfo in sorted(jobs):
-        print(jobinfo[0], end='')
+        print(jobinfo[0])
         sys.stdout.flush()
         job = jobinfo[1]
         # Skip the testcase if we decide to consider everything to
@@ -120,16 +147,15 @@ def test_testcases(base_dir, soluzione, language, assume=None):
             info.append("Time limit exceeded")
             points.append(0.0)
             comments.append("Timeout.")
+            move_cursor(directions.UP, erase=True)
             continue
 
         # Evaluate testcase
         last_status = status
         tasktype.evaluate(job, file_cacher)
         status = job.plus["exit_status"]
-        info.append("Time: %5.3f   Wall: %5.3f   Memory: %s" %
-                   (job.plus["execution_time"],
-                    job.plus["execution_wall_clock_time"],
-                    mem_human(job.plus["execution_memory"])))
+        info.append((job.plus["execution_time"],
+                    job.plus["execution_memory"]))
         points.append(float(job.outcome))
         comments.append(format_status_text(job.text))
         tcnames.append(jobinfo[0])
@@ -137,7 +163,6 @@ def test_testcases(base_dir, soluzione, language, assume=None):
         # If we saw two consecutive timeouts, ask wether we want to
         # consider everything to timeout
         if ask_again and status == "timeout" and last_status == "timeout":
-            print()
             print("Want to stop and consider everything to timeout? [y/N]",
                   end='')
             if assume is not None:
@@ -149,13 +174,93 @@ def test_testcases(base_dir, soluzione, language, assume=None):
                 stop = True
             else:
                 ask_again = False
+            print()
+        move_cursor(directions.UP, erase=True)
+
+    # Subtasks scoring
+    try:
+        subtasks = json.loads(dataset.score_type_parameters)
+        subtasks[0]
+    except:
+        subtasks = [[100, len(info)]]
+
+    if dataset.score_type == 'GroupMin':
+        scoreFun = min
+    else:
+        if dataset.score_type != 'Sum':
+            logger.warning("Score type %s not yet supported! Using Sum"
+                           % dataset.score_type)
+
+        def scoreFun(x):
+            return sum(x)/len(x)
+
+    pos = 0
+    sts = []
+
+    # For each subtask generate a list of testcase it owns, the score gained
+    # and the highest time and memory usage.
+    for i in subtasks:
+        stscores = []
+        stsdata = []
+        worst = [0, 0]
+        try:
+            for _ in xrange(i[1]):
+                stscores.append(points[pos])
+                stsdata.append((tcnames[pos], points[pos],
+                                comments[pos], info[pos]))
+                if info[pos][0] > worst[0]:
+                    worst[0] = info[pos][0]
+                if info[pos][1] > worst[1]:
+                    worst[1] = info[pos][1]
+                pos += 1
+            sts.append((scoreFun(stscores)*i[0], i[0], stsdata, worst))
+        except:
+            sts.append((0, i[0], stsdata, [0, 0]))
 
     # Result pretty printing
+    # Strips sol/ and _EVAL from the solution's name
+    solution = solution[4:-5]
     print()
     clen = max(len(c) for c in comments)
-    ilen = max(len(i) for i in info)
-    for (i, p, c, b) in zip(tcnames, points, comments, info):
-        print("%s) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen)))
+    for st, d in enumerate(sts):
+        print(
+            "Subtask %d:" % st,
+            add_color_to_string(
+                "%5.2f/%d" % (d[0], d[1]),
+                colors.RED if abs(d[0]-d[1]) > 0.01 else colors.GREEN,
+                bold=True
+            )
+        )
+        for (i, p, c, w) in d[2]:
+            print(
+                "%s)" % i,
+                add_color_to_string(
+                    "%5.2lf" % p,
+                    colors.RED if abs(p - 1) > 0.01 else colors.BLACK
+                ),
+                "--- %s [Time:" % c.ljust(clen),
+                add_color_to_string(
+                    "%5.3f" % w[0],
+                    colors.BLUE if w[0] >= 0.95 * d[3][0] else colors.BLACK
+                ),
+                "Memory:",
+                add_color_to_string(
+                    "%5s" % mem_human(w[1]),
+                    colors.BLUE if w[1] >= 0.95 * d[3][1] else colors.BLACK,
+                ),
+                end="]"
+            )
+            move_cursor(directions.RIGHT, 1000)
+            move_cursor(directions.LEFT, len(solution) - 1)
+            print(add_color_to_string(solution, colors.BLACK, bold=True))
+    print()
+
+    sols.append((solution, sum([st[0] for st in sts])))
+
+    global tested_something
+    if not tested_something:
+        tested_something = True
+        atexit.register(print_at_exit)
 
     return zip(points, comments, info)
 

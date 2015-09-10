@@ -53,11 +53,17 @@ def main():
     test_db_connection()
 
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-y", "--yes", action="store_true",
+                        help="do not require confirmation")
     args = parser.parse_args()
 
-    print("Are you sure you want to DROP the database? [y/N] ", end='')
-    ans = sys.stdin.readline().strip().lower()
-    if ans in ["y", "yes"]:
+    if not args.yes:
+        print("Are you sure you want to DROP the database? [y/N] ", end='')
+        ans = sys.stdin.readline().strip().lower()
+        if ans in ["y", "yes"]:
+            args.yes = True
+
+    if args.yes:
         print("Dropping database.")
         return drop_db()
     else:

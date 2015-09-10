@@ -750,7 +750,7 @@ class FileCacher(object):
 
         """
         clean = True
-        for digest, description in self.list():
+        for digest, _ in self.list():
             fobj = self.backend.get_file(digest)
             hasher = hashlib.sha1()
             try:

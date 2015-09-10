@@ -1,0 +1,174 @@
+{
+    "_help": "There is no way to put comments in a JSON file; the",
+    "_help": "fields starting with '_' are meant to be comments.",
+
+
+
+    "_section": "System-wide configuration",
+
+    "temp_dir": "/tmp",
+
+    "_help": "Whether to have a backdoor (see doc for the risks).",
+    "backdoor": false,
+
+
+
+    "_section": "AsyncLibrary",
+
+    "core_services":
+    {
+        "LogService":        [["localhost", 29000]],
+        "ResourceService":   [["localhost", 28000]],
+        "ScoringService":    [["localhost", 28500]],
+        "Checker":           [["localhost", 22000]],
+        "EvaluationService": [["localhost", 25000]],
+        "Worker":            [["localhost", 26000], ["localhost", 26001]],
+        "ContestWebServer":  [["localhost", 21000]],
+        "AdminWebServer":    [["localhost", 21100]],
+        "ProxyService":      [["localhost", 28600]],
+        "PrintingService":   [["localhost", 25123]]
+        },
+
+    "other_services":
+    {
+        "TestFileCacher":    [["localhost", 27501]]
+        },
+
+
+
+    "_section": "Database",
+
+    "_help": "Connection string for the database.",
+    "database": "postgresql+psycopg2://cmsuser:password@localhost/database",
+
+    "_help": "Whether SQLAlchemy prints DB queries on stdout.",
+    "database_debug": false,
+
+    "_help": "Whether to use two-phase commit.",
+    "twophase_commit": false,
+
+
+
+    "_section": "Worker",
+
+    "_help": "Don't delete the sandbox directory under /tmp/ when they",
+    "_help": "are not needed anymore. Warning: this can easily eat GB",
+    "_help": "of space very soon.",
+    "keep_sandbox": false,
+
+
+
+    "_section": "Sandbox",
+
+    "_help": "Do not allow contestants' solutions to write files bigger",
+    "_help": "than this size (expressed in KB; defaults to 1 GB).",
+    "max_file_size": 1048576,
+
+
+
+    "_section": "WebServers",
+
+    "_help": "This key is used to encode information that can be seen",
+    "_help": "by the user, namely cookies and auto-incremented",
+    "_help": "numbers. It should be changed for each",
+    "_help": "contest. Particularly, you should not use this example",
+    "_help": "for other than testing. You can easily create a key",
+    "_help": "calling cmscommon.crypto.get_hex_random_key().",
+    "secret_key":             "8e045a51e4b102ea803c06f92841a1fb",
+
+    "_help": "Whether Tornado prints debug information on stdout.",
+    "tornado_debug": false,
+
+
+
+    "_section": "ContestWebServer",
+
+    "_help": "Listening HTTP addresses and ports for the CWSs listed above",
+    "_help": "in core_services. If you access them through a proxy (acting",
+    "_help": "as a load balancer) running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
+    "contest_listen_address": [""],
+    "contest_listen_port":    [8888],
+
+    "_help": "Login cookie duration in seconds. The duration is refreshed",
+    "_help": "on every manual request.",
+    "cookie_duration": 10800,
+
+    "_help": "If CWSs write submissions to disk before storing them in",
+    "_help": "the DB, and where to save them. %s = DATA_DIR.",
+    "submit_local_copy":      true,
+    "submit_local_copy_path": "%s/submissions/",
+
+    "_help": "If we allow users to log in only from their specified IP",
+    "_help": "address. Users with no IP set are anyway allowed to log in",
+    "_help": "from anywhere.",
+    "ip_lock": true,
+
+    "_help": "Whether hidden users are allowed to log in.",
+    "block_hidden_users": false,
+
+    "_help": "Whether the CWSs are behind a (trusted) proxy (e.g.,",
+    "_help": "nginx) that does load balancing. Used to know if it is",
+    "_help": "safe to assume that the real source IP address is the",
+    "_help": "one listed in the request headers.",
+    "is_proxy_used": false,
+
+    "_help": "Maximum size of a submission in bytes. If you use a proxy",
+    "_help": "and set these sizes to large values remember to change",
+    "_help": "client_max_body_size in nginx.conf too.",
+    "max_submission_length": 100000,
+    "max_input_length": 5000000,
+
+    "_help": "STL documentation path in the system (exposed in CWS).",
+    "stl_path": "/usr/share/doc/stl-manual/html/",
+
+    "_help": "Whether questions and messages are enabled.",
+    "allow_questions": true,
+
+
+
+    "_section": "AdminWebServer",
+
+    "_help": "Listening HTTP address and port for the AWS. If you access",
+    "_help": "it through a proxy running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
+    "admin_listen_address": "",
+    "admin_listen_port":    8889,
+
+
+
+    "_section": "ScoringService",
+
+    "_help": "List of URLs (with embedded username and password) of the",
+    "_help": "RWSs where the scores are to be sent. Don't include the",
+    "_help": "load balancing proxy (if any), just the backends. If any",
+    "_help": "of them uses HTTPS specify a file with the certificates",
+    "_help": "you trust.",
+    "rankings": ["http://usern4me:passw0rd@localhost:8890/"],
+    "https_certfile": null,
+
+
+
+    "_section": "PrintingService",
+
+    "_help": "Maximum size of a print job in bytes.",
+    "max_print_length": 10000000,
+
+    "_help": "Printer name (can be found out using 'lpstat -p';",
+    "_help": "if null, printing is disabled)",
+    "printer": null,
+
+    "_help": "Output paper size (probably A4 or Letter)",
+    "paper_size": "A4",
+
+    "_help": "Maximum number of pages a user can print per print job",
+    "_help": "(excluding the title page). Text files are cropped to this",
+    "_help": "length. Too long pdf files are rejected.",
+    "max_pages_per_job": 10,
+    "max_jobs_per_user": 10,
+    "pdf_printing_allowed": false,
+
+
+
+    "_help": "This is the end of this file."
+}

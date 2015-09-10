@@ -1,0 +1,303 @@
+{% extends base.html %}
+
+{% block js %}
+
+function update_submissions_status(response)
+{
+    var table = $("#submissions_status_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
+    {
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        return;
+    }
+
+    var strings = []
+    strings.push('<tr><td>Scored</td><td>' + response['data']['scored'] + '</td></tr>');
+    if (response['data']['scoring'] != 0)
+        strings.push('<tr><td>Scoring...</td><td>' + response['data']['scoring'] + '</td></tr>');
+    if (response['data']['compilation_fail'] != 0)
+        strings.push('<tr><td>Compilation failed</td><td>' + response['data']['compilation_fail'] + '</td></tr>');
+    if (response['data']['compiling'] != 0)
+        strings.push('<tr><td>Compiling...</td><td>' + response['data']['compiling'] + '</td></tr>');
+    if (response['data']['evaluating'] != 0)
+        strings.push('<tr><td>Evaluating...</td><td>' + response['data']['evaluating'] + '</td></tr>');
+    if (response['data']['max_compilations'] != 0)
+        strings.push('<tr><td>Cannot compile (please check)</td><td>' + response['data']['max_compilations'] + '</td></tr>');
+    if (response['data']['max_evaluations'] != 0)
+        strings.push('<tr><td>Cannot evaluate (please check)</td><td>' + response['data']['max_evaluations'] + '</td></tr>');
+    if (response['data']['invalid'] != 0)
+        strings.push('<tr><td>Invalid (please check)</td><td>' + response['data']['invalid'] + '</td></tr>');
+
+    table.html(strings.join(""));
+};
+
+function update_queue_status(response)
+{
+    var table = $("#queue_status_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
+    {
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        return;
+    }
+
+    var l = response['data'].length;
+    if (l == 0)
+    {
+        table.html('<tr><td colspan="100">Queue empty.</td></tr>');
+        return;
+    }
+
+    var strings = [];
+    for (var i = 0; i < l; i++)
+    {
+        var job = utils.repr_job(response['data'][i]['item']);
+        var date = utils.repr_time_ago(response['data'][i]['timestamp']);
+        strings.push('<tr><td style="text-align: center;">' + (i + 1) + '</td>');
+        strings.push('<td>' + job + '</td>');
+        strings.push('<td style="text-align: center;">' + response['data'][i]['priority'] + '</td>');
+        strings.push('<td>' + date + '</td></tr>');
+    }
+
+    table.html(strings.join(""));
+};
+
+function enable_worker(shard) {
+    if (confirm("Do you really want to enable worker " + shard + "?")) {
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "enable_worker",
+                       {"shard":shard},
+                       function() {
+                          cmsrpc_request("{{ url_root }}",
+                                         "EvaluationService", 0,
+                                         "workers_status",
+                                         {},
+                                         update_workers_status);
+                       });
+    }
+}
+
+function disable_worker(shard) {
+    if (confirm("Do you really want to disable worker " + shard + "?")) {
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "disable_worker",
+                       {"shard":shard},
+                       function() {
+                          cmsrpc_request("{{ url_root }}",
+                                         "EvaluationService", 0,
+                                         "workers_status",
+                                         {},
+                                         update_workers_status);
+                       });
+    }
+}
+
+function update_workers_status(response)
+{
+    var table = $("#workers_status_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
+    {
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        return;
+    }
+
+    var l = response['data'].length;
+    if (l == 0)
+    {
+        table.html('<tr><td colspan="100">No workers found.</td>');
+        return;
+    }
+
+    var strings = [];
+    for (var i in response['data'])
+    {
+        var job = utils.repr_job(response['data'][i]['operation']);
+        var start_time = utils.repr_time_ago(response['data'][i]['start_time']);
+        var connected = "Yes";
+        if (response['data'][i]['connected'] == false)
+            connected = "No";
+        strings.push('<tr><td style="text-align: center;">' + i + '</td>');
+        strings.push('<td style="text-align: center;">' + connected + '</td>');
+        strings.push('<td>' + job + '</td>');
+        strings.push('<td>' + start_time + '</td>');
+        if (response['data'][i]['operation'] == "disabled") {
+            strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;">Enable</button></td></tr>');
+        } else {
+            strings.push('<td><button onclick="javascript:disable_worker(' + i + '); return true;">Disable</button></td></tr>');
+        }
+    }
+
+    table.html(strings.join(""));
+};
+
+function link_submissions(s)
+{
+    return s.replace(/submission ([0-9]+)/g,
+                     'submission <a href="{{ url_root }}/submission/$1">\$1</a>');
+}
+
+function update_logs(response)
+{
+    var table = $("#logs_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
+    {
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        return;
+    }
+
+    var l = response['data'].length;
+    if (l == 0)
+    {
+        table.html('<tr><td colspan="100">No log entries.</td>');
+        return;
+    }
+
+    var strings = [];
+    response['data'] = response['data'].reverse()
+    for (i in response['data'])
+    {
+        var message = link_submissions(response['data'][i]['message']);
+        var coord = response['data'][i]['coord'];
+        var operation = link_submissions(response['data'][i]['operation']);
+        var severity = response['data'][i]['severity'];
+        var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
+
+        strings.push('<tr><td>' + timestamp + '</td>');
+        strings.push('<td>' + severity + '</td>');
+        strings.push('<td>' + coord + '</td>');
+        strings.push('<td>' + operation + '</td>');
+        strings.push('<td>' + message + '</td></tr>');
+    }
+
+    table.html(strings.join(""));
+}
+
+function update_statuses()
+{
+
+    {% if contest is not None %}
+    if (!update_statuses.submissions_request
+            || update_statuses.submissions_request.state() != "pending") {
+        update_statuses.submissions_request =
+            cmsrpc_request("{{ url_root }}",
+                           "EvaluationService", 0,
+                           "submissions_status",
+                           {},
+                           update_submissions_status);
+    }
+    {% end %}
+    if (!update_statuses.queue_request
+            || update_statuses.queue_request.state() != "pending") {
+        update_statuses.queue_request =
+            cmsrpc_request("{{ url_root }}",
+                           "EvaluationService", 0,
+                           "queue_status",
+                           {},
+                           update_queue_status);
+    }
+    cmsrpc_request("{{ url_root }}",
+                   "EvaluationService", 0,
+                   "workers_status",
+                   {},
+                   update_workers_status);
+    cmsrpc_request("{{ url_root }}",
+                   "LogService", 0,
+                   "last_messages",
+                   {},
+                   update_logs);
+}
+
+{% end %}
+
+{% block js_init %}
+
+setInterval(update_statuses, 5000);
+update_statuses();
+
+{% end %}
+
+{% block core %}
+
+<h1>Overview</h1>
+<span id="update_time"></span>
+
+{% if contest is not None %}
+<h2 id="title_submissions_status" class="toggling_on">Submissions status</h2>
+<div id="submissions_status">
+  <table id="submissions_status_table" class="sub_table">
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{% end %}
+
+<h2 id="title_queue_status" class="toggling_on">Queue status</h2>
+<div id="queue_status">
+  <table id="queue_status_table" class="sub_table">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Job</th>
+        <th>Priority</th>
+        <th>Since</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_workers_status" class="toggling_on">Workers status</h2>
+<div id="workers_status">
+  <table id="workers_status_table" class="sub_table">
+    <thead>
+      <tr>
+        <th style="width:5%">Shard</th>
+        <th style="width:15%">Connected</th>
+        <th style="width:50%">Current job</th>
+        <th style="width:20%">Since</th>
+        <th style="width:10%">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_logs" class="toggling_on">Logs</h2>
+<div id="logs">
+
+  <table id="logs_table" class="sub_table">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Severity</th>
+        <th>Service</th>
+        <th>Operation</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+    </tbody>
+  </table>
+  <div class="hr"></div>
+</div>
+{% end %}

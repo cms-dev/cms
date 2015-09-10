@@ -67,12 +67,13 @@ class QueueEntry(object):
 
     """
 
-    def __init__(self, item, priority, timestamp):
+    def __init__(self, item, priority, timestamp, index):
         """Create a QueueEntry object.
 
         item (QueueItem): the payload.
         priority (int): the priority.
         timestamp (datetime): the timestamp of first request.
+        index (int): used to enforce strict ordering.
 
         """
         # TODO: item is not actually necessary, as we store the whole
@@ -80,13 +81,16 @@ class QueueEntry(object):
         self.item = item
         self.priority = priority
         self.timestamp = timestamp
+        self.index = index
 
     def __cmp__(self, other):
         """Compare self's and other's priorities."""
         if self.priority != other.priority:
             return self.priority - other.priority
-        else:
+        elif self.timestamp != other.timestamp:
             return (self.timestamp - other.timestamp).total_seconds()
+        else:
+            return self.index - other.index
 
 
 class PriorityQueue(object):
@@ -120,6 +124,9 @@ class PriorityQueue(object):
 
         # Event to signal that there are items in the queue.
         self._event = Event()
+
+        # Index of the next element that will be added to the queue.
+        self._next_index = 0
 
     def _verify(self):
         """Make sure that the internal state of the queue is consistent.
@@ -237,7 +244,10 @@ class PriorityQueue(object):
         if timestamp is None:
             timestamp = make_datetime()
 
-        self._queue.append(QueueEntry(item, priority, timestamp))
+        index = self._next_index
+        self._next_index += 1
+
+        self._queue.append(QueueEntry(item, priority, timestamp, index))
         last = len(self._queue) - 1
         self._reverse[item] = last
         self._up_heap(last)

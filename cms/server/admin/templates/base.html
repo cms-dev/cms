@@ -1,0 +1,220 @@
+{% import time %}
+{% import json %}
+{% from cms import DEFAULT_LANGUAGES, LANGUAGE_NAMES, LANGUAGES, config %}
+{% from cms.db import SubmissionResult %}
+{% from cmscommon.datetime import make_timestamp %}
+{% from cmscommon.crypto import get_hex_random_key %}
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/aws_style.css">
+    <script type="text/javascript" src="{{ url_root }}/static/web_rpc.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/aws_utils.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery.jqplot.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.dateAxisRenderer.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.enhancedLegendRenderer.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shCore.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushCpp.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushDelphi.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/jq/jquery.jqplot.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shCore.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shThemeDefault.css"/>
+
+    {% if contest is None %}
+    <title>Admin</title>
+    {% else %}
+    <title>Admin: {{ contest.description }}</title>
+    {% end %}
+
+    <script type="text/javascript">
+<!--
+function init()
+{
+    {% if contest is None %}
+    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }}, 0, 0, -1);
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 15000);
+    {% else %}
+    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }}, {{ phase }});
+
+    utils.update_remaining_time();
+    setInterval(function() { utils.update_remaining_time(); }, 1000);
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 15000);
+    {% end %}
+
+    $(document).click(utils.hide_subpage);
+
+    // delegate() ensures that the event is fired even for elements
+    // that are added in the future.
+    $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
+    $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
+
+    {% block js_init %}{% end %}
+}
+
+{% block js %}{% end %}
+
+$(document).ready(init);
+
+//-->
+    </script>
+  </head>
+  <body class="admin">
+    <div id="global">
+      <div id="sidebar">
+        <div id="sidebar_header">
+          {% if contest is None %}
+          <h1 class="parent">Administration</h1>
+          {% else %}
+          <h1 class="parent"><a href="{{ url_root }}">Administration</a></h1>
+          <h1 class="child">{{ contest.name }}</h1>
+          {% end %}
+        </div>
+        {% if config.secret_key == config.secret_key_default %}
+        <div class="secret_notice">
+          Change secret_key in cms.conf!<br/>
+          For example,<br/>
+          {{ get_hex_random_key() }}
+        </div>
+        {% end %}
+        <ul class="menu">
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}contest/{{ contest.id }}/overview{% end %}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is None %}resourceslist{% else %}contest/{{ contest.id }}/resourceslist{% end %}">Resource usage</a></li>
+        </ul>
+        <div class="hr"></div>
+
+        {% if contest is None %}
+        <h1>Contests</h1>
+        <ul class="menu">
+          {% if len(contest_list) < 1 %}
+          <li class="menu_entry">
+            No contests available
+          </li>
+          {% end %}
+
+          {% for c in contest_list[:5] %}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{ url_root }}/contest/{{ c.id }}" title="{{ c.description }}">
+              {{ c.name }}
+            </a>
+          </li>
+          {% end %}
+
+          {% if len(contest_list) > 5 %}
+          <li>
+            <a class="menu_link" href="{{ url_root }}/contests">
+              (show more...)
+            </a>
+          </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/contests/add">
+              (create new contest...)
+            </a>
+          </li>
+        </ul>
+
+        <h1>Tasks</h1>
+        <ul class="menu">
+          {% if len(task_list) < 1 %}
+          <li class="menu_entry">
+            No tasks available
+          </li>
+          {% end %}
+
+          {% for t in task_list[:5] %}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{ url_root }}/task/{{ t.id }}" title="{{ t.title }}">
+              {{ t.name }}
+            </a>
+          </li>
+          {% end %}
+
+          {% if len(task_list) > 5 %}
+          <li>
+            <a class="menu_link" href="{{ url_root }}/tasks">
+              (show more...)
+            </a>
+          </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/tasks/add">
+              (create new task...)
+            </a>
+          </li>
+        </ul>
+
+        <h1>Users</h1>
+        <ul class="menu">
+          {% if len(user_list) < 1 %}
+          <li class="menu_entry">
+            No users available
+          </li>
+          {% end %}
+
+          {% for u in user_list[:5] %}
+          <li class="menu_entry">
+            <a class="menu_link bold" href="{{ url_root }}/user/{{ u.id }}" title="{{ u.first_name }} {{ u.last_name }}">
+              {{ u.username }}
+            </a>
+          </li>
+          {% end %}
+
+          {% if len(user_list) > 5 %}
+          <li>
+            <a class="menu_link" href="{{ url_root }}/users">
+              (show more...)
+            </a>
+          </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/users/add">
+              (create new user...)
+            </a>
+          </li>
+        </ul>
+        {% else %}
+          <ul class="menu">
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/ranking">Ranking</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/submissions">Submissions</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/users">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/tasks">Tasks</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/announcements">Announcements</a></li>
+            <li class="menu_entry">
+              <span id="unanswered_questions" class="unread"
+                {% if unanswered == 0 %} style="display: none;" {% end %}>
+                {{ unanswered }}
+              </span>
+              <a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/questions">Questions</a>
+            </li>
+          </ul>
+          <div class="hr"></div>
+          {% if phase != 1 %}
+          <div class="footer">Time left: <span id="remaining"></span></div>
+          {% end %}
+        {% end %}
+        <div class="cr_notice">CMS <a href="http://github.com/cms-dev/cms/">codebase</a> is released under the<br/><a href="http://www.gnu.org/licenses/agpl.txt">GNU Affero General Public License</a>.</div>
+      </div>
+
+      <div id="border"></div>
+      <div id="core">
+        <div id="notifications" class="notifications"></div>
+        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
+          <div id="subpage_border"></div>
+          <div id="subpage_background"></div>
+          <div id="subpage_content"></div>
+        </div>
+        {% block core %}{% end %}
+      </div>
+
+    </div>
+  </body>
+</html>

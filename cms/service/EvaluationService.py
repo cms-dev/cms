@@ -3,9 +3,9 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -41,15 +41,17 @@ from functools import wraps
 
 import gevent.coros
 from gevent.event import Event
+from sqlalchemy import func, not_
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, PriorityQueue, QueueItem, TriggeredService, \
     rpc_method
 from cms.db import SessionGen, Contest, Dataset, Submission, \
-    SubmissionResult, UserTest, UserTestResult
-from cms.service import get_submission_results, get_datasets_to_judge
+    SubmissionResult, Task, UserTest
+from cms.service import get_submissions, get_submission_results, \
+    get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
-from cms.grading.Job import JobGroup
+from cms.grading.Job import Job, CompilationJob, EvaluationJob
 
 
 logger = logging.getLogger(__name__)
@@ -84,6 +86,25 @@ def submission_to_evaluate(submission_result):
          EvaluationService.MAX_EVALUATION_TRIES)
 
 
+def submission_to_evaluate_on_testcase(submission_result, testcase_codename):
+    """Return whether ES is interested in evaluating the submission
+    on the given testcase.
+
+    submission_result (SubmissionResult): a submission result.
+    testcase_codename (str): codename of a testcase.
+
+    return (bool): True if ES wants to evaluate the submission.
+
+    """
+    if not submission_to_evaluate(submission_result):
+        return False
+
+    for evaluation in submission_result.evaluations:
+        if evaluation.testcase.codename == testcase_codename:
+            return False
+    return True
+
+
 def user_test_to_compile(user_test_result):
     """Return whether ES is interested in compiling the user test.
 
@@ -113,82 +134,132 @@ def user_test_to_evaluate(user_test_result):
         r.evaluation_tries < EvaluationService.MAX_USER_TEST_EVALUATION_TRIES
 
 
-def submission_get_operations(submission):
-    """Generate all operations originating from a submission.
+def submission_get_operations(submission, dataset):
+    """Generate all operations originating from a submission for a given
+    dataset.
 
-    submission (Submission): a submission.
-
-    yield (ESOperation, int, datetime): an iterator providing triplets
-        consisting of a ESOperation for a certain operation to
-        perform, its priority and its timestamp.
-
-    """
-    for dataset in get_datasets_to_judge(submission.task):
-        submission_result = submission.get_result_or_create(dataset)
-        if submission_to_compile(submission_result):
-            priority = PriorityQueue.PRIORITY_HIGH \
-                if submission_result.compilation_tries == 0 \
-                else PriorityQueue.PRIORITY_MEDIUM
-            if not dataset.active:
-                priority = PriorityQueue.PRIORITY_EXTRA_LOW
-            yield ESOperation(
-                ESOperation.COMPILATION,
-                submission.id,
-                dataset.id), \
-                priority, \
-                submission.timestamp
-
-        elif submission_to_evaluate(submission_result):
-            priority = PriorityQueue.PRIORITY_MEDIUM \
-                if submission_result.evaluation_tries == 0 \
-                else PriorityQueue.PRIORITY_LOW
-            if not dataset.active:
-                priority = PriorityQueue.PRIORITY_EXTRA_LOW
-            yield ESOperation(
-                ESOperation.EVALUATION,
-                submission.id,
-                dataset.id), \
-                priority, \
-                submission.timestamp
-
-
-def user_test_get_operations(user_test):
-    """Generate all operations originating from a user test.
-
-    user_test (UserTest): a user test.
+    submission (Submission): a submission;
+    dataset (Dataset): a dataset.
 
     yield (ESOperation, int, datetime): an iterator providing triplets
         consisting of a ESOperation for a certain operation to
         perform, its priority and its timestamp.
 
     """
-    for dataset in get_datasets_to_judge(user_test.task):
-        user_test_result = user_test.get_result_or_create(dataset)
-        if user_test_to_compile(user_test_result):
-            priority = PriorityQueue.PRIORITY_HIGH \
-                if user_test_result.compilation_tries == 0\
-                else PriorityQueue.PRIORITY_MEDIUM
-            if not dataset.active:
-                priority = PriorityQueue.PRIORITY_EXTRA_LOW
-            yield ESOperation(
-                ESOperation.USER_TEST_COMPILATION,
-                user_test.id,
-                dataset.id), \
-                priority, \
-                user_test.timestamp
+    submission_result = submission.get_result_or_create(dataset)
+    if submission_to_compile(submission_result):
+        if not dataset.active:
+            priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif submission_result.compilation_tries == 0:
+            priority = PriorityQueue.PRIORITY_HIGH
+        else:
+            priority = PriorityQueue.PRIORITY_MEDIUM
 
-        elif user_test_to_evaluate(user_test_result):
-            priority = PriorityQueue.PRIORITY_MEDIUM \
-                if user_test_result.evaluation_tries == 0 \
-                else PriorityQueue.PRIORITY_LOW
-            if not dataset.active:
-                priority = PriorityQueue.PRIORITY_EXTRA_LOW
-            yield ESOperation(
-                ESOperation.USER_TEST_EVALUATION,
-                user_test.id,
-                dataset.id), \
+        yield ESOperation(ESOperation.COMPILATION,
+                          submission.id,
+                          dataset.id), \
+            priority, \
+            submission.timestamp
+
+    elif submission_to_evaluate(submission_result):
+        if not dataset.active:
+            priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif submission_result.evaluation_tries == 0:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+        else:
+            priority = PriorityQueue.PRIORITY_LOW
+
+        for testcase_codename in sorted(dataset.testcases.iterkeys()):
+            yield ESOperation(ESOperation.EVALUATION,
+                              submission.id,
+                              dataset.id,
+                              testcase_codename), \
                 priority, \
-                user_test.timestamp
+                submission.timestamp
+
+
+def user_test_get_operations(user_test, dataset):
+    """Generate all operations originating from a user test for a given
+    dataset.
+
+    user_test (UserTest): a user test;
+    dataset (Dataset): a dataset.
+
+    yield (ESOperation, int, datetime): an iterator providing triplets
+        consisting of a ESOperation for a certain operation to
+        perform, its priority and its timestamp.
+
+    """
+    user_test_result = user_test.get_result_or_create(dataset)
+    if user_test_to_compile(user_test_result):
+        if not dataset.active:
+            priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif user_test_result.compilation_tries == 0:
+            priority = PriorityQueue.PRIORITY_HIGH
+        else:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+
+        yield ESOperation(ESOperation.USER_TEST_COMPILATION,
+                          user_test.id,
+                          dataset.id), \
+            priority, \
+            user_test.timestamp
+
+    elif user_test_to_evaluate(user_test_result):
+        if not dataset.active:
+            priority = PriorityQueue.PRIORITY_EXTRA_LOW
+        elif user_test_result.evaluation_tries == 0:
+            priority = PriorityQueue.PRIORITY_MEDIUM
+        else:
+            priority = PriorityQueue.PRIORITY_LOW
+
+        yield ESOperation(ESOperation.USER_TEST_EVALUATION,
+                          user_test.id,
+                          dataset.id), \
+            priority, \
+            user_test.timestamp
+
+
+def get_relevant_operations_(level, submissions, dataset_id=None):
+    """Return all possible operations involving the submissions
+
+    level (string): the starting level; if 'compilation', then we
+        return operations for both compilation and evaluation; if
+        'evaluation', we return evaluations only.
+    submissions ([Submission]): submissions we want the operations for.
+    dataset_id (int|None): id of the dataset to select, or None for all
+        datasets
+
+    return ([ESOperation]): list of relevant operations.
+
+    """
+    operations = []
+    for submission in submissions:
+        # All involved datasets: all of the task's dataset unless
+        # one was specified.
+        datasets = submission.task.datasets
+        if dataset_id is not None:
+            for dataset in submission.task.datasets:
+                if dataset.id == dataset_id:
+                    datasets = [dataset]
+                    break
+
+        # For each submission and dataset, the operations are: one
+        # compilation, and one evaluation per testcase.
+        for dataset in datasets:
+            if level == 'compilation':
+                operations.append(ESOperation(
+                    ESOperation.COMPILATION,
+                    submission.id,
+                    dataset.id))
+            for codename in dataset.testcases:
+                operations.append(ESOperation(
+                    ESOperation.EVALUATION,
+                    submission.id,
+                    dataset.id,
+                    codename))
+
+    return operations
 
 
 class ESOperation(QueueItem):
@@ -198,10 +269,12 @@ class ESOperation(QueueItem):
     USER_TEST_COMPILATION = "compile_test"
     USER_TEST_EVALUATION = "evaluate_test"
 
-    def __init__(self, type_, object_id, dataset_id):
+    # Testcase codename is only needed for EVALUATION type of operation
+    def __init__(self, type_, object_id, dataset_id, testcase_codename=None):
         self.type_ = type_
         self.object_id = object_id
         self.dataset_id = dataset_id
+        self.testcase_codename = testcase_codename
 
     def __eq__(self, other):
         # We may receive a non-ESOperation other when comparing with
@@ -211,50 +284,90 @@ class ESOperation(QueueItem):
             return False
         return self.type_ == other.type_ \
             and self.object_id == other.object_id \
-            and self.dataset_id == other.dataset_id
+            and self.dataset_id == other.dataset_id \
+            and self.testcase_codename == other.testcase_codename
 
     def __hash__(self):
-        return hash((self.type_, self.object_id, self.dataset_id))
+        return hash((self.type_, self.object_id, self.dataset_id,
+                     self.testcase_codename))
 
     def __str__(self):
-        return "performing %s on %d against dataset %d" % (
-            self.type_, self.object_id, self.dataset_id)
+        if self.type_ == ESOperation.EVALUATION:
+            return "%s on %d against dataset %d, testcase %s" % (
+                self.type_, self.object_id, self.dataset_id,
+                self.testcase_codename)
+        else:
+            return "%s on %d against dataset %d" % (
+                self.type_, self.object_id, self.dataset_id)
 
     def to_dict(self):
         return {"type": self.type_,
                 "object_id": self.object_id,
-                "dataset_id": self.dataset_id}
+                "dataset_id": self.dataset_id,
+                "testcase_codename": self.testcase_codename}
 
-    def check(self):
+    def check(self, session):
         """Check that this operation is actually to be enqueued.
 
         I.e., check that the associated action has not been performed
         yet. It is used in cases when the status of the underlying object
         may have changed since last check.
 
+        session (Session): the database session to use.
+
         return (bool): True if the operation is still to be performed.
 
         """
-        with SessionGen() as session:
-            dataset = Dataset.get_from_id(self.dataset_id, session)
-            if self.type_ == ESOperation.COMPILATION:
-                submission = Submission.get_from_id(self.object_id, session)
-                submission_result = submission.get_result_or_create(dataset)
-                return submission_to_compile(submission_result)
-            elif self.type_ == ESOperation.EVALUATION:
-                submission = Submission.get_from_id(self.object_id, session)
-                submission_result = submission.get_result_or_create(dataset)
-                return submission_to_evaluate(submission_result)
-            elif self.type_ == ESOperation.USER_TEST_COMPILATION:
-                user_test = UserTest.get_from_id(self.object_id, session)
-                user_test_result = user_test.get_result_or_create(dataset)
-                return user_test_to_compile(user_test_result)
-            elif self.type_ == ESOperation.USER_TEST_EVALUATION:
-                user_test = UserTest.get_from_id(self.object_id, session)
-                user_test_result = user_test.get_result_or_create(dataset)
-                return user_test_to_evaluate(user_test_result)
+        result = True
+        dataset = Dataset.get_from_id(self.dataset_id, session)
+        if self.type_ == ESOperation.COMPILATION:
+            submission = Submission.get_from_id(self.object_id, session)
+            submission_result = submission.get_result_or_create(dataset)
+            result = submission_to_compile(submission_result)
+        elif self.type_ == ESOperation.EVALUATION:
+            submission = Submission.get_from_id(self.object_id, session)
+            submission_result = submission.get_result_or_create(dataset)
+            result = submission_to_evaluate_on_testcase(
+                submission_result, self.testcase_codename)
+        elif self.type_ == ESOperation.USER_TEST_COMPILATION:
+            user_test = UserTest.get_from_id(self.object_id, session)
+            user_test_result = user_test.get_result_or_create(dataset)
+            result = user_test_to_compile(user_test_result)
+        elif self.type_ == ESOperation.USER_TEST_EVALUATION:
+            user_test = UserTest.get_from_id(self.object_id, session)
+            user_test_result = user_test.get_result_or_create(dataset)
+            result = user_test_to_evaluate(user_test_result)
+        return result
 
-        raise Exception("Should never arrive here")
+    def build_job(self, session):
+        """Produce the Job for this operation.
+
+        Return the Job object that has to be sent to Workers to have
+        them perform the operation this object describes.
+
+        session (Session): the database session to use to fetch objects
+            if necessary.
+
+        return (Job): the job encoding of the operation, as understood
+            by Workers and TaskTypes.
+
+        """
+        result = None
+        dataset = Dataset.get_from_id(self.dataset_id, session)
+        if self.type_ == ESOperation.COMPILATION:
+            submission = Submission.get_from_id(self.object_id, session)
+            result = CompilationJob.from_submission(submission, dataset)
+        elif self.type_ == ESOperation.EVALUATION:
+            submission = Submission.get_from_id(self.object_id, session)
+            result = EvaluationJob.from_submission(
+                submission, dataset, self.testcase_codename)
+        elif self.type_ == ESOperation.USER_TEST_COMPILATION:
+            user_test = UserTest.get_from_id(self.object_id, session)
+            result = CompilationJob.from_user_test(user_test, dataset)
+        elif self.type_ == ESOperation.USER_TEST_EVALUATION:
+            user_test = UserTest.get_from_id(self.object_id, session)
+            result = EvaluationJob.from_user_test(user_test, dataset)
+        return result
 
 
 class WorkerPool(object):
@@ -378,39 +491,19 @@ class WorkerPool(object):
         # And finally we ask the worker to do the operation.
         timestamp = side_data[1]
         queue_time = self._start_time[shard] - timestamp
-        logger.info("Asking worker %s to %s submission/user test %d(%d) "
-                    "(%s after submission).", shard, operation.type_,
-                    operation.object_id, operation.dataset_id, queue_time)
+        logger.info("Asking worker %s to `%s' (%s after submission).",
+                    shard, operation, queue_time)
 
         with SessionGen() as session:
-            if operation.type_ == ESOperation.COMPILATION:
-                submission = Submission.get_from_id(operation.object_id,
-                                                    session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_submission_compilation(submission, dataset)
-            elif operation.type_ == ESOperation.EVALUATION:
-                submission = Submission.get_from_id(operation.object_id,
-                                                    session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_submission_evaluation(submission, dataset)
-            elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
-                user_test = UserTest.get_from_id(operation.object_id, session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_user_test_compilation(user_test, dataset)
-            elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
-                user_test = UserTest.get_from_id(operation.object_id, session)
-                dataset = Dataset.get_from_id(operation.dataset_id, session)
-                job_group = \
-                    JobGroup.from_user_test_evaluation(user_test, dataset)
+            job = operation.build_job(session)
+            job_dict = job.export_to_dict()
 
-            self._worker[shard].execute_job_group(
-                job_group_dict=job_group.export_to_dict(),
-                callback=self._service.action_finished,
-                plus=(operation.type_, operation.object_id,
-                      operation.dataset_id, side_data, shard))
+        self._worker[shard].execute_job(
+            job_dict=job_dict,
+            callback=self._service.action_finished,
+            plus=(operation.type_, operation.object_id,
+                  operation.dataset_id, operation.testcase_codename,
+                  side_data, shard))
         return shard
 
     def release_worker(self, shard):
@@ -493,11 +586,10 @@ class WorkerPool(object):
         try:
             shard = self.find_worker(operation)
         except LookupError:
-            logger.warning("Asked to ignore operation `%s' "
-                           "that cannot be found.", operation)
-            return
+            logger.debug("Asked to ignore operation `%s' "
+                         "that cannot be found.", operation)
+            raise
         self._ignore[shard] = True
-        self._worker[shard].ignore_operation()
 
     def get_status(self):
         """Returns a dict with info about the current status of all
@@ -547,10 +639,10 @@ class WorkerPool(object):
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no response "
                                  "in %s.", shard, active_for)
-                    is_busy = (self._operation[shard]
-                               != WorkerPool.WORKER_INACTIVE
-                               and self._operation[shard]
-                               != WorkerPool.WORKER_DISABLED)
+                    is_busy = (self._operation[shard] !=
+                               WorkerPool.WORKER_INACTIVE and
+                               self._operation[shard] !=
+                               WorkerPool.WORKER_DISABLED)
                     assert is_busy
 
                     # We return the operation so ES can do what it needs.
@@ -660,6 +752,14 @@ class EvaluationExecutor(Executor):
         self.evaluation_service = evaluation_service
         self.pool = WorkerPool(self.evaluation_service)
 
+        # QueueItem (ESOperation) we have extracted from the queue,
+        # but not yet finished to execute.
+        self._currently_executing = None
+
+        # Whether execute need to drop the currently executing
+        # operation.
+        self._drop_current = False
+
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
@@ -673,12 +773,36 @@ class EvaluationExecutor(Executor):
         entry (QueueEntry): entry containing the operation to perform.
 
         """
+        self._currently_executing = entry.item
         side_data = (entry.priority, entry.timestamp)
         res = None
-        while res is None:
+        while res is None and not self._drop_current:
             self.pool.wait_for_workers()
+            if self._drop_current:
+                break
             res = self.pool.acquire_worker(entry.item,
                                            side_data=side_data)
+        self._drop_current = False
+        self._currently_executing = None
+
+    def dequeue(self, operation):
+        """Remove an item from the queue.
+
+        We need to override dequeue because in execute we wait for a
+        worker to become available to serve the operation, and if that
+        operation needed to be dequeued, we need to remove it also
+        from there.
+
+        operation (ESOperation)
+
+        """
+        try:
+            super(EvaluationExecutor, self).dequeue(operation)
+        except KeyError:
+            if self._currently_executing == operation:
+                self._drop_current = True
+            else:
+                raise
 
 
 def with_post_finish_lock(func):
@@ -726,6 +850,7 @@ class EvaluationService(TriggeredService):
             ServiceCoord("ScoringService", 0))
 
         self.add_executor(EvaluationExecutor(self))
+        self.start_sweeper(117.0)
 
         self.add_timeout(self.check_workers_timeout, None,
                          EvaluationService.WORKER_TIMEOUT_CHECK_TIME
@@ -735,9 +860,6 @@ class EvaluationService(TriggeredService):
                          EvaluationService.WORKER_CONNECTION_CHECK_TIME
                          .total_seconds(),
                          immediately=False)
-
-    def _sweeper_timeout(self):
-        return 117.0
 
     def submission_enqueue_operations(self, submission, check_again=False):
         """Push in queue the operations required by a submission.
@@ -749,10 +871,12 @@ class EvaluationService(TriggeredService):
 
         """
         new_operations = 0
-        for operation, priority, timestamp in submission_get_operations(
-                submission):
-            new_operations += self.enqueue(operation, priority, timestamp,
-                                           check_again=check_again)
+        for dataset in get_datasets_to_judge(submission.task):
+            for operation, priority, timestamp in \
+                    submission_get_operations(submission, dataset):
+                if self.enqueue(operation, priority, timestamp,
+                                check_again=check_again):
+                    new_operations += 1
 
         return new_operations
 
@@ -766,11 +890,12 @@ class EvaluationService(TriggeredService):
 
         """
         new_operations = 0
-        for operation, priority, timestamp in user_test_get_operations(
-                user_test):
-            if self.enqueue(operation, priority, timestamp,
-                            check_again=check_again):
-                new_operations += 1
+        for dataset in get_datasets_to_judge(user_test.task):
+            for operation, priority, timestamp in user_test_get_operations(
+                    user_test, dataset):
+                if self.enqueue(operation, priority, timestamp,
+                                check_again=check_again):
+                    new_operations += 1
 
         return new_operations
 
@@ -811,41 +936,57 @@ class EvaluationService(TriggeredService):
         return (dict): statistics on the submissions.
 
         """
-        stats = {
-            "scored": 0,
-            "evaluated": 0,
-            "compilation_fail": 0,
-            "compiling": 0,
-            "evaluating": 0,
-            "max_compilations": 0,
-            "max_evaluations": 0,
-            "invalid": 0}
+        # TODO: at the moment this counts all submission results for
+        # the live datasets. It is interesting to show also numbers
+        # for the datasets with autojudge, and for all datasets.
+        stats = {}
         with SessionGen() as session:
-            contest = Contest.get_from_id(self.contest_id, session)
-            for submission_result in contest.get_submission_results():
-                if submission_result.compilation_failed():
-                    stats["compilation_fail"] += 1
-                elif not submission_result.compiled():
-                    if submission_result.compilation_tries >= \
-                            EvaluationService.MAX_COMPILATION_TRIES:
-                        stats["max_compilations"] += 1
-                    else:
-                        stats["compiling"] += 1
-                elif submission_result.compilation_succeeded():
-                    if submission_result.evaluated():
-                        if submission_result.scored():
-                            stats["scored"] += 1
-                        else:
-                            stats["evaluated"] += 1
-                    else:
-                        if submission_result.evaluation_tries >= \
-                                EvaluationService.MAX_EVALUATION_TRIES:
-                            stats["max_evaluations"] += 1
-                        else:
-                            stats["evaluating"] += 1
-                else:
-                    # Should not happen.
-                    stats["invalid"] += 1
+            base_query = session\
+                .query(func.count(SubmissionResult.submission_id))\
+                .select_from(SubmissionResult)\
+                .join(Dataset)\
+                .join(Task, Dataset.task_id == Task.id)\
+                .filter(Task.active_dataset_id == SubmissionResult.dataset_id)\
+                .filter(Task.contest_id == self.contest_id)
+
+            compiled = base_query.filter(SubmissionResult.filter_compiled())
+            evaluated = compiled.filter(SubmissionResult.filter_evaluated())
+            not_compiled = base_query.filter(
+                not_(SubmissionResult.filter_compiled()))
+            not_evaluated = compiled.filter(
+                SubmissionResult.filter_compilation_succeeded(),
+                not_(SubmissionResult.filter_evaluated()))
+
+            queries = {}
+            queries['compiling'] = not_compiled.filter(
+                SubmissionResult.compilation_tries <
+                EvaluationService.MAX_COMPILATION_TRIES)
+            queries['max_compilations'] = not_compiled.filter(
+                SubmissionResult.compilation_tries >=
+                EvaluationService.MAX_COMPILATION_TRIES)
+            queries['compilation_fail'] = base_query.filter(
+                SubmissionResult.filter_compilation_failed())
+            queries['evaluating'] = not_evaluated.filter(
+                SubmissionResult.evaluation_tries <
+                EvaluationService.MAX_EVALUATION_TRIES)
+            queries['max_evaluations'] = not_evaluated.filter(
+                SubmissionResult.evaluation_tries <=
+                EvaluationService.MAX_EVALUATION_TRIES)
+            queries['scoring'] = evaluated.filter(
+                not_(SubmissionResult.filter_scored()))
+            queries['scored'] = evaluated.filter(
+                SubmissionResult.filter_scored())
+            queries['total'] = base_query
+
+            stats = {}
+            keys = queries.keys()
+            results = queries[keys[0]].union_all(
+                *(queries[key] for key in keys[1:])).all()
+
+        for i in range(len(keys)):
+            stats[keys[i]] = results[i][0]
+        stats['invalid'] = 2 * stats['total'] - sum(stats.itervalues())
+
         return stats
 
     @rpc_method
@@ -857,14 +998,14 @@ class EvaluationService(TriggeredService):
         returns (dict): the dict with the workers information.
 
         """
-        return self._executors[0].pool.get_status()
+        return self.get_executor().pool.get_status()
 
     def check_workers_timeout(self):
         """We ask WorkerPool for the unresponsive workers, and we put
         again their operations in the queue.
 
         """
-        lost_operations = self._executors[0].pool.check_timeouts()
+        lost_operations = self.get_executor().pool.check_timeouts()
         for priority, timestamp, operation in lost_operations:
             logger.info("Operation %s put again in the queue because of "
                         "worker timeout.", operation)
@@ -876,29 +1017,44 @@ class EvaluationService(TriggeredService):
         again their operations in the queue.
 
         """
-        lost_operations = self._executors[0].pool.check_connections()
+        lost_operations = self.get_executor().pool.check_connections()
         for priority, timestamp, operation in lost_operations:
             logger.info("Operation %s put again in the queue because of "
                         "disconnected worker.", operation)
             self.enqueue(operation, priority, timestamp)
         return True
 
-    def submission_busy(self, submission_id, dataset_id):
+    def submission_busy(self, submission_id, dataset_id,
+                        testcase_codename=None):
         """Check if the submission has a related operation in the queue or
         assigned to a worker.
 
+        This might be either the compilation of the submission, or the
+        evaluation of the testcase.
+
+        submission_id (int): the id of the submission.
+        dataset_id (int): the id of the dataset.
+        testcase_codename (unicode|None): if not set, we will only
+            check for the presence of the compilation of the
+            submission.
+
+        return (bool): True when the submission / testcase is present
+            in the queue.
+
         """
-        operations = [
-            ESOperation(
-                ESOperation.COMPILATION,
-                submission_id,
-                dataset_id),
-            ESOperation(
+        operations = []
+        operations.append(ESOperation(
+            ESOperation.COMPILATION,
+            submission_id,
+            dataset_id))
+        if testcase_codename is not None:
+            operations.append(ESOperation(
                 ESOperation.EVALUATION,
                 submission_id,
-                dataset_id),
-        ]
-        return any([operation in self._executors[0].pool
+                dataset_id,
+                testcase_codename))
+        return any([operation in self.get_executor().pool or
+                    operation in self.get_executor()
                     for operation in operations])
 
     def user_test_busy(self, user_test_id, dataset_id):
@@ -916,7 +1072,8 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self._executors[0].pool
+        return any([operations in self.get_executor().pool or
+                    operation in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
@@ -929,7 +1086,8 @@ class EvaluationService(TriggeredService):
         if operation.type_ in (ESOperation.COMPILATION,
                                ESOperation.EVALUATION):
             return self.submission_busy(operation.object_id,
-                                        operation.dataset_id)
+                                        operation.dataset_id,
+                                        operation.testcase_codename)
         elif operation.type_ in (ESOperation.USER_TEST_COMPILATION,
                                  ESOperation.USER_TEST_EVALUATION):
             return self.user_test_busy(operation.object_id,
@@ -957,29 +1115,38 @@ class EvaluationService(TriggeredService):
         """
         if self.operation_busy(operation):
             return False
-        elif check_again and not operation.check():
-            return False
-        else:
-            # enqueue() returns the number of successful pushes.
-            return super(EvaluationService, self).enqueue(
-                operation, priority, timestamp) > 0
+
+        if check_again:
+            with SessionGen() as session:
+                if not operation.check(session):
+                    return False
+
+        # enqueue() returns the number of successful pushes.
+        return super(EvaluationService, self).enqueue(
+            operation, priority, timestamp) > 0
 
     @with_post_finish_lock
     def action_finished(self, data, plus, error=None):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
 
-        data (dict): a dictionary that describes a JobGroup instance.
+        data (dict): a dictionary that describes a Job instance.
         plus (tuple): the tuple (type_,
                                  object_id,
                                  dataset_id,
+                                 testcase_codename,
                                  side_data=(priority, timestamp),
                                  shard_of_worker)
 
         """
         # Unpack the plus tuple. It's built in the RPC call to Worker's
-        # execute_job_group method inside WorkerPool.acquire_worker.
-        type_, object_id, dataset_id, side_data, shard = plus
+        # execute_job method inside WorkerPool.acquire_worker.
+        type_, object_id, dataset_id, testcase_codename, _, \
+            shard = plus
+
+        # Restore operation from its fields.
+        operation = ESOperation(
+            type_, object_id, dataset_id, testcase_codename)
 
         # We notify the pool that the worker is available again for
         # further work (no matter how the current request turned out,
@@ -989,7 +1156,7 @@ class EvaluationService(TriggeredService):
         # this method and do nothing because in that case we know the
         # operation has returned to the queue and perhaps already been
         # reassigned to another worker.
-        if self._executors[0].pool.release_worker(shard):
+        if self.get_executor().pool.release_worker(shard):
             logger.info("Ignored result from worker %s as requested.", shard)
             return
 
@@ -1000,94 +1167,146 @@ class EvaluationService(TriggeredService):
 
         else:
             try:
-                job_group = JobGroup.import_from_dict(data)
+                job = Job.import_from_dict_with_type(data)
             except:
-                logger.error("[action_finished] Couldn't build JobGroup for "
+                logger.error("[action_finished] Couldn't build Job for "
                              "data %s.", data, exc_info=True)
                 job_success = False
 
             else:
-                if not job_group.success:
+                if not job.success:
                     logger.error("Worker %s signaled action "
                                  "not successful.", shard)
                     job_success = False
 
-        _, timestamp = side_data
-
-        logger.info("Action %s for submission %s completed. Success: %s.",
-                    type_, object_id, job_success)
+        logger.info("Operation `%s' for submission %s completed. Success: %s.",
+                    operation, object_id, job_success)
 
         # We get the submission from DB and update it.
         with SessionGen() as session:
+            dataset = Dataset.get_from_id(dataset_id, session)
+            if dataset is None:
+                logger.error("[action_finished] Could not find "
+                             "dataset %d in the database.",
+                             dataset_id)
+                return
+
+            # TODO Try to move this 4-cases if-clause into a method of
+            # ESOperation: I'd really like ES itself not to care about
+            # which type of operation it's handling.
             if type_ == ESOperation.COMPILATION:
-                submission_result = SubmissionResult.get_from_id(
-                    (object_id, dataset_id), session)
-                if submission_result is None:
-                    logger.error("[action_finished] Couldn't find "
-                                 "submission %d(%d) in the database.",
-                                 object_id, dataset_id)
+                submission = Submission.get_from_id(object_id, session)
+                if submission is None:
+                    logger.error("[action_finished] Could not find "
+                                 "submission %d in the database.",
+                                 object_id)
                     return
+
+                submission_result = submission.get_result(dataset)
+                if submission_result is None:
+                    logger.info("[action_finished] Couldn't find "
+                                "submission %d(%d) in the database. "
+                                "Creating it.", object_id, dataset_id)
+                    submission_result = \
+                        submission.get_result_or_create(dataset)
+
+                if job_success:
+                    job.to_submission(submission_result)
 
                 submission_result.compilation_tries += 1
 
-                if job_success:
-                    job_group.to_submission_compilation(submission_result)
+                session.commit()
 
                 self.compilation_ended(submission_result)
 
             elif type_ == ESOperation.EVALUATION:
-                submission_result = SubmissionResult.get_from_id(
-                    (object_id, dataset_id), session)
+                submission = Submission.get_from_id(object_id, session)
+                if submission is None:
+                    logger.error("[action_finished] Could not find "
+                                 "submission %d in the database.",
+                                 object_id)
+                    return
+
+                submission_result = submission.get_result(dataset)
                 if submission_result is None:
                     logger.error("[action_finished] Couldn't find "
                                  "submission %d(%d) in the database.",
                                  object_id, dataset_id)
                     return
 
-                submission_result.evaluation_tries += 1
-
                 if job_success:
-                    job_group.to_submission_evaluation(submission_result)
+                    job.to_submission(submission_result)
 
-                self.evaluation_ended(submission_result)
+                # Submission evaluation will be ended only when
+                # evaluation for each testcase is available.
+                # TODO This check makes little sense: failed jobs will
+                # be attempted again by evaluation_ended, which will be
+                # called only in case of equality, which will hold only
+                # if the evaluations for all testcases are present. But
+                # as an evaluation will be stored only if the job was
+                # successful failed jobs will never be attempted again.
+                if len(submission_result.evaluations) == \
+                        len(dataset.testcases):
+                    submission_result.set_evaluation_outcome()
+                    submission_result.evaluation_tries += 1
+
+                session.commit()
+
+                if submission_result.evaluated():
+                    self.evaluation_ended(submission_result)
 
             elif type_ == ESOperation.USER_TEST_COMPILATION:
-                user_test_result = UserTestResult.get_from_id(
-                    (object_id, dataset_id), session)
+                user_test = UserTest.get_from_id(object_id, session)
+                if user_test is None:
+                    logger.error("[action_finished] Could not find "
+                                 "user test %d in the database.",
+                                 object_id)
+                    return
+
+                user_test_result = user_test.get_result(dataset)
                 if user_test_result is None:
                     logger.error("[action_finished] Couldn't find "
-                                 "user test %d(%d) in the database.",
-                                 object_id, dataset_id)
-                    return
+                                 "user test %d(%d) in the database. "
+                                 "Creating it.", object_id, dataset_id)
+                    user_test_result = \
+                        user_test.get_result_or_create(dataset)
+
+                if job_success:
+                    job.to_user_test(user_test_result)
 
                 user_test_result.compilation_tries += 1
 
-                if job_success:
-                    job_group.to_user_test_compilation(user_test_result)
+                session.commit()
 
                 self.user_test_compilation_ended(user_test_result)
 
             elif type_ == ESOperation.USER_TEST_EVALUATION:
-                user_test_result = UserTestResult.get_from_id(
-                    (object_id, dataset_id), session)
+                user_test = UserTest.get_from_id(object_id, session)
+                if user_test is None:
+                    logger.error("[action_finished] Could not find "
+                                 "user test %d in the database.",
+                                 object_id)
+                    return
+
+                user_test_result = user_test.get_result(dataset)
                 if user_test_result is None:
                     logger.error("[action_finished] Couldn't find "
                                  "user test %d(%d) in the database.",
                                  object_id, dataset_id)
                     return
 
+                if job_success:
+                    job.to_user_test(user_test_result)
+
                 user_test_result.evaluation_tries += 1
 
-                if job_success:
-                    job_group.to_user_test_evaluation(user_test_result)
+                session.commit()
 
                 self.user_test_evaluation_ended(user_test_result)
 
             else:
                 logger.error("Invalid operation type %r.", type_)
                 return
-
-            session.commit()
 
     def compilation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
@@ -1114,7 +1333,6 @@ class EvaluationService(TriggeredService):
             logger.info("Submission %d(%d) did not compile.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
-            submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
@@ -1158,7 +1376,6 @@ class EvaluationService(TriggeredService):
             logger.info("Submission %d(%d) was evaluated successfully.",
                         submission_result.submission_id,
                         submission_result.dataset_id)
-            submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
@@ -1188,6 +1405,7 @@ class EvaluationService(TriggeredService):
 
         """
         user_test = user_test_result.user_test
+
         # If compilation was ok, we emit a satisfied log message.
         if user_test_result.compilation_succeeded():
             logger.info("User test %d(%d) was compiled successfully.",
@@ -1296,6 +1514,7 @@ class EvaluationService(TriggeredService):
             session.commit()
 
     @rpc_method
+    @with_post_finish_lock
     def invalidate_submission(self,
                               submission_id=None,
                               dataset_id=None,
@@ -1336,39 +1555,40 @@ class EvaluationService(TriggeredService):
                 "Unexpected invalidation level `%s'." % level)
 
         with SessionGen() as session:
+            # First we load all involved submissions.
+            submissions = get_submissions(
+                # Give contest_id only if all others are None.
+                self.contest_id
+                if {user_id, task_id, submission_id} == {None}
+                else None,
+                user_id, task_id, submission_id, session)
+
+            # Then we get all relevant operations, and we remove them
+            # both from the queue and from the pool (i.e., we ignore
+            # the workers involved in those operations).
+            operations = get_relevant_operations_(
+                level, submissions, dataset_id)
+            for operation in operations:
+                try:
+                    self.dequeue(operation)
+                except KeyError:
+                    pass  # Ok, the operation wasn't in the queue.
+                try:
+                    self.get_executor().pool.ignore_operation(operation)
+                except LookupError:
+                    pass  # Ok, the operation wasn't in the pool.
+
+            # Then we find all existing results in the database, and
+            # we remove them.
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
                 self.contest_id
                 if {user_id, task_id, submission_id, dataset_id} == {None}
                 else None,
                 user_id, task_id, submission_id, dataset_id, session)
-
             logger.info("Submission results to invalidate %s for: %d.",
                         level, len(submission_results))
-            if len(submission_results) == 0:
-                return
-
             for submission_result in submission_results:
-                operations = [
-                    ESOperation(
-                        ESOperation.COMPILATION,
-                        submission_result.submission_id,
-                        submission_result.dataset_id),
-                    ESOperation(
-                        ESOperation.EVALUATION,
-                        submission_result.submission_id,
-                        submission_result.dataset_id),
-                    ]
-                for operation in operations:
-                    try:
-                        self.dequeue(operation)
-                    except KeyError:
-                        pass  # Ok, the operation wasn't in the queue.
-                    try:
-                        self._executors[0].pool.ignore_operation(operation)
-                    except LookupError:
-                        pass  # Ok, the operation wasn't in the pool.
-
                 # We invalidate the appropriate data and queue the
                 # operations to recompute those data.
                 if level == "compilation":
@@ -1376,8 +1596,9 @@ class EvaluationService(TriggeredService):
                 elif level == "evaluation":
                     submission_result.invalidate_evaluation()
 
-            for submission in set(submission_result.submission
-                                  for submission_result in submission_results):
+            # Finally, we re-enqueue the operations for the
+            # submissions.
+            for submission in submissions:
                 self.submission_enqueue_operations(submission)
 
             session.commit()
@@ -1395,7 +1616,7 @@ class EvaluationService(TriggeredService):
 
         lost_operations = []
         try:
-            lost_operations = self._executors[0].pool.disable_worker(shard)
+            lost_operations = self.get_executor().pool.disable_worker(shard)
         except ValueError:
             return False
 
@@ -1416,7 +1637,7 @@ class EvaluationService(TriggeredService):
         """
         logger.info("Received request to enable worker %s.", shard)
         try:
-            self._executors[0].pool.enable_worker(shard)
+            self.get_executor().pool.enable_worker(shard)
         except ValueError:
             return False
 
@@ -1427,10 +1648,35 @@ class EvaluationService(TriggeredService):
         """Return the status of the queue.
 
         Parent method returns list of queues of each executor, but in
-        EvaluationService we have only one executor, so we cat just return
+        EvaluationService we have only one executor, so we can just take
         the first queue.
+
+        As evaluate operations are split by testcases, there are too
+        many entries in the queue to display, so we just take only one
+        operation of each (type, object_id, dataset_id)
+        tuple. Generally, we will see only one evaluate operation for
+        each submission in the queue status with the number of
+        testcase which will be evaluated next. Moreover, we pass also
+        the number of testcases in the queue.
+
+        The entries are then ordered by priority and timestamp (the
+        same criteria used to look at what to complete next).
 
         return ([QueueEntry]): the list with the queued elements.
 
         """
-        return super(EvaluationService, self).queue_status()[0]
+        entries = super(EvaluationService, self).queue_status()[0]
+        entries_by_key = dict()
+        for entry in entries:
+            key = (str(entry["item"]["type"]),
+                   str(entry["item"]["object_id"]),
+                   str(entry["item"]["dataset_id"]))
+            if key in entries_by_key:
+                entries_by_key[key]["item"]["multiplicity"] += 1
+            else:
+                entries_by_key[key] = entry
+                entries_by_key[key]["item"]["multiplicity"] = 1
+        return sorted(
+            entries_by_key.values(),
+            lambda x, y: cmp((x["priority"], x["timestamp"]),
+                             (y["priority"], y["timestamp"])))
