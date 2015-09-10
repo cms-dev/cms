@@ -1518,7 +1518,7 @@ class EvaluationService(TriggeredService):
     def invalidate_submission(self,
                               submission_id=None,
                               dataset_id=None,
-                              user_id=None,
+                              participation_id=None,
                               task_id=None,
                               level="compilation"):
         """Request to invalidate some computed data.
@@ -1526,8 +1526,8 @@ class EvaluationService(TriggeredService):
         Invalidate the compilation and/or evaluation data of the
         SubmissionResults that:
         - belong to submission_id or, if None, to any submission of
-          user_id and/or task_id or, if both None, to any submission
-          of the contest this service is running for.
+          participation_id and/or task_id or, if both None, to any
+          submission of the contest this service is running for.
         - belong to dataset_id or, if None, to any dataset of task_id
           or, if None, to any dataset of any task of the contest this
           service is running for.
@@ -1541,7 +1541,8 @@ class EvaluationService(TriggeredService):
             or None.
         dataset_id (int|None): id of the dataset to invalidate, or
             None.
-        user_id (int|None): id of the user to invalidate, or None.
+        participation_id (int|None): id of the participation to
+            invalidate, or None.
         task_id (int|None): id of the task to invalidate, or None.
         level (string): 'compilation' or 'evaluation'
 
@@ -1559,9 +1560,9 @@ class EvaluationService(TriggeredService):
             submissions = get_submissions(
                 # Give contest_id only if all others are None.
                 self.contest_id
-                if {user_id, task_id, submission_id} == {None}
+                if {participation_id, task_id, submission_id} == {None}
                 else None,
-                user_id, task_id, submission_id, session)
+                participation_id, task_id, submission_id, session)
 
             # Then we get all relevant operations, and we remove them
             # both from the queue and from the pool (i.e., we ignore
@@ -1583,9 +1584,12 @@ class EvaluationService(TriggeredService):
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
                 self.contest_id
-                if {user_id, task_id, submission_id, dataset_id} == {None}
+                if {participation_id,
+                    task_id,
+                    submission_id,
+                    dataset_id} == {None}
                 else None,
-                user_id, task_id, submission_id, dataset_id, session)
+                participation_id, task_id, submission_id, dataset_id, session)
             logger.info("Submission results to invalidate %s for: %d.",
                         level, len(submission_results))
             for submission_result in submission_results:

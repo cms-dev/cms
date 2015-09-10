@@ -30,8 +30,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from sqlalchemy.orm import joinedload
-
 from cms.db import Contest, Submission, Task
 from .base import BaseHandler
 
@@ -44,13 +42,9 @@ class ContestSubmissionsHandler(BaseHandler):
         contest = self.safe_get_item(Contest, contest_id)
         self.contest = contest
 
-        self.r_params = self.render_params()
-        self.r_params["submissions"] = \
-            self.sql_session.query(Submission).join(Task)\
-                            .filter(Task.contest == contest)\
-                            .options(joinedload(Submission.participation))\
-                            .options(joinedload(Submission.files))\
-                            .options(joinedload(Submission.token))\
-                            .options(joinedload(Submission.results))\
-                            .order_by(Submission.timestamp.desc()).all()
+        query = self.sql_session.query(Submission).join(Task)\
+            .filter(Task.contest == contest)
+        page = int(self.get_query_argument("page", 0))
+        self.render_params_for_submissions(query, page)
+
         self.render("contest_submissions.html", **self.r_params)

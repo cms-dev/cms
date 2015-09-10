@@ -1,10 +1,22 @@
 {# This snippet shows a table using the list submissions as input #}
-{% if submissions == [] %}
+{% if submission_count == 0 %}
 <p>No submissions found.</p>
 
 {% else %}
-{# TODO: implement a more useful pagination for a large contest #}
-<div id="page_selector_submissions"></div>
+
+{% if submission_count > len(submissions) %}
+<div id="page_selector_submissions">
+  Pages:
+  {% for i in range(submission_pages) %}
+    {% if i != submission_page %}
+  <a href="{{ url_root }}{{ submission_url }}?page={{ i }}">{{ i + 1 }}</a>
+    {% else %}
+  {{ i + 1 }}
+    {% end %}
+  {% end %}
+</div>
+{% end %}
+
 <table class="bordered">
   <thead>
     <tr>
