@@ -164,7 +164,7 @@ class ParticipationHandler(BaseHandler):
 
             self.get_string(attrs, "password")
             if attrs["password"] == "":
-				attrs["password"] = None
+                attrs["password"] = None
             self.get_ip_address_or_subnet(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
