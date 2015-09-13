@@ -219,7 +219,8 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/usr/bin/gcc"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-static", "-O2", "-o", executable_filename]
+        command += ["-static", "-O2", "-std=c11",
+                    "-o", executable_filename]
         command += source_filenames
         command += ["-lm"]
         commands.append(command)
