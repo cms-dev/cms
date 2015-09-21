@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -68,6 +69,12 @@ class TaskImporter(BaseImporter):
     def do_import(self):
         """Get the task from the TaskLoader and store it."""
 
+        # We need to check whether the task has changed *before* calling
+        # get_task() as that method updates the last modified time used as
+        # reference.
+        if self.update:
+            task_has_changed = self.loader.task_has_changed()
+
         # Get the task
         task = self.loader.get_task(get_statement=not self.no_statement)
         if task is None:
@@ -82,7 +89,7 @@ class TaskImporter(BaseImporter):
                               .first()
             if old_task is not None:
                 if self.update:
-                    if self.loader.task_has_changed():
+                    if task_has_changed:
                         ignore = set(("num",))
                         if self.no_statement:
                             ignore.update(("primary_statements",
