@@ -35,14 +35,23 @@ class ReevaluationButtons(tornado.web.UIModule):
                user_id=None):
         """Render reevaluation buttons for the given filters.
 
-        Apart from contest_id, the parameters are mutually exclusive
-        (i.e., only one can be provided). The only exception is when
-        providing a submission, in which case a specific dataset can
-        also be passed (the live one is used by default).
+        These are the possible configuration of not-none arguments
+        received (other might work but needs to be checked):
+        - contest_id: all submissions in the contest watched by ES or
+          SS are invalidated (regardless of the actual id passed);
+        - dataset_id: all submission for the task identified by the
+          dataset are reevaluated for that dataset;
+        - submission_id, dataset_id: the submission is reevaluated for
+          the given dataset;
+        - participation_id, user_id, contest_id: all submissions for
+          the participation are reevaluated, for all datasets (user_id
+          and contest_id are used only for rendering the correct
+          link, as they are implied by the participation_id).
 
         url_root (unicode): path to the root of the server.
-        contest_id (int): the id of the contest containing the
-            submission results to invalidate.
+        contest_id (int|None): the id of the contest containing the
+            submission results to invalidate, or None not to filter
+            for contest.
         submission_id (int|None): id of the submission to invalidate,
             or None.
         dataset_id (int|None): id of the dataset to invalidate, or
@@ -64,20 +73,20 @@ class ReevaluationButtons(tornado.web.UIModule):
                 url += "/%s" % dataset_id
                 invalidate_arguments["dataset_id"] = dataset_id
         elif participation_id is not None:
-            # All submissions of the participation of this participation
+            # All submissions of the participation.
             url += "contest/%s/user/%s" % (contest_id, user_id)
             invalidate_arguments["participation_id"] = participation_id
         elif dataset_id is not None:
             url += "dataset/%s" % dataset_id
             invalidate_arguments["dataset_id"] = dataset_id
         else:
-            # Reevaluate all submission in the contest that ES is
-            # watching.
+            # Reevaluate all submission in the specified contest.
+            # TODO: block request to invalidate contests different
+            # from those running in ES/SS.
             url += "contest/%s/submissions" % (contest_id)
 
         return self.render_string(
             "views/reevaluation_buttons.html",
             url_root=url_root,
             url=url,
-            contest_id=contest_id,
             invalidate_arguments=invalidate_arguments)
