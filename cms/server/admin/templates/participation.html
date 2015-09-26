@@ -41,7 +41,7 @@ function update_additional_answer(element, invoker)
   {% set reevaluation_par_name = "user" %}
   {% set reevaluation_par_value = selected_user.id %}
   {% set reevaluation_par_dataset_id = None %}
-  {% set submission_url = "/contest/%s/user/%s" % (contest.id, selected_user.id) %}
+  {% set page_url = "/contest/%s/user/%s" % (contest.id, selected_user.id) %}
   {% include fragments/submission_rows.html %}
 
   <div class="hr"></div>

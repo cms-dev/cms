@@ -10,11 +10,11 @@
 </p>
 
 {% if submission_count > len(submissions) %}
-<div id="page_selector_submissions">
+<div>
 Pages:
 {% for i in range(submission_pages) %}
   {% if i != submission_page %}
-<a href="{{ url_root }}{{ submission_url }}?page={{ i }}">{{ i + 1 }}</a>
+<a href="{{ url_root }}{{ page_url }}?page={{ i }}">{{ i + 1 }}</a>
   {% else %}
 {{ i + 1 }}
   {% end %}
@@ -35,7 +35,7 @@ Pages:
       <th>Reevaluate</th>
     </tr>
   </thead>
-  <tbody id="paged_content_submissions">
+  <tbody>
     {% from cms.grading.scoretypes import get_score_type %}
     {% set score_types = {} %}
     {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}

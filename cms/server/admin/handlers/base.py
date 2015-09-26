@@ -426,6 +426,7 @@ class BaseHandler(CommonRequestHandler):
             .options(joinedload(Submission.files))\
             .options(joinedload(Submission.token))\
             .options(joinedload(Submission.results))\
+            .options(joinedload(Submission.results.evaluations))\
             .order_by(Submission.timestamp.desc())
 
         offset = page * page_size
