@@ -29,7 +29,6 @@
         <th></th>
         <th>Name</th>
         <th>Title</th>
-        <th>Reevaluate</th>
       </tr>
     </thead>
     <tbody>
@@ -40,12 +39,6 @@
         </td>
         <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
         <td>{{ t.title }}</td>
-        <td>
-          {% set reevaluation_par_name = "dataset" %}
-          {% set reevaluation_par_value = t.active_dataset_id %}
-          {% set reevaluation_par_dataset_id = None %}
-          {% include fragments/reevaluation_buttons.html %}
-        </td>
       </tr>
       {% end %}
     </tbody>

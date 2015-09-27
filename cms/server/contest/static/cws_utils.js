@@ -37,6 +37,11 @@ CMS.CWSUtils = function(url_root, timestamp, timezoned_timestamp,
     this.phase = phase;
     this.remaining_div = null;
     this.unread_count = 0;
+
+    // Ask permission for desktop notifications
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
 };
 
 
@@ -63,8 +68,9 @@ CMS.CWSUtils.prototype.update_notifications = function() {
 };
 
 
-CMS.CWSUtils.prototype.display_notification = function(
-    type, timestamp, subject, text, level) {
+CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
+                                                       subject, text,
+                                                       level) {
     if (this.last_notification < timestamp) {
         this.last_notification = timestamp;
     }
@@ -95,6 +101,32 @@ CMS.CWSUtils.prototype.display_notification = function(
     }
 
     $("#notifications").prepend(alert);
+
+    // Trigger a desktop notification as well
+    this.desktop_notification(type, timestamp, subject, text, level);
+};
+
+
+CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
+                                                       subject, text,
+                                                       level) {
+    // Check desktop notifications support
+    if (!("Notification" in window)) {
+        return;
+    }
+
+    // Ask again, if it was not explicitly denied
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+    }
+
+    // Create notification
+    if (Notification.permission === "granted") {
+        var notification = new Notification(subject, {
+            "body": text,
+            "icon": "/favicon.ico"
+        });
+    }
 };
 
 

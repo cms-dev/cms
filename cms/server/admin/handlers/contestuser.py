@@ -34,7 +34,7 @@ import logging
 
 import tornado.web
 
-from cms.db import Contest, Message, Participation, User
+from cms.db import Contest, Message, Participation, Submission, User
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler
@@ -140,9 +140,12 @@ class ParticipationHandler(BaseHandler):
         if participation is None:
             raise tornado.web.HTTPError(404)
 
-        self.r_params = self.render_params()
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.participation_id == participation.id)
+        page = int(self.get_query_argument("page", 0))
+        self.render_params_for_submissions(submission_query, page)
+
         self.r_params["participation"] = participation
-        self.r_params["submissions"] = participation.submissions
         self.r_params["selected_user"] = participation.user
         self.render("participation.html", **self.r_params)
 
