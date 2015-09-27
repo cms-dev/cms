@@ -145,9 +145,12 @@ def assert_root():
 
 def assert_not_root():
     """Check if the current user is *not* root, and exit with an error message
-    if needed.
+    if needed. If the --as-root flag is set, this function does nothing.
 
     """
+    if "--as-root" in sys.argv:
+        return
+
     if os.geteuid() == 0:
         print("[Error] You must *not* be root to do this, try avoiding 'sudo'")
         exit(1)
@@ -156,9 +159,13 @@ def assert_not_root():
 def get_real_user():
     """Get the real username (the one who called sudo/su).
 
-    In the case of a user *actually being root* we return an error.
+    In the case of a user *actually being root* we return an error. If the
+    --as-root flag is set, this function returns "root".
 
     """
+    if "--as-root" in sys.argv:
+        return "root"
+
     name = os.getenv("SUDO_USER")
     if name is None:
         name = os.popen("logname").read().strip()
@@ -177,7 +184,7 @@ class CLI(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
             description='Script used to manage prerequisites for CMS',
-            usage="""%s <command> [<args>]
+            usage="""%s <command> [<args>] [-y] [--as-root]
 
 Available commands:
    build_l10n        Build localization files
@@ -187,6 +194,10 @@ Available commands:
    install_isolate   Install "isolate" sandbox (requires root)
    install           Install everything (requires root)
    uninstall         Uninstall everything (requires root)
+
+Options:
+   -y                Don't ask questions interactively (assume "y")
+   --as-root         (DON'T USE) Allow running non-root commands as root
 """ % (sys.argv[0]))
 
         parser.add_argument('command', help='Subcommand to run')
@@ -316,9 +327,13 @@ Available commands:
         cmsuser = pwd.getpwnam("cmsuser")
         root = pwd.getpwnam("root")
 
-        # Run build() command as not root
-        if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
-            exit(1)
+        if real_user == "root":
+            # Run build() command as root
+            self.build()
+        else:
+            # Run build() command as not root
+            if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
+                exit(1)
 
         self.install_l10n()
         self.install_isolate()
@@ -369,30 +384,31 @@ Available commands:
 
         os.umask(old_umask)
 
-        print("===== Adding yourself to the cmsuser group")
-        if ask("Type Y if you want me to automatically add "
-               "\"%s\" to the cmsuser group: " % (real_user)):
-            os.system("usermod -a -G cmsuser %s" % (real_user))
-            print("""
-   ###########################################################################
-   ###                                                                     ###
-   ###    Remember that you must now logout in order to make the change    ###
-   ###    effective ("the change" is: being in the cmsuser group).         ###
-   ###                                                                     ###
-   ###########################################################################
-            """)
-        else:
-            print("""
-   ###########################################################################
-   ###                                                                     ###
-   ###    Remember that you must be in the cmsuser group to use CMS:       ###
-   ###                                                                     ###
-   ###       $ sudo usermod -a -G cmsuser <your user>                      ###
-   ###                                                                     ###
-   ###    You must also logout to make the change effective.               ###
-   ###                                                                     ###
-   ###########################################################################
-            """)
+        if real_user != "root":
+            print("===== Adding yourself to the cmsuser group")
+            if ask("Type Y if you want me to automatically add "
+                   "\"%s\" to the cmsuser group: " % (real_user)):
+                os.system("usermod -a -G cmsuser %s" % (real_user))
+                print("""
+       ###########################################################################
+       ###                                                                     ###
+       ###    Remember that you must now logout in order to make the change    ###
+       ###    effective ("the change" is: being in the cmsuser group).         ###
+       ###                                                                     ###
+       ###########################################################################
+                """)
+            else:
+                print("""
+       ###########################################################################
+       ###                                                                     ###
+       ###    Remember that you must be in the cmsuser group to use CMS:       ###
+       ###                                                                     ###
+       ###       $ sudo usermod -a -G cmsuser <your user>                      ###
+       ###                                                                     ###
+       ###    You must also logout to make the change effective.               ###
+       ###                                                                     ###
+       ###########################################################################
+                """)
 
     def uninstall(self):
         """This function deletes all that was installed by the install()
