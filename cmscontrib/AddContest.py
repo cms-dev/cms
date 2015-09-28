@@ -133,9 +133,9 @@ class ContestImporter(BaseImporter):
                             ignore = set(("num",))
                             if self.no_statements:
                                 ignore.update(("primary_statements",
-                                    "statements"))
+                                               "statements"))
                             self._update_object(task, new_task,
-                                ignore=ignore)
+                                                ignore=ignore)
                         else:
                             logger.critical("Could not reimport task \"%s\".",
                                             taskname)

@@ -92,7 +92,7 @@ class TaskImporter(BaseImporter):
                         ignore = set(("num",))
                         if self.no_statement:
                             ignore.update(("primary_statements",
-                                "statements"))
+                                           "statements"))
                         self._update_object(old_task, task, ignore)
                     task = old_task
                 else:
