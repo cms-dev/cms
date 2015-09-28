@@ -190,7 +190,6 @@ Available commands:
    build_l10n        Build localization files
    build_isolate     Build "isolate" sandbox
    build             Build everything
-   install_l10n      Install localization files (requires root)
    install_isolate   Install "isolate" sandbox (requires root)
    install           Install everything (requires root)
    uninstall         Uninstall everything (requires root)
@@ -218,49 +217,14 @@ Options:
         assert_not_root()
 
         print("===== Compiling localization files")
-        for locale in glob(os.path.join("po", "*.po")):
-            country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-            print("  %s" % country_code)
-            path = os.path.join("mo", country_code, "LC_MESSAGES")
-            makedir(path)
-            os.system(
-                "msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
-
-    def install_l10n(self):
-        """This function installs compiled localization files.
-
-        """
-        assert_root()
-        root = pwd.getpwnam("root")
-
-        print("===== Copying localization files")
-        locale_list = glob(os.path.join("po", "*.po"))
-
-        # Check if build_l10n has been called
-        for locale in locale_list:
-            country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-            path = os.path.join("mo", country_code, "LC_MESSAGES")
-            compiled_path = os.path.join(path, "cms.mo")
-            if not os.path.exists(compiled_path):
-                print("[Error] %s not found" % (compiled_path))
-                print("[Error] You must run \"%s build_l10n\"" % (sys.argv[0]))
-                exit(1)
-            elif os.path.getmtime(locale) > os.path.getmtime(compiled_path):
-                print(
-                    "[Warning] %s is newer than %s" % (locale, compiled_path))
-                print("[Warning] Are you sure you ran "
-                      "\"%s build_l10n\"?" % (sys.argv[0]))
-
-        for locale in locale_list:
-            country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-            print("  %s" % country_code)
-            path = os.path.join("mo", country_code, "LC_MESSAGES")
-            dest_path = os.path.join(USR_ROOT, "share", "locale",
-                                     country_code, "LC_MESSAGES")
-            makedir(dest_path, root, 0755)
-            copyfile(os.path.join(path, "cms.mo"),
-                     os.path.join(dest_path, "cms.mo"),
-                     root, 0644)
+        for locale in glob(os.path.join("cms", "locale", "*")):
+            if os.path.isdir(locale):
+                country_code = os.path.basename(locale)
+                print("  %s" % country_code)
+                path = os.path.join("cms", "locale", country_code, "LC_MESSAGES")
+                locale = os.path.join(locale, "LC_MESSAGES", "cms.po")
+                os.system(
+                    "msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
 
     def build_isolate(self):
         """This function compiles the isolate sandbox.
@@ -335,7 +299,6 @@ Options:
             if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
                 exit(1)
 
-        self.install_l10n()
         self.install_isolate()
 
         # We set permissions for each manually installed files, so we want
