@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,21 +20,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .util import \
-    CommonRequestHandler, DIMS, UNITS, \
-    actual_phase_required, compute_actual_phase, \
-    encode_for_url, file_handler_gen, filter_ascii, \
-    format_amount_of_time, format_dataset_attrs, format_date, \
-    format_datetime, format_datetime_smart, format_size, format_time, \
-    format_token_rules, get_score_class, get_url_root
 
+from locale import \
+    filter_language_codes, get_system_translations, get_translations, \
+    wrap_translations_for_tornado
 
 __all__ = [
-    # util
-    "CommonRequestHandler", "DIMS", "UNITS",
-    "actual_phase_required", "compute_actual_phase",
-    "encode_for_url", "file_handler_gen", "filter_ascii",
-    "format_amount_of_time", "format_dataset_attrs", "format_date",
-    "format_datetime", "format_datetime_smart", "format_size", "format_time",
-    "format_token_rules", "get_score_class", "get_url_root",
+    "filter_language_codes", "get_system_translations", "get_translations", \
+    "wrap_translations_for_tornado"
 ]
