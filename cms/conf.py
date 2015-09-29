@@ -120,31 +120,12 @@ class Config(object):
         self.max_jobs_per_user = 10
         self.pdf_printing_allowed = False
 
-        # Installed or from source?
-        self.installed = sys.argv[0].startswith("/usr/") and \
-            sys.argv[0] != '/usr/bin/ipython' and \
-            sys.argv[0] != '/usr/bin/python2' and \
-            sys.argv[0] != '/usr/bin/python'
-
-        if self.installed:
-            self.log_dir = os.path.join("/", "var", "local", "log", "cms")
-            self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
-            self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
-            self.run_dir = os.path.join("/", "var", "local", "run", "cms")
-            paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                     os.path.join("/", "etc", "cms.conf")]
-        else:
-            self.log_dir = "log"
-            self.cache_dir = "cache"
-            self.data_dir = "lib"
-            self.run_dir = "run"
-            paths = [os.path.join(".", "config", "cms.conf")]
-            if '__file__' in globals():
-                paths += [os.path.abspath(os.path.join(
-                          os.path.dirname(__file__),
-                          '..', 'config', 'cms.conf'))]
-            paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                      os.path.join("/", "etc", "cms.conf")]
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms")
+        self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
+        self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
+        self.run_dir = os.path.join("/", "var", "local", "run", "cms")
+        paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                 os.path.join("/", "etc", "cms.conf")]
 
         # Allow user to override config file path using environment
         # variable 'CMS_CONFIG'.

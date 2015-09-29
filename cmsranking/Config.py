@@ -52,28 +52,11 @@ class Config(object):
         # Buffers
         self.buffer_size = 100  # Needs to be strictly positive.
 
-        # File system.
-        self.installed = sys.argv[0].startswith("/usr/") and \
-            sys.argv[0] != '/usr/bin/ipython' and \
-            sys.argv[0] != '/usr/bin/python2' and \
-            sys.argv[0] != '/usr/bin/python'
-
         self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
-        if self.installed:
-            self.log_dir = os.path.join("/", "var", "local", "log",
-                                        "cms", "ranking")
-            self.lib_dir = os.path.join("/", "var", "local", "lib",
-                                        "cms", "ranking")
-            paths = [os.path.join("/", "usr", "local", "etc",
-                                  "cms.ranking.conf"),
-                     os.path.join("/", "etc", "cms.ranking.conf")]
-        else:
-            self.log_dir = os.path.join("log", "ranking")
-            self.lib_dir = os.path.join("lib", "ranking")
-            paths = [os.path.join(".", "config", "cms.ranking.conf"),
-                     os.path.join("/", "usr", "local", "etc",
-                                  "cms.ranking.conf"),
-                     os.path.join("/", "etc", "cms.ranking.conf")]
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
+        self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
+        paths = [os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
+                 os.path.join("/", "etc", "cms.ranking.conf")]
 
         try:
             os.makedirs(self.lib_dir)
