@@ -262,10 +262,11 @@ class ProxyService(TriggeredService):
         self.rankings = list()
         for ranking in config.rankings:
             self.add_executor(ProxyExecutor(ranking.encode('utf-8')))
-        self.start_sweeper(347.0)
 
-        # Send some initial data to rankings.
+        # Enqueue the dispatch of some initial data to rankings.
         self.initialize()
+
+        self.start_sweeper(347.0)
 
     def _missing_operations(self):
         """Return a generator of data to be sent to the rankings..
