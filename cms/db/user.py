@@ -6,6 +6,7 @@
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -51,7 +52,7 @@ def generate_random_password():
 
 
 class User(Base):
-    """Class to store a 'user participating in a contest'.
+    """Class to store a user.
 
     """
 
@@ -111,8 +112,32 @@ class User(Base):
     # participations (list of Participation objects)
 
 
+class Team(Base):
+    """Class to store a team.
+
+    """
+
+    __tablename__ = 'teams'
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Team code (e.g. "ITA", "USA", ...)
+    code = Column(
+        Unicode,
+        nullable=False,
+        unique=True)
+
+    # Human readable team name (e.g. "Italy", "United States of America", ...)
+    name = Column(
+        Unicode,
+        nullable=False)
+
+
 class Participation(Base):
-    """Class to store user participations to contests.
+    """Class to store a single participation of a user in a contest.
 
     """
     __tablename__ = 'participations'
@@ -189,6 +214,19 @@ class Participation(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
     __table_args__ = (UniqueConstraint('contest_id', 'user_id'),)
+
+    # Team (id and object) that he/she is representing with this participation.
+    team_id = Column(
+        Integer,
+        ForeignKey(Team.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=True,
+        index=True)
+    team = relationship(
+        Team,
+        backref=backref("participations",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

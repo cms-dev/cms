@@ -109,6 +109,7 @@ setup(
             "cmsAdaptContest=cmstestsuite.AdaptContest:main",
             "cmsTestFileCacher=cmstestsuite.TestFileCacher:main",
             "cmsAddUser=cmscontrib.AddUser:main",
+            "cmsAddTeam=cmscontrib.AddTeam:main",
             "cmsRemoveUser=cmscontrib.RemoveUser:main",
             "cmsAddTask=cmscontrib.AddTask:main",
             "cmsRemoveTask=cmscontrib.RemoveTask:main",

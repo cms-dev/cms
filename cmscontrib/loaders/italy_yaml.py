@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,10 +37,10 @@ from cms import LANGUAGES, LANGUAGE_TO_HEADER_EXT_MAP, \
     SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.datetime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
-    SubmissionFormatElement, Dataset, Manager, Testcase
+    Team, SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib import touch
 
-from .base_loader import ContestLoader, TaskLoader, UserLoader
+from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
 
 logger = logging.getLogger(__name__)
 
@@ -109,13 +109,13 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
-class YamlLoader(ContestLoader, TaskLoader, UserLoader):
-    """Load a contest, task or user stored using the Italian IOI format.
+class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
+    """Load a contest, task, user or team stored using the Italian IOI format.
 
-    Given the filesystem location of a contest, task or user, stored
-    using the Italian IOI format, parse those files and directories to
-    produce data that can be consumed by CMS, i.e. the corresponding
-    instances of the DB classes.
+    Given the filesystem location of a contest, task, user or team, stored
+    using the Italian IOI format, parse those files and directories to produce
+    data that can be consumed by CMS, i.e. the corresponding instances of the
+    DB classes.
 
     """
 
@@ -210,13 +210,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
         tasks = load(conf, None, ["tasks", "problemi"])
-
-        users = load(conf, None, ["users", "utenti"])
-        users = (user['username'] for user in users)
+        participations = load(conf, None, ["users", "utenti"])
 
         logger.info("Contest parameters loaded.")
 
-        return Contest(**args), tasks, users
+        return Contest(**args), tasks, participations
 
     def task_has_changed(self):
         """See docstring in class TaskLoader
@@ -301,7 +299,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
         return False
 
     def get_user(self):
-        """See docstring in class Loader.
+        """See docstring in class UserLoader.
 
         """
 
@@ -344,8 +342,44 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
 
         return User(**args)
 
+    def get_team(self):
+        """See docstring in class TeamLoader.
+
+        """
+
+        if not os.path.exists(os.path.join(os.path.dirname(self.path),
+                                           "contest.yaml")):
+            logger.critical("File missing: \"contest.yaml\"")
+            return None
+
+        team_code = os.path.basename(self.path)
+        logger.info("Loading parameters for team %s.", team_code)
+
+        conf = yaml.safe_load(
+            io.open(os.path.join(os.path.dirname(self.path), "contest.yaml"),
+                    "rt", encoding="utf-8"))
+
+        args = {}
+
+        conf = load(conf, None, "teams")
+
+        for team in conf:
+            if team["code"] == team_code:
+                conf = team
+                break
+        else:
+            logger.critical("The specified team cannot be found.")
+            return None
+
+        load(conf, args, "code")
+        load(conf, args, "name")
+
+        logger.info("Team parameters loaded.")
+
+        return Team(**args)
+
     def get_task(self, get_statement=True):
-        """See docstring in class Loader.
+        """See docstring in class TaskLoader.
 
         """
         name = os.path.split(self.path)[1]
