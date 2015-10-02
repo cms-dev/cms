@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -45,7 +45,7 @@ import os
 import os.path
 
 from cms import utf8_decoder
-from cms.db import SessionGen, User, Participation, Task, Contest
+from cms.db import SessionGen, User, Team, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -79,7 +79,7 @@ class ContestImporter(BaseImporter):
         """Get the contest from the Loader and store it."""
 
         # Get the contest
-        contest, tasks, users = self.loader.get_contest()
+        contest, tasks, participations = self.loader.get_contest()
 
         # Apply the modification flags
         if self.zero_time:
@@ -151,23 +151,47 @@ class ContestImporter(BaseImporter):
                     task.num = tasknum
                     task.contest = contest
 
-            # Check needed users
-            for username in users:
+            # Check needed participations
+            for p in participations:
                 user = session.query(User) \
-                              .filter(User.username == username).first()
+                              .filter(User.username == p["username"]).first()
+
+                if "team" not in p:
+                    p["team"] = None
+
+                if p["team"] is None:
+                    team = None
+                else:
+                    team = session.query(Team) \
+                                  .filter(Team.code == p["team"]).first()
+
                 if user is None:
                     # FIXME: it would be nice to automatically try to
                     # import.
                     logger.critical("User \"%s\" not found in database.",
-                                    username)
+                                    p["username"])
                     return
-                # We should tie this user to a new contest
-                # FIXME: there is no way for the loader to specify
-                # hidden users
-                session.add(Participation(
-                    user=user,
-                    contest=contest
-                ))
+
+                if team is None and p["team"] is not None:
+                    # FIXME: it would be nice to automatically try to
+                    # import.
+                    logger.critical("Team \"%s\" not found in database.",
+                                    p["team"])
+                    return
+
+                # Prepare new participation
+                args = {
+                    "user": user,
+                    "team": team,
+                    "contest": contest,
+                }
+
+                if "hidden" in p:
+                    args["hidden"] = p["hidden"]
+                if "ip" in p:
+                    args["ip"] = p["ip"]
+
+                session.add(Participation(**args))
 
             # Here we could check if there are actually some tasks or
             # users to add: if there are not, then don't create the

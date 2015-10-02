@@ -59,6 +59,15 @@ function update_additional_answer(element, invoker)
   <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}/user/{{ selected_user.id }}" method="POST">
     <table>
       <tr>
+        <td>Team</td>
+        <td><input list="teams" name="team" value="{{ participation.team.code if participation.team is not None else "" }}"/></td>
+        <datalist id="teams">
+          {% for t in teams %}
+          <option value="{{ t.code }}">
+          {% end %}
+        </datalist>
+      </tr>
+      <tr>
         <td>Password (if not specified, the user's main password is used)</td>
         <!-- FIXME: Plain text? -->
         <td><input type="text" name="password" value="{{ participation.password if participation.password is not None else "" }}"/></td>
