@@ -246,9 +246,12 @@ class ScoringStore(object):
         subchange_store.add_delete_callback(self.delete_subchange)
 
         self._scores = dict()
-
         self._callbacks = list()
 
+    # We can't do this in the __init__ method because RankingWebServer has not
+    # yet loaded the data from disk. So, after RWS has finished loading, it must
+    # explicitly call init_store.
+    def init_store(self):
         for key, value in submission_store._store.iteritems():
             self.create_submission(key, value)
         for key, value in sorted(subchange_store._store.iteritems()):
