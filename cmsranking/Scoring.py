@@ -246,9 +246,15 @@ class ScoringStore(object):
         subchange_store.add_delete_callback(self.delete_subchange)
 
         self._scores = dict()
-
         self._callbacks = list()
 
+    def init_store(self):
+        """Load the scores from the stores.
+
+        This method must be called by RankingWebServer after it
+        finishes loading the data from disk.
+
+        """
         for key, value in submission_store._store.iteritems():
             self.create_submission(key, value)
         for key, value in sorted(subchange_store._store.iteritems()):

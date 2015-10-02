@@ -466,6 +466,8 @@ def main():
     Submission.store.load_from_disk()
     Subchange.store.load_from_disk()
 
+    Scoring.store.init_store()
+
     toplevel_handler = RoutingHandler(DataWatcher(), ImageHandler(
         os.path.join(config.lib_dir, '%(name)s'),
         os.path.join(config.web_dir, 'img', 'logo.png')))
