@@ -263,7 +263,10 @@ class ProxyService(TriggeredService):
         for ranking in config.rankings:
             self.add_executor(ProxyExecutor(ranking.encode('utf-8')))
 
-        # Enqueue the dispatch of some initial data to rankings.
+        # Enqueue the dispatch of some initial data to rankings. Needs
+        # to be done before the sweeper is started, as otherwise RWS
+        # might receive submissions before the corresponding task, for
+        # example.
         self.initialize()
 
         self.start_sweeper(347.0)
