@@ -390,24 +390,24 @@ Options:
                    "\"%s\" to the cmsuser group: " % (real_user)):
                 os.system("usermod -a -G cmsuser %s" % (real_user))
                 print("""
-       ###########################################################################
-       ###                                                                     ###
-       ###    Remember that you must now logout in order to make the change    ###
-       ###    effective ("the change" is: being in the cmsuser group).         ###
-       ###                                                                     ###
-       ###########################################################################
+    ###########################################################################
+    ###                                                                     ###
+    ###    Remember that you must now logout in order to make the change    ###
+    ###    effective ("the change" is: being in the cmsuser group).         ###
+    ###                                                                     ###
+    ###########################################################################
                 """)
             else:
                 print("""
-       ###########################################################################
-       ###                                                                     ###
-       ###    Remember that you must be in the cmsuser group to use CMS:       ###
-       ###                                                                     ###
-       ###       $ sudo usermod -a -G cmsuser <your user>                      ###
-       ###                                                                     ###
-       ###    You must also logout to make the change effective.               ###
-       ###                                                                     ###
-       ###########################################################################
+    ###########################################################################
+    ###                                                                     ###
+    ###    Remember that you must be in the cmsuser group to use CMS:       ###
+    ###                                                                     ###
+    ###       $ sudo usermod -a -G cmsuser <your user>                      ###
+    ###                                                                     ###
+    ###    You must also logout to make the change effective.               ###
+    ###                                                                     ###
+    ###########################################################################
                 """)
 
     def uninstall(self):

@@ -394,11 +394,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader):
                 if os.path.exists(path):
                     digest = self.file_cacher.put_file_from_path(
                         path,
-                        "Statement for task %s (lang: %s)" % (name,
-                                                              primary_language))
+                        "Statement for task %s (lang: %s)" %
+                        (name, primary_language))
                     break
             else:
-                logger.critical("Couldn't find any task statement, aborting...")
+                logger.critical("Couldn't find any task statement, aborting.")
                 sys.exit(1)
             args["statements"] = [Statement(primary_language, digest)]
 
