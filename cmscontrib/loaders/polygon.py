@@ -33,7 +33,6 @@ from datetime import timedelta
 
 import xml.etree.ElementTree as ET
 
-from cms import config
 from cms.db import Contest, User, Task, Statement, \
     SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib import touch

@@ -25,7 +25,6 @@ import io
 import json
 import os
 import pkg_resources
-import sys
 
 
 class Config(object):
@@ -58,22 +57,15 @@ class Config(object):
         paths = [os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
                  os.path.join("/", "etc", "cms.ranking.conf")]
 
-        try:
-            os.makedirs(self.lib_dir)
-        except OSError:
-            pass  # We assume the directory already exists...
-
-        try:
-            os.makedirs(self.web_dir)
-        except OSError:
-            pass  # We assume the directory already exists...
-
-        try:
-            os.makedirs(self.log_dir)
-        except OSError:
-            pass  # We assume the directory already exists...
-
+        # Attempt to load a config file.
         self._load(paths)
+
+        # Ensure that the directories exist
+        for p in [self.lib_dir, self.log_dir]:  # web_dir surely exists
+            try:
+                os.makedirs(p)
+            except OSError:
+                pass  # We assume the directory already exists...
 
     def get(self, key):
         """Get the config value for the given key.

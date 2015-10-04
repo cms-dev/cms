@@ -30,7 +30,6 @@ import io
 import json
 import logging
 import os
-import sys
 
 from .util import ServiceCoord, Address, async_config
 
@@ -55,6 +54,10 @@ class Config(object):
 
         # System-wide
         self.temp_dir = "/tmp"
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms")
+        self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
+        self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
+        self.run_dir = os.path.join("/", "var", "local", "run", "cms")
         self.backdoor = False
         self.file_log_debug = False
 
@@ -120,10 +123,7 @@ class Config(object):
         self.max_jobs_per_user = 10
         self.pdf_printing_allowed = False
 
-        self.log_dir = os.path.join("/", "var", "local", "log", "cms")
-        self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
-        self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
-        self.run_dir = os.path.join("/", "var", "local", "run", "cms")
+        # Where to look for a cms.conf file
         paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
                  os.path.join("/", "etc", "cms.conf")]
 
@@ -135,6 +135,14 @@ class Config(object):
 
         # Attempt to load a config file.
         self._load(paths)
+
+        # Ensure that the directories exist
+        for p in [self.temp_dir, self.log_dir, self.cache_dir, self.data_dir,
+                  self.run_dir]:
+            try:
+                os.makedirs(p)
+            except OSError:
+                pass  # We assume the directory already exists...
 
     def _load(self, paths):
         """Try to load the config files one at a time, until one loads

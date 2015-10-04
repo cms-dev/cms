@@ -36,6 +36,7 @@ import signal
 import socket
 import subprocess
 import time
+import tempfile
 from urlparse import urlsplit
 
 import cmstestsuite.web
@@ -119,6 +120,11 @@ def read_cms_config():
     global cms_config
     cms_config = json.load(io.open("%(CONFIG_PATH)s" % CONFIG,
                                    "rt", encoding="utf-8"))
+    tmp = tempfile.mkdtemp("_CMSTEST")
+    cms_config["log_dir"] = os.path.join(tmp, "log")
+    cms_config["cache_dir"] = os.path.join(tmp, "cache")
+    cms_config["data_dir"] = os.path.join(tmp, "lib")
+    cms_config["run_dir"] = os.path.join(tmp, "run")
 
 
 def get_cms_config():
