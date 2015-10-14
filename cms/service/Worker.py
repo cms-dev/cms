@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -38,7 +38,7 @@ from cms.db import SessionGen, Contest
 from cms.db.filecacher import FileCacher
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
-from cms.grading.Job import Job
+from cms.grading.Job import CompilationJob, EvaluationJob, Job
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class Worker(Service):
     JOB_TYPE_COMPILATION = "compile"
     JOB_TYPE_EVALUATION = "evaluate"
 
-    def __init__(self, shard):
+    def __init__(self, shard, fake_worker_time=None):
         Service.__init__(self, shard)
         self.file_cacher = FileCacher(self)
 
@@ -64,6 +64,8 @@ class Worker(Service):
         self._total_free_time = 0
         self._total_busy_time = 0
         self._number_execution = 0
+
+        self._fake_worker_time = fake_worker_time
 
     @rpc_method
     def precache_files(self, contest_id):
@@ -110,9 +112,25 @@ class Worker(Service):
 
                 job.shard = self.shard
 
-                task_type = get_task_type(job.task_type,
-                                          job.task_type_parameters)
-                task_type.execute_job(job, self.file_cacher)
+                if self._fake_worker_time is None:
+                    task_type = get_task_type(job.task_type,
+                                              job.task_type_parameters)
+                    task_type.execute_job(job, self.file_cacher)
+
+                else:
+                    time.sleep(self._fake_worker_time)
+                    job.success = True
+                    job.text = ["ok"]
+                    job.plus = {
+                        "execution_time": self._fake_worker_time,
+                        "execution_wall_clock_time": self._fake_worker_time,
+                        "execution_memory": 1000,
+                    }
+
+                    if isinstance(job, CompilationJob):
+                        job.compilation_success = True
+                    elif isinstance(job, EvaluationJob):
+                        job.outcome = "1.0"
 
                 logger.info("Finished job.",
                             extra={"operation": job.info})
