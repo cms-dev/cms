@@ -3,6 +3,7 @@ Contest Management System
 
 Homepage: <http://cms-dev.github.io/>
 
+[![Join the chat at https://gitter.im/cms-dev/cms](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cms-dev/cms?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Introduction
 ------------
@@ -55,6 +56,9 @@ proposals and critics, get opinions and reviews, etc.) is
 
 **Please don't use these mailing lists for bug reports. File them on
 [github](https://github.com/cms-dev/cms/issues) instead.**
+
+For extemporaneous support and discussion, join the Gitter chat (see
+link above).
 
 To help with the troubleshooting, you can collect the complete log
 files that are placed in /var/local/log/cms/ (if CMS was running
