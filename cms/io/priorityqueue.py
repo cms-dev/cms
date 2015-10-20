@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -86,11 +86,11 @@ class QueueEntry(object):
     def __cmp__(self, other):
         """Compare self's and other's priorities."""
         if self.priority != other.priority:
-            return self.priority - other.priority
+            return cmp(self.priority, other.priority)
         elif self.timestamp != other.timestamp:
-            return (self.timestamp - other.timestamp).total_seconds()
+            return cmp(self.timestamp, other.timestamp)
         else:
-            return self.index - other.index
+            return cmp(self.index, other.index)
 
 
 class PriorityQueue(object):
