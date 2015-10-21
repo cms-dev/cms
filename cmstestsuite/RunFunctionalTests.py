@@ -199,10 +199,13 @@ def main():
             "There are no tests to run! (was your filter too restrictive?)")
         return 0
 
-    if args.dry_run:
-        for test in test_list:
-            for language in test.languages:
+    tests = 0
+    for test in test_list:
+        for language in test.languages:
+            if args.dry_run:
                 logger.info("Test %s in %s.", test.name, language)
+            tests += 1
+    if args.dry_run:
         return 0
 
     if args.retry_failed:
@@ -231,13 +234,15 @@ def main():
     logger.info(time_difference(start_time, end_time))
     combine_coverage()
 
+    logger.info("Executed: %s", tests)
+    logger.info("Failed: %s", len(failures))
     if not failures:
         logger.info("All tests passed!")
         return 0
     else:
         logger.error("Some test failed!")
         logger.info("Run again with --retry-failed (or -r) to retry.")
-        logger.info("Failed tests (%d):", len(failures))
+        logger.info("Failed tests:")
         for test, lang, msg in failures:
             logger.info("%s (%s): %s\n", test.name, lang, msg)
         return 1
