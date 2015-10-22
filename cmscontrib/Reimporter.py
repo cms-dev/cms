@@ -76,7 +76,7 @@ class Reimporter(object):
 
         self.file_cacher = FileCacher()
 
-        self.loader = loader_class(os.path.realpath(path), self.file_cacher)
+        self.loader = loader_class(os.path.abspath(path), self.file_cacher)
 
     def _update_columns(self, old_object, new_object):
         for prp in old_object._col_props:

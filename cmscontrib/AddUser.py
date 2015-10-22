@@ -61,7 +61,7 @@ class UserImporter(object):
 
     def __init__(self, path, loader_class):
         self.file_cacher = FileCacher()
-        self.loader = loader_class(os.path.realpath(path), self.file_cacher)
+        self.loader = loader_class(os.path.abspath(path), self.file_cacher)
 
     def do_import(self):
         """Get the user from the UserLoader and store it."""

@@ -73,7 +73,7 @@ class ContestImporter(BaseImporter):
         self.no_statements = no_statements
         self.file_cacher = FileCacher()
 
-        self.loader = loader_class(os.path.realpath(path), self.file_cacher)
+        self.loader = loader_class(os.path.abspath(path), self.file_cacher)
 
     def do_import(self):
         """Get the contest from the Loader and store it."""
