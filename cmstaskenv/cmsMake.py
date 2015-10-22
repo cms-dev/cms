@@ -115,11 +115,11 @@ def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
 
 
 def detect_task_name(base_dir):
-    return os.path.split(os.path.realpath(base_dir))[1]
+    return os.path.split(os.path.abspath(base_dir))[1]
 
 
 def parse_task_yaml(base_dir):
-    parent_dir = os.path.split(os.path.realpath(base_dir))[0]
+    parent_dir = os.path.split(os.path.abspath(base_dir))[0]
 
     # We first look for the yaml file inside the task folder,
     # and eventually fallback to a yaml file in its parent folder.
