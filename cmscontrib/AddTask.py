@@ -44,7 +44,7 @@ import logging
 import os
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Task
+from cms.db import SessionGen, Task, Contest
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -60,10 +60,11 @@ class TaskImporter(BaseImporter):
 
     """
 
-    def __init__(self, path, update, no_statement, loader_class):
+    def __init__(self, path, update, no_statement, add_to_contest, loader_class):
         self.file_cacher = FileCacher()
         self.update = update
         self.no_statement = no_statement
+        self.add_to_contest = add_to_contest
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
     def do_import(self):
@@ -100,7 +101,14 @@ class TaskImporter(BaseImporter):
                                     task.name)
                     return
             else:
+                if self.add_to_contest is not None:
+                    contest = session.query(Contest) \
+                                     .filter(Contest.id == self.add_to_contest) \
+                                     .first()
+                    task.contest = contest
+
                 session.add(task)
+
             session.commit()
             task_id = task.id
 
@@ -133,6 +141,11 @@ def main():
         help="do not import / update task statement"
     )
     parser.add_argument(
+        "--add-to-contest",
+        action="store", type=int,
+        help="what contest we want to add the task to"
+    )
+    parser.add_argument(
         "target",
         action="store", type=utf8_decoder,
         help="target file/directory from where to import task(s)"
@@ -150,6 +163,7 @@ def main():
         path=args.target,
         update=args.update,
         no_statement=args.no_statement,
+        add_to_contest=args.add_to_contest,
         loader_class=loader_class
     ).do_import()
 
