@@ -130,7 +130,7 @@ setup(
     keywords="ioi programming contest grader management system",
     license="Affero General Public License v3",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 2",
