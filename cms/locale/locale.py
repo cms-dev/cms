@@ -32,11 +32,11 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pkg_resources
 import gettext
 import io
 import logging
 import os
-import os.path
 
 from cms import config
 
@@ -89,18 +89,14 @@ def get_translations():
     locale_dir = None
     result = {"en": gettext.NullTranslations()}
 
-    if config.installed:
-        locale_dir = os.path.join("/", "usr", "local", "share", "locale")
-    else:
-        locale_dir = os.path.join(os.path.dirname(__file__),
-                                  os.pardir, os.pardir, "mo")
-
+    locale_dir = pkg_resources.resource_filename("cms.locale", "")
     for lang_code in os.listdir(locale_dir):
-        mo_file_path = os.path.join(locale_dir, lang_code,
-                                    "LC_MESSAGES", "cms.mo")
-        if os.path.exists(mo_file_path):
-            with io.open(mo_file_path, "rb") as mo_file:
-                result[lang_code] = gettext.GNUTranslations(mo_file)
+        if os.path.isdir(os.path.join(locale_dir, lang_code)):
+            mo_file_path = os.path.join(locale_dir, lang_code,
+                    "LC_MESSAGES", "cms.mo")
+            if os.path.exists(mo_file_path):
+                with io.open(mo_file_path, "rb") as mo_file:
+                    result[lang_code] = gettext.GNUTranslations(mo_file)
 
     for lang_code, trans in result.iteritems():
         for sys_trans in get_system_translations(lang_code):

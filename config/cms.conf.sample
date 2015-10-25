@@ -7,6 +7,8 @@
     "_section": "System-wide configuration",
 
     "temp_dir": "/tmp",
+    "log_dir": "/var/local/log/cms",
+    "cache_dir": "/var/local/cache/cms",
 
     "_help": "Whether to have a backdoor (see doc for the risks).",
     "backdoor": false,

@@ -30,7 +30,6 @@ import io
 import json
 import logging
 import os
-import sys
 
 from .util import ServiceCoord, Address, async_config
 
@@ -55,6 +54,10 @@ class Config(object):
 
         # System-wide
         self.temp_dir = "/tmp"
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms")
+        self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
+        self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
+        self.run_dir = os.path.join("/", "var", "local", "run", "cms")
         self.backdoor = False
         self.file_log_debug = False
 
@@ -120,31 +123,9 @@ class Config(object):
         self.max_jobs_per_user = 10
         self.pdf_printing_allowed = False
 
-        # Installed or from source?
-        self.installed = sys.argv[0].startswith("/usr/") and \
-            sys.argv[0] != '/usr/bin/ipython' and \
-            sys.argv[0] != '/usr/bin/python2' and \
-            sys.argv[0] != '/usr/bin/python'
-
-        if self.installed:
-            self.log_dir = os.path.join("/", "var", "local", "log", "cms")
-            self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
-            self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
-            self.run_dir = os.path.join("/", "var", "local", "run", "cms")
-            paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                     os.path.join("/", "etc", "cms.conf")]
-        else:
-            self.log_dir = "log"
-            self.cache_dir = "cache"
-            self.data_dir = "lib"
-            self.run_dir = "run"
-            paths = [os.path.join(".", "config", "cms.conf")]
-            if '__file__' in globals():
-                paths += [os.path.abspath(os.path.join(
-                          os.path.dirname(__file__),
-                          '..', 'config', 'cms.conf'))]
-            paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                      os.path.join("/", "etc", "cms.conf")]
+        # Where to look for a cms.conf file
+        paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                 os.path.join("/", "etc", "cms.conf")]
 
         # Allow user to override config file path using environment
         # variable 'CMS_CONFIG'.
@@ -154,6 +135,14 @@ class Config(object):
 
         # Attempt to load a config file.
         self._load(paths)
+
+        # Ensure that the directories exist
+        for p in [self.temp_dir, self.log_dir, self.cache_dir, self.data_dir,
+                  self.run_dir]:
+            try:
+                os.makedirs(p)
+            except OSError:
+                pass  # We assume the directory already exists...
 
     def _load(self, paths):
         """Try to load the config files one at a time, until one loads

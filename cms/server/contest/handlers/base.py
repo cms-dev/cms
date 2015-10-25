@@ -48,7 +48,8 @@ from werkzeug.http import parse_accept_header
 from cms import config
 from cms.db import Contest, Participation, Session, User
 from cms.server import CommonRequestHandler, compute_actual_phase, \
-    file_handler_gen, get_url_root, filter_language_codes
+    file_handler_gen, get_url_root
+from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 from cmscommon.isocodes import translate_language_code, \
     translate_language_country_code

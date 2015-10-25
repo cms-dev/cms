@@ -28,9 +28,6 @@ from .util import \
     format_amount_of_time, format_dataset_attrs, format_date, \
     format_datetime, format_datetime_smart, format_size, format_time, \
     format_token_rules, get_score_class, get_url_root
-from .locale import \
-    filter_language_codes, get_system_translations, get_translations, \
-    wrap_translations_for_tornado
 
 
 __all__ = [
@@ -41,7 +38,4 @@ __all__ = [
     "format_amount_of_time", "format_dataset_attrs", "format_date",
     "format_datetime", "format_datetime_smart", "format_size", "format_time",
     "format_token_rules", "get_score_class", "get_url_root",
-    # locale
-    "filter_language_codes", "get_system_translations", "get_translations",
-    "wrap_translations_for_tornado"
 ]

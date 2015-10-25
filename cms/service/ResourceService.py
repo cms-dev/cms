@@ -162,11 +162,6 @@ class ResourceService(Service):
                 logger.info("Restarting (%s, %s)...",
                             service.name, service.shard)
                 command = "cms%s" % service.name
-                if not config.installed:
-                    command = os.path.join(
-                        ".",
-                        "scripts",
-                        "cms%s" % service.name)
                 process = subprocess.Popen([command,
                                             "%d" % service.shard,
                                             "-c",

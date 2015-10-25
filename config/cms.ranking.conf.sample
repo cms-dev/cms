@@ -2,6 +2,10 @@
     "_help": "There is no way to put comments in a JSON file; the",
     "_help": "fields starting with '_' are meant to be comments.",
 
+    "_help": "System-wide configuration.",
+    "log_dir": "/var/local/log/cms/ranking",
+    "lib_dir": "/var/local/lib/cms/ranking",
+
     "_help": "Listening address for RankingWebServer.",
     "bind_address": "",
 

@@ -33,7 +33,6 @@ from datetime import timedelta
 
 import xml.etree.ElementTree as ET
 
-from cms import config
 from cms.db import Contest, User, Task, Statement, \
     SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib import touch
@@ -191,9 +190,6 @@ class PolygonTaskLoader(TaskLoader):
                 logger.info("Checker found, compiling")
                 checker_exe = os.path.join(self.path, "files", "checker")
                 testlib_path = "/usr/local/include/cms/testlib.h"
-                if not config.installed:
-                    testlib_path = os.path.join(os.path.dirname(__file__),
-                                                "polygon", "testlib.h")
                 os.system("cat %s | \
                     sed 's$testlib.h$%s$' | \
                     g++ -x c++ -O2 -static -o %s -" %
