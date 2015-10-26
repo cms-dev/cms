@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -160,6 +160,50 @@ class UserLoader(BaseLoader):
         raise NotImplementedError("Please extend UserLoader")
 
 
+class TeamLoader(BaseLoader):
+    """Base class for deriving team loaders.
+
+    Each team loader must extend this class and support the following
+    access pattern:
+
+      * The class method detect() can be called at any time.
+
+      * Once a loader is instatiated, get_team() can be called on it,
+        for how many times the caller want.
+
+    """
+
+    def __init__(self, path, file_cacher):
+        super(TeamLoader, self).__init__(path, file_cacher)
+
+    def get_team(self):
+        """Produce a Team object.
+
+        return (Team): the Team object.
+
+        """
+        raise NotImplementedError("Please extend TeamLoader")
+
+    def team_has_changed(self):
+        """Detect if the team has been changed since its last import.
+
+        This is expected to happen by saving, at every import, some
+        piece of data about the last importation time. Then, when
+        team_has_changed() is called, such time is compared with the
+        last modification time of the files describing the team. Anyway,
+        the TeamLoader may choose the heuristic better suited for its
+        case.
+
+        If this team is being imported for the first time or if the
+        TeamLoader decides not to support changes detection, just return
+        True.
+
+        return (bool): True if the team was changed, False otherwise.
+
+        """
+        raise NotImplementedError("Please extend TeamLoader")
+
+
 class ContestLoader(BaseLoader):
     """Base class for deriving contest loaders.
 
@@ -182,8 +226,10 @@ class ContestLoader(BaseLoader):
         Do what is needed (i.e. search directories and explore files
         in the location given to the constructor) to produce a Contest
         object. Also get a minimal amount of information on tasks and
-        users, at least enough to produce the list of all task names
-        and the list of all usernames.
+        participations, at least enough to produce a list of all task
+        names and a list of dict objects that will represent all the
+        participations in the contest (each participation should have
+        at least the "username" field).
 
         return (tuple): the Contest object and the two lists described
                         above.
