@@ -66,10 +66,11 @@ class TestProxyService(unittest.TestCase):
                      for call in put_mock.call_args_list]
 
         assert urls_data[0][0].endswith("contests/")
-        assert any(urls_data[i][0].endswith("users/") for i in [1, 2])
-        assert any(urls_data[i][0].endswith("tasks/") for i in [1, 2])
-        assert urls_data[3][0].endswith("submissions/")
-        assert urls_data[4][0].endswith("subchanges/")
+        assert any(urls_data[i][0].endswith("users/") for i in [1, 2, 3])
+        assert any(urls_data[i][0].endswith("teams/") for i in [1, 2, 3])
+        assert any(urls_data[i][0].endswith("tasks/") for i in [1, 2, 3])
+        assert urls_data[4][0].endswith("submissions/")
+        assert urls_data[5][0].endswith("subchanges/")
 
     @staticmethod
     def set_up_db(tasks, participations, submissions):
