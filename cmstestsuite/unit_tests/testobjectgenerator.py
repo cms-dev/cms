@@ -89,6 +89,13 @@ def get_user():
     return user
 
 
+def get_team():
+    team = Mock()
+    team.code = get_string()
+    team.name = get_string()
+    return team
+
+
 def get_participation(hidden=False, user=None):
     if user is None:
         user = get_user()
@@ -96,6 +103,7 @@ def get_participation(hidden=False, user=None):
     participation.id = get_int()
     participation.hidden = hidden
     participation.user = user
+    participation.team = get_team()
     return participation
 
 
