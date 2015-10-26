@@ -180,6 +180,13 @@ class ContestImporter(BaseImporter):
                     "contest": contest,
                 }
 
+				if "hidden" in p:
+	                args["hidden"] = p["hidden"]
+				if "ip" in p:
+					args["ip"] = p["ip"]
+				if "password" in p:
+					args["password"] = p["password"]
+
                 session.add(Participation(**args))
 
             # Here we could check if there are actually some tasks or
