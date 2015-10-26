@@ -423,7 +423,7 @@ class PolygonContestLoader(ContestLoader):
         for problem in root.find('problems'):
             tasks.append(os.path.basename(problem.attrib['url']))
 
-        users = []
+        participations = []
 
         # This is not standard Polygon feature, but useful for CMS users
         # we assume contestants.txt contains one line for each user:
@@ -441,10 +441,14 @@ class PolygonContestLoader(ContestLoader):
                 for user in users_file.readlines():
                     user = user.strip()
                     user = user.split(';')
-                    username = user[0].strip()
-                    users.append(username)
+                    participations.append({
+                        "username": user[0].strip(),
+                        "password": user[1].strip(),
+                        "hidden": user[4].strip()
+                        # "ip" is not passed
+                    })
 
-        return Contest(**args), tasks, users
+        return Contest(**args), tasks, participations
 
     def contest_has_changed(self):
         """See docstring in class Loader.
