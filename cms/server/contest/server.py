@@ -49,7 +49,7 @@ import pkg_resources
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.db.filecacher import FileCacher
-from cms.server import get_translations, wrap_translations_for_tornado
+from cms.locale import get_translations, wrap_translations_for_tornado
 
 from .handlers import HANDLERS
 
