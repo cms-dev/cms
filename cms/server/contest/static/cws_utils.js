@@ -102,8 +102,10 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
 
     $("#notifications").prepend(alert);
 
-    // Trigger a desktop notification as well
-    this.desktop_notification(type, timestamp, subject, text, level);
+    // Trigger a desktop notification as well (but only if it's needed)
+    if (type !== "notification") {
+        this.desktop_notification(type, timestamp, subject, text, level);
+    }
 };
 
 
