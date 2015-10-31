@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,9 +31,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import csv
+import io
+import sys
+
 from sqlalchemy.orm import joinedload
 
 from cms.db import Contest
+from cms.grading import task_score
 
 from .base import BaseHandler
 
@@ -65,6 +71,58 @@ class RankingHandler(BaseHandler):
             self.set_header("Content-Type", "text/csv")
             self.set_header("Content-Disposition",
                             "attachment; filename=\"ranking.csv\"")
-            self.render("ranking.csv", **self.r_params)
+
+            if sys.version_info >= (3, 0):
+                output = io.StringIO()  # untested
+            else:
+                output = io.BytesIO()
+            writer = csv.writer(output)
+
+            include_partial = True
+
+            contest = self.r_params["contest"]
+
+            row = ["Username", "User"]
+            for task in contest.tasks:
+                row.append(task.name)
+                if include_partial:
+                    row.append("P")
+
+            row.append("Global")
+            if include_partial:
+                row.append("P")
+
+            writer.writerow(row)
+
+            for p in sorted(contest.participations,
+                            key=lambda p: p.user.username):
+                if p.hidden:
+                    continue
+
+                score = 0.0
+                partial = False
+
+                row = [p.user.username,
+                       "%s %s" % (p.user.first_name, p.user.last_name)]
+                for task in contest.tasks:
+                    t_score, t_partial = task_score(p, task)
+                    t_score = round(t_score, task.score_precision)
+                    score += t_score
+                    partial = partial or t_partial
+
+                    row.append(t_score)
+                    if include_partial:
+                        row.append("*" if t_partial else "")
+
+                row.append(round(score, contest.score_precision))
+                if include_partial:
+                    row.append("*" if partial else "")
+
+                if sys.version_info >= (3, 0):
+                    writer.writerow(row)  # untested
+                else:
+                    writer.writerow([unicode(s).encode("utf-8") for s in row])
+
+            self.finish(output.getvalue())
         else:
             self.render("ranking.html", **self.r_params)
