@@ -6,6 +6,7 @@
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -51,7 +52,7 @@ def generate_random_password():
 
 
 class User(Base):
-    """Class to store a 'user participating in a contest'.
+    """Class to store a user.
 
     """
 
@@ -111,8 +112,39 @@ class User(Base):
     # participations (list of Participation objects)
 
 
+class Team(Base):
+    """Class to store a team.
+
+    A team is a way of grouping the users participating in a contest.
+    This grouping has no effect on the contest itself; it is only used
+    for display purposes in RWS.
+
+    """
+
+    __tablename__ = 'teams'
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Team code (e.g. the ISO 3166-1 code of a country)
+    code = Column(
+        Unicode,
+        nullable=False,
+        unique=True)
+
+    # Human readable team name (e.g. the ISO 3166-1 short name of a country)
+    name = Column(
+        Unicode,
+        nullable=False)
+
+    # TODO: decide if the flag images will eventually be stored here.
+    # TODO: (hopefully, the same will apply for faces in User).
+
+
 class Participation(Base):
-    """Class to store user participations to contests.
+    """Class to store a single participation of a user in a contest.
 
     """
     __tablename__ = 'participations'
@@ -189,6 +221,18 @@ class Participation(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
     __table_args__ = (UniqueConstraint('contest_id', 'user_id'),)
+
+    # Team (id and object) that the user is representing with this participation.
+    team_id = Column(
+        Integer,
+        ForeignKey(Team.id,
+                   onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=True)
+    team = relationship(
+        Team,
+        backref=backref("participations",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

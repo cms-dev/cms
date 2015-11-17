@@ -8,6 +8,7 @@
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -331,31 +332,40 @@ class ProxyService(TriggeredService):
                 "score_precision": contest.score_precision}
 
             users = dict()
+            teams = dict()
 
             for participation in contest.participations:
                 user = participation.user
+                team = participation.team
                 if not participation.hidden:
-                    users[encode_id(user.username)] = \
-                        {"f_name": user.first_name,
-                         "l_name": user.last_name,
-                         "team": None}
+                    users[encode_id(user.username)] = {
+                        "f_name": user.first_name,
+                        "l_name": user.last_name,
+                        "team": team.code if team is not None else None,
+                    }
+                    if team is not None:
+                        teams[encode_id(team.code)] = {
+                            "name": team.name
+                        }
 
             tasks = dict()
 
             for task in contest.tasks:
                 score_type = get_score_type(dataset=task.active_dataset)
-                tasks[encode_id(task.name)] = \
-                    {"short_name": task.name,
-                     "name": task.title,
-                     "contest": encode_id(contest.name),
-                     "order": task.num,
-                     "max_score": score_type.max_score,
-                     "extra_headers": score_type.ranking_headers,
-                     "score_precision": task.score_precision,
-                     "score_mode": task.score_mode}
+                tasks[encode_id(task.name)] = {
+                    "short_name": task.name,
+                    "name": task.title,
+                    "contest": encode_id(contest.name),
+                    "order": task.num,
+                    "max_score": score_type.max_score,
+                    "extra_headers": score_type.ranking_headers,
+                    "score_precision": task.score_precision,
+                    "score_mode": task.score_mode,
+                }
 
         self.enqueue(ProxyOperation(ProxyExecutor.CONTEST_TYPE,
                                     {contest_id: contest_data}))
+        self.enqueue(ProxyOperation(ProxyExecutor.TEAM_TYPE, teams))
         self.enqueue(ProxyOperation(ProxyExecutor.USER_TYPE, users))
         self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks))
 
