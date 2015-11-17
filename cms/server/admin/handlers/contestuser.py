@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,7 +35,7 @@ import logging
 
 import tornado.web
 
-from cms.db import Contest, Message, Participation, Submission, User
+from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler
@@ -147,6 +148,7 @@ class ParticipationHandler(BaseHandler):
 
         self.r_params["participation"] = participation
         self.r_params["selected_user"] = participation.user
+        self.r_params["teams"] = self.sql_session.query(Team).all()
         self.render("participation.html", **self.r_params)
 
     def post(self, contest_id, user_id):
@@ -174,6 +176,13 @@ class ParticipationHandler(BaseHandler):
 
             # Update the participation.
             participation.set_attrs(attrs)
+
+            # Update the team
+            self.get_string(attrs, "team")
+            team = self.sql_session.query(Team)\
+                       .filter(Team.code == attrs["team"])\
+                       .first()
+            participation.team = team
 
         except Exception as error:
             self.application.service.add_notification(
