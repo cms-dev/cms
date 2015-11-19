@@ -126,7 +126,8 @@ class Service(object):
                                "%s-%d" % (self.name, self.shard))
         mkdir(config.log_dir)
         mkdir(log_dir)
-        log_filename = "%d.log" % int(time.time())
+
+        log_filename = time.strftime("%Y-%m-%d-%H-%M-%S.log")
 
         # Install a file handler.
         file_handler = FileHandler(os.path.join(log_dir, log_filename),
