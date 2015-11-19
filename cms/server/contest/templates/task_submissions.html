@@ -68,7 +68,7 @@ schedule_update_submission_row = function (submission_id) {
         $.get("{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id, function (data) {
             update_submission_row(submission_id, data);
         });
-    }, 2000);
+    }, 10000);
 }
 
 $(document).ready(function () {
