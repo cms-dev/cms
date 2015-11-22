@@ -549,7 +549,7 @@ def cws_submit(contest_id, task_id, user_id, submission_format_element,
     return submission_id
 
 
-def get_evaluation_result(contest_id, submission_id, timeout=30):
+def get_evaluation_result(contest_id, submission_id, timeout=60):
     global aws_browser
     if aws_browser is None:
         aws_browser = mechanize.Browser()
