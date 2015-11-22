@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -78,6 +79,11 @@ class ContestImporter(BaseImporter):
     def do_import(self):
         """Get the contest from the Loader and store it."""
 
+        # We need to check whether the contest has changed *before* calling
+        # get_contest() as that method might reset the "has_changed" bit.
+        if self.update_contest:
+            contest_has_changed = self.loader.contest_has_changed()
+
         # Get the contest
         contest, tasks, users = self.loader.get_contest()
 
@@ -95,7 +101,7 @@ class ContestImporter(BaseImporter):
                                  .filter(Contest.name == contest.name).first()
             if old_contest is not None:
                 if self.update_contest:
-                    if self.loader.contest_has_changed():
+                    if contest_has_changed:
                         self._update_object(old_contest, contest)
                     contest = old_contest
                 elif self.update_tasks:
