@@ -208,7 +208,7 @@ def main():
     sh("python -m coverage erase")
 
     # Startup the test runner.
-    runner = TestRunner(test_list, contest_id=args.contest)
+    runner = TestRunner(test_list, contest_id=args.contest, workers=4)
     runner.startup()
 
     # Submit and wait for all tests to complete.

@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestRunner(object):
-    def __init__(self, test_list, contest_id=None):
+    def __init__(self, test_list, contest_id=None, workers=1):
         self.start_time = datetime.datetime.now()
 
         # Map from task name to (task id, task_module).
@@ -63,7 +63,7 @@ class TestRunner(object):
             os.chdir("%(TEST_DIR)s" % CONFIG)
             os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
-        TestRunner.start_generic_services()
+        TestRunner.start_generic_services(workers)
         if contest_id is None:
             self.contest_id = self.create_contest()
         else:
@@ -118,11 +118,12 @@ class TestRunner(object):
         start_service("ProxyService", contest=self.contest_id)
 
     @staticmethod
-    def start_generic_services():
+    def start_generic_services(workers=1):
         start_service("LogService")
         start_service("ResourceService")
         start_service("Checker")
-        start_service("Worker")
+        for shard in xrange(workers):
+            start_service("Worker", shard)
         start_service("ScoringService")
         start_server("AdminWebServer")
         # Just to verify it starts successfully.
