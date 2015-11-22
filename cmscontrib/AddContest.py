@@ -167,13 +167,19 @@ class ContestImporter(BaseImporter):
                     logger.critical("User \"%s\" not found in database.",
                                     username)
                     return
-                # We should tie this user to a new contest
-                # FIXME: there is no way for the loader to specify
-                # hidden users
-                session.add(Participation(
-                    user=user,
-                    contest=contest
-                ))
+
+                # We should tie this user to a new contest (if the relationship
+                # is not already there).
+                # FIXME: there is no way for the loader to specify hidden users
+                participation = session.query(Participation) \
+                    .filter(Participation.user_id == user.id) \
+                    .filter(Participation.contest_id == contest.id) \
+                    .first()
+                if participation is None:
+                    session.add(Participation(
+                        user=user,
+                        contest=contest
+                    ))
 
             # Here we could check if there are actually some tasks or
             # users to add: if there are not, then don't create the
