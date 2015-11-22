@@ -171,6 +171,7 @@ def main():
     args = parser.parse_args()
 
     CONFIG["VERBOSITY"] = args.verbose
+    CONFIG["COVERAGE"] = True
 
     # Pre-process our command-line arguments to figure out which tests to run.
     regexes = [re.compile(s) for s in args.regex]

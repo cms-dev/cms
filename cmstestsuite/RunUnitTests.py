@@ -157,6 +157,7 @@ def main():
     args = parser.parse_args()
 
     CONFIG["VERBOSITY"] = args.verbose
+    CONFIG["COVERAGE"] = True
 
     start_time = datetime.datetime.now()
 

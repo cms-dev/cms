@@ -84,6 +84,7 @@ def main():
     args = parser.parse_args()
 
     CONFIG["VERBOSITY"] = args.verbose
+    CONFIG["COVERAGE"] = False
 
     test_list = [Test('batch',
                       task=batch_50, filename='correct-stdio.%l',
