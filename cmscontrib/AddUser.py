@@ -7,6 +7,7 @@
 # Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -43,9 +44,8 @@ import logging
 import os
 
 from cms import utf8_decoder
-from cms.db import SessionGen
+from cms.db import SessionGen, User
 from cms.db.filecacher import FileCacher
-from sqlalchemy.exc import IntegrityError
 
 from cmscontrib.loaders import choose_loader, build_epilog
 
@@ -72,15 +72,19 @@ class UserImporter(object):
             return
 
         # Store
-        try:
-            logger.info("Creating user on the database.")
-            with SessionGen() as session:
-                session.add(user)
-                session.commit()
-                user_id = user.id
-        except IntegrityError:
-            logger.critical("The user already exists.")
-            return
+        logger.info("Creating user on the database.")
+        with SessionGen() as session:
+            # Check whether the user already exists
+            old_user = session.query(User) \
+                              .filter(User.username == user.username) \
+                              .first()
+            if old_user is not None:
+                logger.critical("The user already exists.")
+                return
+
+            session.add(user)
+            session.commit()
+            user_id = user.id
 
         logger.info("Import finished (new user id: %s).", user_id)
 
