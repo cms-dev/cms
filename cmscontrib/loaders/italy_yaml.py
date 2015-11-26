@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -124,9 +125,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
     @staticmethod
     def detect(path):
-        """See docstring in class Loader.
-
-        """
+        """See docstring in class Loader."""
         # TODO - Not really refined...
         return os.path.exists(os.path.join(path, "contest.yaml")) or \
             os.path.exists(os.path.join(path, "task.yaml")) or \
@@ -136,9 +135,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         return YamlLoader(os.path.join(self.path, taskname), self.file_cacher)
 
     def get_contest(self):
-        """See docstring in class ContestLoader.
-
-        """
+        """See docstring in class ContestLoader."""
         if not os.path.exists(os.path.join(self.path, "contest.yaml")):
             logger.critical("File missing: \"contest.yaml\"")
             return None
@@ -150,6 +147,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     "rt", encoding="utf-8"))
 
         logger.info("Loading parameters for contest %s.", name)
+
+        # Here we update the time of the last import
+        touch(os.path.join(self.path, ".itime_contest"))
+        # If this file is not deleted, then the import failed
+        touch(os.path.join(self.path, ".import_error_contest"))
 
         args = {}
 
@@ -212,96 +214,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         tasks = load(conf, None, ["tasks", "problemi"])
         participations = load(conf, None, ["users", "utenti"])
 
+        # Import was successful
+        os.remove(os.path.join(self.path, ".import_error_contest"))
+
         logger.info("Contest parameters loaded.")
 
         return Contest(**args), tasks, participations
 
-    def task_has_changed(self):
-        """See docstring in class TaskLoader
-
-        """
-        name = os.path.split(self.path)[1]
-
-        if (not os.path.exists(os.path.join(self.path, "task.yaml"))) and \
-           (not os.path.exists(os.path.join(self.path, "..", name + ".yaml"))):
-            logger.critical("File missing: \"task.yaml\"")
-            return None
-
-        # We first look for the yaml file inside the task folder,
-        # and eventually fallback to a yaml file in its parent folder.
-        try:
-            conf = yaml.safe_load(
-                io.open(os.path.join(self.path, "task.yaml"),
-                        "rt", encoding="utf-8"))
-        except IOError:
-            conf = yaml.safe_load(
-                io.open(os.path.join(self.path, "..", name + ".yaml"),
-                        "rt", encoding="utf-8"))
-
-        # If there is no .itime file, we assume that the task has changed
-        if not os.path.exists(os.path.join(self.path, ".itime")):
-            return True
-
-        getmtime = lambda fname: os.stat(fname).st_mtime
-
-        itime = getmtime(os.path.join(self.path, ".itime"))
-
-        # Generate a task's list of files
-        # Testcases
-        files = []
-        for filename in os.listdir(os.path.join(self.path, "input")):
-            files.append(os.path.join(self.path, "input", filename))
-
-        for filename in os.listdir(os.path.join(self.path, "output")):
-            files.append(os.path.join(self.path, "output", filename))
-
-        # Attachments
-        if os.path.exists(os.path.join(self.path, "att")):
-            for filename in os.listdir(os.path.join(self.path, "att")):
-                files.append(os.path.join(self.path, "att", filename))
-
-        # Score file
-        files.append(os.path.join(self.path, "gen", "GEN"))
-
-        # Statement
-        files.append(os.path.join(self.path, "statement", "statement.pdf"))
-        files.append(os.path.join(self.path, "testo", "testo.pdf"))
-
-        # Managers
-        files.append(os.path.join(self.path, "check", "checker"))
-        files.append(os.path.join(self.path, "cor", "correttore"))
-        files.append(os.path.join(self.path, "check", "manager"))
-        files.append(os.path.join(self.path, "cor", "manager"))
-        if not conf.get('output_only', False) and \
-                os.path.isdir(os.path.join(self.path, "sol")):
-            for lang in LANGUAGES:
-                files.append(
-                    os.path.join(self.path, "sol", "grader.%s" % lang))
-            for other_filename in os.listdir(os.path.join(self.path, "sol")):
-                if any(other_filename.endswith(header)
-                       for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
-                    files.append(
-                        os.path.join(self.path, "sol", other_filename))
-
-        # Yaml
-        files.append(os.path.join(self.path, "task.yaml"))
-        files.append(os.path.join(self.path, "..", name + ".yaml"))
-
-        # Check is any of the files have changed
-        for fname in files:
-            if os.path.exists(fname):
-                if getmtime(fname) > itime:
-                    return True
-
-        if os.path.exists(os.path.join(self.path, ".import_error")):
-            logger.warning("Last attempt to import task %s failed,"
-                           " I'm not trying again.", name)
-        return False
-
     def get_user(self):
-        """See docstring in class UserLoader.
-
-        """
+        """See docstring in class UserLoader."""
 
         if not os.path.exists(os.path.join(os.path.dirname(self.path),
                                            "contest.yaml")):
@@ -343,9 +264,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         return User(**args)
 
     def get_team(self):
-        """See docstring in class TeamLoader.
-
-        """
+        """See docstring in class TeamLoader."""
 
         if not os.path.exists(os.path.join(os.path.dirname(self.path),
                                            "contest.yaml")):
@@ -379,9 +298,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         return Team(**args)
 
     def get_task(self, get_statement=True):
-        """See docstring in class TaskLoader.
-
-        """
+        """See docstring in class TaskLoader."""
         name = os.path.split(self.path)[1]
 
         if (not os.path.exists(os.path.join(self.path, "task.yaml"))) and \
@@ -733,3 +650,129 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         logger.info("Task parameters loaded.")
 
         return task
+
+    def contest_has_changed(self):
+        """See docstring in class ContestLoader."""
+        name = os.path.split(self.path)[1]
+        contest_yaml = os.path.join(self.path, "contest.yaml")
+
+        if not os.path.exists(contest_yaml):
+            logger.critical("File missing: \"contest.yaml\"")
+            sys.exit(1)
+
+        # If there is no .itime file, we assume that the contest has changed
+        if not os.path.exists(os.path.join(self.path, ".itime_contest")):
+            return True
+
+        getmtime = lambda fname: os.stat(fname).st_mtime
+
+        itime = getmtime(os.path.join(self.path, ".itime_contest"))
+
+        # Check if contest.yaml has changed
+        if getmtime(contest_yaml) > itime:
+            return True
+
+        if os.path.exists(os.path.join(self.path, ".import_error_contest")):
+            logger.warning("Last attempt to import contest %s failed, I'm not "
+                           "trying again. After fixing the error, delete the "
+                           "file .import_error_contest", name)
+            sys.exit(1)
+
+        return False
+
+    def user_has_changed(self):
+        """See docstring in class UserLoader."""
+        # This works as users are kept inside contest.yaml, so changing
+        # them alters the last modified time of contest.yaml.
+        # TODO Improve this.
+        return self.contest_has_changed()
+
+    def team_has_changed(self):
+        """See docstring in class TeamLoader."""
+        # This works as teams are kept inside contest.yaml, so changing
+        # them alters the last modified time of contest.yaml.
+        # TODO Improve this.
+        return self.contest_has_changed()
+
+    def task_has_changed(self):
+        """See docstring in class TaskLoader."""
+        name = os.path.split(self.path)[1]
+
+        if (not os.path.exists(os.path.join(self.path, "task.yaml"))) and \
+           (not os.path.exists(os.path.join(self.path, "..", name + ".yaml"))):
+            logger.critical("File missing: \"task.yaml\"")
+            sys.exit(1)
+
+        # We first look for the yaml file inside the task folder,
+        # and eventually fallback to a yaml file in its parent folder.
+        try:
+            conf = yaml.safe_load(
+                io.open(os.path.join(self.path, "task.yaml"),
+                        "rt", encoding="utf-8"))
+        except IOError:
+            conf = yaml.safe_load(
+                io.open(os.path.join(self.path, "..", name + ".yaml"),
+                        "rt", encoding="utf-8"))
+
+        # If there is no .itime file, we assume that the task has changed
+        if not os.path.exists(os.path.join(self.path, ".itime")):
+            return True
+
+        getmtime = lambda fname: os.stat(fname).st_mtime
+
+        itime = getmtime(os.path.join(self.path, ".itime"))
+
+        # Generate a task's list of files
+        # Testcases
+        files = []
+        for filename in os.listdir(os.path.join(self.path, "input")):
+            files.append(os.path.join(self.path, "input", filename))
+
+        for filename in os.listdir(os.path.join(self.path, "output")):
+            files.append(os.path.join(self.path, "output", filename))
+
+        # Attachments
+        if os.path.exists(os.path.join(self.path, "att")):
+            for filename in os.listdir(os.path.join(self.path, "att")):
+                files.append(os.path.join(self.path, "att", filename))
+
+        # Score file
+        files.append(os.path.join(self.path, "gen", "GEN"))
+
+        # Statement
+        files.append(os.path.join(self.path, "statement", "statement.pdf"))
+        files.append(os.path.join(self.path, "testo", "testo.pdf"))
+
+        # Managers
+        files.append(os.path.join(self.path, "check", "checker"))
+        files.append(os.path.join(self.path, "cor", "correttore"))
+        files.append(os.path.join(self.path, "check", "manager"))
+        files.append(os.path.join(self.path, "cor", "manager"))
+        if not conf.get('output_only', False) and \
+                os.path.isdir(os.path.join(self.path, "sol")):
+            for lang in LANGUAGES:
+                files.append(
+                    os.path.join(self.path, "sol", "grader.%s" % lang))
+            for other_filename in os.listdir(os.path.join(self.path, "sol")):
+                if any(other_filename.endswith(header)
+                       for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                    files.append(
+                        os.path.join(self.path, "sol", other_filename))
+
+        # Yaml
+        files.append(os.path.join(self.path, "task.yaml"))
+        files.append(os.path.join(self.path, "..", name + ".yaml"))
+
+        # Check is any of the files have changed
+        for fname in files:
+            if os.path.exists(fname):
+                if getmtime(fname) > itime:
+                    return True
+
+        if os.path.exists(os.path.join(self.path, ".import_error")):
+            logger.warning("Last attempt to import task %s failed, I'm not "
+                           "trying again. After fixing the error, delete the "
+                           "file .import_error", name)
+            sys.exit(1)
+
+        return False
