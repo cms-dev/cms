@@ -179,21 +179,35 @@ class ContestImporter(BaseImporter):
                                     p.get("team"))
                     return
 
-                # Prepare new participation
-                args = {
-                    "user": user,
-                    "team": team,
-                    "contest": contest,
-                }
+                # Check that the participation is not already defined.
+                participation = session.query(Participation) \
+                    .filter(Participation.user_id == user.id) \
+                    .filter(Participation.contest_id == contest.id) \
+                    .first()
 
-                if "hidden" in p:
-                    args["hidden"] = p["hidden"]
-                if "ip" in p:
-                    args["ip"] = p["ip"]
-                if "password" in p:
-                    args["password"] = p["password"]
+                # FIXME: detect if some details of the participation have been
+                # updated and thus the existing participation needs to be
+                # changed.
+                if participation is None:
+                    # Prepare new participation
+                    args = {
+                        "user": user,
+                        "team": team,
+                        "contest": contest,
+                    }
 
-                session.add(Participation(**args))
+                    if "hidden" in p:
+                        args["hidden"] = p["hidden"]
+                    if "ip" in p:
+                        args["ip"] = p["ip"]
+                    if "password" in p:
+                        args["password"] = p["password"]
+
+                    session.add(Participation(**args))
+                else:
+                    logger.warning("Participation of user %s in this contest "
+                                   "already exists, not going to update it.",
+                                   p["username"])
 
             # Here we could check if there are actually some tasks or
             # users to add: if there are not, then don't create the
