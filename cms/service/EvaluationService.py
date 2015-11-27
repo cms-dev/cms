@@ -134,19 +134,19 @@ def user_test_to_evaluate(user_test_result):
         r.evaluation_tries < EvaluationService.MAX_USER_TEST_EVALUATION_TRIES
 
 
-def submission_get_operations(submission, dataset):
+def submission_get_operations(submission_result, submission, dataset):
     """Generate all operations originating from a submission for a given
     dataset.
 
-    submission (Submission): a submission;
-    dataset (Dataset): a dataset.
+    submission_result (SubmissionResult|None): a submission result.
+    submission (Submission): the submission for submission_result.
+    dataset (Dataset): the dataset for submission_result.
 
     yield (ESOperation, int, datetime): an iterator providing triplets
         consisting of a ESOperation for a certain operation to
         perform, its priority and its timestamp.
 
     """
-    submission_result = submission.get_result(dataset)
     if submission_to_compile(submission_result):
         if not dataset.active:
             priority = PriorityQueue.PRIORITY_EXTRA_LOW
@@ -182,8 +182,6 @@ def submission_get_operations(submission, dataset):
                                   testcase_codename), \
                     priority, \
                     submission.timestamp
-        # TODO: if we arrive here and we don't have any operation, it
-        # means we need to set the submission result to evaluated.
 
 
 def user_test_get_operations(user_test, dataset):
@@ -881,11 +879,25 @@ class EvaluationService(TriggeredService):
         """
         new_operations = 0
         for dataset in get_datasets_to_judge(submission.task):
-            for operation, priority, timestamp in \
-                    submission_get_operations(submission, dataset):
+            submission_result = submission.get_result(dataset)
+            number_of_operations = 0
+            for operation, priority, timestamp in submission_get_operations(
+                    submission_result, submission, dataset):
+                number_of_operations += 1
                 if self.enqueue(operation, priority, timestamp,
                                 check_again=check_again):
                     new_operations += 1
+
+            # If we got 0 operations, but the submission result is to
+            # evaluate, it means that we just need to finalize the
+            # evaluation.
+            if number_of_operations == 0 and submission_to_evaluate(
+                    submission_result):
+                logger.info("Result %d(%d) has already all evaluations, "
+                            "finalizing it.", submission.id, dataset.id)
+                submission_result.set_evaluation_outcome()
+                submission_result.sa_session.commit()
+                self.evaluation_ended(submission_result)
 
         return new_operations
 
