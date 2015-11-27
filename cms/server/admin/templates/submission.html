@@ -82,7 +82,7 @@
       </tr>
       {% if sr is not None %}
       <tr>
-        <td>Compilation attempts</td>
+        <td>Failures during compilation</td>
         <td>{{ sr.compilation_tries }}</td>
       </tr>
       <tr>
@@ -94,7 +94,7 @@
         <td>{{ sr.compilation_sandbox }}</td>
       </tr>
       <tr>
-        <td>Evaluation attempts</td>
+        <td>Failures during evaluation</td>
         <td>{{ sr.evaluation_tries }}</td>
       </tr>
       {% end %}

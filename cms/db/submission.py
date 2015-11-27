@@ -291,7 +291,7 @@ class SubmissionResult(Base):
         String,
         nullable=True)
 
-    # Number of attempts of compilation.
+    # Number of failures during compilation.
     compilation_tries = Column(
         Integer,
         nullable=False,
@@ -331,7 +331,7 @@ class SubmissionResult(Base):
         String,
         nullable=True)
 
-    # Number of attempts of evaluation.
+    # Number of failures during evaluation.
     evaluation_tries = Column(
         Integer,
         nullable=False,
