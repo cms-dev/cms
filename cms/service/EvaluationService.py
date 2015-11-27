@@ -1221,8 +1221,8 @@ class EvaluationService(TriggeredService):
 
                 if job_success:
                     job.to_submission(submission_result)
-
-                submission_result.compilation_tries += 1
+                else:
+                    submission_result.compilation_tries += 1
 
                 session.commit()
 
@@ -1245,23 +1245,19 @@ class EvaluationService(TriggeredService):
 
                 if job_success:
                     job.to_submission(submission_result)
+                else:
+                    submission_result.evaluation_tries += 1
 
                 # Submission evaluation will be ended only when
                 # evaluation for each testcase is available.
-                # TODO This check makes little sense: failed jobs will
-                # be attempted again by evaluation_ended, which will be
-                # called only in case of equality, which will hold only
-                # if the evaluations for all testcases are present. But
-                # as an evaluation will be stored only if the job was
-                # successful failed jobs will never be attempted again.
-                if len(submission_result.evaluations) == \
-                        len(dataset.testcases):
+                evaluation_complete = (len(submission_result.evaluations) ==
+                                       len(dataset.testcases))
+                if evaluation_complete:
                     submission_result.set_evaluation_outcome()
-                    submission_result.evaluation_tries += 1
 
                 session.commit()
 
-                if submission_result.evaluated():
+                if evaluation_complete:
                     self.evaluation_ended(submission_result)
 
             elif type_ == ESOperation.USER_TEST_COMPILATION:
@@ -1282,8 +1278,8 @@ class EvaluationService(TriggeredService):
 
                 if job_success:
                     job.to_user_test(user_test_result)
-
-                user_test_result.compilation_tries += 1
+                else:
+                    user_test_result.compilation_tries += 1
 
                 session.commit()
 
@@ -1306,8 +1302,8 @@ class EvaluationService(TriggeredService):
 
                 if job_success:
                     job.to_user_test(user_test_result)
-
-                user_test_result.evaluation_tries += 1
+                else:
+                    user_test_result.evaluation_tries += 1
 
                 session.commit()
 
@@ -1354,8 +1350,8 @@ class EvaluationService(TriggeredService):
                            submission_result.dataset_id)
             if submission_result.compilation_tries >= \
                     EvaluationService.MAX_COMPILATION_TRIES:
-                logger.error("Maximum tries reached for the compilation of "
-                             "submission %d(%d).",
+                logger.error("Maximum number of failures reached for the "
+                             "compilation of submission %d(%d).",
                              submission_result.submission_id,
                              submission_result.dataset_id)
 
@@ -1397,8 +1393,8 @@ class EvaluationService(TriggeredService):
                            submission_result.dataset_id)
             if submission_result.evaluation_tries >= \
                     EvaluationService.MAX_EVALUATION_TRIES:
-                logger.error("Maximum tries reached for the evaluation of "
-                             "submission %d(%d).",
+                logger.error("Maximum number of failures reached for the "
+                             "evaluation of submission %d(%d).",
                              submission_result.submission_id,
                              submission_result.dataset_id)
 
@@ -1435,8 +1431,8 @@ class EvaluationService(TriggeredService):
                            user_test_result.dataset_id)
             if user_test_result.compilation_tries >= \
                     EvaluationService.MAX_USER_TEST_COMPILATION_TRIES:
-                logger.error("Maximum tries reached for the compilation of "
-                             "user test %d(%d).",
+                logger.error("Maximum number of failures reached for the "
+                             "compilation of user test %d(%d).",
                              user_test_result.user_test_id,
                              user_test_result.dataset_id)
 
@@ -1472,8 +1468,8 @@ class EvaluationService(TriggeredService):
                            user_test_result.dataset_id)
             if user_test_result.evaluation_tries >= \
                     EvaluationService.MAX_USER_TEST_EVALUATION_TRIES:
-                logger.error("Maximum tries reached for the evaluation of "
-                             "user test %d(%d).",
+                logger.error("Maximum number of failures reached for the "
+                             "evaluation of user test %d(%d).",
                              user_test_result.user_test_id,
                              user_test_result.dataset_id)
 
