@@ -100,14 +100,14 @@ class LoginHandler(BaseHandler):
             self.redirect("/?login_error=true")
             return
 
-        if config.ip_lock and participation.ip is not None \
+        if self.contest.ip_restriction and participation.ip is not None \
                 and not check_ip(self.request.remote_ip, participation.ip):
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)
             self.redirect("/?login_error=true")
             return
 
-        if participation.hidden and config.block_hidden_users:
+        if participation.hidden and self.contest.block_hidden_participations:
             logger.info("Hidden user login attempt: "
                         "user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)

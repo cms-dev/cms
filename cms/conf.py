@@ -84,8 +84,6 @@ class Config(object):
         self.submit_local_copy_path = "%s/submissions/"
         self.tests_local_copy = True
         self.tests_local_copy_path = "%s/tests/"
-        self.ip_lock = True
-        self.block_hidden_users = False
         self.is_proxy_used = False
         self.max_submission_length = 100000
         self.max_input_length = 5000000
