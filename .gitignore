@@ -1,4 +1,5 @@
 *~
+*.mo
 .*.sw?
 *.pyc
 build
