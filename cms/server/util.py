@@ -213,15 +213,15 @@ def format_size(n):
         return '0 B'
 
     # Use the last unit that's smaller than n
-    unit = map(lambda x: n >= x, DIMS).index(False) - 1
-    n = float(n) / DIMS[unit]
+    unit_index = next(i for i, x in enumerate(DIMS) if n >= x) - 1
+    n = float(n) / DIMS[unit_index]
 
     if n < 10:
-        return "%g %s" % (round(n, 2), UNITS[unit])
+        return "%g %s" % (round(n, 2), UNITS[unit_index])
     elif n < 100:
-        return "%g %s" % (round(n, 1), UNITS[unit])
+        return "%g %s" % (round(n, 1), UNITS[unit_index])
     else:
-        return "%g %s" % (round(n, 0), UNITS[unit])
+        return "%g %s" % (round(n, 0), UNITS[unit_index])
 
 
 def format_date(dt, timezone, locale=None):

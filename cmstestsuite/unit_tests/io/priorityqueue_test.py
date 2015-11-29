@@ -50,7 +50,6 @@ class TestPriorityQueue(unittest.TestCase):
 
     def tearDown(self):
         self.queue = PriorityQueue()
-        pass
 
     def test_success(self):
         """Verify a simple success case.

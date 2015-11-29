@@ -42,7 +42,7 @@ __all__ = [
 from cms import config
 
 
-class _make_dict (ContentHandler):
+class _make_dict(ContentHandler):
     def __init__(self, path, key, value, result):
         self.path = path
         self.key = key

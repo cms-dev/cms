@@ -390,8 +390,6 @@ def main():
     while not finished:
         for actor in actors:
             actor.join()
-        else:
-            finished = True
 
     print("Test finished", file=sys.stderr)
 

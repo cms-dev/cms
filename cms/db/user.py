@@ -222,7 +222,8 @@ class Participation(Base):
                         passive_deletes=True))
     __table_args__ = (UniqueConstraint('contest_id', 'user_id'),)
 
-    # Team (id and object) that the user is representing with this participation.
+    # Team (id and object) that the user is representing with this
+    # participation.
     team_id = Column(
         Integer,
         ForeignKey(Team.id,

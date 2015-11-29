@@ -84,7 +84,7 @@ def endswith2(string, suffixes):
     """True if string ends with one of the given suffixes.
 
     """
-    return any(filter(lambda x: string.endswith(x), suffixes))
+    return any(string.endswith(suffix) for suffix in suffixes)
 
 
 def basename2(string, suffixes):
@@ -94,10 +94,10 @@ def basename2(string, suffixes):
 
     """
     try:
-        idx = map(lambda x: string.endswith(x), suffixes).index(True)
-    except ValueError:
+        suffix = next(s for s in suffixes if string.endswith(s))
+        return string[:-len(suffix)], string[-len(suffix):]
+    except StopIteration:
         return None, None
-    return string[:-len(suffixes[idx])], string[-len(suffixes[idx]):]
 
 
 def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
@@ -141,17 +141,13 @@ def detect_task_type(base_dir):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
     check_dir = os.path.join(base_dir, CHECK_DIRNAME)
     grad_present = os.path.exists(sol_dir) and \
-        any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
-                   os.listdir(sol_dir)))
+        any(x.startswith(GRAD_BASENAME + '.') for x in os.listdir(sol_dir))
     stub_present = os.path.exists(sol_dir) and \
-        any(filter(lambda x: x.startswith(STUB_BASENAME + '.'),
-                   os.listdir(sol_dir)))
+        any(x.startswith(STUB_BASENAME + '.') for x in os.listdir(sol_dir))
     cor_present = os.path.exists(check_dir) and \
-        any(filter(lambda x: x.startswith('correttore.'),
-                   os.listdir(check_dir)))
+        any(x.startswith('correttore.') for x in os.listdir(check_dir))
     man_present = os.path.exists(check_dir) and \
-        any(filter(lambda x: x.startswith('manager.'),
-                   os.listdir(check_dir)))
+        any(x.startswith('manager.') for x in os.listdir(check_dir))
 
     if not (cor_present or man_present or stub_present or grad_present):
         return ["Batch", "Diff"]  # TODO Could also be an OutputOnly
@@ -176,12 +172,12 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         return []
 
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
-    entries = map(lambda x: os.path.join(SOL_DIRNAME, x), os.listdir(sol_dir))
-    sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
 
     actions = []
     test_actions = []
-    for src in sources:
+    for src in (os.path.join(SOL_DIRNAME, x)
+                for x in os.listdir(sol_dir)
+                if endswith2(x, SOL_EXTS)):
         exe, lang = basename2(src, SOL_EXTS)
         # Delete the dot
         lang = lang[1:]
@@ -292,10 +288,9 @@ def build_checker_list(base_dir, task_type):
     actions = []
 
     if os.path.exists(check_dir):
-        entries = map(lambda x: os.path.join(CHECK_DIRNAME, x),
-                      os.listdir(check_dir))
-        sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
-        for src in sources:
+        for src in (os.path.join(CHECK_DIRNAME, x)
+                    for x in os.listdir(check_dir)
+                    if endswith2(x, SOL_EXTS)):
             exe, lang = basename2(src, CHECK_EXTS)
             # Delete the dot
             lang = lang[1:]
@@ -374,12 +369,10 @@ def build_gen_list(base_dir, task_type, yaml_conf):
     input_dir = os.path.join(base_dir, INPUT_DIRNAME)
     output_dir = os.path.join(base_dir, OUTPUT_DIRNAME)
     gen_dir = os.path.join(base_dir, GEN_DIRNAME)
-    entries = os.listdir(gen_dir)
-    sources = filter(lambda x: endswith2(x, GEN_EXTS), entries)
     gen_exe = None
     validator_exe = None
 
-    for src in sources:
+    for src in (x for x in os.listdir(gen_dir) if endswith2(x, GEN_EXTS)):
         base, lang = basename2(src, GEN_EXTS)
         if base == GEN_BASENAME:
             gen_exe = os.path.join(GEN_DIRNAME, base)
@@ -517,9 +510,8 @@ def build_gen_list(base_dir, task_type, yaml_conf):
                                       validator_exe, validator_lang),
                     "compile the validator"))
     actions.append(([gen_GEN, gen_exe, validator_exe] + copy_files,
-                    map(lambda x: os.path.join(INPUT_DIRNAME,
-                                               'input%d.txt' % (x)),
-                        range(0, testcase_num)),
+                    [os.path.join(INPUT_DIRNAME, 'input%d.txt' % (x))
+                     for x in range(0, testcase_num)],
                     make_input,
                     "input generation"))
 
@@ -660,8 +652,8 @@ def execute_target(base_dir, exec_tree, target,
 
     # Check if the action really needs to be done (i.e., there is one
     # dependency more recent than the generated file)
-    dep_times = max([0] + map(lambda dep: os.stat(
-        os.path.join(base_dir, dep)).st_mtime, deps))
+    dep_times = max(
+        [0] + [os.stat(os.path.join(base_dir, dep)).st_mtime for dep in deps])
     try:
         gen_time = os.stat(os.path.join(base_dir, target)).st_mtime
     except OSError:

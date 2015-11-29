@@ -178,10 +178,8 @@ def test_testcases(base_dir, solution, language, assume=None):
         move_cursor(directions.UP, erase=True)
 
     # Subtasks scoring
-    try:
-        subtasks = json.loads(dataset.score_type_parameters)
-        subtasks[0]
-    except:
+    subtasks = json.loads(dataset.score_type_parameters)
+    if len(subtasks) == 0:
         subtasks = [[100, len(info)]]
 
     if dataset.score_type == 'GroupMin':

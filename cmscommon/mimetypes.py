@@ -70,7 +70,7 @@ _types = list(l.strip() for l in
 _comments = dict()
 
 
-class _get_comment (ContentHandler):
+class _get_comment(ContentHandler):
     def __init__(self):
         self.inside = False
         self.result = None

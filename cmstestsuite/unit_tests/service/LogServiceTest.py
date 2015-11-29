@@ -77,7 +77,6 @@ class TestLogService(unittest.TestCase):
                               TestLogService.CREATED)
             self.assertEquals(last_message["exc_text"],
                               TestLogService.EXC_TEXT + severity)
-            pass
         else:
             self.assertNotEquals(last_message["severity"], severity)
 

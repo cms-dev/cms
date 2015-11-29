@@ -194,7 +194,7 @@ class RemoteServiceBase(object):
                          self._repr_remote(), error)
         finally:
             self.finalize("Disconnection requested.")
-            return True
+        return True
 
     def _read(self):
         """Receive a message from the socket.

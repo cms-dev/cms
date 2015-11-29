@@ -46,8 +46,7 @@ __all__ = [
 # If that's the case, fallback to weak standard library PRG
 try:
     from Crypto import Random
-    _rndfile = Random.new()
-    get_random_bits = lambda x: _rndfile.read(x)
+    get_random_bits = Random.new().read
     is_random_secure = True
 except ImportError:
     import random
