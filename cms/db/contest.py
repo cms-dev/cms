@@ -88,6 +88,20 @@ class Contest(Base):
         nullable=False,
         default=True)
 
+    # Whether to prevent hidden participations to log in.
+    block_hidden_participations = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # Whether to enforce that the IP address of the request matches
+    # the IP address or subnet specified for the participation (if
+    # present).
+    ip_restriction = Column(
+        Boolean,
+        nullable=False,
+        default=True)
+
     # Whether to automatically log in users connecting from an IP
     # address specified in the ip field of a participation to this
     # contest.

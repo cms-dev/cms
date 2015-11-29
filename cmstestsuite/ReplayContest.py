@@ -104,9 +104,10 @@ class ContestReplayer(object):
             self.importer.run()
             logger.info("Contest imported.")
 
-        logger.info("Please run CMS against the contest (with ip_lock=False).")
+        logger.info("Please run CMS against the contest.")
         logger.info("Please ensure that:")
         logger.info("- the contest is active (we are between start and stop);")
+        logger.info("- IP based login restrictions are disabled;")
         logger.info("- the minimum interval for submissions and usertests ")
         logger.info("  (contest- and task-wise) is None.")
         logger.info("Then press enter to start.")

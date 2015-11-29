@@ -203,13 +203,13 @@ class BaseHandler(CommonRequestHandler):
             return None
 
         # Check if user is using the right IP (or is on the right subnet)
-        if config.ip_lock and participation.ip is not None \
+        if self.contest.ip_restriction and participation.ip is not None \
                 and not check_ip(self.request.remote_ip, participation.ip):
             self.clear_cookie("login")
             return None
 
         # Check if user is hidden
-        if participation.hidden and config.block_hidden_users:
+        if participation.hidden and self.contest.block_hidden_participations:
             self.clear_cookie("login")
             return None
 

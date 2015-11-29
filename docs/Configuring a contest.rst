@@ -1,7 +1,7 @@
 Configuring a contest
 *********************
 
-In the following text "user" and "contestant" are used interchangeably.
+In the following text "user" and "contestant" are used interchangeably. A "participation" is an instance of a user participating in a specific constest.
 
 Configuration parameters will be referred to using their internal name, but it should always be easy to infer what fields control them in the AWS interface by using their label.
 
@@ -113,11 +113,36 @@ When CWS needs to show a timestamp to the user it first tries to show it accordi
 User login
 ==========
 
-Users log into CWS using a username and a password. These have to be specified, respectively, in the ``username`` and ``password`` fields (in cleartext!). These credentials need to be inserted by the admins (i.e. there's no way to have an automatic login, a "guest" session, etc.). The user needs to login again if they do not navigate the site for ``cookie_duration`` seconds (specified in the :file:`cms.conf` file).
+Users log into CWS using their credentials (username and a password), or automatically, matching their IP address.
 
-In fact, there are other reasons that can cause the login to fail. If the ``ip_lock`` option (in :file:`cms.conf`) is set to ``true`` then the login will fail if the IP address that attempted it doesn't match the address or subnet in the ``ip`` field of the specified user. If ``ip`` is not set then this check is skipped, even if ``ip_lock`` is ``true``. Note that if a reverse-proxy (like nginx) is in use then it is necessary to set ``is_proxy_used`` (in :file:`cms.conf`) to ``true`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`).
+Logging in with IP based autologin
+----------------------------------
 
-The login can also fail if ``block_hidden_users`` (in :file:`cms.conf`) is ``true`` and the user trying to login as has the ``hidden`` field set.
+If the "IP based autologin" option in the contest configuration is set, CWS tries to find a user with the IP address of the request, and if it finds exactly one, the requester is automatically logged in as the user. If zero or more than one user match, CWS does not let the user in (and the incident is logged to allow troubleshooting).
+
+.. warning::
+
+  If a reverse-proxy (like nginx) is in use then it is necessary to set ``is_proxy_used`` (in :file:`cms.conf`) to ``true`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`).
+
+Logging in with credentials
+---------------------------
+
+If the autologin is not enabled, users can log in with username and password, which have to be specified in the user configuration (in cleartext, for the moment). The password can also be overridden for a specific contest in the participation configuration. These credentials need to be inserted by the admins (i.e. there's no way to sign up, of log in as a "guest", etc.).
+
+A successfully logged in user needs to reauthenticate after ``cookie_duration`` seconds (specified in the :file:`cms.conf` file) from when they last visited a page.
+
+Even without autologin, it is possible to restrict the IP address or subnet that the user is using for accessing CWS, using the "IP based login restriction" option in the contest configuration (in which case, admins need to set ``is_proxy_used`` as before). If this is set, then the login will fail if the IP address that attempted it does not match the address or subnet in the IP specified for the specified participation. If the participation IP address is not set, then no restriction applies.
+
+Failure to login
+----------------
+
+The following are some common reasons for login failures, all of them coming with some useful log message from CWS.
+
+- IP address mismatch (with IP based autologin): if the participation has the wrong IP address, or if more than one participation has the same IP address, then the login fails. Note that if the user is using the IP address of a different user, CWS will happily log them in without noticing anything.
+
+- IP address mismatch (using IP based login restrictions): the login fails if the participation has the wrong IP address or subnet.
+
+- Blocked hidden participations: users whose participation is hidden cannot log in if "Block hidden participations" is set in the contest configuration.
 
 
 .. _configuringacontest_usaco-like-contests:
