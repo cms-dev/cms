@@ -152,31 +152,46 @@ $(document).ready(init);
 
         <h1>Users</h1>
         <ul class="menu">
-          {% if len(user_list) < 1 %}
           <li class="menu_entry">
-            No users available
+            {% if len(user_list) == 1 %}
+              There is 1 user
+            {% else %}
+              There are {{ len(user_list) }} users
+            {% end %}
           </li>
-          {% end %}
 
-          {% for u in user_list[:5] %}
-          <li class="menu_entry">
-            <a class="menu_link bold" href="{{ url_root }}/user/{{ u.id }}" title="{{ u.first_name }} {{ u.last_name }}">
-              {{ u.username }}
-            </a>
-          </li>
-          {% end %}
-
-          {% if len(user_list) > 5 %}
           <li>
             <a class="menu_link" href="{{ url_root }}/users">
-              (show more...)
+              (show users...)
             </a>
           </li>
-          {% end %}
 
           <li class="menu_entry">
             <a class="menu_link" href="{{ url_root }}/users/add">
               (create new user...)
+            </a>
+          </li>
+        </ul>
+
+        <h1>Teams</h1>
+        <ul class="menu">
+          <li class="menu_entry">
+            {% if len(team_list) == 1 %}
+              There is 1 team
+            {% else %}
+              There are {{ len(team_list) }} teams
+            {% end %}
+          </li>
+
+          <li>
+            <a class="menu_link" href="{{ url_root }}/teams">
+              (show teams...)
+            </a>
+          </li>
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/teams/add">
+              (create new team...)
             </a>
           </li>
         </ul>

@@ -1,0 +1,28 @@
+{% extends base.html %}
+
+{% block core %}
+
+<h1>{{ team.name }} ({{ team.code }})</h1>
+
+<h2 id="title_general_info" class="toggling_on">General Information</h2>
+<div id="general_info">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url_root }}/team/{{ team.code }}" method="POST">
+    <table>
+      <tr>
+        <td>Code</td>
+        <td><input type="text" name="code" value="{{ team.code }}"/></td>
+      </tr>
+      <tr>
+        <td>Name</td>
+        <td><input type="text" name="name" value="{{ team.name }}"/></td>
+      </tr>
+    </table>
+    <input type="submit" value="Update" />
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+
+{% end %}

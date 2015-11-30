@@ -75,7 +75,9 @@ from .user import \
     AddUserHandler, \
     UserHandler, \
     AddParticipationHandler, \
-    EditParticipationHandler
+    EditParticipationHandler, \
+    AddTeamHandler, \
+    TeamHandler
 from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
@@ -158,11 +160,14 @@ HANDLERS = [
     (r"/dataset/([0-9]+)/testcases/add_multiple", AddTestcasesHandler),
     (r"/dataset/([0-9]+)/testcase/([0-9]+)/delete", DeleteTestcaseHandler),
 
-    # Users
+    # Users/Teams
 
     (r"/users", SimpleHandler("users.html")),
+    (r"/teams", SimpleHandler("teams.html")),
     (r"/users/add", AddUserHandler),
+    (r"/teams/add", AddTeamHandler),
     (r"/user/([0-9]+)", UserHandler),
+    (r"/team/([a-zA-Z0-9_.-]+)", TeamHandler),
     (r"/user/([0-9]+)/add_participation", AddParticipationHandler),
     (r"/user/([0-9]+)/edit_participation", EditParticipationHandler),
 
