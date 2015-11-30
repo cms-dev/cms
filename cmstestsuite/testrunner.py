@@ -206,9 +206,9 @@ class TestRunner(object):
         name = task_module.task_info['name'] + str(self.rand)
 
         # Have we done this before? Pull it out of our cache if so.
-        if task_module in self.task_id_map:
+        if name in self.task_id_map:
             # Ensure we don't have multiple modules with the same task name.
-            assert self.task_id_map[task_module][1] == task_module
+            assert self.task_id_map[name][1] == task_module
 
             return self.task_id_map[name][0]
 
