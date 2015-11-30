@@ -167,7 +167,7 @@ HANDLERS = [
     (r"/users/add", AddUserHandler),
     (r"/teams/add", AddTeamHandler),
     (r"/user/([0-9]+)", UserHandler),
-    (r"/team/([a-zA-Z0-9_.-]+)", TeamHandler),
+    (r"/team/([0-9]+)", TeamHandler),
     (r"/user/([0-9]+)/add_participation", AddParticipationHandler),
     (r"/user/([0-9]+)/edit_participation", EditParticipationHandler),
 
