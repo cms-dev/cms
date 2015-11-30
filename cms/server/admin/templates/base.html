@@ -92,7 +92,7 @@ $(document).ready(init);
         <ul class="menu">
           {% if len(contest_list) < 1 %}
           <li class="menu_entry">
-            No contests available
+            (no contests available)
           </li>
           {% end %}
 
@@ -123,7 +123,7 @@ $(document).ready(init);
         <ul class="menu">
           {% if len(task_list) < 1 %}
           <li class="menu_entry">
-            No tasks available
+            (no tasks available)
           </li>
           {% end %}
 
@@ -152,31 +152,50 @@ $(document).ready(init);
 
         <h1>Users</h1>
         <ul class="menu">
-          {% if len(user_list) < 1 %}
-          <li class="menu_entry">
-            No users available
-          </li>
-          {% end %}
-
-          {% for u in user_list[:5] %}
-          <li class="menu_entry">
-            <a class="menu_link bold" href="{{ url_root }}/user/{{ u.id }}" title="{{ u.first_name }} {{ u.last_name }}">
-              {{ u.username }}
-            </a>
-          </li>
-          {% end %}
-
-          {% if len(user_list) > 5 %}
-          <li>
-            <a class="menu_link" href="{{ url_root }}/users">
-              (show more...)
-            </a>
-          </li>
+          {% if len(user_list) == 0 %}
+            <li class="menu_entry">
+              (no user available)
+            </li>
+          {% else %}
+            <li>
+              <a class="menu_link" href="{{ url_root }}/users">
+                {% if len(user_list) == 1 %}
+                  (show the only user...)
+                {% else %}
+                  (show the {{ len(user_list) }} users...)
+                {% end %}
+              </a>
+            </li>
           {% end %}
 
           <li class="menu_entry">
             <a class="menu_link" href="{{ url_root }}/users/add">
               (create new user...)
+            </a>
+          </li>
+        </ul>
+
+        <h1>Teams</h1>
+        <ul class="menu">
+          {% if len(team_list) == 0 %}
+            <li class="menu_entry">
+              (no team available)
+            </li>
+          {% else %}
+            <li>
+              <a class="menu_link" href="{{ url_root }}/teams">
+                {% if len(team_list) == 1 %}
+                  (show the only team...)
+                {% else %}
+                  (show the {{ len(team_list) }} teams...)
+                {% end %}
+              </a>
+            </li>
+          {% end %}
+
+          <li class="menu_entry">
+            <a class="menu_link" href="{{ url_root }}/teams/add">
+              (create new team...)
             </a>
           </li>
         </ul>
