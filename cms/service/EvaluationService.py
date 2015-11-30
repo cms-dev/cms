@@ -665,7 +665,8 @@ class WorkerPool(object):
                     self._schedule_disabling[shard] = True
                     self._ignore[shard] = True
                     self.release_worker(shard)
-                    self._worker[shard].quit("No response in %s." % active_for)
+                    self._worker[shard].quit(
+                        reason="No response in %s." % active_for)
 
         return lost_operations
 
