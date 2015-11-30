@@ -42,7 +42,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from cms.db import Contest, Participation, Question, Session, \
-    Submission, SubmissionFormatElement, SubmissionResult, Task, User
+    Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
@@ -215,6 +215,7 @@ class BaseHandler(CommonRequestHandler):
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["task_list"] = self.sql_session.query(Task).all()
         params["user_list"] = self.sql_session.query(User).all()
+        params["team_list"] = self.sql_session.query(Team).all()
         return params
 
     def finish(self, *args, **kwds):
