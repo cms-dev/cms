@@ -95,21 +95,17 @@ class TeamHandler(BaseHandler):
     If referred by GET, this handler will return a pre-filled HTML form.
     If referred by POST, this handler will sync the team data with the form's.
     """
-    def get(self, team_code):
-        team = self.sql_session.query(Team)\
-            .filter(Team.code == team_code)\
-            .first()
+    def get(self, team_id):
+        team = self.safe_get_item(Team, team_id)
 
         self.r_params = self.render_params()
         self.r_params["team"] = team
         self.render("team.html", **self.r_params)
 
-    def post(self, team_code):
-        fallback_page = "/teams"
+    def post(self, team_id):
+        fallback_page = "/team/%s" % team_id
 
-        team = self.sql_session.query(Team)\
-            .filter(Team.code == team_code)\
-            .first()
+        team = self.safe_get_item(Team, team_id)
 
         try:
             attrs = team.get_attrs()
@@ -161,9 +157,9 @@ class AddTeamHandler(SimpleHandler("add_team.html")):
         if self.try_commit():
             # Create the team on RWS.
             self.application.service.proxy_service.reinitialize()
-            self.redirect("/team/%s" % team.code)
-        else:
-            self.redirect(fallback_page)
+
+        # In case other teams need to be added.
+        self.redirect(fallback_page)
 
 
 class AddUserHandler(SimpleHandler("add_user.html")):
