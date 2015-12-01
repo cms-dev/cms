@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,7 @@ import traceback
 import codecs
 import os
 
-from mechanize import HTMLForm
-
+from mechanize import HTMLForm, HTTPError
 
 utf8_decoder = codecs.getdecoder('utf-8')
 
@@ -84,8 +83,8 @@ def browser_do_request(browser, url, data=None, files=None):
     return response
 
 
-class TestRequest(object):
-    """Docstring TODO.
+class GenericRequest(object):
+    """Request to a server.
 
     """
 
@@ -93,6 +92,8 @@ class TestRequest(object):
     OUTCOME_FAILURE = 'failure'
     OUTCOME_UNDECIDED = 'undecided'
     OUTCOME_ERROR = 'error'
+
+    MINIMUM_LENGTH = 100
 
     def __init__(self, browser, base_url=None):
         if base_url is None:
@@ -104,20 +105,57 @@ class TestRequest(object):
         self.start_time = None
         self.stop_time = None
         self.duration = None
+        self.status_code = None
         self.exception_data = None
 
-    def execute(self):
+        self.url = None
+        self.data = None
+        self.files = None
 
-        # Execute the test
+        self.status_code = None
+        self.response = None
+        self.res_data = None
+        self.redirected_to = None
+
+    def execute(self):
+        """Main entry point to execute the test"""
+        self._prepare()
+        self._execute()
+
+    def _prepare(self):
+        """Optional convenience hook called just after creating the Request"""
+        pass
+
+    def _execute(self):
+        """Execute the test"""
         description = self.describe()
         self.start_time = time.time()
         try:
-            self.do_request()
+            # TODO - We here clear the history, otherwise the memory
+            # consumption would explode; maybe it would be better to use a
+            # custom History object that just discards the history; on the
+            # other hand the History interface is still unstable
+            self.browser.clear_history()
+            try:
+                self.response = browser_do_request(self.browser,
+                                                   self.url,
+                                                   self.data,
+                                                   self.files)
+                self.res_data = self.response.read()
+                self.status_code = 200
+
+            except HTTPError as http_error:
+                self.status_code = http_error.code
+                if http_error.code != 302:
+                    raise
+                for k, v in self.browser.response()._headers.items():
+                    if k == "location":
+                        self.redirected_to = v
 
         # Catch possible exceptions
         except Exception as exc:
             self.exception_data = traceback.format_exc()
-            self.outcome = TestRequest.OUTCOME_ERROR
+            self.outcome = GenericRequest.OUTCOME_ERROR
 
         else:
             self.outcome = None
@@ -131,7 +169,7 @@ class TestRequest(object):
             success = self.test_success()
         except Exception as exc:
             self.exception_data = traceback.format_exc()
-            self.outcome = TestRequest.OUTCOME_ERROR
+            self.outcome = GenericRequest.OUTCOME_ERROR
 
         # If no exceptions were casted, decode the test evaluation
         if self.outcome is None:
@@ -141,14 +179,14 @@ class TestRequest(object):
                 if debug:
                     print("Could not determine status for request '%s'" %
                           (description), file=sys.stderr)
-                self.outcome = TestRequest.OUTCOME_UNDECIDED
+                self.outcome = GenericRequest.OUTCOME_UNDECIDED
 
             # Success
             elif success:
                 if debug:
                     print("Request '%s' successfully completed in %.3fs" %
                           (description, self.duration), file=sys.stderr)
-                self.outcome = TestRequest.OUTCOME_SUCCESS
+                self.outcome = GenericRequest.OUTCOME_SUCCESS
 
             # Failure
             elif not success:
@@ -157,88 +195,21 @@ class TestRequest(object):
                           file=sys.stderr)
                     if self.exception_data is not None:
                         print(self.exception_data, file=sys.stderr)
-                self.outcome = TestRequest.OUTCOME_FAILURE
+                self.outcome = GenericRequest.OUTCOME_FAILURE
 
         # Otherwise report the exception
         else:
-            print("Request '%s' terminated with an exception: %s" %
-                  (description, repr(exc)), file=sys.stderr)
-
-    def describe(self):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
-
-    def do_request(self):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
+            print("Request '%s' terminated with an exception: %s\n%s" %
+                  (description, repr(exc), self.exception_data),
+                  file=sys.stderr)
 
     def test_success(self):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
-
-    def prepare(self):
-        # This is an optional convenience hook called just after
-        # creating the Request
-        pass
-
-    def store_to_file(self, fd):
-        print("Test type: %s" % (self.__class__.__name__), file=fd)
-        print("Execution start time: %s" %
-              (datetime.datetime.fromtimestamp(self.start_time).
-               strftime("%d/%m/%Y %H:%M:%S.%f")), file=fd)
-        print("Execution stop time: %s" %
-              (datetime.datetime.fromtimestamp(self.stop_time).
-               strftime("%d/%m/%Y %H:%M:%S.%f")), file=fd)
-        print("Duration: %f seconds" % (self.duration), file=fd)
-        print("Outcome: %s" % (self.outcome), file=fd)
-        fd.write(self.specific_info())
-        if self.exception_data is not None:
-            print("", file=fd)
-            print("EXCEPTION CASTED", file=fd)
-            fd.write(unicode(self.exception_data))
-
-    def specific_info(self):
-        return ''
-
-    def step(self):
-        self.prepare()
-        self.execute()
-
-
-class GenericRequest(TestRequest):
-    """Docstring TODO.
-
-    """
-    MINIMUM_LENGTH = 100
-
-    def __init__(self, browser, base_url=None):
-        TestRequest.__init__(self, browser, base_url)
-        self.url = None
-        self.data = None
-        self.files = None
-
-        self.response = None
-        self.res_data = None
-
-    def do_request(self):
-        self.response = browser_do_request(self.browser,
-                                           self.url,
-                                           self.data,
-                                           self.files)
-        self.res_data = self.response.read()
-
-        # TODO - We here clear the history, otherwise the memory
-        # consumption would explode; maybe it would be better to use a
-        # custom History object that just discards the history; on the
-        # other hand the History interface is still unstable
-        self.browser.clear_history()
-
-    def test_success(self):
-        #if self.response.getcode() != 200:
-        #    return False
-        if self.res_data is None:
+        if self.status_code not in [200, 302]:
             return False
-        if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
+        if self.status_code == 200 and self.res_data is None:
+            return False
+        if self.status_code == 200 and \
+                len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
             return False
         return True
 
@@ -269,3 +240,19 @@ class GenericRequest(TestRequest):
     def describe(self):
         raise NotImplementedError("Please subclass this class "
                                   "and actually implement some request")
+
+    def store_to_file(self, fd):
+        print("Test type: %s" % (self.__class__.__name__), file=fd)
+        print("Execution start time: %s" %
+              (datetime.datetime.fromtimestamp(self.start_time).
+               strftime("%d/%m/%Y %H:%M:%S.%f")), file=fd)
+        print("Execution stop time: %s" %
+              (datetime.datetime.fromtimestamp(self.stop_time).
+               strftime("%d/%m/%Y %H:%M:%S.%f")), file=fd)
+        print("Duration: %f seconds" % (self.duration), file=fd)
+        print("Outcome: %s" % (self.outcome), file=fd)
+        fd.write(self.specific_info())
+        if self.exception_data is not None:
+            print("", file=fd)
+            print("EXCEPTION CASTED", file=fd)
+            fd.write(unicode(self.exception_data))

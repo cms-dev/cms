@@ -93,16 +93,6 @@ def recompute_start(start, speed, old_speed):
     return start, speed, old_speed
 
 
-def step(request):
-    """Prepare and execute the request in a single instruction.
-
-    request (GenericRequest): some request to *WS.
-
-    """
-    request.prepare()
-    request.execute()
-
-
 def submit(timestamp, username, t_id, t_short, files, base_url):
     """Execute the request for a submission.
 
@@ -118,11 +108,11 @@ def submit(timestamp, username, t_id, t_short, files, base_url):
           (to_time(timestamp), username, t_short), end='')
     browser = Browser()
     browser.set_handle_robots(False)
-    step(LoginRequest(browser, username, "", base_url=base_url))
-    step(SubmitRequest(browser,
-                       (int(t_id), t_short),
-                       filename=files[0],
-                       base_url=base_url))
+    LoginRequest(browser, username, "", base_url=base_url).execute()
+    SubmitRequest(browser,
+                  (int(t_id), t_short),
+                  filename=files[0],
+                  base_url=base_url).execute()
 
 
 def token(timestamp, username, t_id, t_short, submission_num, base_url):
@@ -140,11 +130,11 @@ def token(timestamp, username, t_id, t_short, submission_num, base_url):
           (to_time(timestamp), username, t_short), end='')
     browser = Browser()
     browser.set_handle_robots(False)
-    step(LoginRequest(browser, username, "", base_url=base_url))
-    step(TokenRequest(browser,
-                      (int(t_id), t_short),
-                      submission_num=submission_num,
-                      base_url=base_url))
+    LoginRequest(browser, username, "", base_url=base_url).execute()
+    TokenRequest(browser,
+                 (int(t_id), t_short),
+                 submission_num=submission_num,
+                 base_url=base_url).execute()
 
 
 def replay(base_url, source="./source.txt", start_from=None):

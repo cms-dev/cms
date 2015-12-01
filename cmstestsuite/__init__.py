@@ -533,14 +533,14 @@ def cws_submit(contest_id, task_id, user_id, submission_format_element,
     if cws_browser is None:
         cws_browser = mechanize.Browser()
         cws_browser.set_handle_robots(False)
-        lr = LoginRequest(cws_browser, username, password, base_url=base_url)
-        lr.step()
+        cws_browser.set_handle_redirect(False)
+        LoginRequest(
+            cws_browser, username, password, base_url=base_url).execute()
 
     sr = SubmitRequest(cws_browser, task, base_url=base_url,
                        submission_format_element=submission_format_element,
                        filename=filename)
-    sr.step()
-
+    sr.execute()
     submission_id = sr.get_submission_id()
 
     if submission_id is None:
@@ -568,7 +568,7 @@ def get_evaluation_result(contest_id, submission_id, timeout=60):
         sr = AWSSubmissionViewRequest(aws_browser,
                                       submission_id,
                                       base_url=base_url)
-        sr.step()
+        sr.execute()
 
         result = sr.get_submission_info()
         status = result['status']

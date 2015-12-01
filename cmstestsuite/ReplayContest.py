@@ -75,16 +75,6 @@ def to_time(seconds):
     return "%02d:%02d:%02d" % (hours, minutes, seconds)
 
 
-def step(request):
-    """Prepare and execute the request in a single instruction.
-
-    request (GenericRequest): some request to *WS.
-
-    """
-    request.prepare()
-    request.execute()
-
-
 class ContestReplayer(object):
 
     def __init__(self, import_source, cws_address, no_import=False,
@@ -231,12 +221,12 @@ class ContestReplayer(object):
         filename = os.path.join(files[0]["filename"])
         browser = Browser()
         browser.set_handle_robots(False)
-        step(LoginRequest(browser, username, password,
-                          base_url=self.cws_address))
-        step(SubmitRequest(browser,
-                           (int(t_id), t_short),
-                           filename=filename,
-                           base_url=self.cws_address))
+        LoginRequest(browser, username, password,
+                     base_url=self.cws_address).execute()
+        SubmitRequest(browser,
+                      (int(t_id), t_short),
+                      filename=filename,
+                      base_url=self.cws_address).execute()
         shutil.rmtree(temp_dir)
 
     def token(self, timestamp, username, password, t_id, t_short,
@@ -255,12 +245,12 @@ class ContestReplayer(object):
                     to_time(timestamp), username, t_short)
         browser = Browser()
         browser.set_handle_robots(False)
-        step(LoginRequest(browser, username, password,
-                          base_url=self.cws_address))
-        step(TokenRequest(browser,
-                          (int(t_id), t_short),
-                          submission_num=submission_num,
-                          base_url=self.cws_address))
+        LoginRequest(browser, username, password,
+                     base_url=self.cws_address).execute()
+        TokenRequest(browser,
+                     (int(t_id), t_short),
+                     submission_num=submission_num,
+                     base_url=self.cws_address).execute()
 
     def replay(self):
         """Start replaying the events in source on the CWS at the

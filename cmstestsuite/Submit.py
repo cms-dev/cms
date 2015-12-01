@@ -55,28 +55,21 @@ def harvest_contest_data(contest_id):
 
 
 def submit_solution(username, password, task, files, base_url=None):
-    def step(request):
-        request.prepare()
-        request.execute()
-
     browser = mechanize.Browser()
     browser.set_handle_robots(False)
 
-    step(LoginRequest(browser, username, password, base_url=base_url))
-    step(SubmitRequest(browser, task, base_url=base_url, filename=files[0]))
+    LoginRequest(browser, username, password, base_url=base_url).execute()
+    SubmitRequest(
+        browser, task, base_url=base_url, filename=files[0]).execute()
 
 
 def release_test(username, password, task, submission_num, base_url=None):
-    def step(request):
-        request.prepare()
-        request.execute()
-
     browser = mechanize.Browser()
     browser.set_handle_robots(False)
 
-    step(LoginRequest(browser, username, password, base_url=base_url))
-    step(TokenRequest(
-        browser, task, base_url=base_url, submission_num=submission_num))
+    LoginRequest(browser, username, password, base_url=base_url).execute()
+    TokenRequest(browser, task, base_url=base_url,
+                 submission_num=submission_num).execute()
 
 
 def main():

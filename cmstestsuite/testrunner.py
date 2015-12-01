@@ -220,8 +220,8 @@ class TestRunner(object):
             "token_gen_number": "0",
             "token_gen_interval": "1",
             "token_gen_max": "100",
-            "max_submission_number": "100",
-            "max_user_test_number": "100",
+            "max_submission_number": None,
+            "max_user_test_number": None,
             "min_submission_interval": None,
             "min_user_test_interval": None,
         }

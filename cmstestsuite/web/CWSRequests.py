@@ -77,11 +77,7 @@ class LoginRequest(GenericRequest):
     def test_success(self):
         if not GenericRequest.test_success(self):
             return False
-        fail_re = re.compile('Failed to log in.')
-        if fail_re.search(self.res_data) is not None:
-            return False
-        username_re = re.compile(self.username)
-        if username_re.search(self.res_data) is None:
+        if self.redirected_to != './':
             return False
         return True
 
@@ -134,8 +130,8 @@ class SubmitRequest(GenericRequest):
         self.filename = filename
         self.data = {}
 
-    def prepare(self):
-        GenericRequest.prepare(self)
+    def _prepare(self):
+        GenericRequest._prepare(self)
         self.files = [(self.submission_format_element, self.filename)]
 
     def describe(self):
@@ -155,10 +151,15 @@ class SubmitRequest(GenericRequest):
 
     def get_submission_id(self):
         # Only valid after self.execute()
-        # Parse submission ID out of response.
-        p = self.browser.geturl().split("?")[-1]
+        # Parse submission ID out of redirect.
+        if self.redirected_to is None:
+            return None
+
+        p = self.redirected_to.split("?")
+        if len(p) != 2:
+            return None
         try:
-            submission_id = decrypt_number(p)
+            submission_id = decrypt_number(p[-1])
         except Exception:
             return None
         return submission_id
@@ -177,9 +178,6 @@ class TokenRequest(GenericRequest):
         self.submission_num = submission_num
         self.data = {}
 
-    def prepare(self):
-        GenericRequest.prepare(self)
-
     def describe(self):
         return "release test the %s-th submission for task %s (ID %d)" % \
             (self.submission_num, self.task[1], self.task[0])
@@ -188,12 +186,6 @@ class TokenRequest(GenericRequest):
         return 'Task: %s (ID %d)\nSubmission: %s\n' % \
             (self.task[1], self.task[0], self.submission_num) + \
             GenericRequest.specific_info(self)
-
-    def test_success(self):
-        if not GenericRequest.test_success(self):
-            return False
-
-        return True
 
 
 class SubmitRandomRequest(SubmitRequest):
@@ -208,7 +200,7 @@ class SubmitRandomRequest(SubmitRequest):
         self.submissions_path = submissions_path
         self.data = {}
 
-    def prepare(self):
+    def _prepare(self):
         """Select a random solution and prepare it for submission.
 
         If task/ is the task directory, it might contain files (only
@@ -220,7 +212,7 @@ class SubmitRandomRequest(SubmitRequest):
         their basenames without extension.
 
         """
-        GenericRequest.prepare(self)
+        GenericRequest._prepare(self)
 
         # Select a random directory or file inside the task directory.
         task_path = os.path.join(self.submissions_path, self.task[1])
