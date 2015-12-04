@@ -38,8 +38,8 @@ import zipfile
 from StringIO import StringIO
 import tornado.web
 
-from cms.db import Dataset, Manager, Message, Session, Submission, User, \
-    Task, Testcase
+from cms.db import Dataset, Manager, Message, Participation, \
+    Session, Submission, Task, Testcase
 from cms.grading import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 
@@ -284,11 +284,11 @@ class ActivateDatasetHandler(BaseHandler):
             m = r.match(k)
             if not m:
                 continue
-            user = self.safe_get_item(User, m.group(1))
+            participation = self.safe_get_item(Participation, m.group(1))
             message = Message(datetime,
                               self.get_argument("message_subject", ""),
                               self.get_argument("message_text", ""),
-                              user=user)
+                              participation=participation)
             self.sql_session.add(message)
             count += 1
 
