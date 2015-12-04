@@ -33,8 +33,11 @@ from __future__ import unicode_literals
 
 import logging
 
+from sqlalchemy import case, literal
+
 from cms.io import PriorityQueue, QueueItem
-from cms.db import Dataset, Submission, UserTest
+from cms.db import Dataset, Evaluation, Submission, SubmissionResult, \
+    Task, Testcase, UserTest, UserTestResult
 from cms.grading.Job import CompilationJob, EvaluationJob
 
 
@@ -45,6 +48,30 @@ MAX_COMPILATION_TRIES = 3
 MAX_EVALUATION_TRIES = 3
 MAX_USER_TEST_COMPILATION_TRIES = 3
 MAX_USER_TEST_EVALUATION_TRIES = 3
+
+
+FILTER_DATASETS_TO_JUDGE = (
+    (SubmissionResult.dataset_id == Task.active_dataset_id) |
+    (Dataset.autojudge == True)  # noqa
+)
+FILTER_SUBMISSION_RESULTS_TO_COMPILE = (
+    (~SubmissionResult.filter_compiled()) &
+    (SubmissionResult.compilation_tries < MAX_COMPILATION_TRIES)
+)
+FILTER_SUBMISSION_RESULTS_TO_EVALUATE = (
+    SubmissionResult.filter_compilation_succeeded() &
+    (~SubmissionResult.filter_evaluated()) &
+    (SubmissionResult.evaluation_tries < MAX_EVALUATION_TRIES)
+)
+FILTER_USER_TEST_RESULTS_TO_COMPILE = (
+    (~UserTestResult.filter_compiled()) &
+    (UserTestResult.compilation_tries < MAX_COMPILATION_TRIES)
+)
+FILTER_USER_TEST_RESULTS_TO_EVALUATE = (
+    UserTestResult.filter_compilation_succeeded() &
+    (~UserTestResult.filter_evaluated()) &
+    (UserTestResult.evaluation_tries < MAX_EVALUATION_TRIES)
+)
 
 
 def submission_to_compile(submission_result):
@@ -256,6 +283,199 @@ def get_relevant_operations(level, submissions, dataset_id=None):
     return operations
 
 
+def get_submissions_operations(session, contest_id):
+    """Return all the operations to do for submissions in the contest.
+
+    session (Session): the database session to use.
+    contest_id (int): the contest for which we want the operations.
+
+    return ([ESOperation, float, int]): a list of operation, timestamp
+        and priority.
+
+    """
+    operations = []
+
+    # Retrieve the compilation operations for all submissions without
+    # the corresponding result for a dataset to judge. Since we have
+    # no SubmissionResult, we cannot join regularly with dataset;
+    # instead we take the cartesian product with all the datasets for
+    # the correct task.
+    to_compile = session.query(Submission)\
+        .join(Task)\
+        .join(Dataset, Dataset.task_id == Task.id)\
+        .outerjoin(SubmissionResult,
+                   (Dataset.id == SubmissionResult.dataset_id) &
+                   (Submission.id == SubmissionResult.submission_id))\
+        .filter(
+            (Task.contest_id == contest_id) &
+            (FILTER_DATASETS_TO_JUDGE) &
+            (SubmissionResult.dataset_id == None))\
+        .with_entities(Submission.id, Dataset.id,
+                       case([
+                           (Dataset.id != Task.active_dataset_id,
+                            literal(PriorityQueue.PRIORITY_EXTRA_LOW))
+                           ], else_=literal(PriorityQueue.PRIORITY_HIGH)),
+                       Submission.timestamp)\
+        .all()  # noqa
+
+    # Retrieve all the compilation operations for submissions
+    # already having a result for a dataset to judge.
+    to_compile += session.query(Submission)\
+        .join(Task)\
+        .join(SubmissionResult)\
+        .join(Dataset)\
+        .filter(
+            (Task.contest_id == contest_id) &
+            (FILTER_DATASETS_TO_JUDGE) &
+            (FILTER_SUBMISSION_RESULTS_TO_COMPILE))\
+        .with_entities(Submission.id, Dataset.id,
+                       case([
+                           (Dataset.id != Task.active_dataset_id,
+                            literal(PriorityQueue.PRIORITY_EXTRA_LOW)),
+                           (SubmissionResult.compilation_tries == 0,
+                            literal(PriorityQueue.PRIORITY_HIGH))
+                           ], else_=literal(PriorityQueue.PRIORITY_MEDIUM)),
+                       Submission.timestamp)\
+        .all()
+
+    for data in to_compile:
+        submission_id, dataset_id, priority, timestamp = data
+        operations.append((
+            ESOperation(ESOperation.COMPILATION, submission_id, dataset_id),
+            priority, timestamp))
+
+    # Retrieve all the evaluation operations for a dataset to
+    # judge. Again we need to pick all tuples (submission, dataset,
+    # testcase) such that there is no evaluation for them, and to do
+    # so we take the cartesian product with the testcases and later
+    # ensure that there is no evaluation associated.
+    to_evaluate = session.query(SubmissionResult)\
+        .join(Dataset)\
+        .join(Submission)\
+        .join(Task)\
+        .join(Testcase)\
+        .outerjoin(Evaluation,
+                   (Evaluation.submission_id == Submission.id) &
+                   (Evaluation.dataset_id == Dataset.id) &
+                   (Evaluation.testcase_id == Testcase.id))\
+        .filter(
+            (Task.contest_id == contest_id) &
+            (FILTER_DATASETS_TO_JUDGE) &
+            (FILTER_SUBMISSION_RESULTS_TO_EVALUATE) &
+            (Evaluation.id == None))\
+        .with_entities(Submission.id, Dataset.id,
+                       case([
+                           (Dataset.id != Task.active_dataset_id,
+                            literal(PriorityQueue.PRIORITY_EXTRA_LOW)),
+                           (SubmissionResult.evaluation_tries == 0,
+                            literal(PriorityQueue.PRIORITY_MEDIUM))
+                           ], else_=literal(PriorityQueue.PRIORITY_LOW)),
+                       Submission.timestamp,
+                       Testcase.codename)\
+        .all()  # noqa
+
+    for data in to_evaluate:
+        submission_id, dataset_id, priority, timestamp, codename = data
+        operations.append((
+            ESOperation(
+                ESOperation.EVALUATION, submission_id, dataset_id, codename),
+            priority, timestamp))
+
+    return operations
+
+
+def get_user_tests_operations(session, contest_id):
+    """Return all the operations to do for user tests in the contest.
+
+    session (Session): the database session to use.
+    contest_id (int): the contest for which we want the operations.
+
+    return ([ESOperation, float, int]): a list of operation, timestamp
+        and priority.
+
+    """
+    operations = []
+
+    # Retrieve the compilation operations for all user tests without
+    # the corresponding result for a dataset to judge. Since we have
+    # no UserTestResult, we cannot join regularly with dataset;
+    # instead we take the cartesian product with all the datasets for
+    # the correct task.
+    to_compile = session.query(UserTest)\
+        .join(Task)\
+        .join(Dataset, Dataset.task_id == Task.id)\
+        .outerjoin(UserTestResult,
+                   (Dataset.id == UserTestResult.dataset_id) &
+                   (UserTest.id == UserTestResult.user_test_id))\
+        .filter(
+            (Task.contest_id == contest_id) &
+            (FILTER_DATASETS_TO_JUDGE) &
+            (UserTestResult.dataset_id == None))\
+        .with_entities(UserTest.id, Dataset.id,
+                       case([
+                           (Dataset.id != Task.active_dataset_id,
+                            literal(PriorityQueue.PRIORITY_EXTRA_LOW))
+                           ], else_=literal(PriorityQueue.PRIORITY_HIGH)),
+                       UserTest.timestamp)\
+        .all()  # noqa
+
+    # Retrieve all the compilation operations for user_tests
+    # already having a result for a dataset to judge.
+    to_compile += session.query(UserTest)\
+        .join(Task)\
+        .join(UserTestResult)\
+        .join(Dataset)\
+        .filter(
+            (Task.contest_id == contest_id) &
+            (FILTER_DATASETS_TO_JUDGE) &
+            (FILTER_USER_TEST_RESULTS_TO_COMPILE))\
+        .with_entities(UserTest.id, Dataset.id,
+                       case([
+                           (Dataset.id != Task.active_dataset_id,
+                            literal(PriorityQueue.PRIORITY_EXTRA_LOW)),
+                           (UserTestResult.compilation_tries == 0,
+                            literal(PriorityQueue.PRIORITY_HIGH))
+                           ], else_=literal(PriorityQueue.PRIORITY_MEDIUM)),
+                       UserTest.timestamp)\
+        .all()
+
+    for data in to_compile:
+        user_test_id, dataset_id, priority, timestamp = data
+        operations.append((
+            ESOperation(ESOperation.COMPILATION, user_test_id, dataset_id),
+            priority, timestamp))
+
+    # Retrieve all the evaluation operations for a dataset to judge,
+    # that is, all pairs (user_test, dataset) for which we have a
+    # user test result which is compiled but not evaluated.
+    to_evaluate = session.query(UserTest)\
+        .join(Task)\
+        .join(UserTestResult)\
+        .join(Dataset)\
+        .filter(
+            (Task.contest_id == contest_id) &
+            (FILTER_DATASETS_TO_JUDGE) &
+            (FILTER_USER_TEST_RESULTS_TO_EVALUATE))\
+        .with_entities(UserTest.id, Dataset.id,
+                       case([
+                           (Dataset.id != Task.active_dataset_id,
+                            literal(PriorityQueue.PRIORITY_EXTRA_LOW)),
+                           (UserTestResult.evaluation_tries == 0,
+                            literal(PriorityQueue.PRIORITY_MEDIUM))
+                           ], else_=literal(PriorityQueue.PRIORITY_LOW)),
+                       UserTest.timestamp)\
+        .all()
+
+    for data in to_evaluate:
+        user_test_id, dataset_id, priority, timestamp = data
+        operations.append((
+            ESOperation(
+                ESOperation.EVALUATION, user_test_id, dataset_id),
+            priority, timestamp))
+
+    return operations
+
+
 class ESOperation(QueueItem):
 
     COMPILATION = "compile"
@@ -293,6 +513,13 @@ class ESOperation(QueueItem):
         else:
             return "%s on %d against dataset %d" % (
                 self.type_, self.object_id, self.dataset_id)
+
+    def __repr__(self):
+        return "(\"%s\", %s, %s, %s)" % (
+            self.type_,
+            self.object_id,
+            self.dataset_id,
+            self.testcase_codename)
 
     def to_dict(self):
         return {"type": self.type_,
