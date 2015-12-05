@@ -179,11 +179,10 @@ class EvaluationService(TriggeredService):
                          .total_seconds(),
                          immediately=False)
 
-    def submission_enqueue_operations(self, submission, check_again=False):
+    def submission_enqueue_operations(self, submission):
         """Push in queue the operations required by a submission.
 
         submission (Submission): a submission.
-        check_again (bool): whether to run check() on the operation.
 
         return (int): the number of actually enqueued operations.
 
@@ -195,8 +194,7 @@ class EvaluationService(TriggeredService):
             for operation, priority, timestamp in submission_get_operations(
                     submission_result, submission, dataset):
                 number_of_operations += 1
-                if self.enqueue(operation, priority, timestamp,
-                                check_again=check_again):
+                if self.enqueue(operation, priority, timestamp):
                     new_operations += 1
 
             # If we got 0 operations, but the submission result is to
@@ -212,11 +210,10 @@ class EvaluationService(TriggeredService):
 
         return new_operations
 
-    def user_test_enqueue_operations(self, user_test, check_again=False):
+    def user_test_enqueue_operations(self, user_test):
         """Push in queue the operations required by a user test.
 
         user_test (UserTest): a user test.
-        check_again (bool): whether to run check() on the operation.
 
         return (int): the number of actually enqueued operations.
 
@@ -225,8 +222,7 @@ class EvaluationService(TriggeredService):
         for dataset in get_datasets_to_judge(user_test.task):
             for operation, priority, timestamp in user_test_get_operations(
                     user_test, dataset):
-                if self.enqueue(operation, priority, timestamp,
-                                check_again=check_again):
+                if self.enqueue(operation, priority, timestamp):
                     new_operations += 1
 
         return new_operations
@@ -244,11 +240,9 @@ class EvaluationService(TriggeredService):
 
             # Scan through submissions and user tests
             for submission in contest.get_submissions():
-                counter += self.submission_enqueue_operations(submission,
-                                                              check_again=True)
+                counter += self.submission_enqueue_operations(submission)
             for user_test in contest.get_user_tests():
-                counter += self.user_test_enqueue_operations(user_test,
-                                                             check_again=True)
+                counter += self.user_test_enqueue_operations(user_test)
 
         return counter
 
@@ -428,30 +422,21 @@ class EvaluationService(TriggeredService):
             raise Exception("Wrong operation type %s" % operation.type_)
 
     @with_post_finish_lock
-    def enqueue(self, operation, priority, timestamp, check_again=False):
-        """Check an operation and push it in the queue.
+    def enqueue(self, operation, priority, timestamp):
+        """Push an operation in the queue.
 
         Push an operation in the operation queue if the submission is
-        not already in the queue or assigned to a worker. Optionally
-        check that the operation is actually still to be performed by
-        running check() on it.
+        not already in the queue or assigned to a worker.
 
         operation (ESOperation): the operation to put in the queue.
         priority (int): the priority of the operation.
         timestamp (datetime): the time of the submission.
-        check_again (bool): whether or not to run check() on the
-            operation.
 
         return (bool): True if pushed, False if not.
 
         """
         if self.operation_busy(operation):
             return False
-
-        if check_again:
-            with SessionGen() as session:
-                if not operation.check(session):
-                    return False
 
         # enqueue() returns the number of successful pushes.
         return super(EvaluationService, self).enqueue(

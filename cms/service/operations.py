@@ -300,39 +300,6 @@ class ESOperation(QueueItem):
                 "dataset_id": self.dataset_id,
                 "testcase_codename": self.testcase_codename}
 
-    def check(self, session):
-        """Check that this operation is actually to be enqueued.
-
-        I.e., check that the associated action has not been performed
-        yet. It is used in cases when the status of the underlying object
-        may have changed since last check.
-
-        session (Session): the database session to use.
-
-        return (bool): True if the operation is still to be performed.
-
-        """
-        result = True
-        dataset = Dataset.get_from_id(self.dataset_id, session)
-        if self.type_ == ESOperation.COMPILATION:
-            submission = Submission.get_from_id(self.object_id, session)
-            submission_result = submission.get_result(dataset)
-            result = submission_to_compile(submission_result)
-        elif self.type_ == ESOperation.EVALUATION:
-            submission = Submission.get_from_id(self.object_id, session)
-            submission_result = submission.get_result(dataset)
-            result = submission_to_evaluate_on_testcase(
-                submission_result, self.testcase_codename)
-        elif self.type_ == ESOperation.USER_TEST_COMPILATION:
-            user_test = UserTest.get_from_id(self.object_id, session)
-            user_test_result = user_test.get_result(dataset)
-            result = user_test_to_compile(user_test_result)
-        elif self.type_ == ESOperation.USER_TEST_EVALUATION:
-            user_test = UserTest.get_from_id(self.object_id, session)
-            user_test_result = user_test.get_result(dataset)
-            result = user_test_to_evaluate(user_test_result)
-        return result
-
     def build_job(self, session):
         """Produce the Job for this operation.
 
