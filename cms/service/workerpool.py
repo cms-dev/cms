@@ -89,10 +89,9 @@ class WorkerPool(object):
         self._workers_available_event = Event()
 
     def __contains__(self, operation):
-        for shard in self._worker:
-            if operation == self._operation[shard] and not self._ignore[shard]:
-                return True
-        return False
+        return any(operation == self._operation[shard]
+                   and not self._ignore[shard]
+                   for shard in self._worker)
 
     def wait_for_workers(self):
         """Wait until a worker might be available."""
