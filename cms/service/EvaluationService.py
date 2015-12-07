@@ -84,6 +84,20 @@ class EvaluationExecutor(Executor):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
 
+    def __contains__(self, item):
+        """Return whether the item is in execution.
+
+        item (QueueItem): an item to search.
+
+        return (bool): True if item is in the queue, or if it is the
+            item already extracted but not given to the workers yet,
+            or if it is being executed by a worker.
+
+        """
+        return super(EvaluationExecutor, self).__contains__(item) or \
+            self._currently_executing == item or \
+            item in self.pool
+
     def execute(self, entry):
         """Execute an operation in the queue.
 
@@ -162,6 +176,28 @@ class EvaluationService(TriggeredService):
         super(EvaluationService, self).__init__(shard)
 
         self.contest_id = contest_id
+
+        # This lock is used to avoid inserting in the queue (which
+        # itself is already thread-safe) an operation which is already
+        # being processed. Such operation might be in one of the
+        # following state:
+        # 1. in the queue;
+        # 2. extracted from the queue by the executor, but not yet
+        #    dispatched to a worker;
+        # 3. being processed by a worker ("in the worker pool");
+        # 4. being processed by action_finished, but with the results
+        #    not yet written to the database.
+        # 5. with results written in the database.
+        #
+        # The methods enqueuing operations already check that the
+        # operation is not in state 5, and enqueue() checks that it is
+        # not in the first three states.
+        #
+        # Therefore, the lock guarantees that the methods adding
+        # operations to the queue (_missing_operations,
+        # invalidate_submission, enqueue) are not executed
+        # concurrently with action_finished to avoid picking
+        # operations in state 4.
         self.post_finish_lock = gevent.coros.RLock()
 
         self.scoring_service = self.connect_to(
@@ -227,6 +263,7 @@ class EvaluationService(TriggeredService):
 
         return new_operations
 
+    @with_post_finish_lock
     def _missing_operations(self):
         """Look in the database for submissions that have not been compiled or
         evaluated for no good reasons. Put the missing operation in
@@ -379,8 +416,7 @@ class EvaluationService(TriggeredService):
                 submission_id,
                 dataset_id,
                 testcase_codename))
-        return any([operation in self.get_executor().pool or
-                    operation in self.get_executor()
+        return any([operation in self.get_executor()
                     for operation in operations])
 
     def user_test_busy(self, user_test_id, dataset_id):
@@ -398,8 +434,7 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self.get_executor().pool or
-                    operation in self.get_executor()
+        return any([operations in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
@@ -623,7 +658,7 @@ class EvaluationService(TriggeredService):
 
     def compilation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
-        ended compilation . In particular: we queue evaluation if
+        ended compilation. In particular: we queue evaluation if
         compilation was ok, we inform ScoringService if the
         compilation failed for an error in the submission, or we
         requeue the compilation if there was an error in CMS.
