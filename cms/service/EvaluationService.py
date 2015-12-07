@@ -84,6 +84,20 @@ class EvaluationExecutor(Executor):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
 
+    def __contains__(self, item):
+        """Return whether the item is in execution.
+
+        item (QueueItem): an item to search.
+
+        return (bool): True if item is in the queue, or if it is the
+            item already extracted but not given to the workers yet,
+            or if it is being executed by a worker.
+
+        """
+        return super(EvaluationExecutor, self).__contains__(item) or \
+            self._currently_executing == item or \
+            item in self.pool
+
     def execute(self, entry):
         """Execute an operation in the queue.
 
@@ -227,6 +241,7 @@ class EvaluationService(TriggeredService):
 
         return new_operations
 
+    @with_post_finish_lock
     def _missing_operations(self):
         """Look in the database for submissions that have not been compiled or
         evaluated for no good reasons. Put the missing operation in
@@ -379,8 +394,7 @@ class EvaluationService(TriggeredService):
                 submission_id,
                 dataset_id,
                 testcase_codename))
-        return any([operation in self.get_executor().pool or
-                    operation in self.get_executor()
+        return any([operation in self.get_executor()
                     for operation in operations])
 
     def user_test_busy(self, user_test_id, dataset_id):
@@ -398,8 +412,7 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self.get_executor().pool or
-                    operation in self.get_executor()
+        return any([operations in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
