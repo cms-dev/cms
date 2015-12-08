@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import time
 
 import gevent
 from gevent.event import Event
@@ -311,8 +312,11 @@ class TriggeredService(Service):
 
     def _sweep(self):
         """Check for missed operations."""
+        logger.info("Start looking for missing operations.")
+        start_time = time.time()
         counter = self._missing_operations()
-        logger.info("Found %d missed operation(s).", counter)
+        logger.info("Found %d missed operation(s) in %d ms.",
+                    counter, (time.time() - start_time) * 1000)
 
     def _missing_operations(self):
         """Enqueue missed operations, and return their number.
