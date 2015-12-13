@@ -164,7 +164,7 @@ Language details
 
 * Java programs are first compiled using ``gcj`` (optimized with ``-O3``), and then run as normal executables. Proper Java support using a JVM will most probably come in the next CMS version.
 
-* Python submissions are interpreted using Python 2 (you need to have ``/usr/bin/python2``).
+* Python submissions are interpreted using Python 2 (you need to have ``/usr/bin/python2``). If you want to use Python 3, you can set the ``python_version`` to ``"3"`` in your :file:`cms.conf` file.
 
 * PHP submissions are interpreted by ``/usr/bin/php5``.
 
