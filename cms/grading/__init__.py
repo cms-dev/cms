@@ -243,13 +243,17 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         # The executable name is fixed, and there is no way to specify
         # the name of the pyc, so we need to bundle together two
         # commands (compilation and rename).
-        # In order to use Python 3 change them to:
-        # /usr/bin/python3 -m py_compile %s
-        # mv __pycache__/%s.*.pyc %s
-        py_command = ["/usr/bin/python2", "-m", "py_compile",
-                      source_filenames[0]]
-        mv_command = ["/bin/mv", "%s.pyc" % os.path.splitext(os.path.basename(
+        py_command = ["/usr/bin/python" + config.python_version, "-m",
+                      "py_compile", source_filenames[0]]
+
+        if config.python_version == "3":
+            pyc_name = "__pycache__/%s.cpython-34.pyc"
+        else:
+            pyc_name = "%s.pyc"
+
+        mv_command = ["/bin/mv", pyc_name % os.path.splitext(os.path.basename(
                       source_filenames[0]))[0], executable_filename]
+
         commands.append(py_command)
         commands.append(mv_command)
     elif language == LANG_PHP:
@@ -283,9 +287,8 @@ def get_evaluation_commands(language, executable_filename):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
     elif language == LANG_PYTHON:
-        # In order to use Python 3 change it to:
-        # /usr/bin/python3 %s
-        command = ["/usr/bin/python2", executable_filename]
+        command = ["/usr/bin/python" + config.python_version,
+                   executable_filename]
         commands.append(command)
     elif language == LANG_PHP:
         command = ["/usr/bin/php5", executable_filename]
