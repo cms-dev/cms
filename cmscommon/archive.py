@@ -159,9 +159,9 @@ class Archive(object):
         """Remove temporary directory, if needed.
 
         """
-        if os.path.exists(self.temp_dir):
+        if self.temp_dir is not None and os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
-        self.temp_dir = None
+            self.temp_dir = None
         if self.delete_source:
             try:
                 os.remove(self.path)
