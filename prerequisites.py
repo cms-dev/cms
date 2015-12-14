@@ -196,6 +196,7 @@ Available commands:
 
 Options:
    -y                Don't ask questions interactively (assume "y")
+   --no-conf         Don't install configuration files
    --as-root         (DON'T USE) Allow running non-root commands as root
 """ % (sys.argv[0]))
 
@@ -274,6 +275,28 @@ Options:
         self.build_l10n()
         self.build_isolate()
 
+    def install_conf(self):
+        """Install configuration files"""
+        print("===== Copying configuration to /usr/local/etc/")
+        makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
+        for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+            conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
+            # Skip if destination is a symlink
+            if os.path.islink(conf_file):
+                continue
+            # If the config exists, check if the user wants to overwrite it
+            if os.path.exists(conf_file):
+                if not ask("The %s file is already installed, "
+                           "type Y to overwrite it: " % (conf_file_name)):
+                    continue
+            if os.path.exists(os.path.join(".", "config", conf_file_name)):
+                copyfile(os.path.join(".", "config", conf_file_name),
+                         conf_file, cmsuser, 0660)
+            else:
+                conf_file_name = "%s.sample" % conf_file_name
+                copyfile(os.path.join(".", "config", conf_file_name),
+                         conf_file, cmsuser, 0660)
+
     def install(self):
         """This function prepares all that's needed to run CMS:
         - creation of cmsuser user
@@ -308,25 +331,8 @@ Options:
         # max liberty to change them.
         old_umask = os.umask(0000)
 
-        print("===== Copying configuration to /usr/local/etc/")
-        makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
-        for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
-            conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
-            # Skip if destination is a symlink
-            if os.path.islink(conf_file):
-                continue
-            # If the config exists, check if the user wants to overwrite it
-            if os.path.exists(conf_file):
-                if not ask("The %s file is already installed, "
-                           "type Y to overwrite it: " % (conf_file_name)):
-                    continue
-            if os.path.exists(os.path.join(".", "config", conf_file_name)):
-                copyfile(os.path.join(".", "config", conf_file_name),
-                         conf_file, cmsuser, 0660)
-            else:
-                conf_file_name = "%s.sample" % conf_file_name
-                copyfile(os.path.join(".", "config", conf_file_name),
-                         conf_file, cmsuser, 0660)
+        if "--no-conf" not in sys.argv:
+            self.install_conf()
 
         print("===== Creating directories")
         dirs = [os.path.join(VAR_ROOT, "log"),
