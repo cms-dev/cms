@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import time
 
 import gevent
 from gevent.event import Event
@@ -129,28 +130,28 @@ class Executor(object):  # pylint: disable=R0921
             assert len(to_execute) > 0, "Expected at least one element."
             if self._batch_executions:
                 try:
-                    logger.info("Executing operations `%s' and %d more.",
+                    logger.info("[TS] Executing operations `%s' and %d more.",
                                 to_execute[0].item, len(to_execute) - 1)
                     self.execute(to_execute)
-                    logger.info("Operations `%s' and %d more concluded "
+                    logger.info("[TS] Operations `%s' and %d more concluded "
                                 "successfully.", to_execute[0].item,
                                 len(to_execute) - 1)
                 except Exception:
                     logger.error(
-                        "Unexpected error when executing operation "
+                        "[TS] Unexpected error when executing operation "
                         "`%s' (and %d more operations).", to_execute[0].item,
                         len(to_execute) - 1, exc_info=True)
 
             else:
                 try:
-                    logger.info("Executing operation `%s'.",
+                    logger.info("[TS] Executing operation `%s'.",
                                 to_execute[0].item)
                     self.execute(to_execute[0])
-                    logger.info("Operation `%s' concluded successfully",
+                    logger.info("[TS] Operation `%s' concluded successfully",
                                 to_execute[0].item)
                 except Exception:
                     logger.error(
-                        "Unexpected error when executing operation `%s'.",
+                        "[TS] Unexpected error when executing operation `%s'.",
                         to_execute[0].item, exc_info=True)
 
     def execute(self, entry):
@@ -275,7 +276,8 @@ class TriggeredService(Service):
             # TODO: link to greenlet and react to its death.
             gevent.spawn(self._sweeper_loop)
         else:
-            logger.warning("Service tried to start the sweeper loop twice.")
+            logger.warning(
+                "[TS] Service tried to start the sweeper loop twice.")
 
     def _sweeper_loop(self):
         """Regularly check for missed operations.
@@ -302,7 +304,7 @@ class TriggeredService(Service):
             try:
                 self._sweep()
             except Exception:
-                logger.error("Unexpected error when searching for missed "
+                logger.error("[TS] Unexpected error when searching for missed "
                              "operations.", exc_info=True)
 
             self._sweeper_event.wait(max(self._sweeper_start +
@@ -311,8 +313,11 @@ class TriggeredService(Service):
 
     def _sweep(self):
         """Check for missed operations."""
+        logger.info("[TS] Start looking for missing operations.")
+        start_time = time.time()
         counter = self._missing_operations()
-        logger.info("Found %d missed operation(s).", counter)
+        logger.info("[TS] Found %d missed operation(s) in %d ms.",
+                    counter, (time.time() - start_time) * 1000)
 
     def _missing_operations(self):
         """Enqueue missed operations, and return their number.

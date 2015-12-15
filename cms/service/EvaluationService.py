@@ -45,13 +45,14 @@ from sqlalchemy import func, not_
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, TriggeredService, rpc_method
-from cms.db import SessionGen, Contest, Dataset, Submission, \
+from cms.db import SessionGen, Dataset, Submission, \
     SubmissionResult, Task, UserTest
-from cms.service import get_submissions, get_submission_results, \
-    get_datasets_to_judge
+from cms.service import get_datasets_to_judge, \
+    get_submissions, get_submission_results
 from cms.grading.Job import Job
 
 from .operations import ESOperation, get_relevant_operations, \
+    get_submissions_operations, get_user_tests_operations, \
     submission_get_operations, submission_to_evaluate, \
     user_test_get_operations
 from .workerpool import WorkerPool
@@ -83,6 +84,20 @@ class EvaluationExecutor(Executor):
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
+
+    def __contains__(self, item):
+        """Return whether the item is in execution.
+
+        item (QueueItem): an item to search.
+
+        return (bool): True if item is in the queue, or if it is the
+            item already extracted but not given to the workers yet,
+            or if it is being executed by a worker.
+
+        """
+        return super(EvaluationExecutor, self).__contains__(item) or \
+            self._currently_executing == item or \
+            item in self.pool
 
     def execute(self, entry):
         """Execute an operation in the queue.
@@ -227,6 +242,7 @@ class EvaluationService(TriggeredService):
 
         return new_operations
 
+    @with_post_finish_lock
     def _missing_operations(self):
         """Look in the database for submissions that have not been compiled or
         evaluated for no good reasons. Put the missing operation in
@@ -235,14 +251,16 @@ class EvaluationService(TriggeredService):
         """
         counter = 0
         with SessionGen() as session:
-            contest = session.query(Contest).\
-                filter_by(id=self.contest_id).first()
 
-            # Scan through submissions and user tests
-            for submission in contest.get_submissions():
-                counter += self.submission_enqueue_operations(submission)
-            for user_test in contest.get_user_tests():
-                counter += self.user_test_enqueue_operations(user_test)
+            for operation, timestamp, priority in \
+                    get_submissions_operations(session, self.contest_id):
+                if self.enqueue(operation, timestamp, priority):
+                    counter += 1
+
+            for operation, timestamp, priority in \
+                    get_user_tests_operations(session, self.contest_id):
+                if self.enqueue(operation, timestamp, priority):
+                    counter += 1
 
         return counter
 
@@ -379,8 +397,7 @@ class EvaluationService(TriggeredService):
                 submission_id,
                 dataset_id,
                 testcase_codename))
-        return any([operation in self.get_executor().pool or
-                    operation in self.get_executor()
+        return any([operation in self.get_executor()
                     for operation in operations])
 
     def user_test_busy(self, user_test_id, dataset_id):
@@ -398,8 +415,7 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self.get_executor().pool or
-                    operation in self.get_executor()
+        return any([operations in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
@@ -438,9 +454,8 @@ class EvaluationService(TriggeredService):
         if self.operation_busy(operation):
             return False
 
-        # enqueue() returns the number of successful pushes.
         return super(EvaluationService, self).enqueue(
-            operation, priority, timestamp) > 0
+            operation, priority, timestamp)
 
     @with_post_finish_lock
     def action_finished(self, data, plus, error=None):
@@ -496,8 +511,8 @@ class EvaluationService(TriggeredService):
                                  "not successful.", shard)
                     job_success = False
 
-        logger.info("Operation `%s' for submission %s completed. Success: %s.",
-                    operation, object_id, job_success)
+        logger.info("[action_finished] `%s' completed. Success: %s.",
+                    operation, job_success)
 
         # We get the submission from DB and update it.
         with SessionGen() as session:
