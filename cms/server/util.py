@@ -213,7 +213,10 @@ def format_size(n):
         return '0 B'
 
     # Use the last unit that's smaller than n
-    unit_index = next(i for i, x in enumerate(DIMS) if n >= x) - 1
+    try:
+        unit_index = next(i for i, x in enumerate(DIMS) if n < x) - 1
+    except StopIteration:
+        unit_index = -1
     n = float(n) / DIMS[unit_index]
 
     if n < 10:
