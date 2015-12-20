@@ -36,6 +36,7 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import re
 
 from tornado.template import Template
 
@@ -141,9 +142,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
     """Intermediate class to manage tasks whose testcases are
     subdivided in groups (or subtasks). The score type parameters must
     be in the form [[m, t, ...], [...], ...], where m is the maximum
-    score for the given subtask and t is the number of testcases
+    score for the given subtask and t is the parameter for specifying
+    testcases.
+
+    If t is int, it is interpreted as the number of testcases
     comprising the subtask (that are consumed from the first to the
-    last, sorted by num).
+    last, sorted by num). If t is unicode, it is interpreted as the regular
+    expression of the names of target testcases. All t must have the same type.
 
     A subclass must implement the method 'get_public_outcome' and
     'reduce'.
@@ -235,24 +240,67 @@ class ScoreTypeGroup(ScoreTypeAlone):
 </div>
 {% end %}"""
 
+    def retrieve_target_testcases(self):
+        """Return the list of the target testcases for each subtask.
+
+        Each element of the list consist of multiple strings.
+        Each string represents the testcase name which should be included
+        to the corresponding subtask.
+        The order of the list is the same as 'parameters'.
+
+        return ([[unicode]]): the list of the target testcases for each task.
+
+        """
+
+        t_params = [p[1] for p in self.parameters]
+
+        if all(isinstance(t, int) for t in t_params):
+
+            # XXX Lexicographical order by codename
+            indices = sorted(self.public_testcases.keys())
+            current = 0
+            targets = []
+
+            for t in t_params:
+                next_ = current + t
+                targets.append(indices[current:next_])
+                current = next_
+
+            return targets
+
+        elif all(isinstance(t, unicode) for t in t_params):
+
+            indices = sorted(self.public_testcases.keys())
+            targets = []
+
+            for t in t_params:
+                regexp = re.compile(t)
+                target = [tc for tc in indices if regexp.match(tc)]
+                if not target:
+                    raise StandardError(
+                        "No testcase matches against the regexp '%s'" % t)
+                targets.append(target)
+
+            return targets
+
+        raise StandardError(
+            "In the score type parameters, the second value of each element "
+            "must have the same type (int or unicode)")
+
     def max_scores(self):
         """See ScoreType.max_score."""
         score = 0.0
         public_score = 0.0
         headers = list()
 
-        # XXX Lexicographical order by codename
-        indices = sorted(self.public_testcases.keys())
-        current = 0
+        targets = self.retrieve_target_testcases()
 
         for i, parameter in enumerate(self.parameters):
-            next_ = current + parameter[1]
+            target = targets[i]
             score += parameter[0]
-            if all(self.public_testcases[idx]
-                   for idx in indices[current:next_]):
+            if all(self.public_testcases[idx] for idx in target):
                 public_score += parameter[0]
             headers += ["Subtask %d (%g)" % (i + 1, parameter[0])]
-            current = next_
 
         return score, public_score, headers
 
@@ -263,32 +311,28 @@ class ScoreTypeGroup(ScoreTypeAlone):
             return 0.0, "[]", 0.0, "[]", \
                 json.dumps(["%lg" % 0.0 for _ in self.parameters])
 
-        # XXX Lexicographical order by codename
-        indices = sorted(self.public_testcases.keys())
+        targets = self.retrieve_target_testcases()
         evaluations = dict((ev.codename, ev)
                            for ev in submission_result.evaluations)
         subtasks = []
         public_subtasks = []
         ranking_details = []
-        tc_start = 0
-        tc_end = 0
 
         for st_idx, parameter in enumerate(self.parameters):
-            tc_end = tc_start + parameter[1]
+            target = targets[st_idx]
             st_score = self.reduce([float(evaluations[idx].outcome)
-                                    for idx in indices[tc_start:tc_end]],
+                                    for idx in target],
                                    parameter) * parameter[0]
-            st_public = all(self.public_testcases[idx]
-                            for idx in indices[tc_start:tc_end])
+            st_public = all(self.public_testcases[idx] for idx in target)
             tc_outcomes = dict((
                 idx,
                 self.get_public_outcome(
                     float(evaluations[idx].outcome), parameter)
-                ) for idx in indices[tc_start:tc_end])
+                ) for idx in target)
 
             testcases = []
             public_testcases = []
-            for idx in indices[tc_start:tc_end]:
+            for idx in target:
                 testcases.append({
                     "idx": idx,
                     "outcome": tc_outcomes[idx],
@@ -315,8 +359,6 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     })
 
             ranking_details.append("%g" % round(st_score, 2))
-
-            tc_start = tc_end
 
         score = sum(st["score"] for st in subtasks)
         public_score = sum(st["score"]
