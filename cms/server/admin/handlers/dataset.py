@@ -239,7 +239,7 @@ class ActivateDatasetHandler(BaseHandler):
         task = dataset.task
 
         changes = compute_changes_for_dataset(task.active_dataset, dataset)
-        notify_users = set()
+        notify_participations = set()
 
         # By default, we will notify users who's public scores have changed, or
         # their non-public scores have changed but they have used a token.
@@ -249,13 +249,13 @@ class ActivateDatasetHandler(BaseHandler):
                 c.new_public_score is not None
             if public_score_changed or \
                     (c.submission.tokened() and score_changed):
-                notify_users.add(c.submission.participation.user.id)
+                notify_participations.add(c.submission.participation.id)
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
         self.r_params["dataset"] = dataset
         self.r_params["changes"] = changes
-        self.r_params["default_notify_users"] = notify_users
+        self.r_params["default_notify_participations"] = notify_participations
         self.render("activate_dataset.html", **self.r_params)
 
     def post(self, dataset_id):

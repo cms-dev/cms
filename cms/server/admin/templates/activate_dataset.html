@@ -78,7 +78,7 @@ scores. No notifications will be sent.</p>
     <tr>
       <td style="text-align: right;">
         {% if c.submission.participation.id != prev_id %}
-        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.id in default_notify_users else "off" }}" name="notify_{{ c.submission.participation.id}}"/>
+        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.id in default_notify_participations else "off" }}" name="notify_{{ c.submission.participation.id}}"/>
         {% end %}
       </td>
       <td>
