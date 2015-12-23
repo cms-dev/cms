@@ -1,0 +1,111 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Tests for the flushing dict module."""
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import gevent
+import unittest
+
+from cms.service.flushingdict import FlushingDict
+
+
+class TestFlushingDict(unittest.TestCase):
+
+    SIZE = 3
+    FLUSH_LATENCY_SECONDS = 0.2
+
+    def setUp(self):
+        super(TestFlushingDict, self).setUp()
+        self.received_data = []
+        self.d = FlushingDict(
+            TestFlushingDict.SIZE, TestFlushingDict.FLUSH_LATENCY_SECONDS,
+            self.callback)
+
+    def test_success_latency(self):
+        self.d.add(0, 0)
+        gevent.sleep(2 * TestFlushingDict.FLUSH_LATENCY_SECONDS)
+        self.assertEqual(1, len(self.received_data))
+        self.assertItemsEqual([(0, 0)], self.received_data[0])
+
+    def test_success_size(self):
+        expected_data = []
+        for i in range(TestFlushingDict.SIZE):
+            self.d.add(i, i)
+            expected_data.append((i, i))
+        gevent.sleep(0)
+        self.assertEqual(1, len(self.received_data))
+        self.assertItemsEqual(expected_data, self.received_data[0])
+
+    def test_success_size_latency(self):
+        expected_data = []
+        for i in range(TestFlushingDict.SIZE):
+            self.d.add(i, i)
+            expected_data.append((i, i))
+        gevent.sleep(0)
+        self.assertEqual(1, len(self.received_data))
+        self.assertItemsEqual(expected_data, self.received_data[0])
+        self.d.add(TestFlushingDict.SIZE, TestFlushingDict.SIZE)
+        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS)
+        self.assertEqual(2, len(self.received_data))
+        self.assertItemsEqual(
+            [(TestFlushingDict.SIZE, TestFlushingDict.SIZE)],
+            self.received_data[1])
+
+    def test_long_callback(self):
+        self.d = FlushingDict(
+            TestFlushingDict.SIZE, TestFlushingDict.FLUSH_LATENCY_SECONDS,
+            self.long_callback)
+        expected_data = []
+        for i in range(TestFlushingDict.SIZE):
+            self.d.add(i, i)
+            expected_data.append((i, i))
+
+        # We add another element while the callback is idling, to see
+        # if the new element is flushed later. We need to wait 2
+        # latencies for the callback, one more for the time-based
+        # second flush, and we add some tolerance.
+        gevent.sleep(0)
+        self.d.add(TestFlushingDict.SIZE, TestFlushingDict.SIZE)
+        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS * 3 + 0.1)
+
+        self.assertEqual(TestFlushingDict.SIZE + 1,
+                         sum(len(data) for data in self.received_data))
+
+    def test_many_elements(self):
+        expected_data = []
+        for i in range(20):
+            self.d.add(i, i)
+            expected_data.append((i, i))
+        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS)
+        self.assertItemsEqual(expected_data, sum(self.received_data, []))
+
+    def callback(self, data):
+        self.received_data.append(data)
+
+    def long_callback(self, data):
+        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS * 2)
+        self.callback(data)
+
+
+if __name__ == "__main__":
+    unittest.main()
