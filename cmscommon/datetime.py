@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -72,16 +73,19 @@ def make_timestamp(_datetime=None):
 
 
 def get_timezone(user, contest):
-    """Return the timezone for the given user and contest
+    """Return the timezone for the given user and contest.
 
-    user (User): the user owning the timezone.
-    contest (Contest): the contest in which the user is competing.
+    user (User|None): the user for which the timezone should be determined, or
+        None if the user timezone should not be considered.
+    contest (Contest): the contest for which the timezone should be determined.
 
-    return (tzinfo): the timezone information for the user.
+    return (tzinfo): the timezone information for the user (or for the contest
+        if user is None).
 
     """
-    if user.timezone is not None and user.timezone in all_timezones:
-        return timezone(user.timezone)
+    if user is not None:
+        if user.timezone is not None and user.timezone in all_timezones:
+            return timezone(user.timezone)
     if contest.timezone is not None and contest.timezone in all_timezones:
         return timezone(contest.timezone)
     return local

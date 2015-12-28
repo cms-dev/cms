@@ -1,5 +1,6 @@
 /* Programming contest management system
  * Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+ * Copyright © 2015 Luca Chiodini <luca@chiodini.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -66,6 +67,14 @@ var DataStore = new function () {
             dataType: "json",
             success: function (data, status, xhr) {
                 self.contest_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
+
+                // This is expected to be the first AJAX call and so it is a good
+                // chance to properly initialize "diff_with_server_time",
+                // which contains the difference in seconds between local time
+                // and server time (not considering timezone offsets).
+                TimeView.diff_with_server_time =
+                    Math.round($.now() / 1000 - self.contest_init_time);
+
                 for (var key in data) {
                     self.create_contest(key, data[key]);
                 }
@@ -828,6 +837,7 @@ var DataStore = new function () {
             if (timestamp > self.contest_init_time) {
                 self.contest_listener(event);
             }
+            TimeView.diff_with_server_time = Math.round($.now() / 1000 - timestamp);
             self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("task", function (event) {
@@ -835,6 +845,7 @@ var DataStore = new function () {
             if (timestamp > self.task_init_time) {
                 self.task_listener(event);
             }
+            TimeView.diff_with_server_time = Math.round($.now() / 1000 - timestamp);
             self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("team", function (event) {
@@ -842,6 +853,7 @@ var DataStore = new function () {
             if (timestamp > self.team_init_time) {
                 self.team_listener(event);
             }
+            TimeView.diff_with_server_time = Math.round($.now() / 1000 - timestamp);
             self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("user", function (event) {
@@ -849,6 +861,7 @@ var DataStore = new function () {
             if (timestamp > self.user_init_time) {
                 self.user_listener(event);
             }
+            TimeView.diff_with_server_time = Math.round($.now() / 1000 - timestamp);
             self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("score", function (event) {
@@ -856,6 +869,7 @@ var DataStore = new function () {
             if (timestamp > self.score_init_time) {
                 self.score_listener(event);
             }
+            TimeView.diff_with_server_time = Math.round($.now() / 1000 - timestamp);
             self.last_event_id = event.lastEventId;
         }, false);
     };
