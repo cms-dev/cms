@@ -1,5 +1,6 @@
 /* Programming contest management system
  * Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+ * Copyright © 2015 Luca Chiodini <luca@chiodini.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -25,9 +26,14 @@ function format_time(time, full) {
     return (h + ":" + m + ":" + s);
 };
 
-function _get_time() {
-    // Return the seconds since January 1, 1970 00:00:00 UTC
-    return $.now() / 1000;
+function _get_server_time() {
+    // Return the seconds since January 1, 1970 00:00:00 UTC (server time)
+    return ($.now() / 1000) - TimeView.diff_with_server_time;
+}
+
+function _get_server_timezoned_time(server_utc_offset) {
+    var local_utc_offset = new Date().getTimezoneOffset() * -60;
+    return _get_server_time() + server_utc_offset - local_utc_offset;
 }
 
 var TimeView = new function () {
@@ -38,6 +44,10 @@ var TimeView = new function () {
     // - 1: remaining time
     // - 2: current (clock) time
     self.status = 0;
+
+    // Difference in seconds between local time and server time (not
+    // considering timezone offsets).
+    self.diff_with_server_time = 0;
 
     self.init = function () {
         window.setInterval(function() {
@@ -78,14 +88,14 @@ var TimeView = new function () {
     };
 
     self.on_timer = function () {
-        var cur_time = _get_time();
+        var server_time = _get_server_time();
         var c = null;
 
         // contests are iterated sorted by begin time
         // and the first one that's still running is chosen
         for (var j in DataStore.contest_list) {
             var contest = DataStore.contest_list[j];
-            if (cur_time <= contest['end']) {
+            if (server_time <= contest['end']) {
                 c = contest;
                 break;
             }
@@ -97,9 +107,9 @@ var TimeView = new function () {
             $("#TimeView_name").text(c["name"]);
         }
 
-        var date = new Date(cur_time * 1000);
+        var date = new Date(server_time * 1000);
         var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        var time = cur_time - today.getTime() / 1000;
+        var time = server_time - today.getTime() / 1000;
 
         var full_time = false;
 
@@ -109,7 +119,7 @@ var TimeView = new function () {
             $("#TimeView").addClass("current post_cont");
             full_time = true;
         } else {
-            if (cur_time < c['begin']) {
+            if (server_time < c['begin']) {
                 // the next contest has yet to start: show remaining or clock
                 $("#TimeView").removeClass("cont post_cont");
                 $("#TimeView").addClass("pre_cont");
@@ -120,7 +130,7 @@ var TimeView = new function () {
                 } else {
                     $("#TimeView").removeClass("elapsed current");
                     $("#TimeView").addClass("remaining");
-                    time = cur_time - c['begin'];
+                    time = server_time - c['begin'];
                 }
             } else {
                 // the next contest already started: all options available
@@ -133,13 +143,23 @@ var TimeView = new function () {
                 } else if (self.status == 1) {
                     $("#TimeView").removeClass("elapsed current");
                     $("#TimeView").addClass("remaining");
-                    time = cur_time - c['end'];
+                    time = server_time - c['end'];
                 } else {
                     $("#TimeView").removeClass("remaining current");
                     $("#TimeView").addClass("elapsed");
-                    time = cur_time - c['begin'];
+                    time = server_time - c['begin'];
                 }
             }
+        }
+
+        // If we are showing the clock and we have information about a contest,
+        // set the clock in the contest timezone. While adding the offset the
+        // day might change, so it has to be redetermined.
+        if (self.status == 2 && c != null) {
+            server_timezoned_time = _get_server_timezoned_time(c["tz_offset"]);
+            date = new Date(server_timezoned_time * 1000);
+            today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            time = server_timezoned_time - today.getTime() / 1000;
         }
 
         var time_str = format_time(Math.abs(Math.floor(time)), full_time);

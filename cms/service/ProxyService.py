@@ -9,6 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,7 +47,7 @@ from cms import config
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
 from cms.grading.scoretypes import get_score_type
-from cmscommon.datetime import make_timestamp
+from cmscommon.datetime import get_timezone, make_timestamp
 
 
 logger = logging.getLogger(__name__)
@@ -329,7 +330,10 @@ class ProxyService(TriggeredService):
                 "name": contest.description,
                 "begin": int(make_timestamp(contest.start)),
                 "end": int(make_timestamp(contest.stop)),
-                "score_precision": contest.score_precision}
+                "score_precision": contest.score_precision,
+                "tz_offset": int(get_timezone(contest)
+                                 .utcoffset(contest.start).total_seconds())
+            }
 
             users = dict()
             teams = dict()

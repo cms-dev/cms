@@ -93,7 +93,7 @@ class PrintingExecutor(Executor):
                                  printjob_id)
             user = printjob.participation.user
             contest = user.contest
-            timezone = get_timezone(user, contest)
+            timezone = get_timezone(contest, user)
             timestr = format_datetime(printjob.timestamp, timezone)
             filename = printjob.filename
 

@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -47,6 +48,7 @@ class Contest(Entity):
         self.begin = None
         self.end = None
         self.score_precision = None
+        self.tz_offset = None
 
     @staticmethod
     def validate(data):
@@ -70,6 +72,8 @@ class Contest(Entity):
                 "Field 'score_precision' isn't an integer"
             assert data['score_precision'] >= 0, \
                 "Field 'score_precision' is negative"
+            assert isinstance(data['tz_offset'], six.integer_types), \
+                "Field 'tz_offset' isn't an integer"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)
         except AssertionError as exc:
@@ -81,6 +85,7 @@ class Contest(Entity):
         self.begin = data['begin']
         self.end = data['end']
         self.score_precision = data['score_precision']
+        self.tz_offset = data['tz_offset']
 
     def get(self):
         result = self.__dict__.copy()
