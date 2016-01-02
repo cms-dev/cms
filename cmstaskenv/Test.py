@@ -179,7 +179,7 @@ def test_testcases(base_dir, solution, language, assume=None):
 
     # Subtasks scoring
     subtasks = json.loads(dataset.score_type_parameters)
-    if len(subtasks) == 0:
+    if not isinstance(subtasks, list) or len(subtasks) == 0:
         subtasks = [[100, len(info)]]
 
     if dataset.score_type == 'GroupMin':
