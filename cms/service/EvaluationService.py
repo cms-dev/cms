@@ -51,7 +51,7 @@ from cms.service import get_submissions, get_submission_results, \
     get_datasets_to_judge
 from cms.grading.Job import Job
 
-from .operations import ESOperation, get_relevant_operations, \
+from .esoperations import ESOperation, get_relevant_operations, \
     submission_get_operations, submission_to_evaluate, \
     user_test_get_operations
 from .workerpool import WorkerPool
