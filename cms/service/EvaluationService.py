@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -45,13 +45,14 @@ from sqlalchemy import func, not_
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, TriggeredService, rpc_method
-from cms.db import SessionGen, Contest, Dataset, Submission, \
+from cms.db import SessionGen, Dataset, Submission, \
     SubmissionResult, Task, UserTest
-from cms.service import get_submissions, get_submission_results, \
-    get_datasets_to_judge
+from cms.service import get_datasets_to_judge, \
+    get_submissions, get_submission_results
 from cms.grading.Job import Job
 
 from .esoperations import ESOperation, get_relevant_operations, \
+    get_submissions_operations, get_user_tests_operations, \
     submission_get_operations, submission_to_evaluate, \
     user_test_get_operations
 from .workerpool import WorkerPool
@@ -250,14 +251,16 @@ class EvaluationService(TriggeredService):
         """
         counter = 0
         with SessionGen() as session:
-            contest = session.query(Contest).\
-                filter_by(id=self.contest_id).first()
 
-            # Scan through submissions and user tests
-            for submission in contest.get_submissions():
-                counter += self.submission_enqueue_operations(submission)
-            for user_test in contest.get_user_tests():
-                counter += self.user_test_enqueue_operations(user_test)
+            for operation, timestamp, priority in \
+                    get_submissions_operations(session, self.contest_id):
+                if self.enqueue(operation, timestamp, priority):
+                    counter += 1
+
+            for operation, timestamp, priority in \
+                    get_user_tests_operations(session, self.contest_id):
+                if self.enqueue(operation, timestamp, priority):
+                    counter += 1
 
         return counter
 
