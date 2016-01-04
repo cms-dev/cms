@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -32,27 +32,15 @@ from __future__ import unicode_literals
 import logging
 
 from cms import ServiceCoord, config
-from cms.io import Executor, QueueItem, TriggeredService, rpc_method
+from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Submission, Dataset
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results
 
+from .scoringoperations import ScoringOperation, get_operations
+
 
 logger = logging.getLogger(__name__)
-
-
-class ScoringOperation(QueueItem):
-    def __init__(self, submission_id, dataset_id):
-        self.submission_id = submission_id
-        self.dataset_id = dataset_id
-
-    def __str__(self):
-        return "scoring submission %d on dataset %d" % (
-            self.submission_id, self.dataset_id)
-
-    def to_dict(self):
-        return {"submission_id": self.submission_id,
-                "dataset_id": self.dataset_id}
 
 
 class ScoringExecutor(Executor):
@@ -165,12 +153,9 @@ class ScoringService(TriggeredService):
         """
         counter = 0
         with SessionGen() as session:
-            for sr in get_submission_results(session=session):
-                if sr is not None and sr.needs_scoring():
-                    self.enqueue(ScoringOperation(sr.submission_id,
-                                                  sr.dataset_id),
-                                 timestamp=sr.submission.timestamp)
-                    counter += 1
+            for operation, timestamp in get_operations(session):
+                self.enqueue(operation, timestamp=timestamp)
+                counter += 1
         return counter
 
     @rpc_method
