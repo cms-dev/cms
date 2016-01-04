@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -342,6 +343,13 @@ class UserTestResult(Base):
         """
         return self.compilation_outcome is not None
 
+    @staticmethod
+    def filter_compiled():
+        """Return a filtering expression for compiled user test results.
+
+        """
+        return UserTestResult.compilation_outcome.isnot(None)
+
     def compilation_failed(self):
         """Return whether the user test result did not compile.
 
@@ -351,6 +359,14 @@ class UserTestResult(Base):
 
         """
         return self.compilation_outcome == "fail"
+
+    @staticmethod
+    def filter_compilation_failed():
+        """Return a filtering expression for user test results failing
+        compilation.
+
+        """
+        return UserTestResult.compilation_outcome == "fail"
 
     def compilation_succeeded(self):
         """Return whether the user test compiled.
@@ -362,6 +378,14 @@ class UserTestResult(Base):
         """
         return self.compilation_outcome == "ok"
 
+    @staticmethod
+    def filter_compilation_succeeded():
+        """Return a filtering expression for user test results failing
+        compilation.
+
+        """
+        return UserTestResult.compilation_outcome == "ok"
+
     def evaluated(self):
         """Return whether the user test result has been evaluated.
 
@@ -369,6 +393,13 @@ class UserTestResult(Base):
 
         """
         return self.evaluation_outcome is not None
+
+    @staticmethod
+    def filter_evaluated():
+        """Return a filtering lambda for evaluated user test results.
+
+        """
+        return UserTestResult.evaluation_outcome.isnot(None)
 
     def invalidate_compilation(self):
         """Blank all compilation and evaluation outcomes.
