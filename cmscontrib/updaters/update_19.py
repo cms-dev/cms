@@ -21,8 +21,8 @@
 
 Used by ContestImporter and DumpUpdater.
 
-This updater is no-op as the new fields (block_hidden_participations
-and ip_restriction) have a proper default value.
+This updater just adds the default values for the new fields
+(block_hidden_participations and ip_restriction).
 
 """
 
@@ -38,4 +38,11 @@ class Updater(object):
         self.objs = data
 
     def run(self):
+        for k, v in self.objs.iteritems():
+            if k.startswith("_"):
+                continue
+            if v["_class"] == "Contest":
+                v["block_hidden_participations"] = False
+                v["ip_restriction"] = True
+
         return self.objs

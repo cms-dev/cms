@@ -95,12 +95,12 @@ class Contest(Base):
         default=False)
 
     # Whether to enforce that the IP address of the request matches
-    # the IP address of subnet specified for the participation (if
+    # the IP address or subnet specified for the participation (if
     # present).
     ip_restriction = Column(
         Boolean,
         nullable=False,
-        default=False)
+        default=True)
 
     # Whether to automatically log in users connecting from an IP
     # address specified in the ip field of a participation to this
