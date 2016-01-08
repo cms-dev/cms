@@ -59,7 +59,7 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
 
     # Optional
     sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
-         texlive-latex-base a2ps
+         texlive-latex-base a2ps gcj-jdk
 
 Arch Linux
 ----------
