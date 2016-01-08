@@ -235,7 +235,9 @@ Options:
 
         print("===== Compiling isolate")
         os.chdir("isolate")
-        os.system("make")
+        # We make only the executable isolate, otherwise the tool a2x
+        # is needed and we have to add more compilation dependencies.
+        os.system("make isolate")
         os.chdir("..")
 
     def install_isolate(self):
