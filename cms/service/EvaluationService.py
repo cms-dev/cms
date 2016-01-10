@@ -390,75 +390,6 @@ class EvaluationService(TriggeredService):
             self.enqueue(operation, priority, timestamp)
         return True
 
-    def submission_busy(self, submission_id, dataset_id,
-                        testcase_codename=None):
-        """Check if the submission has a related operation in the queue or
-        assigned to a worker.
-
-        This might be either the compilation of the submission, or the
-        evaluation of the testcase.
-
-        submission_id (int): the id of the submission.
-        dataset_id (int): the id of the dataset.
-        testcase_codename (unicode|None): if not set, we will only
-            check for the presence of the compilation of the
-            submission.
-
-        return (bool): True when the submission / testcase is present
-            in the queue.
-
-        """
-        operations = []
-        operations.append(ESOperation(
-            ESOperation.COMPILATION,
-            submission_id,
-            dataset_id))
-        if testcase_codename is not None:
-            operations.append(ESOperation(
-                ESOperation.EVALUATION,
-                submission_id,
-                dataset_id,
-                testcase_codename))
-        return any([operation in self.get_executor()
-                    for operation in operations])
-
-    def user_test_busy(self, user_test_id, dataset_id):
-        """Check if the user test has a related operation in the queue or
-        assigned to a worker.
-
-        """
-        operations = [
-            ESOperation(
-                ESOperation.USER_TEST_COMPILATION,
-                user_test_id,
-                dataset_id),
-            ESOperation(
-                ESOperation.USER_TEST_EVALUATION,
-                user_test_id,
-                dataset_id),
-        ]
-        return any([operations in self.get_executor()
-                    for operation in operations])
-
-    def operation_busy(self, operation):
-        """Check the entity (submission or user test) related to an operation
-        has other related operations in the queue or assigned to a
-        worker.
-
-        """
-
-        if operation.type_ in (ESOperation.COMPILATION,
-                               ESOperation.EVALUATION):
-            return self.submission_busy(operation.object_id,
-                                        operation.dataset_id,
-                                        operation.testcase_codename)
-        elif operation.type_ in (ESOperation.USER_TEST_COMPILATION,
-                                 ESOperation.USER_TEST_EVALUATION):
-            return self.user_test_busy(operation.object_id,
-                                       operation.dataset_id)
-        else:
-            raise Exception("Wrong operation type %s" % operation.type_)
-
     @with_post_finish_lock
     def enqueue(self, operation, priority, timestamp):
         """Push an operation in the queue.
@@ -473,7 +404,7 @@ class EvaluationService(TriggeredService):
         return (bool): True if pushed, False if not.
 
         """
-        if self.operation_busy(operation):
+        if operation in self.get_executor() or operation in self.result_cache:
             return False
 
         # enqueue() returns the number of successful pushes.
