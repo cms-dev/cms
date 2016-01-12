@@ -117,7 +117,8 @@ class LargeObject(io.RawIOBase):
                     (LargeObject.INV_WRITE if self._writable else 0)
         self._fd = self._execute("SELECT lo_open(%(loid)s, %(mode)s);",
                                  {'loid': self.loid, 'mode': open_mode},
-                                 "Couldn't open large object.", cursor)
+                                 "Couldn't open large object with LOID "
+                                 "%s." % (self.loid), cursor)
 
         cursor.close()
 
