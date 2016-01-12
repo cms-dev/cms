@@ -276,13 +276,15 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 regexp = re.compile(t)
                 target = [tc for tc in indices if regexp.match(tc)]
                 if not target:
-                    raise StandardError("No testcase matches "\
-                        "against the regexp '%s'" % t)
+                    raise StandardError(
+                        "No testcase matches against the regexp '%s'" % t)
                 targets.append(target)
 
             return targets
 
-        raise StandardError("All t must have the same type (int or str)")
+        raise StandardError(
+            "In the score type parameters, the second value of each element "
+            "must have the same type (int or str)")
 
     def max_scores(self):
         """See ScoreType.max_score."""
