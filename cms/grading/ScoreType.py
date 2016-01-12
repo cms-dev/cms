@@ -146,7 +146,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
     If t is int, it is interpreted as the number of testcases
     comprising the subtask (that are consumed from the first to the
-    last, sorted by num). If t is str, it is interpreted as the regular
+    last, sorted by num). If t is unicode, it is interpreted as the regular
     expression of the names of target testcases. All t must have the same type.
 
     A subclass must implement the method 'get_public_outcome' and
@@ -247,7 +247,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         to the corresponding subtask.
         The order of the list is the same as 'parameters'.
 
-        return ([[str]]): the list of the target testcases for each task.
+        return ([[unicode]]): the list of the target testcases for each task.
 
         """
 
@@ -267,7 +267,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             return targets
 
-        elif all(isinstance(t, str) for t in t_params):
+        elif all(isinstance(t, unicode) for t in t_params):
 
             indices = sorted(self.public_testcases.keys())
             targets = []
@@ -284,7 +284,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         raise StandardError(
             "In the score type parameters, the second value of each element "
-            "must have the same type (int or str)")
+            "must have the same type (int or unicode)")
 
     def max_scores(self):
         """See ScoreType.max_score."""
