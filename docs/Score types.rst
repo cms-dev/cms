@@ -32,9 +32,13 @@ For example, if there are 20 testcases, 2 of which are public, and the parameter
 GroupMin
 --------
 
-With the GroupMin score type, outcomes are again treated as a measure of correctness, from 0.0 (incorrect) to 1.0 (correct); testcases are split into groups, and each group has an integral multiplier. The score is the sum, over all groups, of the minimum outcome for that group times the multiplier. The public score is computed over all groups in which all testcases within are public.
+With the GroupMin score type, outcomes are again treated as a measure of correctness, from 0.0 (incorrect) to 1.0 (correct); testcases are split into groups, and each group has an integral multiplier. The score is the sum of the score of each group, which in turn is the minimum outcome within the group times the multiplier. The public score is computed over all groups whose testcases are all public.
 
-More precisely, the parameters string for GroupMin is of the form :samp:`[[{m1}, {t1}], [{m2}, {t2}], ...]`, meaning that the first group comprises the first :samp:`{t1}` testcases and has multiplier :samp:`{m1}`; the second group comprises the testcases from the :samp:`{t1}` + 1 to the :samp:`{t1}` + :samp:`{t2}` and has multiplier :samp:`{m2}`; and so on.
+The parameters string for GroupMin is of the form :samp:`[[{m1}, {t1}], [{m2}, {t2}], ...]`, where for each pair the first element is the multiplier, and the second is either always an integer, or always a string.
+
+In the first case (second element is always an integer), the integer is interpreted as the number of testcases that the group consumes (ordered by codename). That is, the first group comprises the first :samp:`{t1}` testcases and has multiplier :samp:`{m1}`; the second group comprises the testcases from the :samp:`{t1}` + 1 to the :samp:`{t1}` + :samp:`{t2}` and has multiplier :samp:`{m2}`; and so on.
+
+In the second case (second element is always a string), the string is interpreted as a regular expression, and the group comprises all testcases whose codename satisfies it.
 
 
 GroupMul
