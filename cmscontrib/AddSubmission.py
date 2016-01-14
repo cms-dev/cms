@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,7 +30,8 @@ import logging
 import sys
 
 from cms import filename_to_language, utf8_decoder
-from cms.db import File, SessionGen, Submission, Task, User, ask_for_contest
+from cms.db import File, Participation, SessionGen, Submission, Task, User, \
+    ask_for_contest
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_datetime
 
@@ -42,15 +43,19 @@ def add_submission(contest_id, username, task_name, timestamp, files):
     file_cacher = FileCacher()
     with SessionGen() as session:
 
-        user = session.query(User)\
-            .filter(User.contest_id == contest_id)\
-            .filter(User.username == username).first()
-        if user is None:
-            logging.critical("Unable to find user `%s'.", username)
+        participation = session.query(Participation)\
+            .join(Participation.user)\
+            .filter(Participation.contest_id == contest_id)\
+            .filter(User.username == username)\
+            .first()
+        if participation is None:
+            logging.critical("User `%s' does not exists or "
+                             "does not participate in the contest.", username)
             return False
         task = session.query(Task)\
             .filter(Task.contest_id == contest_id)\
-            .filter(Task.name == task_name).first()
+            .filter(Task.name == task_name)\
+            .first()
         if task is None:
             logging.critical("Unable to find task `%s'.", task_name)
             return False
@@ -98,8 +103,8 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             return False
 
         # Create objects in the DB.
-        submission = Submission(make_datetime(timestamp),
-                                language, user=user, task=task)
+        submission = Submission(make_datetime(timestamp), language,
+                                participation=participation, task=task)
         for filename, digest in file_digests.items():
             session.add(File(filename, digest, submission=submission))
         session.add(submission)
