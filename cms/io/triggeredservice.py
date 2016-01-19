@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -121,10 +121,10 @@ class Executor(object):  # pylint: disable=R0921
             # Wait for the queue to be non-empty.
             to_execute = [self._operation_queue.pop(wait=True)]
             if self._batch_executions:
-                # TODO: shall we yield to other greenlets? I think
-                # that it is going to be extremely unlikely to have
-                # more than one operations.
-                while not self._operation_queue.empty():
+                max_operations = self.max_operations_per_batch()
+                while not self._operation_queue.empty() and (
+                        max_operations == 0 or
+                        len(to_execute) < max_operations):
                     to_execute.append(self._operation_queue.pop())
 
             assert len(to_execute) > 0, "Expected at least one element."
@@ -153,6 +153,19 @@ class Executor(object):  # pylint: disable=R0921
                     logger.error(
                         "Unexpected error when executing operation `%s'.",
                         to_execute[0].item, exc_info=True)
+
+    def max_operations_per_batch(self):
+        """Return the maximum number of operations in a batch.
+
+        If the service has batch executions, this method returns the
+        maximum size of a batch (the batch might be smaller if not
+        enough operations are present in the queue).
+
+        return (int): the maximum number of operations, or 0 to
+            indicate no limits.
+
+        """
+        return 0
 
     def execute(self, entry):
         """Perform a single operation.
