@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -127,6 +127,9 @@ class PriorityQueue(object):
 
         # Index of the next element that will be added to the queue.
         self._next_index = 0
+
+    def __len__(self):
+        return len(self._queue)
 
     def _verify(self):
         """Make sure that the internal state of the queue is consistent.
