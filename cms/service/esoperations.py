@@ -547,6 +547,15 @@ class ESOperation(QueueItem):
             self.dataset_id,
             self.testcase_codename)
 
+    def for_submission(self):
+        """Return if the operation is for a submission or for a user test.
+
+        return (bool): True if this operation is for a submission.
+
+        """
+        return self.type_ == ESOperation.COMPILATION or \
+            self.type_ == ESOperation.EVALUATION
+
     def to_dict(self):
         return {
             "type": self.type_,
@@ -555,31 +564,27 @@ class ESOperation(QueueItem):
             "testcase_codename": self.testcase_codename
         }
 
-    def build_job(self, session):
+    def build_job(self, object_, dataset):
         """Produce the Job for this operation.
 
         Return the Job object that has to be sent to Workers to have
         them perform the operation this object describes.
 
-        session (Session): the database session to use to fetch objects
-            if necessary.
+        object_ (Submission|UserTest): the object this operation
+            refers to (might be a submission or a user test).
+        dataset (Dataset): the dataset this operation refers to.
 
         return (Job): the job encoding of the operation, as understood
             by Workers and TaskTypes.
 
         """
         result = None
-        dataset = Dataset.get_from_id(self.dataset_id, session)
         if self.type_ == ESOperation.COMPILATION:
-            submission = Submission.get_from_id(self.object_id, session)
-            result = CompilationJob.from_submission(self, submission, dataset)
+            result = CompilationJob.from_submission(self, object_, dataset)
         elif self.type_ == ESOperation.EVALUATION:
-            submission = Submission.get_from_id(self.object_id, session)
-            result = EvaluationJob.from_submission(self, submission, dataset)
+            result = EvaluationJob.from_submission(self, object_, dataset)
         elif self.type_ == ESOperation.USER_TEST_COMPILATION:
-            user_test = UserTest.get_from_id(self.object_id, session)
-            result = CompilationJob.from_user_test(self, user_test, dataset)
+            result = CompilationJob.from_user_test(self, object_, dataset)
         elif self.type_ == ESOperation.USER_TEST_EVALUATION:
-            user_test = UserTest.get_from_id(self.object_id, session)
-            result = EvaluationJob.from_user_test(self, user_test, dataset)
+            result = EvaluationJob.from_user_test(self, object_, dataset)
         return result
