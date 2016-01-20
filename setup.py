@@ -125,6 +125,7 @@ setup(
             "cmsAddTask=cmscontrib.AddTask:main",
             "cmsRemoveTask=cmscontrib.RemoveTask:main",
             "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
+            "cmsExportSubmissions=cmscontrib.ExportSubmissions:main",
             "cmsAddContest=cmscontrib.AddContest:main",
             "cmsAddAdmin=cmscontrib.AddAdmin:main",
             "cmsDumpExporter=cmscontrib.DumpExporter:main",
