@@ -36,6 +36,7 @@ from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
+from cms.service.esoperations import ESOperation
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
 
@@ -119,6 +120,11 @@ def test_testcases(base_dir, solution, language, assume=None):
         "Solution %s for task %s" % (solution, task.name))
     executables = {task.name: Executable(filename=task.name, digest=digest)}
     jobs = [(t, EvaluationJob(
+        operation=ESOperation(
+            ESOperation.EVALUATION,
+            None,
+            dataset.id,
+            dataset.testcases[t].codename).to_dict(),
         language=language,
         task_type=dataset.task_type,
         task_type_parameters=json.loads(dataset.task_type_parameters),

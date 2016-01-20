@@ -29,7 +29,7 @@ import random
 def unique_long_id():
     """Return a unique id of type long."""
     if not hasattr(unique_long_id, "id"):
-        unique_long_id.id = random.random()
+        unique_long_id.id = random.randint(0, 1000000000)
     unique_long_id.id += 1
     return unique_long_id.id
 
