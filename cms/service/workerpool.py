@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -39,6 +39,7 @@ from gevent.event import Event
 
 from cms.io import QueueItem
 from cms.db import SessionGen
+from cms.grading.Job import JobGroup
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
@@ -176,14 +177,13 @@ class WorkerPool(object):
 
         with SessionGen() as session:
             job = operation.build_job(session)
-            job_dict = job.export_to_dict()
+            job_group = JobGroup([job])
+            job_group_dict = job_group.export_to_dict()
 
-        self._worker[shard].execute_job(
-            job_dict=job_dict,
+        self._worker[shard].execute_job_group(
+            job_group_dict=job_group_dict,
             callback=self._service.action_finished,
-            plus=(operation.type_, operation.object_id,
-                  operation.dataset_id, operation.testcase_codename,
-                  side_data, shard))
+            plus=(shard, side_data))
         return shard
 
     def release_worker(self, shard):
