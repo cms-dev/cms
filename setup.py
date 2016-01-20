@@ -113,6 +113,7 @@ setup(
             "cmsRemoveTask=cmscontrib.RemoveTask:main",
             "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
             "cmsAddContest=cmscontrib.AddContest:main",
+            "cmsAddAdmin=cmscontrib.AddAdmin:main",
             "cmsDumpExporter=cmscontrib.DumpExporter:main",
             "cmsDumpImporter=cmscontrib.DumpImporter:main",
             "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
