@@ -38,7 +38,7 @@ from cms.db import SessionGen, Contest
 from cms.db.filecacher import FileCacher
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
-from cms.grading.Job import CompilationJob, EvaluationJob, Job
+from cms.grading.Job import CompilationJob, EvaluationJob, JobGroup
 
 
 logger = logging.getLogger(__name__)
@@ -94,48 +94,51 @@ class Worker(Service):
         logger.info("Precaching finished.")
 
     @rpc_method
-    def execute_job(self, job_dict):
-        """Receive a group of jobs in a dict format and executes them
-        one by one.
+    def execute_job_group(self, job_group_dict):
+        """Receive a group of jobs in a list format and executes them one by
+        one.
 
-        job_dict (dict): a dictionary suitable to be imported from Job.
+        job_group_list ({}): a JobGroup exported to dict.
 
         """
         start_time = time.time()
-        job = Job.import_from_dict_with_type(job_dict)
+        job_group = JobGroup.import_from_dict(job_group_dict)
 
         if self.work_lock.acquire(False):
-
             try:
-                logger.info("Starting job.",
-                            extra={"operation": job.info})
+                logger.info("Starting job group.")
+                for job in job_group.jobs:
+                    logger.info("Starting job.",
+                                extra={"operation": job.info})
 
-                job.shard = self.shard
+                    job.shard = self.shard
 
-                if self._fake_worker_time is None:
-                    task_type = get_task_type(job.task_type,
-                                              job.task_type_parameters)
-                    task_type.execute_job(job, self.file_cacher)
+                    if self._fake_worker_time is None:
+                        task_type = get_task_type(job.task_type,
+                                                  job.task_type_parameters)
+                        task_type.execute_job(job, self.file_cacher)
 
-                else:
-                    time.sleep(self._fake_worker_time)
-                    job.success = True
-                    job.text = ["ok"]
-                    job.plus = {
-                        "execution_time": self._fake_worker_time,
-                        "execution_wall_clock_time": self._fake_worker_time,
-                        "execution_memory": 1000,
-                    }
+                    else:
+                        time.sleep(self._fake_worker_time)
+                        job.success = True
+                        job.text = ["ok"]
+                        job.plus = {
+                            "execution_time": self._fake_worker_time,
+                            "execution_wall_clock_time":
+                            self._fake_worker_time,
+                            "execution_memory": 1000,
+                        }
 
-                    if isinstance(job, CompilationJob):
-                        job.compilation_success = True
-                    elif isinstance(job, EvaluationJob):
-                        job.outcome = "1.0"
+                        if isinstance(job, CompilationJob):
+                            job.compilation_success = True
+                        elif isinstance(job, EvaluationJob):
+                            job.outcome = "1.0"
 
-                logger.info("Finished job.",
-                            extra={"operation": job.info})
+                    logger.info("Finished job.",
+                                extra={"operation": job.info})
 
-                return job.export_to_dict()
+                logger.info("Finished job group.")
+                return job_group.export_to_dict()
 
             except:
                 err_msg = "Worker failed."

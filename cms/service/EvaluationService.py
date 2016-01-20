@@ -51,7 +51,7 @@ from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task, \
     UserTest
 from cms.service import get_datasets_to_judge, \
     get_submissions, get_submission_results
-from cms.grading.Job import Job
+from cms.grading.Job import JobGroup
 
 from .esoperations import ESOperation, get_relevant_operations, \
     get_submissions_operations, get_user_tests_operations, \
@@ -163,8 +163,7 @@ class Result(object):
 
     """
 
-    def __init__(self, plus, job, job_success):
-        self.plus = plus
+    def __init__(self, job, job_success):
         self.job = job
         self.job_success = job_success
 
@@ -439,23 +438,11 @@ class EvaluationService(TriggeredService):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
 
-        data (dict): a dictionary that describes a Job instance.
-        plus (tuple): the tuple (type_,
-                                 object_id,
-                                 dataset_id,
-                                 testcase_codename,
-                                 side_data=(priority, timestamp),
-                                 shard_of_worker)
+        data (dict): the JobGroup, exported to dict.
+        plus (tuple): the tuple (shard, (priority, timestamp)).
 
         """
-        # Unpack the plus tuple. It's built in the RPC call to Worker's
-        # execute_job method inside WorkerPool.acquire_worker.
-        type_, object_id, dataset_id, testcase_codename, _, \
-            shard = plus
-
-        # Restore operation from its fields.
-        operation = ESOperation(
-            type_, object_id, dataset_id, testcase_codename)
+        shard, side_data = plus
 
         # We notify the pool that the worker is available again for
         # further work (no matter how the current request turned out,
@@ -469,29 +456,27 @@ class EvaluationService(TriggeredService):
             logger.info("Ignored result from worker %s as requested.", shard)
             return
 
-        job = None
-        job_success = True
+        job_group = None
+        job_group_success = True
         if error is not None:
             logger.error("Received error from Worker: `%s'.", error)
-            job_success = False
+            job_group_success = False
 
         else:
             try:
-                job = Job.import_from_dict_with_type(data)
+                job_group = JobGroup.import_from_dict(data)
             except:
                 logger.error("Couldn't build Job for data %s.", data,
                              exc_info=True)
-                job_success = False
+                job_group_success = False
 
-            else:
-                if not job.success:
-                    logger.error("Worker %s signaled action not successful.",
-                                 shard)
-                    job_success = False
-
-        logger.info("`%s' completed. Success: %s.", operation, job_success)
-
-        self.result_cache.add(operation, Result(plus, job, job_success))
+        if job_group_success:
+            for job in job_group.jobs:
+                operation = ESOperation.from_dict(job.operation)
+                logger.info("`%s' completed. Success: %s.",
+                            operation, job.success)
+                self.result_cache.add(
+                    operation, Result(side_data, job, job.success))
 
     # This should work without the lock, but if troublesome remove the comment.
     @with_post_finish_lock
@@ -515,9 +500,7 @@ class EvaluationService(TriggeredService):
         # evaluations for the same submission and dataset).
         by_object_and_type = defaultdict(list)
         for operation, result in items:
-            type_, object_id, dataset_id, testcase_codename, _, \
-                shard = result.plus
-            t = (type_, object_id, dataset_id)
+            t = (operation.type_, operation.object_id, operation.dataset_id)
             by_object_and_type[t].append((operation, result))
 
         with SessionGen() as session:
@@ -567,8 +550,7 @@ class EvaluationService(TriggeredService):
                     object_result = object_.get_result(dataset)
 
                 self.write_results_one_object_and_type(
-                    session, type_, dataset, object_, object_result,
-                    operation_results)
+                    session, object_result, operation_results)
 
             logger.info("Committing evaluations...")
             session.commit()
@@ -598,19 +580,15 @@ class EvaluationService(TriggeredService):
         logger.info("Done")
 
     def write_results_one_object_and_type(
-            self, session, type_, dataset, object_,
-            object_result, operation_results):
+            self, session, object_result, operation_results):
         """Write to the DB the results for one object and type.
 
         session (Session): the DB session to use.
-        type_ (unicode): the type of all the ESOperations.
-        dataset (Dataset): the dataset of all the ESOperations.
-        object_ (Submission|UserTest): the object of all the ESOperations.
         object_result (SubmissionResult|UserTestResult): the DB object
-            for the result of object_, for all the ESOperations.
+            for the result referred to all the ESOperations.
         operation_results ([(ESOperation, WorkerResult)]): all the
-            operation and corresponding worker results we have
-            received for the given parameters.
+            operations and corresponding worker results we have
+            received for the given object_result
 
         """
         for operation, result in operation_results:
@@ -618,39 +596,35 @@ class EvaluationService(TriggeredService):
             try:
                 with session.begin_nested():
                     self.write_results_one_row(
-                        session, type_, dataset, object_,
-                        object_result, result)
+                        session, object_result, operation, result)
             except IntegrityError:
                 logger.warning(
                     "Integrity error while inserting worker result.",
                     exc_info=True)
 
-    def write_results_one_row(self, session, type_, dataset, object_,
-                              object_result, result):
+    def write_results_one_row(self, session, object_result, operation, result):
         """Write to the DB a single result.
 
         session (Session): the DB session to use.
-        type_ (unicode): the type of the ESOperation.
-        dataset (Dataset): the dataset of the ESOperation.
-        object_ (Submission|UserTest): the object of the ESOperation.
         object_result (SubmissionResult|UserTestResult): the DB object
-            for the result of object_, for the ESOperation.
+            for the operation (and for the result).
+        operation (ESOperation): the operation for which we have the result.
         result (WorkerResult): the result from the worker.
 
         """
-        if type_ == ESOperation.COMPILATION:
+        if operation.type_ == ESOperation.COMPILATION:
             if result.job_success:
                 result.job.to_submission(object_result)
             else:
                 object_result.compilation_tries += 1
 
-        elif type_ == ESOperation.EVALUATION:
+        elif operation.type_ == ESOperation.EVALUATION:
             if result.job_success:
                 result.job.to_submission(object_result)
             else:
                 object_result.evaluation_tries += 1
 
-        elif type_ == ESOperation.USER_TEST_COMPILATION:
+        elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
             if result.job_success:
                 result.job.to_user_test(object_result)
             else:
@@ -658,7 +632,7 @@ class EvaluationService(TriggeredService):
 
             self.user_test_compilation_ended(object_result)
 
-        elif type_ == ESOperation.USER_TEST_EVALUATION:
+        elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
             if result.job_success:
                 result.job.to_user_test(object_result)
             else:
@@ -667,7 +641,7 @@ class EvaluationService(TriggeredService):
             self.user_test_evaluation_ended(object_result)
 
         else:
-            logger.error("Invalid operation type %r.", type_)
+            logger.error("Invalid operation type %r.", operation.type_)
 
     def compilation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
