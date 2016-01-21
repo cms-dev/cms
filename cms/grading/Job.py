@@ -87,6 +87,7 @@ class Job(object):
         self.info = info
 
     def export_to_dict(self):
+        """Return a dict representing the job."""
         res = {
             'operation': self.operation,
             'task_type': self.task_type,
@@ -99,6 +100,15 @@ class Job(object):
 
     @staticmethod
     def import_from_dict_with_type(data):
+        """Create a Job from a dict having a type information.
+
+        data (dict): a dict with all the items required for a job, and
+            in addition a 'type' key with associated value
+            'compilation' or 'evaluation'.
+
+        return (Job): either a CompilationJob or an EvaluationJob.
+
+        """
         type_ = data['type']
         del data['type']
         if type_ == 'compilation':
@@ -111,6 +121,7 @@ class Job(object):
 
     @classmethod
     def import_from_dict(cls, data):
+        """Create a Job from the output of export_to_dict."""
         return cls(**data)
 
 
@@ -201,6 +212,17 @@ class CompilationJob(Job):
 
     @staticmethod
     def from_submission(operation, submission, dataset):
+        """Create a CompilationJob from a submission.
+
+        operation (ESOperation): a COMPILATION operation.
+        submission (Submission): the submission object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (CompilationJob): the job.
+
+        """
         job = CompilationJob()
 
         # Job
@@ -218,6 +240,11 @@ class CompilationJob(Job):
         return job
 
     def to_submission(self, sr):
+        """Fill detail of the submission result with the job result.
+
+        sr (SubmissionResult): the DB object to fill.
+
+        """
         # This should actually be useless.
         sr.invalidate_compilation()
 
@@ -239,6 +266,17 @@ class CompilationJob(Job):
 
     @staticmethod
     def from_user_test(operation, user_test, dataset):
+        """Create a CompilationJob from a user test.
+
+        operation (ESOperation): a USER_TEST_COMPILATION operation.
+        user_test (UserTest): the user test object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (CompilationJob): the job.
+
+        """
         job = CompilationJob()
 
         # Job
@@ -271,6 +309,11 @@ class CompilationJob(Job):
         return job
 
     def to_user_test(self, ur):
+        """Fill detail of the user test result with the job result.
+
+        ur (UserTestResult): the DB object to fill.
+
+        """
         # This should actually be useless.
         ur.invalidate_compilation()
 
@@ -411,6 +454,17 @@ class EvaluationJob(Job):
 
     @staticmethod
     def from_submission(operation, submission, dataset):
+        """Create an EvaluationJob from a submission.
+
+        operation (ESOperation): an EVALUATION operation.
+        submission (Submission): the submission object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (EvaluationJob): the job.
+
+        """
         job = EvaluationJob()
 
         # Job
@@ -441,9 +495,11 @@ class EvaluationJob(Job):
         return job
 
     def to_submission(self, sr):
-        # Should not invalidate because evaluations will be added one
-        # by one now.
+        """Fill detail of the submission result with the job result.
 
+        sr (SubmissionResult): the DB object to fill.
+
+        """
         # No need to check self.success because this method gets called
         # only if it is True.
 
@@ -461,6 +517,17 @@ class EvaluationJob(Job):
 
     @staticmethod
     def from_user_test(operation, user_test, dataset):
+        """Create an EvaluationJob from a user test.
+
+        operation (ESOperation): an EVALUATION operation.
+        user_test (UserTest): the user test object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (EvaluationJob): the job.
+
+        """
         job = EvaluationJob()
 
         # Job
@@ -505,6 +572,11 @@ class EvaluationJob(Job):
         return job
 
     def to_user_test(self, ur):
+        """Fill detail of the user test result with the job result.
+
+        ur (UserTestResult): the DB object to fill.
+
+        """
         # This should actually be useless.
         ur.invalidate_evaluation()
 
