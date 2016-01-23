@@ -406,7 +406,7 @@ msgstr "使用规则中没有其他额外的限制."
 
 #, python-format
 msgid "Automatic (%s)"
-msgstr "自动侦测 (%s)"
+msgstr "自动检测 (%s)"
 
 #, python-format
 msgid ""
