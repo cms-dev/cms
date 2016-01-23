@@ -34,6 +34,6 @@ Konstantin Tretyakov <kt@ut.ee>
 Luca Versari <veluca93@gmail.com>
 Hyungsuk Yoon <youhanmir@gmail.com>
 Kenneth Wong <kenneth@wong.pro>
-
+Minwei Xu (aka vanshady) <faceswilliam@gmail.com>
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
