@@ -25,18 +25,18 @@ from __future__ import unicode_literals
 task_info = {
     "name": "batchfileio",
     "title": "Test Batch Task with I/O via files",
-    "time_limit": "0.2",
-    "memory_limit": "128",
     "official_language": "",
-    "task_type": "Batch",
-    "TaskTypeOptions_Batch_compilation": "alone",
-    "TaskTypeOptions_Batch_io_0_inputfile": "input.txt",
-    "TaskTypeOptions_Batch_io_1_outputfile": "output.txt",
-    "TaskTypeOptions_Batch_output_eval": "diff",
     "submission_format_choice": "other",
     "submission_format": "[\"batchfileio.%l\"]",
-    "score_type": "Sum",
-    "score_type_parameters": "50",
+    "time_limit_{{dataset_id}}": "0.2",
+    "memory_limit_{{dataset_id}}": "128",
+    "task_type_{{dataset_id}}": "Batch",
+    "TaskTypeOptions_{{dataset_id}}_Batch_compilation": "alone",
+    "TaskTypeOptions_{{dataset_id}}_Batch_io_0_inputfile": "input.txt",
+    "TaskTypeOptions_{{dataset_id}}_Batch_io_1_outputfile": "output.txt",
+    "TaskTypeOptions_{{dataset_id}}_Batch_output_eval": "diff",
+    "score_type_{{dataset_id}}": "Sum",
+    "score_type_parameters_{{dataset_id}}": "50",
 }
 
 test_cases = [

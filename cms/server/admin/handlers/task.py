@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -53,30 +53,8 @@ class AddTaskHandler(SimpleHandler("add_task.html")):
             attrs = dict()
 
             self.get_string(attrs, "name", empty=None)
-            self.get_string(attrs, "title")
-
             assert attrs.get("name") is not None, "No task name specified."
-
-            self.get_string(attrs, "primary_statements")
-
-            self.get_submission_format(attrs)
-
-            self.get_string(attrs, "token_mode")
-            self.get_int(attrs, "token_max_number")
-            self.get_timedelta_sec(attrs, "token_min_interval")
-            self.get_int(attrs, "token_gen_initial")
-            self.get_int(attrs, "token_gen_number")
-            self.get_timedelta_min(attrs, "token_gen_interval")
-            self.get_int(attrs, "token_gen_max")
-
-            self.get_int(attrs, "max_submission_number")
-            self.get_int(attrs, "max_user_test_number")
-            self.get_timedelta_sec(attrs, "min_submission_interval")
-            self.get_timedelta_sec(attrs, "min_user_test_interval")
-
-            self.get_int(attrs, "score_precision")
-
-            self.get_string(attrs, "score_mode")
+            attrs["title"] = attrs["name"]
 
             # Create the task.
             task = Task(**attrs)
@@ -91,14 +69,13 @@ class AddTaskHandler(SimpleHandler("add_task.html")):
         try:
             attrs = dict()
 
-            self.get_time_limit(attrs, "time_limit")
-            self.get_memory_limit(attrs, "memory_limit")
-            self.get_task_type(attrs, "task_type", "TaskTypeOptions_")
-            self.get_score_type(attrs, "score_type", "score_type_parameters")
-
             # Create its first dataset.
             attrs["description"] = "Default"
             attrs["autojudge"] = True
+            attrs["task_type"] = "Batch"
+            attrs["task_type_parameters"] = '["alone", ["", ""], "diff"]'
+            attrs["score_type"] = "Sum"
+            attrs["score_type_parameters"] = '100'
             attrs["task"] = task
             dataset = Dataset(**attrs)
             self.sql_session.add(dataset)
