@@ -25,14 +25,14 @@ from __future__ import unicode_literals
 task_info = {
     "name": "communication",
     "title": "Test Communication Task",
-    "time_limit": "1.0",
-    "memory_limit": "128",
     "official_language": "",
-    "task_type": "Communication",
     "submission_format_choice": "other",
     "submission_format": "[\"communication.%l\"]",
-    "score_type": "Sum",
-    "score_type_parameters": "50",
+    "time_limit_{{dataset_id}}": "1.0",
+    "memory_limit_{{dataset_id}}": "128",
+    "task_type_{{dataset_id}}": "Communication",
+    "score_type_{{dataset_id}}": "Sum",
+    "score_type_parameters_{{dataset_id}}": "50",
 }
 
 managers = [

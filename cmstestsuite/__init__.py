@@ -458,29 +458,43 @@ def get_users(contest_id):
 
 
 def add_contest(**kwargs):
-    resp = admin_req('contests/add', multipart_post=True, args=kwargs)
+    add_args = {
+        "name": kwargs.get('name'),
+        "description": kwargs.get('description'),
+    }
+    resp = admin_req('contests/add', multipart_post=True, args=add_args)
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
         r'<form enctype="multipart/form-data" action="../contest/([0-9]+)" '
         'method="POST" name="edit_contest">',
         page)
-    if match is None:
+    if match is not None:
+        contest_id = int(match.groups()[0])
+        admin_req('contest/%s' % contest_id, multipart_post=True, args=kwargs)
+        return contest_id
+    else:
         raise FrameworkException("Unable to create contest.")
-    return int(match.groups()[0])
 
 
 def add_task(**kwargs):
-    # We need to specify token_mode. Why this and no others?
-    if 'token_mode' not in kwargs:
-        kwargs['token_mode'] = 'disabled'
-
-    r = admin_req('tasks/add',
-                  multipart_post=True,
-                  args=kwargs)
-    g = re.search(r'/task/([0-9]+)$', r.geturl())
-    if g:
-        task_id = int(g.group(1))
+    add_args = {
+        "name": kwargs.get('name'),
+        "title": kwargs.get('title'),
+    }
+    r = admin_req('tasks/add', multipart_post=True, args=add_args)
+    response = r.read()
+    match_task_id = re.search(r'/task/([0-9]+)$', r.geturl())
+    match_dataset_id = re.search(r'/dataset/([0-9]+)', response)
+    if match_task_id and match_dataset_id:
+        task_id = int(match_task_id.group(1))
+        dataset_id = int(match_dataset_id.group(1))
+        edit_args = {}
+        for k, v in kwargs.iteritems():
+            edit_args[k.replace("{{dataset_id}}", str(dataset_id))] = v
+        r = admin_req('task/%s' % task_id,
+                      multipart_post=True,
+                      args=edit_args)
         created_tasks[task_id] = kwargs
     else:
         raise FrameworkException("Unable to create task.")
