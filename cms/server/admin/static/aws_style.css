@@ -85,6 +85,11 @@ input, textarea {
     border-radius: 4px;
 }
 
+table input[type=text], table textarea {
+    min-width: 25em;
+    width: 100%;
+}
+
 input:focus, textarea:focus {
     border: 1px solid #FFD69C;
 }
@@ -667,4 +672,24 @@ body.admin .notifications .notification_close:hover {
 /* HACKS */
 table.jqplot-table-legend {
     width: auto;
+}
+
+
+
+/* OTHERS */
+span.info {
+    color: #6DC942;
+    font-size: smaller;
+    background-color: #EEF3EA;
+    display: inline-block;
+    border-radius: 10px;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    font-weight: bold;
+    margin: 0 8px;
+    line-height: 18px;
+}
+span.info::after {
+    content: "?";
 }

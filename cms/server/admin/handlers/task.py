@@ -104,6 +104,7 @@ class TaskHandler(BaseHandler):
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task

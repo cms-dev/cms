@@ -11,8 +11,11 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url_root }}/contests/add" method="POST" name="add_contest">
-  Name: <input type="text" name="name">
+  <span class="info" title="A short name for the contest, preferably using only letters, numbers and underscores."></span>
+  Name:
+  <input type="text" name="name">
+
   <input type="submit">
 </form>
-{% end %}
 
+{% end %}

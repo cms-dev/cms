@@ -65,32 +65,55 @@
   <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ user.id }}" method="POST">
     <table>
       <tr>
-        <td>First name</td>
+        <td>
+          <span class="info" title="First name of the contestant."></span>
+          First name
+        </td>
         <td><input type="text" name="first_name" value="{{ user.first_name }}"/></td>
       </tr>
       <tr>
-        <td>Last name</td>
+        <td>
+          <span class="info" title="Last name of the contestant."></span>
+          Last name
+        </td>
         <td><input type="text" name="last_name" value="{{ user.last_name }}"/></td>
       </tr>
       <tr>
-        <td>Username</td>
+        <td>
+          <span class="info" title="Username of the contestant (used to log in)."></span>
+          Username
+        </td>
         <td><input type="text" name="username" value="{{ user.username }}"/></td>
       </tr>
       <tr>
-        <td>Password</td>
+        <td>
+          <span class="info" title="Contestant password. Caution: stored in plain text."></span>
+          Password
+        </td>
         <!-- FIXME: Plain text? -->
         <td><input type="text" name="password" value="{{ user.password }}"/></td>
       </tr>
       <tr>
-        <td>Email</td>
+        <td>
+          <span class="info" title="Contestant e-mail address."></span>
+          E-mail
+        </td>
         <td><input type="text" name="email" value="{{ user.email if user.email is not None else "" }}"/></td>
       </tr>
       <tr>
-        <td>Timezone (like "Europe/Rome", "America/New_York", ...)</td>
+        <td>
+          <span class="info" title="Timezone of the contestant, used to display start, end times and the current server time in local time.
+                                    Example: 'Europe/Rome', 'America/New_York', ..."></span>
+          Timezone
+        </td>
         <td><input type="text" name="timezone" value="{{ user.timezone if user.timezone is not None else "" }}"></td>
       </tr>
       <tr>
-        <td>Preferred languages (JSON-encoded list of language codes, from the most to the least preferred)</td>
+        <td>
+          <span class="info" title="JSON-encoded list of language codes, from the most to the least preferred.
+                                    Example: '[&quot;en&quot;, &quot;ja&quot;]'."></span>
+          Preferred languages
+        </td>
         <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages }}"></td>
       </tr>
     </table>

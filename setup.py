@@ -31,6 +31,8 @@ from __future__ import print_function
 # setuptools doesn't seem to like this:
 # from __future__ import unicode_literals
 
+import io
+import re
 import os
 
 from setuptools import setup, find_packages
@@ -76,9 +78,20 @@ PACKAGE_DATA = {
 }
 
 
+def find_version():
+    """Return the version string obtained from cms/__init__.py"""
+    path = os.path.join("cms", "__init__.py")
+    version_file = io.open(path, "rt", encoding="utf-8").read()
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                              version_file, re.M)
+    if version_match is not None:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
+
 setup(
     name="cms",
-    version="1.3.dev0",
+    version=find_version(),
     author="The CMS development team",
     author_email="contestms@freelists.org",
     url="https://github.com/cms-dev/cms",

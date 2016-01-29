@@ -42,6 +42,7 @@ import tornado.web
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
+from cms import __version__
 from cms.db import Admin, Contest, Participation, Question, \
     Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User
 from cms.grading.scoretypes import get_score_type_class
@@ -284,6 +285,8 @@ class BaseHandler(CommonRequestHandler):
 
         """
         params = {}
+        params["rtd_version"] = "latest" if "dev" in __version__ \
+                                else "v" + __version__[:3]
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
         params["url_root"] = get_url_root(self.request.path)
