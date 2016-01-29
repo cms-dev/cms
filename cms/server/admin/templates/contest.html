@@ -2,7 +2,7 @@
 
 {% block core %}
 <div class="core_title">
-  <h1>Contest information</h1>
+  <h1>Contest configuration</h1>
 </div>
 
 {% if len(config.contest_listen_port) > 0 %}
@@ -15,21 +15,38 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest">
+
   <table class="sub_table">
+
+    <tr><td colspan=2><h2>Contest information</h2></td></tr>
     <tr>
-      <td>Name</td>
+      <td>
+        <span class="info" title="A short name for the contest, preferably using only letters, numbers and underscores."></span>
+        Name
+      </td>
       <td><input type="text" name="name" value="{{ contest.name }}"></td>
     </tr>
     <tr>
-      <td>Description</td>
+      <td>
+        <span class="info" title="The name of the contest as seen by the contestants."></span>
+        Description
+      </td>
       <td><textarea name="description">{{ contest.description }}</textarea></td>
     </tr>
     <tr>
-      <td>Allowed web interface localization (list of language codes, leave empty for all available languages)</td>
+      <td>
+        <span class="info" title="The list of languages that contestants can use, or empty for allowing any language.
+                                  Example: 'en,ja' (without quotes)."></span>
+        Allowed localizations
+      </td>
       <td><input type="text" name="allowed_localizations" value="{{ ",".join(contest.allowed_localizations) }}"/></td>
     </tr>
     <tr>
-      <td>Languages allowed</td>
+      <td>
+        <span class="info" title="Programming languages that contestants can use to solve the tasks.
+                                  All the allowed languages must have task support, for example in managed tasks."></span>
+        Allowed programming languages
+      </td>
       <td>
         {% for lang in LANGUAGES %}
           <label><input type="checkbox" name="languages" value="{{ lang }}" {{ "checked" if lang in contest.languages else "" }}>{{ LANGUAGE_NAMES[lang] }}</label>
@@ -37,31 +54,59 @@
       </td>
     </tr>
     <tr>
-      <td><label for="submissions_download_allowed">Submissions download allowed</label></td>
+      <td>
+        <span class="info" title="Whether contestants can download their own submissions."></span>
+        <label for="submissions_download_allowed">Submissions download allowed</label>
+      </td>
       <td>
         <input type="checkbox" id="submissions_download_allowed" name="submissions_download_allowed" {{ "checked" if contest.submissions_download_allowed else "" }}/>
       </td>
     </tr>
     <tr>
-      <td><label for="block_hidden_participations">Block hidden participations</label></td>
+      <td>
+        <span class="info" title="The number of decimal places the scores will be rounded to.
+                                  Example: '2' to allow 98.76."></span>
+        Score decimal places
+      </td>
+      <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
+    </tr>
+
+    <tr><td colspan=2><h2>Logging in</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="If checked, contestants that are marked as hidden in this contest will not be able to log in."></span>
+        <label for="block_hidden_participations">Block hidden participations</label>
+      </td>
       <td>
         <input type="checkbox" id="block_hidden_participations" name="block_hidden_participations" {{ "checked" if contest.block_hidden_participations else "" }}/>
       </td>
     </tr>
     <tr>
-      <td><label for="ip_restriction">IP based login restriction</label></td>
+      <td>
+        <span class="info" title="If true, contestants with an IP address specified for this contest will only be able to log in from that address."></span>
+        <label for="ip_restriction">IP based login restriction</label>
+      </td>
       <td>
         <input type="checkbox" id="ip_restriction" name="ip_restriction" {{ "checked" if contest.ip_restriction else "" }}/>
       </td>
     </tr>
     <tr>
-      <td><label for="ip_autologin">IP based autologin</label></td>
+      <td>
+        <span class="info" title="If true, contestants with an IP address specified for this contest will be automatically logged in when connecting from that address."></span>
+        <label for="ip_autologin">IP based autologin</label>
+      </td>
       <td>
         <input type="checkbox" id="ip_autologin" name="ip_autologin" {{ "checked" if contest.ip_autologin else "" }}/>
       </td>
     </tr>
+
+    <tr><td colspan=2><h2>Tokens parameters (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">documentation</a>)</h2></td></tr>
     <tr>
-      <td>Token mode</td>
+      <td>
+        <span class="info" title="Select 'disabled' to remove tokens completely, 'infinite' for allowing any number of tokens, or 'finite' to specify the amount with the following parameters.
+                                  If you prefer to control tokens at the task level, select 'infinite' here."></span>
+        Token mode
+      </td>
       <td>
         <select name="token_mode">
           <option value="disabled" {{ "selected" if contest.token_mode == "disabled" else "" }}>Disabled</option>
@@ -71,64 +116,121 @@
       </td>
     </tr>
     <tr>
-      <td>[only if finite] Maximum number of tokens a contestant can use</td>
+      <td>
+        <span class="info" title="The maximum number of tokens a contestant can use in the whole contest.
+                                  It is used only if tokens are finite."></span>
+        Maximum number of tokens
+      </td>
       <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not None else "" }}" size="3"></td>
     </tr>
     <tr>
-      <td>[only if finite] Minimum interval a contestant has to wait between two token uses (in seconds)</td>
+      <td>
+        <span class="info" title="The minimum amount of time (in seconds) that a contestant needs to wait after using a token before being able to use another.
+                                  It is used only if tokens are finite."></span>
+        Minimum interval between tokens
+      </td>
       <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3"></td>
     </tr>
     <tr>
-      <td>[only if finite] Initial number of tokens</td>
+      <td>
+        <span class="info" title="The number of tokens that a contestant has available when their contest time starts.
+                                  It is used only if tokens are finite."></span>
+        Initial number of tokens
+      </td>
       <td><input type="text" name="token_gen_initial" value="{{ contest.token_gen_initial }}" size="3"></td>
     </tr>
     <tr>
-      <td>[only if finite] Token generation number</td>
+      <td>
+        <span class="info" title="The number of tokens that are generated periodically.
+                                  It is used only if tokens are finite."></span>
+        Token generation number
+      </td>
       <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3"></td>
     </tr>
     <tr>
-      <td>[only if finite] Token generation period (in minutes)</td>
+      <td>
+        <span class="info" title="The amount of time (in minutes) between two token generation events.
+                                  It is used only if tokens are finite."></span>
+        Token generation period
+      </td>
       <td><input type="text" name="token_gen_interval" value="{{ int(contest.token_gen_interval.total_seconds() / 60) }}" size="3"></td>
     </tr>
     <tr>
-      <td>[only if finite] Maximum accumulated tokens</td>
+      <td>
+        <span class="info" title="Maximum number of tokens available to a contestant at any given time during the contest.
+                                  It is used only if tokens are finite."></span>
+        Maximum accumulated tokens
+      </td>
       <td><input type="text" name="token_gen_max" value="{{ contest.token_gen_max if contest.token_gen_max is not None else "" }}" size="3"></td>
     </tr>
+
+    <tr><td colspan=2><h2>Times</h2></td></tr>
     <tr>
-      <td>Start (in UTC)</td>
+      <td>
+        <span class="info" title="Start time of the contest in the UTC timezone.
+                                  Example: '2015-12-31 15:00:00'."></span>
+        Start time (in UTC)
+      </td>
       <td><input type="text" name="start" value="{{ str(contest.start) }}"></td>
     </tr>
     <tr>
-      <td>End (in UTC)</td>
+      <td>
+        <span class="info" title="End time of the contest in the UTC timezone.
+                                  Example: '2015-12-31 18:00:00'."></span>
+        End time (in UTC)
+      </td>
       <td><input type="text" name="stop" value="{{ str(contest.stop) }}"></td>
     </tr>
     <tr>
-      <td>Timezone (like "Europe/Rome", "America/New_York", ...)</td>
+      <td>
+        <span class="info" title="Timezone of the server, used to display start, end times and the current server time to contestants.
+                                  Example: 'Europe/Rome', 'America/New_York', ..."></span>
+        Timezone
+      </td>
       <td><input type="text" name="timezone" value="{{ contest.timezone if contest.timezone is not None else "" }}"></td>
     </tr>
     <tr>
-      <td>Maximum length of the contest for a user (in seconds)</td>
+      <td>
+        <span class="info" title="Length of the contest (in seconds) for each contestant.
+                                  If not specified, each contestant can submit solutions for the whole duration of the contest.
+                                  If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."></span>
+        Length of the contest
+      </td>
       <td><input type="text" name="per_user_time" value="{{ int(contest.per_user_time.total_seconds()) if contest.per_user_time is not None else "" }}"></td>
     </tr>
+
+    <tr><td colspan=2><h2>Limits</h2></td></tr>
     <tr>
-      <td>Maximum number of submissions for each user (for the whole contest)</td>
+      <td>
+        <span class="info" title="Maximum number of submissions each contestant can submit, for the whole contest.
+                                  Leave empty for no limits."></span>
+        Maximum number of submissions
+      </td>
       <td><input type="text" name="max_submission_number" value="{{ contest.max_submission_number if contest.max_submission_number is not None else "" }}"></td>
     </tr>
     <tr>
-      <td>Maximum number of user_tests for each user (for the whole contest)</td>
+      <td>
+        <span class="info" title="Maximum number of user tests each contestant can submit, for the whole contest.
+                                  Leave empty for no limits."></span>
+        Maximum number of user tests
+      </td>
       <td><input type="text" name="max_user_test_number" value="{{ contest.max_user_test_number if contest.max_user_test_number is not None else "" }}"></td>
     </tr>
     <tr>
-      <td>Minimum interval between two submissions of each user (for the whole contest, in seconds)</td>
+      <td>
+        <span class="info" title="The minimum amount of time (in seconds) that a contestant needs to wait after a submission before being able to submit another.
+                                  Leave empty for no limits."></span>
+        Minimum interval between submissions
+      </td>
       <td><input type="text" name="min_submission_interval" value="{{ int(contest.min_submission_interval.total_seconds()) if contest.min_submission_interval is not None else "" }}"></td>
     </tr>
     <tr>
-      <td>Minimum interval between two user_tests of each user (for the whole contest, in seconds)</td>
+      <td>
+        <span class="info" title="The minimum amount of time (in seconds) that a contestant needs to wait after a user test before being able to send another.
+                                  Leave empty for no limits."></span>
+        Minimum interval between user tests
+      </td>
       <td><input type="text" name="min_user_test_interval" value="{{ int(contest.min_user_test_interval.total_seconds()) if contest.min_user_test_interval is not None else "" }}"></td>
-    </tr>
-    <tr>
-      <td>The number of decimal places the scores will be rounded to</td>
-      <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
   </table>
   <input type="submit"

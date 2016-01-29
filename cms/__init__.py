@@ -24,6 +24,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pkg_resources
+
 # As this package initialization code is run by all code that imports
 # something in cms.* it's the best place to setup the logging handlers.
 # By importing the log module we install a handler on stdout. Other
@@ -34,6 +36,7 @@ import cms.log
 # Define what this package will provide.
 
 __all__ = [
+    "__version__",
     "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP",
     "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
     "SOURCE_EXT_TO_LANGUAGE_MAP", "filename_to_language",
@@ -51,6 +54,9 @@ __all__ = [
     # plugin
     "plugin_list", "plugin_lookup",
 ]
+
+
+__version__ = pkg_resources.require("cms")[0].version
 
 
 # Instantiate or import these objects.

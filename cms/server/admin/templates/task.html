@@ -46,25 +46,40 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}" method="POST">
-  <h2 id="title_task_information" class="toggling_on">Task information</h2>
-  <div id="task_information">
+  <h2 id="title_task_configuration" class="toggling_on">Task configuration</h2>
+  <div id="task_configuration">
     <table>
+      <tr><td colspan=2><h2>Task information</h2></td></tr>
       <tr>
-        <td>Name</td>
+        <td>
+          <span class="info" title="A short name for the task, preferably using only letters, numbers and underscores."></span>
+          Name
+        </td>
         <td><input type="text" name="name" value="{{ task.name }}"/></td>
       </tr>
       <tr>
-        <td>Title</td>
+        <td>
+          <span class="info" title="The title of the task as seen by the contestants."></span>
+          Title
+        </td>
         <td><input type="text" name="title" value="{{ task.title }}"/></td>
       </tr>
       <tr>
-        <td>Position</td>
+        <td>
+          <span class="info" title="The index of the task within the contest, if the task is associated with a contest."></span>
+          Position
+        </td>
         <td>{{ task.num }}</td>
       </tr>
       <tr>
-        <td>Statement</td>
         <td>
-          <a href="{{ url_root }}/task/{{ task.id }}/statements/add">Add statement</a><br/>
+          <span class="info" title="The statements of this task, by language code."></span>
+          Statements
+{% if current_user.permission_all %}
+          [<a href="{{ url_root }}/task/{{ task.id }}/statements/add">add</a>]
+{% end %}
+        </td>
+        <td>
           {% if len(task.statements) == 0 %}
           No statements uploaded yet
           {% else %}
@@ -78,13 +93,22 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         </td>
       </tr>
       <tr>
-        <td>Primary statements (JSON-encoded list of language codes)</td>
+        <td>
+          <span class="info" title="A JSON-encoded list of language codes that are considered primaries with respect to the statements.
+                                    Example: '[&quot;en&quot;, &quot;ja&quot;]'."></span>
+          Primary statements
+        </td>
         <td><input type="text" name="primary_statements" value="{{ task.primary_statements }}"/></td>
       </tr>
       <tr>
-        <td>Attachments</td>
         <td>
-          <a href="{{ url_root }}/task/{{ task.id }}/attachments/add" >Add attachment</a><br/>
+          <span class="info" title="Attachments for this task. Contestant can view and download attachments from the task page."></span>
+          Attachments
+{% if current_user.permission_all %}
+          [<a href="{{ url_root }}/task/{{ task.id }}/attachments/add">add</a>]
+{% end %}
+        </td>
+        <td>
           {% if len(task.attachments) == 0 %}
             No attachments.
           {% else %}
@@ -98,9 +122,132 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         </td>
       </tr>
       <tr>
-        <td>Submission format</td>
+        <td>
+          <span class="info" title="A JSON encoded list of file names (with the language extensions changed to %l) that needs to be submitted.
+                                    The task type dictates the submission format. Consult the task type documentation to know the requirements."></span>
+          Submission format
+        </td>
         <td>
           <input type="text" name="submission_format" value="{{ json.dumps([x.filename for x in task.submission_format]) }}"/>
+        </td>
+      </tr>
+      <tr><td colspan=2><h2>Tokens parameters (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">documentation</a>)</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="Select 'disabled' to remove tokens completely for this task, 'infinite' for allowing any number of tokens for this task, or 'finite' to specify the amount with the following parameters.
+                                    If you prefer to control tokens at the task level, select 'infinite' here."></span>
+          Token mode
+        </td>
+        <td>
+          <select name="token_mode">
+            <option value="disabled" {{ "selected" if task.token_mode == "disabled" else "" }}>Disabled</option>
+            <option value="finite" {{ "selected" if task.token_mode == "finite" else "" }}>Finite</option>
+            <option value="infinite" {{ "selected" if task.token_mode == "infinite" else "" }}>Infinite</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The maximum number of tokens a contestant can use in this task.
+                                    It is used only if tokens are finite."></span>
+          Maximum number of tokens
+        </td>
+        <td><input type="text" name="token_max_number" value="{{ task.token_max_number if task.token_max_number is not None else "" }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The minimum amount of time (in seconds) that a contestant needs to wait for this task after using a token before being able to use another.
+                                    It is used only if tokens are finite."></span>
+          Minimum interval between tokens
+        </td>
+        <td><input type="text" name="token_min_interval" value="{{ int(task.token_min_interval.total_seconds()) }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The number of tokens that a contestant has available for this task when their contest time starts.
+                                    It is used only if tokens are finite."></span>
+          Initial number of tokens
+        </td>
+        <td><input type="text" name="token_gen_initial" value="{{ task.token_gen_initial }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The number of tokens that are generated periodically for this task.
+                                    It is used only if tokens are finite."></span>
+          Token generation number
+        </td>
+        <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The amount of time (in minutes) between two token generation events for this task.
+                                    It is used only if tokens are finite."></span>
+          Token generation period
+        </td>
+        <td><input type="text" name="token_gen_interval" value="{{ int(task.token_gen_interval.total_seconds() / 60) }}" /></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Maximum number of tokens for this task available to a contestant at any given time during the contest.
+                                    It is used only if tokens are finite."></span>
+          Maximum accumulated tokens
+        </td>
+        <td><input type="text" name="token_gen_max" value="{{ task.token_gen_max if task.token_gen_max is not None else "" }}" /></td>
+      </tr>
+
+      <tr><td colspan=2><h2>Limits</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="Maximum number of submissions each contestant can submit for this task, for the whole contest.
+                                    Leave empty for no limits."></span>
+          Maximum number of submissions
+        </td>
+        <td><input type="text" name="max_submission_number" value="{{ task.max_submission_number if task.max_submission_number is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Maximum number of user tests each contestant can submit for this task, for the whole contest.
+                                    Leave empty for no limits."></span>
+          Maximum number of user tests
+        </td>
+        <td><input type="text" name="max_user_test_number" value="{{ task.max_user_test_number if task.max_user_test_number is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The minimum amount of time (in seconds) for this task that a contestant needs to wait after a submission before being able to submit another.
+                                    Leave empty for no limits."></span>
+          Minimum interval between submissions
+        </td>
+        <td><input type="text" name="min_submission_interval" value="{{ int(task.min_submission_interval.total_seconds()) if task.min_submission_interval is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="The minimum amount of time (in seconds) for this task that a contestant needs to wait after a user test before being able to send another.
+                                    Leave empty for no limits."></span>
+          Minimum interval between user tests
+        </td>
+        <td><input type="text" name="min_user_test_interval" value="{{ int(task.min_user_test_interval.total_seconds()) if task.min_user_test_interval is not None else "" }}"></td>
+      </tr>
+
+      <tr><td colspan=2><h2>Score options</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="The number of decimal places the scores will be rounded to.
+                                    Example: '2' to allow 98.76."></span>
+          Score decimal places
+        </td>
+        <td><input type="text" name="score_precision" value="{{ task.score_precision }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="How the score for the task is computed from the score of each submission."></span>
+          Score mode
+        </td>
+        <td>
+          <select name="score_mode">
+            <option value="{{ SCORE_MODE_MAX_TOKENED_LAST }}" {{ "selected" if task.score_mode == SCORE_MODE_MAX_TOKENED_LAST else "" }}>Use best among tokened and last submissions (IOI 2010-2012)</option>
+            <option value="{{ SCORE_MODE_MAX }}" {{ "selected" if task.score_mode == SCORE_MODE_MAX else "" }}>Use best among all submissions (IOI 2013-)</option>
+          </select>
         </td>
       </tr>
     </table>
@@ -148,7 +295,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
   <!-- Task type and score type settings -->
 
-    <h4 id="title_task_type_{{ dataset.id }}" class="toggling_on">Task and scoring parameters</h4>
+    <h4 id="title_task_type_{{ dataset.id }}" class="toggling_on">Dataset configuration</h4>
 
     {% if dataset.task_type not in [task_type.__name__ for task_type in task_type_list] %}
     <script type="text/javascript">
@@ -179,17 +326,28 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     <div id="task_type_{{ dataset.id }}" class="task_dataset_params">
       <table>
 
+        <tr><td colspan=2><h3>Limits</h3></td></tr>
         <tr>
-          <td>Time limit</td>
+          <td>
+            <span class="info" title="Total maximum time for each evaluation, in seconds."></span>
+            Time limit
+          </td>
           <td><input type="text" name="time_limit_{{ dataset.id }}" value="{{ dataset.time_limit if dataset.time_limit is not None else "" }}"/> second(s)</td>
         </tr>
         <tr>
-          <td>Memory limit</td>
+          <td>
+            <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
+            Memory limit
+          </td>
           <td><input type="text" name="memory_limit_{{ dataset.id }}" value="{{ dataset.memory_limit if dataset.memory_limit is not None else "" }}"/> MiB</td>
         </tr>
 
+        <tr><td colspan=2><h3>Task type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Task%20types.html" target="_blank">documentation</a>)</h3></td></tr>
         <tr>
-          <td>Task type</td>
+          <td>
+            <span class="info" title="Please see the task type documentation."></span>
+            Task type
+          </td>
           <td>
 
             <select name="task_type_{{ dataset.id }}">
@@ -217,11 +375,14 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           </td>
         </tr>
         <tr>
-          <td>Managers</td>
           <td>
+            <span class="info" title="Managers for this task. Managers are sources, headers, libraries or binaries used during the evaluation."></span>
+            Managers
 {% if current_user.permission_all %}
-            <a href="{{ url_root }}/dataset/{{ dataset.id }}/managers/add">Add a manager</a></br>
+            [<a href="{{ url_root }}/dataset/{{ dataset.id }}/managers/add">add</a>]
 {% end %}
+          </td>
+          <td>
             {% if len(dataset.managers) == 0 %}
               No managers.
             {% else %}
@@ -234,8 +395,13 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% end %}
           </td>
         </tr>
+
+        <tr><td colspan=2><h3>Score type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Score%20types.html" target="_blank">documentation</a>)</h3></td></tr>
         <tr>
-          <td>Score Type</td>
+          <td>
+            <span class="info" title="Please see the score type documentation."></span>
+            Score Type
+          </td>
           <td>
             <select name="score_type_{{ dataset.id }}">
               {% for score_type in score_type_list %}
@@ -245,7 +411,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           </td>
         </tr>
         <tr>
-          <td>Score Parameters</td>
+          <td>
+            <span class="info" title="Please see the score type documentation."></span>
+            Score Parameters
+          </td>
           <td><textarea name="score_type_parameters_{{ dataset.id }}">{{ dataset.score_type_parameters }}</textarea></td>
         </tr>
       </table>
@@ -294,83 +463,6 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     </div>
   </div>
   {% end %}
-  </div>
-
-  <h2 id="title_token_options" class="toggling_on">Token Options</h2>
-  <div id="token_options">
-    <table>
-      <tr>
-        <td>Token mode</td>
-        <td>
-          <select name="token_mode">
-            <option value="disabled" {{ "selected" if task.token_mode == "disabled" else "" }}>Disabled</option>
-            <option value="finite" {{ "selected" if task.token_mode == "finite" else "" }}>Finite</option>
-            <option value="infinite" {{ "selected" if task.token_mode == "infinite" else "" }}>Infinite</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>[only if finite] Maximum number of tokens a contestant can use</td>
-        <td><input type="text" name="token_max_number" value="{{ task.token_max_number if task.token_max_number is not None else "" }}" /></td>
-      </tr>
-      <tr>
-        <td>[only if finite] Minimum interval a contestant has to wait between two token uses (in seconds)</td>
-        <td><input type="text" name="token_min_interval" value="{{ int(task.token_min_interval.total_seconds()) }}" /></td>
-      </tr>
-      <tr>
-        <td>[only if finite] Initial number of tokens</td>
-        <td><input type="text" name="token_gen_initial" value="{{ task.token_gen_initial }}" /></td>
-      </tr>
-      <tr>
-        <td>[only if finite] Token generation number</td>
-        <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number }}" /></td>
-      </tr>
-      <tr>
-        <td>[only if finite] Token generation period (in minutes)</td>
-        <td><input type="text" name="token_gen_interval" value="{{ int(task.token_gen_interval.total_seconds() / 60) }}" /></td>
-      </tr>
-      <tr>
-        <td>[only if finite] Maximum number of tokens</td>
-        <td><input type="text" name="token_gen_max" value="{{ task.token_gen_max if task.token_gen_max is not None else "" }}" /></td>
-      </tr>
-      <tr>
-        <td>Maximum number of submissions for each user (for this task)</td>
-        <td><input type="text" name="max_submission_number" value="{{ task.max_submission_number if task.max_submission_number is not None else "" }}"></td>
-      </tr>
-      <tr>
-        <td>Maximum number of user_tests for each user (for this task)</td>
-        <td><input type="text" name="max_user_test_number" value="{{ task.max_user_test_number if task.max_user_test_number is not None else "" }}"></td>
-      </tr>
-      <tr>
-        <td>Minimum interval between two submissions of each user (for this task, in seconds)</td>
-        <td><input type="text" name="min_submission_interval" value="{{ int(task.min_submission_interval.total_seconds()) if task.min_submission_interval is not None else "" }}"></td>
-      </tr>
-      <tr>
-        <td>Minimum interval between two user_tests of each user (for this task, in seconds)</td>
-        <td><input type="text" name="min_user_test_interval" value="{{ int(task.min_user_test_interval.total_seconds()) if task.min_user_test_interval is not None else "" }}"></td>
-      </tr>
-      <tr>
-        <td>The number of decimal places the scores will be rounded to</td>
-        <td><input type="text" name="score_precision" value="{{ task.score_precision }}"></td>
-      </tr>
-    </table>
-    <div class="hr"></div>
-  </div>
-
-  <h2 id="title_score_options" class="toggling_on">Score Options</h2>
-  <div id="score_options">
-    <table>
-      <tr>
-        <td>Score mode</td>
-        <td>
-          <select name="score_mode">
-            <option value="{{ SCORE_MODE_MAX_TOKENED_LAST }}" {{ "selected" if task.score_mode == SCORE_MODE_MAX_TOKENED_LAST else "" }}>Use best among tokened and last submissions (IOI 2010-2012)</option>
-            <option value="{{ SCORE_MODE_MAX }}" {{ "selected" if task.score_mode == SCORE_MODE_MAX else "" }}>Use best among all submissions (IOI 2013-)</option>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <div class="hr"></div>
   </div>
 
   <input type="submit"
