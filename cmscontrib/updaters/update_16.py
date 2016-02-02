@@ -21,8 +21,8 @@
 
 Used by ContestImporter and DumpUpdater.
 
-This updater is no-op as the new field (score mode) has a proper
-default value.
+This updater adds the default value for the new field
+submissions_download_allowed.
 
 """
 
@@ -38,4 +38,10 @@ class Updater(object):
         self.objs = data
 
     def run(self):
+        for k, v in self.objs.iteritems():
+            if k.startswith("_"):
+                continue
+            if v["_class"] == "Contest":
+                v["submissions_download_allowed"] = True
+
         return self.objs

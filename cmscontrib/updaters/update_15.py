@@ -75,7 +75,7 @@ class Updater(object):
         participation_data["_class"] = "Participation"
 
         participation_data["password"] = None
-        user_data["contests"] = [participation_id]
+        user_data["participations"] = [participation_id]
 
         participation_data["user"] = user_id
 

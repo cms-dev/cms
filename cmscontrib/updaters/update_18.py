@@ -21,8 +21,7 @@
 
 Used by ContestImporter and DumpUpdater.
 
-This updater is no-op as the new field (ip_autologin) has a proper
-default value.
+This updater adds the default value for the new ip_autologin.
 
 """
 
@@ -38,4 +37,10 @@ class Updater(object):
         self.objs = data
 
     def run(self):
+        for k, v in self.objs.iteritems():
+            if k.startswith("_"):
+                continue
+            if v["_class"] == "Contest":
+                v["ip_autologin"] = False
+
         return self.objs

@@ -21,8 +21,7 @@
 
 Used by ContestImporter and DumpUpdater.
 
-This updater is no-op as the new field (team id) has a proper
-default value.
+This updater adds the default value for the new field team_id.
 
 """
 
@@ -38,4 +37,10 @@ class Updater(object):
         self.objs = data
 
     def run(self):
+        for k, v in self.objs.iteritems():
+            if k.startswith("_"):
+                continue
+            if v["_class"] == "Participation":
+                v["team_id"] = None
+
         return self.objs
