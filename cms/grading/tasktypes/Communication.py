@@ -29,13 +29,14 @@ import logging
 import os
 import tempfile
 
-from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP, config
+from cms import config
 from cms.grading.Sandbox import wait_without_std, Sandbox
-from cms.grading import get_compilation_commands, compilation_step, \
-    human_evaluation_message, is_evaluation_passed, \
-    extract_outcome_and_text, evaluation_step_before_run, \
-    evaluation_step_after_run, merge_evaluation_results
+from cms.grading import compilation_step, \
+    human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
+    evaluation_step_before_run, evaluation_step_after_run, \
+    merge_evaluation_results
+from cms.grading.languagemanager import \
+    LANGUAGES, HEADER_EXTS, SOURCE_EXTS, OBJECT_EXTS, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
@@ -80,7 +81,7 @@ class Communication(TaskType):
         """See TaskType.get_compilation_commands."""
         res = dict()
         for language in LANGUAGES:
-            source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
+            source_ext = language.source_extension
             source_filenames = []
             source_filenames.append("stub%s" % source_ext)
             executable_filename = \
@@ -89,10 +90,9 @@ class Communication(TaskType):
             for filename in submission_format:
                 source_filename = filename.replace(".%l", source_ext)
                 source_filenames.append(source_filename)
-            commands = get_compilation_commands(language,
-                                                source_filenames,
-                                                executable_filename)
-            res[language] = commands
+            commands = language.get_compilation_commands(
+                source_filenames, executable_filename)
+            res[language.name] = commands
         return res
 
     def get_user_managers(self, unused_submission_format):
@@ -108,8 +108,8 @@ class Communication(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = job.language
-        source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
+        language = get_language(job.language)
+        source_ext = language.source_extension
 
         # Create the sandbox
         sandbox = create_sandbox(file_cacher)
@@ -130,16 +130,13 @@ class Communication(TaskType):
 
         # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
-            if any(filename.endswith(header)
-                   for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+            if any(filename.endswith(header) for header in HEADER_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(source)
-                     for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+            elif any(filename.endswith(source) for source in SOURCE_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(obj)
-                     for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
+            elif any(filename.endswith(obj) for obj in OBJECT_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
@@ -150,9 +147,8 @@ class Communication(TaskType):
         executable_filename = \
             "_".join(pattern.replace(".%l", "")
                      for pattern in job.files.keys())
-        commands = get_compilation_commands(language,
-                                            source_filenames,
-                                            executable_filename)
+        commands = language.get_compilation_commands(
+            source_filenames, executable_filename)
 
         # Run the compilation
         operation_success, compilation_success, text, plus = \

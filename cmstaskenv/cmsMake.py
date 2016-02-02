@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 Luca Versari <veluca93@gmail.com>
@@ -37,16 +37,15 @@ import tempfile
 import yaml
 import logging
 
-from cms import utf8_decoder, SOURCE_EXT_TO_LANGUAGE_MAP, \
-    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP
-from cms.grading import get_compilation_commands
+from cms import utf8_decoder
+from cms.grading.languagemanager import SOURCE_EXTS, filename_to_language
 from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
-SOL_EXTS = SOURCE_EXT_TO_LANGUAGE_MAP.keys()
+SOL_EXTS = SOURCE_EXTS
 CHECK_DIRNAME = 'cor'
 CHECK_EXTS = SOL_EXTS
 TEXT_DIRNAME = 'testo'
@@ -179,9 +178,10 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
     for src in (os.path.join(SOL_DIRNAME, x)
                 for x in os.listdir(sol_dir)
                 if endswith2(x, SOL_EXTS)):
-        exe, lang = basename2(src, SOL_EXTS)
+        exe, ext = basename2(src, SOL_EXTS)
+        lang = filename_to_language(src)
         # Delete the dot
-        lang = lang[1:]
+        ext = ext[1:]
         exe_EVAL = "%s_EVAL" % (exe)
 
         # Ignore things known to be auxiliary files
@@ -189,19 +189,18 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
             continue
         if exe == os.path.join(SOL_DIRNAME, STUB_BASENAME):
             continue
-        if lang == 'pas' and exe.endswith('lib'):
+        if ext == 'pas' and exe.endswith('lib'):
             continue
 
         srcs = []
-        # The grader, when present, must be in the first position of
-        # srcs; see docstring of get_compilation_commands().
+        # The grader, when present, must be in the first position of srcs.
         if task_type == ['Batch', 'Grad'] or \
                 task_type == ['Batch', 'GradComp']:
             srcs.append(os.path.join(SOL_DIRNAME,
-                                     GRAD_BASENAME + '.%s' % (lang)))
+                                     GRAD_BASENAME + '.%s' % (ext)))
         if task_type == ['Communication', '']:
             srcs.append(os.path.join(SOL_DIRNAME,
-                                     STUB_BASENAME + '.%s' % (lang)))
+                                     STUB_BASENAME + '.%s' % (ext)))
         srcs.append(src)
 
         test_deps = [exe_EVAL] + in_out_files
@@ -226,13 +225,14 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                     os.path.join(tempdir, grader_name))
                     new_srcs.append(os.path.join(tempdir, grader_name))
                 # For now, we assume we only have one non-grader source.
-                source_name = task_name + LANGUAGE_TO_SOURCE_EXT_MAP[lang]
+                source_name = task_name + lang.source_extension
                 shutil.copyfile(os.path.join(base_dir, srcs[grader_num]),
                                 os.path.join(tempdir, source_name))
                 new_srcs.append(source_name)
                 # Libraries are needed/used only for C/C++ and Pascal
-                if lang in LANGUAGE_TO_HEADER_EXT_MAP:
-                    lib_template = "%s" + LANGUAGE_TO_HEADER_EXT_MAP[lang]
+                header_extension = lang.header_extension
+                if header_extension is not None:
+                    lib_template = "%s" + header_extension
                     lib_filename = lib_template % (task_name)
                     lib_path = os.path.join(
                         base_dir, SOL_DIRNAME, lib_filename)
@@ -240,11 +240,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                         shutil.copyfile(lib_path,
                                         os.path.join(tempdir, lib_filename))
                 new_exe = os.path.join(tempdir, task_name)
-                compilation_commands = get_compilation_commands(
-                    lang,
-                    new_srcs,
-                    new_exe,
-                    for_evaluation=for_evaluation)
+                compilation_commands = lang.get_compilation_commands(
+                    new_srcs, new_exe, for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(tempdir, command)
                     move_cursor(directions.UP, erase=True, stream=sys.stderr)
@@ -294,12 +291,11 @@ def build_checker_list(base_dir, task_type):
         for src in (os.path.join(CHECK_DIRNAME, x)
                     for x in os.listdir(check_dir)
                     if endswith2(x, SOL_EXTS)):
-            exe, lang = basename2(src, CHECK_EXTS)
-            # Delete the dot
-            lang = lang[1:]
+            exe, ext = basename2(src, CHECK_EXTS)
+            lang = filename_to_language(src)
 
             def compile_check(src, exe, assume=None):
-                commands = get_compilation_commands(lang, [src], exe)
+                commands = lang.get_compilation_commands([src], exe)
                 for command in commands:
                     call(base_dir, command)
 
@@ -376,15 +372,16 @@ def build_gen_list(base_dir, task_type, yaml_conf):
     validator_exe = None
 
     for src in (x for x in os.listdir(gen_dir) if endswith2(x, GEN_EXTS)):
-        base, lang = basename2(src, GEN_EXTS)
+        base, ext = basename2(src, GEN_EXTS)
+        lang = filename_to_language(src)
         if base == GEN_BASENAME:
             gen_exe = os.path.join(GEN_DIRNAME, base)
-            gen_src = os.path.join(GEN_DIRNAME, base + lang)
-            gen_lang = lang[1:]
+            gen_src = os.path.join(GEN_DIRNAME, base + ext)
+            gen_lang = lang
         elif base == VALIDATOR_BASENAME:
             validator_exe = os.path.join(GEN_DIRNAME, base)
-            validator_src = os.path.join(GEN_DIRNAME, base + lang)
-            validator_lang = lang[1:]
+            validator_src = os.path.join(GEN_DIRNAME, base + ext)
+            validator_lang = lang
     if gen_exe is None:
         raise Exception("Couldn't find generator")
     if validator_exe is None:
@@ -400,12 +397,12 @@ def build_gen_list(base_dir, task_type, yaml_conf):
     copy_files = [x[1] for x in testcases if x[0]]
 
     def compile_src(src, exe, lang, assume=None):
-        if lang in ['cpp', 'c', 'pas']:
-            commands = get_compilation_commands(lang, [src], exe,
-                                                for_evaluation=False)
+        if lang.source_extension in ['.cpp', '.c', '.pas']:
+            commands = lang.get_compilation_commands(
+                [src], exe, for_evaluation=False)
             for command in commands:
                 call(base_dir, command)
-        elif lang in ['py', 'sh']:
+        elif lang.source_extension in ['.py', '.sh']:
             os.symlink(os.path.basename(src), exe)
         else:
             raise Exception("Wrong generator/validator language!")

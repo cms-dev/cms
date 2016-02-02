@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -37,6 +37,7 @@ import io
 import logging
 import os
 import pickle
+import re
 
 from urllib import quote
 
@@ -44,8 +45,9 @@ import tornado.web
 
 from sqlalchemy import func
 
-from cms import config, filename_to_language
+from cms import config
 from cms.db import Task, UserTest, UserTestFile, UserTestManager
+from cms.grading.languagemanager import get_language
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required, format_size
 from cmscommon.archive import Archive
@@ -127,6 +129,7 @@ class UserTestHandler(BaseHandler):
 
     def _send_error(self, subject, text, task):
         """Shorthand for sending a notification and redirecting."""
+        logger.warning("Sent error: `%s' - `%s'", subject, text)
         self.application.service.add_notification(
             self.current_user.user.username,
             self.timestamp,
@@ -299,41 +302,37 @@ class UserTestHandler(BaseHandler):
         for uploaded, data in self.request.files.iteritems():
             files[uploaded] = (data[0]["filename"], data[0]["body"])
 
+        # Read the submission language provided in the request; we
+        # integrate it with the language fetched from the previous
+        # submission (if we use it) and later make sure it is
+        # recognized and allowed.
+        submission_lang = self.get_argument("language", None)
+        need_lang = any(our_filename.find(".%l") != -1
+                        for our_filename in files)
+
         # If we allow partial submissions, implicitly we recover the
-        # non-submitted files from the previous submission. And put them
+        # non-submitted files from the previous user test. And put them
         # in file_digests (i.e. like they have already been sent to FS).
-        submission_lang = None
         file_digests = {}
-        if task_type.ALLOW_PARTIAL_SUBMISSION and last_user_test_t is not None:
+        if task_type.ALLOW_PARTIAL_SUBMISSION and \
+                last_user_test_t is not None and \
+                (submission_lang is None or
+                 submission_lang == last_user_test_t.language):
+            submission_lang = last_user_test_t.language
             for filename in required.difference(provided):
                 if filename in last_user_test_t.files:
-                    # If we retrieve a language-dependent file from
-                    # last submission, we take not that language must
-                    # be the same.
-                    if "%l" in filename:
-                        submission_lang = last_user_test_t.language
                     file_digests[filename] = \
                         last_user_test_t.files[filename].digest
 
-        # We need to ensure that everytime we have a .%l in our
-        # filenames, the user has one amongst ".cpp", ".c", or ".pas,
-        # and that all these are the same (i.e., no mixed-language
-        # submissions).
-
-        error = None
-        for our_filename in files:
-            user_filename = files[our_filename][0]
-            if our_filename.find(".%l") != -1:
-                lang = filename_to_language(user_filename)
-                if lang is None:
-                    error = self._("Cannot recognize test's language.")
-                    break
-                elif submission_lang is not None and \
-                        submission_lang != lang:
-                    error = self._("All sources must be in the same language.")
-                    break
-                else:
-                    submission_lang = lang
+        # Throw an error if task needs a language, but we don't have
+        # it or it is not allowed / recognized.
+        if need_lang:
+            error = None
+            if submission_lang is None:
+                error = self._("Cannot recognize the user test language.")
+            elif submission_lang not in contest.languages:
+                error = self._("Language %s not allowed in this contest.") \
+                    % submission_lang
         if error is not None:
             self._send_error(self._("Invalid test!"), error, task)
             return
@@ -415,7 +414,8 @@ class UserTestHandler(BaseHandler):
         for filename in task_type.get_user_managers(task.submission_format):
             digest = file_digests[filename]
             if submission_lang is not None:
-                filename = filename.replace("%l", submission_lang)
+                extension = get_language(submission_lang).source_extension
+                filename = filename.replace(".%l", extension)
             self.sql_session.add(
                 UserTestManager(filename, digest, user_test=user_test))
 
@@ -593,22 +593,25 @@ class UserTestFileHandler(FileHandler):
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
-        # filename follows our convention (e.g. 'foo.%l'), real_filename
-        # follows the one we present to the user (e.g. 'foo.c').
-        real_filename = filename
+        # filename is the name used by the browser, hence is something
+        # like 'foo.c' (and the extension is CMS's preferred extension
+        # for the language). To retrieve the right file, we need to
+        # decode it to 'foo.%l'.
+        stored_filename = filename
         if user_test.language is not None:
-            real_filename = filename.replace("%l", user_test.language)
+            extension = get_language(user_test.language).source_extension
+            stored_filename = re.sub(r'%s$' % extension, '.%l', filename)
 
-        if filename in user_test.files:
-            digest = user_test.files[filename].digest
-        elif filename in user_test.managers:
-            digest = user_test.managers[filename].digest
+        if stored_filename in user_test.files:
+            digest = user_test.files[stored_filename].digest
+        elif stored_filename in user_test.managers:
+            digest = user_test.managers[stored_filename].digest
         else:
             raise tornado.web.HTTPError(404)
         self.sql_session.close()
 
-        mimetype = get_type_for_file_name(real_filename)
+        mimetype = get_type_for_file_name(filename)
         if mimetype is None:
             mimetype = 'application/octet-stream'
 
-        self.fetch(digest, mimetype, real_filename)
+        self.fetch(digest, mimetype, filename)

@@ -49,7 +49,7 @@
       </td>
       <td>
         {% for lang in LANGUAGES %}
-          <label><input type="checkbox" name="languages" value="{{ lang }}" {{ "checked" if lang in contest.languages else "" }}>{{ LANGUAGE_NAMES[lang] }}</label>
+          <label><input type="checkbox" name="languages" value="{{ lang.name }}" {{ "checked" if lang.name in contest.languages else "" }}>{{ lang.name }}</label>
         {% end %}
       </td>
     </tr>

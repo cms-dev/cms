@@ -30,13 +30,20 @@ import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 import cmstestsuite.tasks.communication2 as communication2
 
-from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
-    LANG_PYTHON, LANG_HS
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
 
 
-ALL_LANGUAGES = tuple(LANGUAGES)
+LANG_CPP = "C++11 / g++"
+LANG_C = "C11 / gcc"
+LANG_HS = "Haskell / ghc"
+LANG_JAVA = "Java 1.4 / gcj"
+LANG_PASCAL = "Pascal / fpc"
+LANG_PHP = "PHP"
+LANG_PYTHON = "Python 2 / CPython"
+ALL_LANGUAGES = (
+    LANG_CPP, LANG_C, LANG_HS, LANG_JAVA, LANG_PASCAL, LANG_PHP, LANG_PYTHON
+)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 COMPILED_LANGUAGES = (
     LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON, LANG_HS

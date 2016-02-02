@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -24,13 +24,18 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import re
+import logging
 import os
 import random
+import re
 import tempfile
 
+from cms.grading.languagemanager import filename_to_language
 from cmscommon.crypto import decrypt_number
 from cmstestsuite.web import GenericRequest, LoginRequest
+
+
+logger = logging.getLogger(__name__)
 
 
 class CWSLoginRequest(LoginRequest):
@@ -103,13 +108,23 @@ class SubmitRequest(GenericRequest):
 
     """
     def __init__(self, browser, task, submission_format,
-                 filenames, base_url=None):
+                 filenames, language=None, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%stasks/%s/submit" % (self.base_url, task[1])
         self.task = task
         self.submission_format = submission_format
         self.filenames = filenames
         self.data = {}
+        # If not passed, try to recover the language from the filenames.
+        if language is None:
+            for filename in filenames:
+                lang = filename_to_language(filename)
+                if lang is not None:
+                    language = lang.name
+                    break
+        # Only send the language in the request if not None.
+        if language is not None:
+            self.data = {"language": language}
 
     def _prepare(self):
         GenericRequest._prepare(self)
@@ -138,10 +153,14 @@ class SubmitRequest(GenericRequest):
 
         p = self.redirected_to.split("?")
         if len(p) != 2:
+            logger.warning("Redirected to an unexpected page: `%s'",
+                           self.redirected_to)
             return None
         try:
             submission_id = decrypt_number(p[-1])
         except Exception:
+            logger.warning("Unable to decrypt submission id from page: `%s'",
+                           self.redirected_to)
             return None
         return submission_id
 
@@ -149,13 +168,23 @@ class SubmitRequest(GenericRequest):
 class SubmitUserTestRequest(GenericRequest):
     """Submit a user test in CWS."""
     def __init__(self, browser, task, submission_format,
-                 filenames, base_url=None):
+                 filenames, language=None, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%stasks/%s/test" % (self.base_url, task[1])
         self.task = task
         self.submission_format = submission_format
         self.filenames = filenames
         self.data = {}
+        # If not passed, try to recover the language from the filenames.
+        if language is None:
+            for filename in filenames:
+                lang = filename_to_language(filename)
+                if lang is not None:
+                    language = lang.name
+                    break
+        # Only send the language in the request if not None.
+        if language is not None:
+            self.data = {"language": language}
 
     def _prepare(self):
         GenericRequest._prepare(self)
@@ -188,10 +217,14 @@ class SubmitUserTestRequest(GenericRequest):
 
         p = self.redirected_to.split("&")
         if len(p) != 2:
+            logger.warning("Redirected to an unexpected page: `%s'",
+                           self.redirected_to)
             return None
         try:
             user_test_id = decrypt_number(p[-1])
         except Exception:
+            logger.warning("Unable to decrypt user test id from page: `%s'",
+                           self.redirected_to)
             return None
         return user_test_id
 

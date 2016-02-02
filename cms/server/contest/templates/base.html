@@ -1,9 +1,9 @@
 {% import re %}
 {% import time %}
 {% import json %}
-{% from cms import LANGUAGE_NAMES, LANGUAGE_TO_SOURCE_EXT_MAP %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
 {% from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES %}
+{% from cms.grading.languagemanager import get_language %}
 {% from cms.db import SubmissionResult %}
 {% from cmscommon.datetime import make_timestamp, utc %}
 {% from cmscommon.isocodes import translate_language_country_code %}
@@ -24,6 +24,16 @@
         <title>{{ contest.description }}</title>
 
         <script type="text/javascript">
+var LANGUAGES = {
+{% for lang in contest.languages %}
+    '{{ lang }}': {
+{% for extension in get_language(lang).source_extensions %}
+        '{{ extension }}': true,
+{% end %}
+    },
+{% end %}
+};
+
 {% if current_user is None %}
 var utils = new CMS.CWSUtils("{{ url_root }}",
                              0, 0, 0, 0, 0);

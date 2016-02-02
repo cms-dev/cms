@@ -163,14 +163,15 @@ class TaskType(object):
         submission_format ([string]): the list of files provided by the
             user that have to be compiled (the compilation command may
             contain references to other files like graders, stubs, etc...);
-            they may contain the string "%l" as a language-wildcard.
+            they may contain the string ".%l" as a language-wildcard.
+
         return ({string: [[string]]}|None): for each language (indexed
-            by its shorthand code i.e. one of the cms.LANG_* constants)
-            provide a list of commands, each as a list of tokens. That
-            is because some languages may require multiple operations
-            to compile or because some task types may require multiple
-            independent compilations (e.g. encoder and decoder); return
-            None if no compilation is required (e.g. output only).
+            by its name) provide a list of commands, each as a list of
+            tokens. That is because some languages may require
+            multiple operations to compile or because some task types
+            may require multiple independent compilations
+            (e.g. encoder and decoder); return None if no compilation
+            is required (e.g. output only).
 
         """
         raise NotImplementedError("Please subclass this class.")

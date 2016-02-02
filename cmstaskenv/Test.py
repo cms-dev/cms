@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013-2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -54,7 +54,7 @@ def usage():
     print("""%s base_dir executable [assume]"
 base_dir:   directory of the task
 executable: solution to test (relative to the task's directory)
-language:   programming language the solution is written in
+language:   programming language of the solution, e.g. "C++11 / gcc",
 assume:     if it's y, answer yes to every question
             if it's n, answer no to every question
 """ % sys.argv[0])
@@ -126,7 +126,7 @@ def test_testcases(base_dir, solution, language, assume=None):
             None,
             dataset.id,
             dataset.testcases[t].codename).to_dict(),
-        language=language,
+        language=language.name,
         task_type=dataset.task_type,
         task_type_parameters=json.loads(dataset.task_type_parameters),
         managers=dict(dataset.managers),

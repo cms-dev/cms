@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import os
 import random
 import subprocess
 
-from cms import LANGUAGES
 from cmstestsuite import get_cms_config, CONFIG
 from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     add_user, add_task, add_testcase, add_manager, \
@@ -143,7 +142,15 @@ class TestRunner(object):
         self.contest_id = add_contest(
             name="testcontest" + str(self.rand),
             description="A test contest #%s." % self.rand,
-            languages=LANGUAGES,
+            languages=[
+                "C++11 / g++",
+                "C11 / gcc",
+                "Haskell / ghc",
+                "Java 1.4 / gcj",
+                "Pascal / fpc",
+                "PHP",
+                "Python 2",
+            ],
             allow_password_authentication="checked",
             start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
             stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),

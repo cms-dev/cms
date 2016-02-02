@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cms.db import Dataset, UserTestFile, UserTest
+from cms.grading.languagemanager import get_language
 
 from .base import BaseHandler, FileHandler, require_permission
 
@@ -66,7 +67,8 @@ class UserTestFileHandler(FileHandler):
 
         real_filename = user_test_file.filename
         if user_test.language is not None:
-            real_filename = real_filename.replace("%l", user_test.language)
+            real_filename = real_filename.replace(
+                ".%l", get_language(user_test.language).source_extension)
         digest = user_test_file.digest
 
         self.sql_session.close()
