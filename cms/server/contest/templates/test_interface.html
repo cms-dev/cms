@@ -104,7 +104,9 @@ $(document).ready(function () {
                 <div class="control-group">
                     <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
                     <div class="controls">
-                        <input type="file" class="input-xlarge" id="input{{ idx }}" name="{{ filename }}"/>
+                        <input type="file" class="input-xlarge"
+                               id="input{{ idx }}" name="{{ filename }}"
+                               onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]').not('#input_file'))"/>
                     </div>
                 </div>
 {% end %}
@@ -112,6 +114,15 @@ $(document).ready(function () {
                     <label class="control-label" for="input_file">{{ _("input") }}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_file" name="input"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="language" name="language">
+{% for lang in contest.languages %}
+                            <option value="{{ lang }}">{{ lang }}</option>
+{% end %}
+                        <select>
                     </div>
                 </div>
                 <div class="control-group">
@@ -131,6 +142,15 @@ $(document).ready(function () {
                     <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="zip_language" name="language">
+{% for lang in contest.languages %}
+                            <option value="{{ lang }}">{{ lang }}</option>
+{% end %}
+                        <select>
                     </div>
                 </div>
                 <div class="control-group">

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -126,5 +126,11 @@ def plugin_list(plugin_dir, plugin_family):
         os.path.join(config.data_dir, "plugins", plugin_family),
     ])
     modules = [ret[0].find_module(ret[1]).load_module(ret[1]) for ret in rets]
-    return [module.__dict__[module.__name__]
-            for module in modules if module.__name__ in module.__dict__]
+    classes = []
+    for module in modules:
+        if module.__dict__.get(module.__name__) is not None:
+            classes.append(module.__dict__.get(module.__name__))
+        elif len(module.__dict__.get("__all__", [])) == 1:
+            classes.append(
+                module.__dict__.get(module.__dict__.get("__all__")[0]))
+    return classes

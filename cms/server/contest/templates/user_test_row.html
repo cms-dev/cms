@@ -94,7 +94,7 @@
             <ul class="dropdown-menu">
             {% for filename in files %}
                 {% if t.language is not None %}
-                    {% set real_filename = filename.replace("%l", t.language) %}
+                    {% set real_filename = filename.replace("%l", LANGUAGE_MANAGER.get_language(t.language).source_extension) %}
                 {% else %}
                     {% set real_filename = filename %}
                 {% end %}

@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cms.db import Dataset, UserTestFile, UserTest
+from cms.grading import LANGUAGE_MANAGER
 
 from .base import BaseHandler, FileHandler, require_permission
 
@@ -66,7 +67,9 @@ class UserTestFileHandler(FileHandler):
 
         real_filename = user_test_file.filename
         if user_test.language is not None:
-            real_filename = real_filename.replace("%l", user_test.language)
+            real_filename = real_filename.replace(
+                ".%l", LANGUAGE_MANAGER.get_language(user_test.language)
+                .source_extension)
         digest = user_test_file.digest
 
         self.sql_session.close()

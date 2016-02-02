@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ def load_test_list_from_file(filename):
 
     tests = []
     for i, line in enumerate(lines):
-        bits = [x.strip() for x in line.split()]
+        bits = [x.strip() for x in line.split(" ", 1)]
         if len(bits) != 2:
             print("ERROR: %s:%d invalid line: %s" % (filename, i + 1, line))
             errors = True

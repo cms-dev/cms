@@ -31,6 +31,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cms.db import Dataset, File, Submission
+from cms.grading import LANGUAGE_MANAGER
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, FileHandler, require_permission
@@ -79,7 +80,9 @@ class SubmissionFileHandler(FileHandler):
 
         real_filename = sub_file.filename
         if submission.language is not None:
-            real_filename = real_filename.replace("%l", submission.language)
+            real_filename = real_filename.replace(
+                ".%l", LANGUAGE_MANAGER.get_language(submission.language)
+                .source_extension)
         digest = sub_file.digest
 
         self.sql_session.close()

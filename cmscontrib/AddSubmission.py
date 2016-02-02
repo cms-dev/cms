@@ -29,10 +29,11 @@ import argparse
 import logging
 import sys
 
-from cms import filename_to_language, utf8_decoder
+from cms import utf8_decoder
 from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
+from cms.grading import LANGUAGE_MANAGER
 from cmscommon.datetime import make_datetime
 
 
@@ -76,8 +77,8 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         # each file and check that they do not mix.
         language = None
         for file_ in files:
-            this_language = filename_to_language(files[file_])
-            if this_language is None and "%l" in file_:
+            this_language = LANGUAGE_MANAGER.filename_to_language(files[file_])
+            if this_language is None and ".%l" in file_:
                 logger.critical("Cannot recognize language for file `%s'.",
                                 file_)
                 return False

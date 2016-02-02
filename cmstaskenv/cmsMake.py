@@ -37,16 +37,15 @@ import tempfile
 import yaml
 import logging
 
-from cms import utf8_decoder, SOURCE_EXT_TO_LANGUAGE_MAP, \
-    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP
-from cms.grading import get_compilation_commands
+from cms import utf8_decoder
+from cms.grading import LANGUAGE_MANAGER, get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
-SOL_EXTS = SOURCE_EXT_TO_LANGUAGE_MAP.keys()
+SOL_EXTS = LANGUAGE_MANAGER.source_exts
 CHECK_DIRNAME = 'cor'
 CHECK_EXTS = SOL_EXTS
 TEXT_DIRNAME = 'testo'
@@ -226,13 +225,16 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                     os.path.join(tempdir, grader_name))
                     new_srcs.append(os.path.join(tempdir, grader_name))
                 # For now, we assume we only have one non-grader source.
-                source_name = task_name + LANGUAGE_TO_SOURCE_EXT_MAP[lang]
+                source_name = task_name \
+                    + LANGUAGE_MANAGER.get_language(lang).source_extension
                 shutil.copyfile(os.path.join(base_dir, srcs[grader_num]),
                                 os.path.join(tempdir, source_name))
                 new_srcs.append(source_name)
                 # Libraries are needed/used only for C/C++ and Pascal
-                if lang in LANGUAGE_TO_HEADER_EXT_MAP:
-                    lib_template = "%s" + LANGUAGE_TO_HEADER_EXT_MAP[lang]
+                header_extension = \
+                    LANGUAGE_MANAGER.get_language(lang).header_extension
+                if header_extension is not None:
+                    lib_template = "%s" + header_extension
                     lib_filename = lib_template % (task_name)
                     lib_path = os.path.join(
                         base_dir, SOL_DIRNAME, lib_filename)

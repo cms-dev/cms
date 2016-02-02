@@ -46,8 +46,9 @@ import tornado.web
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
-from cms import config, filename_to_language
+from cms import config
 from cms.db import File, Submission, SubmissionResult, Task, Token
+from cms.grading import LANGUAGE_MANAGER
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required
@@ -70,6 +71,7 @@ class SubmitHandler(BaseHandler):
 
     def _send_error(self, subject, text, task):
         """Shorthand for sending a notification and redirecting."""
+        logger.warning("Sent error: `%s' - `%s'", subject, text)
         self.application.service.add_notification(
             self.current_user.user.username,
             self.timestamp,
@@ -232,46 +234,38 @@ class SubmitHandler(BaseHandler):
         for uploaded, data in self.request.files.iteritems():
             files[uploaded] = (data[0]["filename"], data[0]["body"])
 
-        # If we allow partial submissions, implicitly we recover the
-        # non-submitted files from the previous submission. And put them
-        # in file_digests (i.e. like they have already been sent to FS).
-        submission_lang = None
+        # Read the submission language provided in the request; we
+        # integrate it with the language fetched from the previous
+        # submission (if we use it) and later make sure it is
+        # recognized and allowed.
+        submission_lang = self.get_argument("language", None)
+        need_lang = any(our_filename.find(".%l") != -1
+                        for our_filename in files)
+
+        # If we allow partial submissions, we implicitly recover the
+        # non-submitted files from the previous submission (if it has
+        # the same programming language of the current one), and put
+        # them in file_digests (since they are already in FS).
         file_digests = {}
         if task_type.ALLOW_PARTIAL_SUBMISSION and \
-                last_submission_t is not None:
+                last_submission_t is not None and \
+                (submission_lang is None or
+                 submission_lang == last_submission_t.language):
+            submission_lang = last_submission_t.language
             for filename in required.difference(provided):
                 if filename in last_submission_t.files:
-                    # If we retrieve a language-dependent file from
-                    # last submission, we take not that language must
-                    # be the same.
-                    if "%l" in filename:
-                        submission_lang = last_submission_t.language
                     file_digests[filename] = \
                         last_submission_t.files[filename].digest
 
-        # We need to ensure that everytime we have a .%l in our
-        # filenames, the user has the extension of an allowed
-        # language, and that all these are the same (i.e., no
-        # mixed-language submissions).
-
-        error = None
-        for our_filename in files:
-            user_filename = files[our_filename][0]
-            if our_filename.find(".%l") != -1:
-                lang = filename_to_language(user_filename)
-                if lang is None:
-                    error = self._("Cannot recognize submission's language.")
-                    break
-                elif submission_lang is not None and \
-                        submission_lang != lang:
-                    error = self._("All sources must be in the same language.")
-                    break
-                elif lang not in contest.languages:
-                    error = self._(
-                        "Language %s not allowed in this contest.") % lang
-                    break
-                else:
-                    submission_lang = lang
+        # Throw an error if task needs a language, but we don't have
+        # it or it is not allowed / recognized.
+        if need_lang:
+            error = None
+            if submission_lang is None:
+                error = self._("Cannot recognize the submission language.")
+            elif submission_lang not in contest.languages:
+                error = self._("Language %s not allowed in this contest.") \
+                    % submission_lang
         if error is not None:
             self._send_error(self._("Invalid submission!"), error, task)
             return
@@ -556,13 +550,14 @@ class SubmissionFileHandler(FileHandler):
         # follows the one we present to the user (e.g. 'foo.c').
         real_filename = filename
         if submission.language is not None:
+            extension = LANGUAGE_MANAGER.get_language(submission.language)\
+                .source_extension
             if filename in submission.files:
-                real_filename = filename.replace("%l", submission.language)
+                real_filename = filename.replace(".%l", extension)
             else:
                 # We don't recognize this filename. Let's try to 'undo'
                 # the '%l' -> 'c|cpp|pas' replacement before giving up.
-                filename = re.sub(r'\.%s$' % submission.language, '.%l',
-                                  filename)
+                filename = re.sub(r'%s$' % extension, '.%l', filename)
 
         if filename not in submission.files:
             raise tornado.web.HTTPError(404)
