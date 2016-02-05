@@ -67,6 +67,10 @@ class UserTestInterfaceHandler(BaseHandler):
     def get(self):
         participation = self.current_user
 
+        if not self.r_params["testing_enabled"]:
+            self.redirect("/")
+            return
+
         user_tests = dict()
         user_tests_left = dict()
         default_task = None
@@ -123,6 +127,10 @@ class UserTestHandler(BaseHandler):
     @actual_phase_required(0)
     def post(self, task_name):
         participation = self.current_user
+
+        if not self.r_params["testing_enabled"]:
+            self.redirect("/")
+            return
 
         try:
             task = self.contest.get_task(task_name)
@@ -442,6 +450,9 @@ class UserTestStatusHandler(BaseHandler):
     def get(self, task_name, user_test_num):
         participation = self.current_user
 
+        if not self.r_params["testing_enabled"]:
+            raise tornado.web.HTTPError(404)
+
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
@@ -497,6 +508,9 @@ class UserTestDetailsHandler(BaseHandler):
     def get(self, task_name, user_test_num):
         participation = self.current_user
 
+        if not self.r_params["testing_enabled"]:
+            raise tornado.web.HTTPError(404)
+
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
@@ -524,6 +538,9 @@ class UserTestIOHandler(FileHandler):
     @actual_phase_required(0)
     def get(self, task_name, user_test_num, io):
         participation = self.current_user
+
+        if not self.r_params["testing_enabled"]:
+            raise tornado.web.HTTPError(404)
 
         try:
             task = self.contest.get_task(task_name)
@@ -562,6 +579,9 @@ class UserTestFileHandler(FileHandler):
     @actual_phase_required(0)
     def get(self, task_name, user_test_num, filename):
         participation = self.current_user
+
+        if not self.r_params["testing_enabled"]:
+            raise tornado.web.HTTPError(404)
 
         try:
             task = self.contest.get_task(task_name)
