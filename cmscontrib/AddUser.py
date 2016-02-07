@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
@@ -44,7 +44,7 @@ import logging
 import os
 
 from cms import utf8_decoder
-from cms.db import SessionGen, User
+from cms.db import Contest, Participation, SessionGen, User
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
@@ -59,8 +59,9 @@ class UserImporter(object):
 
     """
 
-    def __init__(self, path, loader_class):
+    def __init__(self, path, contest_id, loader_class):
         self.file_cacher = FileCacher()
+        self.contest_id = contest_id
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
 
     def do_import(self):
@@ -72,8 +73,20 @@ class UserImporter(object):
             return
 
         # Store
-        logger.info("Creating user on the database.")
+        logger.info("Creating user %s on the database.", user.username)
         with SessionGen() as session:
+            if self.contest_id is not None:
+                contest = session.query(Contest)\
+                                 .filter(Contest.id == self.contest_id)\
+                                 .first()
+
+                if contest is None:
+                    logger.critical(
+                        "The specified contest (id %s) does not exist. "
+                        "Aborting.",
+                        self.contest_id)
+                    return
+
             # Check whether the user already exists
             old_user = session.query(User) \
                               .filter(User.username == user.username) \
@@ -83,6 +96,13 @@ class UserImporter(object):
                 return
 
             session.add(user)
+
+            if self.contest_id is not None:
+                logger.info("Creating participation of user %s in contest %s.",
+                            user.username, contest.name)
+                participation = Participation(user=user, contest=contest)
+                session.add(participation)
+
             session.commit()
             user_id = user.id
 
@@ -97,6 +117,7 @@ class UserImporter(object):
             user_path = os.path.join(base_path, p["username"])
             UserImporter(
                 path=user_path,
+                contest_id=self.contest_id,
                 loader_class=get_loader(user_path)
             ).do_import()
 
@@ -129,6 +150,11 @@ def main():
         default=None,
         help="try to import all users inside target"
     )
+    parser.add_argument(
+        "-c", "--contest-id",
+        action="store", type=int,
+        help="id of the contest the users will be attached to"
+    )
 
     args = parser.parse_args()
 
@@ -137,6 +163,7 @@ def main():
 
     importer = UserImporter(
         path=args.target,
+        contest_id=args.contest_id,
         loader_class=get_loader(args.target)
     )
 
