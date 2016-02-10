@@ -405,7 +405,7 @@ class SubmissionResult(Base):
         # and spare a query.
         # (We could use .one() and avoid a LIMIT but we would need to
         # catch a NoResultFound exception.)
-        self.sa_session.query(Evaluation)\
+        return self.sa_session.query(Evaluation)\
             .filter(Evaluation.submission_result == self)\
             .filter(Evaluation.testcase == testcase)\
             .first()
