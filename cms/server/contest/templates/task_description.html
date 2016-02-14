@@ -11,7 +11,7 @@
 
 
 <div class="page-header">
-    <h1>{% raw _("%(name)s (%(short_name)s) <small>description</small>") % {"name": task.title, "short_name": task.name} %}</h1>
+    <h1>{% raw _("%(name)s (%(short_name)s) <small>description</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</h1>
 </div>
 
 
