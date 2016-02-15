@@ -156,6 +156,7 @@
   <table class="bordered">
     <thead>
       <tr>
+        <th>#</th>
         <th>Codename</th>
         <th>Outcome</th>
         <th></th>
@@ -166,16 +167,17 @@
       </tr>
     </thead>
     <tbody>
-      {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
+      {% for idx, ev in enumerate(zip(*sorted((ev.codename, ev) for ev in sr.evaluations))[1], start=1) %}
       <tr>
-        <td id="eval_codename_{{ idx }}">{{ ev.codename }}</td>
-        <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
+        <td>{{ idx }}</td>
+        <td>{{ ev.codename }}</td>
+        <td id="eval_outcome_{{ ev.codename }}">{{ ev.outcome }}</td>
         {% if s.token is not None or ev.testcase.public %}
         <td style="align: center;">&bullet;</td>
         {% else %}
         <td></td>
         {% end %}
-        <td id="eval_text_{{ idx }}">{{ format_status_text(ev.text) }}</td>
+        <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.text) }}</td>
         <td>{{ ev.evaluation_shard }}</td>
         <td>
           {% if ev.execution_time is not None %}
