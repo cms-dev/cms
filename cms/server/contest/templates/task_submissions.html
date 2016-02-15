@@ -20,7 +20,7 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
             }
         });
         $(".score_details table.testcase-list").addClass("table table-bordered table-striped");
-        $(".score_details table.testcase-list tbody tr:not(.undefined) td:nth-child(1)").each(function () {
+        $(".score_details table.testcase-list tbody tr:not(.undefined) td.outcome").each(function () {
             $(this).html("<span class=\"outcome\">" + $(this).text() + "</span>");
         });
     });

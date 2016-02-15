@@ -50,10 +50,11 @@ class Sum(ScoreTypeAlone):
 <table class="testcase-list">
     <thead>
         <tr>
-            <th>{{ _("Outcome") }}</th>
-            <th>{{ _("Details") }}</th>
-            <th>{{ _("Execution time") }}</th>
-            <th>{{ _("Memory used") }}</th>
+            <th class="idx">{{ _("#") }}</th>
+            <th class="outcome">{{ _("Outcome") }}</th>
+            <th class="details">{{ _("Details") }}</th>
+            <th class="execution-time">{{ _("Execution time") }}</th>
+            <th class="memory-used">{{ _("Memory used") }}</th>
         </tr>
     </thead>
     <tbody>
@@ -66,16 +67,17 @@ class Sum(ScoreTypeAlone):
             {% else %}
         <tr class="partiallycorrect">
             {% end %}
-            <td>{{ _(tc["outcome"]) }}</td>
-            <td>{{ format_status_text(tc["text"], _) }}</td>
-            <td>
+            <td class="idx">{{ _(tc["idx"]) }}</td>
+            <td class="outcome">{{ _(tc["outcome"]) }}</td>
+            <td class="details">{{ format_status_text(tc["text"], _) }}</td>
+            <td class="execution-time">
             {% if tc["time"] is not None %}
                 {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
             {% else %}
                 {{ _("N/A") }}
             {% end %}
             </td>
-            <td>
+            <td class="memory-used">
             {% if tc["memory"] is not None %}
                 {{ format_size(tc["memory"]) }}
             {% else %}

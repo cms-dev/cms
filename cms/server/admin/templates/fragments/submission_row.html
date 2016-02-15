@@ -46,6 +46,7 @@
         <table class="nested bordered">
           <thead>
             <tr>
+              <th>#</th>
               <th>Outcome</th>
               <th></th>
               <th>Details</th>
@@ -54,6 +55,7 @@
           <tbody>
             {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
             <tr>
+              <td>{{ idx }}</td>
               <td>{{ ev.outcome }}</td>
               {% if s.token is not None or ev.testcase.public %}
               <td style="align: center;">&bullet;</td>
