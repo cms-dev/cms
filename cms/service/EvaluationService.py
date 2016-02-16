@@ -437,7 +437,7 @@ class EvaluationService(TriggeredService):
                 user_test_id,
                 dataset_id),
         ]
-        return any([operations in self.get_executor()
+        return any([operation in self.get_executor()
                     for operation in operations])
 
     def operation_busy(self, operation):
