@@ -44,8 +44,7 @@ def main():
     test_db_connection()
     return default_argument_parser(
         "Submission's compiler and evaluator for CMS.",
-        EvaluationService,
-        ask_contest=ask_for_contest).run()
+        EvaluationService).run()
 
 
 if __name__ == "__main__":

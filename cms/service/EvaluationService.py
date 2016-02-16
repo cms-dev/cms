@@ -173,7 +173,7 @@ class EvaluationService(TriggeredService):
     # How often we check if a worker is connected.
     WORKER_CONNECTION_CHECK_TIME = timedelta(seconds=10)
 
-    def __init__(self, shard, contest_id):
+    def __init__(self, shard, contest_id=None):
         super(EvaluationService, self).__init__(shard)
 
         self.contest_id = contest_id
@@ -312,8 +312,10 @@ class EvaluationService(TriggeredService):
                 .select_from(SubmissionResult)\
                 .join(Dataset)\
                 .join(Task, Dataset.task_id == Task.id)\
-                .filter(Task.active_dataset_id == SubmissionResult.dataset_id)\
-                .filter(Task.contest_id == self.contest_id)
+                .filter(Task.active_dataset_id == SubmissionResult.dataset_id)
+            if self.contest_id is not None:
+                base_query = base_query\
+                    .filter(Task.contest_id == self.contest_id)
 
             compiled = base_query.filter(SubmissionResult.filter_compiled())
             evaluated = compiled.filter(SubmissionResult.filter_evaluated())
@@ -859,6 +861,7 @@ class EvaluationService(TriggeredService):
     @rpc_method
     @with_post_finish_lock
     def invalidate_submission(self,
+                              contest_id=None,
                               submission_id=None,
                               dataset_id=None,
                               participation_id=None,
@@ -870,7 +873,8 @@ class EvaluationService(TriggeredService):
         SubmissionResults that:
         - belong to submission_id or, if None, to any submission of
           participation_id and/or task_id or, if both None, to any
-          submission of the contest this service is running for.
+          submission of the contest asked for, or, if all three are
+          None, the contest this service is running for (or all contests).
         - belong to dataset_id or, if None, to any dataset of task_id
           or, if None, to any dataset of any task of the contest this
           service is running for.
@@ -898,11 +902,14 @@ class EvaluationService(TriggeredService):
             raise ValueError(
                 "Unexpected invalidation level `%s'." % level)
 
+        if contest_id is None:
+            contest_id = self.contest_id
+
         with SessionGen() as session:
             # First we load all involved submissions.
             submissions = get_submissions(
                 # Give contest_id only if all others are None.
-                self.contest_id
+                contest_id
                 if {participation_id, task_id, submission_id} == {None}
                 else None,
                 participation_id, task_id, submission_id, session)
@@ -926,7 +933,7 @@ class EvaluationService(TriggeredService):
             # we remove them.
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
-                self.contest_id
+                contest_id
                 if {participation_id,
                     task_id,
                     submission_id,
