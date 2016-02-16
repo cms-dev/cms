@@ -1280,7 +1280,8 @@ class IsolateSandbox(SandboxBase):
         elif exitcode == 2:
             return False
         else:
-            raise SandboxInterfaceException("Sandbox exit status unknown")
+            raise SandboxInterfaceException("Sandbox exit status (%d) unknown"
+                                            % exitcode)
 
     def delete(self):
         """Delete the directory where the sandbox operated.
