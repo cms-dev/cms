@@ -39,10 +39,14 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
         contentType: 'application/json',
         dataType: 'json'
     });
+
     jqxhr.done(function(data) {
         data["status"] = "ok";
-        callback(data);
+        if (typeof callback !== "undefined") {
+            callback(data);
+        }
     });
+
     jqxhr.fail(function(jqxhr) {
         var data = {};
         if (jqxhr.status == 403) {
@@ -52,7 +56,10 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
         } else {
             data["status"] = "fail";
         }
-        callback(data);
+        if (typeof callback !== "undefined") {
+            callback(data);
+        }
     });
+
     return jqxhr;
 };
