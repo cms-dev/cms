@@ -84,6 +84,7 @@ class ReevaluationButtons(tornado.web.UIModule):
             # TODO: block request to invalidate contests different
             # from those running in ES/SS.
             url += "contest/%s/submissions" % (contest_id)
+            invalidate_arguments["contest_id"] = contest_id
 
         return self.render_string(
             "views/reevaluation_buttons.html",

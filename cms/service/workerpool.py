@@ -89,8 +89,8 @@ class WorkerPool(object):
         self._workers_available_event = Event()
 
     def __contains__(self, operation):
-        return any(operation == self._operation[shard]
-                   and not self._ignore[shard]
+        return any(operation == self._operation[shard] and
+                   not self._ignore[shard]
                    for shard in self._worker)
 
     def wait_for_workers(self):
@@ -129,7 +129,10 @@ class WorkerPool(object):
         """
         shard = worker_coord.shard
         logger.info("Worker %s online again.", shard)
-        self._worker[shard].precache_files(contest_id=self._service.contest_id)
+        if self._service.contest_id is not None:
+            self._worker[shard].precache_files(
+                contest_id=self._service.contest_id
+            )
         # We don't requeue the operation, because a connection lost
         # does not invalidate a potential result given by the worker
         # (as the problem was the connection and not the machine on

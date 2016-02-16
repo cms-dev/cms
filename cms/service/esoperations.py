@@ -289,17 +289,23 @@ def get_relevant_operations(level, submissions, dataset_id=None):
     return operations
 
 
-def get_submissions_operations(session, contest_id):
+def get_submissions_operations(session, contest_id=None):
     """Return all the operations to do for submissions in the contest.
 
     session (Session): the database session to use.
-    contest_id (int): the contest for which we want the operations.
+    contest_id (int|None): the contest for which we want the operations.
+        If none, get operations for any contest.
 
     return ([ESOperation, float, int]): a list of operation, timestamp
         and priority.
 
     """
     operations = []
+
+    if contest_id is None:
+        contest_filter = literal(True)
+    else:
+        contest_filter = Task.contest_id == contest_id
 
     # Retrieve the compilation operations for all submissions without
     # the corresponding result for a dataset to judge. Since we have
@@ -313,7 +319,7 @@ def get_submissions_operations(session, contest_id):
                    (Dataset.id == SubmissionResult.dataset_id) &
                    (Submission.id == SubmissionResult.submission_id))\
         .filter(
-            (Task.contest_id == contest_id) &
+            contest_filter &
             (FILTER_SUBMISSION_DATASETS_TO_JUDGE) &
             (SubmissionResult.dataset_id.is_(None)))\
         .with_entities(Submission.id, Dataset.id,
@@ -331,7 +337,7 @@ def get_submissions_operations(session, contest_id):
         .join(Submission.results)\
         .join(SubmissionResult.dataset)\
         .filter(
-            (Task.contest_id == contest_id) &
+            contest_filter &
             (FILTER_SUBMISSION_DATASETS_TO_JUDGE) &
             (FILTER_SUBMISSION_RESULTS_TO_COMPILE))\
         .with_entities(Submission.id, Dataset.id,
@@ -365,7 +371,7 @@ def get_submissions_operations(session, contest_id):
                    (Evaluation.dataset_id == Dataset.id) &
                    (Evaluation.testcase_id == Testcase.id))\
         .filter(
-            (Task.contest_id == contest_id) &
+            contest_filter &
             (FILTER_SUBMISSION_DATASETS_TO_JUDGE) &
             (FILTER_SUBMISSION_RESULTS_TO_EVALUATE) &
             (Evaluation.id.is_(None)))\
@@ -390,17 +396,23 @@ def get_submissions_operations(session, contest_id):
     return operations
 
 
-def get_user_tests_operations(session, contest_id):
+def get_user_tests_operations(session, contest_id=None):
     """Return all the operations to do for user tests in the contest.
 
     session (Session): the database session to use.
-    contest_id (int): the contest for which we want the operations.
+    contest_id (int|None): the contest for which we want the operations.
+        If none, get operations for any contest.
 
     return ([ESOperation, float, int]): a list of operation, timestamp
         and priority.
 
     """
     operations = []
+
+    if contest_id is None:
+        contest_filter = literal(True)
+    else:
+        contest_filter = Task.contest_id == contest_id
 
     # Retrieve the compilation operations for all user tests without
     # the corresponding result for a dataset to judge. Since we have
@@ -414,7 +426,7 @@ def get_user_tests_operations(session, contest_id):
                    (Dataset.id == UserTestResult.dataset_id) &
                    (UserTest.id == UserTestResult.user_test_id))\
         .filter(
-            (Task.contest_id == contest_id) &
+            contest_filter &
             (FILTER_USER_TEST_DATASETS_TO_JUDGE) &
             (UserTestResult.dataset_id.is_(None)))\
         .with_entities(UserTest.id, Dataset.id,
@@ -432,7 +444,7 @@ def get_user_tests_operations(session, contest_id):
         .join(UserTest.results)\
         .join(UserTestResult.dataset)\
         .filter(
-            (Task.contest_id == contest_id) &
+            contest_filter &
             (FILTER_USER_TEST_DATASETS_TO_JUDGE) &
             (FILTER_USER_TEST_RESULTS_TO_COMPILE))\
         .with_entities(UserTest.id, Dataset.id,
@@ -460,7 +472,7 @@ def get_user_tests_operations(session, contest_id):
         .join(UserTest.results)\
         .join(UserTestResult.dataset)\
         .filter(
-            (Task.contest_id == contest_id) &
+            contest_filter &
             (FILTER_USER_TEST_DATASETS_TO_JUDGE) &
             (FILTER_USER_TEST_RESULTS_TO_EVALUATE))\
         .with_entities(UserTest.id, Dataset.id,
