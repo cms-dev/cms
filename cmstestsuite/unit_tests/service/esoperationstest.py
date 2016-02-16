@@ -402,7 +402,7 @@ class TestESOperations(TestCaseWithDatabase):
         active_priority = PriorityQueue.PRIORITY_HIGH \
             if result is None or result.compilation_tries == 0 \
             else PriorityQueue.PRIORITY_MEDIUM
-        return (ESOperation(ESOperation.COMPILATION,
+        return (ESOperation(ESOperation.USER_TEST_COMPILATION,
                             user_test.id, dataset.id),
                 active_priority if dataset.active
                 else PriorityQueue.PRIORITY_EXTRA_LOW,
@@ -411,7 +411,7 @@ class TestESOperations(TestCaseWithDatabase):
     def user_test_evaluation_operation(self, result):
         active_priority = PriorityQueue.PRIORITY_MEDIUM \
             if result.evaluation_tries == 0 else PriorityQueue.PRIORITY_LOW
-        return (ESOperation(ESOperation.EVALUATION,
+        return (ESOperation(ESOperation.USER_TEST_EVALUATION,
                             result.user_test.id, result.dataset.id),
                 active_priority if result.dataset.active
                 else PriorityQueue.PRIORITY_EXTRA_LOW,

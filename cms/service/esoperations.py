@@ -448,7 +448,8 @@ def get_user_tests_operations(session, contest_id):
     for data in to_compile:
         user_test_id, dataset_id, priority, timestamp = data
         operations.append((
-            ESOperation(ESOperation.COMPILATION, user_test_id, dataset_id),
+            ESOperation(ESOperation.USER_TEST_COMPILATION,
+                        user_test_id, dataset_id),
             priority, timestamp))
 
     # Retrieve all the evaluation operations for a dataset to judge,
@@ -476,7 +477,7 @@ def get_user_tests_operations(session, contest_id):
         user_test_id, dataset_id, priority, timestamp = data
         operations.append((
             ESOperation(
-                ESOperation.EVALUATION, user_test_id, dataset_id),
+                ESOperation.USER_TEST_EVALUATION, user_test_id, dataset_id),
             priority, timestamp))
 
     return operations
