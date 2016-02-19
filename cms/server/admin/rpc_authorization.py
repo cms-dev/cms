@@ -63,15 +63,15 @@ def rpc_authorization_checker(environ):
     return (bool): whether to accept the request or not.
 
     """
-    admin_id = int(environ.get(AUTHENTICATED_USER_HEADER_IN_ENV, None))
-    path_info = environ.get("PATH_INFO", "").strip("/").split("/")
+    try:
+        admin_id = int(environ.get(AUTHENTICATED_USER_HEADER_IN_ENV, None))
+        path_info = environ.get("PATH_INFO", "").strip("/").split("/")
 
-    if admin_id is None or len(path_info) < 3:
+        service = path_info[-3]
+        # We don't check on shard = path_info[-2].
+        method = path_info[-1]
+    except (ValueError, TypeError, IndexError):
         return False
-
-    service = path_info[-3]
-    # We don't check on shard = path_info[-2].
-    method = path_info[-1]
 
     with SessionGen() as session:
         # Load admin.
