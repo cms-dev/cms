@@ -220,7 +220,7 @@ CMS.CWSUtils.prototype.update_time = function() {
         // Contest has already started but user hasn't started its
         // time yet.
         $("#countdown_label").text(
-            $("#translation_until_contest_ends").text());
+            $("#translation_until_contest_starts").text());
         $("#countdown").text(
             this.format_timedelta(this.current_phase_end - server_time));
         break;
