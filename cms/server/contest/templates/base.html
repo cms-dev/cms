@@ -34,8 +34,10 @@ var utils = new CMS.CWSUtils("{{ url_root }}",
                              {{ make_timestamp(current_phase_end) }},
                              {{ actual_phase }});
 $(document).ready(function () {
-    utils.update_time();
-    setInterval(function() { utils.update_time(); }, 1000);
+    utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+    setInterval(function() {
+        utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+    }, 1000);
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 30000);
     $('#main').css('top', $('#navigation_bar').outerHeight());

@@ -27,7 +27,7 @@
         {{ _("The contest is currently running.") }}
         </p>
         <p>
-        {{ _("The contest started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.start, timezone, locale=locale), "stop_time": format_datetime_smart(contest.stop, timezone, locale=locale)} }}
+        {{ _("The contest started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.start + current_user.delay_time, timezone, locale=locale), "stop_time": format_datetime_smart(contest.stop + current_user.delay_time, timezone, locale=locale)} }}
 {% elif phase == +1 %}
         {{ _("The contest has already ended.") }}
         </p>
