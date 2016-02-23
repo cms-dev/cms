@@ -114,6 +114,8 @@ http {
         location ^~ /aws/ {
             proxy_pass http://aws/;
             include proxy_params;
+            proxy_redirect http://$host/ /aws/;
+            proxy_redirect https://$host/ /aws/;
             proxy_http_version 1.1;
             proxy_set_header Connection "";
 
