@@ -55,7 +55,8 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
          gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
 
     # Only if you will use pip/virtualenv to install python dependencies
-    sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev
+    sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev \
+         libffi-dev
 
     # Optional
     sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
