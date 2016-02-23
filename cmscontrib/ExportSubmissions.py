@@ -145,9 +145,12 @@ def main():
             .join(Participation.user)\
             .filter(Dataset.id == Task.active_dataset_id)\
             .filter(SubmissionResult.score >= args.min_score)\
-            .with_entities(Submission.id, Submission.language, Submission.timestamp,
-                           SubmissionResult.score, File.filename, File.digest,
-                           User.id, User.username, User.first_name, User.last_name,
+            .with_entities(Submission.id, Submission.language,
+                           Submission.timestamp,
+                           SubmissionResult.score,
+                           File.filename, File.digest,
+                           User.id, User.username, User.first_name,
+                           User.last_name,
                            Task.id, Task.name)
 
         if args.contest_id:

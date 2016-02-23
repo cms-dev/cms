@@ -127,7 +127,7 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        description="Add a user to the database.",
+        description="Import a user to the database.",
         epilog=build_epilog(),
         formatter_class=argparse.RawDescriptionHelpFormatter
     )

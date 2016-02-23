@@ -131,7 +131,7 @@ def main():
     """Parse arguments and launch process."""
 
     parser = argparse.ArgumentParser(
-        description="Create a new or update an existing task in CMS.",
+        description="Import a new task or update an existing one in CMS.",
         epilog=build_epilog(),
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
