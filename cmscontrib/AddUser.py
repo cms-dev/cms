@@ -79,7 +79,7 @@ def main():
     """Parse arguments and launch process.
 
     """
-    parser = argparse.ArgumentParser(description="Add a team to CMS.")
+    parser = argparse.ArgumentParser(description="Add a user to CMS.")
     parser.add_argument("first_name", action="store", type=utf8_decoder,
                         help="given name of the user")
     parser.add_argument("last_name", action="store", type=utf8_decoder,
