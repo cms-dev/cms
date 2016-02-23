@@ -49,7 +49,6 @@
               <th>#</th>
               <th>Codename</th>
               <th>Outcome</th>
-              <th></th>
               <th>Details</th>
             </tr>
           </thead>
@@ -59,11 +58,6 @@
               <td>{{ idx }}</td>
               <td>{{ ev.codename }}</td>
               <td>{{ ev.outcome }}</td>
-              {% if s.token is not None or ev.testcase.public %}
-              <td style="align: center;">&bullet;</td>
-              {% else %}
-              <td></td>
-              {% end %}
               <td>{{ ev.text }}</td>
             </tr>
             {% end %}
