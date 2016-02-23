@@ -94,7 +94,7 @@ def main():
     """Parse arguments and launch process.
 
     """
-    parser = argparse.ArgumentParser(description="Add a team to CMS.")
+    parser = argparse.ArgumentParser(description="Add a participation to CMS.")
     parser.add_argument("username", action="store", type=utf8_decoder,
                         help="username to add to the contest")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
