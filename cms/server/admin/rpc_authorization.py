@@ -46,7 +46,7 @@ RPCS_ALLOWED_FOR_MESSAGING = RPCS_ALLOWED_FOR_AUTHENTICATED + []
 
 
 RPCS_ALLOWED_FOR_ALL = RPCS_ALLOWED_FOR_MESSAGING + [
-    ("ResourceService", "kill_resources"),
+    ("ResourceService", "kill_service"),
     ("ResourceService", "toggle_autorestart"),
     ("EvaluationService", "enable_worker"),
     ("EvaluationService", "disable_worker"),
