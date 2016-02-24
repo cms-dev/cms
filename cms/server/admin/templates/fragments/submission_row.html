@@ -46,20 +46,22 @@
         <table class="nested bordered">
           <thead>
             <tr>
+              <th>#</th>
+              <th>Codename</th>
               <th>Outcome</th>
-              <th></th>
+              <th>Visible</th>
               <th>Details</th>
             </tr>
           </thead>
           <tbody>
-            {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
+            {% for idx, ev in enumerate(zip(*sorted((ev.codename, ev) for ev in sr.evaluations))[1], start=1) %}
             <tr>
+              <td>{{ idx }}</td>
+              <td>{{ ev.codename }}</td>
               <td>{{ ev.outcome }}</td>
-              {% if s.token is not None or ev.testcase.public %}
-              <td style="align: center;">&bullet;</td>
-              {% else %}
-              <td></td>
-              {% end %}
+              <td style="text-align: center">
+                <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
+              </td>
               <td>{{ ev.text }}</td>
             </tr>
             {% end %}
