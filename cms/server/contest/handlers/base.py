@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -271,7 +271,7 @@ class BaseHandler(CommonRequestHandler):
         ret["phase"] = self.contest.phase(self.timestamp)
 
         ret["printing_enabled"] = (config.printer is not None)
-        ret["testing_enabled"] = config.allow_testing
+        ret["testing_enabled"] = self.contest.allow_user_tests
 
         if self.current_user is not None:
             participation = self.current_user

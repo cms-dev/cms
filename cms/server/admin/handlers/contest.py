@@ -96,6 +96,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             attrs["languages"] = self.get_arguments("languages")
 
             self.get_bool(attrs, "submissions_download_allowed")
+            self.get_bool(attrs, "allow_user_tests")
             self.get_bool(attrs, "block_hidden_participations")
             self.get_bool(attrs, "ip_restriction")
             self.get_bool(attrs, "ip_autologin")

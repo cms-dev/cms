@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -84,6 +84,12 @@ class Contest(Base):
 
     # Whether contestants allowed to download their submissions.
     submissions_download_allowed = Column(
+        Boolean,
+        nullable=False,
+        default=True)
+
+    # Whether the user test interface is enabled.
+    allow_user_tests = Column(
         Boolean,
         nullable=False,
         default=True)

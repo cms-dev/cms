@@ -64,6 +64,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether contestants can submit user tests."></span>
+        <label for="allow_user_tests">Allow user tests</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_user_tests" name="allow_user_tests" {{ "checked" if contest.allow_user_tests else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The number of decimal places the scores will be rounded to.
                                   Example: '2' to allow 98.76."></span>
         Score decimal places
