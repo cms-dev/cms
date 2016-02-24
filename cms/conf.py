@@ -91,6 +91,7 @@ class Config(object):
         self.max_input_length = 5000000
         self.stl_path = "/usr/share/doc/stl-manual/html/"
         self.allow_questions = True
+        self.allow_testing = True
         # Prefix of 'iso-codes'[1] installation. It can be found out
         # using `pkg-config --variable=prefix iso-codes`, but it's
         # almost universally the same (i.e. '/usr') so it's hardly

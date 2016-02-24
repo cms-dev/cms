@@ -271,6 +271,7 @@ class BaseHandler(CommonRequestHandler):
         ret["phase"] = self.contest.phase(self.timestamp)
 
         ret["printing_enabled"] = (config.printer is not None)
+        ret["testing_enabled"] = config.allow_testing
 
         if self.current_user is not None:
             participation = self.current_user
