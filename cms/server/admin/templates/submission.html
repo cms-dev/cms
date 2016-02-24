@@ -159,7 +159,7 @@
         <th>#</th>
         <th>Codename</th>
         <th>Outcome</th>
-        <th></th>
+        <th>Visible</th>
         <th>Details</th>
         <th>Shard</th>
         <th>Resources</th>
@@ -172,11 +172,9 @@
         <td>{{ idx }}</td>
         <td>{{ ev.codename }}</td>
         <td id="eval_outcome_{{ ev.codename }}">{{ ev.outcome }}</td>
-        {% if s.token is not None or ev.testcase.public %}
-        <td style="align: center;">&bullet;</td>
-        {% else %}
-        <td></td>
-        {% end %}
+        <td style="text-align: center">
+          <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
+        </td>
         <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.text) }}</td>
         <td>{{ ev.evaluation_shard }}</td>
         <td>
