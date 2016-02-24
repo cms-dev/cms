@@ -10,6 +10,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -303,8 +304,17 @@ class BaseHandler(CommonRequestHandler):
         # TODO Now all language names are shown in the active language.
         # It would be better to show them in the corresponding one.
         ret["lang_names"] = {}
+
+        # Get language codes for allowed localizations
+        lang_codes = self.langs.keys()
+        if len(self.contest.allowed_localizations) > 0:
+            lang_codes = filter_language_codes(
+                lang_codes, self.contest.allowed_localizations)
         for lang_code, trans in self.langs.iteritems():
             language_name = None
+            # Filter lang_codes with allowed localizations
+            if lang_code not in lang_codes:
+                continue
             try:
                 language_name = translate_language_country_code(
                     lang_code, trans)
