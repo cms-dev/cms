@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -90,7 +91,6 @@ class Config(object):
         self.max_submission_length = 100000
         self.max_input_length = 5000000
         self.stl_path = "/usr/share/doc/stl-manual/html/"
-        self.allow_questions = True
         # Prefix of 'iso-codes'[1] installation. It can be found out
         # using `pkg-config --variable=prefix iso-codes`, but it's
         # almost universally the same (i.e. '/usr') so it's hardly

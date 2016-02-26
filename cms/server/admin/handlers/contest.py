@@ -8,6 +8,7 @@
 # Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -96,6 +97,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             attrs["languages"] = self.get_arguments("languages")
 
             self.get_bool(attrs, "submissions_download_allowed")
+            self.get_bool(attrs, "allow_questions")
             self.get_bool(attrs, "allow_user_tests")
             self.get_bool(attrs, "block_hidden_participations")
             self.get_bool(attrs, "ip_restriction")

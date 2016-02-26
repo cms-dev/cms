@@ -65,7 +65,7 @@ class QuestionHandler(BaseHandler):
         participation = self.current_user
 
         # User can post only if we want.
-        if not config.allow_questions:
+        if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
         subject_length = len(self.get_argument("question_subject", ""))
