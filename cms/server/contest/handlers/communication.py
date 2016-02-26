@@ -36,7 +36,6 @@ import logging
 
 import tornado.web
 
-from cms import config
 from cms.db import Question
 
 from .base import BaseHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
@@ -65,7 +64,7 @@ class QuestionHandler(BaseHandler):
         participation = self.current_user
 
         # User can post only if we want.
-        if not config.allow_questions:
+        if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
         subject_length = len(self.get_argument("question_subject", ""))
