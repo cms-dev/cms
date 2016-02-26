@@ -221,13 +221,14 @@ class BaseHandler(CommonRequestHandler):
             lang_codes = filter_language_codes(
                 lang_codes, self.contest.allowed_localizations)
 
-        # TODO We fallback on "en" if no language matches: we could
+        # TODO We fallback on basic_lang if no language matches: we could
         # return 406 Not Acceptable instead.
         # Select the one the user likes most.
+        basic_lang = 'en' if 'en' in lang_codes else lang_codes[0]
         http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]
         self.browser_lang = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(http_langs, "en")
+            LanguageAccept).best_match(http_langs, basic_lang)
 
         self.cookie_lang = self.get_cookie("language", None)
 
