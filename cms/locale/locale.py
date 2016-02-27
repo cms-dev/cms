@@ -10,6 +10,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -162,9 +163,10 @@ def filter_language_codes(lang_codes, prefix_filter):
     # TODO Be more fussy with prefix checking: validate strings
     # (match with "[A-Za-z]+(_[A-Za-z]+)*") and verify that the
     # prefix is on the underscores.
-    lang_codes = [lang_code for lang_code in lang_codes
-                  if any(lang_code.startswith(prefix)
-                         for prefix in prefix_filter)]
+    # It needs to maintain order of allowed_localizations(prefix_filter)
+    lang_codes = [lang_code for prefix in prefix_filter
+                  for lang_code in lang_codes
+                  if lang_code.startswith(prefix)]
 
     if not lang_codes:
         logger.warning("No allowed localization matches any installed one."
