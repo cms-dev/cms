@@ -8,6 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -721,6 +722,19 @@ def extract_outcome_and_text(sandbox):
     except ValueError:
         logger.error("Wrong outcome `%s' from manager.", outcome)
         raise ValueError("Outcome is not a float.")
+
+    # Write default message when text is empty
+    # TODO: Add description about this mechanism to docs.
+    if not text.strip():
+        if outcome == 1.0:
+            text = EVALUATION_MESSAGES.get("success").message
+        elif outcome == 0.0:
+            text = EVALUATION_MESSAGES.get("wrong").message
+        else:
+            # TODO: Decide default message for partially correct
+            # Proper message couldn't be found in po file.
+            # It seems it need to be added after.
+            text = 'No message'
 
     return outcome, [text]
 
