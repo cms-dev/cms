@@ -64,6 +64,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether contestants can submit questions."></span>
+        <label for="allow_questions">Allow questions</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_questions" name="allow_questions" {{ "checked" if contest.allow_questions else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Whether contestants can submit user tests."></span>
         <label for="allow_user_tests">Allow user tests</label>
       </td>
