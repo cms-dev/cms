@@ -66,7 +66,9 @@ $(document).ready(function () {
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
                         {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": escape(current_user.user.first_name), "last_name": escape(current_user.user.last_name), "username": escape(current_user.user.username)} %}
+{% if not contest.ip_autologin %}
                         <a class="btn btn-warning" href="{{ url_root }}/logout">{{ _("Logout") }}</a>
+{% end %}
                     </p>
 {% end %}
                 </div>
@@ -84,6 +86,7 @@ $(document).ready(function () {
         <div class="login_container">
             <div class="login_box hero-unit">
                 <h1>{{ _("Welcome") }}</h1>
+    {% if not contest.ip_autologin %}
                 <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ url_root }}/login" method="POST">
                     <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
@@ -108,6 +111,7 @@ $(document).ready(function () {
                         </div>
                     </fieldset>
                 </form>
+    {% end %}
             </div>
         </div>
 {% else %}
