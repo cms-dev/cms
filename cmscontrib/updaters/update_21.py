@@ -22,7 +22,7 @@
 Used by ContestImporter and DumpUpdater.
 
 This updater just adds the default values for the new field
-(allow_user_tests).
+(allow_questions).
 
 """
 

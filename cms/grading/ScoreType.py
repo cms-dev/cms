@@ -215,7 +215,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {% end %}
                     <td class="idx">{{ idx }}</td>
                     <td class="outcome">{{ _(tc["outcome"]) }}</td>
-                    <td class="details">{{ format_status_text(tc["text"], _) }}</td>
+                    <td class="details">
+                      {{ format_status_text(tc["text"], _) }}
+                    </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
                         {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
