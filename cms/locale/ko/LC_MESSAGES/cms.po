@@ -1,15 +1,16 @@
 # Korean translations for CMS.
 # Copyright © 2010-2015 CMS authors
 # This file is distributed under the same license as CMS.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Hyunmin Choi <auxiliarycode@gmail.com>, 2015.
+# Myungwoo Chun <mc.tamaki@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-02-02 17:15+0200\n"
-"PO-Revision-Date: 2015-02-15 00:53+0900\n"
-"Last-Translator: Hyun Min Choi <auxiliarycode@gmail.com>\n"
+"PO-Revision-Date: 2016-02-28 20:33+0900\n"
+"Last-Translator: Myungwoo Chun <mc.tamaki@gmail.com>\n"
 "Language-Team: Korean\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
@@ -75,13 +76,13 @@ msgstr ""
 "제출 파일이 성공적으로 실행되었지만 올바른 출력 파일에 출력하지 않았습니다."
 
 msgid "Execution timed out"
-msgstr "실행 제한 시간 초과."
+msgstr "실행 시간 초과"
 
 msgid "Your submission used too much CPU time."
 msgstr "제출이 과도한 CPU 시간을 소모했습니다."
 
 msgid "Execution timed out (wall clock limit exceeded)"
-msgstr "제한 시간 초과"
+msgstr "실행 시간 초과 (wall clock)"
 
 msgid ""
 "Your submission used too much total time. This might be triggered by "
@@ -223,7 +224,7 @@ msgid "The submitted archive could not be opened."
 msgstr "제출된 문서가 열리지 않습니다."
 
 msgid "Cannot recognize submission's language."
-msgstr "가능한 확장자들: c, cc, cpp (대소문자도 확인해야 합니다)"
+msgstr "제출 언어를 알 수 없습니다."
 
 msgid "All sources must be in the same language."
 msgstr "모든 소스들은 동일한 프로그래밍 언어를 사용하여야 합니다."
@@ -633,7 +634,7 @@ msgid "Standard Template Library"
 msgstr "Standard Template Library"
 
 msgid "Submission details for compilation"
-msgstr "제출 세부 사항"
+msgstr "컴파일 세부 사항"
 
 msgid "Message"
 msgstr "메시지"
@@ -642,7 +643,7 @@ msgid "Explanation"
 msgstr "설명"
 
 msgid "Submission details for evaluation"
-msgstr "제출 세부 사항"
+msgstr "평가 세부 사항"
 
 #, python-format
 msgid "Error %d"
