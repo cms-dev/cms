@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -325,7 +325,10 @@ def format_status_text(status, translator=None):
         elif not isinstance(status, list):
             raise TypeError("Invalid type: %r" % type(status))
 
-        return translator(status[0]) % tuple(status[1:])
+        # translator('') gives, for some reason, the first lines of
+        # the po file.
+        text = translator(status[0]) if status[0] != '' else ''
+        return text % tuple(status[1:])
     except:
         logger.error("Unexpected error when formatting status "
                      "text: %r", status, exc_info=True)
