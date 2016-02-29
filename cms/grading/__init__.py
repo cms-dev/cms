@@ -725,6 +725,17 @@ def extract_outcome_and_text(sandbox):
         logger.error("Wrong outcome `%s' from manager.", outcome)
         raise ValueError("Outcome is not a float.")
 
+    # If the text starts with translate, the manager is asking us to
+    # use a stock message, that can be translated.
+    if text.startswith("translate:"):
+        remaining = text[len("translate:"):].strip()
+        if remaining in ["success", "wrong"]:
+            text = EVALUATION_MESSAGES.get(remaining).message
+        else:
+            remaining = remaining[:15]  # to avoid logging lots of text
+            logger.warning("Manager asked to translate text, but string "
+                           "'%s' is not recognized." % remaining)
+
     return outcome, [text]
 
 
