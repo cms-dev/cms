@@ -41,7 +41,7 @@ If the output is compared with a diff, the outcome will be a float, 0.0 if the o
 - writes on standard output the outcome (that is going to be used by the score type, and is usually a float between 0.0 and 1.0);
 - writes on standard error a message to forward to the contestant.
 
-.. note:: The checker can also print the special strings "translate:success" or "translate:wrong", which will be respectively shown to the contestants as the localized messages for "Output is correct" and "Output isn't correct".
+.. note:: The checker can also print the special strings "translate:success", "translate:wrong" or "translate:partial", which will be respectively shown to the contestants as the localized messages for "Output is correct", "Output isn't correct", and "Output is partially correct".
 
 The submission format must contain one filename ending with ``.%l``. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
 

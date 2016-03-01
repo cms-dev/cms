@@ -8,6 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -136,6 +137,9 @@ EVALUATION_MESSAGES = MessageCollection([
     HumanMessage("success",
                  N_("Output is correct"),
                  N_("Your submission ran and gave the correct answer")),
+    HumanMessage("partial",
+                 N_("Output is partially correct"),
+                 N_("Your submission ran and gave the partially correct answer")),
     HumanMessage("wrong",
                  N_("Output isn't correct"),
                  N_("Your submission ran, but gave the wrong answer")),
@@ -729,7 +733,7 @@ def extract_outcome_and_text(sandbox):
     # use a stock message, that can be translated.
     if text.startswith("translate:"):
         remaining = text[len("translate:"):].strip()
-        if remaining in ["success", "wrong"]:
+        if remaining in ["success", "partial", "wrong"]:
             text = EVALUATION_MESSAGES.get(remaining).message
         else:
             remaining = remaining[:15]  # to avoid logging lots of text
