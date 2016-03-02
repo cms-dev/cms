@@ -8,6 +8,7 @@
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -278,6 +279,7 @@ Options:
     def install_conf(self):
         """Install configuration files"""
         print("===== Copying configuration to /usr/local/etc/")
+        root = pwd.getpwnam("root")
         makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
         for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
             conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
