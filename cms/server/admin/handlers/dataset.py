@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,18 +33,22 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import os
 import re
+import shutil
+import tempfile
 import zipfile
 
 from StringIO import StringIO
 import tornado.web
 
+from cms import config
 from cms.db import Dataset, Manager, Message, Participation, \
     Session, Submission, Task, Testcase
 from cms.grading import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, require_permission
+from .base import BaseHandler, FileHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -653,3 +658,61 @@ class DeleteTestcaseHandler(BaseHandler):
             # max_score and/or extra_headers might have changed.
             self.application.service.proxy_service.reinitialize()
         self.redirect("/task/%s" % task.id)
+
+
+class DownloadTestcasesHandler(FileHandler):
+    """Download all testcases in a zip file.
+
+    """
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.r_params["dataset"] = dataset
+        self.render("download_testcases.html", **self.r_params)
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self, dataset_id):
+        fallback_page = "/dataset/%s/testcases/download" % dataset_id
+
+        dataset = self.safe_get_item(Dataset, dataset_id)
+
+        # Get zip file name, input/output file names templates,
+        # or use default ones.
+        zip_filename = self.get_argument("zip_filename", "testcases.zip")
+        input_template = self.get_argument("input_template", "input.*")
+        output_template = self.get_argument("output_template", "output.*")
+
+        # Template validations
+        if input_template.count('*') != 1 or output_template.count('*') != 1:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid template format",
+                "You must have exactly one '*' in input/output template.")
+            self.redirect(fallback_page)
+            return
+
+        # Replace input/output template to python format
+        input_template = input_template.strip().replace("*", "%s")
+        output_template = output_template.strip().replace("*", "%s")
+
+        # Make temp dir to contain zip file
+        tempdir = tempfile.mkdtemp(dir=config.temp_dir)
+        zip_path = os.path.join(tempdir, "testcases.zip")
+        with zipfile.ZipFile(zip_path, "w") as zip_file:
+            for testcase in dataset.testcases.itervalues():
+                # Get input, output file path
+                input_path = self.application.service.file_cacher.\
+                            get_file(testcase.input).name
+                output_path = self.application.service.file_cacher.\
+                            get_file(testcase.output).name
+                zip_file.write(input_path, input_template % testcase.codename)
+                zip_file.write(output_path, output_template % testcase.codename)
+            zip_file.close()
+
+        self.fetch_from_filesystem(zip_path, "application/zip", zip_filename)
+
+        shutil.rmtree(tempdir)
