@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -72,7 +73,8 @@ from .dataset import \
     DeleteManagerHandler, \
     AddTestcaseHandler, \
     AddTestcasesHandler, \
-    DeleteTestcaseHandler
+    DeleteTestcaseHandler, \
+    DownloadTestcasesHandler
 from .user import \
     AddUserHandler, \
     UserHandler, \
@@ -167,6 +169,7 @@ HANDLERS = [
     (r"/dataset/([0-9]+)/testcases/add", AddTestcaseHandler),
     (r"/dataset/([0-9]+)/testcases/add_multiple", AddTestcasesHandler),
     (r"/dataset/([0-9]+)/testcase/([0-9]+)/delete", DeleteTestcaseHandler),
+    (r"/dataset/([0-9]+)/testcases/download", DownloadTestcasesHandler),
 
     # Users/Teams
 

@@ -428,6 +428,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if current_user.permission_all %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/download">Download all testcases</a>
 {% end %}
       <table class="bordered" style="text-align:center">
         <thead>
