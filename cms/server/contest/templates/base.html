@@ -23,8 +23,11 @@
 
         <title>{{ contest.description }}</title>
 
-{% if current_user is not None %}
         <script type="text/javascript">
+{% if current_user is None %}
+var utils = new CMS.CWSUtils("{{ url_root }}",
+                             0, 0, 0, 0, 0);
+{% else %}
 // FIXME use Date objects
 var utils = new CMS.CWSUtils("{{ url_root }}",
                              {{ make_timestamp(timestamp) }},
@@ -44,8 +47,8 @@ $(document).ready(function () {
 });
 
 {% block js %}{% end %}
-        </script>
 {% end%}
+        </script>
 
     </head>
     <body id="body">
