@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This script adds statement to specific task in the database.
+"""This script adds a statement to a specific task in the database.
 
 """
 
@@ -39,10 +39,12 @@ logger = logging.getLogger(__name__)
 
 
 def add_statement(task_name, language_code, statement_file, overwrite):
-    logger.info("Adding the statement(language: %s) of task %s in the database." % (language_code, task_name))
+    logger.info("Adding the statement(language: %s) of task %s "
+                "in the database.", language_code, task_name)
 
     if not os.path.exists(statement_file):
-        logger.error("Statement file (path: %s) does not exist." % statement_file)
+        logger.error("Statement file (path: %s) does not exist.",
+                     statement_file)
         return False
     if not statement_file.endswith(".pdf"):
         logger.error("Statement file should be a pdf file.")
@@ -52,26 +54,28 @@ def add_statement(task_name, language_code, statement_file, overwrite):
         task = session.query(Task)\
             .filter(Task.name == task_name).first()
         if not task:
-            logger.error("No Task named %s" % task_name)
+            logger.error("No task named %s", task_name)
             return False
         try:
             file_cacher = FileCacher()
             digest = file_cacher.put_file_from_path(
                 statement_file,
-                "Statement for task %s (lang: %s)" % (task_name, language_code))
-        except Exception as error:
-            logger.error("Task statement storage failed. (%s)" % repr(error))
+                "Statement for task %s (lang: %s)" %
+                (task_name, language_code))
+        except Exception:
+            logger.error("Task statement storage failed.", exc_info=True)
         arr = session.query(Statement)\
             .filter(Statement.language == language_code)\
             .filter(Statement.task == task)\
             .all()
-        if arr: # Statement already exists
+        if arr:  # Statement already exists
             if overwrite:
-                logger.info("Overwrite already existing statement")
+                logger.info("Overwriting already existing statement.")
                 session.delete(arr[0])
                 session.commit()
             else:
-                logger.error("A statement with given language already exists.")
+                logger.error("A statement with given language already exists. "
+                             "Not overwriting.")
                 return False
         statement = Statement(language_code, digest, task=task)
         session.add(statement)
@@ -92,13 +96,16 @@ def main():
                         help="language code of statement, e.g. en")
     parser.add_argument("statement_file", action="store", type=utf8_decoder,
                         help="absolute/relative path of statement file")
-    parser.add_argument("-o", "--overwrite", dest="overwrite", action="store_true",
+    parser.add_argument("-o", "--overwrite", dest="overwrite",
+                        action="store_true",
                         help="overwrite existing statement")
     parser.set_defaults(overwrite=False)
 
     args = parser.parse_args()
 
-    return add_statement(args.task_name, args.language_code, args.statement_file, args.overwrite)
+    return add_statement(args.task_name, args.language_code,
+                         args.statement_file, args.overwrite)
+
 
 if __name__ == "__main__":
     sys.exit(0 if main() is True else 1)
