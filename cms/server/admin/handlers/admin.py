@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -164,4 +165,4 @@ class AdminHandler(BaseHandler):
         self.try_commit()
 
         # Page to redirect to.
-        self.write("/admins")
+        self.write("../admins")

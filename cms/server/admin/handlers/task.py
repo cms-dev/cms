@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -271,7 +272,7 @@ class StatementHandler(BaseHandler):
         self.try_commit()
 
         # Page to redirect to.
-        self.write("/task/%s" % task.id)
+        self.write("%s" % task.id)
 
 
 class AddAttachmentHandler(BaseHandler):
@@ -342,7 +343,7 @@ class AttachmentHandler(BaseHandler):
         self.try_commit()
 
         # Page to redirect to.
-        self.write("/task/%s" % task.id)
+        self.write("%s" % task.id)
 
 
 class AddDatasetHandler(BaseHandler):
