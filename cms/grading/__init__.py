@@ -636,6 +636,28 @@ def evaluation_step_after_run(sandbox):
     return success, plus
 
 
+def merge_evaluation_results(plus0, plus1):
+    """Merges two evaluation results provided by different sandboxes.
+
+    """
+    plus = plus0.copy()
+    plus["execution_time"] += plus1["execution_time"]
+    plus["execution_wall_clock_time"] = max(
+        plus["execution_wall_clock_time"],
+        plus1["execution_wall_clock_time"])
+    plus["execution_memory"] += plus1["execution_memory"]
+    if plus0["exit_status"] == Sandbox.EXIT_OK:
+        plus["exit_status"] = plus1["exit_status"]
+        if plus1["exit_status"] == Sandbox.EXIT_SIGNAL:
+            plus["signal"] = plus1["signal"]
+        elif plus1["exit_status"] == Sandbox.EXIT_SYSCALL:
+            plus["syscall"] = plus1["syscall"]
+        elif plus1["exit_status"] == Sandbox.EXIT_FILE_ACCESS:
+            plus["filename"] = plus1["filename"]
+
+    return plus
+
+
 def human_evaluation_message(plus):
     """Given the plus object returned by evaluation_step, builds a
     human-readable message about what happened.

@@ -6,6 +6,7 @@
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,7 +35,8 @@ from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_commands, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text, evaluation_step_before_run, \
-    evaluation_step_after_run
+    evaluation_step_after_run, merge_evaluation_results
+from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
@@ -67,16 +69,27 @@ class Communication(TaskType):
 
     name = "Communication"
 
+    _NUM_PROCESSES = ParameterTypeInt(
+        "Number of Processes",
+        "num_processes",
+        "")
+
+    ACCEPTED_PARAMETERS = [_NUM_PROCESSES]
+
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
         for language in LANGUAGES:
-            format_filename = submission_format[0]
             source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
             source_filenames = []
             source_filenames.append("stub%s" % source_ext)
-            source_filenames.append(format_filename.replace(".%l", source_ext))
-            executable_filename = format_filename.replace(".%l", "")
+            if len(submission_format) == 1:
+                executable_filename = submission_format[0].replace(".%l", "")
+            else:
+                executable_filename = "user_program"
+            for filename in submission_format:
+                source_filename = filename.replace(".%l", source_ext)
+                source_filenames.append(source_filename)
             commands = get_compilation_commands(language,
                                                 source_filenames,
                                                 executable_filename)
@@ -99,34 +112,23 @@ class Communication(TaskType):
         language = job.language
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
 
-        # TODO: here we are sure that submission.files are the same as
-        # task.submission_format. The following check shouldn't be
-        # here, but in the definition of the task, since this actually
-        # checks that task's task type and submission format agree.
-        if len(job.files) != 1:
-            job.success = True
-            job.compilation_success = False
-            job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 1",
-                         len(job.files), extra={"operation": job.info})
-            return True
-
         # Create the sandbox
         sandbox = create_sandbox(file_cacher)
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename = job.files.keys()[0]
         source_filenames = []
         # Stub.
-        source_filenames.append("stub%s" % source_ext)
-        files_to_get[source_filenames[-1]] = \
-            job.managers["stub%s" % source_ext].digest
+        stub_filename = "stub%s" % source_ext
+        source_filenames.append(stub_filename)
+        files_to_get[stub_filename] = \
+            job.managers[stub_filename].digest
         # User's submission.
-        source_filenames.append(format_filename.replace(".%l", source_ext))
-        files_to_get[source_filenames[-1]] = \
-            job.files[format_filename].digest
+        for filename, fileinfo in job.files.iteritems():
+            source_filename = filename.replace(".%l", source_ext)
+            source_filenames.append(source_filename)
+            files_to_get[source_filename] = fileinfo.digest
 
         # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
@@ -147,7 +149,10 @@ class Communication(TaskType):
             sandbox.create_file_from_storage(filename, digest)
 
         # Prepare the compilation command
-        executable_filename = format_filename.replace(".%l", "")
+        if len(job.files) == 1:
+            executable_filename = job.files.keys()[0].replace(".%l", "")
+        else:
+            executable_filename = "user_program"
         commands = get_compilation_commands(language,
                                             source_filenames,
                                             executable_filename)
@@ -174,21 +179,32 @@ class Communication(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
+        if len(self.parameters) <= 0:
+            num_processes = 1
+        else:
+            num_processes = self.parameters[0]
+        indices = range(num_processes)
         # Create sandboxes and FIFOs
         sandbox_mgr = create_sandbox(file_cacher)
-        sandbox_user = create_sandbox(file_cacher)
-        fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
-        fifo_in = os.path.join(fifo_dir, "in")
-        fifo_out = os.path.join(fifo_dir, "out")
-        os.mkfifo(fifo_in)
-        os.mkfifo(fifo_out)
-        os.chmod(fifo_dir, 0o755)
-        os.chmod(fifo_in, 0o666)
-        os.chmod(fifo_out, 0o666)
+        sandbox_user = [create_sandbox(file_cacher) for i in indices]
+        fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
+        fifo_in = [os.path.join(fifo_dir[i], "in"+str(i)) for i in indices]
+        fifo_out = [os.path.join(fifo_dir[i], "out"+str(i)) for i in indices]
+        for i in indices:
+            os.mkfifo(fifo_in[i])
+            os.mkfifo(fifo_out[i])
+            os.chmod(fifo_dir[i], 0o755)
+            os.chmod(fifo_in[i], 0o666)
+            os.chmod(fifo_out[i], 0o666)
+
+        timeout = num_processes * job.time_limit
 
         # First step: we start the manager.
         manager_filename = "manager"
-        manager_command = ["./%s" % manager_filename, fifo_in, fifo_out]
+        manager_command = ["./%s" % manager_filename]
+        for i in indices:
+            manager_command.append(fifo_in[i])
+            manager_command.append(fifo_out[i])
         manager_executables_to_get = {
             manager_filename:
             job.managers[manager_filename].digest
@@ -196,7 +212,7 @@ class Communication(TaskType):
         manager_files_to_get = {
             "input.txt": job.input
             }
-        manager_allow_dirs = [fifo_dir]
+        manager_allow_dirs = fifo_dir
         for filename, digest in manager_executables_to_get.iteritems():
             sandbox_mgr.create_file_from_storage(
                 filename, digest, executable=True)
@@ -205,7 +221,7 @@ class Communication(TaskType):
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            job.time_limit,
+            timeout,
             0,
             allow_dirs=manager_allow_dirs,
             writable_files=["output.txt"],
@@ -214,33 +230,39 @@ class Communication(TaskType):
         # Second step: we start the user submission compiled with the
         # stub.
         executable_filename = job.executables.keys()[0]
-        command = ["./%s" % executable_filename, fifo_out, fifo_in]
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest
             }
-        user_allow_dirs = [fifo_dir]
-        for filename, digest in executables_to_get.iteritems():
-            sandbox_user.create_file_from_storage(
-                filename, digest, executable=True)
-        process = evaluation_step_before_run(
-            sandbox_user,
-            command,
-            job.time_limit,
-            job.memory_limit,
-            allow_dirs=user_allow_dirs)
+        process = [None for i in indices]
+        for i in indices:
+            command = ["./%s" % executable_filename, fifo_out[i], fifo_in[i]]
+            if num_processes != 1:
+                command.append(str(i))
+            user_allow_dirs = [fifo_dir[i]]
+            for filename, digest in executables_to_get.iteritems():
+                sandbox_user[i].create_file_from_storage(
+                    filename, digest, executable=True)
+            process[i] = evaluation_step_before_run(
+                sandbox_user[i],
+                command,
+                timeout,
+                job.memory_limit,
+                allow_dirs=user_allow_dirs)
 
         # Consume output.
-        wait_without_std([process, manager])
+        wait_without_std(process + [manager])
         # TODO: check exit codes with translate_box_exitcode.
 
-        success_user, plus_user = \
-            evaluation_step_after_run(sandbox_user)
+        user_results = [evaluation_step_after_run(s) for s in sandbox_user]
+        success_user = all(r[0] for r in user_results)
+        plus_user = reduce(merge_evaluation_results,
+                           [r[1] for r in user_results])
         success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
-        job.sandboxes = [sandbox_user.path,
-                         sandbox_mgr.path]
+        # merge results
+        job.sandboxes = [s.path for s in sandbox_user] + [sandbox_mgr.path]
         job.plus = plus_user
 
         # If at least one evaluation had problems, we report the
@@ -272,6 +294,8 @@ class Communication(TaskType):
         job.text = text
 
         delete_sandbox(sandbox_mgr)
-        delete_sandbox(sandbox_user)
+        for s in sandbox_user:
+            delete_sandbox(s)
         if not config.keep_sandbox:
-            rmtree(fifo_dir)
+            for d in fifo_dir:
+                rmtree(d)
