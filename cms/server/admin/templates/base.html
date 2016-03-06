@@ -181,11 +181,13 @@ $(document).ready(init);
             </li>
           {% end %}
 
+{% if current_user.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url_root }}/users/add">
               (create new user...)
             </a>
           </li>
+{% end %}
         </ul>
 
         <h1>Teams</h1>

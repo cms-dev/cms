@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -44,7 +45,7 @@ from .base import BaseHandler, SimpleHandler, require_permission
 logger = logging.getLogger(__name__)
 
 
-class AddTaskHandler(SimpleHandler("add_task.html")):
+class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = "/tasks/add"

@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -133,7 +134,8 @@ class TeamHandler(BaseHandler):
         self.redirect(fallback_page)
 
 
-class AddTeamHandler(SimpleHandler("add_team.html")):
+class AddTeamHandler(SimpleHandler("add_team.html", permission_all=True)):
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = "/teams/add"
 
@@ -164,7 +166,7 @@ class AddTeamHandler(SimpleHandler("add_team.html")):
         self.redirect(fallback_page)
 
 
-class AddUserHandler(SimpleHandler("add_user.html")):
+class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = "/users/add"
