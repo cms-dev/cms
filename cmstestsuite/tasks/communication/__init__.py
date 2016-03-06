@@ -31,6 +31,7 @@ task_info = {
     "time_limit_{{dataset_id}}": "1.0",
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Communication",
+    "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "1",
     "score_type_{{dataset_id}}": "Sum",
     "score_type_parameters_{{dataset_id}}": "50",
 }
