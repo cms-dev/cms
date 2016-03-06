@@ -277,7 +277,7 @@ class StatementHandler(BaseHandler):
         self.try_commit()
 
         # Page to redirect to.
-        self.write("/task/%s" % task.id)
+        self.write("%s" % task.id)
 
 
 class AddAttachmentHandler(BaseHandler):
@@ -348,7 +348,7 @@ class AttachmentHandler(BaseHandler):
         self.try_commit()
 
         # Page to redirect to.
-        self.write("/task/%s" % task.id)
+        self.write("%s" % task.id)
 
 
 class AddDatasetHandler(BaseHandler):

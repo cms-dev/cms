@@ -165,4 +165,4 @@ class AdminHandler(BaseHandler):
         self.try_commit()
 
         # Page to redirect to.
-        self.write("/admins")
+        self.write("../admins")
