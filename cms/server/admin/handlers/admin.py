@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -68,7 +69,7 @@ def _admin_attrs(handler):
     return attrs
 
 
-class AddAdminHandler(SimpleHandler("add_admin.html")):
+class AddAdminHandler(SimpleHandler("add_admin.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
         fallback_page = "/admins/add"

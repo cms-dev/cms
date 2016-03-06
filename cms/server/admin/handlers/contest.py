@@ -39,7 +39,7 @@ from .base import BaseHandler, SimpleContestHandler, SimpleHandler, \
     require_permission
 
 
-class AddContestHandler(SimpleHandler("add_contest.html")):
+class AddContestHandler(SimpleHandler("add_contest.html", permission_all=True)):
     """Adds a new contest.
 
     """

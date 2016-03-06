@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -542,8 +543,14 @@ class BaseHandler(CommonRequestHandler):
 FileHandler = file_handler_gen(BaseHandler)
 
 
-def SimpleHandler(page, authenticated=True):
-    if authenticated:
+def SimpleHandler(page, authenticated=True, permission_all=False):
+    if permission_all:
+        class Cls(BaseHandler):
+            @require_permission(BaseHandler.PERMISSION_ALL)
+            def get(self):
+                self.r_params = self.render_params()
+                self.render(page, **self.r_params)
+    elif authenticated:
         class Cls(BaseHandler):
             @require_permission(BaseHandler.AUTHENTICATED)
             def get(self):
