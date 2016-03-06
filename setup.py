@@ -122,6 +122,7 @@ setup(
             "cmsTestFileCacher=cmstestsuite.TestFileCacher:main",
             "cmsAddAdmin=cmscontrib.AddAdmin:main",
             "cmsAddParticipation=cmscontrib.AddParticipation:main",
+            "cmsAddStatement=cmscontrib.AddStatement:main",
             "cmsAddSubmission=cmscontrib.AddSubmission:main",
             "cmsAddTeam=cmscontrib.AddTeam:main",
             "cmsAddUser=cmscontrib.AddUser:main",
