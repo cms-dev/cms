@@ -123,6 +123,7 @@ setup(
             "cmsAddUser=cmscontrib.AddUser:main",
             "cmsAddTeam=cmscontrib.AddTeam:main",
             "cmsAddParticipation=cmscontrib.AddParticipation:main",
+            "cmsAddStatement=cmscontrib.AddStatement:main",
             "cmsAddSubmission=cmscontrib.AddSubmission:main",
             "cmsRemoveUser=cmscontrib.RemoveUser:main",
             "cmsRemoveTask=cmscontrib.RemoveTask:main",
