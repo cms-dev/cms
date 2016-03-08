@@ -29,6 +29,7 @@ import logging
 import netifaces
 import os
 import sys
+import grp
 from argparse import ArgumentParser
 from collections import namedtuple
 
@@ -54,6 +55,13 @@ def mkdir(path):
     """
     try:
         os.mkdir(path)
+        try:
+            os.chmod(path, 0770)
+            cmsuser_gid = grp.getgrnam('cmsuser').gr_gid
+            os.chown(path, -1, cmsuser_gid)
+        except OSError as error:
+            os.rmdir(path)
+            return False
     except OSError as error:
         if error.errno != errno.EEXIST:
             return False
