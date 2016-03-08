@@ -29,7 +29,6 @@ import logging
 import netifaces
 import os
 import sys
-import pwd
 import grp
 from argparse import ArgumentParser
 from collections import namedtuple
