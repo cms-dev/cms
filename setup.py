@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -120,24 +120,26 @@ setup(
             "cmsReplayContest=cmstestsuite.ReplayContest:main",
             "cmsAdaptContest=cmstestsuite.AdaptContest:main",
             "cmsTestFileCacher=cmstestsuite.TestFileCacher:main",
-            "cmsAddUser=cmscontrib.AddUser:main",
-            "cmsAddTeam=cmscontrib.AddTeam:main",
+            "cmsAddAdmin=cmscontrib.AddAdmin:main",
             "cmsAddParticipation=cmscontrib.AddParticipation:main",
             "cmsAddSubmission=cmscontrib.AddSubmission:main",
-            "cmsRemoveUser=cmscontrib.RemoveUser:main",
-            "cmsRemoveTask=cmscontrib.RemoveTask:main",
-            "cmsImportUser=cmscontrib.ImportUser:main",
-            "cmsImportTeam=cmscontrib.ImportTeam:main",
-            "cmsImportContest=cmscontrib.ImportContest:main",
-            "cmsImportTask=cmscontrib.ImportTask:main",
+            "cmsAddTeam=cmscontrib.AddTeam:main",
+            "cmsAddUser=cmscontrib.AddUser:main",
             "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
-            "cmsExportSubmissions=cmscontrib.ExportSubmissions:main",
-            "cmsAddAdmin=cmscontrib.AddAdmin:main",
             "cmsDumpExporter=cmscontrib.DumpExporter:main",
             "cmsDumpImporter=cmscontrib.DumpImporter:main",
-            "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
             "cmsDumpUpdater=cmscontrib.DumpUpdater:main",
+            "cmsExportSubmissions=cmscontrib.ExportSubmissions:main",
+            "cmsImportContest=cmscontrib.ImportContest:main",
+            "cmsImportTask=cmscontrib.ImportTask:main",
+            "cmsImportTeam=cmscontrib.ImportTeam:main",
+            "cmsImportUser=cmscontrib.ImportUser:main",
             "cmsRWSHelper=cmscontrib.RWSHelper:main",
+            "cmsRemoveContest=cmscontrib.RemoveContest:main",
+            "cmsRemoveSubmissions=cmscontrib.RemoveSubmissions:main",
+            "cmsRemoveTask=cmscontrib.RemoveTask:main",
+            "cmsRemoveUser=cmscontrib.RemoveUser:main",
+            "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
             "cmsMake=cmstaskenv.cmsMake:main",
             "cmsYamlImporter=cmscompat.YamlImporter:main",
             "cmsYamlReimporter=cmscompat.YamlReimporter:main",
