@@ -139,7 +139,8 @@ EVALUATION_MESSAGES = MessageCollection([
                  N_("Your submission ran and gave the correct answer")),
     HumanMessage("partial",
                  N_("Output is partially correct"),
-                 N_("Your submission ran and gave the partially correct answer")),
+                 N_("Your submission ran and gave the partially correct "
+                    "answer")),
     HumanMessage("wrong",
                  N_("Output isn't correct"),
                  N_("Your submission ran, but gave the wrong answer")),
