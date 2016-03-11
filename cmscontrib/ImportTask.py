@@ -60,8 +60,9 @@ class TaskImporter(BaseImporter):
 
     """
 
-    def __init__(self, path, update, no_statement, contest_id, loader_class):
+    def __init__(self, path, prefix, update, no_statement, contest_id, loader_class):
         self.file_cacher = FileCacher()
+        self.prefix = prefix
         self.update = update
         self.no_statement = no_statement
         self.contest_id = contest_id
@@ -79,6 +80,10 @@ class TaskImporter(BaseImporter):
         task = self.loader.get_task(get_statement=not self.no_statement)
         if task is None:
             return
+
+        # Apply the prefix, if there is one
+        if self.prefix:
+            task.name = self.prefix + task.name
 
         # Store
         logger.info("Creating task on the database.")
@@ -158,6 +163,11 @@ def main():
         help="id of the contest the task will be attached to"
     )
     parser.add_argument(
+        "-p", "--prefix",
+        action="store", type=utf8_decoder,
+        help="the prefix to be added before the task name"
+    )
+    parser.add_argument(
         "target",
         action="store", type=utf8_decoder,
         help="target file/directory from where to import task(s)"
@@ -176,6 +186,7 @@ def main():
         update=args.update,
         no_statement=args.no_statement,
         contest_id=args.contest_id,
+        prefix=args.prefix,
         loader_class=loader_class
     ).do_import()
 
