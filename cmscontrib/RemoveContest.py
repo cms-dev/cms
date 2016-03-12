@@ -62,7 +62,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Remove a contest from CMS.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
-                        help="id of contest the user is in")
+                        help="id of the contest")
     args = parser.parse_args()
 
     if args.contest_id is None:
