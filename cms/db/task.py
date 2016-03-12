@@ -35,12 +35,14 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import backref, relationship, validates
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from . import Base, Contest
 from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
+
+import re
 
 
 class Task(Base):
@@ -555,3 +557,8 @@ class Testcase(Base):
     output = Column(
         String,
         nullable=False)
+
+    @validates("codename")
+    def validate_codename(self, key, codename):
+        codename = re.sub(r'[^a-zA-Z0-9_.-]+', '_', codename)
+        return codename
