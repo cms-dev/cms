@@ -83,10 +83,9 @@ class Communication(TaskType):
             source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
             source_filenames = []
             source_filenames.append("stub%s" % source_ext)
-            if len(submission_format) == 1:
-                executable_filename = submission_format[0].replace(".%l", "")
-            else:
-                executable_filename = "user_program"
+            executable_filename = \
+                "_".join(pattern.replace(".%l", "")
+                         for pattern in submission_format)
             for filename in submission_format:
                 source_filename = filename.replace(".%l", source_ext)
                 source_filenames.append(source_filename)
@@ -149,10 +148,9 @@ class Communication(TaskType):
             sandbox.create_file_from_storage(filename, digest)
 
         # Prepare the compilation command
-        if len(job.files) == 1:
-            executable_filename = job.files.keys()[0].replace(".%l", "")
-        else:
-            executable_filename = "user_program"
+        executable_filename = \
+            "_".join(pattern.replace(".%l", "")
+                     for pattern in job.files.keys())
         commands = get_compilation_commands(language,
                                             source_filenames,
                                             executable_filename)
@@ -188,8 +186,8 @@ class Communication(TaskType):
         sandbox_mgr = create_sandbox(file_cacher)
         sandbox_user = [create_sandbox(file_cacher) for i in indices]
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
-        fifo_in = [os.path.join(fifo_dir[i], "in"+str(i)) for i in indices]
-        fifo_out = [os.path.join(fifo_dir[i], "out"+str(i)) for i in indices]
+        fifo_in = [os.path.join(fifo_dir[i], "in%d" % i) for i in indices]
+        fifo_out = [os.path.join(fifo_dir[i], "out%d" % i) for i in indices]
         for i in indices:
             os.mkfifo(fifo_in[i])
             os.mkfifo(fifo_out[i])
@@ -234,7 +232,7 @@ class Communication(TaskType):
             executable_filename:
             job.executables[executable_filename].digest
             }
-        process = [None for i in indices]
+        processes = [None for i in indices]
         for i in indices:
             command = ["./%s" % executable_filename, fifo_out[i], fifo_in[i]]
             if num_processes != 1:
@@ -243,7 +241,7 @@ class Communication(TaskType):
             for filename, digest in executables_to_get.iteritems():
                 sandbox_user[i].create_file_from_storage(
                     filename, digest, executable=True)
-            process[i] = evaluation_step_before_run(
+            processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
                 command,
                 timeout,
@@ -251,7 +249,7 @@ class Communication(TaskType):
                 allow_dirs=user_allow_dirs)
 
         # Consume output.
-        wait_without_std(process + [manager])
+        wait_without_std(processes + [manager])
         # TODO: check exit codes with translate_box_exitcode.
 
         user_results = [evaluation_step_after_run(s) for s in sandbox_user]
@@ -261,7 +259,7 @@ class Communication(TaskType):
         success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
-        # merge results
+        # Merge results.
         job.sandboxes = [s.path for s in sandbox_user] + [sandbox_mgr.path]
         job.plus = plus_user
 
