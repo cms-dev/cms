@@ -121,8 +121,7 @@ class Communication(TaskType):
         # Stub.
         stub_filename = "stub%s" % source_ext
         source_filenames.append(stub_filename)
-        files_to_get[stub_filename] = \
-            job.managers[stub_filename].digest
+        files_to_get[stub_filename] = job.managers[stub_filename].digest
         # User's submission.
         for filename, fileinfo in job.files.iteritems():
             source_filename = filename.replace(".%l", source_ext)
