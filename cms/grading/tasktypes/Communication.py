@@ -31,7 +31,7 @@ import tempfile
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
     LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP, config
-from cms.grading.Sandbox import wait_without_std
+from cms.grading.Sandbox import wait_without_std, Sandbox
 from cms.grading import get_compilation_commands, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text, evaluation_step_before_run, \
@@ -194,8 +194,6 @@ class Communication(TaskType):
             os.chmod(fifo_in[i], 0o666)
             os.chmod(fifo_out[i], 0o666)
 
-        timeout = num_processes * job.time_limit
-
         # First step: we start the manager.
         manager_filename = "manager"
         manager_command = ["./%s" % manager_filename]
@@ -218,7 +216,7 @@ class Communication(TaskType):
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            timeout,
+            num_processes * job.time_limit,
             0,
             allow_dirs=manager_allow_dirs,
             writable_files=["output.txt"],
@@ -243,7 +241,7 @@ class Communication(TaskType):
             processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
                 command,
-                timeout,
+                job.time_limit,
                 job.memory_limit,
                 allow_dirs=user_allow_dirs)
 
@@ -257,6 +255,10 @@ class Communication(TaskType):
                            [r[1] for r in user_results])
         success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
+
+        if plus_user['exit_status'] == Sandbox.EXIT_OK and \
+            plus_user["execution_time"] >= job.time_limit:
+            plus_user['exit_status'] = Sandbox.EXIT_TIMEOUT
 
         # Merge results.
         job.sandboxes = [s.path for s in sandbox_user] + [sandbox_mgr.path]
