@@ -290,7 +290,7 @@ class BaseHandler(CommonRequestHandler):
                 ret["phase"] = 0
 
             # set the timezone used to format timestamps
-            ret["timezone"] = get_timezone(participation.user, self.contest)
+            ret["timezone"] = get_timezone(participation)
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)

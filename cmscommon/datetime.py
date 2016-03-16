@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +27,7 @@ import time
 import platform
 from datetime import tzinfo, timedelta, datetime
 from pytz import timezone, all_timezones
+from pytz.exceptions import UnknownTimeZoneError
 
 
 __all__ = [
@@ -71,20 +73,21 @@ def make_timestamp(_datetime=None):
         return (_datetime - EPOCH).total_seconds()
 
 
-def get_timezone(user, contest):
+def get_timezone(participation):
     """Return the timezone for the given user and contest
 
-    user (User): the user owning the timezone.
-    contest (Contest): the contest in which the user is competing.
+    participation (Participation): the user and contest to consider.
 
     return (tzinfo): the timezone information for the user.
 
     """
-    if user.timezone is not None and user.timezone in all_timezones:
-        return timezone(user.timezone)
-    if contest.timezone is not None and contest.timezone in all_timezones:
-        return timezone(contest.timezone)
-    return local
+    try:
+        if participation.user.timezone is not None:
+            return timezone(participation.user.timezone)
+        if participation.contest.timezone is not None:
+            return timezone(participation.contest.timezone)
+    except UnknownTimeZoneError:
+        return local
 
 
 def get_system_timezone():

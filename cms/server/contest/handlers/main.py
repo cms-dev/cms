@@ -332,7 +332,7 @@ class PrintingHandler(BaseHandler):
                     participation.user.username)
 
         printjob = PrintJob(timestamp=self.timestamp,
-                            user=participation.user,
+                            participation=participation,
                             filename=filename,
                             digest=digest)
 
