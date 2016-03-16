@@ -92,7 +92,7 @@ class PrintingExecutor(Executor):
                 raise ValueError("Print job %d not found in the database." %
                                  printjob_id)
             user = printjob.participation.user
-            contest = user.contest
+            contest = printjob.participation.contest
             timezone = get_timezone(user, contest)
             timestr = format_datetime(printjob.timestamp, timezone)
             filename = printjob.filename
