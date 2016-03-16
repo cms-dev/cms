@@ -637,7 +637,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     Attachment("input_%03d.txt" % i, input_digest)]
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
                                 conv=lambda x: "" if x is None else x)
-        if public_testcases != "":
+        if public_testcases == "all":
+            for t in args["testcases"]:
+                t.public = True
+        elif public_testcases != "":
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
 

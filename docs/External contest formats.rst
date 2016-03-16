@@ -149,7 +149,7 @@ The following are optional keys.
 
 - ``memory_limit`` (integer; also accepted: ``memlimit``): the memory limit for this task in megabytes; defaults to no limitations.
 
-- ``public_testcases`` (string; also accepted: ``risultati``): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens.
+- ``public_testcases`` (string; also accepted: ``risultati``): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens. If the given string is equal to ``all``, then the importer will mark all testcases as public.
 
 - ``token_*``: additional token parameters for the task, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there).
 
