@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -637,7 +637,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     Attachment("input_%03d.txt" % i, input_digest)]
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
                                 conv=lambda x: "" if x is None else x)
-        if public_testcases != "":
+        if public_testcases == "all":
+            for t in args["testcases"]:
+                t.public = True
+        elif public_testcases != "":
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
 
