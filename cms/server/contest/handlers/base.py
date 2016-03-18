@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,59 +34,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import pickle
-import socket
-import struct
 import traceback
-
-from datetime import timedelta
-
 import tornado.web
 
-from werkzeug.datastructures import LanguageAccept
-from werkzeug.http import parse_accept_header
-
-from cms import config
-from cms.db import Contest, Participation, User
-from cms.server import CommonRequestHandler, compute_actual_phase, \
-    file_handler_gen, get_url_root
-from cms.locale import filter_language_codes
-from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
-from cmscommon.isocodes import translate_language_code, \
-    translate_language_country_code
+from cms.db import Contest
+from cms.server import CommonRequestHandler, get_url_root
 
 
 logger = logging.getLogger(__name__)
 
 
-NOTIFICATION_ERROR = "error"
-NOTIFICATION_WARNING = "warning"
-NOTIFICATION_SUCCESS = "success"
-
-
-def check_ip(client, wanted):
-    """Return if client IP belongs to the wanted subnet.
-
-    client (string): IP address to verify.
-    wanted (string): IP address or subnet to check against.
-
-    return (bool): whether client equals wanted (if the latter is an IP
-        address) or client belongs to wanted (if it's a subnet).
-
-    """
-    wanted, sep, subnet = wanted.partition('/')
-    subnet = 32 if sep == "" else int(subnet)
-    snmask = 2 ** 32 - 2 ** (32 - subnet)
-    wanted = struct.unpack(">I", socket.inet_aton(wanted))[0]
-    client = struct.unpack(">I", socket.inet_aton(client))[0]
-    return (wanted & snmask) == (client & snmask)
-
-
 class BaseHandler(CommonRequestHandler):
     """Base RequestHandler for this application.
 
-    All the RequestHandler classes in this application should be a
-    child of this class.
+    This will also handle the contest list on the homepage.
 
     """
 
@@ -97,165 +58,24 @@ class BaseHandler(CommonRequestHandler):
         self.langs = None
         self._ = None
 
+    def get(self):
+        self.r_params = self.render_params()
+
+        self.render("contest_list.html", **self.r_params)
+
     def prepare(self):
         """This method is executed at the beginning of each request.
 
         """
         super(BaseHandler, self).prepare()
-        self.contest = Contest.get_from_id(self.application.service.contest,
-                                           self.sql_session)
 
         self._ = self.locale.translate
 
-        self.r_params = self.render_params()
-
-    def get_current_user(self):
-        """The name is get_current_user because tornado wants it that
-        way, but this is really a get_current_participation.
-
-        Gets the current participation from cookies.
-
-        If a valid cookie is retrieved, return a Participation tuple
-        (specifically: the Participation involving the username
-        specified in the cookie and the current contest).
-
-        Otherwise (e.g. the user exists but doesn't participate in the
-        current contest), return None.
-
-        """
-        remote_ip = self.request.remote_ip
-        if self.contest.ip_autologin:
-            self.clear_cookie("login")
-            participations = self.sql_session.query(Participation)\
-                .filter(Participation.contest == self.contest)\
-                .filter(Participation.ip == remote_ip)\
-                .all()
-            if len(participations) == 1:
-                return participations[0]
-
-            if len(participations) > 1:
-                logger.error("Multiple users have IP %s." % (remote_ip))
-            else:
-                logger.error("No user has IP %s" % (remote_ip))
-
-            # If IP autologin is set, we do not allow password logins.
-            return None
-
-        if self.get_secure_cookie("login") is None:
-            return None
-
-        # Parse cookie.
-        try:
-            cookie = pickle.loads(self.get_secure_cookie("login"))
-            username = cookie[0]
-            password = cookie[1]
-            last_update = make_datetime(cookie[2])
-        except:
-            self.clear_cookie("login")
-            return None
-
-        # Check if the cookie is expired.
-        if self.timestamp - last_update > \
-                timedelta(seconds=config.cookie_duration):
-            self.clear_cookie("login")
-            return None
-
-        # Load user from DB.
-        user = self.sql_session.query(User)\
-            .filter(User.username == username)\
-            .first()
-
-        # Check if user exists.
-        if user is None:
-            self.clear_cookie("login")
-            return None
-
-        # Load participation from DB.
-        participation = self.sql_session.query(Participation)\
-            .filter(Participation.contest == self.contest)\
-            .filter(Participation.user == user)\
-            .first()
-
-        # Check if participaton exists.
-        if participation is None:
-            self.clear_cookie("login")
-            return None
-
-        # If a contest-specific password is defined, use that. If it's
-        # not, use the user's main password.
-        if participation.password is None:
-            correct_password = user.password
-        else:
-            correct_password = participation.password
-
-        # Check if user is allowed to login.
-        if password != correct_password:
-            self.clear_cookie("login")
-            return None
-
-        # Check if user is using the right IP (or is on the right subnet)
-        if self.contest.ip_restriction and participation.ip is not None \
-                and not check_ip(self.request.remote_ip, participation.ip):
-            self.clear_cookie("login")
-            return None
-
-        # Check if user is hidden
-        if participation.hidden and self.contest.block_hidden_participations:
-            self.clear_cookie("login")
-            return None
-
-        if self.refresh_cookie:
-            self.set_secure_cookie("login",
-                                   pickle.dumps((user.username,
-                                                 password,
-                                                 make_timestamp())),
-                                   expires_days=None)
-
-        return participation
-
-    def get_user_locale(self):
-        self.langs = self.application.service.langs
-        lang_codes = self.langs.keys()
-
-        if len(self.contest.allowed_localizations) > 0:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
-
-        # Select the one the user likes most.
-        basic_lang = lang_codes[0].replace("_", "-") \
-            if len(self.contest.allowed_localizations) else 'en'
-        http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]
-        self.browser_lang = parse_accept_header(
-            self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(http_langs, basic_lang)
-
-        self.cookie_lang = self.get_cookie("language", None)
-
-        if self.cookie_lang in http_langs:
-            lang_code = self.cookie_lang
-        else:
-            lang_code = self.browser_lang
-
-        self.set_header("Content-Language", lang_code)
-        return self.langs[lang_code.replace("-", "_")]
-
-    @staticmethod
-    def _get_token_status(obj):
-        """Return the status of the tokens for the given object.
-
-        obj (Contest or Task): an object that has the token_* attributes.
-        return (int): one of 0 (disabled), 1 (enabled/finite) and 2
-                      (enabled/infinite).
-
-        """
-        if obj.token_mode == "disabled":
-            return 0
-        elif obj.token_mode == "finite":
-            return 1
-        elif obj.token_mode == "infinite":
-            return 2
-        else:
-            raise RuntimeError("Unknown token_mode value.")
+        # We need this to be computed for each request because we want to be
+        # able to import new contests without having to restart CWS.
+        self.contest_list = {}
+        for contest in self.sql_session.query(Contest).all():
+            self.contest_list[contest.name] = contest
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
@@ -265,68 +85,13 @@ class BaseHandler(CommonRequestHandler):
         """
         ret = {}
         ret["timestamp"] = self.timestamp
-        ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
 
-        ret["phase"] = self.contest.phase(self.timestamp)
-
-        ret["printing_enabled"] = (config.printer is not None)
-        ret["questions_enabled"] = self.contest.allow_questions
-        ret["testing_enabled"] = self.contest.allow_user_tests
-
-        if self.current_user is not None:
-            participation = self.current_user
-
-            res = compute_actual_phase(
-                self.timestamp, self.contest.start, self.contest.stop,
-                self.contest.per_user_time, participation.starting_time,
-                participation.delay_time, participation.extra_time)
-
-            ret["actual_phase"], ret["current_phase_begin"], \
-                ret["current_phase_end"], ret["valid_phase_begin"], \
-                ret["valid_phase_end"] = res
-
-            if ret["actual_phase"] == 0:
-                ret["phase"] = 0
-
-            # set the timezone used to format timestamps
-            ret["timezone"] = get_timezone(participation.user, self.contest)
-
-        # some information about token configuration
-        ret["tokens_contest"] = self._get_token_status(self.contest)
-
-        t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
-        if t_tokens == 0:
-            ret["tokens_tasks"] = 0  # all disabled
-        elif t_tokens == 2 * len(self.contest.tasks):
-            ret["tokens_tasks"] = 2  # all infinite
-        else:
-            ret["tokens_tasks"] = 1  # all finite or mixed
+        ret["contest_list"] = self.contest_list
 
         # TODO Now all language names are shown in the active language.
         # It would be better to show them in the corresponding one.
         ret["lang_names"] = {}
-
-        # Get language codes for allowed localizations
-        lang_codes = self.langs.keys()
-        if len(self.contest.allowed_localizations) > 0:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
-        for lang_code, trans in self.langs.iteritems():
-            language_name = None
-            # Filter lang_codes with allowed localizations
-            if lang_code not in lang_codes:
-                continue
-            try:
-                language_name = translate_language_country_code(
-                    lang_code, trans)
-            except ValueError:
-                language_name = translate_language_code(
-                    lang_code, trans)
-            ret["lang_names"][lang_code.replace("_", "-")] = language_name
-
-        ret["cookie_lang"] = self.cookie_lang
-        ret["browser_lang"] = self.browser_lang
 
         return ret
 
@@ -394,6 +159,3 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
             return "text/plain"
         else:
             return tornado.web.StaticFileHandler.get_content_type(self)
-
-
-FileHandler = file_handler_gen(BaseHandler)

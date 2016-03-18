@@ -67,7 +67,7 @@ HANDLERS = [
 
     # Main
 
-    (r"/", MainHandler),
+    (r"", MainHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/start", StartHandler),

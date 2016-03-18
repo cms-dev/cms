@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -38,24 +38,24 @@ import tornado.web
 
 from cms.db import Question
 
-from .base import BaseHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
 
 
-class CommunicationHandler(BaseHandler):
+class CommunicationHandler(ContestHandler):
     """Displays the private conversations between the logged in user
     and the contest managers..
 
     """
     @tornado.web.authenticated
-    def get(self):
-        self.set_secure_cookie("unread_count", "0")
+    def get(self, contest_name):
+        self.set_secure_cookie(contest_name + "_unread_count", "0")
         self.render("communication.html", **self.r_params)
 
 
-class QuestionHandler(BaseHandler):
+class QuestionHandler(ContestHandler):
     """Called when the user submits a question.
 
     """
