@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -47,30 +47,30 @@ from sqlalchemy import func
 from cms import config, filename_to_language
 from cms.db import Task, UserTest, UserTestFile, UserTestManager
 from cms.grading.tasktypes import get_task_type
-from cms.server import actual_phase_required, format_size
+from cms.server import actual_phase_required, format_size, multi_contest
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, FileHandler, \
-    NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
+    NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
 
 
-class UserTestInterfaceHandler(BaseHandler):
+class UserTestInterfaceHandler(ContestHandler):
     """Serve the interface to test programs.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self):
+    @multi_contest
+    def get(self, contest_name):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(403)
 
         user_tests = dict()
         user_tests_left = dict()
@@ -117,7 +117,7 @@ class UserTestInterfaceHandler(BaseHandler):
                     **self.r_params)
 
 
-class UserTestHandler(BaseHandler):
+class UserTestHandler(ContestHandler):
 
     refresh_cookie = False
 
@@ -126,17 +126,20 @@ class UserTestHandler(BaseHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def post(self, task_name):
+    @multi_contest
+    def post(self, contest_name, task_name):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(403)
 
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
+
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     "testing?%s" % quote(task.name, safe=''))
 
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
@@ -180,7 +183,7 @@ class UserTestHandler(BaseHandler):
                 self._("Too many tests!"),
                 error.message,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Enforce minimum time between user_tests
@@ -224,7 +227,7 @@ class UserTestHandler(BaseHandler):
                 self._("Tests too frequent!"),
                 error.message,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -236,7 +239,7 @@ class UserTestHandler(BaseHandler):
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # If the user submitted an archive, extract it and use content
@@ -256,7 +259,7 @@ class UserTestHandler(BaseHandler):
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
                     NOTIFICATION_ERROR)
-                self.redirect("/testing?%s" % quote(task.name, safe=''))
+                self.redirect(fallback_page)
                 return
 
             # Extract the archive.
@@ -286,7 +289,7 @@ class UserTestHandler(BaseHandler):
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -339,7 +342,7 @@ class UserTestHandler(BaseHandler):
                 self._("Invalid test!"),
                 error,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Check if submitted files are small enough.
@@ -352,7 +355,7 @@ class UserTestHandler(BaseHandler):
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
         if len(files["input"][1]) > config.max_input_length:
             self.application.service.add_notification(
@@ -362,7 +365,7 @@ class UserTestHandler(BaseHandler):
                 self._("The input file must be at most %d bytes long.") %
                 config.max_input_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # All checks done, submission accepted.
@@ -409,7 +412,7 @@ class UserTestHandler(BaseHandler):
                 self._("Test storage failed!"),
                 self._("Please try again."),
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # All the files are stored, ready to submit!
@@ -443,16 +446,17 @@ class UserTestHandler(BaseHandler):
             self._("Your test has been received "
                    "and is currently being executed."),
             NOTIFICATION_SUCCESS)
-        self.redirect("/testing?%s" % quote(task.name, safe=''))
+        self.redirect(fallback_page)
 
 
-class UserTestStatusHandler(BaseHandler):
+class UserTestStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num):
+    @multi_contest
+    def get(self, contest_name, task_name, user_test_num):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -504,13 +508,14 @@ class UserTestStatusHandler(BaseHandler):
         self.write(data)
 
 
-class UserTestDetailsHandler(BaseHandler):
+class UserTestDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num):
+    @multi_contest
+    def get(self, contest_name, task_name, user_test_num):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -541,7 +546,8 @@ class UserTestIOHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num, io):
+    @multi_contest
+    def get(self, contest_name, task_name, user_test_num, io):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -582,7 +588,8 @@ class UserTestFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num, filename):
+    @multi_contest
+    def get(self, contest_name, task_name, user_test_num, filename):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
