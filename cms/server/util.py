@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -178,6 +179,24 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
     return (actual_phase,
             current_phase_begin, current_phase_end,
             actual_start, actual_stop)
+
+
+# TODO: multi_contest and actual_phase_required are only relevant for CWS
+
+
+def multi_contest(f):
+    """Return decorator swallowing the contest name if in multi contest mode.
+
+    """
+    @wraps(f)
+    def wrapped_f(self, *args):
+        if self.is_multi_contest():
+            # Swallow the first argument (the contest name).
+            f(self, *(args[1:]))
+        else:
+            # Otherwise, just forward all arguments.
+            f(self, *args)
+    return wrapped_f
 
 
 def actual_phase_required(*actual_phases):
@@ -694,13 +713,19 @@ class CommonRequestHandler(RequestHandler):
         return self.application.service
 
     def redirect(self, url):
-        url = get_url_root(self.request.path) + url
+        """This method overrides tornado.web.RequestHandler.redirect()
 
-        # We would prefer to just use this:
-        #   tornado.web.RequestHandler.redirect(self, url)
-        # but unfortunately that assumes it knows the full path to the current
-        # page to generate an absolute URL. This may not be the case if we are
-        # hidden behind a proxy which is remapping part of its URL space to us.
+        We would prefer not to override this, but the parent method assumes it
+        knows the full path to the current page to generate an absolute URL.
+        This may not be the case if we are hidden behind a proxy which is
+        remapping part of its URL space to us.
+
+        url (string): a URL starting with a forward slash, e.g. "/stuff"
+
+        """
+        # We don't use os.path.join here, because we need something like this:
+        # ".." + "/stuff" to become: "../stuff" not: "/stuff"
+        url = get_url_root(self.request.path) + url
 
         self.set_status(302)
         self.set_header("Location", url)

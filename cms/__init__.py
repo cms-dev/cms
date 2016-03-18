@@ -41,7 +41,7 @@ __all__ = [
     # util
     "ConfigError", "mkdir", "utf8_decoder", "Address", "ServiceCoord",
     "get_safe_shard", "get_service_address", "get_service_shards",
-    "default_argument_parser",
+    "contest_id_from_args", "default_argument_parser",
     # conf
     "config",
     # plugin
@@ -64,6 +64,6 @@ SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
 
 from .util import ConfigError, mkdir, utf8_decoder, Address, ServiceCoord, \
     get_safe_shard, get_service_address, get_service_shards, \
-    default_argument_parser
+    contest_id_from_args, default_argument_parser
 from .conf import config
 from .plugin import plugin_list, plugin_lookup

@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,24 +37,25 @@ import logging
 
 import tornado.web
 
-from cms.server import actual_phase_required
+from cms.server import actual_phase_required, multi_contest
 from cmscommon.isocodes import is_language_code, translate_language_code, \
     is_country_code, translate_country_code, \
     is_language_country_code, translate_language_country_code
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, FileHandler
+from .contest import ContestHandler, FileHandler
 
 
 logger = logging.getLogger(__name__)
 
 
-class TaskDescriptionHandler(BaseHandler):
+class TaskDescriptionHandler(ContestHandler):
     """Shows the data of a task in the contest.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name):
         try:
             task = self.contest.get_task(task_name)
@@ -100,6 +101,7 @@ class TaskStatementViewHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, lang_code):
         try:
             task = self.contest.get_task(task_name)
@@ -126,6 +128,7 @@ class TaskAttachmentViewHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, filename):
         try:
             task = self.contest.get_task(task_name)

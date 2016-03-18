@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -49,31 +49,31 @@ from cms import config
 from cms.db import Task, UserTest, UserTestFile, UserTestManager
 from cms.grading.languagemanager import get_language
 from cms.grading.tasktypes import get_task_type
-from cms.server import actual_phase_required, format_size
+from cms.server import actual_phase_required, format_size, multi_contest
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, FileHandler, \
-    NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
+    NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
 
 
-class UserTestInterfaceHandler(BaseHandler):
+class UserTestInterfaceHandler(ContestHandler):
     """Serve the interface to test programs.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(404)
 
         user_tests = dict()
         user_tests_left = dict()
@@ -120,14 +120,14 @@ class UserTestInterfaceHandler(BaseHandler):
                     **self.r_params)
 
 
-class UserTestHandler(BaseHandler):
+class UserTestHandler(ContestHandler):
 
     refresh_cookie = False
 
     # The following code has been taken from SubmitHandler and adapted
     # for UserTests.
 
-    def _send_error(self, subject, text, task):
+    def _send_error(self, subject, text):
         """Shorthand for sending a notification and redirecting."""
         logger.warning("Sent error: `%s' - `%s'", subject, text)
         self.application.service.add_notification(
@@ -136,22 +136,25 @@ class UserTestHandler(BaseHandler):
             subject,
             text,
             NOTIFICATION_ERROR)
-        task_name = quote(task.name, safe='')
-        self.redirect("/testing?{0}".format(task_name))
+        self.redirect(self.fallback_page)
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, task_name):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(404)
 
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
+
+        self.fallback_page = os.path.join(
+            self.r_params["real_contest_root"],
+            "testing?%s" % quote(task.name, safe=''))
 
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
@@ -189,7 +192,7 @@ class UserTestHandler(BaseHandler):
                                "at most %d tests on this task.") %
                         task.max_user_test_number)
         except ValueError as error:
-            self._send_error(self._("Too many tests!"), error.message, task)
+            self._send_error(self._("Too many tests!"), error.message)
             return
 
         # Enforce minimum time between user_tests
@@ -227,8 +230,7 @@ class UserTestHandler(BaseHandler):
                                "after %d seconds from last test.") %
                         task.min_user_test_interval.total_seconds())
         except ValueError as error:
-            self._send_error(
-                self._("Tests too frequent!"), error.message, task)
+            self._send_error(self._("Tests too frequent!"), error.message)
             return
 
         # Required files from the user.
@@ -241,8 +243,7 @@ class UserTestHandler(BaseHandler):
         if any(len(filename) != 1 for filename in self.request.files.values()):
             self._send_error(
                 self._("Invalid test format!"),
-                self._("Please select the correct files."),
-                task)
+                self._("Please select the correct files."))
             return
 
         # If the user submitted an archive, extract it and use content
@@ -266,8 +267,7 @@ class UserTestHandler(BaseHandler):
             if archive is None:
                 self._send_error(
                     self._("Invalid archive format!"),
-                    self._("The submitted archive could not be opened."),
-                    task)
+                    self._("The submitted archive could not be opened."))
                 return
 
             # Extract the archive.
@@ -290,8 +290,7 @@ class UserTestHandler(BaseHandler):
                                          and required.issuperset(provided))):
             self._send_error(
                 self._("Invalid test format!"),
-                self._("Please select the correct files."),
-                task)
+                self._("Please select the correct files."))
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -334,7 +333,7 @@ class UserTestHandler(BaseHandler):
                 error = self._("Language %s not allowed in this contest.") \
                     % submission_lang
         if error is not None:
-            self._send_error(self._("Invalid test!"), error, task)
+            self._send_error(self._("Invalid test!"), error)
             return
 
         # Check if submitted files are small enough.
@@ -343,15 +342,13 @@ class UserTestHandler(BaseHandler):
             self._send_error(
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %
-                config.max_submission_length,
-                task)
+                config.max_submission_length)
             return
         if len(files["input"][1]) > config.max_input_length:
             self._send_error(
                 self._("Input too big!"),
                 self._("The input file must be at most %d bytes long.") %
-                config.max_input_length,
-                task)
+                config.max_input_length)
             return
 
         # All checks done, submission accepted.
@@ -394,8 +391,7 @@ class UserTestHandler(BaseHandler):
             logger.error("Storage failed! %s", error)
             self._send_error(
                 self._("Test storage failed!"),
-                self._("Please try again."),
-                task)
+                self._("Please try again."))
             return
 
         # All the files are stored, ready to submit!
@@ -430,19 +426,20 @@ class UserTestHandler(BaseHandler):
             self._("Your test has been received "
                    "and is currently being executed."),
             NOTIFICATION_SUCCESS)
+
         # The argument (encripted user test id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the user test id).
-        self.redirect("/testing?%s&%s" % (
-            quote(task.name, safe=''), encrypt_number(user_test.id)))
+        self.redirect(self.fallback_page + "&" + encrypt_number(user_test.id))
 
 
-class UserTestStatusHandler(BaseHandler):
+class UserTestStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, user_test_num):
         participation = self.current_user
 
@@ -495,12 +492,13 @@ class UserTestStatusHandler(BaseHandler):
         self.write(data)
 
 
-class UserTestDetailsHandler(BaseHandler):
+class UserTestDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, user_test_num):
         participation = self.current_user
 
@@ -532,6 +530,7 @@ class UserTestIOHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, user_test_num, io):
         participation = self.current_user
 
@@ -573,6 +572,7 @@ class UserTestFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, user_test_num, filename):
         participation = self.current_user
 
