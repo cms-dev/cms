@@ -25,9 +25,9 @@
 
 var CMS = CMS || {};
 
-CMS.CWSUtils = function(url_root, timestamp, timezoned_timestamp,
+CMS.CWSUtils = function(contest_root, timestamp, timezoned_timestamp,
                         current_phase_begin, current_phase_end, phase) {
-    this.url_root = url_root;
+    this.contest_root = contest_root;
     this.last_notification = timestamp;
     this.server_timestamp = timestamp;
     this.server_timezoned_timestamp = timezoned_timestamp;
@@ -48,7 +48,7 @@ CMS.CWSUtils = function(url_root, timestamp, timezoned_timestamp,
 CMS.CWSUtils.prototype.update_notifications = function() {
     var self = this;
     $.get(
-        this.url_root + "/notifications",
+        this.contest_root + "/notifications",
         {"last_notification": this.last_notification},
         function(data) {
             var counter = 0;

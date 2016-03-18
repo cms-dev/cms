@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends contest.html %}
 {% block core %}
 <div class="span9">
 
@@ -33,7 +33,7 @@
 
 <h2>{{ _("Questions") }}</h2>
 <div class="well question_submit">
-    <form class="form-horizontal" action="{{ url_root }}/question" method="POST">
+    <form class="form-horizontal" action="{{ contest_root }}/question" method="POST">
         {% module xsrf_form_html() %}
         <fieldset>
             <div class="control-group">

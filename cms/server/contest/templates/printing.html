@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends contest.html %}
 
 {% block core %}
 
@@ -20,7 +20,7 @@
     {% end %}
 
 <div id="print" class="row">
-    <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/printing" method="POST">
+    <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/printing" method="POST">
         {% module xsrf_form_html() %}
         <fieldset>
             <div class="control-group">

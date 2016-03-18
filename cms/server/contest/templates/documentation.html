@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends contest.html %}
 {% block core %}
 <div class="span9">
 
@@ -11,7 +11,7 @@
 {% if any(".cpp" in get_language(lang).source_extensions for lang in contest.languages) %}
 <h3>C++</h3>
 
-<p><a href="{{ url_root }}/stl/index.html">{{ _("Standard Template Library") }}</a></p>
+<p><a href="{{ contest_root }}/stl/index.html">{{ _("Standard Template Library") }}</a></p>
 {% end %}
 
 {% if any(".java" in get_language(lang).source_extensions for lang in contest.languages) %}

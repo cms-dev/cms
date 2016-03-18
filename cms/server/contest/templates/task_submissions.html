@@ -1,13 +1,13 @@
-{% extends base.html %}
+{% extends contest.html %}
 
-{% block js %}
+{% block additional_js %}
 
 $(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>');
-    modal_body.load("{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id + "/details", function() {
+    modal_body.load("{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id + "/details", function() {
         $(".score_details .subtask .subtask-head").each(function () {
             $(this).prepend("<i class=\"icon-chevron-right\"></i>");
         });
@@ -60,7 +60,7 @@ update_submission_row = function (submission_id, data) {
 
 schedule_update_submission_row = function (submission_id) {
     setTimeout(function () {
-        $.get("{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id, function (data) {
+        $.get("{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id, function (data) {
             update_submission_row(submission_id, data);
         });
     }, 10000);
@@ -97,7 +97,7 @@ $(document).ready(function () {
 
 <div id="submit_solution" class="row">
     <div class="span5">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
 {% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
@@ -130,7 +130,7 @@ $(document).ready(function () {
     </div>
 {% if len(task.submission_format) > 1 and not any(x.filename.endswith(".%l") for x in task.submission_format) %}
     <div class="span4">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
                 <div class="control-group">

@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends contest.html %}
 {% block core %}
 
 {% from cms.server import format_token_rules, format_size %}
@@ -26,7 +26,7 @@
 <div class="row statement one_statement">
     <div class="span9">
     {% for lang_code in task.statements %}
-        <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(lang_code) }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
+        <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(lang_code) }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
     {% end %}
     </div>
 </div>
@@ -41,7 +41,7 @@
     {% set task_primary = primary_statements %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in task_primary %}
-        <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large btn-success">
+        <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large btn-success">
             {% if statement.language != statement.language_name %}
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
@@ -52,7 +52,7 @@
     {% end %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
-        <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large">
+        <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
@@ -67,7 +67,7 @@
             <ul>
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
                 <li>
-                    <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}">
+                    <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}">
         {% if statement.language != statement.language_name %}
             {% raw _("<b>%s</b>") % escape(statement.language_name) %}
         {% else %}
@@ -149,7 +149,7 @@
         </p>
     {% elif tokens_tasks == 2 %}
         <p>
-        {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>.") % {"type_pl": _("tokens"), "url_root": url_root} %}
+        {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") % {"type_pl": _("tokens"), "contest_root": contest_root} %}
         </p>
     {% else %}
         <p>
@@ -159,7 +159,7 @@
 
         <p>
         {{ _("Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token.") }}
-        {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>.") % {"type_pl": _("contest-tokens"), "url_root": url_root} %}
+        {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") % {"type_pl": _("contest-tokens"), "contest_root": contest_root} %}
         </p>
     {% end %}
     </td>
@@ -186,7 +186,7 @@
         {% end %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
-                <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/attachments/{{ encode_for_url(filename) }}" class="btn">
+                <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/attachments/{{ encode_for_url(filename) }}" class="btn">
             {% if type_icon is not None %}
                     <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png" alt="{{ mime_type }}" />
             {% else %}
