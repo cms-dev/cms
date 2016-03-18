@@ -6,6 +6,7 @@
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -231,19 +232,20 @@ def default_argument_parser(description, cls, ask_contest=None):
                           "no shard specified for service %s, "
                           "quitting." % (cls.__name__))
 
-    if ask_contest is not None:
-        if args.contest_id is not None:
-            # Test if there is a contest with the given contest id.
-            from cms.db import is_contest_id
-            if not is_contest_id(args.contest_id):
-                print("There is no contest with the specified id. "
-                      "Please try again.", file=sys.stderr)
-                sys.exit(1)
-            return cls(args.shard, args.contest_id)
-        else:
-            return cls(args.shard, ask_contest())
+    if args.contest_id is not None:
+        contest_id = args.contest_id
+    elif ask_contest is not None:
+        contest_id = ask_contest()
     else:
         return cls(args.shard)
+
+    # Test if there is a contest with the given contest id.
+    from cms.db import is_contest_id
+    if not is_contest_id(contest_id):
+        print("There is no contest with the specified id. "
+              "Please try again.", file=sys.stderr)
+        sys.exit(1)
+    return cls(args.shard, contest_id)
 
 
 def _find_local_addresses():
