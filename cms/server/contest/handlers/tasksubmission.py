@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -55,25 +55,28 @@ from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, FileHandler, \
-    NOTIFICATION_ERROR, NOTIFICATION_SUCCESS, NOTIFICATION_WARNING
+from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
+    NOTIFICATION_SUCCESS, NOTIFICATION_WARNING
 
 
 logger = logging.getLogger(__name__)
 
 
-class SubmitHandler(BaseHandler):
+class SubmitHandler(ContestHandler):
     """Handles the received submissions.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def post(self, task_name):
+    def post(self, contest_name, task_name):
         participation = self.current_user
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
+
+        fallback_page = "/" + contest_name + "/tasks/%s/submissions" % \
+                        quote(task.name, safe='')
 
         # Alias for easy access
         contest = self.contest
@@ -112,7 +115,7 @@ class SubmitHandler(BaseHandler):
                 self._("Too many submissions!"),
                 error.message,
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Enforce minimum time between submissions
@@ -156,7 +159,7 @@ class SubmitHandler(BaseHandler):
                 self._("Submissions too frequent!"),
                 error.message,
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -168,7 +171,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # If the user submitted an archive, extract it and use content
@@ -188,8 +191,7 @@ class SubmitHandler(BaseHandler):
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
                     NOTIFICATION_ERROR)
-                self.redirect("/tasks/%s/submissions" % quote(task.name,
-                                                              safe=''))
+                self.redirect(fallback_page)
                 return
 
             # Extract the archive.
@@ -218,7 +220,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -276,7 +278,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission!"),
                 error,
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Check if submitted files are small enough.
@@ -289,7 +291,7 @@ class SubmitHandler(BaseHandler):
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # All checks done, submission accepted.
@@ -336,7 +338,7 @@ class SubmitHandler(BaseHandler):
                 self._("Submission storage failed!"),
                 self._("Please try again."),
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # All the files are stored, ready to submit!
@@ -364,18 +366,16 @@ class SubmitHandler(BaseHandler):
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
         # FIXME is it actually used by something?
-        self.redirect("/tasks/%s/submissions?%s" % (
-            quote(task.name, safe=''),
-            encrypt_number(submission.id)))
+        self.redirect(fallback_page + "?" + encrypt_number(submission.id))
 
 
-class TaskSubmissionsHandler(BaseHandler):
+class TaskSubmissionsHandler(ContestHandler):
     """Shows the data of a task in the contest.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name):
+    def get(self, contest_name, task_name):
         participation = self.current_user
 
         try:
@@ -423,13 +423,13 @@ class TaskSubmissionsHandler(BaseHandler):
                     **self.r_params)
 
 
-class SubmissionStatusHandler(BaseHandler):
+class SubmissionStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, submission_num):
+    def get(self, contest_name, task_name, submission_num):
         participation = self.current_user
 
         try:
@@ -486,13 +486,13 @@ class SubmissionStatusHandler(BaseHandler):
         self.write(data)
 
 
-class SubmissionDetailsHandler(BaseHandler):
+class SubmissionDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, submission_num):
+    def get(self, contest_name, task_name, submission_num):
         participation = self.current_user
 
         try:
@@ -535,7 +535,7 @@ class SubmissionFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, submission_num, filename):
+    def get(self, contest_name, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
             raise tornado.web.HTTPError(404)
 
@@ -585,19 +585,22 @@ class SubmissionFileHandler(FileHandler):
         self.fetch(digest, mimetype, real_filename)
 
 
-class UseTokenHandler(BaseHandler):
+class UseTokenHandler(ContestHandler):
     """Called when the user try to use a token on a submission.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def post(self, task_name, submission_num):
+    def post(self, contest_name, task_name, submission_num):
         participation = self.current_user
 
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
+
+        fallback_page = "/" + contest_name + "/tasks/%s/submissions" % \
+                        quote(task.name, safe='')
 
         submission = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\
@@ -625,7 +628,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Your request has been discarded because you have no "
                        "tokens available."),
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         if submission.token is None:
@@ -640,7 +643,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Your request has been discarded because you already "
                        "used a token on that submission."),
                 NOTIFICATION_WARNING)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Inform ProxyService and eventually the ranking that the
@@ -660,4 +663,4 @@ class UseTokenHandler(BaseHandler):
                    "and applied to the submission."),
             NOTIFICATION_SUCCESS)
 
-        self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+        self.redirect(fallback_page)

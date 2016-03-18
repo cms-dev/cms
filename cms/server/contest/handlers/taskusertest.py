@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -52,20 +52,20 @@ from cmscommon.archive import Archive
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, FileHandler, \
-    NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
+    NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
 
 
-class UserTestInterfaceHandler(BaseHandler):
+class UserTestInterfaceHandler(ContestHandler):
     """Serve the interface to test programs.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self):
+    def get(self, contest_name):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -117,7 +117,7 @@ class UserTestInterfaceHandler(BaseHandler):
                     **self.r_params)
 
 
-class UserTestHandler(BaseHandler):
+class UserTestHandler(ContestHandler):
 
     refresh_cookie = False
 
@@ -126,12 +126,11 @@ class UserTestHandler(BaseHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def post(self, task_name):
+    def post(self, contest_name, task_name):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(403)
 
         try:
             task = self.contest.get_task(task_name)
@@ -446,13 +445,13 @@ class UserTestHandler(BaseHandler):
         self.redirect("/testing?%s" % quote(task.name, safe=''))
 
 
-class UserTestStatusHandler(BaseHandler):
+class UserTestStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num):
+    def get(self, contest_name, task_name, user_test_num):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -504,13 +503,13 @@ class UserTestStatusHandler(BaseHandler):
         self.write(data)
 
 
-class UserTestDetailsHandler(BaseHandler):
+class UserTestDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num):
+    def get(self, contest_name, task_name, user_test_num):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -541,7 +540,7 @@ class UserTestIOHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num, io):
+    def get(self, contest_name, task_name, user_test_num, io):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -582,7 +581,7 @@ class UserTestFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, user_test_num, filename):
+    def get(self, contest_name, task_name, user_test_num, filename):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
