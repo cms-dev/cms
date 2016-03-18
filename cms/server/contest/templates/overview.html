@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends contest.html %}
 {% block core %}
 
 {% from cms.server import format_token_rules, format_datetime_smart %}
@@ -128,8 +128,8 @@
             </p>
 
     {% if actual_phase == -1 %}
-        <form action="{{ url_root }}/start" method="POST" style="margin: 0">
-            <input type="hidden" name="next" value="{{ url_root + request.path }}">
+        <form action="{{ contest_root }}/start" method="POST" style="margin: 0">
+            <input type="hidden" name="next" value="{{ contest_root + request.path }}">
             <button type="submit" class="btn btn-danger btn-large" style="width:100%;-moz-box-sizing:border-box;box-sizing:border-box;" type="submit">{{ _("Start!") }}</button>
         </form>
     {% end %}
