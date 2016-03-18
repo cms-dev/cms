@@ -27,7 +27,7 @@ from .util import \
     encode_for_url, file_handler_gen, filter_ascii, \
     format_amount_of_time, format_dataset_attrs, format_date, \
     format_datetime, format_datetime_smart, format_size, format_time, \
-    format_token_rules, get_score_class, get_url_root
+    format_token_rules, get_score_class, get_url_root, multi_contest
 
 
 __all__ = [
@@ -37,5 +37,5 @@ __all__ = [
     "encode_for_url", "file_handler_gen", "filter_ascii",
     "format_amount_of_time", "format_dataset_attrs", "format_date",
     "format_datetime", "format_datetime_smart", "format_size", "format_time",
-    "format_token_rules", "get_score_class", "get_url_root",
+    "format_token_rules", "get_score_class", "get_url_root", "multi_contest",
 ]

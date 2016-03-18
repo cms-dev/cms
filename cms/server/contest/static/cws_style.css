@@ -962,3 +962,35 @@ td.token_rules p:last-child {
 #lang {
     width: 100px;
 }
+
+/* Contest selection page */
+
+.contest-list {
+    width: 60%;
+    margin: auto;
+    margin-top: 50px;
+}
+
+.contest-list ul {
+    padding: 0;
+}
+
+.contest-list li:first-child > a {
+    -webkit-border-radius: 6px 6px 0 0;
+    -moz-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
+}
+
+.contest-list li:last-child > a {
+    -webkit-border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 6px 6px;
+    border-radius: 0 0 6px 6px;
+}
+
+.contest-list li > a {
+    display: block;
+    margin: 0 0 -1px;
+    padding: 8px 14px;
+    background-color: white;
+    border: 1px solid #e5e5e5;
+}
