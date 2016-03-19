@@ -15,6 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+var escapeHTML = (function() {
+    var escapeMap = {
+        '&' : '&amp;',
+        '<' : '&lt;',
+        '>' : '&gt;',
+        '"' : '&quot;',
+        "'" : '&#x27;',
+        '/' : '&#x2F;',
+        '`' : '&#x60;',
+    };
+    var escapeHTML = function(str) {
+        return String(str).replace(/[&<>"'\/`]/g, function(ch) {
+            return escapeMap[ch];
+        });
+    };
+    return escapeHTML;
+})();
+
 var Scoreboard = new function () {
     var self = this;
 
@@ -217,8 +235,8 @@ var Scoreboard = new function () {
 <tr class=\"user" + (user["selected"] > 0 ? " selected color" + user["selected"] : "") + "\" data-user=\"" + user["key"] + "\"> \
     <td class=\"sel\"></td> \
     <td class=\"rank\">" + user["rank"] + "</td> \
-    <td colspan=\"10\" class=\"f_name\">" + user["f_name"] + "</td> \
-    <td colspan=\"10\" class=\"l_name\">" + user["l_name"] + "</td>";
+    <td colspan=\"10\" class=\"f_name\">" + escapeHTML(user["f_name"]) + "</td> \
+    <td colspan=\"10\" class=\"l_name\">" + escapeHTML(user["l_name"]) + "</td>";
 
         if (user['team']) {
             result += " \
