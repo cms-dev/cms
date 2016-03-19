@@ -15,6 +15,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+var escapeHTML = (function() {
+    var escapeMap = {
+        '&' : '&amp;',
+        '<' : '&lt;',
+        '>' : '&gt;',
+        '"' : '&quot;',
+        "'" : '&#x27;',
+        '/' : '&#x2F;',
+        '`' : '&#x60;'
+    };
+    var escapeHTML = function(str) {
+        return String(str).replace(/[&<>"'\/`]/g, function(ch) {
+            return escapeMap[ch];
+        });
+    };
+    return escapeHTML;
+})();
+
 var Scoreboard = new function () {
     var self = this;
 
@@ -185,11 +203,11 @@ var Scoreboard = new function () {
                 var t_id = task["key"];
 
                 result += " \
-    <th colspan=\"3\" class=\"score task\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\"><abbr title=\"" + task["name"] + "\">" + task["short_name"] + "</abbr></th>";
+    <th colspan=\"3\" class=\"score task\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\"><abbr title=\"" + escapeHTML(task["name"]) + "\">" + escapeHTML(task["short_name"]) + "</abbr></th>";
             }
 
             result += " \
-    <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"><abbr title=\"" + contest["name"]+"\">" + contest["name"] + "</abbr></th>";
+    <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"><abbr title=\"" + escapeHTML(contest["name"]) + "\">" + escapeHTML(contest["name"]) + "</abbr></th>";
         }
 
         result += " \
@@ -217,8 +235,8 @@ var Scoreboard = new function () {
 <tr class=\"user" + (user["selected"] > 0 ? " selected color" + user["selected"] : "") + "\" data-user=\"" + user["key"] + "\"> \
     <td class=\"sel\"></td> \
     <td class=\"rank\">" + user["rank"] + "</td> \
-    <td colspan=\"10\" class=\"f_name\">" + user["f_name"] + "</td> \
-    <td colspan=\"10\" class=\"l_name\">" + user["l_name"] + "</td>";
+    <td colspan=\"10\" class=\"f_name\">" + escapeHTML(user["f_name"]) + "</td> \
+    <td colspan=\"10\" class=\"l_name\">" + escapeHTML(user["l_name"]) + "</td>";
 
         if (user['team']) {
             result += " \
