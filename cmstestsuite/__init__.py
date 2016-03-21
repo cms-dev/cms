@@ -578,14 +578,14 @@ def add_existing_user(user_id, **kwargs):
     created_users[user_id] = kwargs
 
 
-def cws_submit(contest_id, task_id, user_id, submission_format_element,
-               filename, language):
+def cws_submit(contest_id, task_id, user_id, submission_format,
+               filenames, language):
     task = (task_id, created_tasks[task_id]['name'])
 
     browser = get_cws_browser(user_id)
     sr = SubmitRequest(browser, task, base_url=CWS_BASE_URL,
-                       submission_format_element=submission_format_element,
-                       filename=filename)
+                       submission_format=submission_format,
+                       filenames=filenames)
     sr.execute()
     submission_id = sr.get_submission_id()
 
