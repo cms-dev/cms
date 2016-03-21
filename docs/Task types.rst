@@ -69,11 +69,13 @@ Communication
 
 In a Communication task, a contestant must submit a source file implementing a function, similarly to what happens for a Batch task. The difference is that the admins must provide both a stub, that is a source file that is compiled together with the contestant's source, and a manager, that is an executable.
 
-The two programs communicate through two fifo files. The manager receives the name of the two fifos as its arguments. It is supposed to read from standard input the input of the testcase, and to start communicating some data to the other program through the fifo. The two programs exchange data through the fifo, until the manager is able to assign an outcome to the evaluation. The manager then writes to standard output the outcome and to standard error the message to the user, similarly to the what the checker does for a Batch task.
+For usual reactive tasks, ``num_processes`` is set to ``1``. In that case, the two programs communicate through two fifo files. The manager receives the name of the two fifos as its arguments. It is supposed to read from standard input the input of the testcase, and to start communicating some data to the other program through the fifo. The two programs exchange data through the fifo, until the manager is able to assign an outcome to the evaluation. The manager then writes to standard output the outcome and to standard error the message to the user, similarly to the what the checker does for a Batch task.
+
+When ``num_processes`` is greater than ``1``, multiple instances of the submitted program are executed. ``2 * num_processes`` fifos are given to the manager, and two of them are given to each instance of the submitted program. An additional number is given to the submitted program to distinguish the processes. Two instances of the submitted program can't communicate directly. Time and memory consumed are calculated by summation.
 
 If the program linked to the user-provided file fails (for a timeout, or for a non-allowed syscall), the outcome is 0.0 and the message describes the problem to the user.
 
-The submission format must contain one filename ending with ``.%l``. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
+The submission format must contain one or more filenames ending with ``.%l``. Multiple source files are simply linked together. Usually the number of files to submit is equal to ``num_processes``.
 
 
 TwoSteps
