@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -75,6 +76,8 @@ PACKAGE_DATA = {
         os.path.join("tasks", "batch_fileio_managed", "data", "*.*"),
         os.path.join("tasks", "communication", "code", "*"),
         os.path.join("tasks", "communication", "data", "*.*"),
+        os.path.join("tasks", "communication2", "code", "*"),
+        os.path.join("tasks", "communication2", "data", "*.*"),
     ],
 }
 
