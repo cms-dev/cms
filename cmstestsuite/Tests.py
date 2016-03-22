@@ -5,6 +5,7 @@
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,6 +28,7 @@ import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
+import cmstestsuite.tasks.communication2 as communication2
 
 from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
     LANG_PYTHON
@@ -190,6 +192,20 @@ ALL_TESTS = [
 
     Test('communication-incorrect',
          task=communication, filenames=['communication-incorrect.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(0, 100)]),
+
+    # Communication tasks with two processes.
+
+    Test('communication2-correct',
+         task=communication2, filenames=['communication2-correct-user1.%l',
+                                         'communication2-correct-user2.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('communication2-incorrect',
+         task=communication2, filenames=['communication2-incorrect-user1.%l',
+                                         'communication2-incorrect-user2.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
