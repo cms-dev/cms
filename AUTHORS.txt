@@ -36,5 +36,6 @@ Hyungsuk Yoon <youhanmir@gmail.com>
 Kenneth Wong <kenneth@wong.pro>
 Minwei Xu (aka vanshady) <faceswilliam@gmail.com>
 Myungwoo Chun <mc.tamaki@gmail.com>
+wafrelka <wafrelka@gmail.com>
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
