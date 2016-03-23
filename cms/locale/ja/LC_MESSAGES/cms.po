@@ -1,16 +1,17 @@
 # Japanese translations for CMS.
-# Copyright © 2010-2015 CMS authors
+# Copyright © 2010-2016 CMS authors
 # This file is distributed under the same license as CMS.
 # Masaki Hara <ackie.h.gmai@gmail.com>, 2014.
 # Kento Nikaido <snukent@gmail.com>, 2014.
+# wafrelka <wafrelka@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-06 17:10+0000\n"
-"PO-Revision-Date: 2015-01-12 15:31+0900\n"
-"Last-Translator: Masaki Hara <ackie.h.gmai@gmail.com>\n"
+"POT-Creation-Date: 2016-03-01 15:57+0900\n"
+"PO-Revision-Date: 2015-03-23 15:31+0900\n"
+"Last-Translator: wafrelka <wafrelka@gmail.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -18,57 +19,150 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgid "N/A"
-msgstr "N/A"
-
 msgid "Compilation succeeded"
 msgstr "コンパイル成功"
+
+msgid "Your submission successfully compiled to an excutable."
+msgstr "提出されたファイルのコンパイルに成功しました。"
 
 msgid "Compilation failed"
 msgstr "コンパイル失敗"
 
+msgid "Your submission did not compile correctly."
+msgstr "提出されたファイルのコンパイルに失敗しました。"
+
 msgid "Compilation timed out"
-msgstr "コンパイル時間超過"
+msgstr "コンパイル時間制限超過"
+
+msgid ""
+"Your submission exceeded the time limit while compiling. This might be "
+"caused by an excessive use of C++ templates, for example."
+msgstr ""
+"提出されたファイルのコンパイルが制限時間内に終わりませんでした。"
+"原因として C++ テンプレートの多用などが考えられます。"
 
 #, python-format
 msgid ""
-"Compilation killed with signal %d (could be triggered by violating memory "
+"Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"コンパイラはシグナル %d を受け取って異常終了しました(メモリ制限違反が原因かも"
+"コンパイラはシグナル %s によって強制終了されました (メモリ制限超過が原因かも"
 "しれません)"
 
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit for the compilation, and "
+"in turn by an excessive use of C++ templates, for example."
+msgstr ""
+"提出されたファイルのコンパイルは強制終了されました。"
+"原因としてさまざまなものが考えられますが、例えば C++ テンプレートの多用など"
+"によるコンパイル時のメモリ制限の超過が原因かもしれません。"
+
+msgid "Output is correct"
+msgstr "出力は正しいです"
+
+msgid "Your submission ran and gave the correct answer"
+msgstr "提出されたプログラムは正常終了して、正しい解答を出力しました。"
+
+msgid "Output is partially correct"
+msgstr "出力は部分的に正しいです"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr "提出されたプログラムは正常終了して、部分的に正しい解答を出力しました。"
+
+msgid "Output isn't correct"
+msgstr "出力は正しくありません"
+
+msgid "Your submission ran, but gave the wrong answer"
+msgstr ""
+"提出されたプログラムは正常終了しましたが、解答が正しくありませんでした。"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "提出されたプログラムはファイル %s を生成しませんでした"
+
+msgid "Your submission ran, but did not write on the correct output file"
+msgstr ""
+"提出されたプログラムは正常終了しましたが、"
+"指定されたファイルへの出力がありませんでした。"
+
 msgid "Execution timed out"
-msgstr "実行時間超過"
+msgstr "CPU時間制限超過"
+
+msgid "Your submission used too much CPU time."
+msgstr "提出されたプログラムの実行が CPU 時間の制限を超えました。"
+
+msgid "Execution timed out (wall clock limit exceeded)"
+msgstr "実時間制限超過"
+
+msgid ""
+"Your submission used too much total time. This might be triggered by "
+"undefined code, or buffer overflow, for example. Note that in this case the "
+"CPU time visible in the submission details might be much smaller than the "
+"time limit."
+msgstr ""
+"提出されたプログラムの実行が実時間の制限を超えました。"
+"原因として、ソースコード中の未定義動作やバッファオーバーフローなどが"
+"考えられます。詳細ページに表示される実行時間は実時間ではなく"
+" CPU 時間であるため、時間制限より小さくなりうることに注意してください。"
 
 #, python-format
 msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"プログラムはシグナル %d を受け取って異常終了しました(メモリ制限違反が原因かも"
-"しれません)"
+"提出されたプログラムはシグナル %d によって強制終了されました "
+"(メモリ制限超過が原因かもしれません)"
+
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit. Note that if this is the "
+"reason, the memory usage visible in the submission details is the usage "
+"before the allocation that caused the signal."
+msgstr ""
+"提出されたプログラムは強制終了されました。原因としてさまざまなものが"
+"考えられますが、例えばメモリ制限の超過が原因かもしれません。"
+"もしメモリ制限の超過によって強制終了された場合には、"
+"詳細ページに表示される消費メモリの量が、メモリ制限を超える直前に"
+"消費していたメモリの量を示していることに注意してください。"
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
 msgstr ""
-"禁止されたシステムコール %s を使用したため、プログラムは強制終了されました"
+"禁止されているシステムコール %s を使用したため、"
+"提出されたプログラムは強制終了されました。"
+
+msgid ""
+"Your submission was killed because it tried to use the forbidden syscall "
+"specified in the message."
+msgstr ""
+"禁止されているシステムコールを呼び出そうとしたため、"
+"提出されたプログラムは強制終了されました。"
 
 msgid "Execution killed because of forbidden file access"
-msgstr "禁止されたファイルアクセスを行ったため、プログラムは強制終了されました"
+msgstr ""
+"禁止されているファイルアクセスを行ったため、"
+"提出されたプログラムは強制終了されました。"
+
+msgid ""
+"Your submission was killed because it tried to read or write a forbidden "
+"file."
+msgstr ""
+"禁止されているファイルへの読み込みまたは書き込みを行おうとしたため、"
+"提出されたプログラムは強制終了されました。"
 
 msgid "Execution failed because the return code was nonzero"
-msgstr "戻り値がゼロでなかったため、実行に失敗しました"
+msgstr ""
+"提出されたプログラムは、ゼロではない戻り値を返して異常終了しました。"
 
-msgid "Output is correct"
-msgstr "出力は正しいです"
+msgid ""
+"Your submission failed because it exited with a return code different from 0."
+msgstr ""
+"提出されたプログラムはゼロではない戻り値を返したため、"
+"正常終了することができませんでした。"
 
-msgid "Output isn't correct"
-msgstr "出力は正しくありません"
-
-#, python-format
-msgid "Evaluation didn't produce file %s"
-msgstr "評価システムがファイル %s を生成しませんでした"
+msgid "N/A"
+msgstr "N/A"
 
 #, python-format
 msgid "Subtask %d"
@@ -96,214 +190,16 @@ msgid "Partially correct"
 msgstr "部分的に正解"
 
 msgid "Invalid files in submission"
-msgstr "提出物の中に無効なファイルがあります"
+msgstr "提出されたファイルの中に無効なものがあります"
 
 msgid "Execution completed successfully"
-msgstr "正常に実行が完了しました"
+msgstr "実行が正常終了しました"
 
 msgid "No compilation needed"
-msgstr "コンパイルの必要はありません"
+msgstr "コンパイルは不要です"
 
 msgid "File not submitted"
 msgstr "ファイルが提出されていません"
-
-msgid "Question received"
-msgstr "質問を受理しました"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr "あなたの質問は受理されました。回答があった場合は通知されます。"
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "全課題を通して最大 %d 回までという提出回数の上限に達しました。"
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr "この課題に関して最大 %d 回までという提出回数の上限に達しました。"
-
-msgid "Too many submissions!"
-msgstr "提出が多すぎます！"
-
-#, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"全課題を通して、最後の提出から %d 秒間は解答を提出することができません。"
-
-#, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"この課題に関して、最後の提出から %d 秒間は解答を提出することができません。"
-
-msgid "Submissions too frequent!"
-msgstr "提出の頻度が高すぎます！"
-
-msgid "Invalid submission format!"
-msgstr "無効な提出形式です！"
-
-msgid "Please select the correct files."
-msgstr "正しいファイルを選択してください。"
-
-msgid "Invalid archive format!"
-msgstr "無効なアーカイブ形式です！"
-
-msgid "The submitted archive could not be opened."
-msgstr "提出されたアーカイブを開くことができませんでした。"
-
-msgid "Cannot recognize submission's language."
-msgstr "提出ファイルのプログラミング言語を判定することができません。"
-
-msgid "All sources must be in the same language."
-msgstr "全てのソースコードは同じプログラミング言語でなければなりません。"
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "プログラミング言語 %s はこのコンテストでは使用できません。"
-
-msgid "Invalid submission!"
-msgstr "無効な提出です！"
-
-msgid "Submission too big!"
-msgstr "提出ファイルが大きすぎます！"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "各ソースファイルは %d バイト以下である必要があります。"
-
-msgid "Submission storage failed!"
-msgstr "提出ファイルの保存に失敗しました！"
-
-msgid "Please try again."
-msgstr "もう一度試してください。"
-
-msgid "Submission received"
-msgstr "提出を受理しました"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "あなたの提出は受理されました。提出ファイルの評価が行われています。"
-
-msgid "Token request discarded"
-msgstr "トークン要求は破棄されました"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "有効なトークンが存在しないため、あなたの要求は破棄されました。"
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"この提出には既にトークンが使用されているため、あなたの要求は破棄されました。"
-
-msgid "Token request received"
-msgstr "トークン要求を受理しました"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "あなたの要求は受理され、トークンが提出に適用されました。"
-
-msgid "Compiling..."
-msgstr "コンパイルしています…"
-
-msgid "details"
-msgstr "詳細"
-
-msgid "Evaluating..."
-msgstr "評価しています…"
-
-msgid "Scoring..."
-msgstr "得点を計算しています…"
-
-msgid "Evaluated"
-msgstr "評価完了"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr "全課題を通して最大 %d 回までというテスト回数の上限に達しました。"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "この課題に関して最大 %d 回までというテスト回数の上限に達しました。"
-
-msgid "Too many tests!"
-msgstr "テストの行いすぎです！"
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"全課題を通して、最後の提出から %d 秒間はテストを実行することができません。"
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
-"この課題に関して、最後の提出から %d 秒間はテストを実行することができません。"
-
-msgid "Tests too frequent!"
-msgstr "テストの頻度が高すぎます！"
-
-msgid "Invalid test format!"
-msgstr "無効なテスト形式です！"
-
-msgid "Cannot recognize test's language."
-msgstr "テストのプログラミング言語を判定することができません。"
-
-msgid "Invalid test!"
-msgstr "無効なテストです！"
-
-msgid "Test too big!"
-msgstr "テストが大きすぎます！"
-
-msgid "Input too big!"
-msgstr "入力が大きすぎます！"
-
-#, python-format
-msgid "The input file must be at most %d bytes long."
-msgstr "各入力ファイルは %d バイト以下である必要があります。"
-
-msgid "Test storage failed!"
-msgstr "テストの保存に失敗しました！"
-
-msgid "Test received"
-msgstr "テストを受理しました"
-
-msgid "Your test has been received and is currently being executed."
-msgstr "あなたのテストは受理されました。テストが実行されています。"
-
-msgid "Executing..."
-msgstr "実行中…"
-
-msgid "Executed"
-msgstr "実行完了"
-
-#, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f 秒"
-
-msgid "Too many print jobs!"
-msgstr "印刷の行いすぎです！"
-
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "この課題に関して最大 %d 回までという印刷回数の上限に達しました。"
-
-msgid "Invalid format!"
-msgstr "無効な形式です！"
-
-msgid "File too big!"
-msgstr "ファイルが大きすぎます！"
-
-msgid "Each file must be at most %d bytes long."
-msgstr "各ファイルは %d バイト以下である必要があります。"
-
-msgid "Print job storage failed!"
-msgstr "印刷ジョブの保存に失敗しました！"
-
-msgid "Print job received"
-msgstr "印刷ジョブを受理しました"
-
-msgid "Your print job has been received."
-msgstr "あなたの印刷ジョブは受理されました。"
 
 msgid "%Y-%m-%d"
 msgstr "%Y-%m-%d"
@@ -343,7 +239,7 @@ msgstr "%s %s"
 
 #, python-format
 msgid "more than %s"
-msgstr "%s よりも多い"
+msgstr "%s よりも長い"
 
 msgid "contest-token"
 msgstr "コンテストトークン"
@@ -369,7 +265,7 @@ msgstr "この課題に対して使用可能な%(type_pl)sはありません。"
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "この課題では無限個の%(type_pl)sが使用できます。"
+msgstr "この課題では%(type_pl)sを無制限に使用できます。"
 
 #, python-format
 msgid "You start with no %(type_pl)s."
@@ -378,7 +274,7 @@ msgstr "%(type_pl)sがない状態から始まります。"
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "あなたは始めに%(gen_initial)d個の%(type_pl)sを持っています。"
+msgstr[0] "開始時に%(gen_initial)d個の%(type_pl)sを使用可能です。"
 
 #, python-format
 msgid "Every minute "
@@ -404,13 +300,13 @@ msgstr[0] "新たに%(gen_number)d個の%(type_pl)sが追加されます。"
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "新たに%(type_pl)sが追加されることはありません。"
+msgstr "これ以上%(type_pl)sが追加されることはありません。"
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] ""
-"あなたは%(min_interval)g秒につき一回まで、%(type_s)sを使うことができます。"
+"あなたは%(min_interval)g秒につき一回まで%(type_s)sを使うことができます。"
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -421,7 +317,7 @@ msgstr[0] "ただし、合計で%(max_number)d個までしか使うことはで�
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] ""
-"あなたは%(min_interval)g秒につき一回まで、%(type_s)sを使うことができます。"
+"あなたは%(min_interval)g秒につき一回まで%(type_s)sを使うことができます。"
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
@@ -431,6 +327,216 @@ msgstr[0] ""
 
 msgid "You have no limitations on how you use them."
 msgstr "%(type_pl)sを使う間隔や回数に制限はありません。"
+
+msgid "Question too big!"
+msgstr "質問が長すぎます"
+
+msgid "You have reached the question length limit."
+msgstr "質問の長さに対する制限を超えています"
+
+msgid "Question received"
+msgstr "質問を受理しました"
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr "あなたの質問を受理しました。回答があった場合は通知されます。"
+
+msgid "Too many print jobs!"
+msgstr "印刷が多すぎます"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "印刷はひとりあたり最大 %d 回までです。"
+
+msgid "Invalid format!"
+msgstr "無効な形式です"
+
+msgid "Please select the correct files."
+msgstr "正しいファイルを選択してください。"
+
+msgid "File too big!"
+msgstr "ファイルが大きすぎます"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "各ファイルは %d バイト以下である必要があります。"
+
+msgid "Print job storage failed!"
+msgstr "印刷ジョブの保存に失敗しました"
+
+msgid "Please try again."
+msgstr "もう一度試してください。"
+
+msgid "Print job received"
+msgstr "印刷ジョブを受理しました"
+
+msgid "Your print job has been received."
+msgstr "あなたの印刷ジョブを受理しました。"
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "すべての課題を通して、提出は合計で最大 %d 回までです。"
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr "この課題に対する提出は最大 %d 回までです。"
+
+msgid "Too many submissions!"
+msgstr "提出が多すぎます"
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr ""
+"全課題を通して、最後の提出から %d 秒間は解答を提出することができません。"
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr ""
+"この課題に関して、最後の提出から %d 秒間は解答を提出することができません。"
+
+msgid "Submissions too frequent!"
+msgstr "提出間隔が短すぎます"
+
+msgid "Invalid submission format!"
+msgstr "無効な提出形式です"
+
+msgid "Invalid archive format!"
+msgstr "無効なアーカイブ形式です"
+
+msgid "The submitted archive could not be opened."
+msgstr "提出されたアーカイブを開くことができませんでした。"
+
+msgid "Cannot recognize submission's language."
+msgstr ""
+"提出されたファイルがどのプログラミング言語で"
+"書かれているか判定することができません。"
+
+msgid "All sources must be in the same language."
+msgstr ""
+"全てのソースコードは同じプログラミング言語で"
+"書かれている必要があります。"
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "プログラミング言語 %s はこのコンテストでは使用できません。"
+
+msgid "Invalid submission!"
+msgstr "無効な提出です"
+
+msgid "Submission too big!"
+msgstr "提出ファイルが大きすぎます"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "各ソースファイルは %d バイト以下である必要があります。"
+
+msgid "Submission storage failed!"
+msgstr "提出ファイルの保存に失敗しました"
+
+msgid "Submission received"
+msgstr "提出を受理しました"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "あなたの提出を受理しました。提出ファイルの評価が行われています。"
+
+msgid "Compiling..."
+msgstr "コンパイルしています…"
+
+msgid "details"
+msgstr "詳細"
+
+msgid "Evaluating..."
+msgstr "評価しています…"
+
+msgid "Scoring..."
+msgstr "得点を計算しています…"
+
+msgid "Evaluated"
+msgstr "評価完了"
+
+msgid "Token request discarded"
+msgstr "トークン要求は却下されました"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "使用可能なトークンがないので、あなたの要求は却下されました。"
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"この提出には既にトークンが使用されているため、あなたの要求は却下されました。"
+
+msgid "Token request received"
+msgstr "トークン要求は受理されました"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "あなたの要求は受理され、トークンが提出に適用されました。"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "全課題を通して、テストは合計で最大 %d 回までです。"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "この課題に対するテストは最大 %d 回までです。"
+
+msgid "Too many tests!"
+msgstr "テスト要求が多すぎます"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr ""
+"全課題を通して、最後の提出から %d 秒間はテストを要求することができません。"
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr ""
+"この課題に関して、最後の提出から %d 秒間はテストを要求することができません。"
+
+msgid "Tests too frequent!"
+msgstr "テスト要求の間隔が短すぎます"
+
+msgid "Invalid test format!"
+msgstr "無効なテスト形式です"
+
+msgid "Cannot recognize test's language."
+msgstr "テスト用ソースコードのプログラミング言語を判定することができません。"
+
+msgid "Invalid test!"
+msgstr "無効なテスト要求です"
+
+msgid "Test too big!"
+msgstr "テストが大きすぎます"
+
+msgid "Input too big!"
+msgstr "入力が大きすぎます"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "各入力ファイルは %d バイト以下である必要があります。"
+
+msgid "Test storage failed!"
+msgstr "テスト要求の保存に失敗しました"
+
+msgid "Test received"
+msgstr "テスト要求を受理しました"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "あなたのテスト要求を受理しました。テストが実行されています。"
+
+msgid "Executing..."
+msgstr "実行中…"
+
+msgid "Executed"
+msgstr "実行完了"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f 秒"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -448,7 +554,7 @@ msgid "Logout"
 msgstr "ログアウト"
 
 msgid "Failed to log in."
-msgstr "ログインに失敗しました"
+msgstr "ログインに失敗しました。"
 
 msgid "Welcome"
 msgstr "ようこそ"
@@ -521,7 +627,7 @@ msgid "is released under the"
 msgstr "は以下のライセンスのもとでリリースされています:"
 
 msgid "GNU Affero General Public License"
-msgstr "GNU Affero 一般公衆利用許諾書"
+msgstr "GNU Affero General Public License"
 
 msgid "Announcements"
 msgstr "アナウンス"
@@ -547,8 +653,23 @@ msgstr "回答はまだありません"
 msgid "Messages"
 msgstr "メッセージ"
 
+msgid "Programming languages and libraries"
+msgstr "プログラミング言語およびライブラリの仕様"
+
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
+
+msgid "Submission details for compilation"
+msgstr "コンパイルメッセージの詳細"
+
+msgid "Message"
+msgstr "メッセージ"
+
+msgid "Explanation"
+msgstr "説明"
+
+msgid "Submission details for evaluation"
+msgstr "評価メッセージの詳細"
 
 #, python-format
 msgid "Error %d"
@@ -562,15 +683,15 @@ msgid ""
 "the server with customized URLs) may be considered cheating and may lead to "
 "disqualification."
 msgstr ""
-"コンテスト管理システム (CMS) の内部に干渉したり、改竄しようとする試み(例え"
-"ば、URLを改変してサーバー内を探索すること) は、不正行為とみなされたり、失格の"
-"原因となる可能性があるので、注意すること。"
+"コンテスト管理システム (CMS) の内部に干渉したり、改竄しようとする試み (例え"
+"ば、URL を改変してサーバー内を探索すること) は、不正行為とみなされて失格の"
+"原因となる可能性があるので、注意してください。"
 
 msgid ""
 "If you encountered this error during normal usage, please notify the contest "
 "administrators."
 msgstr ""
-"通常の使用においてこのエラーに遭遇した場合は、コンテストの管理者に知らせてく"
+"通常の利用においてこのエラーに遭遇した場合は、コンテストの管理者に知らせてく"
 "ださい。"
 
 msgid "General information"
@@ -590,7 +711,7 @@ msgstr "コンテストは現在実施中です。"
 #, python-format
 msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
 msgstr ""
-"コンテストは %(start_time)s に始まりました。終了は%(stop_time)s の予定です。"
+"コンテストは %(start_time)s に始まりました。%(stop_time)s に終わる予定です。"
 
 msgid "The contest has already ended."
 msgstr "コンテストは終了しました。"
@@ -600,18 +721,18 @@ msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr "コンテストは %(start_time)s に始まり、%(stop_time)s に終わりました。"
 
 msgid "You have an infinite number of tokens."
-msgstr "無限個のトークンが使用できます。"
+msgstr "トークンが無制限に使用できます。"
 
 msgid "You can see the detailed result of a submission by using a token on it."
 msgstr ""
-"提出に対する結果の詳細は、トークンを使用することによって見ることができます。"
+"トークンを使用することによって、提出に対する詳細な結果を見ることができます。"
 
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
 "and the last one."
 msgstr ""
-"各課題の得点は、トークンを使用した全ての提出および最後の提出のうち、最大のも"
-"のです。"
+"各課題の得点として、トークンを使用した全ての提出および最後の提出によって"
+"得た得点のうち、最大のものが採用されます。"
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "課題ごとに別々のトークンが与えられます。"
@@ -629,30 +750,31 @@ msgid ""
 "You have two types of tokens: a set of <em>contest-tokens</em> shared among "
 "all tasks and a distinct set of <em>task-tokens</em> for each task."
 msgstr ""
-"全ての課題で共通の<em>コンテストトークン</em>と課題ごとに別々の<em>課題トーク"
-"ン</em>の二種類のトークンが与えられます。"
+"全ての課題で共通の<em>コンテストトークン</em>と、"
+"課題ごとに別々の<em>課題トークン</em>の二種類のトークンが与えられます。"
 
 msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
 "one of each type."
 msgstr ""
-"提出に対する結果の詳細は、二種類のトークンを一つずつ、合計二つのトークンを使"
-"用することによって見ることができます。"
+"提出に対する結果の詳細は、二種類のトークンを一つずつ、"
+"合計二つのトークンを使用することによって見ることができます。"
 
+#, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr "この課題に関して最大 %(submissions)s 回まで提出できます。"
+msgstr "この課題に対して最大 %(submissions)s 回まで提出できます。"
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr "この課題に関して最大 %(user_tests)s 回までテストを提出できます。"
+msgstr "この課題に対して最大 %(user_tests)s 回までテストを要求できます。"
 
 #, python-format
 msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
 msgstr ""
-"それぞれのユーザーは連続する%(per_user_time)sの時間枠の間、競技に参加する(す"
-"なわち、解答を提出する)ことができます。"
+"それぞれのユーザーは連続する%(per_user_time)sの時間枠の間、"
+"競技に参加する (すなわち、解答を提出する) ことができます。"
 
 msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr ""
@@ -663,29 +785,29 @@ msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
 msgstr ""
-"時間枠が始まったら、時間枠の終了かコンテストそのものの終了のうち早いほうが来"
-"るまでの間、解答を提出することができます。"
+"時間枠が始まったら、時間枠の終了かコンテストそのものの終了のうち早いほうが"
+"来るまでの間、解答を提出することができます。"
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "このボタンをクリックすると、あなたの時間枠が始まります。"
 
 #, python-format
 msgid "You started your time frame at %(start_time)s."
-msgstr "あなたの時間枠は%(start_time)sに始まりました。"
+msgstr "あなたの時間枠は %(start_time)s に始まりました。"
 
 msgid ""
 "You can submit solutions until the end of the time frame or until the end of "
 "the contest, whatever comes first."
 msgstr ""
-"時間枠の終了かコンテストそのものの終了のうち早いほうが来るまでの間、解答を提"
-"出することができます。"
+"時間枠の終了かコンテストそのものの終了のうち早いほうが来るまでの間、"
+"解答を提出することができます。"
 
 #, python-format
 msgid ""
 "You started your time frame at %(start_time)s and you already finished it."
 msgstr ""
-"あなたの時間枠は%(start_time)sに始まりました。この時間枠は既に終了していま"
-"す。"
+"あなたの時間枠は %(start_time)s に始まりました。"
+"この時間枠は既に終了しています。"
 
 msgid "There's nothing you can do now."
 msgstr "現在あなたができることはありません。"
@@ -715,7 +837,7 @@ msgid "Type"
 msgstr "課題の種類"
 
 msgid "Files"
-msgstr "ファイル"
+msgstr "提出ファイル"
 
 msgid "Tokens"
 msgstr "トークン"
@@ -769,7 +891,8 @@ msgstr "提出"
 msgid ""
 "You cannot print anything any more as you have used up your printing quota."
 msgstr ""
-"あなたに割り当てられた印刷量の上限に達したため、これ以上印刷することはできません。"
+"あなたに割り当てられた印刷制限の上限に達したため、"
+"これ以上印刷することはできません。"
 
 msgid "Previous print jobs"
 msgstr "以前の印刷ジョブ"
@@ -802,7 +925,7 @@ msgid "Compilation time:"
 msgstr "コンパイル時間"
 
 msgid "Memory used:"
-msgstr "消費メモリ:"
+msgstr "消費メモリ"
 
 msgid "Standard output"
 msgstr "標準出力"
@@ -846,7 +969,7 @@ msgstr ""
 
 msgid "You can see (and download) all of them using the list on the right."
 msgstr ""
-"全ての問題文は、右側のリストを用いることで閲覧(およびダウンロード)できます。"
+"全ての問題文は、右側のリストを用いることで閲覧 (およびダウンロード) できます。"
 
 msgid "Some suggested translations follow."
 msgstr "推奨された翻訳が以下にあります。"
@@ -868,7 +991,7 @@ msgid "%s"
 msgstr "%s"
 
 msgid "Some details"
-msgstr "いくつかの詳細"
+msgstr "詳細"
 
 msgid "Compilation commands"
 msgstr "コンパイル時のコマンド"
@@ -885,7 +1008,7 @@ msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
-"提出に対する結果の詳細を見るためには、コンテストトークンと課題トークンの両方"
+"提出に対する詳細な結果を見るためには、コンテストトークンと課題トークンの両方"
 "を使用する必要があることに注意してください。"
 
 msgid "Attachments"
@@ -900,7 +1023,7 @@ msgstr "解答を提出する"
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
-msgstr "あなたはあと $(submissions_left)s 回提出できます。"
+msgstr "あなたはあと %(submissions_left)s 回提出できます。"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -909,7 +1032,7 @@ msgid "Previous submissions"
 msgstr "以前の提出"
 
 msgid "Right now, you have infinite tokens available on this task."
-msgstr "現在、この課題では無限個のトークンが使用できます。"
+msgstr "現在、この課題ではトークンを無制限に使用できます。"
 
 msgid "Right now, you have one token available on this task."
 msgstr "現在、この課題では1個のトークンが使用できます。"
@@ -959,11 +1082,11 @@ msgid "Close"
 msgstr "閉じる"
 
 msgid "Submit a test"
-msgstr "テストを実行する"
+msgstr "テストを要求する"
 
 #, python-format
 msgid "You can submit %(user_tests_left)s more test(s)."
-msgstr "あなたはテストをあと $(submissions_left)s 回提出できます。"
+msgstr "あなたはテストをあと $(submissions_left)s 回要求できます。"
 
 msgid "input"
 msgstr "入力"
