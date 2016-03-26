@@ -67,6 +67,8 @@ class QuestionHandler(ContestHandler):
         if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
+        fallback_page = "/" + contest_name + "/communication"
+
         subject_length = len(self.get_argument("question_subject", ""))
         text_length = len(self.get_argument("question_text", ""))
         if subject_length > 50 or text_length > 2000:
@@ -79,7 +81,7 @@ class QuestionHandler(ContestHandler):
                 self._("Question too big!"),
                 self._("You have reached the question length limit."),
                 NOTIFICATION_ERROR)
-            self.redirect("/communication")
+            self.redirect(fallback_page)
             return
 
         question = Question(self.timestamp,
@@ -101,4 +103,4 @@ class QuestionHandler(ContestHandler):
                    "notified when it is answered."),
             NOTIFICATION_SUCCESS)
 
-        self.redirect("/communication")
+        self.redirect(fallback_page)

@@ -34,6 +34,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import os
 import traceback
 import tornado.web
 
@@ -138,7 +139,13 @@ class BaseHandler(CommonRequestHandler):
 
 
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
-    """Handle files which may be gzip-compressed on the filesystem."""
+    """Handle files which may be gzip-compressed on the filesystem.
+
+    """
+    def get_absolute_path(self, root, path):
+        # The path argument is actually contest_name, so we don't use it
+        return os.path.abspath(os.path.join(root, self.path_args[1]))
+
     def validate_absolute_path(self, root, absolute_path):
         self.is_gzipped = False
         try:
