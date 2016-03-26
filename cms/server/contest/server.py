@@ -85,7 +85,7 @@ class ContestWebServer(WebService):
 
         handlers = [(r'/', BaseHandler)]
         for h in HANDLERS:
-            handlers.append((r'/([^/]+)' + h[0], h[1]))
+            handlers.append((r'/([^/]+)' + h[0],) + h[1:])
 
         super(ContestWebServer, self).__init__(
             listen_port,

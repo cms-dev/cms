@@ -69,8 +69,7 @@ class UserTestInterfaceHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(403)
 
         user_tests = dict()
         user_tests_left = dict()
@@ -137,6 +136,8 @@ class UserTestHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
+        fallback_page = "/testing?%s" % quote(task.name, safe='')
+
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
         if not task_type.testable:
@@ -179,7 +180,7 @@ class UserTestHandler(ContestHandler):
                 self._("Too many tests!"),
                 error.message,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Enforce minimum time between user_tests
@@ -223,7 +224,7 @@ class UserTestHandler(ContestHandler):
                 self._("Tests too frequent!"),
                 error.message,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -235,7 +236,7 @@ class UserTestHandler(ContestHandler):
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # If the user submitted an archive, extract it and use content
@@ -255,7 +256,7 @@ class UserTestHandler(ContestHandler):
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
                     NOTIFICATION_ERROR)
-                self.redirect("/testing?%s" % quote(task.name, safe=''))
+                self.redirect(fallback_page)
                 return
 
             # Extract the archive.
@@ -285,7 +286,7 @@ class UserTestHandler(ContestHandler):
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -338,7 +339,7 @@ class UserTestHandler(ContestHandler):
                 self._("Invalid test!"),
                 error,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Check if submitted files are small enough.
@@ -351,7 +352,7 @@ class UserTestHandler(ContestHandler):
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
         if len(files["input"][1]) > config.max_input_length:
             self.application.service.add_notification(
@@ -361,7 +362,7 @@ class UserTestHandler(ContestHandler):
                 self._("The input file must be at most %d bytes long.") %
                 config.max_input_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # All checks done, submission accepted.
@@ -408,7 +409,7 @@ class UserTestHandler(ContestHandler):
                 self._("Test storage failed!"),
                 self._("Please try again."),
                 NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # All the files are stored, ready to submit!
@@ -442,7 +443,7 @@ class UserTestHandler(ContestHandler):
             self._("Your test has been received "
                    "and is currently being executed."),
             NOTIFICATION_SUCCESS)
-        self.redirect("/testing?%s" % quote(task.name, safe=''))
+        self.redirect(fallback_page)
 
 
 class UserTestStatusHandler(ContestHandler):

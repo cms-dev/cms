@@ -92,7 +92,18 @@ class ContestHandler(BaseHandler):
 
     def choose_contest(self, contest_name):
         # Select the correct contest or return an error
-        self.contest = self.contest_list[contest_name]
+        try:
+            self.contest = self.contest_list[contest_name]
+        except KeyError:
+            # The right thing here would be:
+            #    raise tornado.web.HTTPError(404)
+            # however, that would make the "error.html" page fail because
+            # there is no self.contest available
+
+            # So, let's return to the contest list
+            self.redirect("/")
+            return
+
 
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name

@@ -141,7 +141,7 @@ class StartHandler(ContestHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect("/")
+        self.redirect("/" + contest_name)
 
 
 class LogoutHandler(ContestHandler):
@@ -241,8 +241,7 @@ class PrintingHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(403)
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -263,8 +262,9 @@ class PrintingHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(403)
+
+        fallback_page = "/" + contest_name + "/printing"
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -278,7 +278,7 @@ class PrintingHandler(ContestHandler):
                 self._("You have reached the maximum limit of "
                        "at most %d print jobs.") % config.max_jobs_per_user,
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -292,7 +292,7 @@ class PrintingHandler(ContestHandler):
                 self._("Invalid format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         filename = self.request.files["file"][0]["filename"]
@@ -307,7 +307,7 @@ class PrintingHandler(ContestHandler):
                 self._("Each file must be at most %d bytes long.") %
                 config.max_print_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         # We now have to send the file to the destination...
@@ -327,7 +327,7 @@ class PrintingHandler(ContestHandler):
                 self._("Print job storage failed!"),
                 self._("Please try again."),
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         # The file is stored, ready to submit!
@@ -349,7 +349,7 @@ class PrintingHandler(ContestHandler):
             self._("Print job received"),
             self._("Your print job has been received."),
             NOTIFICATION_SUCCESS)
-        self.redirect("/printing")
+        self.redirect(fallback_page)
 
 
 class DocumentationHandler(ContestHandler):
