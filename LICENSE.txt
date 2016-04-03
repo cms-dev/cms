@@ -34,6 +34,10 @@ Copyright: 2008-2012 Dmitry Baranovskiy (http://raphaeljs.com)
 License: Expat
 Comment: See http://raphaeljs.com/license.html
 
+Files: cmsranking/static/lib/he.js
+Copyright: 2013-2015 Mathias Bynens <https://mathiasbynens.be/>
+License: Expat
+
 Files: cms/server/static/jq/jquery-1.7.1.min.js
 Copyright: 2011 John Resig, http://jquery.com/
 License: Expat or GPL-2

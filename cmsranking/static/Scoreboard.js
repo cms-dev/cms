@@ -217,8 +217,8 @@ var Scoreboard = new function () {
 <tr class=\"user" + (user["selected"] > 0 ? " selected color" + user["selected"] : "") + "\" data-user=\"" + user["key"] + "\"> \
     <td class=\"sel\"></td> \
     <td class=\"rank\">" + user["rank"] + "</td> \
-    <td colspan=\"10\" class=\"f_name\">" + user["f_name"] + "</td> \
-    <td colspan=\"10\" class=\"l_name\">" + user["l_name"] + "</td>";
+    <td colspan=\"10\" class=\"f_name\">" + he.escape(user["f_name"]) + "</td> \
+    <td colspan=\"10\" class=\"l_name\">" + he.escape(user["l_name"]) + "</td>";
 
         if (user['team']) {
             result += " \
