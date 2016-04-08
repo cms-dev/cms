@@ -101,26 +101,26 @@ class SubmitRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """
-    def __init__(self, browser, task, submission_format_element,
-                 filename, base_url=None):
+    def __init__(self, browser, task, submission_format,
+                 filenames, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%stasks/%s/submit" % (self.base_url, task[1])
         self.task = task
-        self.submission_format_element = submission_format_element
-        self.filename = filename
+        self.submission_format = submission_format
+        self.filenames = filenames
         self.data = {}
 
     def _prepare(self):
         GenericRequest._prepare(self)
-        self.files = [(self.submission_format_element, self.filename)]
+        self.files = list(zip(self.submission_format, self.filenames))
 
     def describe(self):
-        return "submit source %s for task %s (ID %d) %s" % \
-            (self.filename, self.task[1], self.task[0], self.url)
+        return "submit sources %s for task %s (ID %d) %s" % \
+            (repr(self.filenames), self.task[1], self.task[0], self.url)
 
     def specific_info(self):
         return 'Task: %s (ID %d)\nFile: %s\n' % \
-            (self.task[1], self.task[0], self.filename) + \
+            (self.task[1], self.task[0], repr(self.filenames)) + \
             GenericRequest.specific_info(self)
 
     def test_success(self):
