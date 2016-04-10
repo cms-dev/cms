@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -422,8 +422,8 @@ class FileCacher(object):
 
         self.temp_dir = os.path.join(self.file_dir, "_temp")
 
-        if not mkdir(config.cache_dir) or not mkdir(self.file_dir) \
-                or not mkdir(self.temp_dir):
+        if not mkdir(config.cache_dir) or not mkdir(config.temp_dir) \
+                or not mkdir(self.file_dir) or not mkdir(self.temp_dir):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
 
