@@ -36,7 +36,8 @@ import traceback
 
 import tornado.web
 
-from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
+from cms.db import Attachment, Dataset, Session, Statement, Submission, \
+    SubmissionFormatElement, Task
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -56,6 +57,10 @@ class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
             self.get_string(attrs, "name", empty=None)
             assert attrs.get("name") is not None, "No task name specified."
             attrs["title"] = attrs["name"]
+
+            # Set default submission format as ["taskname.%l"]
+            attrs["submission_format"] = \
+                [SubmissionFormatElement("%s.%%l" % attrs["name"])]
 
             # Create the task.
             task = Task(**attrs)
