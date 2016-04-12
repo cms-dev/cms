@@ -10,6 +10,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -86,7 +87,8 @@ class SubmitHandler(BaseHandler):
                     .filter(Task.contest == contest)\
                     .filter(Submission.participation == participation)\
                     .scalar()
-                if submission_c >= contest.max_submission_number:
+                if submission_c >= contest.max_submission_number and \
+                    not self.current_user.is_super_user:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d submissions among all tasks.") %
@@ -97,7 +99,8 @@ class SubmitHandler(BaseHandler):
                     .filter(Submission.task == task)\
                     .filter(Submission.participation == participation)\
                     .scalar()
-                if submission_t >= task.max_submission_number:
+                if submission_t >= task.max_submission_number and \
+                    not self.current_user.is_super_user:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d submissions on this task.") %
@@ -123,7 +126,8 @@ class SubmitHandler(BaseHandler):
                     .first()
                 if last_submission_c is not None and \
                         self.timestamp - last_submission_c.timestamp < \
-                        contest.min_submission_interval:
+                        contest.min_submission_interval and \
+                        not self.current_user.is_super_user:
                     raise ValueError(
                         self._("Among all tasks, you can submit again "
                                "after %d seconds from last submission.") %
@@ -139,7 +143,8 @@ class SubmitHandler(BaseHandler):
             if task.min_submission_interval is not None:
                 if last_submission_t is not None and \
                         self.timestamp - last_submission_t.timestamp < \
-                        task.min_submission_interval:
+                        task.min_submission_interval and \
+                        not self.current_user.is_super_user:
                     raise ValueError(
                         self._("For this task, you can submit again "
                                "after %d seconds from last submission.") %
