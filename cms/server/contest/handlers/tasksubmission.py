@@ -48,7 +48,7 @@ from cms import config, filename_to_language
 from cms.db import File, Submission, SubmissionResult, Task, Token
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
-from cms.server import actual_phase_required
+from cms.server import actual_phase_required, multi_contest
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
@@ -67,6 +67,7 @@ class SubmitHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, contest_name, task_name):
         participation = self.current_user
         try:
@@ -74,8 +75,8 @@ class SubmitHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = "/" + contest_name + "/tasks/%s/submissions" % \
-                        quote(task.name, safe='')
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     "tasks/%s/submissions" % quote(task.name, safe=''))
 
         # Alias for easy access
         contest = self.contest
@@ -370,6 +371,7 @@ class TaskSubmissionsHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name):
         participation = self.current_user
 
@@ -424,6 +426,7 @@ class SubmissionStatusHandler(ContestHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, submission_num):
         participation = self.current_user
 
@@ -482,6 +485,7 @@ class SubmissionDetailsHandler(ContestHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, submission_num):
         participation = self.current_user
 
@@ -525,6 +529,7 @@ class SubmissionFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
             raise tornado.web.HTTPError(404)
@@ -581,6 +586,7 @@ class UseTokenHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, contest_name, task_name, submission_num):
         participation = self.current_user
 
@@ -589,8 +595,8 @@ class UseTokenHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = "/" + contest_name + "/tasks/%s/submissions" % \
-                        quote(task.name, safe='')
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     "tasks/%s/submissions" % quote(task.name, safe=''))
 
         submission = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\

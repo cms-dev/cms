@@ -33,10 +33,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import os
 
 import tornado.web
 
 from cms.db import Question
+from cms.server import multi_contest
 
 from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
@@ -50,8 +52,9 @@ class CommunicationHandler(ContestHandler):
 
     """
     @tornado.web.authenticated
+    @multi_contest
     def get(self, contest_name):
-        self.set_secure_cookie(contest_name + "_unread_count", "0")
+        self.set_secure_cookie(self.contest.name + "_unread_count", "0")
         self.render("communication.html", **self.r_params)
 
 
@@ -60,6 +63,7 @@ class QuestionHandler(ContestHandler):
 
     """
     @tornado.web.authenticated
+    @multi_contest
     def post(self, contest_name):
         participation = self.current_user
 
@@ -67,7 +71,8 @@ class QuestionHandler(ContestHandler):
         if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = "/" + contest_name + "/communication"
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     "communication")
 
         subject_length = len(self.get_argument("question_subject", ""))
         text_length = len(self.get_argument("question_text", ""))

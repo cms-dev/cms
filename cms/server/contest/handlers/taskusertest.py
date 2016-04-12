@@ -46,7 +46,7 @@ from sqlalchemy import func
 from cms import config, filename_to_language
 from cms.db import Task, UserTest, UserTestFile, UserTestManager
 from cms.grading.tasktypes import get_task_type
-from cms.server import actual_phase_required, format_size
+from cms.server import actual_phase_required, format_size, multi_contest
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -64,6 +64,7 @@ class UserTestInterfaceHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name):
         participation = self.current_user
 
@@ -124,6 +125,7 @@ class UserTestHandler(ContestHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, contest_name, task_name):
         participation = self.current_user
 
@@ -135,8 +137,8 @@ class UserTestHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = "/" + contest_name + "/testing?%s" % \
-                        quote(task.name, safe='')
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     "testing?%s" % quote(task.name, safe=''))
 
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
@@ -448,6 +450,7 @@ class UserTestStatusHandler(ContestHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, user_test_num):
         participation = self.current_user
 
@@ -506,6 +509,7 @@ class UserTestDetailsHandler(ContestHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, user_test_num):
         participation = self.current_user
 
@@ -537,6 +541,7 @@ class UserTestIOHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, user_test_num, io):
         participation = self.current_user
 
@@ -578,6 +583,7 @@ class UserTestFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, user_test_num, filename):
         participation = self.current_user
 

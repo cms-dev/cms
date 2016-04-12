@@ -34,13 +34,14 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import os
 import pickle
 
 import tornado.web
 
 from cms import config
 from cms.db import Participation, PrintJob, User
-from cms.server import actual_phase_required, filter_ascii
+from cms.server import actual_phase_required, filter_ascii, multi_contest
 from cmscommon.datetime import make_datetime, make_timestamp
 
 from .contest import ContestHandler, check_ip, \
@@ -54,6 +55,7 @@ class MainHandler(ContestHandler):
     """Home page handler.
 
     """
+    @multi_contest
     def get(self, contest_name):
         self.render("overview.html", **self.r_params)
 
@@ -62,8 +64,9 @@ class LoginHandler(ContestHandler):
     """Login handler.
 
     """
+    @multi_contest
     def post(self, contest_name):
-        fallback_page = "/" + self.contest.name
+        fallback_page = self.r_params["real_contest_root"]
 
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
@@ -134,6 +137,7 @@ class StartHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(-1)
+    @multi_contest
     def post(self, contest_name):
         participation = self.current_user
 
@@ -141,16 +145,17 @@ class StartHandler(ContestHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect("/" + contest_name)
+        self.redirect(self.r_params["contest_root"])
 
 
 class LogoutHandler(ContestHandler):
     """Logout handler.
 
     """
+    @multi_contest
     def get(self, contest_name):
-        self.clear_cookie(contest_name + "_login")
-        self.redirect("/" + contest_name)
+        self.clear_cookie(self.contest.name + "_login")
+        self.redirect(self.r_params["contest_root"])
 
 
 class NotificationsHandler(ContestHandler):
@@ -161,6 +166,7 @@ class NotificationsHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
+    @multi_contest
     def get(self, contest_name):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
@@ -237,6 +243,7 @@ class PrintingHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name):
         participation = self.current_user
 
@@ -258,13 +265,14 @@ class PrintingHandler(ContestHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, contest_name):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
             raise tornado.web.HTTPError(403)
 
-        fallback_page = "/" + contest_name + "/printing"
+        fallback_page = os.path.join(self.r_params["real_contest_root"], "printing")
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -358,5 +366,6 @@ class DocumentationHandler(ContestHandler):
 
     """
     @tornado.web.authenticated
+    @multi_contest
     def get(self, contest_name):
         self.render("documentation.html", **self.r_params)

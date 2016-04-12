@@ -34,7 +34,7 @@ from __future__ import unicode_literals
 
 import tornado.web
 
-from cms.server import actual_phase_required
+from cms.server import actual_phase_required, multi_contest
 from cmscommon.isocodes import is_language_code, translate_language_code, \
     is_country_code, translate_country_code, \
     is_language_country_code, translate_language_country_code
@@ -49,6 +49,7 @@ class TaskDescriptionHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name):
         try:
             task = self.contest.get_task(task_name)
@@ -78,6 +79,7 @@ class TaskStatementViewHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, lang_code):
         try:
             task = self.contest.get_task(task_name)
@@ -104,6 +106,7 @@ class TaskAttachmentViewHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, contest_name, task_name, filename):
         try:
             task = self.contest.get_task(task_name)

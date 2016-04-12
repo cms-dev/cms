@@ -44,7 +44,7 @@ from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
 
 from cms import config
-from cms.db import Participation, User
+from cms.db import Contest, Participation, User
 from cms.server import compute_actual_phase, file_handler_gen
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
@@ -86,24 +86,31 @@ class ContestHandler(BaseHandler):
     def prepare(self):
         super(ContestHandler, self).prepare()
 
-        # Choose the contest found in the path argument
-        # see: https://github.com/tornadoweb/tornado/issues/1673
-        self.choose_contest(self.path_args[0])
+        self.choose_contest()
 
-    def choose_contest(self, contest_name):
-        # Select the correct contest or return an error
-        try:
-            self.contest = self.contest_list[contest_name]
-        except KeyError:
-            # The right thing here would be:
-            #    raise tornado.web.HTTPError(404)
-            # however, that would make the "error.html" page fail because
-            # there is no self.contest available
+    def choose_contest(self, contest_name=None):
+        if self.application.service.contest is None:
+            if contest_name is None:
+                # Choose the contest found in the path argument
+                # see: https://github.com/tornadoweb/tornado/issues/1673
+                contest_name = self.path_args[0]
 
-            # So, let's return to the contest list
-            self.redirect("/")
-            return
+            # Select the correct contest or return an error
+            try:
+                self.contest = self.contest_list[contest_name]
+            except KeyError:
+                # The right thing here would be:
+                #    raise tornado.web.HTTPError(404)
+                # however, that would make the "error.html" page fail because
+                # there is no self.contest available
 
+                # So, let's return to the contest list
+                self.redirect("/")
+                return
+        else:
+            # Select the contest specified on the command line
+            self.contest = Contest.get_from_id(self.application.service.contest,
+                                               self.sql_session)
 
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name
@@ -113,7 +120,11 @@ class ContestHandler(BaseHandler):
         ret = super(ContestHandler, self).render_params()
 
         ret["contest"] = self.contest
-        ret["contest_root"] = ret["url_root"] + "/" + self.contest.name
+        ret["contest_root"] = ret["url_root"]
+        ret["real_contest_root"] = "/"
+        if self.application.service.contest is None:
+            ret["contest_root"] += "/" + self.contest.name
+            ret["real_contest_root"] += self.contest.name
         ret["phase"] = self.contest.phase(self.timestamp)
 
         ret["printing_enabled"] = (config.printer is not None)

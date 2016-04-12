@@ -143,8 +143,11 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
 
     """
     def get_absolute_path(self, root, path):
-        # The path argument is actually contest_name, so we don't use it
-        return os.path.abspath(os.path.join(root, self.path_args[1]))
+        if self.application.service.contest is None:
+            # The path argument is actually contest_name, so we don't use it
+            return os.path.abspath(os.path.join(root, self.path_args[1]))
+        else:
+            return os.path.abspath(os.path.join(root, path))
 
     def validate_absolute_path(self, root, absolute_path):
         self.is_gzipped = False

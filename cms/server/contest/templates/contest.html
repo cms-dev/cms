@@ -82,7 +82,7 @@
                 <h1>{{ _("Welcome") }}</h1>
                 <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ contest_root }}/login" method="POST">
-                    <input type="hidden" name="next" value="{{ handler.get_argument("next", "/" + contest.name) }}">
+                    <input type="hidden" name="next" value="{{ handler.get_argument("next", real_contest_root) }}">
                     <fieldset>
                         <div class="control-group">
                             <label class="control-label" for="input01">{{ _("Username") }}</label>

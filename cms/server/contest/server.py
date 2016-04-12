@@ -53,6 +53,7 @@ from cms.locale import get_translations, wrap_translations_for_tornado
 
 from .handlers import HANDLERS
 from .handlers.base import BaseHandler
+from .handlers.main import MainHandler
 
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ class ContestWebServer(WebService):
     """Service that runs the web server serving the contestants.
 
     """
-    def __init__(self, shard):
+    def __init__(self, shard, contest=None):
         parameters = {
             "template_path": pkg_resources.resource_filename(
                 "cms.server.contest", "templates"),
@@ -82,9 +83,17 @@ class ContestWebServer(WebService):
                               "contest_listen_address and contest_listen_port "
                               "in cms.conf." % __name__)
 
-        handlers = [(r'/', BaseHandler)]
-        for h in HANDLERS:
-            handlers.append((r'/([^/]+)' + h[0],) + h[1:])
+        self.contest = contest
+        del contest
+
+        if self.contest is None:
+            HANDLERS.append((r"", MainHandler))
+            handlers = [(r'/', BaseHandler)]
+            for h in HANDLERS:
+                handlers.append((r'/([^/]+)' + h[0],) + h[1:])
+        else:
+            HANDLERS.append((r"/", MainHandler))
+            handlers = HANDLERS
 
         super(ContestWebServer, self).__init__(
             listen_port,

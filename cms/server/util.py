@@ -6,6 +6,7 @@
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -176,6 +177,22 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
     return (actual_phase,
             current_phase_begin, current_phase_end,
             actual_start, actual_stop)
+
+
+def multi_contest(f):
+    """Return decorator allowing not to specify the "contest_name"
+    parameter, whenever a method requires it.
+
+    """
+    def wrapped_f(*args):
+        # If no contest was selected
+        if args[0].application.service.contest is None:
+            # Send all URL parameters
+            f(*args)
+        else:
+            # Send a fake "contest_name" URL parameter
+            f(args[0], None, *(args[1:]))
+    return wrapped_f
 
 
 def actual_phase_required(*actual_phases):
