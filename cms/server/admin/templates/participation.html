@@ -88,6 +88,14 @@ function update_additional_answer(element, invoker)
       </tr>
       <tr>
         <td>
+          <span class="info" title="Whether the contestant is unrestricted by maximum number of submissions, user tests,
+                                    and minimum interval between submissions, user tests, and contest time."></span>
+          Unrestricted participation
+        </td>
+        <td><input type="checkbox" name="unrestricted" {% if participation.unrestricted %}checked{% end %}/></td>
+      </tr>
+      <tr>
+        <td>
           <span class="info" title="IP address (or subnet) of the contestant for this contest.
                                     Used for IP-based login restrictions and/or for autologin (in this case, it must be an address)."></span>
           IP address or subnet

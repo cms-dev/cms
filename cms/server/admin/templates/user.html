@@ -20,6 +20,7 @@
       {% end %}
     </select>
     <input type="checkbox" name="hidden">Hidden</input>
+    <input type="checkbox" name="unrestricted">Unrestricted</input>
     <input type="submit" value="Add participation" />
   </form>
 
@@ -35,6 +36,7 @@
           <th></th>
           <th>Participation</th>
           <th>Hidden?</th>
+          <th>Unrestricted?</th>
           <th>Contest</th>
           <th>Contest description</th>
         </tr>
@@ -47,6 +49,7 @@
           </td>
           <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
           <td>{{ p.hidden }}</td>
+          <td>{{ p.unrestricted }}</td>
           <td><a href="{{ url_root }}/contest/{{ p.contest.id }}">{{ p.contest.name }}</a></td>
           <td>{{ p.contest.description }}</td>
         </tr>

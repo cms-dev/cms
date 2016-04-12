@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -182,6 +183,15 @@ class Participation(Base):
     # A hidden participation (e.g. does not appear in public rankings), can
     # also be used for debugging purposes.
     hidden = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
+    # An unrestricted participation (e.g. contest time,
+    # maximum number of submissions, minimum interval between submissions,
+    # maximum number of user tests, minimum interval between user tests),
+    # can also be used for debugging purposes.
+    unrestricted = Column(
         Boolean,
         nullable=False,
         default=False)
