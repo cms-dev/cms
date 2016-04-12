@@ -191,7 +191,9 @@ def actual_phase_required(*actual_phases):
     def decorator(func):
         @wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.r_params["actual_phase"] not in actual_phases:
+            if self.r_params["actual_phase"] not in actual_phases and \
+                    (self.current_user is None or \
+                    not self.current_user.unrestricted):
                 # TODO maybe return some error code?
                 self.redirect("/")
             else:

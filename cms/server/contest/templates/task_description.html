@@ -5,7 +5,7 @@
 {% from cms.grading.tasktypes import get_task_type %}
 {% import json %}
 
-{% if actual_phase == 0 %}
+{% if actual_phase == 0 or current_user.unrestricted %}
 
 <div class="span9 task_description">
 
