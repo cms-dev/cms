@@ -225,11 +225,13 @@ class AddParticipationHandler(BaseHandler):
 
         attrs = {}
         self.get_bool(attrs, "hidden")
+        self.get_bool(attrs, "unrestricted")
 
         # Create the participation.
         participation = Participation(contest=self.contest,
                                       user=user,
-                                      hidden=attrs["hidden"])
+                                      hidden=attrs["hidden"],
+                                      unrestricted=attrs["unrestricted"])
         self.sql_session.add(participation)
 
         if self.try_commit():

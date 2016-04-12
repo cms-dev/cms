@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -178,6 +179,7 @@ class ParticipationHandler(BaseHandler):
             self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")
             self.get_bool(attrs, "hidden")
+            self.get_bool(attrs, "unrestricted")
 
             # Update the participation.
             participation.set_attrs(attrs)
