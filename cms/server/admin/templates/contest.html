@@ -101,6 +101,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="If checked, contestants will be able to log in using username and password."></span>
+        <label for="allow_password_authentication">Allow password authentication</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_password_authentication" name="allow_password_authentication" {{ "checked" if contest.allow_password_authentication else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="If true, contestants with an IP address specified for this contest will only be able to log in from that address."></span>
         <label for="ip_restriction">IP based login restriction</label>
       </td>
