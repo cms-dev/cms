@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,8 +47,8 @@ logger = logging.getLogger(__name__)
 
 
 def add_participation(username, contest_id, ip, delay_time, extra_time,
-                      password, team_code, hidden):
-    logger.info("Creating the user in the database.")
+                      password, team_code, hidden, unrestricted):
+    logger.info("Creating the user's participation in the database.")
     delay_time = delay_time if delay_time is not None else 0
     extra_time = extra_time if extra_time is not None else 0
 
@@ -77,7 +78,8 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
                 extra_time=datetime.timedelta(seconds=extra_time),
                 password=password,
                 team=team,
-                hidden=hidden)
+                hidden=hidden,
+                unrestricted=unrestricted)
 
             session.add(participation)
             session.commit()
@@ -111,6 +113,8 @@ def main():
                         help="code of the team for this participation")
     parser.add_argument("-n", "--hidden", action="store_true",
                         help="if the participation is hidden")
+    parser.add_argument("-u", "--unrestricted", action="store_true",
+                        help="if the participation is unrestricted")
 
     args = parser.parse_args()
 
@@ -119,7 +123,7 @@ def main():
 
     return add_participation(args.username, args.contest_id,
                              args.ip, args.delay_time, args.extra_time,
-                             args.password, args.team, args.hidden)
+                             args.password, args.team, args.hidden, args.unrestricted)
 
 
 if __name__ == "__main__":
