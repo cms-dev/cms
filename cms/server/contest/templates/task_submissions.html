@@ -81,7 +81,7 @@ $(document).ready(function () {
 
 {% block core %}
 
-{% if actual_phase == 0 %}
+{% if actual_phase in [0, 1, 2] %}
 
 <div class="span9 task_submissions">
 
@@ -89,6 +89,7 @@ $(document).ready(function () {
     <h1>{% raw _("%(name)s (%(short_name)s) <small>submissions</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</small></h1>
 </div>
 
+{% if actual_phase == 0 %}
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
 
@@ -143,10 +144,12 @@ $(document).ready(function () {
 {% end %}
 </div>
 
+{% end %}
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous submissions") }}</h2>
 
-{% if tokens_contest != 0 and tokens_tasks != 0 %}
+
+{% if actual_phase == 0 and tokens_contest != 0 and tokens_tasks != 0 %}
 <div style="padding-bottom:10px">
     {% set tokens_info = contest.tokens_available(current_user.user.username, task.name, timestamp) %}
     {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}

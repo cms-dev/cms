@@ -48,7 +48,7 @@ class TaskDescriptionHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name):
         try:
             task = self.contest.get_task(task_name)
@@ -77,7 +77,7 @@ class TaskStatementViewHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, lang_code):
         try:
             task = self.contest.get_task(task_name)
@@ -103,7 +103,7 @@ class TaskAttachmentViewHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, filename):
         try:
             task = self.contest.get_task(task_name)

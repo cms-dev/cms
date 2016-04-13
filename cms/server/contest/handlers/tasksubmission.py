@@ -369,7 +369,7 @@ class TaskSubmissionsHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name):
         participation = self.current_user
 
@@ -423,7 +423,7 @@ class SubmissionStatusHandler(BaseHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, submission_num):
         participation = self.current_user
 
@@ -481,7 +481,7 @@ class SubmissionDetailsHandler(BaseHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, submission_num):
         participation = self.current_user
 
@@ -524,7 +524,7 @@ class SubmissionFileHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
             raise tornado.web.HTTPError(404)
@@ -579,6 +579,7 @@ class UseTokenHandler(BaseHandler):
     """Called when the user try to use a token on a submission.
 
     """
+    # TODO: Decide if tokens can be applied after contest ends.
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name, submission_num):

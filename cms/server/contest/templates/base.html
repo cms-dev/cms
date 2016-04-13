@@ -166,7 +166,7 @@ $(document).ready(function () {
     {% end %}
                                     </a>
                             </li>
-    {% if actual_phase == 0 %}
+    {% if actual_phase in [0, 1, 2] %}
         {% for t_iter in contest.tasks %}
                             <li class="nav-header">
                                 {{ t_iter.name }}
@@ -183,7 +183,7 @@ $(document).ready(function () {
                             <li{% if request.path == '/documentation' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/documentation">{{ _("Documentation") }}</a>
                             </li>
-    {% if actual_phase == 0 %}{% comment FIXME maybe >= 0? %}
+    {% if actual_phase in [0, 1, 2] %}
         {% if testing_enabled %}
                             <li{% if request.path == '/testing' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/testing">{{ _("Testing") }}</a>
