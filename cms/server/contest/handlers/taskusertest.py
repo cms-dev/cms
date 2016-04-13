@@ -10,6 +10,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -155,7 +156,8 @@ class UserTestHandler(BaseHandler):
                     .filter(Task.contest == contest)\
                     .filter(UserTest.participation == participation)\
                     .scalar()
-                if user_test_c >= contest.max_user_test_number:
+                if user_test_c >= contest.max_user_test_number and \
+                        not self.current_user.unrestricted:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d tests among all tasks.") %
@@ -165,7 +167,8 @@ class UserTestHandler(BaseHandler):
                     .filter(UserTest.task == task)\
                     .filter(UserTest.participation == participation)\
                     .scalar()
-                if user_test_t >= task.max_user_test_number:
+                if user_test_t >= task.max_user_test_number and \
+                        not self.current_user.unrestricted:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d tests on this task.") %
@@ -191,7 +194,8 @@ class UserTestHandler(BaseHandler):
                     .first()
                 if last_user_test_c is not None and \
                         self.timestamp - last_user_test_c.timestamp < \
-                        contest.min_user_test_interval:
+                        contest.min_user_test_interval and \
+                        not self.current_user.unrestricted:
                     raise ValueError(
                         self._("Among all tasks, you can test again "
                                "after %d seconds from last test.") %
@@ -207,7 +211,8 @@ class UserTestHandler(BaseHandler):
             if task.min_user_test_interval is not None:
                 if last_user_test_t is not None and \
                         self.timestamp - last_user_test_t.timestamp < \
-                        task.min_user_test_interval:
+                        task.min_user_test_interval and \
+                        not self.current_user.unrestricted:
                     raise ValueError(
                         self._("For this task, you can test again "
                                "after %d seconds from last test.") %

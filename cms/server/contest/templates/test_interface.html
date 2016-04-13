@@ -62,7 +62,7 @@ $(document).ready(function () {
 
 {% from cms.grading.tasktypes import get_task_type %}
 
-{% if actual_phase == 0 %}
+{% if actual_phase == 0 or current_user.unrestricted %}
 
 <div class="span9 test_interface">
 
