@@ -63,7 +63,7 @@ class UserTestInterfaceHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self):
         participation = self.current_user
 
@@ -446,7 +446,7 @@ class UserTestStatusHandler(BaseHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, user_test_num):
         participation = self.current_user
 
@@ -504,7 +504,7 @@ class UserTestDetailsHandler(BaseHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, user_test_num):
         participation = self.current_user
 
@@ -535,7 +535,7 @@ class UserTestIOHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, user_test_num, io):
         participation = self.current_user
 
@@ -576,7 +576,7 @@ class UserTestFileHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self, task_name, user_test_num, filename):
         participation = self.current_user
 

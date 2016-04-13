@@ -129,8 +129,8 @@
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
     <td class="token">
         {% if s.token is not None %}
-        <a class="btn disabled">{{ _("Played") }}</a>
-        {% else %}
+        <a class="btn {% if actual_phase != 0 %} btn-warning {% end %} disabled">{{ _("Played") }}</a>
+        {% elif actual_phase == 0 %}
             {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
             {% if can_play_token and not need_to_wait %}
         <form action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/token" method="POST">
@@ -141,6 +141,8 @@
             {% else %}
         <a class="btn disabled">{{ _("No tokens") }}</a>
             {% end %}
+        {% else %}
+            <a class="btn disabled">{{ _("Not Played") }}</a>
         {% end %}
     </td>
 {% end %}

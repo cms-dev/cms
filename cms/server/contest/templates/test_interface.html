@@ -62,7 +62,7 @@ $(document).ready(function () {
 
 {% from cms.grading.tasktypes import get_task_type %}
 
-{% if actual_phase == 0 %}
+{% if actual_phase in [0, 1, 2] %}
 
 <div class="span9 test_interface">
 
@@ -85,6 +85,8 @@ $(document).ready(function () {
     {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
 <div class="tab-pane{% if task == default_task %} active{% end %}" id="test_{{ task.name }}">
+
+{% if actual_phase == 0 %}
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
 
@@ -143,6 +145,7 @@ $(document).ready(function () {
     </div>
 </div>
 
+{% end %}
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 

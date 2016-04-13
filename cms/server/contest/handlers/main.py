@@ -233,7 +233,7 @@ class PrintingHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0)
+    @actual_phase_required(0, 1, 2)
     def get(self):
         participation = self.current_user
 
