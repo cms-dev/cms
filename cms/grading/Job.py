@@ -39,8 +39,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
+import logging
 
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
+from cms.service.esoperations import ESOperation
+
+
+logger = logging.getLogger(__name__)
 
 
 class Job(object):
@@ -224,6 +229,11 @@ class CompilationJob(Job):
         return (CompilationJob): the job.
 
         """
+        if operation.type_ != ESOperation.COMPILATION:
+            logger.error("Programming error: asking for a compilation job, "
+                         "but the operation is %s.", operation.type_)
+            raise ValueError("Operation is not a compilation")
+
         job = CompilationJob()
 
         # Job
@@ -278,6 +288,12 @@ class CompilationJob(Job):
         return (CompilationJob): the job.
 
         """
+        if operation.type_ != ESOperation.USER_TEST_COMPILATION:
+            logger.error("Programming error: asking for a user test "
+                         "compilation job, but the operation is %s.",
+                         operation.type_)
+            raise ValueError("Operation is not a user test compilation")
+
         job = CompilationJob()
 
         # Job
@@ -466,6 +482,11 @@ class EvaluationJob(Job):
         return (EvaluationJob): the job.
 
         """
+        if operation.type_ != ESOperation.EVALUATION:
+            logger.error("Programming error: asking for an evaluation job, "
+                         "but the operation is %s.", operation.type_)
+            raise ValueError("Operation is not an evaluation")
+
         job = EvaluationJob()
 
         # Job
@@ -520,7 +541,7 @@ class EvaluationJob(Job):
     def from_user_test(operation, user_test, dataset):
         """Create an EvaluationJob from a user test.
 
-        operation (ESOperation): an EVALUATION operation.
+        operation (ESOperation): an USER_TEST_EVALUATION operation.
         user_test (UserTest): the user test object referred by the
             operation.
         dataset (Dataset): the dataset object referred by the
@@ -529,6 +550,12 @@ class EvaluationJob(Job):
         return (EvaluationJob): the job.
 
         """
+        if operation.type_ != ESOperation.USER_TESTEVALUATION:
+            logger.error("Programming error: asking for a user test "
+                         "evaluation job, but the operation is %s.",
+                         operation.type_)
+            raise ValueError("Operation is not a user test evaluation")
+
         job = EvaluationJob()
 
         # Job
