@@ -130,6 +130,33 @@ class Job(object):
         """Create a Job from the output of export_to_dict."""
         return cls(**data)
 
+    @staticmethod
+    def from_operation(operation, object_, dataset):
+        """Produce the job for the operation in the argument.
+
+        Return the Job object that has to be sent to Workers to have
+        them perform the operation this object describes.
+
+        operation (ESOperation): the operation to use.
+        object_ (Submission|UserTest): the object this operation
+            refers to (might be a submission or a user test).
+        dataset (Dataset): the dataset this operation refers to.
+
+        return (Job): the job encoding of the operation, as understood
+            by Workers and TaskTypes.
+
+        """
+        job = None
+        if operation.type_ == ESOperation.COMPILATION:
+            job = CompilationJob.from_submission(operation, object_, dataset)
+        elif operation.type_ == ESOperation.EVALUATION:
+            job = EvaluationJob.from_submission(operation, object_, dataset)
+        elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
+            job = CompilationJob.from_user_test(operation, object_, dataset)
+        elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
+            job = EvaluationJob.from_user_test(operation, object_, dataset)
+        return job
+
 
 class CompilationJob(Job):
     """Job representing a compilation.
