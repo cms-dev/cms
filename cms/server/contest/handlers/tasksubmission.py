@@ -265,7 +265,7 @@ class SubmitHandler(BaseHandler):
                     break
                 elif lang not in contest.languages:
                     error = self._(
-                        "Language %s not allowed in this contest." % lang)
+                        "Language %s not allowed in this contest.") % lang
                     break
                 else:
                     submission_lang = lang
