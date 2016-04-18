@@ -38,7 +38,6 @@ from sqlalchemy import case, literal
 from cms.io import PriorityQueue, QueueItem
 from cms.db import Dataset, Evaluation, Submission, SubmissionResult, \
     Task, Testcase, UserTest, UserTestResult
-from cms.grading.Job import CompilationJob, EvaluationJob
 
 
 logger = logging.getLogger(__name__)
@@ -551,28 +550,3 @@ class ESOperation(QueueItem):
             "dataset_id": self.dataset_id,
             "testcase_codename": self.testcase_codename
         }
-
-    def build_job(self, object_, dataset):
-        """Produce the Job for this operation.
-
-        Return the Job object that has to be sent to Workers to have
-        them perform the operation this object describes.
-
-        object_ (Submission|UserTest): the object this operation
-            refers to (might be a submission or a user test).
-        dataset (Dataset): the dataset this operation refers to.
-
-        return (Job): the job encoding of the operation, as understood
-            by Workers and TaskTypes.
-
-        """
-        result = None
-        if self.type_ == ESOperation.COMPILATION:
-            result = CompilationJob.from_submission(self, object_, dataset)
-        elif self.type_ == ESOperation.EVALUATION:
-            result = EvaluationJob.from_submission(self, object_, dataset)
-        elif self.type_ == ESOperation.USER_TEST_COMPILATION:
-            result = CompilationJob.from_user_test(self, object_, dataset)
-        elif self.type_ == ESOperation.USER_TEST_EVALUATION:
-            result = EvaluationJob.from_user_test(self, object_, dataset)
-        return result
