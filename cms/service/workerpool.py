@@ -40,7 +40,7 @@ import gevent.coros
 from gevent.event import Event
 
 from cms.db import Dataset, SessionGen, Submission, UserTest
-from cms.grading.Job import JobGroup
+from cms.grading.Job import Job, JobGroup
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
@@ -236,8 +236,8 @@ class WorkerPool(object):
                     object_ = user_tests[operation.object_id]
                 logger.info("Asking worker %s to `%s'.", shard, operation)
 
-                jobs.append(operation.build_job(
-                    object_, datasets[operation.dataset_id]))
+                jobs.append(Job.from_operation(
+                    operation, object_, datasets[operation.dataset_id]))
             job_group_dict = JobGroup(jobs).export_to_dict()
 
         self._worker[shard].execute_job_group(
