@@ -145,7 +145,21 @@ class Job(object):
         return (Job): the job encoding of the operation, as understood
             by Workers and TaskTypes.
 
+        raise (ValueError): if object_ or dataset are not those
+            referred by the operation.
+
         """
+        if operation.object_id != object_.id:
+            logger.error("Programming error: operation is for object `%s' "
+                         "while passed object is `%s'.",
+                         operation.object_id, object_.id)
+            raise ValueError("Object mismatch while building job.")
+        if operation.dataset_id != dataset.id:
+            logger.error("Programming error: operation is for dataset `%s' "
+                         "while passed dataset is `%s'.",
+                         operation.dataset_id, dataset.id)
+            raise ValueError("Dataset mismatch while building job.")
+
         job = None
         if operation.type_ == ESOperation.COMPILATION:
             job = CompilationJob.from_submission(operation, object_, dataset)
