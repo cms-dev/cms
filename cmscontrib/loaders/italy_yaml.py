@@ -585,7 +585,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             for path in paths:
                 if os.path.exists(path):
                     num_processes = load(conf, None, "num_processes")
-                    if (num_processes == None):
+                    if num_processes is None:
                         num_processes = 1
                     logger.info("Task type Communication")
                     args["task_type"] = "Communication"
