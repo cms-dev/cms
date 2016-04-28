@@ -8,6 +8,7 @@
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -583,8 +584,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                      os.path.join(self.path, "cor", "manager")]
             for path in paths:
                 if os.path.exists(path):
+                    num_processes = load(conf, None, "num_processes")
+                    if (num_processes == None):
+                        num_processes = 1
+                    logger.info("Task type Communication")
                     args["task_type"] = "Communication"
-                    args["task_type_parameters"] = '[1]'
+                    args["task_type_parameters"] = '[%d]' % num_processes
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Manager for task %s" % name)
