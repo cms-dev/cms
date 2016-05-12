@@ -85,8 +85,10 @@ Warning: use this task type only if you know what are you doing.
 
 In a TwoSteps task, contestants submit two source files implementing a function each (the idea is that the first function gets the input and compute some data from it with some restriction, and the second tries to retrieve the original data).
 
-The admins must provide a manager compiled together with both files. The resulting executable is run twice (one acting as the computer, one acting as the retriever. The manager in the computer executable must take care of reading the input from standard input; the one in the retriever executable of writing the outcome and the explanation message to standard output and error respectively. Both must take responsibility of the communication between them through a pipe.
+The admins must provide a manager, which is compiled together with both of the contestant-submitted files. The manager needs to be named :file:`manager.ext`, where ``ext`` is the standard extension of a source file in that language. Furthermore, for C/C++ and Pascal, appropriate header files for the two source files given by the contestants need to be provided, as well as manager header files (:file:`manager.h`, :file:`managerlib.pas`)---**even if they are empty**.
 
-More precisely, the executable are called with two arguments: the first is an integer which is 0 if the executable is the computer, and 1 if it is the retriever; the second is the name of the pipe to be used for communication between the processes.
+The resulting executable is run twice (one acting as the computer, one acting as the retriever). The manager in the computer executable must take care of reading the input from standard input; the one in the retriever executable of writing the retrieved data to standard output. Both must take responsibility of the communication between them through a pipe.
 
+More precisely, the executable is called with two arguments: the first is an integer which is 0 if the executable is the computer, and 1 if it is the retriever; the second is the name of the pipe to be used for communication between the processes.
 
+Normally, the standard output of the second invocation of the manager is compared to a provided reference output file using the white-diff comparator. However, the admins may provide a :file:`checker` executable, with the same properties as for Batch. If a file with such a name is found in the uploaded manager files, it will be run instead of the white-diff comparator.
