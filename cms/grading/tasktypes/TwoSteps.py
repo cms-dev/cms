@@ -6,6 +6,7 @@
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Petar Veličković <pv273@cam.ac.uk>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,8 +33,9 @@ from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
     LANGUAGE_TO_HEADER_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_commands, compilation_step, \
-    evaluation_step_before_run, evaluation_step_after_run, \
-    is_evaluation_passed, human_evaluation_message, white_diff_step
+    evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
+    is_evaluation_passed, human_evaluation_message, \
+    extract_outcome_and_text, white_diff_step
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
@@ -66,26 +68,30 @@ class TwoSteps(TaskType):
 
     name = "Two steps"
 
+    CHECKER_FILENAME = "checker"
+
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
         for language in LANGUAGES:
             source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-            header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
+            header_ext = LANGUAGE_TO_HEADER_EXT_MAP.get(language)
             source_filenames = []
-            for filename in submission_format:
-                source_filename = filename.replace(".%l", source_ext)
-                source_filenames.append(source_filename)
-                # Headers.
-                header_filename = filename.replace(".%l", header_ext)
-                source_filenames.append(header_filename)
-
-            # Manager.
+            # Manager
             manager_source_filename = "manager%s" % source_ext
             source_filenames.append(manager_source_filename)
             # Manager's header.
-            manager_header_filename = "manager%s" % header_ext
-            source_filenames.append(manager_header_filename)
+            if header_ext is not None:
+                manager_header_filename = "manager%s" % header_ext
+                source_filenames.append(manager_header_filename)
+
+            for filename in submission_format:
+                source_filename = filename.replace(".%l", source_ext)
+                source_filenames.append(source_filename)
+                # Headers
+                if header_ext is not None:
+                    header_filename = filename.replace(".%l", header_ext)
+                    source_filenames.append(header_filename)
 
             # Get compilation command and compile.
             executable_filename = "manager"
@@ -102,7 +108,7 @@ class TwoSteps(TaskType):
         # before accepting it.
         language = job.language
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-        header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
+        header_ext = LANGUAGE_TO_HEADER_EXT_MAP.get(language)
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -121,17 +127,7 @@ class TwoSteps(TaskType):
         job.sandboxes.append(sandbox.path)
         files_to_get = {}
 
-        # User's submissions and headers.
         source_filenames = []
-        for filename, file_ in job.files.iteritems():
-            source_filename = filename.replace(".%l", source_ext)
-            source_filenames.append(source_filename)
-            files_to_get[source_filename] = file_.digest
-            # Headers.
-            header_filename = filename.replace(".%l", header_ext)
-            source_filenames.append(header_filename)
-            files_to_get[header_filename] = \
-                job.managers[header_filename].digest
 
         # Manager.
         manager_filename = "manager%s" % source_ext
@@ -139,10 +135,23 @@ class TwoSteps(TaskType):
         files_to_get[manager_filename] = \
             job.managers[manager_filename].digest
         # Manager's header.
-        manager_filename = "manager%s" % header_ext
-        source_filenames.append(manager_filename)
-        files_to_get[manager_filename] = \
-            job.managers[manager_filename].digest
+        if header_ext is not None:
+            manager_filename = "manager%s" % header_ext
+            source_filenames.append(manager_filename)
+            files_to_get[manager_filename] = \
+                job.managers[manager_filename].digest
+
+        # User's submissions and headers.
+        for filename, file_ in job.files.iteritems():
+            source_filename = filename.replace(".%l", source_ext)
+            source_filenames.append(source_filename)
+            files_to_get[source_filename] = file_.digest
+            # Headers (fixing compile error again here).
+            if header_ext is not None:
+                header_filename = filename.replace(".%l", header_ext)
+                source_filenames.append(header_filename)
+                files_to_get[header_filename] = \
+                    job.managers[header_filename].digest
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -294,13 +303,45 @@ class TwoSteps(TaskType):
                         "res.txt",
                         job.output)
 
-                    outcome, text = white_diff_step(
-                        second_sandbox, "output.txt", "res.txt")
+                    # If a checker is not provided, use white-diff
+                    if TwoSteps.CHECKER_FILENAME not in job.managers:
+                        outcome, text = white_diff_step(
+                            second_sandbox, "output.txt", "res.txt")
+                    else:
+                        second_sandbox.create_file_from_storage(
+                            TwoSteps.CHECKER_FILENAME,
+                            job.managers[TwoSteps.CHECKER_FILENAME].digest,
+                            executable=True)
+                        # Rewrite input file, as in Batch.py
+                        try:
+                            second_sandbox.remove_file("input.txt")
+                        except OSError as e:
+                            assert not second_sandbox.file_exists("input.txt")
+                        second_sandbox.create_file_from_storage(
+                            "input.txt",
+                            job.input)
+                        success, _ = evaluation_step(
+                            second_sandbox,
+                            [["./%s" % TwoSteps.CHECKER_FILENAME,
+                              "input.txt", "res.txt", "output.txt"]])
+                        if success:
+                            try:
+                                outcome, text = \
+                                    extract_outcome_and_text(second_sandbox)
+                            except ValueError, e:
+                                logger.error("Invalid output from "
+                                             "comparator: %s", e.message,
+                                             extra={"operation": job.info})
+                                success = False
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = str(outcome)
+        job.outcome = str(outcome) if outcome is not None else None
         job.text = text
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
+
+    def get_user_managers(self, unused_submission_format):
+        """See TaskType.get_user_managers."""
+        return ["manager.%l"]
