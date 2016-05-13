@@ -6,6 +6,7 @@
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Petar Veličković <pv273@cam.ac.uk>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -348,3 +349,7 @@ class TwoSteps(TaskType):
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
+
+    def get_user_managers(self, unused_submission_format):
+    """See TaskType.get_user_managers."""
+        return []
