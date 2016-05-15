@@ -7,7 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2015-2016 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -158,6 +158,9 @@ class ContestImporter(BaseImporter):
                     task.contest = contest
 
             # Check needed participations
+            if participations is None:
+                participations = []
+
             for p in participations:
                 user = session.query(User) \
                               .filter(User.username == p["username"]).first()
