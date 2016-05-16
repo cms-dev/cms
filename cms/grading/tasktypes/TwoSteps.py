@@ -32,6 +32,7 @@ import tempfile
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
     LANGUAGE_TO_HEADER_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
+from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading import get_compilation_commands, compilation_step, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, \
@@ -63,12 +64,30 @@ class TwoSteps(TaskType):
     Admins must provide also header files, named "foo{.h|lib.pas}" for
     the three sources (manager and user provided).
 
+    Parameters are given by a singleton list of strings (for possible
+    expansions in the future), which may be 'diff' or 'comparator',
+    specifying whether the evaluation is done using white diff or a
+    comparator.
+
     """
     ALLOW_PARTIAL_SUBMISSION = False
 
-    name = "Two steps"
+    _EVALUATION = ParameterTypeChoice(
+        "Output evaluation",
+        "output_eval",
+        "",
+        {"diff": "Outputs compared with white diff",
+         "comparator": "Outputs are compared by a comparator"})
+
+    ACCEPTED_PARAMETERS = [_EVALUATION]
 
     CHECKER_FILENAME = "checker"
+
+    @property
+    def name(self):
+        """See TaskType.name."""
+        # TODO add some details if a comparator is used, etc...
+        return "Two steps"
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -304,35 +323,48 @@ class TwoSteps(TaskType):
                         job.output)
 
                     # If a checker is not provided, use white-diff
-                    if TwoSteps.CHECKER_FILENAME not in job.managers:
+                    if self.parameters[0] == "diff":
                         outcome, text = white_diff_step(
                             second_sandbox, "output.txt", "res.txt")
-                    else:
-                        second_sandbox.create_file_from_storage(
-                            TwoSteps.CHECKER_FILENAME,
-                            job.managers[TwoSteps.CHECKER_FILENAME].digest,
-                            executable=True)
-                        # Rewrite input file, as in Batch.py
-                        try:
-                            second_sandbox.remove_file("input.txt")
-                        except OSError as e:
-                            assert not second_sandbox.file_exists("input.txt")
-                        second_sandbox.create_file_from_storage(
-                            "input.txt",
-                            job.input)
-                        success, _ = evaluation_step(
-                            second_sandbox,
-                            [["./%s" % TwoSteps.CHECKER_FILENAME,
-                              "input.txt", "res.txt", "output.txt"]])
-                        if success:
+
+                    elif self.parameters[0] == "comparator":
+                        if TwoSteps.CHECKER_FILENAME not in job.managers:
+                            logger.error("Configuration error: missing or "
+                                         "invalid comparator (it must be "
+                                         "named `checker')",
+                                         extra={"operation": job.info})
+                            success = False
+                        else:
+                            second_sandbox.create_file_from_storage(
+                                TwoSteps.CHECKER_FILENAME,
+                                job.managers[TwoSteps.CHECKER_FILENAME].digest,
+                                executable=True)
+                            # Rewrite input file, as in Batch.py
                             try:
-                                outcome, text = \
-                                    extract_outcome_and_text(second_sandbox)
-                            except ValueError, e:
-                                logger.error("Invalid output from "
-                                             "comparator: %s", e.message,
-                                             extra={"operation": job.info})
-                                success = False
+                                second_sandbox.remove_file("input.txt")
+                            except OSError as e:
+                                assert not second_sandbox.file_exists(
+                                    "input.txt")
+                            second_sandbox.create_file_from_storage(
+                                "input.txt",
+                                job.input)
+                            success, _ = evaluation_step(
+                                second_sandbox,
+                                [["./%s" % TwoSteps.CHECKER_FILENAME,
+                                  "input.txt", "res.txt", "output.txt"]])
+                            if success:
+                                try:
+                                    outcome, text = extract_outcome_and_text(
+                                        second_sandbox)
+                                except ValueError, e:
+                                    logger.error("Invalid output from "
+                                                 "comparator: %s", e.message,
+                                                 extra={"operation": job.info})
+                                    success = False
+                    else:
+                        raise ValueError("Uncrecognized first parameter"
+                                         " `%s' for TwoSteps tasktype." %
+                                         self.parameters[0])
 
         # Whatever happened, we conclude.
         job.success = success
