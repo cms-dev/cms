@@ -37,5 +37,6 @@ Kenneth Wong <kenneth@wong.pro>
 Minwei Xu (aka vanshady) <faceswilliam@gmail.com>
 Myungwoo Chun <mc.tamaki@gmail.com>
 wafrelka <wafrelka@gmail.com>
+Petar Veličković <pv273@cam.ac.uk>
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
