@@ -9,6 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -284,6 +285,13 @@ class ProxyService(TriggeredService):
                 if submission.participation.hidden:
                     continue
 
+                # Send operation for submission always.
+                # We need to send data of submission which is
+                # not evaluated yet to RWS.
+                for operation in self.operations_for_submission(submission):
+                    self.enqueue(operation)
+                    counter += 1
+
                 # The submission result can be None if the dataset has
                 # been just made live.
                 sr = submission.get_result()
@@ -369,6 +377,26 @@ class ProxyService(TriggeredService):
         self.enqueue(ProxyOperation(ProxyExecutor.USER_TYPE, users))
         self.enqueue(ProxyOperation(ProxyExecutor.TASK_TYPE, tasks))
 
+    def operations_for_submission(self, submission):
+        """Send the given submission to all rankings.
+
+        Put the submission in all the proxy queues for them to be sent to
+        rankings.
+
+        """
+
+        # Data to send to remote rankings.
+        submission_id = "%d" % submission.id
+        submission_data = {
+            "user": encode_id(submission.participation.user.username),
+            "task": encode_id(submission.task.name),
+            "time": int(make_timestamp(submission.timestamp))}
+
+        return [
+            ProxyOperation(ProxyExecutor.SUBMISSION_TYPE,
+                           {submission_id: submission_data})
+        ]
+
     def operations_for_score(self, submission):
         """Send the score for the given submission to all rankings.
 
@@ -446,6 +474,34 @@ class ProxyService(TriggeredService):
         """
         logger.info("Reinitializing rankings.")
         self.initialize()
+
+    @rpc_method
+    def submission_submitted(self, submission_id):
+        """Notice that a submission has been submitted.
+
+        Usually called by EvaluationService when it's done with submitting,
+        and then send data about the submission to the rankings.
+
+        submission_id (int): the id of the submission that changed.
+
+        """
+        with SessionGen() as session:
+            submission = Submission.get_from_id(submission_id, session)
+
+            if submission is None:
+                logger.error("[submission_submitted] Received score request for "
+                             "unexistent submission id %s.", submission_id)
+                raise KeyError("Submission not found.")
+
+            if submission.participation.hidden:
+                logger.info("[submission_submitted] Score for submission %d "
+                            "not sent because the participation is hidden.",
+                            submission_id)
+                return
+
+            # Update RWS.
+            for operation in self.operations_for_submission(submission):
+                self.enqueue(operation)
 
     @rpc_method
     def submission_scored(self, submission_id):

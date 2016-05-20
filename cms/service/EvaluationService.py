@@ -8,6 +8,7 @@
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -43,7 +44,7 @@ import gevent.coros
 
 from sqlalchemy import func, not_
 
-from cms import ServiceCoord, get_service_shards
+from cms import ServiceCoord, get_service_shards, config
 from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Dataset, Submission, \
     SubmissionResult, Task, UserTest
@@ -203,6 +204,10 @@ class EvaluationService(TriggeredService):
 
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
+        ranking_enabled = len(config.rankings) > 0
+        self.proxy_service = self.connect_to(
+            ServiceCoord("ProxyService", 0),
+            must_be_present=ranking_enabled)
 
         self.add_executor(EvaluationExecutor(self))
         self.start_sweeper(117.0)
@@ -829,6 +834,8 @@ class EvaluationService(TriggeredService):
                 logger.error("[new_submission] Couldn't find submission "
                              "%d in the database.", submission_id)
                 return
+
+            self.proxy_service.submission_submitted(submission_id=submission.id)
 
             self.submission_enqueue_operations(submission)
 
