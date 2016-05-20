@@ -1,5 +1,6 @@
 /* Programming contest management system
  * Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+ * Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -264,13 +265,21 @@ var UserDetail = new function () {
                 var submission = self.submissions[task_id][i];
                 time = submission["time"] - DataStore.contests[DataStore.tasks[task_id]["contest"]]["begin"];
                 time = format_time(time);
-                res += " \
+                if (submission['score'] == null) {
+                    res += " \
+        <tr> \
+            <td>" + time + "</td> \
+            <td colspan=\"" + (2 + DataStore.tasks[task_id]['extra_headers'].length) + "\">Not evaluated yet...</td> \
+        </tr>";
+                } else {
+                    res += " \
         <tr> \
             <td>" + time + "</td> \
             <td>" + round_to_str(submission['score'], DataStore.tasks[task_id]['score_precision']) + "</td> \
             <td>" + (submission["token"] ? 'Yes' : 'No') + "</td> \
             " + (submission["extra"].length > 0 ? "<td>" + submission["extra"].join("</td><td>") + "</td>" : "") + " \
         </tr>";
+                }
             }
         }
         res += " \
