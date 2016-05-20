@@ -1,5 +1,53 @@
 dist: trusty
-sudo: true
+sudo: required
+
+# FIXME: The following travis setting would automatically use a virtualenv,
+#        and CMS would think it is not installed, see this github issue:
+#        https://github.com/cms-dev/cms/issues/559
+#        (while it stays commented out, travis will think we're using ruby)
+#        when the issue is fixed, we will be able to take advantage of
+#        multi-version testing (testing against many python versions)
+#language: python
+#python:
+#  - 2.7
+
 env:
   - TEST_SUITE=functionaltests
-script: ./.travis.sh
+
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y build-essential fpc php5-cli gcj-jdk
+  - sudo apt-get install -y postgresql-client gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
+  - sudo apt-get install -y python-dev libpq-dev libcups2-dev libyaml-dev
+
+  - cp ./config/cms.conf.sample ./config/cms.conf
+  - sudo ./prerequisites.py install -y
+
+  - sudo pip install -r requirements.txt
+  - sudo pip install -r dev-requirements.txt
+  - sudo python setup.py install
+
+  - sudo -u postgres psql -c "CREATE USER cmsuser WITH PASSWORD 'password';"
+  - sudo -u postgres psql -c "CREATE DATABASE database WITH OWNER cmsuser;"
+  - sudo -u postgres psql database -c "ALTER SCHEMA public OWNER TO cmsuser"
+  - sudo -u postgres psql database -c "GRANT SELECT ON pg_largeobject TO cmsuser"
+
+  - sudo -u postgres psql -c "CREATE DATABASE databasefortesting WITH OWNER cmsuser;"
+  - sudo -u postgres psql databasefortesting -c "ALTER SCHEMA public OWNER TO cmsuser"
+  - sudo -u postgres psql databasefortesting -c "GRANT SELECT ON pg_largeobject TO cmsuser"
+
+  - sudo chown root:$USER /usr/local/bin/isolate /usr/local/etc/cms.conf
+  - sudo chmod 750 /usr/local/bin/isolate
+  - sudo chmod 640 /usr/local/etc/cms.conf
+  - sudo chmod u+s /usr/local/bin/isolate /usr/local/etc/cms.conf
+
+  - ls -al /usr/local/bin/isolate /usr/local/etc/cms.conf
+  - groups
+
+  - sudo cmsInitDB
+
+script:
+  - sudo cmsRunTests -v
+
+notifications:
+  email: no
