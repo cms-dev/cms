@@ -73,7 +73,8 @@ class ScoreType(object):
         self.max_score, self.max_public_score, self.ranking_headers = \
             self.max_scores()
 
-    def get_html_details(self, score_details, translator=None):
+    def get_html_details(self, score_details, simple_submission_detail, \
+            translator=None):
         """Return an HTML string representing the score details of a
         submission.
 
@@ -95,6 +96,9 @@ class ScoreType(object):
                          "Try invalidating scores.")
             return translator("Score details temporarily unavailable.")
         else:
+            if simple_submission_detail:
+                return Template(self.SIMPLE_TEMPLATE).generate(details=score_details,
+                                                        _=translator)
             return Template(self.TEMPLATE).generate(details=score_details,
                                                     _=translator)
 
@@ -162,6 +166,62 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("Execution time")
     N_("Memory used")
     N_("N/A")
+    SIMPLE_TEMPLATE = """\
+{% from cms.grading import format_status_text %}
+{% from cms.server import format_size %}
+{% set correct = True %}
+{% for st in details %}
+    {% for tc in st["testcases"] %}
+        {% if "outcome" in tc and "text" in tc and tc["outcome"] != "Correct" %}
+            {% set correct = False %}
+        {% end %}
+    {% end %}
+{% end %}
+{% if not correct %}
+        <table class="testcase-list">
+            <thead>
+                <tr>
+                    <th class="outcome">{{ _("Outcome") }}</th>
+                    <th class="details">{{ _("Details") }}</th>
+                    <th class="execution-time">{{ _("Execution time") }}</th>
+                    <th class="memory-used">{{ _("Memory used") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+    {% for st in details %}
+        {% for tc in st["testcases"] %}
+            {% if "outcome" in tc and "text" in tc and tc["outcome"] != "Correct" %}
+                {% if tc["outcome"] == "Not correct" %}
+                <tr class="notcorrect">
+                {% else %}
+                <tr class="partiallycorrect">
+                {% end %}
+                    <td class="outcome">{{ _(tc["outcome"]) }}</td>
+                    <td class="details">
+                      {{ format_status_text(tc["text"], _) }}
+                    </td>
+                    <td class="execution-time">
+                {% if "time" in tc and tc["time"] is not None %}
+                        {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
+                {% else %}
+                        {{ _("N/A") }}
+                {% end %}
+                    </td>
+                    <td class="memory-used">
+                {% if "memory" in tc and tc["memory"] is not None %}
+                        {{ format_size(tc["memory"]) }}
+                {% else %}
+                        {{ _("N/A") }}
+                {% end %}
+                    </td>
+                </tr>
+                {% break %}
+            {% end %}
+        {% end %}
+    {% end %}
+            </tbody>
+        </table>
+{% end %}"""
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}

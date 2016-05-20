@@ -82,6 +82,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether show only first not correct testcase for each subtask."></span>
+        <label for="simple_submission_detail">Simple submission detail</label>
+      </td>
+      <td>
+        <input type="checkbox" id="simple_submission_detail" name="simple_submission_detail" {{ "checked" if contest.simple_submission_detail else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The number of decimal places the scores will be rounded to.
                                   Example: '2' to allow 98.76."></span>
         Score decimal places
