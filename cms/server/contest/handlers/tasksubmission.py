@@ -466,11 +466,24 @@ class SubmissionStatusHandler(BaseHandler):
                 self._("Evaluated"), self._("details"))
 
             score_type = get_score_type(dataset=task.active_dataset)
-            if score_type is not None and score_type.max_public_score != 0:
-                data["max_public_score"] = "%g" % \
-                    round(score_type.max_public_score, task.score_precision)
-            data["public_score"] = "%g" % \
-                round(sr.public_score, task.score_precision)
+            if submission.task.contest.simple_submission_detail and \
+                score_type.max_public_score == score_type.max_score:
+                if sr.public_score == score_type.max_public_score:
+                    data["public_message"] = self._("Accepted")
+                    data["score_class"] = "score_100"
+                elif sr.public_score > 0:
+                    data["public_message"] = self._("Rejected")
+                    data["score_class"] = "score_0_100"
+                else:
+                    data["public_message"] = self._("Rejected")
+                    data["score_class"] = "score_0"
+            else:
+                if score_type is not None and score_type.max_public_score != 0:
+                    data["max_public_score"] = "%g" % \
+                        round(score_type.max_public_score, task.score_precision)
+                data["public_score"] = "%g" % \
+                    round(sr.public_score, task.score_precision)
+
             if submission.token is not None:
                 if score_type is not None and score_type.max_score != 0:
                     data["max_score"] = "%g" % \
@@ -515,7 +528,10 @@ class SubmissionDetailsHandler(BaseHandler):
                 details = sr.public_score_details
 
             if sr.scored():
-                details = score_type.get_html_details(details, self._)
+                simple_submission_detail = \
+                    submission.task.contest.simple_submission_detail
+                details = score_type.get_html_details(details, \
+                    simple_submission_detail, self._)
             else:
                 details = None
 
