@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -119,7 +120,7 @@ class Score(object):
 
         if self._score_mode == "max":
             score = max([0.0] +
-                        [submission.score
+                        [submission.score if submission.score is not None else 0
                          for submission in self._submissions.values()])
         else:
             score = max(self._released.query(),
@@ -139,7 +140,8 @@ class Score(object):
 
         # Reset the submissions at their default value.
         for sub in self._submissions.itervalues():
-            sub.score = 0.0
+            # None score means that it is not evaluted yet.
+            sub.score = None
             sub.token = False
             sub.extra = list()
 
@@ -193,7 +195,8 @@ class Score(object):
     def create_submission(self, key, submission):
         # A new submission never triggers an update in the history,
         # since it doesn't have a score.
-        submission.score = 0.0
+        # None score means that it is not evaluted yet.
+        submission.score = None
         submission.token = False
         submission.extra = list()
         self._submissions[key] = submission
