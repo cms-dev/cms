@@ -62,7 +62,6 @@ class DatasetImporter(object):
 
         # Get the task
         task = self.loader.get_task(get_statement=False)
-        __import__("pdb").set_trace()
         if task is None:
             return
 
