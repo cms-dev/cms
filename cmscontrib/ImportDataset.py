@@ -19,7 +19,7 @@
 
 """This script works kind of like cmsImportTask, but it assumes that the task
 already exists. Specifically, it will just add a new dataset (without
-activating it.
+activating it).
 
 """
 
