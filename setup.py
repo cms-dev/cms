@@ -136,6 +136,7 @@ setup(
             "cmsExportSubmissions=cmscontrib.ExportSubmissions:main",
             "cmsImportContest=cmscontrib.ImportContest:main",
             "cmsImportTask=cmscontrib.ImportTask:main",
+            "cmsImportDataset=cmscontrib.ImportDataset:main",
             "cmsImportTeam=cmscontrib.ImportTeam:main",
             "cmsImportUser=cmscontrib.ImportUser:main",
             "cmsRWSHelper=cmscontrib.RWSHelper:main",
