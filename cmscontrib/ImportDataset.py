@@ -79,8 +79,8 @@ class DatasetImporter(object):
             dataset.description = self.description
 
         # Store the dataset
-        logger.info("Creating new dataset for task %s on the database.",
-                    task_name)
+        logger.info("Creating new dataset (\"%s\") for task %s on the "
+                    "database.", dataset.description, task_name)
 
         with SessionGen() as session:
             # Check whether the task already exists
