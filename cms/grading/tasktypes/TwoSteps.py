@@ -92,16 +92,12 @@ class TwoSteps(TaskType):
         res = dict()
         for language in LANGUAGES:
             source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-            header_ext = None
-            # Fixing error 500---add only headers for languages that have a defined header_ext!
-            if language in LANGUAGE_TO_HEADER_EXT_MAP:
-                header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
+            header_ext = LANGUAGE_TO_HEADER_EXT_MAP.get(language, None)
             source_filenames = []
             # Manager 
-            # (N.B. needs to go first, otherwise Pascal compilation command will be wrong!).
             manager_source_filename = "manager%s" % source_ext
             source_filenames.append(manager_source_filename)
-            # Manager's header.     
+            # Manager's header.
             if header_ext != None:
                 manager_header_filename = "manager%s" % header_ext
                 source_filenames.append(manager_header_filename)
@@ -109,7 +105,7 @@ class TwoSteps(TaskType):
             for filename in submission_format:
                 source_filename = filename.replace(".%l", source_ext)
                 source_filenames.append(source_filename)
-                # Headers (Fixing error 500 again here).
+                # Headers
                 if header_ext != None:
                     header_filename = filename.replace(".%l", header_ext)
                     source_filenames.append(header_filename)
@@ -129,9 +125,7 @@ class TwoSteps(TaskType):
         # before accepting it.
         language = job.language
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-        header_ext = None
-        if language in LANGUAGE_TO_HEADER_EXT_MAP:
-            header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
+        header_ext = LANGUAGE_TO_HEADER_EXT_MAP.get(language, None)
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -153,14 +147,11 @@ class TwoSteps(TaskType):
         source_filenames = []
    
         # Manager.
-        # Once again, must move it to the front, for Pascal to produce
-        # the proper compilation command.
         manager_filename = "manager%s" % source_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
             job.managers[manager_filename].digest
         # Manager's header.
-        # Fixing compile err.---add only headers for languages that have a defined header_ext!
         if header_ext != None:
             manager_filename = "manager%s" % header_ext
             source_filenames.append(manager_filename)
@@ -175,9 +166,9 @@ class TwoSteps(TaskType):
             # Headers (fixing compile error again here).
             if header_ext != None:
                 header_filename = filename.replace(".%l", header_ext)
-            source_filenames.append(header_filename)
-            files_to_get[header_filename] = \
-                job.managers[header_filename].digest
+                source_filenames.append(header_filename)
+                files_to_get[header_filename] = \
+                    job.managers[header_filename].digest
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -328,7 +319,7 @@ class TwoSteps(TaskType):
                     second_sandbox.create_file_from_storage(
                         "res.txt",
                         job.output)
-                    
+                        
                     # If a checker is not provided, use white-diff
                     if self.parameters[0] == "diff":
                         outcome, text = white_diff_step(
