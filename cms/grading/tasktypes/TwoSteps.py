@@ -80,6 +80,8 @@ class TwoSteps(TaskType):
          "comparator": "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
+    
+    checker_filename = "checker"
 
     @property
     def name(self):
@@ -326,7 +328,6 @@ class TwoSteps(TaskType):
                             second_sandbox, "output.txt", "res.txt")
                     
                     elif self.parameters[0] == "comparator":
-                        checker_filename = "checker"
                         if checker_filename not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
@@ -374,4 +375,4 @@ class TwoSteps(TaskType):
 
     def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
-        return []
+        return ["manager.%l"]
