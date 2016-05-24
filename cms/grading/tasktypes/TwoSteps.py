@@ -328,15 +328,15 @@ class TwoSteps(TaskType):
                             second_sandbox, "output.txt", "res.txt")
                     
                     elif self.parameters[0] == "comparator":
-                        if checker_filename not in job.managers:
+                        if self.checker_filename not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named `checker')", extra={"operation": job.info})
                             success = False
                         else:
                             second_sandbox.create_file_from_storage(
-                                checker_filename,
-                                job.managers[checker_filename].digest,
+                                self.checker_filename,
+                                job.managers[self.checker_filename].digest,
                                 executable=True)
                             # Rewrite input file, as in Batch.py
                             try:
@@ -348,7 +348,7 @@ class TwoSteps(TaskType):
                                 job.input)
                             success, _ = evaluation_step(
                                 second_sandbox,
-                                [["./%s" % checker_filename,
+                                [["./%s" % self.checker_filename,
                                   "input.txt", "res.txt", "output.txt"]])
                             if success:
                                 try:
