@@ -37,9 +37,11 @@ install:
   - sudo -u postgres psql databasefortesting -c "GRANT SELECT ON pg_largeobject TO cmsuser"
 
   - sudo chown root:$USER /usr/local/bin/isolate /usr/local/etc/cms.conf
-  - sudo chmod 777 /usr/local/bin/isolate /usr/local/etc/cms.conf
+  - sudo chmod 640 /usr/local/bin/isolate /usr/local/etc/cms.conf
   - sudo chmod u+s /usr/local/bin/isolate /usr/local/etc/cms.conf
+
   - ls -al /usr/local/bin/isolate /usr/local/etc/cms.conf
+  - groups
 
   - sudo cmsInitDB
 
