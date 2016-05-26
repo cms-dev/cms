@@ -80,8 +80,8 @@ class TwoSteps(TaskType):
          "comparator": "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
-    
-    checker_filename = "checker"
+
+    CHECKER_FILENAME = "checker"
 
     @property
     def name(self):
@@ -147,7 +147,7 @@ class TwoSteps(TaskType):
         files_to_get = {}
 
         source_filenames = []
-   
+
         # Manager.
         manager_filename = "manager%s" % source_ext
         source_filenames.append(manager_filename)
@@ -321,22 +321,22 @@ class TwoSteps(TaskType):
                     second_sandbox.create_file_from_storage(
                         "res.txt",
                         job.output)
-                        
+
                     # If a checker is not provided, use white-diff
                     if self.parameters[0] == "diff":
                         outcome, text = white_diff_step(
                             second_sandbox, "output.txt", "res.txt")
-                    
+
                     elif self.parameters[0] == "comparator":
-                        if self.checker_filename not in job.managers:
+                        if TwoSteps.CHECKER_FILENAME not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named `checker')", extra={"operation": job.info})
                             success = False
                         else:
                             second_sandbox.create_file_from_storage(
-                                self.checker_filename,
-                                job.managers[self.checker_filename].digest,
+                                TwoSteps.CHECKER_FILENAME,
+                                job.managers[TwoSteps.CHECKER_FILENAME].digest,
                                 executable=True)
                             # Rewrite input file, as in Batch.py
                             try:
@@ -348,7 +348,7 @@ class TwoSteps(TaskType):
                                 job.input)
                             success, _ = evaluation_step(
                                 second_sandbox,
-                                [["./%s" % self.checker_filename,
+                                [["./%s" % TwoSteps.CHECKER_FILENAME,
                                   "input.txt", "res.txt", "output.txt"]])
                             if success:
                                 try:
