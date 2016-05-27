@@ -22,7 +22,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
-import json
+try:
+    import json5 as json
+except ImportError:
+    import json
 import os
 import pkg_resources
 import sys
