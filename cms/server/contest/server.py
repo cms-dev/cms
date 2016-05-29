@@ -71,6 +71,7 @@ class ContestWebServer(WebService):
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
+            "num_proxies_used": config.num_proxies_used,
         }
 
         try:

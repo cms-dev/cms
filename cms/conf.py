@@ -87,7 +87,8 @@ class Config(object):
         self.submit_local_copy_path = "%s/submissions/"
         self.tests_local_copy = True
         self.tests_local_copy_path = "%s/tests/"
-        self.is_proxy_used = False
+        self.is_proxy_used = None  # (deprecated in favor of num_proxies_used)
+        self.num_proxies_used = None
         self.max_submission_length = 100000
         self.max_input_length = 5000000
         self.stl_path = "/usr/share/doc/stl-manual/html/"
@@ -202,6 +203,10 @@ class Config(object):
             return False
 
         logger.info("Using configuration file %s.", path)
+
+        if "is_proxy_used" in data:
+            logger.warning("The 'is_proxy_used' setting is deprecated, please "
+                           "use 'num_proxies_used' instead.")
 
         # Put core and test services in async_config, ignoring those
         # whose name begins with "_".

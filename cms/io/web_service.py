@@ -55,7 +55,8 @@ class WebService(Service):
         rpc_enabled = parameters.pop('rpc_enabled', False)
         rpc_auth = parameters.pop('rpc_auth', None)
         auth_middleware = parameters.pop('auth_middleware', None)
-        is_proxy_used = parameters.pop('is_proxy_used', False)
+        is_proxy_used = parameters.pop('is_proxy_used', None)
+        num_proxies_used = parameters.pop('num_proxies_used', None)
 
         self.wsgi_app = tornado.wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self
@@ -75,15 +76,21 @@ class WebService(Service):
             self.wsgi_app = auth_middleware(self.wsgi_app)
             self.auth_handler = self.wsgi_app
 
-        # If is_proxy_used is set to True we'll use the content of the
-        # X-Forwarded-For HTTP header (if provided) to determine the
-        # client IP address, ignoring the one the request came from.
+        # If we are behind one or more proxies, we'll use the content
+        # of the X-Forwarded-For HTTP header (if provided) to determine
+        # the client IP address, ignoring the one the request came from.
         # This allows to use the IP lock behind a proxy. Activate it
         # only if all requests come from a trusted source (if clients
         # were allowed to directlty communicate with the server they
         # could fake their IP and compromise the security of IP lock).
-        if is_proxy_used:
-            self.wsgi_app = ProxyFix(self.wsgi_app)
+        if num_proxies_used is None:
+            if is_proxy_used:
+                num_proxies_used = 1
+            else:
+                num_proxies_used = 0
+
+        if num_proxies_used > 0:
+            self.wsgi_app = ProxyFix(self.wsgi_app, num_proxies_used)
 
         self.web_server = WSGIServer((listen_address, listen_port),
                                      self.wsgi_app)
