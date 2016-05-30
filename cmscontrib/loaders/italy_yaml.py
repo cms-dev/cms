@@ -141,13 +141,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             logger.critical("File missing: \"contest.yaml\"")
             return None
 
-        name = os.path.split(self.path)[1]
-
         conf = yaml.safe_load(
             io.open(os.path.join(self.path, "contest.yaml"),
                     "rt", encoding="utf-8"))
-
-        logger.info("Loading parameters for contest %s.", name)
 
         # Here we update the time of the last import
         touch(os.path.join(self.path, ".itime_contest"))
@@ -159,8 +155,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, ["name", "nome_breve"])
         load(conf, args, ["description", "nome"])
 
-        # Contest directory == Contest name
-        assert name == args["name"]
+        logger.info("Loading parameters for contest %s.", args["name"])
 
         # Use the new token settings format if detected.
         if "token_mode" in conf:
@@ -313,12 +308,21 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             conf = yaml.safe_load(
                 io.open(os.path.join(self.path, "task.yaml"),
                         "rt", encoding="utf-8"))
-        except IOError:
-            conf = yaml.safe_load(
-                io.open(os.path.join(self.path, "..", name + ".yaml"),
-                        "rt", encoding="utf-8"))
+        except IOError as err:
+            try:
+                deprecated_path = os.path.join(self.path, "..", name + ".yaml")
+                conf = yaml.safe_load(io.open(deprecated_path, "rt",
+                                              encoding="utf-8"))
 
-        logger.info("Loading parameters for task %s.", name)
+                logger.warning("You're using a deprecated location for the "
+                               "task.yaml file. You're advised to move %s to "
+                               "%s.", deprecated_path,
+                               os.path.join(self.path, "task.yaml"))
+            except IOError:
+                # Since both task.yaml and the (deprecated) "../taskname.yaml"
+                # are missing, we will only warn the user that task.yaml is
+                # missing (to avoid encouraging the use of the deprecated one)
+                raise err
 
         # Here we update the time of the last import
         touch(os.path.join(self.path, ".itime"))
@@ -330,11 +334,16 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, ["name", "nome_breve"])
         load(conf, args, ["title", "nome"])
 
-        assert name == args["name"]
+        if name != args["name"]:
+            logger.info("The task name (%s) and the directory name (%s) are "
+                        "different. The former will be used.", args["name"],
+                        name)
 
         if args["name"] == args["title"]:
             logger.warning("Short name equals long name (title). "
                            "Please check.")
+
+        logger.info("Loading parameters for task %s.", args["name"])
 
         if get_statement:
             primary_language = load(conf, None, "primary_language")
@@ -347,7 +356,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Statement for task %s (lang: %s)" %
-                        (name, primary_language))
+                        (args["name"], primary_language))
                     break
             else:
                 logger.critical("Couldn't find any task statement, aborting.")
@@ -359,7 +368,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         args["attachments"] = []  # FIXME Use auxiliary
 
         args["submission_format"] = [
-            SubmissionFormatElement("%s.%%l" % name)]
+            SubmissionFormatElement("%s.%%l" % args["name"])]
 
         if conf.get("score_mode", None) == SCORE_MODE_MAX:
             args["score_mode"] = SCORE_MODE_MAX
@@ -378,9 +387,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # Otherwise fall back on the old one.
         else:
             logger.warning(
-                "%s.yaml uses a deprecated format for token settings which "
-                "will soon stop being supported, you're advised to update it.",
-                name)
+                "task.yaml uses a deprecated format for token settings which "
+                "will soon stop being supported, you're advised to update it.")
             # Determine the mode.
             if conf.get("token_initial", None) is None:
                 args["token_mode"] = "disabled"
@@ -418,7 +426,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             for filename in os.listdir(os.path.join(self.path, "att")):
                 digest = self.file_cacher.put_file_from_path(
                     os.path.join(self.path, "att", filename),
-                    "Attachment %s for task %s" % (filename, name))
+                    "Attachment %s for task %s" % (filename, args["name"]))
                 args["attachments"] += [Attachment(filename, digest)]
 
         task = Task(**args)
@@ -453,7 +461,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 if os.path.exists(grader_filename):
                     digest = self.file_cacher.put_file_from_path(
                         grader_filename,
-                        "Grader for task %s and language %s" % (name, lang))
+                        "Grader for task %s and language %s" % (task.name,
+                                                                lang))
                     args["managers"] += [
                         Manager("grader.%s" % lang, digest)]
                 else:
@@ -464,7 +473,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                        for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                     digest = self.file_cacher.put_file_from_path(
                         os.path.join(self.path, "sol", other_filename),
-                        "Manager %s for task %s" % (other_filename, name))
+                        "Manager %s for task %s" % (other_filename, task.name))
                     args["managers"] += [
                         Manager(other_filename, digest)]
             compilation_param = "grader"
@@ -480,7 +489,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             if os.path.exists(path):
                 digest = self.file_cacher.put_file_from_path(
                     path,
-                    "Manager for task %s" % name)
+                    "Manager for task %s" % task.name)
                 args["managers"] += [
                     Manager("checker", digest)]
                 evaluation_param = "comparator"
@@ -592,7 +601,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     args["task_type_parameters"] = '[%d]' % num_processes
                     digest = self.file_cacher.put_file_from_path(
                         path,
-                        "Manager for task %s" % name)
+                        "Manager for task %s" % task.name)
                     args["managers"] += [
                         Manager("manager", digest)]
                     for lang in LANGUAGES:
@@ -601,8 +610,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         if os.path.exists(stub_name):
                             digest = self.file_cacher.put_file_from_path(
                                 stub_name,
-                                "Stub for task %s and language %s" % (name,
-                                                                      lang))
+                                "Stub for task %s and language %s" % (
+                                    task.name, lang))
                             args["managers"] += [
                                 Manager("stub.%s" % lang, digest)]
                         else:
@@ -614,7 +623,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                                LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                             digest = self.file_cacher.put_file_from_path(
                                 os.path.join(self.path, "sol", other_filename),
-                                "Stub %s for task %s" % (other_filename, name))
+                                "Stub %s for task %s" % (other_filename,
+                                                         task.name))
                             args["managers"] += [
                                 Manager(other_filename, digest)]
                     break
@@ -631,10 +641,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         for i in xrange(n_input):
             input_digest = self.file_cacher.put_file_from_path(
                 os.path.join(self.path, "input", "input%d.txt" % i),
-                "Input %d for task %s" % (i, name))
+                "Input %d for task %s" % (i, task.name))
             output_digest = self.file_cacher.put_file_from_path(
                 os.path.join(self.path, "output", "output%d.txt" % i),
-                "Output %d for task %s" % (i, name))
+                "Output %d for task %s" % (i, task.name))
             args["testcases"] += [
                 Testcase("%03d" % i, False, input_digest, output_digest)]
             if args["task_type"] == "OutputOnly":
