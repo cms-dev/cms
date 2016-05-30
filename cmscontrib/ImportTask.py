@@ -60,9 +60,21 @@ class TaskImporter(BaseImporter):
 
     """
 
-    def __init__(self, path, prefix, update, no_statement, contest_id, loader_class):
+    def __init__(self, path, prefix, override_name, update, no_statement,
+                 contest_id, loader_class):
+        """Create the importer object for a task.
+
+        path (string): the path to the file or directory to import.
+        prefix (string): an optional prefix added to the task name.
+        override_name (string): an optional new name for the task.
+        update (bool): if the task already exists, try to update it.
+        no_statement (bool): do not try to import the task statement.
+        contest_id (int): if set, the new task will be tied to this contest.
+
+        """
         self.file_cacher = FileCacher()
         self.prefix = prefix
+        self.override_name = override_name
         self.update = update
         self.no_statement = no_statement
         self.contest_id = contest_id
@@ -80,6 +92,10 @@ class TaskImporter(BaseImporter):
         task = self.loader.get_task(get_statement=not self.no_statement)
         if task is None:
             return
+
+        # Override name, if necessary
+        if self.override_name:
+            task.name = self.override_name
 
         # Apply the prefix, if there is one
         if self.prefix:
@@ -168,6 +184,11 @@ def main():
         help="the prefix to be added before the task name"
     )
     parser.add_argument(
+        "-n", "--name",
+        action="store", type=utf8_decoder,
+        help="the new name that will override the task name"
+    )
+    parser.add_argument(
         "target",
         action="store", type=utf8_decoder,
         help="target file/directory from where to import task(s)"
@@ -187,6 +208,7 @@ def main():
         no_statement=args.no_statement,
         contest_id=args.contest_id,
         prefix=args.prefix,
+        override_name=args.name,
         loader_class=loader_class
     ).do_import()
 
