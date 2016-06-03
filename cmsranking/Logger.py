@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,8 +29,6 @@ import time
 from traceback import format_tb
 
 import gevent.coros
-
-from cmsranking.Config import config
 
 
 class StreamHandler(logging.StreamHandler):
@@ -254,10 +252,16 @@ shell_handler.setLevel(logging.INFO)
 shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
 root_logger.addHandler(shell_handler)
 
-# Define the file handler to output on the specified log directory.
-log_filename = time.strftime("%Y-%m-%d-%H-%M-%S.log")
-file_handler = FileHandler(os.path.join(config.log_dir, log_filename),
-                           mode='w', encoding='utf-8')
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(CustomFormatter(False))
-root_logger.addHandler(file_handler)
+
+def add_file_handler(log_dir):
+    """Install a handler that writes in files in the given directory.
+
+    log_dir (str): a path to a directory.
+
+    """
+    log_filename = time.strftime("%Y-%m-%d-%H-%M-%S.log")
+    file_handler = FileHandler(os.path.join(log_dir, log_filename),
+                               mode='w', encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(CustomFormatter(False))
+    root_logger.addHandler(file_handler)

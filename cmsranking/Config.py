@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,10 +22,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
+import errno
 import json
+import logging
 import os
 import pkg_resources
 import sys
+
+from cmsranking.Logger import add_file_handler
+
+
+logger = logging.getLogger(__name__)
+
+
+CMS_RANKING_CONFIG_ENV_VAR = "CMS_RANKING_CONFIG"
 
 
 class Config(object):
@@ -64,16 +74,40 @@ class Config(object):
                                         "cms", "ranking")
             self.lib_dir = os.path.join("/", "var", "local", "lib",
                                         "cms", "ranking")
-            paths = [os.path.join("/", "usr", "local", "etc",
-                                  "cms.ranking.conf"),
-                     os.path.join("/", "etc", "cms.ranking.conf")]
+            self.conf_paths = [os.path.join("/", "usr", "local", "etc",
+                                            "cms.ranking.conf"),
+                               os.path.join("/", "etc", "cms.ranking.conf")]
         else:
             self.log_dir = os.path.join("log", "ranking")
             self.lib_dir = os.path.join("lib", "ranking")
-            paths = [os.path.join(".", "config", "cms.ranking.conf"),
-                     os.path.join("/", "usr", "local", "etc",
-                                  "cms.ranking.conf"),
-                     os.path.join("/", "etc", "cms.ranking.conf")]
+            self.conf_paths = [os.path.join(".", "config", "cms.ranking.conf"),
+                               os.path.join("/", "usr", "local", "etc",
+                                            "cms.ranking.conf"),
+                               os.path.join("/", "etc", "cms.ranking.conf")]
+
+        # Allow users to override config file path using environment
+        # variable 'CMS_RANKING_CONFIG'.
+        if CMS_RANKING_CONFIG_ENV_VAR in os.environ:
+            self.conf_paths = [os.environ[CMS_RANKING_CONFIG_ENV_VAR]] \
+                              + self.conf_paths
+
+    def get(self, key):
+        """Get the config value for the given key.
+
+        """
+        return getattr(self, key)
+
+    def load(self, config_override_fobj=None):
+        """Look for config files on disk and load them.
+
+        """
+        # If a command-line override is given it is used exclusively.
+        if config_override_fobj is not None:
+            if not self._load_one(config_override_fobj):
+                sys.exit(1)
+        else:
+            if not self._load_many(self.conf_paths):
+                sys.exit(1)
 
         try:
             os.makedirs(self.lib_dir)
@@ -90,51 +124,65 @@ class Config(object):
         except OSError:
             pass  # We assume the directory already exists...
 
-        self._load(paths)
+        add_file_handler(self.log_dir)
 
-    def get(self, key):
-        """Get the config value for the given key.
+
+    def _load_many(self, conf_paths):
+        """Load the first existing config file among the given ones.
+
+        Take a list of paths where config files may reside and attempt
+        to load the first one that exists.
+
+        conf_paths([str]): paths of config file candidates, from most
+            to least prioritary.
+        returns (bool): whether loading was successful.
 
         """
-        return getattr(self, key)
-
-    def _load(self, paths):
-        """Try to load the config files one at a time, until one loads
-        correctly.
-
-        """
-        for conf_file in paths:
+        for conf_path in conf_paths:
             try:
-                self._load_unique(conf_file)
-            except IOError:
-                # We cannot access the file, we skip it.
-                pass
-            except ValueError as exc:
-                print("Unable to load JSON configuration file %s, probably "
-                      "because of a JSON decoding error.\n%r" % (conf_file,
-                                                                 exc))
-            else:
-                print("Using configuration file %s." % conf_file)
-                return
-        print("Warning: no configuration file found.")
+                with io.open(conf_path, "rt") as conf_fobj:
+                    logger.info("Using config file %s.", conf_path)
+                    return self._load_one(conf_fobj)
+            except IOError as error:
+                # If it's because it doesn't exist we just skip to the
+                # next one. Otherwise it's probably unintended and the
+                # user should do something about it.
+                if error.errno != errno.ENOENT:
+                    logger.critical("Unable to access config file %s: %s.",
+                                    conf_path, os.strerror(error.errno))
+                    return False
+        logger.warning("No config file found, using hardcoded defaults.")
+        return True
 
-    def _load_unique(self, path):
-        """Populate the Config class with everything that sits inside
-        the JSON file path (usually something like /etc/cms.conf). The
-        only pieces of data treated differently are the elements of
-        core_services and other_services that are sent to async
-        config.
+    def _load_one(self, conf_fobj):
+        """Populate config parameters from the given file.
 
-        path (string): the path of the JSON config file.
+        Parse it as JSON and store in self all configuration properties
+        it defines. Log critical message and return False if anything
+        goes wrong or seems odd.
+
+        conf_fobj (file-like object): the config file.
+        returns (bool): whether parsing was successful.
 
         """
-        # Load config file
-        with io.open(path, 'rb') as fobj:
-            data = json.load(fobj)
+        # Parse config file.
+        try:
+            data = json.load(conf_fobj)
+        except ValueError:
+            logger.critical("Config file is invalid JSON.")
+            return False
 
-            # Put everything.
-            for key, value in data.iteritems():
-                setattr(self, key, value)
+        # Store every config property.
+        for key, value in data.iteritems():
+            if key.startswith("_"):
+                continue
+            if not hasattr(self, key):
+                logger.critical("Invalid field %s in config file, maybe a "
+                                "typo? (use leading underscore to ignore).",
+                                key)
+                return False
+            setattr(self, key, value)
+        return True
 
 
 # Create an instance of the Config class.

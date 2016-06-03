@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2011-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -444,9 +444,13 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Ranking for CMS.")
+    parser.add_argument("--config", type=argparse.FileType("rt"),
+                        help="override config file")
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop the data already stored")
     args = parser.parse_args()
+
+    config.load(args.config)
 
     if args.drop:
         print("Are you sure you want to delete directory %s? [y/N]" %
