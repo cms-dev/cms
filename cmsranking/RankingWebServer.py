@@ -83,7 +83,7 @@ class StoreHandler(object):
              Rule("/", methods=["PUT"], endpoint="put_list"),
              Rule("/<key>", methods=["DELETE"], endpoint="delete"),
              Rule("/", methods=["DELETE"], endpoint="delete_list"),
-             ], encoding_errors="strict")
+            ], encoding_errors="strict")
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -344,7 +344,7 @@ class ImageHandler(object):
 
         self.router = Map(
             [Rule("/<name>", methods=["GET"], endpoint="get"),
-             ], encoding_errors="strict")
+            ], encoding_errors="strict")
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -398,7 +398,7 @@ class RoutingHandler(object):
              Rule("/scores", methods=["GET"], endpoint="scores"),
              Rule("/events", methods=["GET"], endpoint="events"),
              Rule("/logo", methods=["GET"], endpoint="logo"),
-             ], encoding_errors="strict")
+            ], encoding_errors="strict")
 
         self.event_handler = event_handler
         self.logo_handler = logo_handler
@@ -490,7 +490,7 @@ def main():
          '/flags': ImageHandler(
              os.path.join(config.lib_dir, 'flags', '%(name)s'),
              os.path.join(config.web_dir, 'img', 'flag.png')),
-         }), {'/': config.web_dir})
+        }), {'/': config.web_dir})
 
     servers = list()
     if config.http_port is not None:
