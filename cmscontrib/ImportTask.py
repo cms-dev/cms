@@ -62,6 +62,16 @@ class TaskImporter(BaseImporter):
 
     def __init__(self, path, prefix, override_name, update, no_statement,
                  contest_id, loader_class):
+        """Create the importer object for a task.
+
+        path (string): the path to the file or directory to import.
+        prefix (string): an optional prefix added to the task name.
+        override_name (string): an optional new name for the task.
+        update (bool): if the task already exists, try to update it.
+        no_statement (bool): do not try to import the task statement.
+        contest_id (int): if set, the new task will be tied to this contest.
+
+	"""
         self.file_cacher = FileCacher()
         self.prefix = prefix
         self.override_name = override_name

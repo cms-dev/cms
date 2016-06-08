@@ -343,7 +343,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             logger.warning("Short name equals long name (title). "
                            "Please check.")
 
-        logger.info("Loading parameters for task %s.", args["name"])
+        name = args["name"]
+
+        logger.info("Loading parameters for task %s.", name)
 
         if get_statement:
             primary_language = load(conf, None, "primary_language")
@@ -356,7 +358,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Statement for task %s (lang: %s)" %
-                        (args["name"], primary_language))
+                        (name, primary_language))
                     break
             else:
                 logger.critical("Couldn't find any task statement, aborting.")
@@ -368,7 +370,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         args["attachments"] = []  # FIXME Use auxiliary
 
         args["submission_format"] = [
-            SubmissionFormatElement("%s.%%l" % args["name"])]
+            SubmissionFormatElement("%s.%%l" % name)]
 
         if conf.get("score_mode", None) == SCORE_MODE_MAX:
             args["score_mode"] = SCORE_MODE_MAX
@@ -426,7 +428,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             for filename in os.listdir(os.path.join(self.path, "att")):
                 digest = self.file_cacher.put_file_from_path(
                     os.path.join(self.path, "att", filename),
-                    "Attachment %s for task %s" % (filename, args["name"]))
+                    "Attachment %s for task %s" % (filename, name))
                 args["attachments"] += [Attachment(filename, digest)]
 
         task = Task(**args)
