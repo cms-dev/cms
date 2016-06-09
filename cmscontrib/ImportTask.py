@@ -71,7 +71,7 @@ class TaskImporter(BaseImporter):
         no_statement (bool): do not try to import the task statement.
         contest_id (int): if set, the new task will be tied to this contest.
 
-	"""
+        """
         self.file_cacher = FileCacher()
         self.prefix = prefix
         self.override_name = override_name
