@@ -64,22 +64,29 @@ NOTIFICATION_WARNING = "warning"
 NOTIFICATION_SUCCESS = "success"
 
 
-def check_ip(client, wanted):
-    """Return if client IP belongs to the wanted subnet.
+def check_ip(ip, whitelist):
+    """Return if client IP belongs to one of the accepted subnets.
 
-    client (string): IP address to verify.
-    wanted (string): IP address or subnet to check against.
+    ip (string): IP address to verify.
+    whitelist (string): IP addresses or subnets to check against (separated
+        by a comma).
 
-    return (bool): whether client equals wanted (if the latter is an IP
-        address) or client belongs to wanted (if it's a subnet).
+    return (bool): whether client is equal to one of the IPs in the whitelist
+        or client belongs to one of the subnets in the whitelist.
 
     """
-    wanted, sep, subnet = wanted.partition('/')
-    subnet = 32 if sep == "" else int(subnet)
-    snmask = 2 ** 32 - 2 ** (32 - subnet)
-    wanted = struct.unpack(">I", socket.inet_aton(wanted))[0]
-    client = struct.unpack(">I", socket.inet_aton(client))[0]
-    return (wanted & snmask) == (client & snmask)
+    for wanted in whitelist.split(","):
+        wanted, sep, subnet = wanted.partition('/')
+
+        subnet = 32 if sep == "" else int(subnet)
+        snmask = 2 ** 32 - 2 ** (32 - subnet)
+        wanted = struct.unpack(">I", socket.inet_aton(wanted))[0]
+        client = struct.unpack(">I", socket.inet_aton(ip))[0]
+
+        if (wanted & snmask) == (client & snmask):
+            return True
+
+    return False
 
 
 class BaseHandler(CommonRequestHandler):
