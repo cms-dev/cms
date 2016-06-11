@@ -118,18 +118,19 @@ def parse_datetime(value):
         raise ValueError("Can't cast %s to datetime." % value)
 
 
-def parse_ip_address_or_subnet(value):
-    """Validate an IP address or subnet."""
-    address, sep, subnet = value.partition("/")
-    if sep != "":
-        subnet = int(subnet)
-        assert 0 <= subnet < 32
-    fields = address.split(".")
-    assert len(fields) == 4
-    for field in fields:
-        num = int(field)
-        assert 0 <= num < 256
-    return value
+def parse_ip_address_or_subnet(ip_list):
+    """Validate a comma-separated list of IP addresses or subnets."""
+    for value in ip_list.split(","):
+        address, sep, subnet = value.partition("/")
+        if sep != "":
+            subnet = int(subnet)
+            assert 0 <= subnet < 32
+        fields = address.split(".")
+        assert len(fields) == 4
+        for field in fields:
+            num = int(field)
+            assert 0 <= num < 256
+    return ip_list
 
 
 def require_permission(permission="authenticated", self_allowed=False):
