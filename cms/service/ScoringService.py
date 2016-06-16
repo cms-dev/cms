@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import logging
 
 from cms import ServiceCoord, config
@@ -103,8 +104,10 @@ class ScoringExecutor(Executor):
                 submission_result.score_details, \
                 submission_result.public_score, \
                 submission_result.public_score_details, \
-                submission_result.ranking_score_details = \
+                ranking_score_details = \
                 score_type.compute_score(submission_result)
+            submission_result.ranking_score_details = \
+                json.dumps(ranking_score_details)
 
             # Store it.
             session.commit()

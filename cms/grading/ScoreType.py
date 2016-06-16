@@ -143,10 +143,11 @@ class ScoreType(object):
             result of which we want the score
 
         returns (float, str, float, str, [str]): respectively: the
-            score, the HTML string with additional information (e.g.
-            testcases' and subtasks' score), and the same information
-            from the point of view of a user that did not play a
-            token, the list of strings to send to RWS.
+            score, the opaque data with additional information (e.g.
+            testcases' and subtasks' score) that will be converted to
+            HTML by get_html_details, and the same information from the
+            point of view of a user that did not play a token, the list
+            of strings to send to RWS.
 
         """
         logger.error("Unimplemented method compute_score.")
@@ -257,9 +258,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
                         {{ _("N/A") }}
             {% end %}
                     </td>
+                </tr>
         {% else %}
                 <tr class="undefined">
-                    <td colspan="4">
+                    <td colspan="5">
                         {{ _("N/A") }}
                     </td>
                 </tr>
@@ -398,7 +400,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         return score, json.dumps(subtasks), \
             public_score, json.dumps(public_subtasks), \
-            json.dumps(ranking_details)
+            ranking_details
 
     def get_public_outcome(self, unused_outcome, unused_parameter):
         """Return a public outcome from an outcome.
