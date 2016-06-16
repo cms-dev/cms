@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,6 +32,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import gevent
+import json
 import random
 import unittest
 from mock import Mock, call
@@ -65,7 +67,7 @@ class TestScoringService(unittest.TestCase):
                 sr.score_details,
                 sr.public_score,
                 sr.public_score_details,
-                sr.ranking_score_details) == score_info
+                json.loads(sr.ranking_score_details)) == score_info
 
     def test_new_evaluation_two(self):
         """More than one submissions in the queue.
