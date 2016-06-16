@@ -60,23 +60,17 @@
         <a class="details">{{ _("details") }}</a>
     </td>
 
-    {% if score_type is not None and score_type.max_public_score != 0 %}
+    {% if score_type.max_public_score > 0 %}
     <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) }}">
-            {{ "%g" % round(sr.public_score, task.score_precision) }} / {{ "%g" % round(score_type.max_public_score, task.score_precision) }}
+        {{ score_type.format_score(sr.public_score, score_type.max_public_score, sr.public_score_details, task.score_precision, _) }}
     </td>
     {% end %}
 
-    {% if score_type is not None and score_type.max_public_score != score_type.max_score %}
+    {% if score_type.max_public_score != score_type.max_score %}
         {% if s.token is not None %}
-            {% if score_type.max_score != 0 %}
     <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
-        {{ "%g" % round(sr.score, task.score_precision) }} / {{ "%g" % round(score_type.max_score, task.score_precision) }}
+        {{ score_type.format_score(sr.score, score_type.max_score, sr.score_details, task.score_precision, _) }}
     </td>
-            {% else %}
-    <td class="total_score">
-        {{ "%g" % round(sr.score, task.score_precision) }}
-    </td>
-            {% end %}
         {% else %}
     <td class="total_score undefined">
         {{ _("N/A") }}
