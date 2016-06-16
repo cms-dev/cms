@@ -43,20 +43,15 @@ update_submission_row = function (submission_id, data) {
     row.children("td.status").html(data["status_text"]);
     if (data["status"] == {{ SubmissionResult.SCORED }}) {
         if (data["public_score"] != undefined) {
-            var public_score = data["public_score"];
-            if (data["max_public_score"] != undefined) {
-                row.children("td.public_score").addClass(get_score_class(parseFloat(data["public_score"]), parseFloat(data["max_public_score"])));
-                public_score += " / " + data["max_public_score"];
-            }
-            row.children("td.public_score").removeClass("undefined").html(public_score);
+            row.children("td.public_score").addClass(get_score_class(data["public_score"], data["max_public_score"]));
+            row.children("td.public_score").removeClass("undefined");
+            row.children("td.public_score").html(data["public_score_message"]);
         }
         if (data["score"] != undefined) {
-            var score = data["score"];
-            if (data["max_score"] != undefined) {
-                row.children("td.total_score").addClass(get_score_class(parseFloat(data["score"]), parseFloat(data["max_score"])));
-                score += " / " + data["max_score"];
-            }
-            row.children("td.total_score").removeClass("undefined").html(score);
+            // This element may not exist, if max_public_score == max_score.
+            row.children("td.total_score").addClass(get_score_class(data["score"], data["max_score"]));
+            row.children("td.total_score").removeClass("undefined");
+            row.children("td.total_score").html(data["score_message"]);
         }
     } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
         schedule_update_submission_row(submission_id);

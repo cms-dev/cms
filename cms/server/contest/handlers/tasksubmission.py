@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -466,17 +466,22 @@ class SubmissionStatusHandler(BaseHandler):
                 self._("Evaluated"), self._("details"))
 
             score_type = get_score_type(dataset=task.active_dataset)
-            if score_type is not None and score_type.max_public_score != 0:
-                data["max_public_score"] = "%g" % \
+            if score_type.max_public_score > 0:
+                data["max_public_score"] = \
                     round(score_type.max_public_score, task.score_precision)
-            data["public_score"] = "%g" % \
-                round(sr.public_score, task.score_precision)
+                data["public_score"] = \
+                    round(sr.public_score, task.score_precision)
+                data["public_score_message"] = score_type.format_score(
+                    sr.public_score, score_type.max_public_score,
+                    sr.public_score_details, task.score_precision, self._)
             if submission.token is not None:
-                if score_type is not None and score_type.max_score != 0:
-                    data["max_score"] = "%g" % \
-                        round(score_type.max_score, task.score_precision)
-                data["score"] = "%g" % \
+                data["max_score"] = \
+                    round(score_type.max_score, task.score_precision)
+                data["score"] = \
                     round(sr.score, task.score_precision)
+                data["score_message"] = score_type.format_score(
+                    sr.score, score_type.max_score,
+                    sr.score_details, task.score_precision, self._)
 
         self.write(data)
 
