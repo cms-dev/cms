@@ -91,6 +91,13 @@ The flag ``-a`` informs ResourceService that it has to start all other services,
 
 Note that it is your duty to keep CMS's configuration synchronized among the machines.
 
+You should now be able to start exploring the admin interface, by default at http://localhost:8889/. The interface is accessible with an admin account, which you need to create first using the AddAdmin command, for example:
+
+.. sourcecode:: bash
+
+    cmsAddAdmin name
+
+CMS will create an admin account with username "name" and a random password that will be printed by the command. You can log in with this credentials, and then use the admin interface to modify the account or add other accounts.
 
 .. _running-cms_recommended-setup:
 
