@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -350,8 +350,8 @@ class ResourceService(Service):
             try:
                 proc_info = proc.as_dict(attrs=PSUTIL_PROC_ATTRS)
                 dic["since"] = self._last_saved_time - proc_info["create_time"]
-                dic["resident"], dic["virtual"] = \
-                    (x // B_TO_MB for x in proc_info["memory_info"])
+                dic["resident"] = proc_info["memory_info"].rss // B_TO_MB
+                dic["virtual"] = proc_info["memory_info"].vms // B_TO_MB
                 cpu_times = proc_info["cpu_times"]
                 dic["user"] = int(
                     round((cpu_times[0] -
