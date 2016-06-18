@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -99,8 +99,12 @@ class TestRPC(unittest.TestCase):
 
     def kill_listener(self):
         """Stop listening."""
-        self._server.stop()
-        del self._server
+        # Some code may kill the listener in the middle of a test, and
+        # plan to spawn a new one aftwerards. Yet if the test fails
+        # then upon tearDown _server will still be unset.
+        if hasattr(self, "_server"):
+            self._server.stop()
+            del self._server
         # We leave self.host and self.port.
 
     def get_server(self, socket_, address):
