@@ -273,6 +273,7 @@ class BaseHandler(CommonRequestHandler):
         ret["printing_enabled"] = (config.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions
         ret["testing_enabled"] = self.contest.allow_user_tests
+        ret["simple_submission_detail"] = self.contest.simple_submission_detail
 
         if self.current_user is not None:
             participation = self.current_user

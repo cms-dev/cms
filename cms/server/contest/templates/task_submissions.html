@@ -42,7 +42,13 @@ update_submission_row = function (submission_id, data) {
     row.attr("data-status", data["status"]);
     row.children("td.status").html(data["status_text"]);
     if (data["status"] == {{ SubmissionResult.SCORED }}) {
-        if (data["public_score"] != undefined) {
+        if (data["public_message"] != undefined) {
+            var public_message = data["public_message"];
+            var score_class = data["score_class"];
+            row.children("td.public_score").addClass(score_class);
+            row.children("td.public_score").removeClass("undefined").html(public_message);
+        }
+        else if (data["public_score"] != undefined) {
             var public_score = data["public_score"];
             if (data["max_public_score"] != undefined) {
                 row.children("td.public_score").addClass(get_score_class(parseFloat(data["public_score"]), parseFloat(data["max_public_score"])));
@@ -230,7 +236,11 @@ $(document).ready(function () {
             <th class="public_score">{{ _("Public score") }}</th>
             <th class="total_score">{{ _("Total score") }}</th>
 {% else %}
+    {% if simple_submission_detail %}
+            <th class="total_score">{{ _("Result") }}</th>
+    {% else %}
             <th class="total_score">{{ _("Score") }}</th>
+    {% end %}
 {% end %}
 {% if submissions_download_allowed %}
             <th class="files">{{ _("Files") }}</th>

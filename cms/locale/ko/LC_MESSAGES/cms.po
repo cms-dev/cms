@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-01 15:57+0900\n"
+"POT-Creation-Date: 2016-05-20 16:32+0000\n"
 "PO-Revision-Date: 2016-03-02 15:51+0900\n"
 "Last-Translator: Myungwoo Chun <mc.tamaki@gmail.com>\n"
 "Language-Team: Korean\n"
@@ -915,6 +915,12 @@ msgstr "표준 출력"
 msgid "Standard error"
 msgstr "표준 에러"
 
+msgid "Accepted"
+msgstr "Accepted"
+
+msgid "Rejected"
+msgstr "Rejected"
+
 msgid "None"
 msgstr "없음"
 
@@ -1044,6 +1050,9 @@ msgstr "공개 점수"
 
 msgid "Total score"
 msgstr "총 점수"
+
+msgid "Result"
+msgstr "결과"
 
 msgid "Score"
 msgstr "점수"

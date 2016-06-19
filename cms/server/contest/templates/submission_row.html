@@ -62,7 +62,15 @@
 
     {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) }}">
+        {% if simple_submission_detail and score_type.max_public_score == score_type.max_score %}
+            {% if sr.public_score == score_type.max_public_score %}
+                {{ _("Accepted") }}
+            {% else %}
+                {{ _("Rejected") }}
+            {% end %}
+        {% else %}
             {{ "%g" % round(sr.public_score, task.score_precision) }} / {{ "%g" % round(score_type.max_public_score, task.score_precision) }}
+        {% end %}
     </td>
     {% end %}
 

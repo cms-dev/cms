@@ -101,6 +101,13 @@ class Contest(Base):
         nullable=False,
         default=True)
 
+    # Whether show only first not correct testcase for each subtasks..
+    # It's useful for ICPC
+    simple_submission_detail = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Whether to prevent hidden participations to log in.
     block_hidden_participations = Column(
         Boolean,

@@ -83,7 +83,7 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 23
+version = 24
 
 
 engine = create_engine(config.database, echo=config.database_debug,
