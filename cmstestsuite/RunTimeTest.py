@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -90,7 +90,7 @@ def main():
     CONFIG["COVERAGE"] = False
 
     test_list = [Test('batch',
-                      task=batch_50, filename='correct-stdio.%l',
+                      task=batch_50, filenames=['correct-stdio.%l'],
                       languages=LANG_C, checks=[])
                  for _ in range(args.submissions)]
 
