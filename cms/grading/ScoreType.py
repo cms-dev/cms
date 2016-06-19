@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 wafrelka <wafrelka@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -73,6 +73,31 @@ class ScoreType(object):
         self.max_score, self.max_public_score, self.ranking_headers = \
             self.max_scores()
 
+    @staticmethod
+    def format_score(score, max_score, unused_score_details,
+                     score_precision, unused_translator=None):
+        """Produce the string of the score that is shown in CWS.
+
+        In the submission table in the task page of CWS the global
+        score of the submission is shown (the sum of all subtask and
+        testcases). This method is in charge of producing the actual
+        text that is shown there. It can be overridden to provide a
+        custom message (e.g. "Accepted"/"Rejected").
+
+        score (float): the global score of the submission.
+        max_score (float): the maximum score that can be achieved.
+        unused_score_details (string): the opaque data structure that
+            the ScoreType produced for the submission when scoring it.
+        score_precision (int): the maximum number of digits of the
+            fractional digits to show.
+        unused_translator (function): a function to localize text.
+
+        return (string): the message to show.
+
+        """
+        return "%g / %g" % (round(score, score_precision),
+                            round(max_score, score_precision))
+
     def get_html_details(self, score_details, translator=None):
         """Return an HTML string representing the score details of a
         submission.
@@ -119,10 +144,11 @@ class ScoreType(object):
             result of which we want the score
 
         returns (float, str, float, str, [str]): respectively: the
-            score, the HTML string with additional information (e.g.
-            testcases' and subtasks' score), and the same information
-            from the point of view of a user that did not play a
-            token, the list of strings to send to RWS.
+            score, the opaque data with additional information (e.g.
+            testcases' and subtasks' score) that will be converted to
+            HTML by get_html_details, and the same information from the
+            point of view of a user that did not play a token, the list
+            of strings to send to RWS.
 
         """
         logger.error("Unimplemented method compute_score.")
@@ -233,9 +259,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
                         {{ _("N/A") }}
             {% end %}
                     </td>
+                </tr>
         {% else %}
                 <tr class="undefined">
-                    <td colspan="4">
+                    <td colspan="5">
                         {{ _("N/A") }}
                     </td>
                 </tr>
@@ -315,8 +342,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
-            return 0.0, "[]", 0.0, "[]", \
-                json.dumps(["%lg" % 0.0 for _ in self.parameters])
+            return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
 
         targets = self.retrieve_target_testcases()
         evaluations = dict((ev.codename, ev)
@@ -374,7 +400,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         return score, json.dumps(subtasks), \
             public_score, json.dumps(public_subtasks), \
-            json.dumps(ranking_details)
+            ranking_details
 
     def get_public_outcome(self, unused_outcome, unused_parameter):
         """Return a public outcome from an outcome.
