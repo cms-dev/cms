@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -688,6 +688,10 @@ class CommonRequestHandler(RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.sql_session = Session()
         self.sql_session.expire_all()
+
+    @property
+    def service(self):
+        return self.application.service
 
     def redirect(self, url):
         url = get_url_root(self.request.path) + url

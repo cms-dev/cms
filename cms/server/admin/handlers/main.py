@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
@@ -82,7 +82,7 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
 
         logger.info("Admin logged in: %s from IP %s.",
                     filter_ascii(username), self.request.remote_ip)
-        self.set_cookie_action("create:%s" % admin.id)
+        self.service.auth_handler.set(admin.id)
         self.redirect(next_page)
 
 
@@ -91,7 +91,7 @@ class LogoutHandler(BaseHandler):
 
     """
     def get(self):
-        self.set_cookie_action("delete")
+        self.service.auth_handler.clear()
         self.redirect("/")
 
 
