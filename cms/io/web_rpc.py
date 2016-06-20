@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,8 +27,8 @@ import logging
 
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
-from werkzeug.exceptions import HTTPException, BadRequest, NotFound, \
-    NotAcceptable, UnsupportedMediaType, ServiceUnavailable
+from werkzeug.exceptions import HTTPException, BadRequest, Forbidden, \
+    NotFound, NotAcceptable, UnsupportedMediaType, ServiceUnavailable
 from werkzeug.wsgi import responder
 
 from cms import ServiceCoord
@@ -110,21 +110,17 @@ class RPCMiddleware(object):
 
         assert endpoint == "rpc"
 
-        response = Response()
-
-        if self._auth is not None and not self._auth(environ):
-            response.status_code = 403
-            response.mimetype = "plain/text"
-            response.data = "Request not allowed."
-            return response
-
-        request = Request(environ)
-        request.encoding_errors = "strict"
-
         remote_service = ServiceCoord(args['service'], args['shard'])
 
         if remote_service not in self._service.remote_services:
             return NotFound()
+
+        if self._auth is not None and not self._auth(
+                args['service'], args['shard'], args['method']):
+            return Forbidden()
+
+        request = Request(environ)
+        request.encoding_errors = "strict"
 
         # TODO Check content_encoding and content_md5.
 
@@ -147,6 +143,8 @@ class RPCMiddleware(object):
 
         # XXX We could set a timeout on the .wait().
         result.wait()
+
+        response = Response()
 
         response.status_code = 200
         response.mimetype = "application/json"
