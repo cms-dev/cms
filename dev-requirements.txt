@@ -1,5 +1,5 @@
 # Only for testing
-BeautifulSoup==3.2.1
+beautifulsoup4==4.5.3
 coverage==4.3.4
 mock==2.0.0
 mechanize==0.3.1
