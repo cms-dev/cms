@@ -1,5 +1,6 @@
 # Only for testing
-BeautifulSoup==3.2.1
+# Ubuntu 12.04 ships 4.0, Ubuntu 14.04 ships 4.2, Ubuntu 16.04 ships 4.4.
+beautifulsoup4>=4.2
 coverage==3.7.1
 mock==1.0.1
 mechanize==0.2.5
