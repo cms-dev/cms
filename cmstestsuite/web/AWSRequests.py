@@ -49,8 +49,8 @@ class AWSSubmissionViewRequest(GenericRequest):
     """Load the view of a submission in AWS.
 
     """
-    def __init__(self, session, submission_id, base_url=None):
-        GenericRequest.__init__(self, session, base_url)
+    def __init__(self, browser, submission_id, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
         self.submission_id = submission_id
         self.url = "%ssubmission/%s" % (self.base_url, submission_id)
 
@@ -106,8 +106,8 @@ class AWSSubmissionViewRequest(GenericRequest):
 
 class AWSUserTestViewRequest(GenericRequest):
     """Load the view of a user test in AWS."""
-    def __init__(self, session, user_test_id, base_url=None):
-        GenericRequest.__init__(self, session, base_url)
+    def __init__(self, browser, user_test_id, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
         self.user_test_id = user_test_id
         self.url = "%suser_test/%s" % (self.base_url, user_test_id)
 
