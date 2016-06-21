@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
@@ -29,7 +29,6 @@ import atexit
 import errno
 import io
 import json
-import mechanize
 import os
 import re
 import signal
@@ -38,7 +37,9 @@ import subprocess
 import time
 from urlparse import urlsplit
 
-from cmstestsuite.web import browser_do_request
+import requests
+
+from cmstestsuite.web import session_do_request
 from cmstestsuite.web.AWSRequests import \
     AWSLoginRequest, AWSSubmissionViewRequest
 from cmstestsuite.web.CWSRequests import CWSLoginRequest, SubmitRequest
@@ -74,33 +75,30 @@ AWS_BASE_URL = "http://localhost:8889/"
 CWS_BASE_URL = "http://localhost:8888/"
 
 
-# Persistent browsers to access AWS and CWS.
-aws_browser = None
-cws_browser = None
+# Sessions to access AWS and CWS.
+aws_session = None
+cws_session = None
 
 
-def get_aws_browser():
-    global aws_browser
-    if aws_browser is None:
-        aws_browser = mechanize.Browser()
-        aws_browser.set_handle_robots(False)
-        AWSLoginRequest(aws_browser,
+def get_aws_session():
+    global aws_session
+    if aws_session is None:
+        aws_session = requests.Session()
+        AWSLoginRequest(aws_session,
                         admin_info["username"], admin_info["password"],
                         base_url=AWS_BASE_URL).execute()
-    return aws_browser
+    return aws_session
 
 
-def get_cws_browser(user_id):
-    global cws_browser
-    if cws_browser is None:
-        cws_browser = mechanize.Browser()
-        cws_browser.set_handle_robots(False)
-        cws_browser.set_handle_redirect(False)
+def get_cws_session(user_id):
+    global cws_session
+    if cws_session is None:
+        cws_session = requests.Session()
         username = created_users[user_id]['username']
         password = created_users[user_id]['password']
         CWSLoginRequest(
-            cws_browser, username, password, base_url=CWS_BASE_URL).execute()
-    return cws_browser
+            cws_session, username, password, base_url=CWS_BASE_URL).execute()
+    return cws_session
 
 
 class FrameworkException(Exception):
@@ -399,14 +397,9 @@ def initialize_aws(rand):
        % admin_info)
 
 
-def admin_req(path, multipart_post=False, args=None, files=None):
-    # Some requests must be forced to be multipart.
-    # Do this by making files not None.
-    if multipart_post and files is None:
-        files = []
-
-    browser = get_aws_browser()
-    return browser_do_request(browser, AWS_BASE_URL + path, args, files)
+def admin_req(path, args=None, files=None):
+    session = get_aws_session()
+    return session_do_request(session, AWS_BASE_URL + path, args, files)
 
 
 def get_tasks():
@@ -419,7 +412,7 @@ def get_tasks():
         <tr>\s*
         <td><a\s+href="./task/(\d+)">(.*)</a></td>\s*
         <td>(.*)</td>\s*
-        ''', r.read(), re.X)
+        ''', r.text, re.X)
     tasks = {}
     for g in groups:
         id, name, title = g
@@ -443,7 +436,7 @@ def get_users(contest_id):
         <td> \s* (.*) \s* </td> \s*
         <td> \s* (.*) \s* </td> \s*
         <td><a\s+href="./user/(\d+)">(.*)</a></td>
-    ''', r.read(), re.X)
+    ''', r.text, re.X)
     users = {}
     for g in groups:
         firstname, lastname, id, username = g
@@ -462,16 +455,16 @@ def add_contest(**kwargs):
         "name": kwargs.get('name'),
         "description": kwargs.get('description'),
     }
-    resp = admin_req('contests/add', multipart_post=True, args=add_args)
+    resp = admin_req('contests/add', args=add_args)
     # Contest ID is returned as HTTP response.
-    page = resp.read()
+    page = resp.text
     match = re.search(
         r'<form enctype="multipart/form-data" action="../contest/([0-9]+)" '
         'method="POST" name="edit_contest">',
         page)
     if match is not None:
         contest_id = int(match.groups()[0])
-        admin_req('contest/%s' % contest_id, multipart_post=True, args=kwargs)
+        admin_req('contest/%s' % contest_id, args=kwargs)
         return contest_id
     else:
         raise FrameworkException("Unable to create contest.")
@@ -482,9 +475,9 @@ def add_task(**kwargs):
         "name": kwargs.get('name'),
         "title": kwargs.get('title'),
     }
-    r = admin_req('tasks/add', multipart_post=True, args=add_args)
-    response = r.read()
-    match_task_id = re.search(r'/task/([0-9]+)$', r.geturl())
+    r = admin_req('tasks/add', args=add_args)
+    response = r.text
+    match_task_id = re.search(r'/task/([0-9]+)$', r.url)
     match_dataset_id = re.search(r'/dataset/([0-9]+)', response)
     if match_task_id and match_dataset_id:
         task_id = int(match_task_id.group(1))
@@ -492,18 +485,15 @@ def add_task(**kwargs):
         edit_args = {}
         for k, v in kwargs.iteritems():
             edit_args[k.replace("{{dataset_id}}", str(dataset_id))] = v
-        r = admin_req('task/%s' % task_id,
-                      multipart_post=True,
-                      args=edit_args)
+        r = admin_req('task/%s' % task_id, args=edit_args)
         created_tasks[task_id] = kwargs
     else:
         raise FrameworkException("Unable to create task.")
 
     r = admin_req('contest/' + kwargs["contest_id"] + '/tasks/add',
-                  multipart_post=True,
                   args={"task_id": str(task_id)})
     g = re.search('<input type="radio" name="task_id" value="' +
-                  str(task_id) + '"/>', r.read())
+                  str(task_id) + '"/>', r.text)
     if g:
         return task_id
     else:
@@ -516,13 +506,12 @@ def add_manager(task_id, manager):
         ('manager', manager),
     ]
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('dataset/%d/managers/add' % dataset_id,
-              multipart_post=True, files=files, args=args)
+    admin_req('dataset/%d/managers/add' % dataset_id, files=files, args=args)
 
 
 def get_task_active_dataset_id(task_id):
     resp = admin_req('task/%d' % task_id)
-    page = resp.read()
+    page = resp.text
     match = re.search(
         r'id="title_dataset_([0-9]+).* \(Live\)</',
         page)
@@ -542,13 +531,12 @@ def add_testcase(task_id, num, input_file, output_file, public):
     if public:
         args['public'] = '1'
     dataset_id = get_task_active_dataset_id(task_id)
-    admin_req('dataset/%d/testcases/add' % dataset_id,
-              multipart_post=True, files=files, args=args)
+    admin_req('dataset/%d/testcases/add' % dataset_id, files=files, args=args)
 
 
 def add_user(**kwargs):
     r = admin_req('users/add', args=kwargs)
-    g = re.search(r'/user/([0-9]+)$', r.geturl())
+    g = re.search(r'/user/([0-9]+)$', r.url)
     if g:
         user_id = int(g.group(1))
         created_users[user_id] = kwargs
@@ -559,7 +547,7 @@ def add_user(**kwargs):
     r = admin_req('contest/' + kwargs["contest_id"] + '/users/add',
                   args=kwargs)
     g = re.search('<input type="radio" name="user_id" value="' +
-                  str(user_id) + '"/>', r.read())
+                  str(user_id) + '"/>', r.text)
     if g:
         return user_id
     else:
@@ -582,8 +570,8 @@ def cws_submit(contest_id, task_id, user_id, submission_format,
                filenames, language):
     task = (task_id, created_tasks[task_id]['name'])
 
-    browser = get_cws_browser(user_id)
-    sr = SubmitRequest(browser, task, base_url=CWS_BASE_URL,
+    session = get_cws_session(user_id)
+    sr = SubmitRequest(session, task, base_url=CWS_BASE_URL,
                        submission_format=submission_format,
                        filenames=filenames)
     sr.execute()
@@ -601,12 +589,12 @@ def get_evaluation_result(contest_id, submission_id, timeout=60):
     COMPLETED_STATUS = re.compile(
         r'Compilation failed|Evaluated \(|Scored \(')
 
-    browser = get_aws_browser()
+    session = get_aws_session()
     sleep_interval = 0.1
     while timeout > 0:
         timeout -= sleep_interval
 
-        sr = AWSSubmissionViewRequest(browser,
+        sr = AWSSubmissionViewRequest(session,
                                       submission_id,
                                       base_url=AWS_BASE_URL)
         sr.execute()

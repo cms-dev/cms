@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -48,8 +49,9 @@ import tempfile
 import time
 
 from argparse import ArgumentParser
-from mechanize import Browser
 from threading import Thread, RLock
+
+import requests
 
 from cms import config, utf8_decoder
 from cmscontrib.ContestImporter import ContestImporter
@@ -220,11 +222,10 @@ class ContestReplayer(object):
             file_["filename"] = temp_filename
 
         filename = os.path.join(files[0]["filename"])
-        browser = Browser()
-        browser.set_handle_robots(False)
-        LoginRequest(browser, username, password,
+        session = requests.Session()
+        LoginRequest(session, username, password,
                      base_url=self.cws_address).execute()
-        SubmitRequest(browser,
+        SubmitRequest(session,
                       (int(t_id), t_short),
                       filename=filename,
                       base_url=self.cws_address).execute()
@@ -244,11 +245,10 @@ class ContestReplayer(object):
         """
         logger.info("%s - Playing token for %s on task %s",
                     to_time(timestamp), username, t_short)
-        browser = Browser()
-        browser.set_handle_robots(False)
-        LoginRequest(browser, username, password,
+        session = requests.Session()
+        LoginRequest(session, username, password,
                      base_url=self.cws_address).execute()
-        TokenRequest(browser,
+        TokenRequest(session,
                      (int(t_id), t_short),
                      submission_num=submission_num,
                      base_url=self.cws_address).execute()

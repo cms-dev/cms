@@ -6,6 +6,7 @@
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,11 +29,12 @@ import ast
 import io
 import os
 import sys
-import mechanize
 import threading
 import optparse
 import random
 import time
+
+import requests
 
 from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
@@ -132,7 +134,7 @@ class Actor(threading.Thread):
 
         self.name = "Actor thread for user %s" % (self.username)
 
-        self.browser = mechanize.Browser()
+        self.session = requests.Session()
         self.die = False
 
     def run(self):
@@ -195,15 +197,15 @@ class Actor(threading.Thread):
 
     def login(self):
         """Log in and check to be logged in."""
-        self.do_step(HomepageRequest(self.browser,
+        self.do_step(HomepageRequest(self.session,
                                      self.username,
                                      loggedin=False,
                                      base_url=self.base_url))
-        self.do_step(LoginRequest(self.browser,
+        self.do_step(LoginRequest(self.session,
                                   self.username,
                                   self.password,
                                   base_url=self.base_url))
-        self.do_step(HomepageRequest(self.browser,
+        self.do_step(HomepageRequest(self.session,
                                      self.username,
                                      loggedin=True,
                                      base_url=self.base_url))
@@ -219,17 +221,17 @@ class RandomActor(Actor):
             task = random.choice(self.tasks)
             if choice < 0.1 and self.submissions_path is not None:
                 self.do_step(SubmitRandomRequest(
-                    self.browser,
+                    self.session,
                     task,
                     base_url=self.base_url,
                     submissions_path=self.submissions_path))
             elif choice < 0.6 and task[2] != []:
-                self.do_step(TaskStatementRequest(self.browser,
+                self.do_step(TaskStatementRequest(self.session,
                                                   task[1],
                                                   random.choice(task[2]),
                                                   base_url=self.base_url))
             else:
-                self.do_step(TaskRequest(self.browser,
+                self.do_step(TaskRequest(self.session,
                                          task[1],
                                          base_url=self.base_url))
 
@@ -243,7 +245,7 @@ class SubmitActor(Actor):
         while True:
             task = random.choice(self.tasks)
             self.do_step(SubmitRandomRequest(
-                self.browser,
+                self.session,
                 task,
                 base_url=self.base_url,
                 submissions_path=self.submissions_path))

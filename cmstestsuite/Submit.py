@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,8 +25,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import mechanize
 import optparse
+
+import requests
 
 from cms.db import Contest, SessionGen
 
@@ -55,20 +57,18 @@ def harvest_contest_data(contest_id):
 
 
 def submit_solution(username, password, task, files, base_url=None):
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
+    session = requests.Session()
 
-    LoginRequest(browser, username, password, base_url=base_url).execute()
+    LoginRequest(session, username, password, base_url=base_url).execute()
     SubmitRequest(
-        browser, task, base_url=base_url, filename=files[0]).execute()
+        session, task, base_url=base_url, filename=files[0]).execute()
 
 
 def release_test(username, password, task, submission_num, base_url=None):
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
+    session = requests.Session()
 
-    LoginRequest(browser, username, password, base_url=base_url).execute()
-    TokenRequest(browser, task, base_url=base_url,
+    LoginRequest(session, username, password, base_url=base_url).execute()
+    TokenRequest(session, task, base_url=base_url,
                  submission_num=submission_num).execute()
 
 

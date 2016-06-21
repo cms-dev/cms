@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -48,8 +49,9 @@ import sys
 import time
 
 from argparse import ArgumentParser
-from mechanize import Browser
 from threading import Thread
+
+import requests
 
 from cms import utf8_decoder
 from cmstestsuite.web.CWSRequests import \
@@ -106,10 +108,9 @@ def submit(timestamp, username, t_id, t_short, files, base_url):
     """
     print("\n%s - Submitting for %s on task %s" %
           (to_time(timestamp), username, t_short), end='')
-    browser = Browser()
-    browser.set_handle_robots(False)
-    LoginRequest(browser, username, "", base_url=base_url).execute()
-    SubmitRequest(browser,
+    session = requests.Session()
+    LoginRequest(session, username, "", base_url=base_url).execute()
+    SubmitRequest(session,
                   (int(t_id), t_short),
                   filename=files[0],
                   base_url=base_url).execute()
@@ -128,10 +129,9 @@ def token(timestamp, username, t_id, t_short, submission_num, base_url):
     """
     print("\n%s - Playing token for %s on task %s" %
           (to_time(timestamp), username, t_short), end='')
-    browser = Browser()
-    browser.set_handle_robots(False)
-    LoginRequest(browser, username, "", base_url=base_url).execute()
-    TokenRequest(browser,
+    session = requests.Session()
+    LoginRequest(session, username, "", base_url=base_url).execute()
+    TokenRequest(session,
                  (int(t_id), t_short),
                  submission_num=submission_num,
                  base_url=base_url).execute()
