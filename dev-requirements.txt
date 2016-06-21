@@ -2,7 +2,6 @@
 beautifulsoup4==4.5.3
 coverage==4.3.4
 mock==2.0.0
-mechanize==0.3.1
 
 # Only for building documentation
 Sphinx==1.5.3
