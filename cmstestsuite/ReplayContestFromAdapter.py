@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -48,10 +49,10 @@ import sys
 import time
 
 from argparse import ArgumentParser
-from mechanize import Browser
 from threading import Thread
 
 from cms import utf8_decoder
+from cmstestsuite.web import Browser
 from cmstestsuite.web.CWSRequests import \
     LoginRequest, SubmitRequest, TokenRequest
 
@@ -107,7 +108,6 @@ def submit(timestamp, username, t_id, t_short, files, base_url):
     print("\n%s - Submitting for %s on task %s" %
           (to_time(timestamp), username, t_short), end='')
     browser = Browser()
-    browser.set_handle_robots(False)
     LoginRequest(browser, username, "", base_url=base_url).execute()
     SubmitRequest(browser,
                   (int(t_id), t_short),
@@ -129,7 +129,6 @@ def token(timestamp, username, t_id, t_short, submission_num, base_url):
     print("\n%s - Playing token for %s on task %s" %
           (to_time(timestamp), username, t_short), end='')
     browser = Browser()
-    browser.set_handle_robots(False)
     LoginRequest(browser, username, "", base_url=base_url).execute()
     TokenRequest(browser,
                  (int(t_id), t_short),

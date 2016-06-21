@@ -6,6 +6,7 @@
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,7 +29,6 @@ import ast
 import io
 import os
 import sys
-import mechanize
 import threading
 import random
 import time
@@ -39,6 +39,7 @@ from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
 
 import cmstestsuite.web
+from cmstestsuite.web import Browser
 from cmstestsuite.web.CWSRequests import HomepageRequest, LoginRequest, \
     TaskRequest, TaskStatementRequest, SubmitRandomRequest
 
@@ -133,7 +134,7 @@ class Actor(threading.Thread):
 
         self.name = "Actor thread for user %s" % (self.username)
 
-        self.browser = mechanize.Browser()
+        self.browser = Browser()
         self.die = False
 
     def run(self):
