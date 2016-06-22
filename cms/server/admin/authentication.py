@@ -71,7 +71,7 @@ class AWSAuthMiddleware(object):
         """Return the ID of the admin.
 
         It's the value that has been read from the cookie and (if
-        modified by the rest of the application )will be written back.
+        modified by the rest of the application) will be written back.
 
         returns (int or None): the ID of the admin, if logged in.
 
@@ -144,9 +144,11 @@ class AWSAuthMiddleware(object):
         return self._app(environ, my_start_response)
 
     def _verify_cookie(self):
-        """Perform sanity checks on the stored cookie.
+        """Check whether the cookie is valid, and if not clear it.
 
         """
+        # Clearing an empty cookie marks it as modified and causes it
+        # to be sent in the response. This check prevents it.
         if len(self._cookie) == 0:
             return
 

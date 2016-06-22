@@ -68,8 +68,9 @@ class WebService(Service):
             self.wsgi_app = DispatcherMiddleware(
                 self.wsgi_app, {"/rpc": RPCMiddleware(self, rpc_auth)})
 
-        # It needs to be applied before the ProxyFix for the remote
-        # address to be properly recognized.
+        # The authentication middleware needs to be applied before the
+        # ProxyFix as otherwise the remote address it gets is the one
+        # of the proxy.
         if auth_middleware is not None:
             self.wsgi_app = auth_middleware(self.wsgi_app)
             self.auth_handler = self.wsgi_app
