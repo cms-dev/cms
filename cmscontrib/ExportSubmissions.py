@@ -105,6 +105,9 @@ def main():
                         help="id of user (default: all users)")
     parser.add_argument("-s", "--submission-id", action="store", type=int,
                         help="id of submission (default: all submissions)")
+    parser.add_argument("--utf8", action="store_true",
+                        help="if set, the files will be encoded in utf8"
+                             " when possible")
     parser.add_argument("--add-info", action="store_true",
                         help="if set, information on the submission will"
                              " be added in the first lines of each file")
@@ -128,6 +131,11 @@ def main():
                             " exported for each (user, task)")
 
     args = parser.parse_args()
+
+    if args.add_info and not args.utf8:
+        logger.critical("If --add-info is specified, then --utf8 must be"
+                        " specified as well.")
+        sys.exit(1)
 
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
@@ -193,20 +201,34 @@ def main():
             fso = FSObject.get_from_digest(f_digest, session)
             assert fso is not None
             with fso.get_lobject(mode="rb") as file_obj:
-                data = file_obj.read().decode('utf-8')
+                data = file_obj.read()
 
-                if args.add_info:
-                    data = TEMPLATE[s_language] % (
-                        u_name,
-                        u_fname,
-                        u_lname,
-                        t_name,
-                        sr_score,
-                        s_timestamp
-                    ) + data
+                if args.utf8:
+                    try:
+                        data = utf8_decoder(data)
+                    except TypeError:
+                        logger.critical("Could not guess encoding of file "
+                                        "'%s'. Aborting.",
+                                        filename)
+                        sys.exit(1)
 
-                with codecs.open(filename, "w", encoding="utf-8") as file_out:
-                    file_out.write(data)
+                    if args.add_info:
+                        data = TEMPLATE[s_language] % (
+                            u_name,
+                            u_fname,
+                            u_lname,
+                            t_name,
+                            sr_score,
+                            s_timestamp
+                        ) + data
+
+                    # Print utf8-encoded, possibly altered data
+                    with codecs.open(filename, "w", encoding="utf-8") as f_out:
+                        f_out.write(data)
+                else:
+                    # Print raw, untouched binary data
+                    with open(filename, "wb") as f_out:
+                        f_out.write(data)
 
             done += 1
             print(done, "/", len(results))

@@ -24,6 +24,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import chardet
 import errno
 import logging
 import netifaces
@@ -69,7 +70,8 @@ def mkdir(path):
 
 
 def utf8_decoder(value):
-    """Decode given binary to text (if it isn't already) using UTF8.
+    """Decode given binary to text (if it isn't already) using UTF8, and
+    falling back to other encodings when possible (using chardet to guess).
 
     value (string): value to decode.
 
@@ -81,9 +83,15 @@ def utf8_decoder(value):
     if isinstance(value, six.text_type):
         return value
     elif isinstance(value, six.binary_type):
-        return value.decode('utf-8')
-    else:
-        raise TypeError("Not a string.")
+        try:
+            return value.decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                return value.decode(chardet.detect(value).get("encoding"))
+            except TypeError:
+                pass
+
+    raise TypeError("Not a string.")
 
 
 class Address(namedtuple("Address", "ip port")):

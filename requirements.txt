@@ -12,6 +12,7 @@ gevent==1.0.2
 werkzeug==0.10.4
 patool==1.7
 bcrypt==2.0
+chardet==2.3
 
 # Only for some importers:
 pyyaml==3.11
