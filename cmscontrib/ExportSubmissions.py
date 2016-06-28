@@ -193,11 +193,7 @@ def main():
             fso = FSObject.get_from_digest(f_digest, session)
             assert fso is not None
             with fso.get_lobject(mode="rb") as file_obj:
-                data = file_obj.read()
-                try:
-                    data = data.decode('utf-8')
-                except UnicodeDecodeError:
-                    data = data.decode('latin-1')
+                data = utf8_decoder(file_obj.read())
 
                 if args.add_info:
                     data = TEMPLATE[s_language] % (
