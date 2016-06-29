@@ -130,7 +130,7 @@ If the "IP based autologin" option in the contest configuration is set, CWS trie
 
 .. warning::
 
-  If a reverse-proxy (like nginx) is in use then it is necessary to set ``is_proxy_used`` (in :file:`cms.conf`) to ``true`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`).
+  If a reverse-proxy (like nginx) is in use then it is necessary to set ``num_proxies_used`` (in :file:`cms.conf`) to ``1`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`). That configuration option can be set to a higher number if there are more proxies between the origin and the server.
 
 Logging in with credentials
 ---------------------------
@@ -139,7 +139,7 @@ If the autologin is not enabled, users can log in with username and password, wh
 
 A successfully logged in user needs to reauthenticate after ``cookie_duration`` seconds (specified in the :file:`cms.conf` file) from when they last visited a page.
 
-Even without autologin, it is possible to restrict the IP address or subnet that the user is using for accessing CWS, using the "IP based login restriction" option in the contest configuration (in which case, admins need to set ``is_proxy_used`` as before). If this is set, then the login will fail if the IP address that attempted it does not match the address or subnet in the IP specified for the specified participation. If the participation IP address is not set, then no restriction applies.
+Even without autologin, it is possible to restrict the IP address or subnet that the user is using for accessing CWS, using the "IP based login restriction" option in the contest configuration (in which case, admins need to set ``num_proxies_used`` as before). If this is set, then the login will fail if the IP address that attempted it does not match at least one of the addresses or subnets specified in the participation settings. If the participation IP address is not set, then no restriction applies.
 
 Failure to login
 ----------------
