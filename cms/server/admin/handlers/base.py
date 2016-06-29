@@ -48,7 +48,6 @@ from cms.db import Admin, Contest, Participation, Question, \
     Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
-from cms.io import WebService
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
 from cmscommon.datetime import make_datetime
 

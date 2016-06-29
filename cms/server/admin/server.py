@@ -31,17 +31,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
-import json
 import logging
 import pkg_resources
-
-from werkzeug.contrib.securecookie import SecureCookie
-from werkzeug.wrappers import Request, Response
 
 from cms import config, ServiceCoord, get_service_shards
 from cms.db.filecacher import FileCacher
 from cms.io import WebService
-from cmscommon.datetime import make_timestamp
 
 from .handlers import HANDLERS
 from .handlers import views
