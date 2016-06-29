@@ -84,7 +84,7 @@ def utf8_decoder(value):
         return value
     elif isinstance(value, six.binary_type):
         try:
-            return value.decode('utf-8')
+            return value.decode("utf-8")
         except UnicodeDecodeError:
             return value.decode(chardet.detect(value)["encoding"])
     else:

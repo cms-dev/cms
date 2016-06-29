@@ -217,12 +217,12 @@ def main():
                         ) + data
 
                     # Print utf8-encoded, possibly altered data
-                    with codecs.open(filename, "w", encoding="utf-8") as file_out:
-                        file_out.write(data)
+                    with codecs.open(filename, "w", encoding="utf-8") as f_out:
+                        f_out.write(data)
                 else:
                     # Print raw, untouched binary data
-                    with open(filename, "wb") as file_out:
-                        file_out.write(data)
+                    with open(filename, "wb") as f_out:
+                        f_out.write(data)
 
             done += 1
             print(done, "/", len(results))
