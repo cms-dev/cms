@@ -11,6 +11,7 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -133,19 +134,31 @@ class BaseHandler(CommonRequestHandler):
         remote_ip = self.request.remote_ip
         if self.contest.ip_autologin:
             self.clear_cookie("login")
+
             participations = self.sql_session.query(Participation)\
                 .filter(Participation.contest == self.contest)\
-                .filter(Participation.ip == remote_ip)\
-                .all()
+                .filter(Participation.ip == remote_ip)
+
+            # If hidden users are blocked we ignore them completely.
+            if self.contest.block_hidden_participations:
+                participations = participations\
+                    .filter(Participation.hidden == False)
+
+            participations = participations.all()
+
             if len(participations) == 1:
                 return participations[0]
 
+            # Having more than participation with the same IP,
+            # is a mistake and should not happen. In such case,
+            # we disallow login for that IP completely, in order to
+            # make sure the problem is noticed.
             if len(participations) > 1:
-                logger.error("Multiple users have IP %s." % (remote_ip))
-            else:
-                logger.error("No user has IP %s" % (remote_ip))
+                logger.error("Multiple participants have IP %s while"
+                             "auto-login feature is enabled." % remote_ip)
+                return None
 
-            # If IP autologin is set, we do not allow password logins.
+        if not self.contest.allow_password_authentication:
             return None
 
         if self.get_secure_cookie("login") is None:
