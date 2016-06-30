@@ -193,9 +193,9 @@ def main():
             fso = FSObject.get_from_digest(f_digest, session)
             assert fso is not None
             with fso.get_lobject(mode="rb") as file_obj:
-                data = file_obj.read().decode('utf-8')
 
                 if args.add_info:
+                    raw_data = file_obj.read().decode('utf-8')
                     data = TEMPLATE[s_language] % (
                         u_name,
                         u_fname,
@@ -203,9 +203,13 @@ def main():
                         t_name,
                         sr_score,
                         s_timestamp
-                    ) + data
+                    ) + raw_data
+                    out_options = {"encoding": "utf-8"}
+                else:
+                    data = file_obj.read()
+                    out_options = {}
 
-                with codecs.open(filename, "w", encoding="utf-8") as file_out:
+                with codecs.open(filename, "w", **out_options) as file_out:
                     file_out.write(data)
 
             done += 1
