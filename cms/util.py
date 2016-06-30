@@ -73,7 +73,7 @@ def utf8_decoder(value):
     """Decode given binary to text (if it isn't already) using UTF8, and
     falling back to other encodings when possible (using chardet to guess).
 
-    value (bytes): value to decode.
+    value (string): value to decode.
 
     return (unicode): decoded value.
 
