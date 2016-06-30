@@ -118,48 +118,106 @@ class BaseHandler(CommonRequestHandler):
         self.r_params = self.render_params()
 
     def get_current_user(self):
-        """The name is get_current_user because tornado wants it that
-        way, but this is really a get_current_participation.
+        """Return the currently logged in participation.
 
-        Gets the current participation from cookies.
+        The name is get_current_user because tornado requires that
+        name.
 
-        If a valid cookie is retrieved, return a Participation tuple
-        (specifically: the Participation involving the username
-        specified in the cookie and the current contest).
+        The participation is obtained from one of the possible sources:
+        - if IP autologin is enabled, the remote IP address is matched
+          with the participation IP address; if a match is found, that
+          participation is returned; in case of errors, None is returned;
+        - if username/password authentication is enabled, and the cookie
+          is valid, the corresponding participation is returned, and the
+          cookie is refreshed.
 
-        Otherwise (e.g. the user exists but doesn't participate in the
-        current contest), return None.
+        After finding the participation, IP login and hidden users
+        restrictions are checked.
+
+        In case of any error, or of a login by other sources, the
+        cookie is deleted.
+
+        return (Participation|None): the participation object for the
+            user logged in for the running contest.
 
         """
-        remote_ip = self.request.remote_ip
+        participation = None
+
         if self.contest.ip_autologin:
-            participations = self.sql_session.query(Participation)\
-                .filter(Participation.contest == self.contest)\
-                .filter(Participation.ip == remote_ip)
-
-            # If hidden users are blocked we ignore them completely.
-            if self.contest.block_hidden_participations:
-                participations = participations\
-                    .filter(Participation.hidden.is_(False))
-
-            participations = participations.all()
-
-            if len(participations) == 1:
-                return participations[0]
-
-            # Having more than participation with the same IP,
-            # is a mistake and should not happen. In such case,
-            # we disallow login for that IP completely, in order to
-            # make sure the problem is noticed.
-            if len(participations) > 1:
-                logger.error("Multiple participants have IP %s while"
-                             "auto-login feature is enabled." % remote_ip)
+            try:
+                participation = self._get_current_user_from_ip()
+                # If the login is IP-based, we delete previous cookies.
+                if participation is not None:
+                    self.clear_cookie("login")
+            except RuntimeError:
                 return None
 
-        if not self.contest.allow_password_authentication:
+        if participation is None \
+                and self.contest.allow_password_authentication:
+            participation = self._get_current_user_from_cookie()
+
+        if participation is None:
             self.clear_cookie("login")
             return None
 
+        # Check if user is using the right IP (or is on the right subnet),
+        # and that is not hidden if hidden users are blocked.
+        ip_login_restricted = \
+            self.contest.ip_restriction and participation.ip is not None \
+            and not check_ip(self.request.remote_ip, participation.ip)
+        hidden_user_restricted = \
+            participation.hidden and self.contest.block_hidden_participations
+        if ip_login_restricted or hidden_user_restricted:
+            self.clear_cookie("login")
+            participation = None
+
+        return participation
+
+    def _get_current_user_from_ip(self):
+        """Return the current participation based on the IP address.
+
+        return (Participation|None): the only participation matching
+            the remote IP address, or None if no participations could
+            be matched.
+
+        raise (RuntimeError): if there is more than one participation
+            matching the remote IP address.
+
+        """
+        remote_ip = self.request.remote_ip
+        participations = self.sql_session.query(Participation)\
+            .filter(Participation.contest == self.contest)\
+            .filter(Participation.ip == remote_ip)
+
+        # If hidden users are blocked we ignore them completely.
+        if self.contest.block_hidden_participations:
+            participations = participations\
+                .filter(Participation.hidden.is_(False))
+
+        participations = participations.all()
+
+        if len(participations) == 1:
+            return participations[0]
+
+        # Having more than participation with the same IP,
+        # is a mistake and should not happen. In such case,
+        # we disallow login for that IP completely, in order to
+        # make sure the problem is noticed.
+        if len(participations) > 1:
+            logger.error("%d participants have IP %s while"
+                         "auto-login feature is enabled." % (
+                             len(participations), remote_ip))
+            raise RuntimeError("More than one participants with the same IP.")
+
+    def _get_current_user_from_cookie(self):
+        """Return the current participation based on the cookie.
+
+        If a participation can be extracted, the cookie is refreshed.
+
+        return (Participation|None): the participation extracted from
+            the cookie, or None if not possible.
+
+        """
         if self.get_secure_cookie("login") is None:
             return None
 
@@ -170,57 +228,35 @@ class BaseHandler(CommonRequestHandler):
             password = cookie[1]
             last_update = make_datetime(cookie[2])
         except:
-            self.clear_cookie("login")
             return None
 
         # Check if the cookie is expired.
         if self.timestamp - last_update > \
                 timedelta(seconds=config.cookie_duration):
-            self.clear_cookie("login")
             return None
 
-        # Load user from DB.
+        # Load user from DB and make sure it exists.
         user = self.sql_session.query(User)\
             .filter(User.username == username)\
             .first()
-
-        # Check if user exists.
         if user is None:
-            self.clear_cookie("login")
             return None
 
-        # Load participation from DB.
+        # Load participation from DB and make sure it exists.
         participation = self.sql_session.query(Participation)\
             .filter(Participation.contest == self.contest)\
             .filter(Participation.user == user)\
             .first()
-
-        # Check if participaton exists.
         if participation is None:
-            self.clear_cookie("login")
             return None
 
-        # If a contest-specific password is defined, use that. If it's
-        # not, use the user's main password.
+        # Check that the password is correct (if a contest-specific
+        # password is defined, use that instead of the user password).
         if participation.password is None:
             correct_password = user.password
         else:
             correct_password = participation.password
-
-        # Check if user is allowed to login.
         if password != correct_password:
-            self.clear_cookie("login")
-            return None
-
-        # Check if user is using the right IP (or is on the right subnet)
-        if self.contest.ip_restriction and participation.ip is not None \
-                and not check_ip(self.request.remote_ip, participation.ip):
-            self.clear_cookie("login")
-            return None
-
-        # Check if user is hidden
-        if participation.hidden and self.contest.block_hidden_participations:
-            self.clear_cookie("login")
             return None
 
         if self.refresh_cookie:
