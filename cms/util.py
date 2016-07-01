@@ -86,9 +86,12 @@ def utf8_decoder(value):
         try:
             return value.decode("utf-8")
         except UnicodeDecodeError:
-            return value.decode(chardet.detect(value)["encoding"])
-    else:
-        raise TypeError("Not a string.")
+            try:
+                return value.decode(chardet.detect(value).get("encoding"))
+            except TypeError:
+                pass
+
+    raise TypeError("Not a string.")
 
 
 class Address(namedtuple("Address", "ip port")):
