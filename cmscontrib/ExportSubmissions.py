@@ -204,7 +204,13 @@ def main():
                 data = file_obj.read()
 
                 if args.utf8:
-                    data = utf8_decoder(data)
+                    try:
+                        data = utf8_decoder(data)
+                    except TypeError:
+                        logger.critical("Could not guess encoding of file "
+                                        "'%s'. Aborting.",
+                                        filename)
+                        sys.exit(1)
 
                     if args.add_info:
                         data = TEMPLATE[s_language] % (
