@@ -219,6 +219,7 @@ $(document).ready(function () {
 {% else %}
         <col class="total_score"/>
 {% end %}
+        <col class="considered_in_score"/>
 {% if submissions_download_allowed %}
         <col class="files"/>
 {% end %}
@@ -240,6 +241,7 @@ $(document).ready(function () {
 {% else %}
             <th class="total_score">{{ _("Score") }}</th>
 {% end %}
+            <th class="considered_in_score">{{ _("Official") }}</th>
 {% if submissions_download_allowed %}
             <th class="files">{{ _("Files") }}</th>
 {% end %}

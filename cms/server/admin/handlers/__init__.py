@@ -5,6 +5,7 @@
 # Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -99,6 +100,7 @@ from .admin import \
 from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
+    SubmissionOfficialStatusHandler, \
     SubmissionFileHandler
 from .usertest import \
     UserTestHandler, \
@@ -210,6 +212,8 @@ HANDLERS = [
 
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?/official",
+     SubmissionOfficialStatusHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
 
     # User tests

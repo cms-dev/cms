@@ -109,6 +109,13 @@
     {% end %}
   </td>
   <td>
+    {% if s.official %}
+    Yes
+    {% else %}
+    No
+    {% end %}
+  </td>
+  <td>
     {{ s.short_comment }}
   </td>
   <td>
