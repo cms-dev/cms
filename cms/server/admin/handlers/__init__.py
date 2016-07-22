@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -89,6 +90,7 @@ from .admin import \
 from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
+    SubmissionIgnoreHandler, \
     SubmissionFileHandler, \
     FileFromDigestHandler
 
@@ -192,6 +194,7 @@ HANDLERS = [
 
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?/ignore", SubmissionIgnoreHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
 ]

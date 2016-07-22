@@ -64,6 +64,36 @@
         </td>
       </tr>
       <tr>
+        <td>Ignored</td>
+        <td>
+            <form action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/ignore" name="ignore_form" method="POST">
+            {% if s.ignored is False %}
+              <input type="hidden" name="ignore" value="yes"/>
+              No
+              <button
+              {% if not current_user.permission_all %}
+                  disabled
+              {% end %}
+               onclick="document.ignore_form.submit()"
+              >
+                Ignore
+              </button>
+            {% else %}
+              <input type="hidden" name="ignore" value="no"/>
+              Yes
+              <button
+              {% if not current_user.permission_all %}
+                  disabled
+              {% end %}
+               onclick="document.ignore_form.submit()"
+              >
+                Unignore
+              </button>
+            {% end %}
+            </form>
+        </td>
+      </tr>
+      <tr>
         <td>Status</td>
         <td id="submission_status">
           {% if status == SubmissionResult.COMPILING %}

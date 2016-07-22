@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,7 +34,11 @@ from __future__ import unicode_literals
 from cms.db import Dataset, File, Submission
 from cmscommon.datetime import make_datetime
 
+import logging
+
 from .base import BaseHandler, FileHandler, require_permission
+
+logger = logging.getLogger(__name__)
 
 
 class SubmissionHandler(BaseHandler):
@@ -104,6 +109,32 @@ class SubmissionCommentHandler(BaseHandler):
 
         else:
             self.try_commit()
+
+        if dataset_id is None:
+            self.redirect("/submission/%s" % submission_id)
+        else:
+            self.redirect("/submission/%s/%s" % (submission_id,
+                                                 dataset_id))
+
+
+class SubmissionIgnoreHandler(BaseHandler):
+    """Called when the admin comments on a submission.
+
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, submission_id, dataset_id=None):
+        submission = self.safe_get_item(Submission, submission_id)
+
+        should_ignore = self.get_argument("ignore", "no") == "yes"
+
+        submission.ignored = should_ignore
+        if self.try_commit():
+            logger.info("Submission '%s' by user %s in contest %s has "
+                        "been %s",
+                        submission.id,
+                        submission.participation.user.username,
+                        submission.participation.contest.name,
+                        ["unignored", "ignored"][should_ignore])
 
         if dataset_id is None:
             self.redirect("/submission/%s" % submission_id)
