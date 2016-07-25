@@ -1,0 +1,24 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Remove Task</h1>
+</div>
+
+{% if current_user.permission_all %}
+<p>
+  Are you sure you want to remove task {{ task.name }} from CMS, including all related data?
+  <br>
+  This will remove {{ submission_count }} submission(s).
+  <br>
+  This operation cannot be undone.
+</p>
+<br>
+<a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/tasks/{{ task.id }}/remove');" class="button-link">Yes, remove</a>
+<a href="{{ url_root }}/tasks" class="button-link">No</a>
+
+{% else %}
+You do not have permission to remove a task.
+{% end %}
+
+{% end %}

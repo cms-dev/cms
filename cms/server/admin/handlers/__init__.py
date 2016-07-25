@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,9 +36,12 @@ from .contest import \
     AddContestHandler, \
     ContestHandler, \
     OverviewHandler, \
-    ResourcesListHandler
+    ResourcesListHandler, \
+    ContestListHandler, \
+    RemoveContestHandler
 from .contestuser import \
     ContestUsersHandler, \
+    RemoveParticipationHandler, \
     AddContestUserHandler, \
     ParticipationHandler, \
     MessageHandler
@@ -63,7 +67,9 @@ from .task import \
     AddStatementHandler, \
     StatementHandler, \
     AddAttachmentHandler, \
-    AttachmentHandler
+    AttachmentHandler, \
+    TaskListHandler, \
+    RemoveTaskHandler
 from .dataset import \
     DatasetSubmissionsHandler, \
     CloneDatasetHandler, \
@@ -80,6 +86,8 @@ from .dataset import \
 from .user import \
     AddUserHandler, \
     UserHandler, \
+    UserListHandler, \
+    RemoveUserHandler, \
     AddParticipationHandler, \
     EditParticipationHandler, \
     AddTeamHandler, \
@@ -110,7 +118,8 @@ HANDLERS = [
 
     # Contest
 
-    (r"/contests", SimpleHandler("contests.html")),
+    (r"/contests", ContestListHandler),
+    (r"/contests/([0-9]+)/remove", RemoveContestHandler),
     (r"/contests/add", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/overview", OverviewHandler),
@@ -120,7 +129,8 @@ HANDLERS = [
 
     (r"/contest/([0-9]+)/users", ContestUsersHandler),
     (r"/contest/([0-9]+)/users/add", AddContestUserHandler),
-    (r"/contest/([0-9]+)/user/([0-9]+)", ParticipationHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)/remove", RemoveParticipationHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)/edit", ParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
 
     # Contest's tasks
@@ -153,7 +163,8 @@ HANDLERS = [
 
     # Tasks
 
-    (r"/tasks", SimpleHandler("tasks.html")),
+    (r"/tasks", TaskListHandler),
+    (r"/tasks/([0-9]+)/remove", RemoveTaskHandler),
     (r"/tasks/add", AddTaskHandler),
     (r"/task/([0-9]+)", TaskHandler),
     (r"/task/([0-9]+)/add_dataset", AddDatasetHandler),
@@ -179,7 +190,8 @@ HANDLERS = [
 
     # Users/Teams
 
-    (r"/users", SimpleHandler("users.html")),
+    (r"/users", UserListHandler),
+    (r"/users/([0-9]+)/remove", RemoveUserHandler),
     (r"/teams", SimpleHandler("teams.html")),
     (r"/users/add", AddUserHandler),
     (r"/teams/add", AddTeamHandler),

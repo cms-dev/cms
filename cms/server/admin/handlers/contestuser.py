@@ -10,6 +10,7 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -67,8 +68,6 @@ class ContestUsersHandler(BaseHandler):
     def post(self, contest_id):
         fallback_page = "/contest/%s/users" % contest_id
 
-        self.contest = self.safe_get_item(Contest, contest_id)
-
         try:
             user_id = self.get_argument("user_id")
             operation = self.get_argument("operation")
@@ -81,22 +80,60 @@ class ContestUsersHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
+        if operation == self.REMOVE_FROM_CONTEST:
+            asking_page = "/contest/%s/user/%s/remove" % (contest_id, user_id)
+            # Open asking for remove page
+            self.redirect(asking_page)
+            return
+
+        self.redirect(fallback_page)
+
+
+class RemoveParticipationHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the participation from the contest.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, contest_id, user_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+        user = self.safe_get_item(User, user_id)
+        participation = self.sql_session.query(Participation)\
+                            .filter(Participation.contest_id == contest_id)\
+                            .filter(Participation.user_id == user_id)\
+                            .first()
+        # Check that the participation is valid.
+        if participation is None:
+            raise tornado.web.HTTPError(404)
+
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.participation == participation)
+        self.render_params_for_remove_confirmation(submission_query)
+
+        self.r_params["user"] = user
+        self.r_params["contest"] = self.contest
+        self.render("participation_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, contest_id, user_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
 
-        if operation == self.REMOVE_FROM_CONTEST:
-            # Unassign the user from the contest.
-            participation = self.sql_session.query(Participation)\
-                .filter(Participation.user == user)\
-                .filter(Participation.contest == self.contest)\
-                .first()
-            self.sql_session.delete(participation)
+        participation = self.sql_session.query(Participation)\
+            .filter(Participation.user == user)\
+            .filter(Participation.contest == self.contest)\
+            .first()
+
+        # Unassign the user from the contest.
+        self.sql_session.delete(participation)
 
         if self.try_commit():
-            # Create the user on RWS.
+            # Remove the participation on RWS.
             self.application.service.proxy_service.reinitialize()
 
-        # Maybe they'll want to do this again (for another task)
-        self.redirect(fallback_page)
+        # Maybe they'll want to do this again (for another participation)
+        self.write("../../users")
 
 
 class AddContestUserHandler(BaseHandler):
@@ -158,7 +195,7 @@ class ParticipationHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id, user_id):
-        fallback_page = "/contest/%s/user/%s" % (contest_id, user_id)
+        fallback_page = "/contest/%s/user/%s/edit" % (contest_id, user_id)
 
         self.contest = self.safe_get_item(Contest, contest_id)
         participation = self.sql_session.query(Participation)\
@@ -230,4 +267,4 @@ class MessageHandler(BaseHandler):
             logger.info("Message submitted to user %s in contest %s.",
                         user.username, self.contest.name)
 
-        self.redirect("/contest/%s/user/%s" % (self.contest.id, user.id))
+        self.redirect("/contest/%s/user/%s/edit" % (self.contest.id, user.id))

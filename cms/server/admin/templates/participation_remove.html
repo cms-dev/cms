@@ -1,0 +1,24 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Remove Participation</h1>
+</div>
+
+{% if current_user.permission_all %}
+<p>
+  Are you sure you want to remove user {{ user.username }} from contest {{ contest.name }}, including all related data?
+  <br>
+  This will remove {{ submission_count }} submission(s).
+  <br>
+  This operation cannot be undone.
+</p>
+<br>
+<a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/contest/{{ contest.id }}/user/{{ user.id }}/remove');" class="button-link">Yes, remove</a>
+<a href="{{ url_root }}/contest/{{ contest.id }}/users" class="button-link">No</a>
+
+{% else %}
+You do not have permission to remove a participation.
+{% end %}
+
+{% end %}

@@ -31,7 +31,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from cms.db import Contest, Participation, User, Team
+from cms.db import Contest, Participation, Submission, Team, User
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -90,6 +90,61 @@ class UserHandler(BaseHandler):
             # Update the user on RWS.
             self.application.service.proxy_service.reinitialize()
         self.redirect(fallback_page)
+
+
+class UserListHandler(SimpleHandler("users.html")):
+    """Get returns the list of all users, post perform operations on
+    a specific user (removing them from CMS).
+
+    """
+
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        user_id = self.get_argument("user_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/users/%s/remove" % user_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/contests")
+
+
+class RemoveUserHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the user from CMS.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, user_id):
+        user = self.safe_get_item(User, user_id)
+        submission_query = self.sql_session.query(Submission)\
+            .join(Submission.participation)\
+            .filter(Participation.user == user)
+        participation_query = self.sql_session.query(Participation)\
+            .filter(Participation.user == user)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["user"] = user
+        self.r_params["participation_count"] = participation_query.count()
+        self.render("user_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, user_id):
+        user = self.safe_get_item(User, user_id)
+
+        self.sql_session.delete(user)
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another user)
+        self.write("../../users")
 
 
 class TeamHandler(BaseHandler):

@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -557,6 +558,13 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["user_test_page"] = page
         self.r_params["user_test_pages"] = \
             (count + page_size - 1) // page_size
+
+    def render_params_for_remove_confirmation(self, query):
+        count = query.count()
+
+        if self.r_params is None:
+            self.r_params = self.render_params()
+        self.r_params["submission_count"] = count
 
 
 FileHandler = file_handler_gen(BaseHandler)

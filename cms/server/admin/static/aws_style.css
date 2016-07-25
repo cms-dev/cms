@@ -693,3 +693,15 @@ span.info {
 span.info::after {
     content: "?";
 }
+
+a.button-link {
+    text-decoration: none;
+    margin-right: 25px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #6DC942;
+}
+
+a.button-link:hover {
+    background-color: #EEF3EA;
+}

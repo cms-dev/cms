@@ -33,7 +33,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cms import ServiceCoord, get_service_shards, get_service_address
-from cms.db import Contest
+from cms.db import Contest, Participation, Submission
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleContestHandler, SimpleHandler, \
@@ -167,3 +167,55 @@ class ResourcesListHandler(BaseHandler):
             self.r_params["resource_addresses"][i] = get_service_address(
                 ServiceCoord("ResourceService", i)).ip
         self.render("resourceslist.html", **self.r_params)
+
+
+class ContestListHandler(SimpleHandler("contests.html")):
+    """Get returns the list of all contests, post perform operations on
+    a specific contest (removing them from CMS).
+
+    """
+
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        contest_id = self.get_argument("contest_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/contests/%s/remove" % contest_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/contests")
+
+
+class RemoveContestHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the contest from CMS.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+        submission_query = self.sql_session.query(Submission)\
+            .join(Submission.participation)\
+            .filter(Participation.contest == contest)
+
+        self.contest = contest
+        self.render_params_for_remove_confirmation(submission_query)
+        self.render("contest_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+
+        self.sql_session.delete(contest)
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another contest)
+        self.write("../../contests")

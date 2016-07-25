@@ -425,3 +425,64 @@ class AddDatasetHandler(BaseHandler):
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect(fallback_page)
+
+
+class TaskListHandler(SimpleHandler("tasks.html")):
+    """Get returns the list of all tasks, post perform operations on
+    a specific task (removing them from CMS).
+
+    """
+
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        task_id = self.get_argument("task_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/tasks/%s/remove" % task_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/tasks")
+
+
+class RemoveTaskHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the task from CMS.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.task == task)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["task"] = task
+        self.render("task_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        contest_id = task.contest_id
+        num = task.num
+
+        self.sql_session.delete(task)
+        # Keeping the tasks' nums to the range 0... n - 1.
+        if contest_id is not None:
+            following_tasks = self.sql_session.query(Task)\
+                .filter(Task.contest_id == contest_id)\
+                .filter(Task.num > num)\
+                .all()
+            for task in following_tasks:
+                task.num -= 1
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.write("../../tasks")
