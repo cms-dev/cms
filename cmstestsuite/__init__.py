@@ -7,6 +7,7 @@
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -255,7 +256,7 @@ def add_contest(**kwargs):
     page = resp.read()
     match = re.search(
         r'<form enctype="multipart/form-data" action="../contest/([0-9]+)" '
-        'method="POST" name="edit_contest">',
+        'method="POST" name="edit_contest" style="display:inline;">',
         page)
     if match is not None:
         contest_id = int(match.groups()[0])
