@@ -1,0 +1,22 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Remove Participant</h1>
+</div>
+
+
+<form action="{{ url_root }}/contest/{{ contest.id }}/user/{{ user.id }}/delete" method="POST">
+  Are you sure you want to delete user {{ user.username }} from contest {{ contest.name }}? <br>
+  This will remove {{ submission_count }} submission(s). <br>
+  <input type="submit"
+         name="asking"
+         value="Yes"
+         />
+  <input type="submit"
+         name="asking"
+         value="No"
+         />
+</form>
+
+{% end %}

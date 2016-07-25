@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,6 +25,12 @@ from __future__ import unicode_literals
 
 from .base import \
     SimpleHandler, \
+    UsersListHandler, \
+    ContestsListHandler, \
+    TasksListHandler, \
+    RemoveContestHandler, \
+    RemoveTaskHandler, \
+    RemoveUserHandler, \
     SimpleContestHandler
 from .main import \
     LoginHandler, \
@@ -37,6 +44,7 @@ from .contest import \
     ResourcesListHandler
 from .contestuser import \
     ContestUsersHandler, \
+    RemoveParticipantHandler, \
     AddContestUserHandler, \
     ParticipationHandler, \
     MessageHandler
@@ -105,7 +113,8 @@ HANDLERS = [
 
     # Contest
 
-    (r"/contests", SimpleHandler("contests.html")),
+    (r"/contests", ContestsListHandler),
+    (r"/contests/([0-9]+)/delete", RemoveContestHandler),
     (r"/contests/add", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/overview", OverviewHandler),
@@ -115,7 +124,8 @@ HANDLERS = [
 
     (r"/contest/([0-9]+)/users", ContestUsersHandler),
     (r"/contest/([0-9]+)/users/add", AddContestUserHandler),
-    (r"/contest/([0-9]+)/user/([0-9]+)", ParticipationHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)/delete", RemoveParticipantHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)/edit", ParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
 
     # Contest's tasks
@@ -147,7 +157,8 @@ HANDLERS = [
 
     # Tasks
 
-    (r"/tasks", SimpleHandler("tasks.html")),
+    (r"/tasks", TasksListHandler),
+    (r"/tasks/([0-9]+)/delete", RemoveTaskHandler),
     (r"/tasks/add", AddTaskHandler),
     (r"/task/([0-9]+)", TaskHandler),
     (r"/task/([0-9]+)/add_dataset", AddDatasetHandler),
@@ -173,7 +184,8 @@ HANDLERS = [
 
     # Users/Teams
 
-    (r"/users", SimpleHandler("users.html")),
+    (r"/users", UsersListHandler),
+    (r"/users/([0-9]+)/delete", RemoveUserHandler),
     (r"/teams", SimpleHandler("teams.html")),
     (r"/users/add", AddUserHandler),
     (r"/teams/add", AddTeamHandler),

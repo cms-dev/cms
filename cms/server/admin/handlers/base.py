@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -528,6 +529,13 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["submission_pages"] = \
             (count + page_size - 1) // page_size
 
+    def render_params_for_remove_confirmation(self, query):
+        count = query.count()
+
+        if self.r_params is None:
+            self.r_params = self.render_params()
+        self.r_params["submission_count"] = count
+
 
 FileHandler = file_handler_gen(BaseHandler)
 
@@ -562,3 +570,242 @@ def SimpleContestHandler(page):
             self.r_params = self.render_params()
             self.render(page, **self.r_params)
     return Cls
+
+
+class TasksListHandler(BaseHandler):
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("tasks.html", **self.r_params)
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        fallback_page = "/tasks"
+
+        try:
+            task_id = self.get_argument("task_id")
+            operation = self.get_argument("operation")
+            assert operation in (
+                self.REMOVE
+            ), "Please select a valid operation"
+        except Exception as error:
+            self.application.service.add_notification(
+                    make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if operation == self.REMOVE:
+            asking_page = "/tasks/%s/delete" % task_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+            return
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class RemoveTaskHandler(BaseHandler):
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.task == task)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["task"] = task
+        self.render("remove_task.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, task_id):
+        fallback_page = "/tasks"
+        task = self.safe_get_item(Task, task_id)
+        contest_id = task.contest_id
+        num = task.num
+
+        try:
+            asking = self.get_argument("asking")
+            assert asking in (
+                self.YES,
+                self.NO
+            ), "Please select a valid asking"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if asking == self.YES:
+            self.sql_session.delete(task)
+            if self.try_commit():
+                self.application.service.proxy_service.reinitialize()
+            # Keeping the tasks' nums to the range 0... n - 1.
+            if contest_id is not None:
+                following_tasks = self.sql_session.query(Task)\
+                    .filter(Task.contest_id == contest_id)\
+                    .filter(Task.num > num)\
+                    .all()
+                for task in following_tasks:
+                    task.num -= 1
+                if self.try_commit():
+                    self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class ContestsListHandler(BaseHandler):
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("contests.html", **self.r_params)
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        fallback_page = "/contests"
+
+        try:
+            contest_id = self.get_argument("contest_id")
+            operation = self.get_argument("operation")
+            assert operation in (
+                self.REMOVE
+            ), "Please select a valid operation"
+        except Exception as error:
+            self.application.service.add_notification(
+                    make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if operation == self.REMOVE:
+            asking_page = "/contests/%s/delete" % contest_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+            return
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class RemoveContestHandler(BaseHandler):
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+        submission_query = self.sql_session.query(Submission)\
+            .join(Submission.participation)\
+            .filter(Participation.contest == contest)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["thiscontest"] = contest
+        self.render("remove_contest.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, contest_id):
+        fallback_page = "/contests"
+        contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            asking = self.get_argument("asking")
+            assert asking in (
+                self.YES,
+                self.NO
+            ), "Please select a valid asking"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if asking == self.YES:
+            self.sql_session.delete(contest)
+            if self.try_commit():
+                self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class UsersListHandler(BaseHandler):
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self):
+        self.r_params = self.render_params()
+        self.render("users.html", **self.r_params)
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        fallback_page = "/users"
+
+        try:
+            user_id = self.get_argument("user_id")
+            operation = self.get_argument("operation")
+            assert operation in (
+                self.REMOVE
+            ), "Please select a valid operation"
+        except Exception as error:
+            self.application.service.add_notification(
+                    make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if operation == self.REMOVE:
+            asking_page = "/users/%s/delete" % user_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+            return
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class RemoveUserHandler(BaseHandler):
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, user_id):
+        user = self.safe_get_item(User, user_id)
+        submission_query = self.sql_session.query(Submission)\
+            .join(Submission.participation)\
+            .filter(Participation.user == user)
+        participant_query = self.sql_session.query(Participation)\
+            .filter(Participation.user == user)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["user"] = user
+        self.r_params["participant_count"] = participant_query.count()
+        self.render("remove_user.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, user_id):
+        fallback_page = "/users"
+        user = self.safe_get_item(User, user_id)
+
+        try:
+            asking = self.get_argument("asking")
+            assert asking in (
+                self.YES,
+                self.NO
+            ), "Please select a valid asking"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        if asking == self.YES:
+            self.sql_session.delete(user)
+            if self.try_commit():
+                self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
