@@ -10,6 +10,7 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -67,13 +68,11 @@ class ContestUsersHandler(BaseHandler):
     def post(self, contest_id):
         fallback_page = "/contest/%s/users" % contest_id
 
-        self.contest = self.safe_get_item(Contest, contest_id)
-
         try:
             user_id = self.get_argument("user_id")
             operation = self.get_argument("operation")
             assert operation in (
-                self.REMOVE_FROM_CONTEST,
+                self.REMOVE_FROM_CONTEST
             ), "Please select a valid operation"
         except Exception as error:
             self.application.service.add_notification(
@@ -81,14 +80,66 @@ class ContestUsersHandler(BaseHandler):
             self.redirect(fallback_page)
             return
 
+        if operation == self.REMOVE_FROM_CONTEST:
+            asking_page = "/contest/%s/user/%s/delete" % (contest_id, user_id)
+            # Open asking for remove page
+            self.redirect(asking_page)
+            return
+
+        # Maybe they'll want to do this again (for another task)
+        self.redirect(fallback_page)
+
+
+class RemoveParticipantHandler(BaseHandler):
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, contest_id, user_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+        user = self.safe_get_item(User, user_id)
+        participation = self.sql_session.query(Participation)\
+                            .filter(Participation.contest_id == contest_id)\
+                            .filter(Participation.user_id == user_id)\
+                            .first()
+        # Check that the participation is valid.
+        if participation is None:
+            raise tornado.web.HTTPError(404)
+
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.participation == participation)
+        self.render_params_for_remove_confirmation(submission_query)
+
+        self.r_params["user"] = user
+        self.r_params["contest"] = self.contest
+        self.render("remove_participant.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, contest_id, user_id):
+        fallback_page = "/contest/%s/users" % contest_id
+
+        self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
 
-        if operation == self.REMOVE_FROM_CONTEST:
+        try:
+            asking = self.get_argument("asking")
+            assert asking in (
+                self.YES,
+                self.NO
+            ), "Please select a valid asking"
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect(fallback_page)
+            return
+
+        participation = self.sql_session.query(Participation)\
+            .filter(Participation.user == user)\
+            .filter(Participation.contest == self.contest)\
+            .first()
+
+        if asking == self.YES:
             # Unassign the user from the contest.
-            participation = self.sql_session.query(Participation)\
-                .filter(Participation.user == user)\
-                .filter(Participation.contest == self.contest)\
-                .first()
             self.sql_session.delete(participation)
 
         if self.try_commit():
@@ -158,7 +209,7 @@ class ParticipationHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id, user_id):
-        fallback_page = "/contest/%s/user/%s" % (contest_id, user_id)
+        fallback_page = "/contest/%s/user/%s/edit" % (contest_id, user_id)
 
         self.contest = self.safe_get_item(Contest, contest_id)
         participation = self.sql_session.query(Participation)\
@@ -230,4 +281,4 @@ class MessageHandler(BaseHandler):
             logger.info("Message submitted to user %s in contest %s.",
                         user.username, self.contest.name)
 
-        self.redirect("/contest/%s/user/%s" % (self.contest.id, user.id))
+        self.redirect("/contest/%s/user/%s/edit" % (self.contest.id, user.id))
