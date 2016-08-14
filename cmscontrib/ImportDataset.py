@@ -47,11 +47,6 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetImporter(object):
-
-    """This script creates a dataset
-
-    """
-
     def __init__(self, path, description, loader_class):
         self.file_cacher = FileCacher()
         self.description = description
@@ -87,16 +82,17 @@ class DatasetImporter(object):
             old_task = session.query(Task) \
                               .filter(Task.name == task_name) \
                               .first()
-            if old_task is not None:
+            if old_task is None:
+                logger.error("The specified task does not exist. "
+                             "Aborting, no dataset imported.")
+                return
+            else:
                 # Set the dataset's task to the old task
                 dataset.task = None  # apparently, we *need* this
                 dataset.task = old_task
 
                 # Store it
                 session.add(dataset)
-            else:
-                logger.error("The specified task does not exist. "
-                             "Aborting, no dataset imported.")
 
             session.commit()
             dataset_id = dataset.id

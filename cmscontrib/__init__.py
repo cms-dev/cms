@@ -97,7 +97,6 @@ class BaseImporter(object):
         # cases, we can use a simple DFS to explore the whole data
         # graph, recursing only on "vector" relationships.
         # TODO Find a better way to handle all of this.
-        # TODO Actually, avoid *ever* using this :P
 
         ignore = ignore if ignore is not None else set()
         self._update_columns(old_object, new_object, ignore)
