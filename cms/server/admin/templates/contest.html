@@ -11,7 +11,6 @@
 <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest" style="display:inline;">
   {% module xsrf_form_html() %}
   <table class="sub_table">
-
     <tr><td colspan=2><h2>Contest information</h2></td></tr>
     <tr>
       <td>
@@ -252,6 +251,32 @@
         Minimum interval between user tests
       </td>
       <td><input type="text" name="min_user_test_interval" value="{{ int(contest.min_user_test_interval.total_seconds()) if contest.min_user_test_interval is not None else "" }}"></td>
+    </tr>
+    <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
+    <tr>
+      <td>
+        <span class="info" title="If true, analysis mode for this contest will be enabled."></span>
+        Enabled
+      </td>
+      <td>
+        <input type="checkbox" id="analysis_enabled" name="analysis_enabled" {{ "checked" if contest.analysis_enabled else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="Start time of the analysis mode in the UTC timezone.
+                                  Example: '2015-12-31 15:00:00'."></span>
+        Analysis mode start time (in UTC)
+      </td>
+      <td><input type="text" name="analysis_start" value="{{ str(contest.analysis_start) }}"></td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="End time of the analysis mode in the UTC timezone.
+                                  Example: '2015-12-31 18:00:00'."></span>
+        Analysis mode end time (in UTC)
+      </td>
+      <td><input type="text" name="analysis_stop" value="{{ str(contest.analysis_stop) }}"></td>
     </tr>
   </table>
   <input type="submit"

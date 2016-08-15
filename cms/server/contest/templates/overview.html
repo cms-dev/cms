@@ -28,13 +28,35 @@
         </p>
         <p>
         {{ _("The contest started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.start + current_user.delay_time, timezone, locale=locale), "stop_time": format_datetime_smart(contest.stop + current_user.delay_time + current_user.extra_time, timezone, locale=locale)} }}
-{% elif phase == +1 %}
+{% elif phase >= +1 %}
         {{ _("The contest has already ended.") }}
         </p>
         <p>
         {{ _("The contest started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.start + current_user.delay_time, timezone, locale=locale), "stop_time": format_datetime_smart(contest.stop + current_user.delay_time + current_user.extra_time, timezone, locale=locale)} }}
 {% end %}
         </p>
+{% if contest.analysis_enabled %}
+        <p>
+  {% if phase == +1 %}
+        {{ _("The analysis mode hasn't started yet.") }}
+        </p>
+        <p>
+        {{ _("The analysis mode will start at %(start_time)s and will end at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.analysis_start, timezone, locale=locale), "stop_time": format_datetime_smart(contest.analysis_stop, timezone, locale=locale)} }}
+  {% elif phase == +2 %}
+        {{ _("The analysis mode is currently running.") }}
+        </p>
+        <p>
+        {{ _("The analysis mode started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.analysis_start, timezone, locale=locale), "stop_time": format_datetime_smart(contest.analysis_stop, timezone, locale=locale)} }}
+  {% elif phase == +3 %}
+        {{ _("The analysis mode has already ended.") }}
+        </p>
+        <p>
+        {{ _("The analysis mode started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": format_datetime_smart(contest.analysis_start, timezone, locale=locale), "stop_time": format_datetime_smart(contest.analysis_stop, timezone, locale=locale)} }}
+  {% end %}
+        </p>
+
+{% end %}
+
 
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
@@ -142,7 +164,7 @@
 
 
 
-{% if actual_phase == 0 %}
+{% if actual_phase == 0 or actual_phase == 3%}
 <h2>{{ _("Task overview") }}</h2>
 
 <table class="table table-bordered table-striped">

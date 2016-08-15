@@ -357,6 +357,10 @@ class ContestHandler(BaseHandler):
 
             res = compute_actual_phase(
                 self.timestamp, self.contest.start, self.contest.stop,
+                self.contest.analysis_start if self.contest.analysis_enabled
+                else None,
+                self.contest.analysis_stop if self.contest.analysis_enabled
+                else None,
                 self.contest.per_user_time, participation.starting_time,
                 participation.delay_time, participation.extra_time)
 

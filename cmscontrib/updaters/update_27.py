@@ -21,8 +21,8 @@
 
 Used by ContestImporter and DumpUpdater.
 
-This updater just adds the default values for the new field
-(Submission.official).
+This updater just adds the default values for the new fields related to
+analysis mode (Submission.official, Contest.analysis_*).
 
 """
 
@@ -43,5 +43,8 @@ class Updater(object):
                 continue
             if v["_class"] == "Submission":
                 v["official"] = True
-
+            if v["_class"] == "Contest":
+                v["analysis_enabled"] = False
+                v["analysis_start"] = v["contest_stop"]
+                v["analysis_stop"] = v["contest_stop"]
         return self.objs

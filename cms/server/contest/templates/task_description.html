@@ -4,7 +4,7 @@
 {% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
 
-{% if actual_phase == 0 or current_user.unrestricted %}
+{% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
 
 <div class="span9 task_description">
 
