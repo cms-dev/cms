@@ -8,6 +8,7 @@
 # Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -50,7 +51,8 @@ from cmscommon.datetime import make_datetime, utc
 logger = logging.getLogger(__name__)
 
 
-def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
+def compute_actual_phase(timestamp, contest_start, contest_stop,
+                         analysis_start, analysis_stop, per_user_time,
                          starting_time, delay_time, extra_time):
     """Determine the current phase and when the active phase is.
 
@@ -71,7 +73,11 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
           stopped yet, its per-user time frame already has (again, this
           should normally happen only in USACO-like contests);
     * +2: the user cannot compete because the contest has already
-          stopped.
+          stopped and the analysis mode hasn't started yet.
+    * +3: the user can take part in analysis mode.
+    * +4: the user cannot compete because the contest has already
+          stopped. analysis mode has already finished or has been
+          disabled for this contest.
     A user is said to "compete" if he can read the tasks' statements,
     submit solutions, see their results, etc.
 
@@ -130,6 +136,7 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
             current_phase_end = None
         else:
             raise RuntimeError("Logic doesn't seem to be working...")
+
     else:
         if per_user_time is None:
             # "Traditional" contest.
@@ -149,6 +156,9 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
         actual_stop = intended_stop + delay_time + extra_time
 
         assert contest_start <= actual_start <= actual_stop
+
+        if analysis_start is not None:
+            assert actual_stop <= analysis_start
 
         if actual_start <= timestamp <= actual_stop:
             actual_phase = 0
@@ -175,6 +185,22 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
             current_phase_end = None
         else:
             raise RuntimeError("Logic doesn't seem to be working...")
+
+    if actual_phase == +2:
+        if analysis_start is not None:
+            assert contest_stop <= analysis_start
+            if timestamp < analysis_start:
+                current_phase_end = analysis_start
+            elif analysis_start <= timestamp <= analysis_stop:
+                current_phase_begin = analysis_start
+                current_phase_end = analysis_stop
+                actual_phase = +3
+            elif analysis_stop < timestamp:
+                current_phase_begin = analysis_stop
+                current_phase_end = None
+                actual_phase = +4
+        else:
+            actual_phase = +4
 
     return (actual_phase,
             current_phase_begin, current_phase_end,

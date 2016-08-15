@@ -76,7 +76,7 @@ $(document).ready(function () {
 
 {% block core %}
 
-{% if actual_phase == 0 or current_user.unrestricted %}
+{% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
 
 <div class="span9 task_submissions">
 
@@ -154,7 +154,7 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous submissions") }}</h2>
 
-{% if tokens_contest != 0 and tokens_tasks != 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
 <div style="padding-bottom:10px">
     {% set tokens_info = contest.tokens_available(current_user, task, timestamp) %}
     {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}
@@ -219,11 +219,13 @@ $(document).ready(function () {
 {% else %}
         <col class="total_score"/>
 {% end %}
+{% if actual_phase >= +3 %}
         <col class="considered_in_score"/>
+{% end %}
 {% if submissions_download_allowed %}
         <col class="files"/>
 {% end %}
-{% if tokens_contest != 0 and tokens_tasks != 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
         <col class="token"/>
 {% end %}
     </colgroup>
@@ -241,11 +243,13 @@ $(document).ready(function () {
 {% else %}
             <th class="total_score">{{ _("Score") }}</th>
 {% end %}
+{% if actual_phase >= +3 %}
             <th class="considered_in_score">{{ _("Official") }}</th>
+{% end %}
 {% if submissions_download_allowed %}
             <th class="files">{{ _("Files") }}</th>
 {% end %}
-{% if tokens_contest != 0 and tokens_tasks != 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
             <th class="token">{{ _("Token") }}</th>
 {% end %}
         </tr>
