@@ -7,7 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2015 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2015-2016 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -158,56 +158,57 @@ class ContestImporter(BaseImporter):
                     task.contest = contest
 
             # Check needed participations
-            for p in participations:
-                user = session.query(User) \
-                              .filter(User.username == p["username"]).first()
+            if participations is not None:
+                for p in participations:
+                    user = session.query(User) \
+                        .filter(User.username == p["username"]).first()
 
-                team = session.query(Team) \
-                              .filter(Team.code == p.get("team")).first()
+                    team = session.query(Team) \
+                        .filter(Team.code == p.get("team")).first()
 
-                if user is None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("User \"%s\" not found in database.",
-                                    p["username"])
-                    return
+                    if user is None:
+                        # FIXME: it would be nice to automatically try to
+                        # import.
+                        logger.critical("User \"%s\" not found in database.",
+                                        p["username"])
+                        return
 
-                if team is None and p.get("team") is not None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("Team \"%s\" not found in database.",
-                                    p.get("team"))
-                    return
+                    if team is None and p.get("team") is not None:
+                        # FIXME: it would be nice to automatically try to
+                        # import.
+                        logger.critical("Team \"%s\" not found in database.",
+                                        p.get("team"))
+                        return
 
-                # Check that the participation is not already defined.
-                participation = session.query(Participation) \
-                    .filter(Participation.user_id == user.id) \
-                    .filter(Participation.contest_id == contest.id) \
-                    .first()
+                    # Check that the participation is not already defined.
+                    participation = session.query(Participation) \
+                        .filter(Participation.user_id == user.id) \
+                        .filter(Participation.contest_id == contest.id) \
+                        .first()
 
-                # FIXME: detect if some details of the participation have been
-                # updated and thus the existing participation needs to be
-                # changed.
-                if participation is None:
-                    # Prepare new participation
-                    args = {
-                        "user": user,
-                        "team": team,
-                        "contest": contest,
-                    }
+                    # FIXME: detect if some details of the participation have
+                    # been updated and thus the existing participation needs to
+                    # be changed.
+                    if participation is None:
+                        # Prepare new participation
+                        args = {
+                            "user": user,
+                            "team": team,
+                            "contest": contest,
+                        }
 
-                    if "hidden" in p:
-                        args["hidden"] = p["hidden"]
-                    if "ip" in p:
-                        args["ip"] = p["ip"]
-                    if "password" in p:
-                        args["password"] = p["password"]
+                        if "hidden" in p:
+                            args["hidden"] = p["hidden"]
+                        if "ip" in p:
+                            args["ip"] = p["ip"]
+                        if "password" in p:
+                            args["password"] = p["password"]
 
-                    session.add(Participation(**args))
-                else:
-                    logger.warning("Participation of user %s in this contest "
-                                   "already exists, not going to update it.",
-                                   p["username"])
+                        session.add(Participation(**args))
+                    else:
+                        logger.warning("Participation of user %s in this "
+                                       "contest already exists, not going to "
+                                       "update it.", p["username"])
 
             # Here we could check if there are actually some tasks or
             # users to add: if there are not, then don't create the
