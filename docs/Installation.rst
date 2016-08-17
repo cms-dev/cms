@@ -216,9 +216,6 @@ To install CMS python dependencies on Ubuntu, you can issue:
          python-coverage python-mock python-requests python-werkzeug \
          python-gevent python-bcrypt patool
 
-    # Optional: this allows you to use "cmsImportDataset" without "--description"
-    sudo apt-get install python-petname
-
     # Optional.
     # sudo apt-get install python-yaml python-sphinx python-cups python-pypdf2
 
@@ -241,9 +238,6 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/patool/
-
-    # Optional: this allows you to use "cmsImportDataset" without "--description"
-    # https://aur.archlinux.org/packages/python2-petname/
 
     # Optional.
     # sudo pacman -S python2-yaml python-sphinx python2-pycups

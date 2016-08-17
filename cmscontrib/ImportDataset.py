@@ -65,13 +65,7 @@ class DatasetImporter(object):
         task_name = task.name
         del task
 
-        # Change the default description, there is a unique constraint on
-        # (Task.id, Dataset.description)
-        if self.description is None:
-            import petname
-            dataset.description = petname.Generate(2, " ").title()
-        else:
-            dataset.description = self.description
+        dataset.description = self.description
 
         # Store the dataset
         logger.info("Creating new dataset (\"%s\") for task %s on the "
@@ -86,13 +80,13 @@ class DatasetImporter(object):
                 logger.error("The specified task does not exist. "
                              "Aborting, no dataset imported.")
                 return
-            else:
-                # Set the dataset's task to the old task
-                dataset.task = None  # apparently, we *need* this
-                dataset.task = old_task
 
-                # Store it
-                session.add(dataset)
+            # Set the dataset's task to the old task
+            dataset.task = None  # apparently, we *need* this
+            dataset.task = old_task
+
+            # Store it
+            session.add(dataset)
 
             session.commit()
             dataset_id = dataset.id
@@ -116,18 +110,14 @@ def main():
         help="use the specified loader (default: autodetect)"
     )
     parser.add_argument(
-        "-D", "--description",
-        action="store", type=utf8_decoder,
-        default=None,
-        help="dataset description (default: generate a random readable string)"
-    )
-    parser.add_argument(
         "target",
         action="store", type=utf8_decoder,
         help="target file/directory from where to import the dataset"
     )
 
     args = parser.parse_args()
+
+    args.description = raw_input("Enter a description: ")
 
     loader_class = choose_loader(
         args.loader,
