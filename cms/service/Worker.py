@@ -78,7 +78,6 @@ class Worker(Service):
         # dangerous
         logger.info("Precaching files for contest %d.", contest_id)
         with SessionGen() as session:
-            files = []
             contest = Contest.get_from_id(contest_id, session)
             files = contest.enumerate_files(skip_submissions=True,
                                             skip_user_tests=True)

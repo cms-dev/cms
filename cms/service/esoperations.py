@@ -293,7 +293,7 @@ def get_submissions_operations(session, contest_id=None):
     """Return all the operations to do for submissions in the contest.
 
     session (Session): the database session to use.
-    contest_id (int): the contest for which we want the operations.
+    contest_id (int|None): the contest for which we want the operations.
         If none, get operations for any contest.
 
     return ([ESOperation, float, int]): a list of operation, timestamp
@@ -400,7 +400,7 @@ def get_user_tests_operations(session, contest_id=None):
     """Return all the operations to do for user tests in the contest.
 
     session (Session): the database session to use.
-    contest_id (int): the contest for which we want the operations.
+    contest_id (int|None): the contest for which we want the operations.
         If none, get operations for any contest.
 
     return ([ESOperation, float, int]): a list of operation, timestamp
