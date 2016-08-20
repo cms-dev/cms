@@ -37,7 +37,8 @@ import tempfile
 import yaml
 import logging
 
-from cms import utf8_decoder
+from cms import utf8_decoder, SOURCE_EXT_TO_LANGUAGE_MAP, \
+    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP, LANG_PASCAL
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
@@ -45,7 +46,7 @@ from cmscommon.terminal import move_cursor, add_color_to_string, \
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
-SOL_EXTS = ['.cpp', '.c', '.pas']
+SOL_EXTS = SOURCE_EXT_TO_LANGUAGE_MAP.keys()
 CHECK_DIRNAME = 'cor'
 CHECK_EXTS = SOL_EXTS
 TEXT_DIRNAME = 'testo'
@@ -211,33 +212,33 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
             test_deps.append('cor/manager')
 
         def compile_src(srcs, exe, for_evaluation, lang, assume=None):
-            if lang != 'pas' or len(srcs) == 1:
-                compilation_commands = get_compilation_commands(
-                    lang,
-                    srcs,
-                    exe,
-                    for_evaluation=for_evaluation)
-                for command in compilation_commands:
-                    call(base_dir, command)
-                    move_cursor(directions.UP, erase=True, stream=sys.stderr)
-
-            # When using Pascal with graders, file naming conventions
-            # require us to do a bit of trickery, i.e., performing the
-            # compilation in a separate temporary directory
-            else:
-                tempdir = tempfile.mkdtemp()
+            # We put everything in a temporary directory to reproduce
+            # the same conditions that we have when compiling a
+            # submission.
+            tempdir = tempfile.mkdtemp()
+            try:
                 task_name = detect_task_name(base_dir)
-                new_srcs = [os.path.split(srcs[0])[1],
-                            '%s.pas' % (task_name)]
-                new_exe = os.path.split(srcs[1])[1][:-4]
-                shutil.copyfile(os.path.join(base_dir, srcs[0]),
-                                os.path.join(tempdir, new_srcs[0]))
-                shutil.copyfile(os.path.join(base_dir, srcs[1]),
-                                os.path.join(tempdir, new_srcs[1]))
-                lib_filename = '%slib.pas' % (task_name)
-                if os.path.exists(os.path.join(SOL_DIRNAME, lib_filename)):
-                    shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
-                                    os.path.join(tempdir, lib_filename))
+                grader_num = 1 if len(srcs) > 1 else 0
+                new_srcs = []
+                for grader in srcs[:grader_num]:
+                    grader_name = os.path.basename(grader)
+                    shutil.copyfile(os.path.join(base_dir, grader),
+                                    os.path.join(tempdir, grader_name))
+                    new_srcs.append(os.path.join(tempdir, grader_name))
+                # For now, we assume we only have one non-grader source.
+                source_name = task_name + LANGUAGE_TO_SOURCE_EXT_MAP[lang]
+                shutil.copyfile(os.path.join(base_dir, srcs[grader_num]),
+                                os.path.join(tempdir, source_name))
+                new_srcs.append(source_name)
+                # Libraries are needed/used only for C/C++ and Pascal
+                if lang in LANGUAGE_TO_HEADER_EXT_MAP:
+                    lib_template = "%s" + LANGUAGE_TO_HEADER_EXT_MAP[lang]
+                    lib_filename = lib_template % (task_name)
+                    lib_path = os.path.join(base_dir, SOL_DIRNAME, lib_filename)
+                    if os.path.exists(lib_path):
+                        shutil.copyfile(lib_path,
+                                        os.path.join(tempdir, lib_filename))
+                new_exe = os.path.join(tempdir, task_name)
                 compilation_commands = get_compilation_commands(
                     lang,
                     new_srcs,
@@ -250,6 +251,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                 os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
+            finally:
                 shutil.rmtree(tempdir)
 
         def test_src(exe, lang, assume=None):

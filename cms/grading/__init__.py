@@ -39,7 +39,7 @@ from sqlalchemy.orm import joinedload
 
 from cms import config, \
     LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
-    SCORE_MODE_MAX
+    LANG_HS, SCORE_MODE_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -265,6 +265,20 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
                    executable_filename] + source_filenames
         commands.append(command)
+    elif language == LANG_HS:
+        # Haskell module names are capitalized, so we change the source file
+        # names (except for the first one) to match the module's name.
+        # The first source file is, instead, the grader or the standalone
+        # source file; it won't be imported in any other source file, so
+        # there is no need to capitalize it.
+        def capitalize(string):
+            dirname, basename = os.path.split(string)
+            return os.path.join(dirname, basename[0].upper() + basename[1:])
+        for source in source_filenames[1:]:
+            commands.append(["/bin/ln", "-s", os.path.basename(source),
+                             capitalize(source)])
+        commands.append(["/usr/bin/ghc", "-static", "-O2", "-Wall", "-o",
+                         executable_filename, source_filenames[0]])
     else:
         raise ValueError("Unknown language %s." % language)
     return commands
@@ -284,7 +298,7 @@ def get_evaluation_commands(language, executable_filename):
 
     """
     commands = []
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_HS):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
     elif language == LANG_PYTHON:
@@ -353,6 +367,13 @@ def compilation_step(sandbox, commands):
     """
     # Set sandbox parameters suitable for compilation.
     sandbox.dirs += [("/etc", None, None)]
+    # We need to add "/var/lib/ghc" to the unrestricted dirs so GHC can access
+    # haskell's package database.
+    # GHC looks for it in "/usr/lib/ghc/package.conf.d", which is only a symlink
+    # to "/var/lib/ghc/package.conf.d"
+    ghc_dir = "/var/lib/ghc"
+    if os.path.exists(ghc_dir):
+        sandbox.dirs += [("/var/lib/ghc", None, None)]
     sandbox.preserve_env = True
     sandbox.max_processes = None
     sandbox.timeout = 10
