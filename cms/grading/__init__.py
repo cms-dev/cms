@@ -39,7 +39,7 @@ from sqlalchemy.orm import joinedload
 
 from cms import config, \
     LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
-    SCORE_MODE_MAX
+    LANG_HS, SCORE_MODE_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -265,6 +265,18 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
                    executable_filename] + source_filenames
         commands.append(command)
+    elif language == LANG_HS:
+        # Haskell module names are capitalized, so we change
+        # the source file names (except for the first one)
+        # accordingly
+        def capitalize(string):
+            dirname, basename = os.path.split(string)
+            return os.path.join(dirname, basename[0].upper() + basename[1:])
+        for source in source_filenames[1:]:
+            commands.append(["/bin/ln", "-s", os.path.basename(source),
+                             capitalize(source)])
+        commands.append(["/usr/bin/ghc", "-static", "-O2", "-Wall", "-o",
+                         executable_filename, source_filenames[0]])
     else:
         raise ValueError("Unknown language %s." % language)
     return commands
@@ -284,7 +296,7 @@ def get_evaluation_commands(language, executable_filename):
 
     """
     commands = []
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_HS):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
     elif language == LANG_PYTHON:
