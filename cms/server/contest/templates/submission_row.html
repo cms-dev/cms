@@ -67,7 +67,7 @@
     {% end %}
 
     {% if score_type.max_public_score != score_type.max_score %}
-        {% if s.token is not None %}
+        {% if s.token is not None or actual_phase == 3 %}
     <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
         {{ score_type.format_score(sr.score, score_type.max_score, sr.score_details, task.score_precision, _) }}
     </td>
