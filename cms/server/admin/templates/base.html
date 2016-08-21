@@ -236,7 +236,8 @@ $(document).ready(init);
             </li>
           </ul>
           <div class="hr"></div>
-          {% if phase != 1 %}
+          {% comment TODO: Add time left for analysis mode %}
+          {% if phase < 1 %}
           <div class="footer">Time left: <span id="remaining"></span></div>
           {% end %}
         {% end %}
