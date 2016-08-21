@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -116,7 +117,8 @@ def get_sr(scored=True):
     return sr
 
 
-def get_submission(task=None, participation=None, sr=None, scored=True):
+def get_submission(task=None, participation=None,
+                   sr=None, scored=True, official=True):
     task = task if task is not None else get_task()
     participation = participation if participation is not None \
         else get_participation()
@@ -129,6 +131,7 @@ def get_submission(task=None, participation=None, sr=None, scored=True):
     submission.get_result.return_value = sr
     submission.participation = participation
     submission.task = task
+    submission.official = official
 
     submission.id = get_int()
     return submission
