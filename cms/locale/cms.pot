@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"POT-Creation-Date: 2017-04-09 15:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -557,6 +557,12 @@ msgstr ""
 msgid "Until contest ends:"
 msgstr ""
 
+msgid "Until analysis starts:"
+msgstr ""
+
+msgid "Until analysis ends:"
+msgstr ""
+
 msgid "Time left:"
 msgstr ""
 
@@ -680,6 +686,29 @@ msgstr ""
 
 #, python-format
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr ""
+
+msgid "The analysis mode hasn't started yet."
+msgstr ""
+
+#, python-format
+msgid ""
+"The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr ""
+
+msgid "The analysis mode is currently running."
+msgstr ""
+
+#, python-format
+msgid ""
+"The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr ""
+
+msgid "The analysis mode has already ended."
+msgstr ""
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
 msgstr ""
 
 msgid "You have an infinite number of tokens."
@@ -934,7 +963,7 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
 "\">contest overview page</a>."
 msgstr ""
 
@@ -998,6 +1027,9 @@ msgid "Total score"
 msgstr ""
 
 msgid "Score"
+msgstr ""
+
+msgid "Official"
 msgstr ""
 
 msgid "Token"
