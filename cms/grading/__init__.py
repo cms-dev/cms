@@ -979,7 +979,7 @@ def task_score(participation, task):
     partial = False
 
     submissions = [s for s in participation.submissions if s.task is task and
-                   s.ignored]
+                   not s.ignored]
     submissions.sort(key=lambda s: s.timestamp)
 
     if submissions == []:
