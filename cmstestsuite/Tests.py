@@ -31,14 +31,14 @@ import cmstestsuite.tasks.communication as communication
 import cmstestsuite.tasks.communication2 as communication2
 
 from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
-    LANG_PYTHON
+    LANG_PYTHON, LANG_HS
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
 
 
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
-COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON)
+COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON, LANG_HS)
 
 ALL_TESTS = [
 
