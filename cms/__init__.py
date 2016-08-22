@@ -78,8 +78,16 @@ LANGUAGE_NAMES = {
     LANG_HS: "Haskell",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, 
-             LANG_HS]
+LANGUAGES = [
+    LANG_C,
+    LANG_CPP,
+    LANG_PASCAL,
+    LANG_PYTHON,
+    LANG_PHP, 
+    LANG_JAVA, 
+    LANG_HS
+]
+
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # A reference for extension-based automatic language detection.

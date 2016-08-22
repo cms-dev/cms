@@ -266,17 +266,19 @@ def get_compilation_commands(language, source_filenames, executable_filename,
                    executable_filename] + source_filenames
         commands.append(command)
     elif language == LANG_HS:
-        # Haskell module names are capitalized, so we change
-        # the source file names (except for the first one)
-        # accordingly
+        # Haskell module names are capitalized, so we change the source file
+        # names (except for the first one) to match the module's name.
+        # The first source file is, instead, the grader or the standalone
+        # source file; it won't be imported in any other source file, so
+        # there is no need to capitalize it.
         def capitalize(string):
             dirname, basename = os.path.split(string)
             return os.path.join(dirname, basename[0].upper() + basename[1:])
         for source in source_filenames[1:]:
             commands.append(["/bin/ln", "-s", os.path.basename(source),
                              capitalize(source)])
-        commands.append(["/usr/bin/ghc", "-static", "-O2", "-Wall", "-rtsopts",
-                         "-o", executable_filename, source_filenames[0]])
+        commands.append(["/usr/bin/ghc", "-static", "-O2", "-Wall", "-o",
+                         executable_filename, source_filenames[0]])
     else:
         raise ValueError("Unknown language %s." % language)
     return commands
@@ -296,7 +298,7 @@ def get_evaluation_commands(language, executable_filename):
 
     """
     commands = []
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_HS):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
     elif language == LANG_PYTHON:
@@ -306,10 +308,6 @@ def get_evaluation_commands(language, executable_filename):
         commands.append(command)
     elif language == LANG_PHP:
         command = ["/usr/bin/php5", executable_filename]
-        commands.append(command)
-    elif language == LANG_HS:
-        command = [os.path.join(".", executable_filename), "+RTS", "-K8G",
-                    "-RTS"]
         commands.append(command)
     else:
         raise ValueError("Unknown language %s." % language)
