@@ -38,7 +38,7 @@ import yaml
 import logging
 
 from cms import utf8_decoder, SOURCE_EXT_TO_LANGUAGE_MAP, \
-    LANGUAGE_TO_SOURCE_EXT_MAP, LANG_PASCAL
+    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP, LANG_PASCAL
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
@@ -231,12 +231,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                 os.path.join(tempdir, source_name))
                 new_srcs.append(source_name)
                 # Libraries are needed/used only for C/C++ and Pascal
-                lib_template = "%slib.pas" if lang == LANG_PASCAL else "%s.h"
-                lib_filename = lib_template % (task_name)
-                lib_path = os.path.join(base_dir, SOL_DIRNAME, lib_filename)
-                if os.path.exists(lib_path):
-                    shutil.copyfile(lib_path, os.path.join(tempdir,
-                                                           lib_filename))
+                if lang in LANGUAGE_TO_HEADER_EXT_MAP:
+                    lib_template = "%s" + LANGUAGE_TO_HEADER_EXT_MAP[lang]
+                    lib_filename = lib_template % (task_name)
+                    lib_path = os.path.join(base_dir, SOL_DIRNAME, lib_filename)
+                    if os.path.exists(lib_path):
+                        shutil.copyfile(lib_path,
+                                        os.path.join(tempdir, lib_filename))
                 new_exe = os.path.join(tempdir, task_name)
                 compilation_commands = get_compilation_commands(
                     lang,

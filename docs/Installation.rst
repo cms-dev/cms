@@ -40,7 +40,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
 
-* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php5``).
+* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php5``);
+
+* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
