@@ -606,8 +606,9 @@ class UseTokenHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
+        fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
         fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     "tasks/%s/submissions" % quote(task.name, safe=''))
+                                     fallback_page)
 
         submission = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\
