@@ -77,7 +77,8 @@ class BaseHandler(CommonRequestHandler):
         # able to import new contests without having to restart CWS.
         self.contest_list = {}
         for contest in self.sql_session.query(Contest).all():
-            self.contest_list[contest.name] = contest
+            if not contest.hidden:
+                self.contest_list[contest.name] = contest
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
