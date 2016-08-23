@@ -344,8 +344,11 @@ class ContestHandler(BaseHandler):
                 lang_codes, self.contest.allowed_localizations)
 
         # Select the one the user likes most.
-        basic_lang = lang_codes[0].replace("_", "-") \
-            if self.contest and len(self.contest.allowed_localizations) else 'en'
+        basic_lang = 'en'
+
+        if self.contest and len(self.contest.allowed_localizations):
+            basic_lang = lang_codes[0].replace("_", "-")
+
         http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]
         self.browser_lang = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),

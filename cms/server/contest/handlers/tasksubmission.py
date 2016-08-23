@@ -76,8 +76,9 @@ class SubmitHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
+        fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
         fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     "tasks/%s/submissions" % quote(task.name, safe=''))
+                                     fallback_page)
 
         # Alias for easy access
         contest = self.contest
