@@ -972,7 +972,7 @@ td.token_rules p:last-child {
 }
 
 .contest-list ul {
-    padding: 0px;
+    padding: 0;
 }
 
 .contest-list li:first-child > a {
