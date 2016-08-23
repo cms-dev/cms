@@ -127,8 +127,8 @@ class Contest(Base):
         nullable=False,
         default=False)
 
-    # Whether to automatically create a participation for users when they log in
-    # to this contest. Useful for multi-contest setups.
+    # Whether to automatically create a participation for users when they log
+    # in to this contest. Useful for multi-contest setups.
     open_participation = Column(
         Boolean,
         nullable=False,
