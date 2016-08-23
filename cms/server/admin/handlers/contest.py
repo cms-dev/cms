@@ -107,6 +107,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "ip_restriction")
             self.get_bool(attrs, "ip_autologin")
             self.get_bool(attrs, "open_participation")
+            self.get_bool(attrs, "hidden")
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")

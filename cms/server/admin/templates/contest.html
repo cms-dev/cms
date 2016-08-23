@@ -85,6 +85,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether users should be able to see this contest or not."></span>
+        <label for="hidden">Hidden</label>
+      </td>
+      <td>
+        <input type="checkbox" id="hidden" name="hidden" {{ "checked" if contest.hidden else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The number of decimal places the scores will be rounded to.
                                   Example: '2' to allow 98.76."></span>
         Score decimal places
