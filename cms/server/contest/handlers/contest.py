@@ -210,7 +210,7 @@ class ContestHandler(BaseHandler):
                 participation = self._get_current_user_from_ip()
                 # If the login is IP-based, we delete previous cookies.
                 if participation is not None:
-                    self.clear_cookie("login")
+                    self.clear_cookie(cookie_name)
             except RuntimeError:
                 return None
 
@@ -230,7 +230,7 @@ class ContestHandler(BaseHandler):
         hidden_user_restricted = \
             participation.hidden and self.contest.block_hidden_participations
         if ip_login_restricted or hidden_user_restricted:
-            self.clear_cookie("login")
+            self.clear_cookie(cookie_name)
             participation = None
 
         return participation
