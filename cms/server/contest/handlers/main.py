@@ -85,9 +85,14 @@ class LoginHandler(ContestHandler):
             return
 
         if participation is None:
-            # TODO: notify the user that they're uninvited
-            self.redirect(fallback_page + "?login_error=true")
-            return
+            if self.contest.open_participation:
+                # Create a participation on the fly
+                participation = Participation(user=user, contest=self.contest)
+                self.sql_session.commit()
+            else:
+                # TODO: notify the user that they're uninvited
+                self.redirect(fallback_page + "?login_error=true")
+                return
 
         # If a contest-specific password is defined, use that. If it's
         # not, use the user's main password.
