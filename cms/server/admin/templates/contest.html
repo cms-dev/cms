@@ -76,6 +76,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether existing users can independently join this contest."></span>
+        <label for="open_participation">Open participation</label>
+      </td>
+      <td>
+        <input type="checkbox" id="open_participation" name="open_participation" {{ "checked" if contest.open_participation else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The number of decimal places the scores will be rounded to.
                                   Example: '2' to allow 98.76."></span>
         Score decimal places

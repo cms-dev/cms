@@ -127,6 +127,13 @@ class Contest(Base):
         nullable=False,
         default=False)
 
+    # Whether to automatically create a participation for users when they log in
+    # to this contest. Useful for multi-contest setups.
+    open_participation = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # The parameters that control contest-tokens follow. Note that
     # their effect during the contest depends on the interaction with
     # the parameters that control task-tokens, defined on each Task.
