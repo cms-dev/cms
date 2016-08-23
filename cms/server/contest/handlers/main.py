@@ -160,6 +160,7 @@ class LogoutHandler(ContestHandler):
     @multi_contest
     def get(self, contest_name):
         self.clear_cookie(self.contest.name + "_login")
+        print(self.r_params["contest_root"])
         self.redirect(self.r_params["contest_root"])
 
 

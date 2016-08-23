@@ -30,8 +30,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import time
 import logging
+import os
+import time
+
 from datetime import datetime, timedelta
 from urllib import quote
 
@@ -711,7 +713,7 @@ class CommonRequestHandler(RequestHandler):
         return self.application.service
 
     def redirect(self, url):
-        url = get_url_root(self.request.path) + url
+        url = os.path.join(get_url_root(self.request.path), url)
 
         # We would prefer to just use this:
         #   tornado.web.RequestHandler.redirect(self, url)
