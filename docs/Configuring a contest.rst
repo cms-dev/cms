@@ -201,4 +201,6 @@ Language details
 
 * PHP submissions are interpreted by ``/usr/bin/php5``.
 
+* Haskell support is provided by ``ghc``, and submissions are optimized with ``-O2``.
+
 The compilation lines can be inspected and amended in :file:`cms/grading/__init__.py` (there is no way of configuring them apart from changing the source code). Possible amendments are changing the Python version from 2 to 3 (there are instructions in the file on how to do it) or changing the standard used by the GCC.
