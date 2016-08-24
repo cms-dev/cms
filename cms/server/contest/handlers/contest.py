@@ -129,10 +129,8 @@ class ContestHandler(BaseHandler):
 
         ret["contest"] = self.contest
         ret["contest_root"] = ret["url_root"]
-        ret["real_contest_root"] = "/"
         if self.application.service.contest is None:
             ret["contest_root"] += "/" + self.contest.name
-            ret["real_contest_root"] += self.contest.name
         ret["phase"] = self.contest.phase(self.timestamp)
 
         ret["printing_enabled"] = (config.printer is not None)

@@ -66,7 +66,7 @@ class LoginHandler(ContestHandler):
     """
     @multi_contest
     def post(self, contest_name):
-        fallback_page = self.r_params["real_contest_root"]
+        fallback_page = self.r_params["contest_root"]
 
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
@@ -277,7 +277,7 @@ class PrintingHandler(ContestHandler):
         if not self.r_params["printing_enabled"]:
             raise tornado.web.HTTPError(403)
 
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
+        fallback_page = os.path.join(self.r_params["contest_root"],
                                      "printing")
 
         printjobs = self.sql_session.query(PrintJob)\

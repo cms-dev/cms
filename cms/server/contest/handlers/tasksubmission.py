@@ -77,7 +77,7 @@ class SubmitHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
+        fallback_page = os.path.join(self.r_params["contest_root"],
                                      fallback_page)
 
         # Alias for easy access
@@ -607,7 +607,7 @@ class UseTokenHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
+        fallback_page = os.path.join(self.r_params["contest_root"],
                                      fallback_page)
 
         submission = self.sql_session.query(Submission)\
