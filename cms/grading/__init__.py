@@ -366,7 +366,7 @@ def compilation_step(sandbox, commands):
 
     """
     # Set sandbox parameters suitable for compilation.
-    sandbox.dirs += [("/etc", None, None)]
+    sandbox.dirs += [("/etc", None, None), ("/var", None, None)]
     sandbox.preserve_env = True
     sandbox.max_processes = None
     sandbox.timeout = 10
