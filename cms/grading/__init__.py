@@ -366,7 +366,12 @@ def compilation_step(sandbox, commands):
 
     """
     # Set sandbox parameters suitable for compilation.
-    sandbox.dirs += [("/etc", None, None), ("/var", None, None)]
+    sandbox.dirs += [("/etc", None, None)]
+    # We need to add "/var/lib/ghc" to the unrestricted dirs so GHC can access
+    # haskell's package database.
+    # GHC looks for it in "/usr/lib/ghc/package.conf.d", which is only a symlink
+    # to "/var/lib/ghc/package.conf.d"
+    sandbox.dirs += [("/var/lib/ghc", None, None)]
     sandbox.preserve_env = True
     sandbox.max_processes = None
     sandbox.timeout = 10
