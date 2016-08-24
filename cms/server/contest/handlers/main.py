@@ -88,6 +88,7 @@ class LoginHandler(ContestHandler):
             if self.contest.open_participation:
                 # Create a participation on the fly
                 participation = Participation(user=user, contest=self.contest)
+                self.sql_session.add(participation)
                 self.sql_session.commit()
             else:
                 # TODO: notify the user that they're uninvited
