@@ -175,7 +175,7 @@ class ContestHandler(BaseHandler):
         use the "login_url" application parameter.
 
         """
-        return "/" + self.contest.name
+        return self.r_params["real_contest_root"]
 
     def get_current_user(self):
         """Return the currently logged in participation.
