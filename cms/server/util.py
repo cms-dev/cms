@@ -711,13 +711,19 @@ class CommonRequestHandler(RequestHandler):
         return self.application.service
 
     def redirect(self, url):
-        url = get_url_root(self.request.path) + url
+        """This method overrides tornado.web.RequestHandler.redirect()
 
-        # We would prefer to just use this:
-        #   tornado.web.RequestHandler.redirect(self, url)
-        # but unfortunately that assumes it knows the full path to the current
-        # page to generate an absolute URL. This may not be the case if we are
-        # hidden behind a proxy which is remapping part of its URL space to us.
+        We would prefer not to override this, but the parent method assumes it
+        knows the full path to the current page to generate an absolute URL.
+        This may not be the case if we are hidden behind a proxy which is
+        remapping part of its URL space to us.
+
+        url (string): a URL starting with a forward slash, e.g. "/stuff"
+
+        """
+        # We don't use os.path.join here, because we need something like this:
+        # ".." + "/stuff" to become: "../stuff" not: "/stuff"
+        url = get_url_root(self.request.path) + url
 
         self.set_status(302)
         self.set_header("Location", url)
