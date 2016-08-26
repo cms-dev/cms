@@ -10,6 +10,7 @@
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -128,6 +129,7 @@ setup(
             "cmsAddStatement=cmscontrib.AddStatement:main",
             "cmsAddSubmission=cmscontrib.AddSubmission:main",
             "cmsAddTeam=cmscontrib.AddTeam:main",
+            "cmsAddTests=cmscontrib.AddTests:main",
             "cmsAddUser=cmscontrib.AddUser:main",
             "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
             "cmsDumpExporter=cmscontrib.DumpExporter:main",
