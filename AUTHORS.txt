@@ -39,5 +39,6 @@ Myungwoo Chun <mc.tamaki@gmail.com>
 wafrelka <wafrelka@gmail.com>
 Andrea Cracco <guilucand@gmail.com>
 Petar Veličković <pv273@cam.ac.uk>
+Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
