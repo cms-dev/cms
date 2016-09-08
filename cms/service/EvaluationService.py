@@ -8,6 +8,7 @@
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -216,7 +217,7 @@ class EvaluationService(TriggeredService):
                          .total_seconds(),
                          immediately=False)
 
-    def submission_enqueue_operations(self, submission):
+    def submission_enqueue_operations(self, submission, dataset_ids=None):
         """Push in queue the operations required by a submission.
 
         submission (Submission): a submission.
@@ -225,7 +226,12 @@ class EvaluationService(TriggeredService):
 
         """
         new_operations = 0
-        for dataset in get_datasets_to_judge(submission.task):
+        if dataset_ids is None:
+            datasets = get_datasets_to_judge(submission.task)
+        else:
+            datasets = [dataset for dataset in submission.task.datasets
+                        if dataset.id in dataset_ids]
+        for dataset in datasets:
             submission_result = submission.get_result(dataset)
             number_of_operations = 0
             for operation, priority, timestamp in submission_get_operations(
@@ -953,7 +959,11 @@ class EvaluationService(TriggeredService):
             # Finally, we re-enqueue the operations for the
             # submissions.
             for submission in submissions:
-                self.submission_enqueue_operations(submission)
+                self.submission_enqueue_operations(submission,
+                                                   [dataset_id]
+                                                   if dataset_id is not None
+                                                   else None
+                                                   )
 
             session.commit()
 
