@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Petar Veličković <pv273@cam.ac.uk>
@@ -197,7 +197,7 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox)
+        delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -371,8 +371,8 @@ class TwoSteps(TaskType):
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
 
-        delete_sandbox(first_sandbox)
-        delete_sandbox(second_sandbox)
+        delete_sandbox(first_sandbox, job.success)
+        delete_sandbox(second_sandbox, job.success)
 
     def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""

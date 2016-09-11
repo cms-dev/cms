@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -67,14 +67,18 @@ def create_sandbox(file_cacher):
     return sandbox
 
 
-def delete_sandbox(sandbox):
-    """Delete the sandbox, if the configuration allows it to be
-    deleted.
+def delete_sandbox(sandbox, success=True):
+    """Delete the sandbox, if the configuration and job was ok.
 
     sandbox (Sandbox): the sandbox to delete.
+    success (boolean): if the job succeeded (no system errors).
 
     """
-    if not config.keep_sandbox:
+    # If the job was not successful, we keep the sandbox around.
+    if not success:
+        logger.warning("Sandbox %s kept around because job did not succeeded.",
+                       sandbox.outer_temp_dir)
+    elif not config.keep_sandbox:
         try:
             sandbox.delete()
         except (IOError, OSError):

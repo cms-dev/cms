@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
@@ -172,7 +172,7 @@ class Communication(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox)
+        delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -292,9 +292,9 @@ class Communication(TaskType):
         job.outcome = "%s" % outcome if outcome is not None else None
         job.text = text
 
-        delete_sandbox(sandbox_mgr)
+        delete_sandbox(sandbox_mgr, job.success)
         for s in sandbox_user:
-            delete_sandbox(s)
+            delete_sandbox(s, job.success)
         if not config.keep_sandbox:
             for d in fifo_dir:
                 rmtree(d)
