@@ -168,7 +168,7 @@ class Communication(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox)
+        delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -299,9 +299,9 @@ class Communication(TaskType):
         job.outcome = "%s" % outcome if outcome is not None else None
         job.text = text
 
-        delete_sandbox(sandbox_mgr)
+        delete_sandbox(sandbox_mgr, job.success)
         for s in sandbox_user:
-            delete_sandbox(s)
+            delete_sandbox(s, job.success)
         if not config.keep_sandbox:
             for d in fifo_dir:
                 rmtree(d)

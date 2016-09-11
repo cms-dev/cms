@@ -68,14 +68,18 @@ def create_sandbox(file_cacher, multithreaded=False):
     return sandbox
 
 
-def delete_sandbox(sandbox):
-    """Delete the sandbox, if the configuration allows it to be
-    deleted.
+def delete_sandbox(sandbox, success=True):
+    """Delete the sandbox, if the configuration and job was ok.
 
     sandbox (Sandbox): the sandbox to delete.
+    success (boolean): if the job succeeded (no system errors).
 
     """
-    if not config.keep_sandbox:
+    # If the job was not successful, we keep the sandbox around.
+    if not success:
+        logger.warning("Sandbox %s kept around because job did not succeeded.",
+                       sandbox.outer_temp_dir)
+    elif not config.keep_sandbox:
         try:
             sandbox.delete()
         except (IOError, OSError):

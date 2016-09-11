@@ -195,7 +195,7 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox)
+        delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -369,8 +369,8 @@ class TwoSteps(TaskType):
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
 
-        delete_sandbox(first_sandbox)
-        delete_sandbox(second_sandbox)
+        delete_sandbox(first_sandbox, job.success)
+        delete_sandbox(second_sandbox, job.success)
 
     def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""
