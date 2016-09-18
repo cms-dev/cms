@@ -145,7 +145,7 @@ class StartHandler(ContestHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect(self.r_params["contest_root"])
+        self.redirect(self.r_params["real_contest_root"])
 
 
 class LogoutHandler(ContestHandler):
