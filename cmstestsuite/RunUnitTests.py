@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,6 +22,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
+import logging
 import os
 import sys
 import subprocess
@@ -29,8 +30,11 @@ import datetime
 from argparse import ArgumentParser
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG, FrameworkException, info, sh
+from cmstestsuite import CONFIG, FrameworkException, sh
 from cmstestsuite import combine_coverage
+
+
+logger = logging.getLogger(__name__)
 
 
 FAILED_UNITTEST_FILENAME = '.unittestfailures'
@@ -43,21 +47,21 @@ def run_unittests(test_list):
                                     format (path, filename.py).
     return (int):
     """
-    info("Running unit tests...")
+    logger.info("Running unit tests...")
 
     failures = []
     num_tests_to_execute = len(test_list)
 
     # For all tests...
     for i, (path, filename) in enumerate(test_list):
-        info("Running test %d/%d: %s.%s" % (
+        logger.info("Running test %d/%d: %s.%s" % (
             i + 1, num_tests_to_execute,
             path, filename))
         try:
             sh('python2 -m coverage run -p --source=cms %s' %
                os.path.join(path, filename))
         except FrameworkException:
-            info("  (FAILED: %s)" % filename)
+            logger.info("  (FAILED: %s)" % filename)
 
             # Add this case to our list of failures, if we haven't already.
             failures.append((path, filename))
@@ -180,7 +184,8 @@ def main():
         return 0
 
     if args.retry_failed:
-        info("Re-running %d failed tests from last run." % len(test_list))
+        logger.info("Re-running %d failed tests from last run." %
+                    len(test_list))
 
     # Load config from cms.conf.
     CONFIG["TEST_DIR"] = git_root
@@ -194,7 +199,7 @@ def main():
         os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
         # Clear out any old coverage data.
-        info("Clearing old coverage data.")
+        logger.info("Clearing old coverage data.")
         sh("python -m coverage erase")
 
     # Run all of our test cases.

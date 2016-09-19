@@ -25,23 +25,22 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import atexit
-import errno
 import io
 import json
+import logging
 import mechanize
 import os
 import re
-import signal
-import socket
 import subprocess
 import time
-from urlparse import urlsplit
 
 from cmstestsuite.web import browser_do_request
 from cmstestsuite.web.AWSRequests import \
     AWSLoginRequest, AWSSubmissionViewRequest
 from cmstestsuite.web.CWSRequests import CWSLoginRequest, SubmitRequest
+
+
+logger = logging.getLogger(__name__)
 
 
 # CONFIG is populated by our test script.
@@ -52,12 +51,6 @@ CONFIG = {
 
 # cms_config holds the decoded-JSON of the cms.conf configuration file.
 cms_config = None
-
-
-# We store a list of all services that are running so that we can cleanly shut
-# them down.
-running_services = {}
-running_servers = {}
 
 
 # List of users and tasks we created as part of the test.
@@ -107,48 +100,6 @@ class FrameworkException(Exception):
     pass
 
 
-class RemoteService(object):
-    """Class which implements the RPC protocol used by CMS.
-
-    This is deliberately a re-implementation in order to catch or
-    trigger bugs in the CMS services.
-
-    """
-    def __init__(self, service_name, shard):
-        address, port = cms_config["core_services"][service_name][shard]
-
-        self.service_name = service_name
-        self.shard = shard
-        self.address = address
-        self.port = port
-
-    def call(self, function_name, data):
-        """Perform a synchronous RPC call."""
-        s = json.dumps({
-            "__id": "foo",
-            "__method": function_name,
-            "__data": data,
-        })
-        msg = s + "\r\n"
-
-        # Send message.
-        sock = socket.socket()
-        sock.connect((self.address, self.port))
-        sock.send(msg)
-
-        # Wait for response.
-        s = ''
-        while len(s) < 2 or s[-2:] != "\r\n":
-            s += sock.recv(1)
-        s = s[:-2]
-        sock.close()
-
-        # Decode reply.
-        reply = json.loads(s)
-
-        return reply
-
-
 def read_cms_config():
     global cms_config
     cms_config = json.load(io.open("%(CONFIG_PATH)s" % CONFIG,
@@ -165,12 +116,12 @@ def sh(cmdline, ignore_failure=False):
     """Execute a simple shell command.
 
     If cmdline is a string, it is passed to sh -c verbatim.  All escaping must
-    be performed by the user.  If cmdline is an array, then no escaping is
+    be performed by the user. If cmdline is an array, then no escaping is
     required.
 
     """
     if CONFIG["VERBOSITY"] >= 1:
-        print('$', cmdline)
+        logger.info(str('$' + cmdline))
     if CONFIG["VERBOSITY"] >= 3:
         cmdline += ' > /dev/null 2>&1'
     if isinstance(cmdline, list):
@@ -181,37 +132,6 @@ def sh(cmdline, ignore_failure=False):
         raise FrameworkException(
             "Execution failed with %d/%d. Tried to execute:\n%s\n" %
             (ret & 0xff, ret >> 8, cmdline))
-
-
-def spawn(cmdline):
-    """Execute a python application."""
-
-    def kill(job):
-        try:
-            job.kill()
-        except OSError:
-            pass
-
-    if CONFIG["VERBOSITY"] >= 1:
-        print('$', ' '.join(cmdline))
-
-    if CONFIG["TEST_DIR"] is not None and CONFIG.get("COVERAGE"):
-        cmdline = ['python', '-m', 'coverage', 'run', '-p', '--source=cms'] + \
-            cmdline
-
-    if CONFIG["VERBOSITY"] >= 3:
-        stdout = None
-        stderr = None
-    else:
-        stdout = io.open(os.devnull, 'wb')
-        stderr = stdout
-    job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
-    atexit.register(lambda: kill(job))
-    return job
-
-
-def info(s):
-    print('==>', s)
 
 
 def configure_cms(options):
@@ -248,141 +168,8 @@ def configure_cms(options):
     read_cms_config()
 
 
-def start_prog(path, shard=0, contest=None):
-    """Execute a CMS process."""
-    args = [path]
-    if shard is not None:
-        args.append("%s" % shard)
-    if contest is not None:
-        args += ['-c', "%s" % contest]
-    return spawn(args)
-
-
-def start_servicer(service_name, check, shard=0, contest=None):
-    """Start a CMS service."""
-
-    info("Starting %s." % service_name)
-    executable = os.path.join('.', 'scripts', 'cms%s' % (service_name))
-    if CONFIG["TEST_DIR"] is None:
-        executable = 'cms%s' % service_name
-    prog = start_prog(executable, shard=shard, contest=contest)
-
-    # Wait for service to come up - ping it!
-    attempts = 0
-    while attempts <= 12:
-        attempts += 1
-        try:
-            try:
-                check(service_name, shard)
-            except socket.error as error:
-                if error.errno != errno.ECONNREFUSED:
-                    raise error
-                else:
-                    time.sleep(0.1 * (1.2 ** attempts))
-                    continue
-            else:
-                return prog
-        except Exception:
-            print("Unexpected exception while waiting for the service:")
-            raise
-
-    # If we arrive here, it means the service was not fired up.
-    if shard is None:
-        raise FrameworkException("Failed to bring up service %s" %
-                                 service_name)
-    else:
-        raise FrameworkException("Failed to bring up service %s/%d" %
-                                 (service_name, shard))
-
-
-def check_service(service_name, shard):
-    """Check if the service is up."""
-    rs = RemoteService(service_name, shard)
-    reply = rs.call("echo", {"string": "hello"})
-    if reply['__data'] != 'hello':
-        raise Exception("Strange response from service.")
-
-
-def start_service(service_name, shard=0, contest=None):
-    """Start a CMS service."""
-    prog = start_servicer(service_name, check_service, shard, contest)
-    rs = RemoteService(service_name, shard)
-    running_services[(service_name, shard, contest)] = (rs, prog)
-
-    return prog
-
-
-def restart_service(service_name, shard=0, contest=None):
-    shutdown_service(service_name, shard, contest)
-    return start_service(service_name, shard, contest)
-
-
-def check_server(service_name, shard):
-    """Check if the server is up."""
-    check_service(service_name, shard)
-    if service_name == 'AdminWebServer':
-        port = cms_config['admin_listen_port']
-    else:
-        port = cms_config['contest_listen_port'][shard]
-    sock = socket.socket()
-    sock.connect(('127.0.0.1', port))
-    sock.close()
-
-
-def start_server(service_name, shard=0, contest=None):
-    """Start a CMS server."""
-    prog = start_servicer(service_name, check_server, shard, contest)
-    running_servers[service_name] = prog
-
-    return prog
-
-
-def check_ranking_web_server(service_name, shard):
-    """Check if RankingWebServer is up."""
-    assert service_name == "RankingWebServer"
-    assert shard is None
-    url = urlsplit(cms_config['rankings'][0])
-    sock = socket.socket()
-    sock.connect((url.hostname, url.port))
-    sock.close()
-
-
-def start_ranking_web_server():
-    """Start the RankingWebServer. It's a bit special compared to the
-    others.
-
-    """
-    prog = start_servicer(
-        "RankingWebServer", check_ranking_web_server, shard=None)
-    running_servers['RankingWebServer'] = prog
-    return prog
-
-
-def shutdown_service(service_name, shard=0, contest=None):
-    rs, prog = running_services[(service_name, shard, contest)]
-
-    info("Asking %s/%d to terminate..." % (service_name, shard))
-    rs = running_services[(service_name, shard, contest)]
-    rs = RemoteService(service_name, shard)
-    rs.call("quit", {"reason": "from test harness"})
-    prog.wait()
-
-    del running_services[(service_name, shard, contest)]
-
-
-def shutdown_services():
-    for key in running_services.keys():
-        service_name, shard, contest = key
-        shutdown_service(service_name, shard, contest)
-
-    for name, server in running_servers.iteritems():
-        info("Terminating %s." % name)
-        os.kill(server.pid, signal.SIGINT)
-        server.wait()
-
-
 def combine_coverage():
-    info("Combining coverage results.")
+    logger.info("Combining coverage results.")
     sh("python -m coverage combine")
 
 
@@ -392,7 +179,7 @@ def initialize_aws(rand):
     rand (int): some random bit to add to the admin username.
 
     """
-    info("Creating admin...")
+    logger.info("Creating admin...")
     admin_info["username"] = "admin%s" % rand
     admin_info["password"] = "adminpwd"
     sh("python cmscontrib/AddAdmin.py %(username)s -p %(password)s"
