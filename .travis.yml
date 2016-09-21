@@ -24,14 +24,15 @@ install:
   - sudo pip install -r dev-requirements.txt
   - sudo python setup.py install
 
-  - sudo -u postgres psql -c "CREATE USER cmsuser WITH PASSWORD 'password';"
-  - sudo -u postgres psql -c "CREATE DATABASE database WITH OWNER cmsuser;"
-  - sudo -u postgres psql database -c "ALTER SCHEMA public OWNER TO cmsuser"
-  - sudo -u postgres psql database -c "GRANT SELECT ON pg_largeobject TO cmsuser"
+  - psql --username=postgres --command="CREATE USER cmsuser WITH PASSWORD 'your_password_here';"
 
-  - sudo -u postgres psql -c "CREATE DATABASE databasefortesting WITH OWNER cmsuser;"
-  - sudo -u postgres psql databasefortesting -c "ALTER SCHEMA public OWNER TO cmsuser"
-  - sudo -u postgres psql databasefortesting -c "GRANT SELECT ON pg_largeobject TO cmsuser"
+  - createdb --username=postgres --owner=cmsuser cmsdb
+  - psql --username=postgres --dbname=cmsdb --command='ALTER SCHEMA public OWNER TO cmsuser'
+  - psql --username=postgres --dbname=cmsdb --command='GRANT SELECT ON pg_largeobject TO cmsuser'
+
+  - createdb --username=postgres --owner=cmsuser cmsdbfortesting
+  - psql --username=postgres --dbname=cmsdbfortesting --command='ALTER SCHEMA public OWNER TO cmsuser'
+  - psql --username=postgres --dbname=cmsdbfortesting --command='GRANT SELECT ON pg_largeobject TO cmsuser'
 
   - sudo chown root:$USER /usr/local/bin/isolate /usr/local/etc/cms.conf
   - sudo chmod 750 /usr/local/bin/isolate

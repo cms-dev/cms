@@ -42,7 +42,7 @@
     "_section": "Database",
 
     "_help": "Connection string for the database.",
-    "database": "postgresql+psycopg2://cmsuser:password@localhost/database",
+    "database": "postgresql+psycopg2://cmsuser:your_password_here@localhost/cmsdb",
 
     "_help": "Whether SQLAlchemy prints DB queries on stdout.",
     "database_debug": false,

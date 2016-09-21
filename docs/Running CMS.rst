@@ -8,11 +8,10 @@ The first thing to do is to create the user and the database. For PostgreSQL, th
 
 .. sourcecode:: bash
 
-    sudo su - postgres
-    createuser cmsuser -P
-    createdb -O cmsuser database
-    psql database -c 'ALTER SCHEMA public OWNER TO cmsuser'
-    psql database -c 'GRANT SELECT ON pg_largeobject TO cmsuser'
+    createuser --username=postgres --pwprompt cmsuser
+    createdb --username=postgres --owner=cmsuser cmsdb
+    psql --username=postgres --dbname=cmsdb --command='ALTER SCHEMA public OWNER TO cmsuser'
+    psql --username=postgres --dbname=cmsdb --command='GRANT SELECT ON pg_largeobject TO cmsuser'
 
 The last two lines are required to give the PostgreSQL user some privileges which it does not have by default, despite being the database owner.
 
@@ -32,7 +31,7 @@ Finally you have to create the database schema for CMS, by running:
 
     Moreover, you need to change the HBA (a sort of access control list for PostgreSQL) to accept login requests from outside localhost. Open the file :file:`pg_hba.conf` and add a line like this one::
 
-        host  database  cmsuser  192.168.0.0/24  md5
+        host  cmsdb  cmsuser  192.168.0.0/24  md5
 
 
 .. _running-cms_configuring-cms:
