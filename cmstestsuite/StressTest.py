@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -30,9 +30,10 @@ import os
 import sys
 import mechanize
 import threading
-import optparse
 import random
 import time
+
+from argparse import ArgumentParser
 
 from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
@@ -276,92 +277,82 @@ DEFAULT_METRICS = {'time_coeff': 10.0,
 
 
 def main():
-    parser = optparse.OptionParser(usage="usage: %prog [options]")
-    parser.add_option("-c", "--contest",
-                      help="contest ID to export", dest="contest_id",
-                      action="store", type="int", default=None)
-    parser.add_option("-n", "--actor-num",
-                      help="the number of actors to spawn", dest="actor_num",
-                      action="store", type="int", default=None)
-    parser.add_option("-s", "--sort-actors",
-                      help="sort usernames alphabetically "
-                      "instead of randomizing before slicing them",
-                      action="store_true", default=False, dest="sort_actors")
-    parser.add_option("-u", "--base-url",
-                      help="base URL for placing HTTP requests",
-                      action="store", default=None, dest="base_url")
-    parser.add_option("-S", "--submissions-path",
-                      help="base path for submission to send",
-                      action="store", default=None, dest="submissions_path")
-    parser.add_option("-p", "--prepare-path",
-                      help="file to put contest info to",
-                      action="store", default=None, dest="prepare_path")
-    parser.add_option("-r", "--read-from",
-                      help="file to read contest info from",
-                      action="store", default=None, dest="read_from")
-    parser.add_option("-t", "--time-coeff", type="float",
-                      help="average wait between actions",
-                      action="store", default=10.0, dest="time_coeff")
-    parser.add_option("-o", "--only-submit",
-                      help="whether the actor only submits solutions",
-                      action="store_true", default=False,
-                      dest="only_submissions")
-    options = parser.parse_args()[0]
+    parser = ArgumentParser(description="Stress tester for CMS")
+    parser.add_argument("-c", "--contest-id", type=int, required=True,
+                        help="ID of the contest to test against")
+    parser.add_argument("-n", "--actor-num", type=int,
+                        help="the number of actors to spawn")
+    parser.add_argument(
+        "-s", "--sort-actors", action="store_true",
+        help="sort usernames alphabetically before slicing them")
+    parser.add_argument("-u", "--base-url",
+                        help="base URL for placing HTTP requests")
+    parser.add_argument("-S", "--submissions-path",
+                        help="base path for submission to send")
+    parser.add_argument("-p", "--prepare-path",
+                        help="file to put contest info to")
+    parser.add_argument("-r", "--read-from",
+                        help="file to read contest info from")
+    parser.add_argument("-t", "--time-coeff", type=float, default=10.0,
+                        help="average wait between actions")
+    parser.add_argument("-o", "--only-submit", action="store_true",
+                        help="whether the actor only submits solutions")
+    args = parser.parse_args()
 
     # If prepare_path is specified we only need to save some useful
     # contest data and exit.
-    if options.prepare_path is not None:
-        users, tasks = harvest_contest_data(options.contest_id)
+    if args.prepare_path is not None:
+        users, tasks = harvest_contest_data(args.contest_id)
         contest_data = dict()
         contest_data['users'] = users
         contest_data['tasks'] = tasks
-        with io.open(options.prepare_path, "wt", encoding="utf-8") as file_:
+        with io.open(args.prepare_path, "wt", encoding="utf-8") as file_:
             file_.write("%s" % contest_data)
         return
 
-    assert options.time_coeff > 0.0
-    assert not (options.only_submissions and options.submissions_path == "")
+    assert args.time_coeff > 0.0
+    assert not (args.only_submit and args.submissions_path == "")
 
     users = []
     tasks = []
 
     # If read_from is not specified, read contest data from database
     # if it is specified - read contest data from the file
-    if options.read_from is None:
-        users, tasks = harvest_contest_data(options.contest_id)
+    if args.read_from is None:
+        users, tasks = harvest_contest_data(args.contest_id)
     else:
-        with io.open(options.read_from, "rt", encoding="utf-8") as file_:
+        with io.open(args.read_from, "rt", encoding="utf-8") as file_:
             contest_data = ast.literal_eval(file_.read())
         users = contest_data['users']
         tasks = contest_data['tasks']
 
-    if options.actor_num is not None:
+    if args.actor_num is not None:
         user_items = users.items()
-        if options.sort_actors:
+        if args.sort_actors:
             user_items.sort()
         else:
             random.shuffle(user_items)
-        users = dict(user_items[:options.actor_num])
+        users = dict(user_items[:args.actor_num])
 
     # If the base URL is not specified, we try to guess it; anyway,
     # the guess code isn't very smart...
-    if options.base_url is not None:
-        base_url = options.base_url
+    if args.base_url is not None:
+        base_url = args.base_url
     else:
         base_url = "http://%s:%d/" % \
             (get_service_address(ServiceCoord('ContestWebServer', 0))[0],
              config.contest_listen_port[0])
 
     metrics = DEFAULT_METRICS
-    metrics["time_coeff"] = options.time_coeff
+    metrics["time_coeff"] = args.time_coeff
     actor_class = RandomActor
-    if options.only_submissions:
+    if args.only_submit:
         actor_class = SubmitActor
     actors = [actor_class(username, data['password'], metrics, tasks,
                           log=RequestLog(log_dir=os.path.join('./test_logs',
                                                               username)),
                           base_url=base_url,
-                          submissions_path=options.submissions_path)
+                          submissions_path=args.submissions_path)
               for username, data in users.iteritems()]
     for actor in actors:
         actor.start()
@@ -392,6 +383,7 @@ def main():
         great_log.merge(actor.log)
 
     great_log.print_stats()
+
 
 if __name__ == '__main__':
     main()
