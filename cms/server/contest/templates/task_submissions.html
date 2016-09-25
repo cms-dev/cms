@@ -143,7 +143,7 @@ $(document).ready(function () {
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
 <div style="padding-bottom:10px">
-    {% set tokens_info = contest.tokens_available(current_user.user.username, task.name, timestamp) %}
+    {% set tokens_info = contest.tokens_available(current_user, task, timestamp) %}
     {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}
     {% set need_to_wait = tokens_info[2] is not None %}
     {% if can_play_token %}
