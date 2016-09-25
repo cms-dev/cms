@@ -118,7 +118,7 @@ def get_sr(scored=True):
 
 
 def get_submission(task=None, participation=None,
-                   sr=None, scored=True, ignored=False):
+                   sr=None, scored=True, official=True):
     task = task if task is not None else get_task()
     participation = participation if participation is not None \
         else get_participation()
@@ -131,7 +131,7 @@ def get_submission(task=None, participation=None,
     submission.get_result.return_value = sr
     submission.participation = participation
     submission.task = task
-    submission.ignored = ignored
+    submission.official = official
 
     submission.id = get_int()
     return submission

@@ -64,30 +64,30 @@
         </td>
       </tr>
       <tr>
-        <td>Ignored</td>
+        <td>Official</td>
         <td>
-            <form action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/ignore" name="ignore_form" method="POST">
-            {% if s.ignored is False %}
-              <input type="hidden" name="ignore" value="yes"/>
+            <form action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/official" name="official_status_form" method="POST">
+            {% if s.official is False %}
+              <input type="hidden" name="official" value="yes"/>
               No
               <button
               {% if not current_user.permission_all %}
                   disabled
               {% end %}
-               onclick="document.ignore_form.submit()"
+               onclick="document.official_status_form.submit()"
               >
-                Ignore
+                Make Official
               </button>
             {% else %}
-              <input type="hidden" name="ignore" value="no"/>
+              <input type="hidden" name="official" value="no"/>
               Yes
               <button
               {% if not current_user.permission_all %}
                   disabled
               {% end %}
-               onclick="document.ignore_form.submit()"
+               onclick="document.official_status_form.submit()"
               >
-                Unignore
+                Make Unofficial
               </button>
             {% end %}
             </form>

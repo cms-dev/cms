@@ -90,7 +90,7 @@ from .admin import \
 from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
-    SubmissionIgnoreHandler, \
+    SubmissionOfficialStatusHandler, \
     SubmissionFileHandler, \
     FileFromDigestHandler
 
@@ -194,7 +194,10 @@ HANDLERS = [
 
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
-    (r"/submission/([0-9]+)(?:/([0-9]+))?/ignore", SubmissionIgnoreHandler),
+    (
+        r"/submission/([0-9]+)(?:/([0-9]+))?/official",
+        SubmissionOfficialStatusHandler
+    ),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
 ]

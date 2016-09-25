@@ -22,7 +22,7 @@
 Used by ContestImporter and DumpUpdater.
 
 This updater just adds the default values for the new field
-(Submission.ignored).
+(Submission.official).
 
 """
 
@@ -42,6 +42,6 @@ class Updater(object):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Submission":
-                v["ignored"] = False
+                v["official"] = True
 
         return self.objs

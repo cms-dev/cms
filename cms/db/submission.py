@@ -97,11 +97,11 @@ class Submission(Base):
         nullable=False,
         default="")
 
-    # If true, submission will not be considered in contestant's score.
-    ignored = Column(
+    # If false, submission will not be considered in contestant's score.
+    official = Column(
         Boolean,
         nullable=False,
-        default=False,
+        default=True,
     )
 
     @property

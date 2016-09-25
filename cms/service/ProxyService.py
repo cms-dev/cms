@@ -285,7 +285,7 @@ class ProxyService(TriggeredService):
                 if submission.participation.hidden:
                     continue
 
-                if submission.ignored:
+                if not submission.official:
                     continue
 
                 # The submission result can be None if the dataset has
@@ -480,9 +480,9 @@ class ProxyService(TriggeredService):
                             submission_id)
                 return
 
-            if submission.ignored:
+            if not submission.official:
                 logger.info("[submission_scored] Score for submission %d "
-                            "not sent because the submission is ignored.",
+                            "not sent because the submission isn't official.",
                             submission_id)
                 return
 
@@ -515,9 +515,9 @@ class ProxyService(TriggeredService):
                             submission_id)
                 return
 
-            if submission.ignored:
+            if not submission.official:
                 logger.info("[submission_tokened] Token for submission %d "
-                            "not sent because the submission is ignored.",
+                            "not sent because the submission isn't official.",
                             submission_id)
                 return
 
@@ -552,7 +552,7 @@ class ProxyService(TriggeredService):
             for submission in task.submissions:
                 # Update RWS.
                 if not submission.participation.hidden and \
-                        not submission.ignored and \
+                        submission.official and \
                         submission.get_result() is not None and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):

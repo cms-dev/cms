@@ -344,13 +344,13 @@ class SubmitHandler(BaseHandler):
         logger.info("All files stored for submission sent by %s",
                     participation.user.username)
 
-        ignored = self.r_params["actual_phase"] == +3
+        official = self.r_params["actual_phase"] == +3
 
         submission = Submission(self.timestamp,
                                 submission_lang,
                                 task=task,
                                 participation=participation,
-                                ignored=ignored)
+                                official=official)
 
         for filename, digest in file_digests.items():
             self.sql_session.add(File(filename, digest, submission=submission))

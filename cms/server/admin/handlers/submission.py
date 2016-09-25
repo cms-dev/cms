@@ -117,7 +117,7 @@ class SubmissionCommentHandler(BaseHandler):
                                                  dataset_id))
 
 
-class SubmissionIgnoreHandler(BaseHandler):
+class SubmissionOfficialStatusHandler(BaseHandler):
     """Called when the admin comments on a submission.
 
     """
@@ -125,16 +125,16 @@ class SubmissionIgnoreHandler(BaseHandler):
     def post(self, submission_id, dataset_id=None):
         submission = self.safe_get_item(Submission, submission_id)
 
-        should_ignore = self.get_argument("ignore", "no") == "yes"
+        should_make_official = self.get_argument("official", "yes") == "yes"
 
-        submission.ignored = should_ignore
+        submission.official = should_make_official
         if self.try_commit():
             logger.info("Submission '%s' by user %s in contest %s has "
-                        "been %s",
+                        "been made %s",
                         submission.id,
                         submission.participation.user.username,
                         submission.participation.contest.name,
-                        ["unignored", "ignored"][should_ignore])
+                        ["unofficial", "official"][should_make_official])
 
         if dataset_id is None:
             self.redirect("/submission/%s" % submission_id)
