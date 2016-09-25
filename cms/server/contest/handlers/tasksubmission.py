@@ -614,9 +614,7 @@ class UseTokenHandler(BaseHandler):
         # Don't trust the user, check again if (s)he can really play
         # the token.
         tokens_available = self.contest.tokens_available(
-            participation.user.username,
-            task.name,
-            self.timestamp)
+            participation, task.name, self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token when they "
                            "shouldn't.", participation.user.username)
