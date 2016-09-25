@@ -44,6 +44,7 @@ from urllib import quote
 import tornado.web
 
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from cms import config, filename_to_language
 from cms.db import File, Submission, SubmissionResult, Task, Token
@@ -386,6 +387,8 @@ class TaskSubmissionsHandler(BaseHandler):
         submissions = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\
             .filter(Submission.task == task)\
+            .options(joinedload(Submission.token))\
+            .options(joinedload(Submission.results))\
             .all()
 
         submissions_left_contest = None
