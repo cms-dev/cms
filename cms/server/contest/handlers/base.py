@@ -44,6 +44,7 @@ from datetime import timedelta
 
 import tornado.web
 
+from sqlalchemy.orm import contains_eager
 from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
 
@@ -235,17 +236,12 @@ class BaseHandler(CommonRequestHandler):
                 timedelta(seconds=config.cookie_duration):
             return None
 
-        # Load user from DB and make sure it exists.
-        user = self.sql_session.query(User)\
-            .filter(User.username == username)\
-            .first()
-        if user is None:
-            return None
-
         # Load participation from DB and make sure it exists.
         participation = self.sql_session.query(Participation)\
+            .join(Participation.user)\
+            .options(contains_eager(Participation.user))\
             .filter(Participation.contest == self.contest)\
-            .filter(Participation.user == user)\
+            .filter(User.username == username)\
             .first()
         if participation is None:
             return None
@@ -253,7 +249,7 @@ class BaseHandler(CommonRequestHandler):
         # Check that the password is correct (if a contest-specific
         # password is defined, use that instead of the user password).
         if participation.password is None:
-            correct_password = user.password
+            correct_password = participation.user.password
         else:
             correct_password = participation.password
         if password != correct_password:
@@ -261,7 +257,7 @@ class BaseHandler(CommonRequestHandler):
 
         if self.refresh_cookie:
             self.set_secure_cookie("login",
-                                   pickle.dumps((user.username,
+                                   pickle.dumps((username,
                                                  password,
                                                  make_timestamp())),
                                    expires_days=None)
