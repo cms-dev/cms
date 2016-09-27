@@ -8,6 +8,7 @@
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -50,6 +51,7 @@ from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task, \
     UserTest
+from cms.db.filecacher import FileCacher
 from cms.service import get_datasets_to_judge, \
     get_submissions, get_submission_results
 from cms.grading.Job import JobGroup
@@ -672,7 +674,23 @@ class EvaluationService(TriggeredService):
             if result.job_success:
                 result.job.to_submission(object_result)
             else:
-                object_result.evaluation_tries += 1
+                if result.job.plus is not None and \
+                   result.job.plus.get("tombstone") is True:
+                    executable_digests = [
+                        e.digest for e in
+                        object_result.executables.itervalues()]
+                    if FileCacher.TOMBSTONE_DIGEST in executable_digests:
+                        logger.info("Submission %d's compilation on dataset "
+                                    "%d has been invalidated since the "
+                                    "executable was the tombstone",
+                                    object_result.submission_id,
+                                    object_result.dataset_id)
+                        with session.begin_nested():
+                            object_result.invalidate_compilation()
+                        self.submission_enqueue_operations(
+                            object_result.submission)
+                else:
+                    object_result.evaluation_tries += 1
 
         elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
             if result.job_success:
