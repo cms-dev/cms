@@ -6,6 +6,7 @@
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,22 +25,19 @@
 
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
 import time
 
 import gevent.coros
 
-from cms.io import Service, rpc_method
-from cms.db import SessionGen, Contest
-from cms.db.filecacher import FileCacher
+from cms.db import Contest, SessionGen
+from cms.db.filecacher import BogusFileError, FileCacher
 from cms.grading import JobException
-from cms.grading.tasktypes import get_task_type
 from cms.grading.Job import CompilationJob, EvaluationJob, JobGroup
-
+from cms.grading.tasktypes import get_task_type
+from cms.io import Service, rpc_method
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +117,11 @@ class Worker(Service):
                     if self._fake_worker_time is None:
                         task_type = get_task_type(job.task_type,
                                                   job.task_type_parameters)
-                        task_type.execute_job(job, self.file_cacher)
-
+                        try:
+                            task_type.execute_job(job, self.file_cacher)
+                        except BogusFileError:
+                            job.success = False
+                            job.plus = {"bogus": True}
                     else:
                         time.sleep(self._fake_worker_time)
                         job.success = True

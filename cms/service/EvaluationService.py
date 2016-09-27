@@ -8,6 +8,7 @@
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,37 +31,34 @@ the current ranking.
 
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
-
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
 
 import gevent.coros
-
 from sqlalchemy import func, not_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from cms import ServiceCoord, get_service_shards
-from cms.io import Executor, TriggeredService, rpc_method
-from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task, \
-    UserTest
-from cms.service import get_datasets_to_judge, \
-    get_submissions, get_submission_results
+from cms.db import (Dataset, SessionGen, Submission, SubmissionResult, Task,
+                    UserTest)
+from cms.db.filecacher import FileCacher
 from cms.grading.Job import JobGroup
+from cms.io import Executor, TriggeredService, rpc_method
+from cms.service import (get_datasets_to_judge, get_submission_results,
+                         get_submissions)
 
-from .esoperations import ESOperation, get_relevant_operations, \
-    get_submissions_operations, get_user_tests_operations, \
-    submission_get_operations, submission_to_evaluate, \
-    user_test_get_operations
+from .esoperations import (ESOperation, get_relevant_operations,
+                           get_submissions_operations,
+                           get_user_tests_operations,
+                           submission_get_operations, submission_to_evaluate,
+                           user_test_get_operations)
 from .flushingdict import FlushingDict
 from .workerpool import WorkerPool
-
 
 logger = logging.getLogger(__name__)
 
@@ -668,7 +666,22 @@ class EvaluationService(TriggeredService):
             if result.job_success:
                 result.job.to_submission(object_result)
             else:
-                object_result.evaluation_tries += 1
+                if result.job.plus.get("bogus") is True:
+                    executable_digests = [
+                        e.digest for e in
+                        object_result.executables.itervalues()]
+                    if FileCacher.bogus_digest() in executable_digests:
+                        logger.info("Submission %d's compilation on dataset "
+                                    "%d has been invalidated since the "
+                                    "executable was bogus",
+                                    object_result.submission_id,
+                                    object_result.dataset_id)
+                        with session.begin_nested():
+                            object_result.invalidate_compilation()
+                        self.submission_enqueue_operations(
+                            object_result.submission)
+                else:
+                    object_result.evaluation_tries += 1
 
         elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
             if result.job_success:

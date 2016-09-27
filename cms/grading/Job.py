@@ -34,16 +34,13 @@ testcase".
 
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
 
 import json
 import logging
 
-from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
+from cms.db import Evaluation, Executable, File, Manager, UserTestExecutable
 from cms.service.esoperations import ESOperation
-
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +98,7 @@ class Job(object):
             'shard': self.shard,
             'sandboxes': self.sandboxes,
             'info': self.info,
-            }
+        }
         return res
 
     @staticmethod
@@ -244,7 +241,7 @@ class CompilationJob(Job):
                                 for k, v in self.executables.iteritems()),
             'text': self.text,
             'plus': self.plus,
-            })
+        })
         return res
 
     @classmethod
@@ -407,6 +404,7 @@ class EvaluationJob(Job):
     only_execution, get_output.
 
     """
+
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None, shard=None,
                  sandboxes=None, info=None, language=None,
@@ -497,7 +495,7 @@ class EvaluationJob(Job):
             'plus': self.plus,
             'only_execution': self.only_execution,
             'get_output': self.get_output,
-            })
+        })
         return res
 
     @classmethod
