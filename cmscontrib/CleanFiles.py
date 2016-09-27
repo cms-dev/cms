@@ -45,6 +45,7 @@ def make_bogus(session):
 def clean_files(session, dry_run):
     filecacher = FileCacher()
     files = set(file[0] for file in filecacher.list())
+    logger.info("A total number of %d files are present", len(files))
     for cls in [Attachment, Executable, File, Manager, PrintJob,
                 Statement, Testcase, UserTest, UserTestExecutable,
                 UserTestFile, UserTestManager, UserTestResult]:
@@ -65,9 +66,11 @@ def clean_files(session, dry_run):
     logger.info("Orphan files take %s disk space", format_size(total_size))
     if dry_run:
         return
-    for orphan in files:
+    for count, orphan in enumerate(files):
         filecacher.delete(orphan)
-    logger.info("Orphan files have been deleted")
+        if count % 100 == 0:
+            logger.info("%d files deleted", count)
+    logger.info("All orphan files have been deleted")
 
 
 def main():
