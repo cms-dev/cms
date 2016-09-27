@@ -28,44 +28,46 @@ from cms.db import (Attachment, Executable, File, Manager, PrintJob,
                     UserTestExecutable, UserTestFile, UserTestManager,
                     UserTestResult)
 from cms.db.filecacher import FileCacher
+from cms.server.util import format_size
 
 logger = logging.getLogger()
 
 
-def make_bogus(dry_run):
+def make_bogus(session):
     count = 0
-    with SessionGen() as session:
-        for exe in session.query(Executable).all():
-            if exe.digest != FileCacher.bogus_digest():
-                count += 1
-            exe.digest = FileCacher.bogus_digest()
-        if not dry_run:
-            session.commit()
+    for exe in session.query(Executable).all():
+        if exe.digest != FileCacher.bogus_digest():
+            count += 1
+        exe.digest = FileCacher.bogus_digest()
     logger.info("Made %d executables bogus.", count)
 
 
-def clean_files(dry_run):
+def clean_files(session, dry_run):
     filecacher = FileCacher()
     files = set(file[0] for file in filecacher.list())
-    with SessionGen() as session:
-        for cls in [Attachment, Executable, File, Manager, PrintJob,
-                    Statement, Testcase, UserTest, UserTestExecutable,
-                    UserTestFile, UserTestManager, UserTestResult]:
-            for col in ["input", "output", "digest"]:
-                if hasattr(cls, col):
-                    found_digests = set()
-                    digests = session.query(cls).all()
-                    digests = [getattr(obj, col) for obj in digests]
-                    found_digests |= set(digests)
-                    found_digests.discard(FileCacher.bogus_digest())
-                    logger.info("Found %d digests while scanning %s.%s",
-                                len(found_digests), cls.__name__, col)
-                    files -= found_digests
+    for cls in [Attachment, Executable, File, Manager, PrintJob,
+                Statement, Testcase, UserTest, UserTestExecutable,
+                UserTestFile, UserTestManager, UserTestResult]:
+        for col in ["input", "output", "digest"]:
+            if hasattr(cls, col):
+                found_digests = set()
+                digests = session.query(cls).all()
+                digests = [getattr(obj, col) for obj in digests]
+                found_digests |= set(digests)
+                found_digests.discard(FileCacher.bogus_digest())
+                logger.info("Found %d digests while scanning %s.%s",
+                            len(found_digests), cls.__name__, col)
+                files -= found_digests
     logger.info("%d digests are orphan.", len(files))
+    total_size = 0
+    for orphan in files:
+        total_size += filecacher.get_size(orphan)
+    logger.info("Orphan files take %s disk space", format_size(total_size))
     if dry_run:
         return
     for orphan in files:
         filecacher.delete(orphan)
+    logger.info("Orphan files have been deleted")
 
 
 def main():
@@ -75,6 +77,9 @@ def main():
     parser.add_argument("-b", "--bogus", action="store_true")
     parser.add_argument("-n", "--dry-run", action="store_true")
     args = parser.parse_args()
-    if args.bogus:
-        make_bogus(args.dry_run)
-    clean_files(args.dry_run)
+    with SessionGen() as session:
+        if args.bogus:
+            make_bogus(session)
+        clean_files(session, args.dry_run)
+        if not args.dry_run:
+            session.commit()
