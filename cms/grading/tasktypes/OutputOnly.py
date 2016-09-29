@@ -137,7 +137,7 @@ class OutputOnly(TaskType):
         elif self.parameters[0] == "comparator":
             # Manager present: wonderful, he'll do all the job.
             manager_filename = "checker"
-            if not manager_filename in job.managers:
+            if manager_filename not in job.managers:
                 logger.error("Configuration error: missing or "
                              "invalid comparator (it must be "
                              "named `checker')", extra={"operation": job.info})
