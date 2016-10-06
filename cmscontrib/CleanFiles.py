@@ -17,18 +17,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This script removes all the unused file objects from the file store,
-marking all the executables in the database as bogus if required."""
+"""This script scans the whole database for file objects references
+and removes unreferenced file objects  from the file store. It can
+also mark all the executables in the database as bogus if required."""
 
 import argparse
 import logging
 
-from cms.db import (Attachment, Executable, File, Manager, PrintJob,
-                    SessionGen, Statement, Testcase, UserTest,
-                    UserTestExecutable, UserTestFile, UserTestManager,
-                    UserTestResult)
+from cms.db import Attachment, Executable, File, Manager, PrintJob, \
+    SessionGen, Statement, Testcase, UserTest, UserTestExecutable, \
+    UserTestFile, UserTestManager, UserTestResult
 from cms.db.filecacher import FileCacher
 from cms.server.util import format_size
+
 
 logger = logging.getLogger()
 
@@ -45,7 +46,8 @@ def make_bogus(session):
 def clean_files(session, dry_run):
     filecacher = FileCacher()
     files = set(file[0] for file in filecacher.list())
-    logger.info("A total number of %d files are present", len(files))
+    logger.info("A total number of %d files are present in the file store",
+                len(files))
     for cls in [Attachment, Executable, File, Manager, PrintJob,
                 Statement, Testcase, UserTest, UserTestExecutable,
                 UserTestFile, UserTestManager, UserTestResult]:
@@ -64,13 +66,12 @@ def clean_files(session, dry_run):
     for orphan in files:
         total_size += filecacher.get_size(orphan)
     logger.info("Orphan files take %s disk space", format_size(total_size))
-    if dry_run:
-        return
-    for count, orphan in enumerate(files):
-        filecacher.delete(orphan)
-        if count % 100 == 0:
-            logger.info("%d files deleted", count)
-    logger.info("All orphan files have been deleted")
+    if not dry_run:
+        for count, orphan in enumerate(files):
+            filecacher.delete(orphan)
+            if count % 100 == 0:
+                logger.info("%d files deleted from the file store", count)
+        logger.info("All orphan files have been deleted")
 
 
 def main():

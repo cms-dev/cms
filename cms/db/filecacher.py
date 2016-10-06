@@ -25,7 +25,9 @@
 
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import hashlib
 import io
@@ -39,6 +41,7 @@ from sqlalchemy.exc import IntegrityError
 from cms import config, mkdir
 from cms.db import FSObject, SessionGen
 from cms.io.GeventUtils import copyfileobj, move, rmtree
+
 
 logger = logging.getLogger(__name__)
 

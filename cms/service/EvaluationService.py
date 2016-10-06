@@ -31,7 +31,9 @@ the current ranking.
 
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 from collections import defaultdict
@@ -44,21 +46,20 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from cms import ServiceCoord, get_service_shards
-from cms.db import (Dataset, SessionGen, Submission, SubmissionResult, Task,
-                    UserTest)
+from cms.db import Dataset, SessionGen, Submission, SubmissionResult, Task, \
+    UserTest
 from cms.db.filecacher import FileCacher
 from cms.grading.Job import JobGroup
 from cms.io import Executor, TriggeredService, rpc_method
-from cms.service import (get_datasets_to_judge, get_submission_results,
-                         get_submissions)
+from cms.service import get_datasets_to_judge, get_submission_results, \
+    get_submissions
 
-from .esoperations import (ESOperation, get_relevant_operations,
-                           get_submissions_operations,
-                           get_user_tests_operations,
-                           submission_get_operations, submission_to_evaluate,
-                           user_test_get_operations)
+from .esoperations import ESOperation, get_relevant_operations, \
+    get_submissions_operations, get_user_tests_operations, \
+    submission_get_operations, submission_to_evaluate, user_test_get_operations
 from .flushingdict import FlushingDict
 from .workerpool import WorkerPool
+
 
 logger = logging.getLogger(__name__)
 
