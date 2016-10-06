@@ -5,7 +5,7 @@
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,8 +39,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
+import logging
 
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
+from cms.service.esoperations import ESOperation
+
+
+logger = logging.getLogger(__name__)
 
 
 class Job(object):
@@ -53,10 +58,13 @@ class Job(object):
 
     # TODO Move 'success' inside Job.
 
-    def __init__(self, task_type=None, task_type_parameters=None,
+    def __init__(self, operation=None,
+                 task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None):
         """Initialization.
 
+        operation (dict|None): the operation, in the format that
+            ESOperation.to_dict() uses.
         task_type (string|None): the name of the task type.
         task_type_parameters (string|None): the parameters for the
             creation of the correct task type.
@@ -66,6 +74,8 @@ class Job(object):
         info (string|None): a human readable description of the job.
 
         """
+        if operation is None:
+            operation = {}
         if task_type is None:
             task_type = ""
         if task_type_parameters is None:
@@ -75,6 +85,7 @@ class Job(object):
         if info is None:
             info = ""
 
+        self.operation = operation
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
         self.shard = shard
@@ -82,7 +93,9 @@ class Job(object):
         self.info = info
 
     def export_to_dict(self):
+        """Return a dict representing the job."""
         res = {
+            'operation': self.operation,
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
             'shard': self.shard,
@@ -93,6 +106,15 @@ class Job(object):
 
     @staticmethod
     def import_from_dict_with_type(data):
+        """Create a Job from a dict having a type information.
+
+        data (dict): a dict with all the items required for a job, and
+            in addition a 'type' key with associated value
+            'compilation' or 'evaluation'.
+
+        return (Job): either a CompilationJob or an EvaluationJob.
+
+        """
         type_ = data['type']
         del data['type']
         if type_ == 'compilation':
@@ -105,7 +127,49 @@ class Job(object):
 
     @classmethod
     def import_from_dict(cls, data):
+        """Create a Job from the output of export_to_dict."""
         return cls(**data)
+
+    @staticmethod
+    def from_operation(operation, object_, dataset):
+        """Produce the job for the operation in the argument.
+
+        Return the Job object that has to be sent to Workers to have
+        them perform the operation this object describes.
+
+        operation (ESOperation): the operation to use.
+        object_ (Submission|UserTest): the object this operation
+            refers to (might be a submission or a user test).
+        dataset (Dataset): the dataset this operation refers to.
+
+        return (Job): the job encoding of the operation, as understood
+            by Workers and TaskTypes.
+
+        raise (ValueError): if object_ or dataset are not those
+            referred by the operation.
+
+        """
+        if operation.object_id != object_.id:
+            logger.error("Programming error: operation is for object `%s' "
+                         "while passed object is `%s'.",
+                         operation.object_id, object_.id)
+            raise ValueError("Object mismatch while building job.")
+        if operation.dataset_id != dataset.id:
+            logger.error("Programming error: operation is for dataset `%s' "
+                         "while passed dataset is `%s'.",
+                         operation.dataset_id, dataset.id)
+            raise ValueError("Dataset mismatch while building job.")
+
+        job = None
+        if operation.type_ == ESOperation.COMPILATION:
+            job = CompilationJob.from_submission(operation, object_, dataset)
+        elif operation.type_ == ESOperation.EVALUATION:
+            job = EvaluationJob.from_submission(operation, object_, dataset)
+        elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
+            job = CompilationJob.from_user_test(operation, object_, dataset)
+        elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
+            job = EvaluationJob.from_user_test(operation, object_, dataset)
+        return job
 
 
 class CompilationJob(Job):
@@ -120,7 +184,8 @@ class CompilationJob(Job):
 
     """
 
-    def __init__(self, task_type=None, task_type_parameters=None,
+    def __init__(self, operation=None, task_type=None,
+                 task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
                  language=None, files=None, managers=None,
                  success=None, compilation_success=None,
@@ -153,7 +218,7 @@ class CompilationJob(Job):
         if executables is None:
             executables = {}
 
-        Job.__init__(self, task_type, task_type_parameters,
+        Job.__init__(self, operation, task_type, task_type_parameters,
                      shard, sandboxes, info)
         self.language = language
         self.files = files
@@ -193,10 +258,27 @@ class CompilationJob(Job):
         return cls(**data)
 
     @staticmethod
-    def from_submission(submission, dataset):
+    def from_submission(operation, submission, dataset):
+        """Create a CompilationJob from a submission.
+
+        operation (ESOperation): a COMPILATION operation.
+        submission (Submission): the submission object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (CompilationJob): the job.
+
+        """
+        if operation.type_ != ESOperation.COMPILATION:
+            logger.error("Programming error: asking for a compilation job, "
+                         "but the operation is %s.", operation.type_)
+            raise ValueError("Operation is not a compilation")
+
         job = CompilationJob()
 
         # Job
+        job.operation = operation.to_dict()
         job.task_type = dataset.task_type
         job.task_type_parameters = dataset.task_type_parameters
 
@@ -210,6 +292,11 @@ class CompilationJob(Job):
         return job
 
     def to_submission(self, sr):
+        """Fill detail of the submission result with the job result.
+
+        sr (SubmissionResult): the DB object to fill.
+
+        """
         # This should actually be useless.
         sr.invalidate_compilation()
 
@@ -230,10 +317,28 @@ class CompilationJob(Job):
             sr.executables += [executable]
 
     @staticmethod
-    def from_user_test(user_test, dataset):
+    def from_user_test(operation, user_test, dataset):
+        """Create a CompilationJob from a user test.
+
+        operation (ESOperation): a USER_TEST_COMPILATION operation.
+        user_test (UserTest): the user test object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (CompilationJob): the job.
+
+        """
+        if operation.type_ != ESOperation.USER_TEST_COMPILATION:
+            logger.error("Programming error: asking for a user test "
+                         "compilation job, but the operation is %s.",
+                         operation.type_)
+            raise ValueError("Operation is not a user test compilation")
+
         job = CompilationJob()
 
         # Job
+        job.operation = operation.to_dict()
         job.task_type = dataset.task_type
         job.task_type_parameters = dataset.task_type_parameters
 
@@ -262,6 +367,11 @@ class CompilationJob(Job):
         return job
 
     def to_user_test(self, ur):
+        """Fill detail of the user test result with the job result.
+
+        ur (UserTestResult): the DB object to fill.
+
+        """
         # This should actually be useless.
         ur.invalidate_compilation()
 
@@ -297,9 +407,9 @@ class EvaluationJob(Job):
     only_execution, get_output.
 
     """
-    def __init__(self, task_type=None, task_type_parameters=None,
-                 shard=None, sandboxes=None, info=None,
-                 testcase_codename=None, language=None,
+    def __init__(self, operation=None, task_type=None,
+                 task_type_parameters=None, shard=None,
+                 sandboxes=None, info=None, language=None,
                  files=None, managers=None, executables=None,
                  input=None, output=None,
                  time_limit=None, memory_limit=None,
@@ -310,8 +420,6 @@ class EvaluationJob(Job):
 
         See base class for the remaining arguments.
 
-        testcase_codename (string|None): the codename of the testcase
-            this is an evaluation for.
         language (string|None): the language of the submission or user
             test.
         files ({string: File}|None): files submitted by the user.
@@ -349,9 +457,8 @@ class EvaluationJob(Job):
         if executables is None:
             executables = {}
 
-        Job.__init__(self, task_type, task_type_parameters,
+        Job.__init__(self, operation, task_type, task_type_parameters,
                      shard, sandboxes, info)
-        self.testcase_codename = testcase_codename
         self.language = language
         self.files = files
         self.managers = managers
@@ -372,7 +479,6 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
             'type': 'evaluation',
-            'testcase_codename': self.testcase_codename,
             'language': self.language,
             'files': dict((k, v.digest)
                           for k, v in self.files.iteritems()),
@@ -405,10 +511,27 @@ class EvaluationJob(Job):
         return cls(**data)
 
     @staticmethod
-    def from_submission(submission, dataset, testcase_codename):
+    def from_submission(operation, submission, dataset):
+        """Create an EvaluationJob from a submission.
+
+        operation (ESOperation): an EVALUATION operation.
+        submission (Submission): the submission object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (EvaluationJob): the job.
+
+        """
+        if operation.type_ != ESOperation.EVALUATION:
+            logger.error("Programming error: asking for an evaluation job, "
+                         "but the operation is %s.", operation.type_)
+            raise ValueError("Operation is not an evaluation")
+
         job = EvaluationJob()
 
         # Job
+        job.operation = operation.to_dict()
         job.task_type = dataset.task_type
         job.task_type_parameters = dataset.task_type_parameters
 
@@ -419,7 +542,6 @@ class EvaluationJob(Job):
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
-        job.testcase_codename = testcase_codename
         job.language = submission.language
         job.files = dict(submission.files)
         job.managers = dict(dataset.managers)
@@ -427,7 +549,7 @@ class EvaluationJob(Job):
         job.time_limit = dataset.time_limit
         job.memory_limit = dataset.memory_limit
 
-        testcase = dataset.testcases[testcase_codename]
+        testcase = dataset.testcases[job.operation["testcase_codename"]]
         job.input = testcase.input
         job.output = testcase.output
         job.info = "evaluate submission %d on testcase %s" % \
@@ -436,9 +558,11 @@ class EvaluationJob(Job):
         return job
 
     def to_submission(self, sr):
-        # Should not invalidate because evaluations will be added one
-        # by one now.
+        """Fill detail of the submission result with the job result.
 
+        sr (SubmissionResult): the DB object to fill.
+
+        """
         # No need to check self.success because this method gets called
         # only if it is True.
 
@@ -451,13 +575,32 @@ class EvaluationJob(Job):
             execution_memory=self.plus.get('execution_memory'),
             evaluation_shard=self.shard,
             evaluation_sandbox=":".join(self.sandboxes),
-            testcase=sr.dataset.testcases[self.testcase_codename])]
+            testcase=sr.dataset.testcases[
+                self.operation["testcase_codename"]])]
 
     @staticmethod
-    def from_user_test(user_test, dataset):
+    def from_user_test(operation, user_test, dataset):
+        """Create an EvaluationJob from a user test.
+
+        operation (ESOperation): an USER_TEST_EVALUATION operation.
+        user_test (UserTest): the user test object referred by the
+            operation.
+        dataset (Dataset): the dataset object referred by the
+            operation.
+
+        return (EvaluationJob): the job.
+
+        """
+        if operation.type_ != ESOperation.USER_TESTEVALUATION:
+            logger.error("Programming error: asking for a user test "
+                         "evaluation job, but the operation is %s.",
+                         operation.type_)
+            raise ValueError("Operation is not a user test evaluation")
+
         job = EvaluationJob()
 
         # Job
+        job.operation = operation.to_dict()
         job.task_type = dataset.task_type
         job.task_type_parameters = dataset.task_type_parameters
 
@@ -468,7 +611,6 @@ class EvaluationJob(Job):
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
-        job.testcase_codename = None
         job.language = user_test.language
         job.files = dict(user_test.files)
         job.managers = dict(user_test.managers)
@@ -499,6 +641,11 @@ class EvaluationJob(Job):
         return job
 
     def to_user_test(self, ur):
+        """Fill detail of the user test result with the job result.
+
+        ur (UserTestResult): the DB object to fill.
+
+        """
         # This should actually be useless.
         ur.invalidate_evaluation()
 
@@ -514,3 +661,22 @@ class EvaluationJob(Job):
         ur.evaluation_shard = self.shard
         ur.evaluation_sandbox = ":".join(self.sandboxes)
         ur.output = self.user_output
+
+
+class JobGroup(object):
+    """A simple collection of jobs."""
+
+    def __init__(self, jobs=None):
+        self.jobs = jobs if jobs is not None else []
+
+    def export_to_dict(self):
+        return {
+            "jobs": [job.export_to_dict() for job in self.jobs],
+        }
+
+    @classmethod
+    def import_from_dict(cls, data):
+        jobs = []
+        for job in data["jobs"]:
+            jobs.append(Job.import_from_dict_with_type(job))
+        return cls(jobs)
