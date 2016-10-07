@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -58,6 +59,9 @@ class FlushingDict(object):
         # flushed.
         self.d = dict()
 
+        # This contains all the key-values that are currently being flushed
+        self.fd = dict()
+
         # The greenlet in which we schedule the flush. Whenever a new
         # key-value is added, the greenlet is killed and rescheduled.
         self.flush_greenlet = None
@@ -94,9 +98,11 @@ class FlushingDict(object):
         logger.debug("Flushing items")
         with self.f_lock:
             with self.d_lock:
-                to_send = self.d.items()
+                self.fd = self.d
                 self.d = dict()
-            self.callback(to_send)
+            self.callback(self.fd.items())
+            self.fd = dict()
 
     def __contains__(self, key):
-        return key in self.d
+        with self.d_lock:
+            return key in self.d or key in self.fd
