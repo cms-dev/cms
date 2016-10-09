@@ -667,14 +667,15 @@ class EvaluationService(TriggeredService):
             if result.job_success:
                 result.job.to_submission(object_result)
             else:
-                if result.job.plus.get("bogus") is True:
+                if result.job.plus is not None and \
+                   result.job.plus.get("tombstone") is True:
                     executable_digests = [
                         e.digest for e in
                         object_result.executables.itervalues()]
-                    if FileCacher.bogus_digest() in executable_digests:
+                    if FileCacher.tombstone_digest() in executable_digests:
                         logger.info("Submission %d's compilation on dataset "
                                     "%d has been invalidated since the "
-                                    "executable was bogus",
+                                    "executable was the tombstone",
                                     object_result.submission_id,
                                     object_result.dataset_id)
                         with session.begin_nested():

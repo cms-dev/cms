@@ -35,7 +35,7 @@ import time
 import gevent.coros
 
 from cms.db import Contest, SessionGen
-from cms.db.filecacher import BogusFileError, FileCacher
+from cms.db.filecacher import TombstoneError, FileCacher
 from cms.grading import JobException
 from cms.grading.Job import CompilationJob, EvaluationJob, JobGroup
 from cms.grading.tasktypes import get_task_type
@@ -121,9 +121,9 @@ class Worker(Service):
                                                   job.task_type_parameters)
                         try:
                             task_type.execute_job(job, self.file_cacher)
-                        except BogusFileError:
+                        except TombstoneError:
                             job.success = False
-                            job.plus = {"bogus": True}
+                            job.plus = {"tombstone": True}
                     else:
                         time.sleep(self._fake_worker_time)
                         job.success = True

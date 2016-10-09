@@ -1,6 +1,6 @@
--- This script will mark all executables as bogus, and then will delete
--- all orphan fsobjects and large objects. Run it as follows:
---    psql -tq -U username database < clean_files_bogus.sql
+-- This script will replace all the executables with the tombstone, and then
+-- will delete all orphan fsobjects and large objects. Run it as follows:
+--    psql -tq -U username database < clean_files_tombstone.sql
 CREATE OR REPLACE FUNCTION print_table_size(tbl VARCHAR, pref VARCHAR) RETURNS VOID AS $$
 DECLARE
     table_size VARCHAR;

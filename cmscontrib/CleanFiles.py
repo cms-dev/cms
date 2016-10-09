@@ -18,8 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """This script scans the whole database for file objects references
-and removes unreferenced file objects  from the file store. It can
-also mark all the executables in the database as bogus if required."""
+and removes unreferenced file objects from the file store. It can
+also replace all the executables in the database with the tombstone if
+required."""
 
 import argparse
 import logging
@@ -34,13 +35,13 @@ from cms.server.util import format_size
 logger = logging.getLogger()
 
 
-def make_bogus(session):
+def make_tombstone(session):
     count = 0
     for exe in session.query(Executable).all():
-        if exe.digest != FileCacher.bogus_digest():
+        if exe.digest != FileCacher.tombstone_digest():
             count += 1
-        exe.digest = FileCacher.bogus_digest()
-    logger.info("Made %d executables bogus.", count)
+        exe.digest = FileCacher.tombstone_digest()
+    logger.info("Replaced %d executables with the tombstone.", count)
 
 
 def clean_files(session, dry_run):
@@ -57,7 +58,7 @@ def clean_files(session, dry_run):
                 digests = session.query(cls).all()
                 digests = [getattr(obj, col) for obj in digests]
                 found_digests |= set(digests)
-                found_digests.discard(FileCacher.bogus_digest())
+                found_digests.discard(FileCacher.tombstone_digest())
                 logger.info("Found %d digests while scanning %s.%s",
                             len(found_digests), cls.__name__, col)
                 files -= found_digests
@@ -76,14 +77,15 @@ def clean_files(session, dry_run):
 
 def main():
     parser = argparse.ArgumentParser(description="Remove unused file objects "
-                                     "from the database. If -b is specified, "
-                                     "also mark all executables as bogus")
-    parser.add_argument("-b", "--bogus", action="store_true")
+                                     "from the database. If -t is specified, "
+                                     "also replace all executables with the "
+                                     "tombstone")
+    parser.add_argument("-t", "--tombstone", action="store_true")
     parser.add_argument("-n", "--dry-run", action="store_true")
     args = parser.parse_args()
     with SessionGen() as session:
-        if args.bogus:
-            make_bogus(session)
+        if args.tombstone:
+            make_tombstone(session)
         clean_files(session, args.dry_run)
         if not args.dry_run:
             session.commit()
