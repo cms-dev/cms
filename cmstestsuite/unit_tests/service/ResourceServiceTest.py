@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import sys
 import unittest
 
 from cms import ServiceCoord
@@ -52,6 +53,11 @@ class TestResourceService(unittest.TestCase):
             "/usr/bin/env python2 cmsWorker 0 -c 1",
             "/usr/bin/env python2 cmsWorker -c 1",
             "/usr/bin/env python2 cmsWorker -c 1 0",
+            sys.executable + " cmsWorker",
+            sys.executable + " cmsWorker 0",
+            sys.executable + " cmsWorker 0 -c 1",
+            sys.executable + " cmsWorker -c 1",
+            sys.executable + " cmsWorker -c 1 0",
             ]
         bad_command_lines = [
             "ps",
@@ -69,7 +75,7 @@ class TestResourceService(unittest.TestCase):
 
         # Test we do not pick the wrong shard.
         service = ServiceCoord("Worker", 1)
-        cmdline = "/usr/bin/python2 cmsWorker"
+        cmdline = sys.executable + " cmsWorker"
         self.assertFalse(ResourceService._is_service_proc(
             service, cmdline.split(" ")), cmdline)
 
@@ -79,7 +85,7 @@ class TestResourceService(unittest.TestCase):
 
         # Simulate a service not running on the same machine.
         service = ServiceCoord("FakeWorker", 0)
-        cmdline = "/usr/bin/python2 cmsFakeWorker 0"
+        cmdline = sys.executable + " cmsFakeWorker 0"
         self.assertFalse(ResourceService._is_service_proc(
             service, cmdline.split(" ")), cmdline)
 

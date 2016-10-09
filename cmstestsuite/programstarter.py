@@ -34,6 +34,7 @@ import os
 import signal
 import socket
 import subprocess
+import sys
 import threading
 import time
 from urlparse import urlsplit
@@ -94,7 +95,7 @@ class Program(object):
     """An instance of a program, which might be running or not."""
 
     _COVERAGE_CMDLINE = \
-        ["python", "-m", "coverage", "run", "-p", "--source=cms"]
+        [sys.executable, "-m", "coverage", "run", "-p", "--source=cms"]
 
     def __init__(self, service_name, shard=0, contest=None):
         self.service_name = service_name

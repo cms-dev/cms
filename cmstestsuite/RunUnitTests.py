@@ -58,7 +58,7 @@ def run_unittests(test_list):
             i + 1, num_tests_to_execute,
             path, filename))
         try:
-            sh('python2 -m coverage run -p --source=cms %s' %
+            sh(sys.executable + ' -m coverage run -p --source=cms %s' %
                os.path.join(path, filename))
         except FrameworkException:
             logger.info("  (FAILED: %s)" % filename)
@@ -200,7 +200,7 @@ def main():
 
         # Clear out any old coverage data.
         logger.info("Clearing old coverage data.")
-        sh("python -m coverage erase")
+        sh(sys.executable + " -m coverage erase")
 
     # Run all of our test cases.
     passed, test_results = run_unittests(test_list)
