@@ -65,7 +65,7 @@ class TestFlushingDict(unittest.TestCase):
         self.assertEqual(1, len(self.received_data))
         self.assertItemsEqual(expected_data, self.received_data[0])
         self.d.add(TestFlushingDict.SIZE, TestFlushingDict.SIZE)
-        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS)
+        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS + 0.1)
         self.assertEqual(2, len(self.received_data))
         self.assertItemsEqual(
             [(TestFlushingDict.SIZE, TestFlushingDict.SIZE)],
@@ -86,7 +86,7 @@ class TestFlushingDict(unittest.TestCase):
         # second flush, and we add some tolerance.
         gevent.sleep(0)
         self.d.add(TestFlushingDict.SIZE, TestFlushingDict.SIZE)
-        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS * 3 + 0.1)
+        gevent.sleep((TestFlushingDict.FLUSH_LATENCY_SECONDS + 0.1) * 3)
 
         self.assertEqual(TestFlushingDict.SIZE + 1,
                          sum(len(data) for data in self.received_data))
@@ -96,7 +96,7 @@ class TestFlushingDict(unittest.TestCase):
         for i in range(20):
             self.d.add(i, i)
             expected_data.append((i, i))
-        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS)
+        gevent.sleep(TestFlushingDict.FLUSH_LATENCY_SECONDS + 0.1)
         self.assertItemsEqual(expected_data, sum(self.received_data, []))
 
     def callback(self, data):

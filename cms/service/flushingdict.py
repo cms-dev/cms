@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,6 +24,8 @@ from __future__ import unicode_literals
 
 import gevent
 import logging
+
+from datetime import datetime, timedelta
 
 try:
     from gevent.locks import RLock
@@ -49,7 +52,7 @@ class FlushingDict(object):
         self.size = size
 
         # How much time we wait for other key-values before flushing.
-        self.flush_latency_seconds = flush_latency_seconds
+        self.flush_latency = timedelta(seconds=flush_latency_seconds)
 
         # Function to flush the data to.
         self.callback = callback
@@ -58,45 +61,47 @@ class FlushingDict(object):
         # flushed.
         self.d = dict()
 
-        # The greenlet in which we schedule the flush. Whenever a new
-        # key-value is added, the greenlet is killed and rescheduled.
-        self.flush_greenlet = None
+        # This contains all the key-values that are currently being flushed
+        self.fd = dict()
+
+        # The greenlet that checks if the dict should be flushed or not
+        # TODO: do something if the FlushingDict is deleted
+        self.flush_greenlet = gevent.spawn(self._check_flush)
 
         # This lock ensures that if a key-value arrives while flush is
         # executing, it is not inserted in the dict until flush
         # terminates.
         self.d_lock = RLock()
 
-        # This lock ensures that we do not change the flush greenlet
-        # while it is executing.
-        self.f_lock = RLock()
-
-    def _deschedule(self):
-        """Remove the scheduling of the flush."""
-        with self.f_lock:
-            if self.flush_greenlet is not None:
-                self.flush_greenlet.kill()
-                self.flush_greenlet = None
+        # Time when an item was last inserted in the dict
+        self.last_insert = datetime.now()
 
     def add(self, key, value):
         logger.debug("Adding item %s", key)
         with self.d_lock:
             self.d[key] = value
-        self._deschedule()
-        if len(self.d) >= self.size:
-            self.flush_greenlet = gevent.spawn(self.flush)
-        else:
-            self.flush_greenlet = gevent.spawn_later(
-                self.flush_latency_seconds,
-                self.flush)
+            self.last_insert = datetime.now()
 
     def flush(self):
         logger.debug("Flushing items")
-        with self.f_lock:
-            with self.d_lock:
-                to_send = self.d.items()
-                self.d = dict()
-            self.callback(to_send)
+        with self.d_lock:
+            self.fd = self.d
+            self.d = dict()
+        self.callback(self.fd.items())
+        self.fd = dict()
 
     def __contains__(self, key):
-        return key in self.d
+        with self.d_lock:
+            return key in self.d or key in self.fd
+
+    def _check_flush(self):
+        while True:
+            while True:
+                with self.d_lock:
+                    if len(self.d) != 0 and (
+                        len(self.d) >= self.size or
+                        self.last_insert + self.flush_latency <
+                            datetime.now()):
+                        break
+                gevent.sleep(0.05)
+            self.flush()
