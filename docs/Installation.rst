@@ -204,8 +204,8 @@ Method 2: Virtual environment
 
 An alternative method to perform the installation is with a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python environment that you can put wherever you like and that can be activated/deactivated at will. The tool you need in order to create a virtual environment is called ``virtualenv``, and can be installed by looking for ``virtualenv`` using your Linux distribution's package manager. For example:
 
-* Ubuntu 14.xx: `python-virtualenv <https://apps.ubuntu.com/cat/applications/python-virtualenv/>`_.
-* Ubuntu 16.xx: `virtualenv <https://apps.ubuntu.com/cat/applications/virtualenv/>`_.       ##################### RICONTROLLA QUI ######################
+* Ubuntu 14.x: `python-virtualenv <http://packages.ubuntu.com/trusty/python-virtualenv>`_.
+* Ubuntu 16.x: `virtualenv <http://packages.ubuntu.com/xenial/virtualenv>`_.
 * Arch Linux: `python-virtualenv <https://www.archlinux.org/packages/extra/any/python-virtualenv/>`_.
 
 .. FUTURE FIXME: virtualenv installation is necessary only on python2; when the
@@ -252,7 +252,7 @@ To install CMS and its Python dependencies on Ubuntu, you can issue:
 
 .. sourcecode:: bash
 
-    sudo python2 setup.py install
+    sudo python setup.py install
 
     sudo apt-get install python-setuptools python-tornado python-psycopg2 \
          python-sqlalchemy python-psutil python-netifaces python-crypto \
