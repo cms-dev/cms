@@ -129,7 +129,7 @@ setup(
             "cmsAddStatement=cmscontrib.AddStatement:main",
             "cmsAddSubmission=cmscontrib.AddSubmission:main",
             "cmsAddTeam=cmscontrib.AddTeam:main",
-            "cmsAddTests=cmscontrib.AddTests:main",
+            "cmsAddTestcases=cmscontrib.AddTestcases:main",
             "cmsAddUser=cmscontrib.AddUser:main",
             "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
             "cmsDumpExporter=cmscontrib.DumpExporter:main",
