@@ -69,7 +69,7 @@ def import_testcases_from_zipfile(session, dataset, archive, input_re,
                         session.delete(testcase)
                         try:
                             session.commit()
-                        except:
+                        except Exception:
                             skipped_tc.append(codename)
                             continue
                         overwritten_tc.append(codename)
@@ -83,7 +83,6 @@ def import_testcases_from_zipfile(session, dataset, archive, input_re,
                     output = archive_zfp.read(testdata[1])
                 except Exception:
                     raise Exception("Reading testcase %s failed" % codename)
-                    return
                 try:
                     file_cacher = FileCacher()
                     input_digest = file_cacher.put_file_content(
@@ -94,7 +93,6 @@ def import_testcases_from_zipfile(session, dataset, archive, input_re,
                         "Testcase output for task %s" % task_name)
                 except Exception:
                     raise Exception("Testcase storage failed")
-                    return
 
                 testcase = Testcase(codename, public, input_digest,
                                     output_digest, dataset=dataset)
@@ -109,7 +107,6 @@ def import_testcases_from_zipfile(session, dataset, archive, input_re,
         raise Exception(
             "The selected file is not a zip file."
             " Please select a valid zip file.")
-        return
 
     return (
         "Successfully added %d and overwritten %d testcase(s)" %
