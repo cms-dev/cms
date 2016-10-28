@@ -33,7 +33,7 @@ import re
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Task, Contest
-from cmscommon.imports import import_testcases_from_zipfile
+from cmscommon.importers import import_testcases_from_zipfile
 
 logger = logging.getLogger(__name__)
 
