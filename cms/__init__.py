@@ -62,6 +62,7 @@ LANG_PASCAL = "pas"
 LANG_PYTHON = "py"
 LANG_PHP = "php"
 LANG_JAVA = "java"
+LANG_TURING = "tur"
 
 LANGUAGE_NAMES = {
     LANG_C: "C",
@@ -70,9 +71,10 @@ LANGUAGE_NAMES = {
     LANG_PYTHON: "Python",
     LANG_PHP: "PHP",
     LANG_JAVA: "Java",
+    LANG_TURING: "Turing",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
+LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, LANG_TURING]
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # A reference for extension-based automatic language detection.
@@ -88,6 +90,7 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".py": LANG_PYTHON,
     ".php": LANG_PHP,
     ".java": LANG_JAVA,
+    ".t": LANG_TURING,
 }
 
 # Our preferred source file and header file extension for each language.
@@ -98,6 +101,7 @@ LANGUAGE_TO_SOURCE_EXT_MAP = {
     LANG_PYTHON: ".py",
     LANG_PHP: ".php",
     LANG_JAVA: ".java",
+    LANG_TURING: ".t",
 }
 LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_C: ".h",

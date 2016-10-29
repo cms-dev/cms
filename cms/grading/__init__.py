@@ -37,7 +37,7 @@ from collections import namedtuple
 from sqlalchemy.orm import joinedload
 
 from cms import config, \
-    LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, \
+    LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, LANG_TURING \
     SCORE_MODE_MAX
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
@@ -259,6 +259,12 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
                    executable_filename] + source_filenames
         commands.append(command)
+    elif language == LANG_TURING:
+        command = ["/usr/bin/tprologc"]
+        command += [source_filenames[0]]
+        command += ["-O2"]
+        command += [executable_filename]
+        commands.append(command)
     else:
         raise ValueError("Unknown language %s." % language)
     return commands
@@ -280,6 +286,10 @@ def get_evaluation_commands(language, executable_filename):
     commands = []
     if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
         command = [os.path.join(".", executable_filename)]
+        commands.append(command)
+    elif language == LANG_TURING:
+        command = ["/usr/bin/tprolog"]
+        command += [executable_filename]
         commands.append(command)
     elif language == LANG_PYTHON:
         # In order to use Python 3 change it to:
