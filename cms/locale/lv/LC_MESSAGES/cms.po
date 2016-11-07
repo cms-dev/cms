@@ -891,7 +891,7 @@ msgid "Standard output"
 msgstr "Standarta izvads"
 
 msgid "Standard error"
-msgstr "Standarta kļūda"
+msgstr "Standarta kļūdu izvads"
 
 msgid "None"
 msgstr "Nekas"
