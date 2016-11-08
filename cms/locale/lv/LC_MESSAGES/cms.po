@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-03-01 15:57+0900\n"
-"PO-Revision-Date: 2016-11-06 18:36+0200\n"
+"PO-Revision-Date: 2016-11-08 21:19+0200\n"
 "Last-Translator: Andrey Vihrov <andrey.vihrov@gmail.com>\n"
 "Language-Team: Latvian\n"
 "Language: lv\n"
@@ -267,14 +267,14 @@ msgstr[2] "Sākumā jums ir %(gen_initial)d %(type_pl)s."
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
-msgstr[0] "Katru minūti "
+msgstr[0] "Ik pēc %(gen_interval)g minūtes "
 msgstr[1] "Ik pēc %(gen_interval)g minūtēm "
 msgstr[2] "Ik pēc %(gen_interval)g minūtēm "
 
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "jums tiek piešķirts vēl viens %(type_s)s, "
+msgstr[0] "jums tiek piešķirts vēl %(gen_number)d %(type_s)s, "
 msgstr[1] "jums tiek piešķirti vēl %(gen_number)d %(type_pl)s, "
 msgstr[2] "jums tiek piešķirti vēl %(gen_number)d %(type_pl)s, "
 
@@ -294,12 +294,12 @@ msgstr[2] "jums tiek piešķirti vēl %(gen_number)d %(type_pl)s."
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "Jums netiek piešķirts %(type_pl)s."
+msgstr "Jums netiek piešķirti %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "Katru sekundi jūs varat lietot %(type_s)s"
+msgstr[0] "Katru %(min_interval)g sekundi jūs varat lietot %(type_s)s"
 msgstr[1] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s"
 msgstr[2] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s"
 
@@ -313,7 +313,7 @@ msgstr[2] "un kopumā ne vairāk kā %(max_number)d %(type_pl)s."
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "Katru sekundi jūs varat lietot %(type_s)s."
+msgstr[0] "Katru %(min_interval)g sekundi jūs varat lietot %(type_s)s."
 msgstr[1] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s."
 msgstr[2] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s."
 
@@ -843,7 +843,7 @@ msgstr ""
 "%(max_pages)d lappuses.)"
 
 msgid "File (text or PDF)"
-msgstr "Datnes (teksta vai PDF)"
+msgstr "Datne (teksta vai PDF)"
 
 msgid "File (text)"
 msgstr "Datne (teksta)"
@@ -900,13 +900,13 @@ msgid "Download"
 msgstr "Lejuplādēt"
 
 msgid "Played"
-msgstr "Spēlēts"
+msgstr "Izmantots"
 
 msgid "Play!"
-msgstr "Spēlē!"
+msgstr "Izmantot!"
 
 msgid "Wait..."
-msgstr "Gaidi..."
+msgstr "Gaidiet..."
 
 msgid "No tokens"
 msgstr "Nav žetonu"
