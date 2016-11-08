@@ -189,7 +189,7 @@ msgid "%Y-%m-%d %H:%M:%S"
 msgstr "%d.%m.%Y %H:%M:%S"
 
 msgid "loading..."
-msgstr "ielādē..."
+msgstr "ielādē…"
 
 #, python-format
 msgid "%d second"
@@ -433,16 +433,16 @@ msgid "Your submission has been received and is currently being evaluated."
 msgstr "Jūsu iesūtījums ir saņemts un šobrīd tiek vērtēts."
 
 msgid "Compiling..."
-msgstr "Kompilē..."
+msgstr "Kompilē…"
 
 msgid "details"
 msgstr "detaļas"
 
 msgid "Evaluating..."
-msgstr "Izpilda..."
+msgstr "Izpilda…"
 
 msgid "Scoring..."
-msgstr "Vērtē..."
+msgstr "Vērtē…"
 
 msgid "Evaluated"
 msgstr "Izpildīts"
@@ -513,7 +513,7 @@ msgid "Your test has been received and is currently being executed."
 msgstr "Jūsu tests ir saņemts un šobrīd tiek izpildīts."
 
 msgid "Executing..."
-msgstr "Izpilda..."
+msgstr "Izpilda…"
 
 msgid "Executed"
 msgstr "Izpildīts"
@@ -873,7 +873,7 @@ msgid "no print jobs yet"
 msgstr "pagaidām nav drukas darbu"
 
 msgid "Preparing..."
-msgstr "Sagatavojas..."
+msgstr "Sagatavojas…"
 
 msgid "Compilation output"
 msgstr "Kompilēšanas izvads"
@@ -906,7 +906,7 @@ msgid "Play!"
 msgstr "Izmantot!"
 
 msgid "Wait..."
-msgstr "Gaidiet..."
+msgstr "Gaidiet…"
 
 msgid "No tokens"
 msgstr "Nav žetonu"
