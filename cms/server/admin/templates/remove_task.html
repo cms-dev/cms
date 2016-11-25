@@ -5,18 +5,13 @@
   <h1>Remove Task</h1>
 </div>
 
-
-<form action="{{ url_root }}/tasks/{{ task.id }}/delete" method="POST">
-  Are you sure you want to delete task {{ task.name }}? <br>
+<p>
+  Are you sure you want to remove task {{ task.name }}? <br>
   This will remove {{ submission_count }} submission(s). <br>
-  <input type="submit"
-         name="asking"
-         value="Yes"
-         />
-  <input type="submit"
-         name="asking"
-         value="No"
-         />
-</form>
+</p>
+{% if current_user.permission_all %}
+  <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/tasks/{{ task.id }}/remove'); ">Yes</a>
+{% end %}
+<a href="{{url_root}}/tasks" STYLE="text-decoration: none">No</a>
 
 {% end %}

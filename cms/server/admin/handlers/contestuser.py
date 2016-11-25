@@ -81,16 +81,21 @@ class ContestUsersHandler(BaseHandler):
             return
 
         if operation == self.REMOVE_FROM_CONTEST:
-            asking_page = "/contest/%s/user/%s/delete" % (contest_id, user_id)
+            asking_page = "/contest/%s/user/%s/remove" % (contest_id, user_id)
             # Open asking for remove page
             self.redirect(asking_page)
             return
 
-        # Maybe they'll want to do this again (for another task)
+        # Maybe they'll want to do this again (for another participation)
         self.redirect(fallback_page)
 
 
-class RemoveParticipantHandler(BaseHandler):
+class RemoveParticipationHandler(BaseHandler):
+    """
+    GET request is responded with a page
+    for confirmation of participation removal.
+    DELETE request removes the participation
+    """
     YES = "Yes"
     NO = "No"
 
@@ -112,42 +117,27 @@ class RemoveParticipantHandler(BaseHandler):
 
         self.r_params["user"] = user
         self.r_params["contest"] = self.contest
-        self.render("remove_participant.html", **self.r_params)
+        self.render("remove_participation.html", **self.r_params)
 
     @require_permission(BaseHandler.PERMISSION_ALL)
-    def post(self, contest_id, user_id):
-        fallback_page = "/contest/%s/users" % contest_id
-
+    def delete(self, contest_id, user_id):
         self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
-
-        try:
-            asking = self.get_argument("asking")
-            assert asking in (
-                self.YES,
-                self.NO
-            ), "Please select a valid asking"
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect(fallback_page)
-            return
 
         participation = self.sql_session.query(Participation)\
             .filter(Participation.user == user)\
             .filter(Participation.contest == self.contest)\
             .first()
 
-        if asking == self.YES:
-            # Unassign the user from the contest.
-            self.sql_session.delete(participation)
+        # Unassign the user from the contest.
+        self.sql_session.delete(participation)
 
         if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
 
-        # Maybe they'll want to do this again (for another task)
-        self.redirect(fallback_page)
+        # Maybe they'll want to do this again (for another participation)
+        self.write("../../users")
 
 
 class AddContestUserHandler(BaseHandler):

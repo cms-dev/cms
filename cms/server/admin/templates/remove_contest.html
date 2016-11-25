@@ -5,18 +5,13 @@
   <h1>Remove Contest</h1>
 </div>
 
-
-<form action="{{ url_root }}/contests/{{ thiscontest.id }}/delete" method="POST">
-  Are you sure you want to delete contest {{ thiscontest.name }}? <br>
-  This will remove {{ len(thiscontest.participations) }} participant(s) and {{ submission_count }} submission(s). <br>
-  <input type="submit"
-         name="asking"
-         value="Yes"
-         />
-  <input type="submit"
-         name="asking"
-         value="No"
-         />
-</form>
+<p>
+  Are you sure you want to remove contest {{ contest.name }}? <br>
+  This will remove {{ len(contest.participations) }} participation(s) and {{ submission_count }} submission(s). <br>
+</p>
+{% if current_user.permission_all %}
+  <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/contests/{{ contest.id }}/remove'); ">Yes</a>
+{% end %}
+<a href="{{ url_root }}/contests" STYLE="text-decoration: none">No</a>
 
 {% end %}

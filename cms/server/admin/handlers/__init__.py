@@ -44,7 +44,7 @@ from .contest import \
     ResourcesListHandler
 from .contestuser import \
     ContestUsersHandler, \
-    RemoveParticipantHandler, \
+    RemoveParticipationHandler, \
     AddContestUserHandler, \
     ParticipationHandler, \
     MessageHandler
@@ -114,7 +114,7 @@ HANDLERS = [
     # Contest
 
     (r"/contests", ContestsListHandler),
-    (r"/contests/([0-9]+)/delete", RemoveContestHandler),
+    (r"/contests/([0-9]+)/remove", RemoveContestHandler),
     (r"/contests/add", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/overview", OverviewHandler),
@@ -124,7 +124,7 @@ HANDLERS = [
 
     (r"/contest/([0-9]+)/users", ContestUsersHandler),
     (r"/contest/([0-9]+)/users/add", AddContestUserHandler),
-    (r"/contest/([0-9]+)/user/([0-9]+)/delete", RemoveParticipantHandler),
+    (r"/contest/([0-9]+)/user/([0-9]+)/remove", RemoveParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/edit", ParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
 
@@ -158,7 +158,7 @@ HANDLERS = [
     # Tasks
 
     (r"/tasks", TasksListHandler),
-    (r"/tasks/([0-9]+)/delete", RemoveTaskHandler),
+    (r"/tasks/([0-9]+)/remove", RemoveTaskHandler),
     (r"/tasks/add", AddTaskHandler),
     (r"/task/([0-9]+)", TaskHandler),
     (r"/task/([0-9]+)/add_dataset", AddDatasetHandler),
@@ -185,7 +185,7 @@ HANDLERS = [
     # Users/Teams
 
     (r"/users", UsersListHandler),
-    (r"/users/([0-9]+)/delete", RemoveUserHandler),
+    (r"/users/([0-9]+)/remove", RemoveUserHandler),
     (r"/teams", SimpleHandler("teams.html")),
     (r"/users/add", AddUserHandler),
     (r"/teams/add", AddTeamHandler),
