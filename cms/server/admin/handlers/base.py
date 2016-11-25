@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -528,6 +529,13 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["submission_pages"] = \
             (count + page_size - 1) // page_size
 
+    def render_params_for_remove_confirmation(self, query):
+        count = query.count()
+
+        if self.r_params is None:
+            self.r_params = self.render_params()
+        self.r_params["submission_count"] = count
+
 
 FileHandler = file_handler_gen(BaseHandler)
 
@@ -562,3 +570,171 @@ def SimpleContestHandler(page):
             self.r_params = self.render_params()
             self.render(page, **self.r_params)
     return Cls
+
+
+class TasksListHandler(SimpleHandler("tasks.html")):
+    """
+    show the list of tasks and allow to POST request of removing a task.
+    """
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        task_id = self.get_argument("task_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/tasks/%s/remove" % task_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                    make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/tasks")
+
+
+class RemoveTaskHandler(BaseHandler):
+    """
+    GET request is responded with a page for confirmation of task removal.
+    DELETE request remove the task
+    """
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.task == task)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["task"] = task
+        self.render("remove_task.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        contest_id = task.contest_id
+        num = task.num
+
+        self.sql_session.delete(task)
+        # Keeping the tasks' nums to the range 0... n - 1.
+        if contest_id is not None:
+            following_tasks = self.sql_session.query(Task)\
+                .filter(Task.contest_id == contest_id)\
+                .filter(Task.num > num)\
+                .all()
+            for task in following_tasks:
+                task.num -= 1
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.write("../../tasks")
+
+
+class ContestsListHandler(SimpleHandler("contests.html")):
+    """
+    show the list of contests and allow to POST request of removing a contest.
+    """
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        contest_id = self.get_argument("contest_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/contests/%s/remove" % contest_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                    make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/contests")
+
+
+class RemoveContestHandler(BaseHandler):
+    """
+    GET request is responded with a page for confirmation of contest removal.
+    DELETE request remove the contest
+    """
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+        submission_query = self.sql_session.query(Submission)\
+            .join(Submission.participation)\
+            .filter(Participation.contest == contest)
+
+        self.contest = contest
+        self.render_params_for_remove_confirmation(submission_query)
+        self.render("remove_contest.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+
+        self.sql_session.delete(contest)
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another contest)
+        self.write("../../contests")
+
+
+class UsersListHandler(SimpleHandler("users.html")):
+    """
+    show the list of users and allow to POST request of removing a user.
+    """
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        user_id = self.get_argument("user_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/users/%s/remove" % user_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                    make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/contests")
+
+
+class RemoveUserHandler(BaseHandler):
+    """
+    GET request is responded with a page for confirmation of user removal.
+    DELETE request remove the user
+    """
+    YES = "Yes"
+    NO = "No"
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, user_id):
+        user = self.safe_get_item(User, user_id)
+        submission_query = self.sql_session.query(Submission)\
+            .join(Submission.participation)\
+            .filter(Participation.user == user)
+        participation_query = self.sql_session.query(Participation)\
+            .filter(Participation.user == user)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["user"] = user
+        self.r_params["participation_count"] = participation_query.count()
+        self.render("remove_user.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, user_id):
+        user = self.safe_get_item(User, user_id)
+
+        self.sql_session.delete(user)
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another user)
+        self.write("../../users")

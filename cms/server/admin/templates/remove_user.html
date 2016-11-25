@@ -1,0 +1,17 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Remove User</h1>
+</div>
+
+<p>
+  Are you sure you want to remove user {{ user.username }}? <br>
+  This will remove {{participation_count}} participation(s) and {{ submission_count }} submission(s). <br>
+</p>
+{% if current_user.permission_all %}
+  <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/users/{{ user.id }}/remove'); ">Yes</a>
+{% end %}
+<a href="{{url_root}}/users" STYLE="text-decoration: none">No</a>
+
+{% end %}

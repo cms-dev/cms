@@ -14,7 +14,7 @@
 {% end %}
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest">
+<form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest" style="display:inline;">
 
   <table class="sub_table">
 
@@ -268,5 +268,16 @@
          >
   <input type="reset" value="Reset">
 </form>
+<form action="{{ url_root }}/contests" method="POST" style="display:inline;">
+    <input type="hidden" name="contest_id" value="{{contest.id}}"/>
+    <input type="submit"
+         name="operation"
+         value="Remove" style="float: right;"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         />
+</form>
+
 
 {% end %}
