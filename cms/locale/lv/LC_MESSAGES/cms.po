@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-03-01 15:57+0900\n"
-"PO-Revision-Date: 2016-11-08 22:09+0200\n"
+"PO-Revision-Date: 2016-11-26 20:08+0200\n"
 "Last-Translator: Andrey Vihrov <andrey.vihrov@gmail.com>\n"
 "Language-Team: Latvian\n"
 "Language: lv\n"
@@ -360,7 +360,7 @@ msgid "Each file must be at most %d bytes long."
 msgstr "Katras datnes izmērs nedrīkst pārsniegt %d baitus."
 
 msgid "Print job storage failed!"
-msgstr "Drukas darbu glabātuvē ir kļūme!"
+msgstr "Drukas darbu glabātuvē ir radusies kļūme!"
 
 msgid "Please try again."
 msgstr "Lūdzu, mēģiniet vēlreiz."
@@ -424,7 +424,7 @@ msgid "Each source file must be at most %d bytes long."
 msgstr "Katra izejas koda datne drīkst būt ne vairāk kā %d baitus liela."
 
 msgid "Submission storage failed!"
-msgstr "Iesūtījumu glabātuvē ir kļūme!"
+msgstr "Iesūtījumu glabātuvē ir radusies kļūme!"
 
 msgid "Submission received"
 msgstr "Iesūtījums saņemts"
@@ -504,7 +504,7 @@ msgid "The input file must be at most %d bytes long."
 msgstr "Ievaddatu datnes apjoms nedrīkst pārsniegt %d baitus."
 
 msgid "Test storage failed!"
-msgstr "Testu glabātuvē ir kļūme!"
+msgstr "Testu glabātuvē ir radusies kļūme!"
 
 msgid "Test received"
 msgstr "Tests saņemts"
@@ -656,7 +656,7 @@ msgid "Error %d"
 msgstr "Kļūda %d"
 
 msgid "An error occured while the server was handling your request."
-msgstr "Serverim apstrādājot jūsu pieprasījumu, radusies kļūme."
+msgstr "Serverim apstrādājot jūsu pieprasījumu, ir radusies kļūme."
 
 msgid ""
 "Note that attempts to tamper with Contest Management System (such as probing the server "
@@ -785,7 +785,7 @@ msgid "Start!"
 msgstr "Sākt!"
 
 msgid "Task overview"
-msgstr "Uzdevuma apskats"
+msgstr "Uzdevumu apskats"
 
 msgid "Task"
 msgstr "Uzdevums"
@@ -1028,7 +1028,7 @@ msgid "Token"
 msgstr "Žetons"
 
 msgid "no submissions yet"
-msgstr "vēl nav iesūtījumu"
+msgstr "pagaidām nav iesūtījumu"
 
 msgid "Submission details"
 msgstr "Iesūtījuma detaļas"
@@ -1056,7 +1056,7 @@ msgid "Output"
 msgstr "Izvaddati"
 
 msgid "no tests yet"
-msgstr "vēl nav testu"
+msgstr "pagaidām nav testu"
 
 msgid "Test details"
 msgstr "Testa detaļas"
