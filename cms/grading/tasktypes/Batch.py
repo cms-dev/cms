@@ -349,6 +349,13 @@ class Batch(TaskType):
                             sandbox.create_file_from_storage(
                                 input_filename,
                                 job.input)
+
+                            # Allow using any number of processes (because e.g.
+                            # one may want to write a bash checker who calls
+                            # other processes). Set to a high number because
+                            # to avoid fork-bombing the worker.
+                            sandbox.max_processes = 1000
+
                             success, _ = evaluation_step(
                                 sandbox,
                                 [["./%s" % manager_filename,
