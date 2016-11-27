@@ -593,7 +593,7 @@ class EvaluationService(TriggeredService):
                     # We do not cache user tests as they can come up
                     # only once.
                     object_ = UserTest.get_from_id(object_id, session)
-                    object_result = object_.get_result(dataset)
+                    object_result = object_.get_result_or_create(dataset)
 
                 self.write_results_one_object_and_type(
                     session, object_result, operation_results)
@@ -840,7 +840,7 @@ class EvaluationService(TriggeredService):
         else:
             logger.warning("Worker failed when evaluating submission "
                            "%d(%d).",
-                           user_test_result.submission_id,
+                           user_test_result.user_test_id,
                            user_test_result.dataset_id)
             if user_test_result.evaluation_tries >= \
                     EvaluationService.MAX_USER_TEST_EVALUATION_TRIES:

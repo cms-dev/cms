@@ -591,7 +591,7 @@ class EvaluationJob(Job):
         return (EvaluationJob): the job.
 
         """
-        if operation.type_ != ESOperation.USER_TESTEVALUATION:
+        if operation.type_ != ESOperation.USER_TEST_EVALUATION:
             logger.error("Programming error: asking for a user test "
                          "evaluation job, but the operation is %s.",
                          operation.type_)
