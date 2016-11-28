@@ -49,6 +49,7 @@ from cms.db import Task, UserTest, UserTestFile, UserTestManager
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required, format_size
 from cmscommon.archive import Archive
+from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -443,7 +444,11 @@ class UserTestHandler(BaseHandler):
             self._("Your test has been received "
                    "and is currently being executed."),
             NOTIFICATION_SUCCESS)
-        self.redirect("/testing?%s" % quote(task.name, safe=''))
+        # The argument (encripted user test id) is not used by CWS
+        # (nor it discloses information to the user), but it is useful
+        # for automatic testing to obtain the user test id).
+        self.redirect("/testing?%s&%s" % (
+            quote(task.name, safe=''), encrypt_number(user_test.id)))
 
 
 class UserTestStatusHandler(BaseHandler):

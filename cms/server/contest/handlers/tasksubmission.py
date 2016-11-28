@@ -364,7 +364,6 @@ class SubmitHandler(BaseHandler):
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
-        # FIXME is it actually used by something?
         self.redirect("/tasks/%s/submissions?%s" % (
             quote(task.name, safe=''),
             encrypt_number(submission.id)))

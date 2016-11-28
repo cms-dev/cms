@@ -79,8 +79,10 @@ class TestRunner(object):
         self.test_list = test_list
         self.n_tests = len(test_list)
         self.n_submissions = sum(len(test.languages) for test in test_list)
-        logging.info("Have %s submissions in %s tests...",
-                     self.n_submissions, self.n_tests)
+        self.n_user_tests = sum(len(test.languages) for test in test_list
+                                if test.user_tests)
+        logging.info("Have %s submissions and %s user_tests in %s tests...",
+                     self.n_submissions, self.n_user_tests, self.n_tests)
 
     @staticmethod
     def load_cms_conf():
@@ -146,6 +148,7 @@ class TestRunner(object):
             start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
             stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
             timezone=get_system_timezone(),
+            allow_user_tests="checked",
             token_mode="finite",
             token_max_number="100",
             token_min_interval="0",
@@ -275,6 +278,13 @@ class TestRunner(object):
             for lang in test.languages:
                 yield (test, lang)
 
+    def _all_user_tests(self):
+        """Yield all pairs (test, language)."""
+        for test in self.test_list:
+            if test.user_tests:
+                for lang in test.languages:
+                    yield (test, lang)
+
     def submit_tests(self):
         """Create the tasks, and submit for all languages in all tests.
 
@@ -297,6 +307,17 @@ class TestRunner(object):
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))
 
+        for i, (test, lang) in enumerate(self._all_user_tests()):
+            logging.info("Submitting user test  %s/%s: %s (%s)",
+                         i + 1, self.n_user_tests, test.name, lang)
+            task_id = self.create_or_get_task(test.task_module)
+            try:
+                test.submit_user_test(
+                    self.contest_id, task_id, self.user_id, lang)
+            except TestFailure as f:
+                logging.error("(FAILED (while submitting): %s)", f.message)
+                self.failures.append((test, lang, f.message))
+
     def wait_for_evaluation(self):
         """Wait for all submissions to evaluate.
 
@@ -310,6 +331,16 @@ class TestRunner(object):
                 test.wait(self.contest_id, lang)
             except TestFailure as f:
                 logging.error("(FAILED (while evaluating): %s)", f.message)
+                self.failures.append((test, lang, f.message))
+
+        for i, (test, lang) in enumerate(self._all_user_tests()):
+            logging.info("Waiting for user test %s/%s: %s (%s)",
+                         i + 1, self.n_user_tests, test.name, lang)
+            try:
+                test.wait_user_test(self.contest_id, lang)
+            except TestFailure as f:
+                logging.error("(FAILED (while evaluating user test): %s)",
+                              f.message)
                 self.failures.append((test, lang, f.message))
 
         return self.failures

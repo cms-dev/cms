@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,7 +26,9 @@ import json
 import os
 import re
 
-from cmstestsuite import cws_submit, get_evaluation_result
+from cmstestsuite import \
+    cws_submit, cws_submit_user_test, \
+    get_evaluation_result, get_user_test_result
 
 
 class TestFailure(Exception):
@@ -134,7 +136,8 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
 
 
 class Test(object):
-    def __init__(self, name, task, filenames, languages, checks):
+    def __init__(self, name, task, filenames, languages, checks,
+                 user_tests=False):
         self.name = name
         self.task_module = task
         self.filenames = filenames
@@ -143,9 +146,12 @@ class Test(object):
         submission_format = json.loads(task.task_info["submission_format"])
         self.submission_format = submission_format
 
-        self.submission_id = {}
+        self.user_tests = user_tests
 
-    def submit(self, contest_id, task_id, user_id, language):
+        self.submission_id = {}
+        self.user_test_id = {}
+
+    def _sources_names(self, language):
         # Source files are stored under cmstestsuite/code/.
         path = os.path.join(os.path.dirname(__file__), 'code')
 
@@ -155,7 +161,10 @@ class Test(object):
 
         full_paths = [os.path.join(path, filename) for filename in filenames]
 
-        # Submit our code.
+        return filenames, full_paths
+
+    def submit(self, contest_id, task_id, user_id, language):
+        filenames, full_paths = self._sources_names(language)
         self.submission_id[language] = cws_submit(
             contest_id, task_id, user_id, self.submission_format,
             full_paths, language)
@@ -163,7 +172,7 @@ class Test(object):
     def wait(self, contest_id, language):
         # This means we were not able to submit, hence the error
         # should have been already noted.
-        if self.submission_id[language] is None:
+        if self.submission_id.get(language) is None:
             return
 
         # Wait for evaluation to complete.
@@ -177,3 +186,18 @@ class Test(object):
             except TestFailure:
                 # Our caller can deal with these.
                 raise
+
+    def submit_user_test(self, contest_id, task_id, user_id, language):
+        filenames, full_paths = self._sources_names(language)
+        self.user_test_id[language] = cws_submit_user_test(
+            contest_id, task_id, user_id, self.submission_format,
+            full_paths, language)
+
+    def wait_user_test(self, contest_id, language):
+        # This means we were not able to submit, hence the error
+        # should have been already noted.
+        if self.user_test_id.get(language) is None:
+            return
+
+        # Wait for evaluation to complete. We do not do any other check.
+        get_user_test_result(contest_id, self.user_test_id[language])

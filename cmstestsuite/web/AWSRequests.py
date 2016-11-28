@@ -98,3 +98,44 @@ class AWSSubmissionViewRequest(GenericRequest):
         info['evaluations'] = evaluations
 
         return info
+
+
+class AWSUserTestViewRequest(GenericRequest):
+    """Load the view of a user test in AWS."""
+    def __init__(self, browser, user_test_id, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.user_test_id = user_test_id
+        self.url = "%suser_test/%s" % (self.base_url, user_test_id)
+
+    def describe(self):
+        return "check user_test %s" % self.user_test_id
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+        try:
+            self.get_user_test_info()
+            return True
+        except:
+            return False
+
+    def get_user_test_info(self):
+        # Only valid after self.execute()
+        # Parse user test information out of response.
+        soup = BeautifulSoup(self.res_data)
+
+        info = {}
+
+        # Get user test status.
+        tag = soup.findAll(id="user_test_status")[0]
+        info['status'] = tag.text.strip()
+
+        # Get compilation text.
+        tags = soup.findAll(id="compilation")
+        if tags:
+            content = tags[0]
+            info['compile_output'] = content.pre.text.strip()
+        else:
+            info['compile_output'] = None
+
+        return info

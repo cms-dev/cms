@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -31,10 +31,9 @@ import sys
 
 from argparse import ArgumentParser
 
-import cmstestsuite.Tests
-
 from cms import utf8_decoder
 from cmstestsuite import CONFIG, combine_coverage, sh
+from cmstestsuite.Tests import ALL_TESTS
 from testrunner import TestRunner
 
 
@@ -63,7 +62,7 @@ def load_test_list_from_file(filename):
     errors = False
 
     name_to_test_map = {}
-    for test in cmstestsuite.Tests.ALL_TESTS:
+    for test in ALL_TESTS:
         if test.name in name_to_test_map:
             print("ERROR: Multiple tests with the same name `%s'." % test.name)
             errors = True
@@ -182,7 +181,7 @@ def main():
     if args.retry_failed:
         test_list = load_failed_tests()
     else:
-        test_list = cmstestsuite.Tests.ALL_TESTS
+        test_list = ALL_TESTS
     test_list = filter_tests(test_list, regexes, languages)
 
     if not test_list:
@@ -196,6 +195,12 @@ def main():
             if args.dry_run:
                 logger.info("Test %s in %s.", test.name, language)
             tests += 1
+        if test.user_tests:
+            for language in test.languages:
+                if args.dry_run:
+                    logger.info("Test %s in %s (for usertest).",
+                                test.name, language)
+                tests += 1
     if args.dry_run:
         return 0
 

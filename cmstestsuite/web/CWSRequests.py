@@ -27,6 +27,7 @@ from __future__ import unicode_literals
 import re
 import os
 import random
+import tempfile
 
 from cmscommon.crypto import decrypt_number
 from cmstestsuite.web import GenericRequest, LoginRequest
@@ -143,6 +144,56 @@ class SubmitRequest(GenericRequest):
         except Exception:
             return None
         return submission_id
+
+
+class SubmitUserTestRequest(GenericRequest):
+    """Submit a user test in CWS."""
+    def __init__(self, browser, task, submission_format,
+                 filenames, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = "%stasks/%s/test" % (self.base_url, task[1])
+        self.task = task
+        self.submission_format = submission_format
+        self.filenames = filenames
+        self.data = {}
+
+    def _prepare(self):
+        GenericRequest._prepare(self)
+        # Let's generate an arbitrary input file.
+        temp_file, temp_filename = tempfile.mkstemp()
+        self.files = \
+            list(zip(self.submission_format, self.filenames)) + \
+            [("input", temp_filename)]
+
+    def describe(self):
+        return "submit user test %s for task %s (ID %d) %s" % \
+            (repr(self.filenames), self.task[1], self.task[0], self.url)
+
+    def specific_info(self):
+        return 'Task: %s (ID %d)\nFile: %s\n' % \
+            (self.task[1], self.task[0], repr(self.filenames)) + \
+            GenericRequest.specific_info(self)
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+
+        return self.get_user_test_id() is not None
+
+    def get_user_test_id(self):
+        # Only valid after self.execute()
+        # Parse submission ID out of redirect.
+        if self.redirected_to is None:
+            return None
+
+        p = self.redirected_to.split("&")
+        if len(p) != 2:
+            return None
+        try:
+            user_test_id = decrypt_number(p[-1])
+        except Exception:
+            return None
+        return user_test_id
 
 
 class TokenRequest(GenericRequest):

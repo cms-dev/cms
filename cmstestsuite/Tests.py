@@ -54,7 +54,8 @@ ALL_TESTS = [
     Test('correct-freopen',
          task=batch_fileio, filenames=['correct-freopen.%l'],
          languages=(LANG_C,),
-         checks=[CheckOverallScore(100, 100)]),
+         checks=[CheckOverallScore(100, 100)],
+         user_tests=True),
 
     Test('correct-fileio',
          task=batch_fileio, filenames=['correct-fileio.%l'],

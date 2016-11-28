@@ -37,8 +37,9 @@ import time
 
 from cmstestsuite.web import browser_do_request
 from cmstestsuite.web.AWSRequests import \
-    AWSLoginRequest, AWSSubmissionViewRequest
-from cmstestsuite.web.CWSRequests import CWSLoginRequest, SubmitRequest
+    AWSLoginRequest, AWSSubmissionViewRequest, AWSUserTestViewRequest
+from cmstestsuite.web.CWSRequests import \
+    CWSLoginRequest, SubmitRequest, SubmitUserTestRequest
 
 
 logger = logging.getLogger(__name__)
@@ -383,6 +384,24 @@ def cws_submit(contest_id, task_id, user_id, submission_format,
     return submission_id
 
 
+def cws_submit_user_test(contest_id, task_id, user_id, submission_format,
+                         filenames, language):
+    task = (task_id, created_tasks[task_id]['name'])
+
+    browser = get_cws_browser(user_id)
+    sr = SubmitUserTestRequest(
+        browser, task, base_url=CWS_BASE_URL,
+        submission_format=submission_format,
+        filenames=filenames)
+    sr.execute()
+    user_test_id = sr.get_user_test_id()
+
+    if user_test_id is None:
+        raise FrameworkException("Failed to submit user test.")
+
+    return user_test_id
+
+
 def get_evaluation_result(contest_id, submission_id, timeout=60):
     WAITING_STATUSES = re.compile(
         r'Compiling\.\.\.|Evaluating\.\.\.|Scoring\.\.\.|Evaluated')
@@ -411,4 +430,35 @@ def get_evaluation_result(contest_id, submission_id, timeout=60):
 
         raise FrameworkException("Unknown submission status: %s" % status)
 
-    raise FrameworkException("Waited too long for result.")
+    raise FrameworkException("Waited too long for submission result.")
+
+
+def get_user_test_result(contest_id, user_test_id, timeout=60):
+    WAITING_STATUSES = re.compile(
+        r'Compiling\.\.\.|Evaluating\.\.\.')
+    COMPLETED_STATUS = re.compile(
+        r'Compilation failed|Evaluated')
+
+    browser = get_aws_browser()
+    sleep_interval = 0.1
+    while timeout > 0:
+        timeout -= sleep_interval
+
+        sr = AWSUserTestViewRequest(browser,
+                                    user_test_id,
+                                    base_url=AWS_BASE_URL)
+        sr.execute()
+
+        result = sr.get_user_test_info()
+        status = result['status']
+
+        if COMPLETED_STATUS.search(status):
+            return result
+
+        if WAITING_STATUSES.search(status):
+            time.sleep(sleep_interval)
+            continue
+
+        raise FrameworkException("Unknown user test status: %s" % status)
+
+    raise FrameworkException("Waited too long for user test result.")
