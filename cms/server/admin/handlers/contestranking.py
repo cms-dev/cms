@@ -63,6 +63,9 @@ class RankingHandler(BaseHandler):
             .first()
 
         self.r_params = self.render_params()
+        show_teams = any(map(lambda participation: participation.team_id,
+                             self.contest.participations))
+        self.r_params["show_teams"] = show_teams
         if format == "txt":
             self.set_header("Content-Type", "text/plain")
             self.set_header("Content-Disposition",
@@ -86,6 +89,8 @@ class RankingHandler(BaseHandler):
             contest = self.r_params["contest"]
 
             row = ["Username", "User"]
+            if show_teams:
+                row.append("Team")
             for task in contest.tasks:
                 row.append(task.name)
                 if include_partial:
@@ -107,6 +112,8 @@ class RankingHandler(BaseHandler):
 
                 row = [p.user.username,
                        "%s %s" % (p.user.first_name, p.user.last_name)]
+                if show_teams:
+                    row.append(p.team.name if p.team else "")
                 for task in contest.tasks:
                     t_score, t_partial = task_score(p, task)
                     t_score = round(t_score, task.score_precision)
