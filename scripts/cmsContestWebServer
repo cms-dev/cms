@@ -30,7 +30,7 @@ import logging
 import sys
 
 from cms import ConfigError, default_argument_parser
-from cms.db import ask_for_contest, test_db_connection
+from cms.db import test_db_connection
 from cms.server.contest import ContestWebServer
 
 
@@ -43,8 +43,7 @@ def main():
     """
     test_db_connection()
     return default_argument_parser("Contestants' web server for CMS.",
-                                   ContestWebServer,
-                                   ask_contest=ask_for_contest).run()
+                                   ContestWebServer).run()
 
 
 if __name__ == "__main__":
