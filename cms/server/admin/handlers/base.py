@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -45,7 +45,8 @@ from sqlalchemy.orm import subqueryload
 
 from cms import __version__
 from cms.db import Admin, Contest, Participation, Question, \
-    Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User
+    Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User, \
+    UserTest
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
@@ -496,8 +497,8 @@ class BaseHandler(CommonRequestHandler):
     def render_params_for_submissions(self, query, page, page_size=50):
         """Add data about the requested submissions to r_params.
 
-        submission_query (sqlalchemy.orm.query.Query): the query
-            giving back all interesting submissions.
+        query (sqlalchemy.orm.query.Query): the query giving back all
+            interesting submissions.
         page (int): the index of the page to display.
         page_size(int): the number of submissions per page.
 
@@ -528,8 +529,46 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["submission_pages"] = \
             (count + page_size - 1) // page_size
 
+    def render_params_for_user_tests(self, query, page, page_size=50):
+        """Add data about the requested user tests to r_params.
+
+        query (sqlalchemy.orm.query.Query): the query giving back all
+            interesting user tests.
+        page (int): the index of the page to display.
+        page_size(int): the number of submissions per page.
+
+        """
+        query = query\
+            .options(subqueryload(UserTest.task))\
+            .options(subqueryload(UserTest.participation))\
+            .options(subqueryload(UserTest.files))\
+            .options(subqueryload(UserTest.results))\
+            .order_by(UserTest.timestamp.desc())
+
+        offset = page * page_size
+        count = query.count()
+
+        if self.r_params is None:
+            self.r_params = self.render_params()
+
+        self.r_params["user_test_count"] = count
+        self.r_params["user_tests"] = \
+            query.slice(offset, offset + page_size).all()
+        self.r_params["user_test_page"] = page
+        self.r_params["user_test_pages"] = \
+            (count + page_size - 1) // page_size
+
 
 FileHandler = file_handler_gen(BaseHandler)
+
+
+class FileFromDigestHandler(FileHandler):
+    """Return the file, using the given name, and as plain text."""
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self, digest, filename):
+        # TODO: Accept a MIME type
+        self.sql_session.close()
+        self.fetch(digest, "text/plain", filename)
 
 
 def SimpleHandler(page, authenticated=True, permission_all=False):

@@ -70,7 +70,8 @@ class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
 
     """
-    # FIXME: Replace with FileFromDigestHandler?
+    # We cannot use FileFromDigestHandler as it does not know how to
+    # set the proper name (i.e., converting %l to the language).
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, file_id):
         sub_file = self.safe_get_item(File, file_id)
@@ -110,12 +111,3 @@ class SubmissionCommentHandler(BaseHandler):
         else:
             self.redirect("/submission/%s/%s" % (submission_id,
                                                  dataset_id))
-
-
-class FileFromDigestHandler(FileHandler):
-
-    @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, digest, filename):
-        # TODO: Accept a MIME type
-        self.sql_session.close()
-        self.fetch(digest, "text/plain", filename)

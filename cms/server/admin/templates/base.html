@@ -1,7 +1,7 @@
 {% import time %}
 {% import json %}
 {% from cms import DEFAULT_LANGUAGES, LANGUAGE_NAMES, LANGUAGES, config %}
-{% from cms.db import SubmissionResult %}
+{% from cms.db import SubmissionResult, UserTestResult %}
 {% from cmscommon.datetime import make_timestamp %}
 {% from cmscommon.crypto import get_hex_random_key %}
 <html>
@@ -221,6 +221,7 @@ $(document).ready(init);
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/ranking">Ranking</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/submissions">Submissions</a></li>
+            {% if contest.allow_user_tests %}<li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/user_tests">User tests</a></li>{% end %}
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/users">Users</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/tasks">Tasks</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/announcements">Announcements</a></li>

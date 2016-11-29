@@ -219,6 +219,19 @@ class UserTestResult(Base):
     """Class to store the execution results of a user_test.
 
     """
+    # Possible statuses of a user test result. COMPILING and
+    # EVALUATING do not necessarily imply we are going to schedule
+    # compilation and run for these user test results: for
+    # example, they might be for datasets not scheduled for
+    # evaluation, or they might have passed the maximum number of
+    # tries. If a user test result does not exists for a pair
+    # (user test, dataset), its status can be implicitly assumed to
+    # be COMPILING.
+    COMPILING = 1
+    COMPILATION_FAILED = 2
+    EVALUATING = 3
+    EVALUATED = 4
+
     __tablename__ = 'user_test_results'
     __table_args__ = (
         UniqueConstraint('user_test_id', 'dataset_id'),
@@ -334,6 +347,19 @@ class UserTestResult(Base):
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # executables (dict of UserTestExecutable objects indexed by filename)
+
+    def get_status(self):
+        """Return the status of this object.
+
+        """
+        if not self.compiled():
+            return UserTestResult.COMPILING
+        elif self.compilation_failed():
+            return UserTestResult.COMPILATION_FAILED
+        elif not self.evaluated():
+            return UserTestResult.EVALUATING
+        else:
+            return UserTestResult.EVALUATED
 
     def compiled(self):
         """Return whether the user test result has been compiled.
