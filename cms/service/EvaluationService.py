@@ -581,13 +581,7 @@ class EvaluationService(TriggeredService):
                         continue
                     result_id = (object_id, dataset_id)
                     if result_id not in srs:
-                        srs[result_id] = object_.get_result(dataset)
-                        if srs[result_id] is None:
-                            logger.info("Couldn't find submission %d(%d) "
-                                        "in the database. Creating it.",
-                                        object_id, dataset_id)
-                            srs[result_id] = \
-                                object_.get_result_or_create(dataset)
+                        srs[result_id] = object_.get_result_or_create(dataset)
                     object_result = srs[result_id]
                 else:
                     # We do not cache user tests as they can come up
@@ -614,14 +608,24 @@ class EvaluationService(TriggeredService):
 
             logger.info("Ending operations for %s objects...",
                         len(by_object_and_type))
-            for type_, submission_id, dataset_id in by_object_and_type:
+            for type_, object_id, dataset_id in by_object_and_type:
                 if type_ == ESOperation.COMPILATION:
-                    submission_result = srs[(submission_id, dataset_id)]
+                    submission_result = srs[(object_id, dataset_id)]
                     self.compilation_ended(submission_result)
                 elif type_ == ESOperation.EVALUATION:
-                    submission_result = srs[(submission_id, dataset_id)]
+                    submission_result = srs[(object_id, dataset_id)]
                     if submission_result.evaluated():
                         self.evaluation_ended(submission_result)
+                elif type_ == ESOperation.USER_TEST_COMPILATION:
+                    user_test_result = UserTest\
+                        .get_from_id(object_id, session)\
+                        .get_result(datasets[dataset_id])
+                    self.user_test_compilation_ended(user_test_result)
+                elif type_ == ESOperation.USER_TEST_EVALUATION:
+                    user_test_result = UserTest\
+                        .get_from_id(object_id, session)\
+                        .get_result(datasets[dataset_id])
+                    self.user_test_evaluation_ended(user_test_result)
 
         logger.info("Done")
 
@@ -676,15 +680,11 @@ class EvaluationService(TriggeredService):
             else:
                 object_result.compilation_tries += 1
 
-            self.user_test_compilation_ended(object_result)
-
         elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
             if result.job_success:
                 result.job.to_user_test(object_result)
             else:
                 object_result.evaluation_tries += 1
-
-            self.user_test_evaluation_ended(object_result)
 
         else:
             logger.error("Invalid operation type %r.", operation.type_)
