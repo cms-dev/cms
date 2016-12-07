@@ -123,6 +123,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
+{% if not any(x.filename.endswith(".%l") for x in task.submission_format) %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
             <fieldset>
@@ -141,6 +142,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
+{% end %}
 </div>
 
 

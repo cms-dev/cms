@@ -160,6 +160,9 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
+        # Required files from the user.
+        required = set([sfe.filename for sfe in task.submission_format])
+
         # Ensure that the user did not submit multiple files with the
         # same name.
         if any(len(filename) != 1 for filename in self.request.files.values()):
@@ -173,9 +176,21 @@ class SubmitHandler(BaseHandler):
             return
 
         # If the user submitted an archive, extract it and use content
-        # as request.files.
+        # as request.files. But only valid for "output only" (i.e.,
+        # not for submissions requiring a programming language
+        # identification).
         if len(self.request.files) == 1 and \
                 self.request.files.keys()[0] == "submission":
+            if any(filename.endswith(".%l") for filename in required):
+                self.application.service.add_notification(
+                    participation.user.username,
+                    self.timestamp,
+                    self._("Invalid submission format!"),
+                    self._("Please select the correct files."),
+                    NOTIFICATION_ERROR)
+                self.redirect(
+                    "/tasks/%s/submissions" % quote(task.name, safe=''))
+                return
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
@@ -209,7 +224,6 @@ class SubmitHandler(BaseHandler):
         # submission format and no more. Less is acceptable if task
         # type says so.
         task_type = get_task_type(dataset=task.active_dataset)
-        required = set([sfe.filename for sfe in task.submission_format])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
