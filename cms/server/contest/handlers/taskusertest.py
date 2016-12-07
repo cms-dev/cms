@@ -125,6 +125,17 @@ class UserTestHandler(BaseHandler):
     # The following code has been taken from SubmitHandler and adapted
     # for UserTests.
 
+    def _send_error(self, subject, text, task):
+        """Shorthand for sending a notification and redirecting."""
+        self.application.service.add_notification(
+            self.current_user.user.username,
+            self.timestamp,
+            subject,
+            text,
+            NOTIFICATION_ERROR)
+        task_name = quote(task.name, safe='')
+        self.redirect("/testing?{0}".format(task_name))
+
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name):
@@ -175,13 +186,7 @@ class UserTestHandler(BaseHandler):
                                "at most %d tests on this task.") %
                         task.max_user_test_number)
         except ValueError as error:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Too many tests!"),
-                error.message,
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self._send_error(self._("Too many tests!"), error.message, task)
             return
 
         # Enforce minimum time between user_tests
@@ -219,13 +224,8 @@ class UserTestHandler(BaseHandler):
                                "after %d seconds from last test.") %
                         task.min_user_test_interval.total_seconds())
         except ValueError as error:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Tests too frequent!"),
-                error.message,
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self._send_error(
+                self._("Tests too frequent!"), error.message, task)
             return
 
         # Required files from the user.
@@ -236,13 +236,10 @@ class UserTestHandler(BaseHandler):
         # Ensure that the user did not submit multiple files with the
         # same name.
         if any(len(filename) != 1 for filename in self.request.files.values()):
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+                task)
             return
 
         # If the user submitted an archive, extract it and use content
@@ -252,13 +249,10 @@ class UserTestHandler(BaseHandler):
         if len(self.request.files) == 1 and \
                 self.request.files.keys()[0] == "submission":
             if any(filename.endswith(".%l") for filename in required):
-                self.application.service.add_notification(
-                    participation.user.username,
-                    self.timestamp,
+                self._send_error(
                     self._("Invalid test format!"),
                     self._("Please select the correct files."),
-                    NOTIFICATION_ERROR)
-                self.redirect("/testing?%s" % quote(task.name, safe=''))
+                    task)
                 return
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
@@ -267,13 +261,10 @@ class UserTestHandler(BaseHandler):
             archive = Archive.from_raw_data(archive_data["body"])
 
             if archive is None:
-                self.application.service.add_notification(
-                    participation.user.username,
-                    self.timestamp,
+                self._send_error(
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
-                    NOTIFICATION_ERROR)
-                self.redirect("/testing?%s" % quote(task.name, safe=''))
+                    task)
                 return
 
             # Extract the archive.
@@ -294,13 +285,10 @@ class UserTestHandler(BaseHandler):
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Invalid test format!"),
                 self._("Please select the correct files."),
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+                task)
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -347,36 +335,24 @@ class UserTestHandler(BaseHandler):
                 else:
                     submission_lang = lang
         if error is not None:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Invalid test!"),
-                error,
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            self._send_error(self._("Invalid test!"), error, task)
             return
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
                 for n, f in files.items() if n != "input"]):
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length,
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+                task)
             return
         if len(files["input"][1]) > config.max_input_length:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Input too big!"),
                 self._("The input file must be at most %d bytes long.") %
                 config.max_input_length,
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+                task)
             return
 
         # All checks done, submission accepted.
@@ -417,13 +393,10 @@ class UserTestHandler(BaseHandler):
         # In case of error, the server aborts the submission
         except Exception as error:
             logger.error("Storage failed! %s", error)
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Test storage failed!"),
                 self._("Please try again."),
-                NOTIFICATION_ERROR)
-            self.redirect("/testing?%s" % quote(task.name, safe=''))
+                task)
             return
 
         # All the files are stored, ready to submit!
