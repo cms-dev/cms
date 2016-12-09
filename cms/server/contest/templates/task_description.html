@@ -190,9 +190,9 @@
             <li>
                 <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/attachments/{{ encode_for_url(filename) }}" class="btn">
             {% if type_icon is not None %}
-                    <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
+                    <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png" alt="{{ mime_type }}" />
             {% else %}
-                    <img src="{{ url_root }}/static/img/mimetypes/unknown.png"/>
+                    <img src="{{ url_root }}/static/img/mimetypes/unknown.png" alt="{{ _("unknown") }}" />
             {% end %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>

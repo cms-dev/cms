@@ -92,15 +92,15 @@ $(document).ready(function () {
                     <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
                     <fieldset>
                         <div class="control-group">
-                            <label class="control-label" for="input01">{{ _("Username") }}</label>
+                            <label class="control-label" for="username">{{ _("Username") }}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" name="username">
+                                <input type="text" class="input-xlarge" name="username" id="username">
                             </div>
                         </div>
                         <div class="control-group">
-                            <label class="control-label" for="input01">{{ _("Password") }}</label>
+                            <label class="control-label" for="password">{{ _("Password") }}</label>
                             <div class="controls">
-                                <input type="password" class="input-xlarge" name="password">
+                                <input type="password" class="input-xlarge" name="password" id="password">
                             </div>
                         </div>
                         <div class="control-group">
