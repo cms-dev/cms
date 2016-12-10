@@ -92,8 +92,8 @@
 
   {% if utr is not None and utr.evaluated() %}
 
-<h2 id="title_compilation" class="toggling_on">Compilation</h2>
-<div id="compilation">
+<h2 id="title_evaluation" class="toggling_on">Evaluation</h2>
+<div id="evaluation">
 
   <h3>Outcome</h3>
   <pre>{% if utr.evaluation_text is not None %}{{ format_status_text(utr.evaluation_text) }}{% end %}</pre>
@@ -102,6 +102,8 @@
   <h3>Output</h3>
   <a href="javascript:void(0);" onclick="utils.show_file('output','{{ url_root }}/file/{{ utr.output }}/output')">See output</a>
     {% end %}
+
+</div>
 
   {% end %}
 

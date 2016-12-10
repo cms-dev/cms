@@ -20,6 +20,7 @@
               <option value="{{ task.name }}">
               {% end %}
             </datalist>
+          </div>
           <div class="notification_text">
             <label for="new_text">Text</label>
             <textarea name="text" id="new_text" style="width: 100%" ></textarea>
@@ -47,9 +48,9 @@
       {% end %}
     {% else %}
       No announcements.
+    {% end %}
   </div>
 
-  {% end %}
   <div class="hr"></div>
 </div>
 
