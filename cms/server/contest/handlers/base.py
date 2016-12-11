@@ -91,10 +91,6 @@ class BaseHandler(CommonRequestHandler):
 
         ret["contest_list"] = self.contest_list
 
-        # TODO Now all language names are shown in the active language.
-        # It would be better to show them in the corresponding one.
-        ret["lang_names"] = {}
-
         return ret
 
     def finish(self, *args, **kwds):
