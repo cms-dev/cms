@@ -169,6 +169,31 @@ class ContestHandler(BaseHandler):
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
 
+        # TODO Now all language names are shown in the active language.
+        # It would be better to show them in the corresponding one.
+        ret["lang_names"] = {}
+
+        # Get language codes for allowed localizations
+        lang_codes = self.langs.keys()
+        if len(self.contest.allowed_localizations) > 0:
+            lang_codes = filter_language_codes(
+                lang_codes, self.contest.allowed_localizations)
+        for lang_code, trans in self.langs.iteritems():
+            language_name = None
+            # Filter lang_codes with allowed localizations
+            if lang_code not in lang_codes:
+                continue
+            try:
+                language_name = translate_language_country_code(
+                    lang_code, trans)
+            except ValueError:
+                language_name = translate_language_code(
+                    lang_code, trans)
+            ret["lang_names"][lang_code.replace("_", "-")] = language_name
+
+        ret["cookie_lang"] = self.cookie_lang
+        ret["browser_lang"] = self.browser_lang
+
         return ret
 
     def get_login_url(self):
