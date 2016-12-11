@@ -141,8 +141,7 @@ class RPCMiddleware(object):
         result = self._service.remote_services[remote_service].execute_rpc(
             args['method'], data)
 
-        # XXX We could set a timeout on the .wait().
-        result.wait()
+        result.wait(timeout=60)
 
         response = Response()
 
