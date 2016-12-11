@@ -269,8 +269,8 @@ var plotOptions = {
 {% end %}
 
 {% block js_init %}
-
-for (var i = 0; i < {{ resource_shards }}; i++)
+var shards = {% raw json_encode(resource_addresses) %};
+for (var i in shards)
 {
     getters[i] = new RSgetter(i, plotOptions);
     var f = utils.bind_func(getters[i], getters[i].update_resources);
