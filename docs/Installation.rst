@@ -263,7 +263,7 @@ To install CMS and its Python dependencies on Ubuntu, you can issue:
     # Optional.
     # sudo apt-get install python-yaml python-sphinx python-cups python-pypdf2
 
-Method 3: Using ``pacman`` on Arch Linux
+Method 4: Using ``pacman`` on Arch Linux
 ----------------------------------------
 
 .. warning::
