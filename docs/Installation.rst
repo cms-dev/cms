@@ -72,7 +72,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
 .. sourcecode:: bash
 
-    sudo pacman -S base-devel fpc postgresql postgresql-client python2 \
+    sudo pacman -S --needed base-devel fpc postgresql postgresql-client python2 \
          iso-codes shared-mime-info git
 
     # Install the following from AUR.
@@ -80,10 +80,10 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     # https://aur.archlinux.org/packages/sgi-stl-doc/
 
     # Only if you are going to use pip/virtualenv to install python dependencies
-    sudo pacman -S postgresql-libs libcups libyaml python2-pip
+    sudo pacman -S --needed postgresql-libs libcups libyaml python2-pip
 
     # Optional
-    sudo pacman -S nginx php php-fpm phppgadmin texlive-core a2ps \
+    sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core a2ps \
          ghc
 
 Debian
@@ -276,7 +276,7 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
 
     sudo python2 setup.py install
 
-    sudo pacman -S python2-setuptools python2-tornado python2-psycopg2 \
+    sudo pacman -S --needed python2-setuptools python2-tornado python2-psycopg2 \
          python2-sqlalchemy python2-psutil python2-netifaces python2-crypto \
          python2-pytz python2-six python2-beautifulsoup3 python2-mechanize \
          python2-coverage python2-mock python2-requests python2-werkzeug \
@@ -286,7 +286,7 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
     # https://aur.archlinux.org/packages/patool/
 
     # Optional.
-    # sudo pacman -S python2-yaml python-sphinx python2-pycups
+    # sudo pacman -S --needed python2-yaml python-sphinx python2-pycups
     # Optionally install the following from AUR.
     # https://aur.archlinux.org/packages/python2-pypdf2/
 
