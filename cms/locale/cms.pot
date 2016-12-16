@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-01 15:57+0900\n"
+"POT-Creation-Date: 2016-06-22 13:38+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,6 +154,12 @@ msgid "Correct"
 msgstr ""
 
 msgid "Partially correct"
+msgstr ""
+
+msgid "Rejected"
+msgstr ""
+
+msgid "Accepted"
 msgstr ""
 
 msgid "Invalid files in submission"
