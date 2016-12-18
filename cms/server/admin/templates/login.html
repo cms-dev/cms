@@ -17,6 +17,7 @@
     {% end %}
 <p>Please log in:</p>
 <form action="{{ url_root }}/login" method="POST">
+  {% module xsrf_form_html() %}
   <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
   <div class="section">
     <label>

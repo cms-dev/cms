@@ -653,14 +653,14 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
     });
 };
 
-
 /**
  * Sends a delete request and on success redirect to the page
  * specified in the response, if present.
  */
 CMS.AWSUtils.ajax_delete = function(url) {
   var settings = {
-    'type': 'DELETE'
+    'type': 'DELETE',
+    headers: {"X-XSRFToken": get_cookie("_xsrf")}
   };
   settings['success'] = function(data_redirect_url) {
     if (data_redirect_url) {

@@ -89,6 +89,7 @@ $(document).ready(function () {
                 <h1>{{ _("Welcome") }}</h1>
                 <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ url_root }}/login" method="POST">
+                    {% module xsrf_form_html() %}
                     <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
                     <fieldset>
                         <div class="control-group">

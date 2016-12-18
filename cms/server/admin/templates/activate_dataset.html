@@ -58,6 +58,7 @@ below, and wait for it to complete.
 </p>
 
 <form action="{{ url_root }}/dataset/{{ dataset.id }}/activate" method="POST">
+{% module xsrf_form_html() %}
 {% if len(changes) == 0 %}
 <p>Good news! At present, switching to this dataset will have no effect on the
 scores. No notifications will be sent.</p>
