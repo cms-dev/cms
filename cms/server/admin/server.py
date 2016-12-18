@@ -64,6 +64,7 @@ class AdminWebServer(WebService):
             "auth_middleware": AWSAuthMiddleware,
             "rpc_enabled": True,
             "rpc_auth": self.is_rpc_authorized,
+            "xsrf_cookies": True,
         }
         super(AdminWebServer, self).__init__(
             config.admin_listen_port,

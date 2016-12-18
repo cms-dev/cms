@@ -8,6 +8,7 @@
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
   <form enctype="multipart/form-data" action="{{ url_root }}/users/add" method="POST">
+    {% module xsrf_form_html() %}
     <table>
       <tr>
         <td>

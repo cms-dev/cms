@@ -72,6 +72,7 @@ class ContestWebServer(WebService):
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
             "num_proxies_used": config.num_proxies_used,
+            "xsrf_cookies": True,
         }
 
         try:

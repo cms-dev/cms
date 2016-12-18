@@ -12,6 +12,7 @@
     <div class="notification communication">
       <div class="notification_msg">
         <form method="post" action="{{ url_root }}/contest/{{ contest.id }}/announcements/add">
+          {% module xsrf_form_html() %}
           <div class="notification_subject">
             <label for="new_subject">Subject</label>
             <input type="text" name="subject" id="new_subject" style="width: 100%" list="task_names_list" autocomplete="off">

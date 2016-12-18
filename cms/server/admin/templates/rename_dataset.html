@@ -6,6 +6,7 @@
 </div>
 
 <form action="{{ url_root }}/dataset/{{ dataset.id }}/rename" method="POST">
+  {% module xsrf_form_html() %}
   <table>
     <tr>
       <td>Edit description (each dataset must have a unique description):</td>

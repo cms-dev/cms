@@ -57,6 +57,7 @@ function update_additional_answer(element, invoker)
 <div id="participation_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
   <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit" method="POST">
+    {% module xsrf_form_html() %}
     <table>
       <tr>
         <td>
@@ -158,6 +159,7 @@ function update_additional_answer(element, invoker)
         <div class="reply_question" >
           <hr/>
           <form class="reply_question_form" action="{{ url_root }}/contest/{{ contest.id }}/question/{{ msg.id }}/reply" method="POST">
+            {% module xsrf_form_html() %}
             <input type="hidden" name="ref" value="/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit"/>
             Precompiled answer:
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
@@ -195,6 +197,7 @@ function update_additional_answer(element, invoker)
   <div class="notifications">
       <div class="notification communication">
         <form id="send_message_form" action="{{ url_root }}/contest/{{ contest.id }}/user/{{ selected_user.id }}/message" method="POST">
+          {% module xsrf_form_html() %}
           <div class="notification_msg">
             <div class="notification_subject">
               Subject:
