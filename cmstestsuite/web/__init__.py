@@ -32,6 +32,7 @@ import sys
 import time
 import traceback
 import urllib
+import mechanize
 
 from mechanize import HTMLForm, HTTPError
 
@@ -40,47 +41,71 @@ utf8_decoder = codecs.getdecoder('utf-8')
 debug = False
 
 
-def browser_do_request(browser, url, data=None, files=None):
-    """Open an URL in a mechanize browser, optionally passing the
-    specified data and files as POST arguments.
+class BrowserSession(object):
+    def __init__(self):
+        self.xsrf_token = None
+        self.browser = mechanize.Browser()
+        self.browser.set_handle_robots(False)
 
-    browser (mechanize.Browser): the browser to use.
-    url (string): the URL to open.
-    data (dict): a dictionary of parameters to pass as POST arguments.
-    files (list): a list of files to pass as POST arguments. Each
-                  entry is a tuple containing two strings: the field
-                  name and the file name to send.
+    def read_xsrf_token(self, url):
+        response = self.browser.open(url)
+        cookies = response.info().getheaders("Set-Cookie")
+        for cookie in cookies:
+            if cookie.startswith("_xsrf"):
+                self.xsrf_token = cookie.split(";")[0].split("=", 1)[1]
 
-    """
-    if files is None:
-        if data is None:
-            response = browser.open(url)
-        else:
-            response = browser.open(url, urllib.urlencode(data))
-    else:
-        browser.form = HTMLForm(url,
-                                method='POST',
-                                enctype='multipart/form-data')
-        for key in sorted(data.keys()):
-            # If the passed value is a list, we assume it is a list of
-            # names of checkboxes that are checked.
-            if isinstance(data[key], list):
-                for value in data[key]:
-                    browser.form.new_control(
-                        'checkbox', key, {'value': value, 'checked': True})
+    def login(self, login_request):
+        self.read_xsrf_token(login_request.base_url)
+        login_request.execute()
+
+    def do_request(self, url, data=None, files=None):
+        """Open an URL in a mechanize browser, optionally passing the
+        specified data and files as POST arguments.
+
+        browser (mechanize.Browser): the browser to use.
+        url (string): the URL to open.
+        data (dict): a dictionary of parameters to pass as POST arguments.
+        files (list): a list of files to pass as POST arguments. Each
+                      entry is a tuple containing two strings: the field
+                      name and the file name to send.
+
+        """
+        browser = self.browser
+        if files is None:
+            if data is None:
+                response = browser.open(url)
             else:
-                browser.form.new_control('hidden', key, {'value': data[key]})
+                data = data.copy()
+                data['_xsrf'] = self.xsrf_token
+                response = browser.open(url, urllib.urlencode(data))
+        else:
+            browser.form = HTMLForm(url,
+                                    method='POST',
+                                    enctype='multipart/form-data')
+            browser.form.new_control('hidden',
+                                     '_xsrf', {'value': self.xsrf_token})
+            for key in sorted(data.keys()):
+                # If the passed value is a list, we assume it is a list of
+                # names of checkboxes that are checked.
+                if isinstance(data[key], list):
+                    for value in data[key]:
+                        browser.form.new_control(
+                            'checkbox', key, {'value': value, 'checked': True})
+                else:
+                    browser.form.new_control(
+                        'hidden', key, {'value': data[key]})
 
-        for field_name, file_path in files:
-            browser.form.new_control('file', field_name, {'id': field_name})
-            filename = os.path.basename(file_path)
-            browser.form.add_file(io.open(file_path, 'rb'), 'text/plain',
-                                  filename, id=field_name)
+            for field_name, file_path in files:
+                browser.form.new_control(
+                    'file', field_name, {'id': field_name})
+                filename = os.path.basename(file_path)
+                browser.form.add_file(io.open(file_path, 'rb'), 'text/plain',
+                                      filename, id=field_name)
 
-        browser.form.set_all_readonly(False)
-        browser.form.fixup()
-        response = browser.open(browser.form.click())
-    return response
+            browser.form.set_all_readonly(False)
+            browser.form.fixup()
+            response = browser.open(browser.form.click())
+        return response
 
 
 class GenericRequest(object):
@@ -95,10 +120,11 @@ class GenericRequest(object):
 
     MINIMUM_LENGTH = 100
 
-    def __init__(self, browser, base_url=None):
+    def __init__(self, session, base_url=None):
         if base_url is None:
             base_url = 'http://localhost:8888/'
-        self.browser = browser
+        self.session = session
+        self.browser = session.browser
         self.base_url = base_url
         self.outcome = None
 
@@ -137,10 +163,9 @@ class GenericRequest(object):
             # other hand the History interface is still unstable
             self.browser.clear_history()
             try:
-                self.response = browser_do_request(self.browser,
-                                                   self.url,
-                                                   self.data,
-                                                   self.files)
+                self.response = self.session.do_request(self.url,
+                                                        self.data,
+                                                        self.files)
                 self.res_data = self.response.read()
                 self.status_code = 200
 
@@ -262,8 +287,8 @@ class LoginRequest(GenericRequest):
     """Try to login to CWS or AWS with the given credentials.
 
     """
-    def __init__(self, browser, username, password, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+    def __init__(self, session, username, password, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
         self.username = username
         self.password = password
         self.url = '%slogin' % self.base_url

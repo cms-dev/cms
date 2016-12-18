@@ -29,14 +29,13 @@ from __future__ import unicode_literals
 import io
 import json
 import logging
-import mechanize
 import os
 import re
 import subprocess
 import sys
 import time
 
-from cmstestsuite.web import browser_do_request
+from cmstestsuite.web import BrowserSession
 from cmstestsuite.web.AWSRequests import \
     AWSLoginRequest, AWSSubmissionViewRequest, AWSUserTestViewRequest
 from cmstestsuite.web.CWSRequests import \
@@ -71,32 +70,33 @@ CWS_BASE_URL = "http://localhost:8888/"
 
 
 # Persistent browsers to access AWS and CWS.
-aws_browser = None
-cws_browser = None
+aws_session = None
+cws_session = None
 
 
-def get_aws_browser():
-    global aws_browser
-    if aws_browser is None:
-        aws_browser = mechanize.Browser()
-        aws_browser.set_handle_robots(False)
-        AWSLoginRequest(aws_browser,
-                        admin_info["username"], admin_info["password"],
-                        base_url=AWS_BASE_URL).execute()
-    return aws_browser
+def get_aws_session():
+    global aws_session
+    if aws_session is None:
+        aws_session = BrowserSession()
+
+        lr = AWSLoginRequest(aws_session,
+                             admin_info["username"], admin_info["password"],
+                             base_url=AWS_BASE_URL)
+        aws_session.login(lr)
+    return aws_session
 
 
-def get_cws_browser(user_id):
-    global cws_browser
-    if cws_browser is None:
-        cws_browser = mechanize.Browser()
-        cws_browser.set_handle_robots(False)
-        cws_browser.set_handle_redirect(False)
+def get_cws_session(user_id):
+    global cws_session
+    if cws_session is None:
+        cws_session = BrowserSession()
+        cws_session.browser.set_handle_redirect(False)
         username = created_users[user_id]['username']
         password = created_users[user_id]['password']
-        CWSLoginRequest(
-            cws_browser, username, password, base_url=CWS_BASE_URL).execute()
-    return cws_browser
+        lr = CWSLoginRequest(
+            cws_session, username, password, base_url=CWS_BASE_URL)
+        cws_session.login(lr)
+    return cws_session
 
 
 class FrameworkException(Exception):
@@ -195,8 +195,8 @@ def admin_req(path, multipart_post=False, args=None, files=None):
     if multipart_post and files is None:
         files = []
 
-    browser = get_aws_browser()
-    return browser_do_request(browser, AWS_BASE_URL + path, args, files)
+    session = get_aws_session()
+    return session.do_request(AWS_BASE_URL + path, args, files)
 
 
 def get_tasks():
@@ -372,7 +372,7 @@ def cws_submit(contest_id, task_id, user_id, submission_format,
                filenames, language):
     task = (task_id, created_tasks[task_id]['name'])
 
-    browser = get_cws_browser(user_id)
+    browser = get_cws_session(user_id)
     sr = SubmitRequest(browser, task, base_url=CWS_BASE_URL,
                        submission_format=submission_format,
                        filenames=filenames, language=language)
@@ -389,7 +389,7 @@ def cws_submit_user_test(contest_id, task_id, user_id, submission_format,
                          filenames, language):
     task = (task_id, created_tasks[task_id]['name'])
 
-    browser = get_cws_browser(user_id)
+    browser = get_cws_session(user_id)
     sr = SubmitUserTestRequest(
         browser, task, base_url=CWS_BASE_URL,
         submission_format=submission_format,
@@ -409,7 +409,7 @@ def get_evaluation_result(contest_id, submission_id, timeout=60):
     COMPLETED_STATUS = re.compile(
         r'Compilation failed|Evaluated \(|Scored \(')
 
-    browser = get_aws_browser()
+    browser = get_aws_session()
     sleep_interval = 0.1
     while timeout > 0:
         timeout -= sleep_interval
@@ -440,7 +440,7 @@ def get_user_test_result(contest_id, user_test_id, timeout=60):
     COMPLETED_STATUS = re.compile(
         r'Compilation failed|Evaluated')
 
-    browser = get_aws_browser()
+    browser = get_aws_session()
     sleep_interval = 0.1
     while timeout > 0:
         timeout -= sleep_interval

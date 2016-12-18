@@ -51,8 +51,8 @@ class HomepageRequest(GenericRequest):
     """Load the main page of CWS.
 
     """
-    def __init__(self, browser, username, loggedin, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+    def __init__(self, session, username, loggedin, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
         self.url = self.base_url
         self.username = username
         self.loggedin = loggedin
@@ -77,8 +77,8 @@ class TaskRequest(GenericRequest):
     """Load a task page in CWS.
 
     """
-    def __init__(self, browser, task_id, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+    def __init__(self, session, task_id, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
         self.url = "%stasks/%s/description" % (self.base_url, task_id)
         self.task_id = task_id
 
@@ -90,8 +90,8 @@ class TaskStatementRequest(GenericRequest):
     """Load a task statement in CWS.
 
     """
-    def __init__(self, browser, task_id, language_code, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+    def __init__(self, session, task_id, language_code, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
         self.url = "%stasks/%s/statements/%s" % (self.base_url,
                                                  task_id, language_code)
         self.task_id = task_id
@@ -107,9 +107,9 @@ class SubmitRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """
-    def __init__(self, browser, task, submission_format,
+    def __init__(self, session, task, submission_format,
                  filenames, language=None, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+        GenericRequest.__init__(self, session, base_url)
         self.url = "%stasks/%s/submit" % (self.base_url, task[1])
         self.task = task
         self.submission_format = submission_format
@@ -167,9 +167,9 @@ class SubmitRequest(GenericRequest):
 
 class SubmitUserTestRequest(GenericRequest):
     """Submit a user test in CWS."""
-    def __init__(self, browser, task, submission_format,
+    def __init__(self, session, task, submission_format,
                  filenames, language=None, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+        GenericRequest.__init__(self, session, base_url)
         self.url = "%stasks/%s/test" % (self.base_url, task[1])
         self.task = task
         self.submission_format = submission_format
@@ -233,8 +233,8 @@ class TokenRequest(GenericRequest):
     """Release test a submission.
 
     """
-    def __init__(self, browser, task, submission_num, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+    def __init__(self, session, task, submission_num, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
         self.url = "%stasks/%s/submissions/%s/token" % (self.base_url,
                                                         task[1],
                                                         submission_num)
@@ -256,9 +256,9 @@ class SubmitRandomRequest(SubmitRequest):
     """Submit a solution in CWS.
 
     """
-    def __init__(self, browser, task, base_url=None,
+    def __init__(self, session, task, base_url=None,
                  submissions_path=None):
-        GenericRequest.__init__(self, browser, base_url)
+        GenericRequest.__init__(self, session, base_url)
         self.url = "%stasks/%s/submit" % (self.base_url, task[1])
         self.task = task
         self.submissions_path = submissions_path
