@@ -163,6 +163,10 @@ def test_testcases(base_dir, solution, language, assume=None):
         info.append((job.plus.get("execution_time"),
                      job.plus.get("execution_memory")))
         points.append(float(job.outcome))
+
+        # Avoid printing unneeded newline
+        job.text = [job.text[0].rstrip()]
+
         comments.append(format_status_text(job.text))
         tcnames.append(jobinfo[0])
 
