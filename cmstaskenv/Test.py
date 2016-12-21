@@ -185,8 +185,8 @@ def test_testcases(base_dir, solution, language, assume=None):
                 # User input with a timeout of 5 seconds, at the end of which
                 # we automatically say "n".
                 # See: http://stackoverflow.com/a/2904057
-                i, o, e = select.select([sys.stdin], [], [], 5)
-                if (i):
+                ready, _, _ = select.select([sys.stdin], [], [], 5)
+                if ready:
                     tmp = sys.stdin.readline().strip().lower()
                 else:
                     tmp = 'n'
