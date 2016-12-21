@@ -107,6 +107,19 @@ $(document).ready(function () {
                     </div>
                 </div>
 {% end %}
+{% if len([x for x in task.submission_format if x.filename.find(".%l") != -1]) > 0 %}
+                <div class="control-group">
+                    <label class="control-label">Language</label>
+                    <div class="controls">
+                        <select name="submission_lang">
+                            <option selected="selected" value="auto">Auto Detect</option>
+{% for lang in contest.languages %}
+                            <option value="{{lang}}">{{LANGUAGE_NAMES[lang]}}</option>
+{% end %}
+                        </select>
+                    </div>
+                </div>
+{% end %}
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
