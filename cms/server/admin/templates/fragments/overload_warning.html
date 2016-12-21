@@ -1,0 +1,20 @@
+{# This snippet warns admins about too many users per contest server #}
+
+{#
+  Data from https://github.com/cms-dev/cms/issues/375 shows that a CWS can
+  reasonably handle about 100 simultaneous requests. In a real contest, users
+  won't continuously send requests one after another, so the real user count
+  a CWS can handle is higher. Still, we can be conservative and display the
+  warning early on.
+#}
+
+{% if len(config.contest_listen_port) > 0 %}
+  {% set ratio = round(len(contest.participations) * 1.0 / len(config.contest_listen_port), 2) %}
+  {% if ratio > 100 %}
+<p>
+  At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>
+  One CWS can reasonably handle about 100 simultaneous requests. This situation might
+  cause long request delays or failures.
+</p>
+  {% end %}
+{% end %}

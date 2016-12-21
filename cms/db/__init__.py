@@ -87,7 +87,7 @@ __all__ = [
 version = 24
 
 engine = create_engine(config.database, echo=config.database_debug,
-                       pool_size=20, max_overflow=20, pool_recycle=120)
+                       pool_timeout=60, pool_recycle=120)
 
 
 from .session import Session, ScopedSession, SessionGen, \
