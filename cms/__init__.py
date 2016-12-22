@@ -134,8 +134,8 @@ def filename_to_language(filename):
 
     filename (string): the file to test.
 
-    return (list[string]|None): available languages of the extension
-        of filename, or None if it is not a recognized language.
+    return (list[string]|None): list of languages that can have the same
+        extension as filename, or None if it is not a recognized language.
 
     """
     for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():

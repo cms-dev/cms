@@ -304,7 +304,7 @@ class UserTestHandler(BaseHandler):
         # If we allow partial submissions, implicitly we recover the
         # non-submitted files from the previous submission. And put them
         # in file_digests (i.e. like they have already been sent to FS).
-        submission_lang = self.get_argument("submission_lang", "auto")
+        submission_lang = self.get_argument("submission_lang", self.AUTO)
         chosen_language = submission_lang
         file_digests = {}
         if task_type.ALLOW_PARTIAL_SUBMISSION and \
@@ -336,7 +336,10 @@ class UserTestHandler(BaseHandler):
         # and that all these are the same (i.e., no mixed-language
         # submissions).
         if chosen_language == self.AUTO:
-            available_languages = contest.languages
+            if submission_lang == self.AUTO:
+                available_languages = contest.languages
+            else:
+                available_lang = [submission_lang]
             need_language = False
             for our_filename in files:
                 user_filename = files[our_filename][0]
