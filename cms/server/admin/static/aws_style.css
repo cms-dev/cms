@@ -100,7 +100,9 @@ ul.normal_list {
     padding-left: 0.5em;
 }
 
-
+.inline {
+    display: inline;
+}
 
 
 

@@ -653,13 +653,14 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
     });
 };
 
+
 /**
- * Sends a delete request and on success redirect to the page
+ * Sends a request and on success redirect to the page
  * specified in the response, if present.
  */
-CMS.AWSUtils.ajax_delete = function(url) {
+CMS.AWSUtils.ajax_request = function(type, url) {
   var settings = {
-    'type': 'DELETE',
+    'type': type,
     headers: {"X-XSRFToken": get_cookie("_xsrf")}
   };
   settings['success'] = function(data_redirect_url) {
@@ -668,4 +669,22 @@ CMS.AWSUtils.ajax_delete = function(url) {
     }
   };
   $.ajax(url, settings);
+};
+
+
+/**
+ * Sends a delete request and on success redirect to the page
+ * specified in the response, if present.
+ */
+CMS.AWSUtils.ajax_delete = function(url) {
+  CMS.AWSUtils.ajax_request('DELETE', url);
+};
+
+
+/**
+ * Sends a post request and on success. See AWSUtils.ajax_request
+ * for more details.
+ */
+CMS.AWSUtils.ajax_post = function(url) {
+  CMS.AWSUtils.ajax_request('POST', url);
 };

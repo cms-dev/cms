@@ -76,7 +76,7 @@ $(document).ready(init);
         <div id="sidebar_header">
           <div class="login_notice">
             Hello, <a href="{{ url_root }}/admins">{{ current_user.name }}</a>.
-              Logout <a href="{{ url_root }}/logout">here</a>.
+              <form class="inline" action="{{ url_root }}/logout" method="POST">{% module xsrf_form_html() %}<input type="submit" value="Logout"></form>
           </div>
           {% if contest is None %}
           <h1 class="parent">Administration</h1>

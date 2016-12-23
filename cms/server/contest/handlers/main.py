@@ -146,7 +146,7 @@ class LogoutHandler(BaseHandler):
     """Logout handler.
 
     """
-    def get(self):
+    def post(self):
         self.clear_cookie("login")
         self.redirect("/")
 
