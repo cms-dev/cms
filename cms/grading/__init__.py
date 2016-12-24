@@ -369,8 +369,8 @@ def compilation_step(sandbox, commands):
     sandbox.dirs += [("/etc", None, None)]
     # We need to add "/var/lib/ghc" to the unrestricted dirs so GHC can access
     # haskell's package database.
-    # GHC looks for it in "/usr/lib/ghc/package.conf.d", which is only a symlink
-    # to "/var/lib/ghc/package.conf.d"
+    # GHC looks for it in "/usr/lib/ghc/package.conf.d", which is only a
+    # symlink to "/var/lib/ghc/package.conf.d"
     ghc_dir = "/var/lib/ghc"
     if os.path.exists(ghc_dir):
         sandbox.dirs += [("/var/lib/ghc", None, None)]

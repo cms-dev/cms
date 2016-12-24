@@ -64,6 +64,5 @@ def main():
     return remove_user(username=args.username)
 
 
-
 if __name__ == "__main__":
     sys.exit(main())

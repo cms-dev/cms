@@ -89,7 +89,7 @@ class Config(object):
         # variable 'CMS_RANKING_CONFIG'.
         if CMS_RANKING_CONFIG_ENV_VAR in os.environ:
             self.conf_paths = [os.environ[CMS_RANKING_CONFIG_ENV_VAR]] \
-                              + self.conf_paths
+                + self.conf_paths
 
     def get(self, key):
         """Get the config value for the given key.
@@ -125,7 +125,6 @@ class Config(object):
             pass  # We assume the directory already exists...
 
         add_file_handler(self.log_dir)
-
 
     def _load_many(self, conf_paths):
         """Load the first existing config file among the given ones.

@@ -55,7 +55,7 @@ def remove_participation(contest_id, username):
             .filter(Participation.user == user).first()
         if participation is None:
             logger.error("Participation of %s in contest %d does not exists.",
-                username, contest_id)
+                         username, contest_id)
             return False
         session.delete(participation)
         session.commit()
@@ -79,8 +79,7 @@ def main():
         args.contest_id = ask_for_contest()
 
     return remove_participation(contest_id=args.contest_id,
-                username=args.username)
-
+                                username=args.username)
 
 
 if __name__ == "__main__":
