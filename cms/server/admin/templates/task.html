@@ -478,6 +478,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   <input type="reset" value="Reset" />
 </form>
 <form action="{{ url_root }}/tasks" method="POST" style="display:inline;">
+    {% module xsrf_form_html() %}
     <input type="hidden" name="task_id" value="{{task.id}}"/>
     <input type="submit"
          name="operation"
