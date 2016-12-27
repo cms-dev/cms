@@ -127,6 +127,7 @@
     <input type="reset" value="Reset" />
   </form>
   <form action="{{ url_root }}/users" method="POST" style="display:inline;">
+      {% module xsrf_form_html() %}
       <input type="hidden" name="user_id" value="{{user.id}}"/>
       <input type="submit"
            name="operation"
