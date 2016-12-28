@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -77,8 +77,9 @@ def main():
 
     args = parser.parse_args()
 
-    return add_admin(args.username[0], args.password)
+    success = add_admin(args.username[0], args.password)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    sys.exit(main())

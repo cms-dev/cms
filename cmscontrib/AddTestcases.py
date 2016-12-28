@@ -41,6 +41,55 @@ from cmscommon.importers import import_testcases_from_zipfile
 logger = logging.getLogger(__name__)
 
 
+def add_testcases(archive, input_template, output_template,
+                  task_name, dataset_description=None, contest_name=None,
+                  public=False, overwrite=False):
+    with SessionGen() as session:
+        task = session.query(Task)\
+            .filter(Task.name == task_name).first()
+        if not task:
+            logger.error("No task called %s found." % task_name)
+            return False
+        dataset = task.active_dataset
+        if dataset_description is not None:
+            dataset = session.query(Dataset)\
+                .filter(Dataset.task_id == task.id)\
+                .filter(Dataset.description == dataset_description)\
+                .first()
+            if not dataset:
+                logger.error("No dataset called %s found."
+                             % dataset_description)
+                return False
+        if contest_name is not None:
+            contest = session.query(Contest)\
+                .filter(Contest.name == contest_name).first()
+            if task.contest != contest:
+                logger.error("%s is not in %s" %
+                             (task_name, contest_name))
+                return False
+
+        file_cacher = FileCacher()
+
+        # Get input/output file names templates
+        input_re = re.compile(
+            re.escape(input_template).replace("\\*", "(.*)") + "$")
+        output_re = re.compile(
+            re.escape(output_template).replace("\\*", "(.*)") + "$")
+
+        try:
+            successful_subject, successful_message = \
+                import_testcases_from_zipfile(
+                    session, file_cacher, dataset,
+                    archive, input_re, output_re, overwrite, public)
+        except Exception as error:
+            logger.error(str(error))
+            return False
+
+        logger.info(successful_subject)
+        logger.info(successful_message)
+    return True
+
+
 def main():
     """Parse arguments and launch process."""
     parser = argparse.ArgumentParser(description="Add an admin to CMS.")
@@ -62,54 +111,12 @@ def main():
                         help="dataset testcases will be attached to")
     args = parser.parse_args()
 
-    with SessionGen() as session:
-        task = session.query(Task)\
-            .filter(Task.name == args.task_name).first()
-        if not task:
-            logger.error("No task called %s found." % args.task_name)
-            return False
-        dataset = task.active_dataset
-        if args.dataset_description is not None:
-            dataset = session.query(Dataset)\
-                .filter(Dataset.task_id == task.id)\
-                .filter(Dataset.description == args.dataset_description)\
-                .first()
-            if not dataset:
-                logger.error("No dataset called %s found."
-                             % args.dataset_description)
-                return False
-        if args.contest_name is not None:
-            contest = session.query(Contest)\
-                .filter(Contest.name == args.contest_name).first()
-            if task.contest != contest:
-                logger.error("%s is not in %s" %
-                             (args.task_name, args.contest_name))
-                return False
-        archive = args.file
-
-        file_cacher = FileCacher()
-
-        # Get input/output file names templates
-        input_template = args.inputtemplate
-        output_template = args.outputtemplate
-        input_re = re.compile(
-            re.escape(input_template).replace("\\*", "(.*)") + "$")
-        output_re = re.compile(
-            re.escape(output_template).replace("\\*", "(.*)") + "$")
-
-        try:
-            successful_subject, successful_message = \
-                import_testcases_from_zipfile(
-                    session, file_cacher, dataset,
-                    archive, input_re, output_re, args.overwrite, args.public)
-        except Exception as error:
-            logger.error(str(error))
-            return False
-
-        logger.info(successful_subject)
-        logger.info(successful_message)
-    return True
+    success = add_testcases(
+        args.file, args.inputtemplate, args.outputtemplate,
+        args.task_name, args.dataset_description, args.contest_name,
+        args.public, args.overwrite)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    sys.exit(main())

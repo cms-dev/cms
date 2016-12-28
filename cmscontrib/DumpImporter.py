@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -43,6 +43,8 @@ import io
 import json
 import logging
 import os
+import sys
+
 from datetime import timedelta
 
 from sqlalchemy.types import \
@@ -455,14 +457,16 @@ def main():
 
     args = parser.parse_args()
 
-    DumpImporter(drop=args.drop,
-                 import_source=args.import_source,
-                 load_files=not args.no_files,
-                 load_model=not args.files,
-                 skip_generated=args.no_generated,
-                 skip_submissions=args.no_submissions,
-                 skip_user_tests=args.no_user_tests).do_import()
+    importer = DumpImporter(drop=args.drop,
+                            import_source=args.import_source,
+                            load_files=not args.no_files,
+                            load_model=not args.files,
+                            skip_generated=args.no_generated,
+                            skip_submissions=args.no_submissions,
+                            skip_user_tests=args.no_user_tests)
+    success = importer.do_import()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

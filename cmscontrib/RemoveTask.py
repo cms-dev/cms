@@ -46,10 +46,10 @@ def remove_task(task_name):
             .filter(Task.name == task_name).first()
         if not task:
             print("No task called `%s' found." % task_name)
-            return
+            return False
         if not ask(task_name):
             print("Not removing task `%s'." % task_name)
-            return
+            return False
         num = task.num
         contest_id = task.contest_id
         session.delete(task)
@@ -63,7 +63,9 @@ def remove_task(task_name):
             for task in following_tasks:
                 task.num -= 1
             session.commit()
-        print("Task `%s' removed." % task_name)
+            print("Task `%s' removed." % task_name)
+
+    return True
 
 
 def main():
@@ -82,8 +84,9 @@ def main():
 
     args = parser.parse_args()
 
-    remove_task(task_name=args.task_name)
+    success = remove_task(task_name=args.task_name)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

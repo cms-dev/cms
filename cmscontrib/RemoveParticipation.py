@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -78,8 +79,9 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    return remove_participation(contest_id=args.contest_id,
-                                username=args.username)
+    success = remove_participation(contest_id=args.contest_id,
+                                   username=args.username)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":

@@ -40,6 +40,7 @@ import io
 import json
 import logging
 import os
+import sys
 import tarfile
 import tempfile
 
@@ -390,14 +391,16 @@ def main():
 
     args = parser.parse_args()
 
-    DumpExporter(contest_ids=args.contest_ids,
-                 export_target=args.export_target,
-                 dump_files=not args.no_files,
-                 dump_model=not args.files,
-                 skip_generated=args.no_generated,
-                 skip_submissions=args.no_submissions,
-                 skip_user_tests=args.no_user_tests).do_export()
+    exporter = DumpExporter(contest_ids=args.contest_ids,
+                            export_target=args.export_target,
+                            dump_files=not args.no_files,
+                            dump_model=not args.files,
+                            skip_generated=args.no_generated,
+                            skip_submissions=args.no_submissions,
+                            skip_user_tests=args.no_user_tests)
+    success = exporter.do_export()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -97,10 +97,11 @@ def main():
 
     args = parser.parse_args()
 
-    return add_user(args.first_name, args.last_name,
-                    args.username, args.password, args.email,
-                    args.timezone, args.languages)
+    success = add_user(args.first_name, args.last_name,
+                       args.username, args.password, args.email,
+                       args.timezone, args.languages)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    sys.exit(main())

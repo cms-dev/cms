@@ -70,8 +70,9 @@ def main():
 
     args = parser.parse_args()
 
-    return add_team(args.code, args.name)
+    success = add_team(args.code, args.name)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    sys.exit(main())

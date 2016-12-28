@@ -45,14 +45,16 @@ def remove_contest(contest_id):
             .filter(Contest.id == contest_id).first()
         if not contest:
             print("No contest with id %s found." % contest_id)
-            return
+            return False
         contest_name = contest.name
         if not ask(contest):
             print("Not removing contest `%s'." % contest_name)
-            return
+            return False
         session.delete(contest)
         session.commit()
         print("Contest `%s' removed." % contest_name)
+
+    return True
 
 
 def main():
@@ -68,8 +70,9 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    remove_contest(contest_id=args.contest_id)
+    success = remove_contest(contest_id=args.contest_id)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
