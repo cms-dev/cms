@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,13 +41,14 @@ def main():
     """Parse arguments and launch service.
 
     """
-    return default_argument_parser(
+    success =  default_argument_parser(
         "Checker for aliveness of other CMS service.", Checker).run()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
     try:
-        sys.exit(0 if main() is True else 1)
+        sys.exit(main())
     except ConfigError as error:
         logger.critical(error.message)
         sys.exit(1)
