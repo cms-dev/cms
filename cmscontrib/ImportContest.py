@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
@@ -43,7 +43,7 @@ import argparse
 import datetime
 import logging
 import os
-import os.path
+import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, User, Team, Participation, Task, Contest
@@ -110,7 +110,7 @@ class ContestImporter(BaseImporter):
                     logger.critical(
                         "Contest \"%s\" already exists in database.",
                         contest.name)
-                    return
+                    return False
 
             # Check needed tasks
             for tasknum, taskname in enumerate(tasks):
@@ -125,11 +125,11 @@ class ContestImporter(BaseImporter):
                         else:
                             logger.critical("Could not import task \"%s\".",
                                             taskname)
-                            return
+                            return False
                     else:
                         logger.critical("Task \"%s\" not found in database.",
                                         taskname)
-                        return
+                        return False
                 elif self.update_tasks:
                     task_loader = self.loader.get_task_loader(taskname)
                     if task_loader.task_has_changed():
@@ -145,13 +145,13 @@ class ContestImporter(BaseImporter):
                         else:
                             logger.critical("Could not reimport task \"%s\".",
                                             taskname)
-                            return
+                            return False
 
                 if task.contest is not None \
                    and task.contest.name != contest.name:
                     logger.critical("Task \"%s\" is already tied to a "
                                     "contest.", taskname)
-                    return
+                    return False
                 else:
                     # We should tie this task to the contest
                     task.num = tasknum
@@ -173,14 +173,14 @@ class ContestImporter(BaseImporter):
                     # import.
                     logger.critical("User \"%s\" not found in database.",
                                     p["username"])
-                    return
+                    return False
 
                 if team is None and p.get("team") is not None:
                     # FIXME: it would be nice to automatically try to
                     # import.
                     logger.critical("Team \"%s\" not found in database.",
                                     p.get("team"))
-                    return
+                    return False
 
                 # Check that the participation is not already defined.
                 participation = session.query(Participation) \
@@ -224,6 +224,8 @@ class ContestImporter(BaseImporter):
             # Final commit
             session.commit()
             logger.info("Import finished (new contest id: %s).", contest.id)
+
+        return True
 
 
 def main():
@@ -293,18 +295,18 @@ def main():
         parser.error
     )
 
-    ContestImporter(
-        path=args.import_directory,
-        test=args.test,
-        zero_time=args.zero_time,
-        user_number=args.user_number,
-        import_tasks=args.import_tasks,
-        update_contest=args.update_contest,
-        update_tasks=args.update_tasks,
-        no_statements=args.no_statements,
-        loader_class=loader_class
-    ).do_import()
+    importer = ContestImporter(path=args.import_directory,
+                               test=args.test,
+                               zero_time=args.zero_time,
+                               user_number=args.user_number,
+                               import_tasks=args.import_tasks,
+                               update_contest=args.update_contest,
+                               update_tasks=args.update_tasks,
+                               no_statements=args.no_statements,
+                               loader_class=loader_class)
+    success = importer.do_import()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

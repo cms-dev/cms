@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,6 +38,7 @@ gevent.monkey.patch_all()
 import argparse
 import logging
 import os
+import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen
@@ -61,7 +63,7 @@ class TeamImporter(object):
         # Get the team
         team = self.loader.get_team()
         if team is None:
-            return
+            return False
 
         # Store
         try:
@@ -72,9 +74,10 @@ class TeamImporter(object):
                 team_id = team.id
         except IntegrityError:
             logger.critical("The team already exists.")
-            return
+            return False
 
         logger.info("Import finished (new team id: %s).", team_id)
+        return True
 
     def do_import_all(self, base_path, get_loader):
         """Get the participation list from the ContestLoader and then
@@ -82,6 +85,7 @@ class TeamImporter(object):
 
         """
         added = set()
+        success = True
 
         _, _, participations = self.loader.get_contest()
         for p in participations:
@@ -90,10 +94,12 @@ class TeamImporter(object):
 
                 if team_path not in added:
                     added.add(team_path)
-                    TeamImporter(
+                    importer = TeamImporter(
                         path=team_path,
                         loader_class=get_loader(team_path)
-                    ).do_import()
+                    )
+                    success = success and importer.do_import()
+        return success
 
 
 def main():
@@ -137,9 +143,11 @@ def main():
     )
 
     if args.all:
-        importer.do_import_all(args.target, get_loader)
+        success = importer.do_import_all(args.target, get_loader)
     else:
-        importer.do_import()
+        success = importer.do_import()
+    return 0 if success is True else 1
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

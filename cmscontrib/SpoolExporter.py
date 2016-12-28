@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -39,6 +39,7 @@ import argparse
 import io
 import logging
 import os
+import sys
 import time
 
 from cms import utf8_decoder
@@ -266,9 +267,11 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    SpoolExporter(contest_id=args.contest_id,
-                  spool_dir=args.export_directory).run()
+    exporter = SpoolExporter(contest_id=args.contest_id,
+                             spool_dir=args.export_directory)
+    success = exporter.run()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

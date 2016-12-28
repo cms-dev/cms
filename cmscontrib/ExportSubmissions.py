@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -135,13 +136,13 @@ def main():
     if args.add_info and not args.utf8:
         logger.critical("If --add-info is specified, then --utf8 must be"
                         " specified as well.")
-        sys.exit(1)
+        return 1
 
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
     if not os.path.isdir(args.output_dir):
         logger.critical("The output-dir parameter must point to a directory")
-        sys.exit(1)
+        return 1
 
     with SessionGen() as session:
         q = session.query(Submission)\
@@ -232,6 +233,8 @@ def main():
 
             done += 1
             print(done, "/", len(results))
+
+    return 0
 
 
 if __name__ == "__main__":

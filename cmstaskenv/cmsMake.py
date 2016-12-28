@@ -38,7 +38,7 @@ import yaml
 import logging
 
 from cms import utf8_decoder, SOURCE_EXT_TO_LANGUAGE_MAP, \
-    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP, LANG_PASCAL
+    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
@@ -234,7 +234,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 if lang in LANGUAGE_TO_HEADER_EXT_MAP:
                     lib_template = "%s" + LANGUAGE_TO_HEADER_EXT_MAP[lang]
                     lib_filename = lib_template % (task_name)
-                    lib_path = os.path.join(base_dir, SOL_DIRNAME, lib_filename)
+                    lib_path = os.path.join(
+                        base_dir, SOL_DIRNAME, lib_filename)
                     if os.path.exists(lib_path):
                         shutil.copyfile(lib_path,
                                         os.path.join(tempdir, lib_filename))

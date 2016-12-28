@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -185,8 +186,10 @@ def main():
             print(res.content)
 
     if had_error:
-        sys.exit(1)
+        return 1
+    else:
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
