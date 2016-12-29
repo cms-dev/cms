@@ -273,7 +273,7 @@ class SubmitHandler(BaseHandler):
             if submission_lang == self.AUTO:
                 available_languages = contest.languages
             else:
-                available_lang = [submission_lang]
+                available_languages = [submission_lang]
             need_language = False
             for our_filename in files:
                 user_filename = files[our_filename][0]
@@ -293,7 +293,7 @@ class SubmitHandler(BaseHandler):
                 error = self._("Detected more than one possible language."
                                " Please select your language manually.")
             else:
-                submission_lang = available_lang[0]
+                submission_lang = available_languages[0]
             if error is not None:
                 self._send_error(self._("Invalid submission!"), error, task)
                 return
