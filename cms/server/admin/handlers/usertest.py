@@ -25,7 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from cms.db import Dataset, File, UserTest
+from cms.db import Dataset, UserTestFile, UserTest
 
 from .base import BaseHandler, FileHandler, require_permission
 
@@ -61,7 +61,7 @@ class UserTestFileHandler(FileHandler):
     # set the proper name (i.e., converting %l to the language).
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, file_id):
-        user_test_file = self.safe_get_item(File, file_id)
+        user_test_file = self.safe_get_item(UserTestFile, file_id)
         user_test = user_test_file.user_test
 
         real_filename = user_test_file.filename
