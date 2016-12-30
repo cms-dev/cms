@@ -307,7 +307,11 @@ def get_evaluation_commands(language, executable_filename):
         command = ["/usr/bin/python2", executable_filename]
         commands.append(command)
     elif language == LANG_PHP:
-        command = ["/usr/bin/php5", executable_filename]
+        php7 = "/usr/bin/php7.0"
+        if os.path.exists(php7):
+            command = [php7, executable_filename]
+        else:
+            command = ["/usr/bin/php5", executable_filename]
         commands.append(command)
     else:
         raise ValueError("Unknown language %s." % language)

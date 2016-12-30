@@ -40,7 +40,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
 
-* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php5``);
+* `PHP <http://www.php.net>`_ = 7 (for PHP, with executable ``php7.0``);
 
 * `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
 
@@ -49,7 +49,7 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 14.10, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 16.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
@@ -61,7 +61,7 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
          libffi-dev
 
     # Optional
-    sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
+    sudo apt-get install nginx-full php7.0-cli phppgadmin \
          texlive-latex-base a2ps gcj-jdk haskell-platform
 
 Arch Linux
