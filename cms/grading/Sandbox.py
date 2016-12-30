@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -825,6 +825,11 @@ class IsolateSandbox(SandboxBase):
         # Specifically needed by Python, that searches the home for
         # packages.
         self.set_env["HOME"] = "./"
+
+        # Needed on Ubuntu by PHP (and more, ) that
+        # have in /usr/bin only a symlink to one out of many
+        # alternatives.
+        self.add_mapped_directories(["/etc/alternatives"])
 
         # Tell isolate to get the sandbox ready.
         box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
