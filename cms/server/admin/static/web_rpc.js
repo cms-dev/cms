@@ -21,7 +21,7 @@
 
 function get_cookie(name) {
     var r = document.cookie.match("(^|;)\\s*" + name + "=([^;]*)(;|$)");
-    return r ? r[2] : undefined;
+    return r ? r[2] : void(0);
 }
 
 /**
@@ -42,8 +42,8 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
         type: "POST",
         url: url,
         data: JSON.stringify(args),
-        contentType: 'application/json',
-        dataType: 'json',
+        contentType: "application/json",
+        dataType: "json",
         headers: {"X-XSRFToken": get_cookie("_xsrf")}
     });
 
@@ -69,4 +69,4 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
     });
 
     return jqxhr;
-};
+}
