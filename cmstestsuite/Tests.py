@@ -37,7 +37,7 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 LANG_CPP = "C++11 / g++"
 LANG_C = "C11 / gcc"
 LANG_HS = "Haskell / ghc"
-LANG_JAVA = "Java 1.4 / gcj"
+LANG_JAVA = "Java / JDK"
 LANG_PASCAL = "Pascal / fpc"
 LANG_PHP = "PHP"
 LANG_PYTHON = "Python 2"

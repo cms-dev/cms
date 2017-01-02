@@ -32,9 +32,9 @@ import tempfile
 from cms import config
 from cms.grading.Sandbox import wait_without_std, Sandbox
 from cms.grading import LANGUAGE_MANAGER, compilation_step, \
-    human_evaluation_message, is_evaluation_passed, \
-    extract_outcome_and_text, evaluation_step_before_run, \
-    evaluation_step_after_run, merge_evaluation_results
+    human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
+    evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
+    merge_evaluation_results
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
@@ -222,6 +222,7 @@ class Communication(TaskType):
 
         # Second step: we start the user submission compiled with the
         # stub.
+        language = LANGUAGE_MANAGER.get_language(job.language)
         executable_filename = job.executables.keys()[0]
         executables_to_get = {
             executable_filename:
@@ -229,16 +230,25 @@ class Communication(TaskType):
             }
         processes = [None for i in indices]
         for i in indices:
-            command = ["./%s" % executable_filename, fifo_out[i], fifo_in[i]]
+            args = [fifo_out[i], fifo_in[i]]
             if num_processes != 1:
-                command.append(str(i))
+                args.append(str(i))
+            commands = language.get_evaluation_commands(
+                executable_filename,
+                main="stub",
+                args=args)
             user_allow_dirs = [fifo_dir[i]]
             for filename, digest in executables_to_get.iteritems():
                 sandbox_user[i].create_file_from_storage(
                     filename, digest, executable=True)
+            # Assumes that the actual execution of the user solution
+            # is the last command in commands, and that the previous
+            # are "setup" that doesn't need tight control.
+            if len(commands) > 1:
+                evaluation_step(sandbox_user[i], commands[:-1], 10, 256)
             processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
-                command,
+                commands[-1],
                 job.time_limit,
                 job.memory_limit,
                 allow_dirs=user_allow_dirs)

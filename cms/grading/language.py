@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -116,11 +116,14 @@ class Language(object):
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def get_evaluation_commands(self, executable_filename):
+    def get_evaluation_commands(
+            self, executable_filename, main=None, args=None):
         """Return the evaluation commands.
 
         executable_filename: the name of the "executable" (does not
             need to be executable per se).
+        main (string|None): The name of the main file, or none to use
+            executable_filename (this is required by Java).
         return ([[string]]): a list of commands, each a list of
             strings to be passed to subprocess.
 
@@ -131,6 +134,8 @@ class Language(object):
 class CompiledLanguage(Language):
     """A language where the compilation step produces an executable."""
 
-    def get_evaluation_commands(self, executable_filename):
+    def get_evaluation_commands(
+            self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
-        return [[os.path.join(".", executable_filename)]]
+        args = args if args is not None else []
+        return [[os.path.join(".", executable_filename)] + args]

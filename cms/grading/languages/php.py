@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -51,6 +51,8 @@ class Php(Language):
         """See Language.get_compilation_commands."""
         return [["/bin/cp", source_filenames[0], executable_filename]]
 
-    def get_evaluation_commands(self, executable_filename):
+    def get_evaluation_commands(
+            self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
-        return [["/usr/bin/php", executable_filename]]
+        args = args if args is not None else []
+        return [["/usr/bin/php", executable_filename] + args]
