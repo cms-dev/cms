@@ -37,7 +37,7 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 LANG_CPP = "C++11 / g++"
 LANG_C = "C11 / gcc"
 LANG_HS = "Haskell / ghc"
-LANG_JAVA = "Java 1.4 / gcj"
+LANG_JAVA = "Java / JDK"
 LANG_PASCAL = "Pascal / fpc"
 LANG_PHP = "PHP"
 LANG_PYTHON = "Python 2 / CPython"
@@ -63,6 +63,11 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(100, 100)],
          user_tests=True),
+
+    Test('correct-stdio-inner-class',
+         task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
+         languages=(LANG_JAVA,),
+         checks=[CheckOverallScore(100, 100)]),
 
     Test('correct-fileio',
          task=batch_fileio, filenames=['correct-fileio.%l'],
@@ -164,10 +169,14 @@ ALL_TESTS = [
     # caller; we rely on the fact that the test program is designed to
     # produce output only inside the child process
 
-    Test('fork',
-         task=batch_stdio, filenames=['fork.%l'],
-         languages=(LANG_C, LANG_CPP),
-         checks=[CheckOverallScore(0, 100)]),
+    # TODO: since we allow many processes in the sandbox now by default,
+    # these submission rightfully pass. We need to refactor TestRunner
+    # to allow different contests for different tests to re-enable them.
+
+    # Test('fork',
+    #      task=batch_stdio, filenames=['fork.%l'],
+    #      languages=(LANG_C, LANG_CPP),
+    #      checks=[CheckOverallScore(0, 100)]),
 
     # OOM problems.
 

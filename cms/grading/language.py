@@ -126,11 +126,16 @@ class Language(object):
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def get_evaluation_commands(self, executable_filename):
+    def get_evaluation_commands(
+            self, executable_filename, main=None, args=None):
         """Return the evaluation commands.
 
         executable_filename: the name of the "executable" (does not
             need to be executable per se).
+        main (string|None): The name of the main file, or none to use
+            executable_filename (this is required by Java).
+        args ([string]|None): If not None, a list of arguments to be
+            passed to the executable.
         return ([[string]]): a list of commands, each a list of
             strings to be passed to subprocess.
 
@@ -141,6 +146,8 @@ class Language(object):
 class CompiledLanguage(Language):
     """A language where the compilation step produces an executable."""
 
-    def get_evaluation_commands(self, executable_filename):
+    def get_evaluation_commands(
+            self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
-        return [[os.path.join(".", executable_filename)]]
+        args = args if args is not None else []
+        return [[os.path.join(".", executable_filename)] + args]

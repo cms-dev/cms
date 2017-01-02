@@ -36,6 +36,7 @@ from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     add_user, add_task, add_testcase, add_manager, \
     get_tasks, get_users, initialize_aws
 from cmstestsuite.Test import TestFailure
+from cmstestsuite.Tests import ALL_LANGUAGES
 from cmstestsuite.programstarter import ProgramStarter
 from cmscommon.datetime import get_system_timezone
 
@@ -142,15 +143,7 @@ class TestRunner(object):
         self.contest_id = add_contest(
             name="testcontest" + str(self.rand),
             description="A test contest #%s." % self.rand,
-            languages=[
-                "C++11 / g++",
-                "C11 / gcc",
-                "Haskell / ghc",
-                "Java 1.4 / gcj",
-                "Pascal / fpc",
-                "PHP",
-                "Python 2",
-            ],
+            languages=list(ALL_LANGUAGES),
             allow_password_authentication="checked",
             start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
             stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
