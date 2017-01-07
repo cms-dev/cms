@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -195,14 +195,35 @@ class SandboxBase(object):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, file_cacher):
+    def __init__(self, file_cacher, temp_dir=None):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
             (to interact with FS), if the sandbox needs it.
+        temp_dir (unicode|None): temporary directory to use; if None, use the
+            default temporary directory specified in the configuration.
 
         """
         self.file_cacher = file_cacher
+        self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
+
+        self.cmd_file = "commands.log"
+
+        # These are not necessarily used, but are here for API compatibility
+        self.box_id = 0
+        self.fsize = None
+        self.cgroup = False
+        self.dirs = []
+        self.preserve_env = False
+        self.inherit_env = []
+        self.set_env = {}
+        self.max_processes = 1
+        self.verbosity = 0
+
+        # Set common environment variables.
+        # Specifically needed by Python, that searches the home for
+        # packages.
+        self.set_env["HOME"] = "./"
 
     def get_stats(self):
         """Return a human-readable string representing execution time
@@ -429,20 +450,17 @@ class StupidSandbox(SandboxBase):
 
     """
 
-    def __init__(self, file_cacher=None, temp_dir=None):
+    def __init__(self, file_cacher, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, file_cacher)
+        SandboxBase.__init__(self, file_cacher, temp_dir)
 
         # Make box directory
-        if temp_dir is None:
-            temp_dir = config.temp_dir
-        self.path = tempfile.mkdtemp(dir=temp_dir)
+        self.path = tempfile.mkdtemp(dir=self.temp_dir)
 
-        self.cmd_file = "commands.log"
         self.exec_num = -1
         self.popen = None
         self.popen_time = None
@@ -460,23 +478,6 @@ class StupidSandbox(SandboxBase):
         self.timeout = None
         self.wallclock_timeout = None
         self.extra_timeout = None
-
-        # These parameters are not going to be used, but are here for
-        # API compatibility
-        self.box_id = 0
-        self.fsize = None
-        self.cgroup = False
-        self.dirs = []
-        self.preserve_env = False
-        self.inherit_env = []
-        self.set_env = {}
-        self.max_processes = 1
-        self.verbosity = 0
-
-        # Set common environment variables.
-        # Specifically needed by Python, that searches the home for
-        # packages.
-        self.set_env["HOME"] = "./"
 
     # TODO - It returns wall clock time, because I have no way to
     # check CPU time (libev doesn't have wait4() support)
@@ -753,13 +754,13 @@ class IsolateSandbox(SandboxBase):
     """
     next_id = 0
 
-    def __init__(self, file_cacher=None, temp_dir=None):
+    def __init__(self, file_cacher, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, file_cacher)
+        SandboxBase.__init__(self, file_cacher, temp_dir)
 
         # Isolate only accepts ids between 0 and 99. We assign the
         # range [(shard+1)*10, (shard+2)*10) to each Worker and keep
@@ -782,9 +783,7 @@ class IsolateSandbox(SandboxBase):
         # system to, which is why the outer directory exists with no read
         # permissions.
         self.inner_temp_dir = "/tmp"
-        if temp_dir is None:
-            temp_dir = config.temp_dir
-        self.outer_temp_dir = tempfile.mkdtemp(dir=temp_dir)
+        self.outer_temp_dir = tempfile.mkdtemp(dir=self.temp_dir)
         # Don't use os.path.join here, because the absoluteness of /tmp will
         # bite you.
         self.path = self.outer_temp_dir + self.inner_temp_dir
@@ -794,7 +793,6 @@ class IsolateSandbox(SandboxBase):
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
         self.info_basename = "run.log"   # Used for -M
-        self.cmd_file = "commands.log"
         self.log = None
         self.exec_num = -1
         logger.debug("Sandbox in `%s' created, using box `%s'.",
