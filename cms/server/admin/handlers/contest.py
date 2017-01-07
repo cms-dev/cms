@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -98,6 +98,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
 
             attrs["languages"] = self.get_arguments("languages")
 
+            self.get_bool(attrs, "multithreaded_sandbox")
             self.get_bool(attrs, "submissions_download_allowed")
             self.get_bool(attrs, "allow_questions")
             self.get_bool(attrs, "allow_user_tests")

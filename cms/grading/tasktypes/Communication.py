@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
@@ -112,7 +112,7 @@ class Communication(TaskType):
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher)
+        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
@@ -182,8 +182,9 @@ class Communication(TaskType):
             num_processes = self.parameters[0]
         indices = range(num_processes)
         # Create sandboxes and FIFOs
-        sandbox_mgr = create_sandbox(file_cacher)
-        sandbox_user = [create_sandbox(file_cacher) for i in indices]
+        sandbox_mgr = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        sandbox_user = [create_sandbox(file_cacher, job.multithreaded_sandbox)
+                        for i in indices]
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
         fifo_in = [os.path.join(fifo_dir[i], "in%d" % i) for i in indices]
         fifo_out = [os.path.join(fifo_dir[i], "out%d" % i) for i in indices]

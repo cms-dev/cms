@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -153,7 +153,7 @@ class Batch(TaskType):
             return True
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher)
+        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
@@ -218,7 +218,7 @@ class Batch(TaskType):
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher)
+        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
 
         # Prepare the execution
         executable_filename = job.executables.keys()[0]

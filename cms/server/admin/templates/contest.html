@@ -55,6 +55,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether compilations and evaluations are allowed to use multithreading."></span>
+        <label for="multithreaded_sandbox">Multithreaded sandbox</label>
+      </td>
+      <td>
+        <input type="checkbox" id="multithreaded_sandbox" name="multithreaded_sandbox" {{ "checked" if contest.multithreaded_sandbox else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Whether contestants can download their own submissions."></span>
         <label for="submissions_download_allowed">Submissions download allowed</label>
       </td>

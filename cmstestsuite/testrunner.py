@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -144,6 +144,7 @@ class TestRunner(object):
             name="testcontest" + str(self.rand),
             description="A test contest #%s." % self.rand,
             languages=LANGUAGES,
+            multithreaded_sandbox="checked",
             allow_password_authentication="checked",
             start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
             stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),

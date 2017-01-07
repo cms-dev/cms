@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
@@ -157,10 +157,14 @@ ALL_TESTS = [
     # caller; we rely on the fact that the test program is designed to
     # produce output only inside the child process
 
-    Test('fork',
-         task=batch_stdio, filenames=['fork.%l'],
-         languages=(LANG_C, LANG_CPP),
-         checks=[CheckOverallScore(0, 100)]),
+    # TODO: since we allow many processes in the sandbox now by default,
+    # these submission rightfully pass. We need to refactor TestRunner
+    # to allow different contests for different tests to re-enable them.
+
+    # Test('fork',
+    #      task=batch_stdio, filenames=['fork.%l'],
+    #      languages=(LANG_C, LANG_CPP),
+    #      checks=[CheckOverallScore(0, 100)]),
 
     # OOM problems.
 
