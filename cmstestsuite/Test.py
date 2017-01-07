@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -56,8 +56,10 @@ class CheckOverallScore(Check):
     def check(self, result_info):
         g = CheckOverallScore.score_re.match(result_info['status'])
         if not g:
-            raise TestFailure("Expected total score, got status: %s" %
-                              result_info['status'])
+            raise TestFailure(
+                "Expected total score, got status: %s\n"
+                "Compilation output:\n%s" %
+                (result_info['status'], result_info['compile_output']))
 
         score, total = g.groups()
         try:
