@@ -195,15 +195,18 @@ class SandboxBase(object):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, temp_dir=None):
         """Initialization.
 
+        multithreaded (boolean): whether the sandbox should allow
+            multithreading.
         file_cacher (FileCacher): an instance of the FileCacher class
             (to interact with FS), if the sandbox needs it.
         temp_dir (unicode|None): temporary directory to use; if None, use the
             default temporary directory specified in the configuration.
 
         """
+        self.multithreaded = multithreaded
         self.file_cacher = file_cacher
         self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
 
@@ -218,8 +221,12 @@ class SandboxBase(object):
         self.preserve_env = False
         self.inherit_env = []
         self.set_env = {}
-        self.max_processes = 1
         self.verbosity = 0
+
+        self.max_processes = 1
+        if multithreaded:
+            # Max processes is set to 1000 to limit the effect of fork bombs.
+            self.max_processes = 1000
 
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
@@ -451,13 +458,13 @@ class StupidSandbox(SandboxBase):
 
     """
 
-    def __init__(self, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, file_cacher, temp_dir)
+        SandboxBase.__init__(self, multithreaded, file_cacher, temp_dir)
 
         # Make box directory
         self.path = tempfile.mkdtemp(dir=self.temp_dir)
@@ -755,13 +762,13 @@ class IsolateSandbox(SandboxBase):
     """
     next_id = 0
 
-    def __init__(self, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, file_cacher, temp_dir)
+        SandboxBase.__init__(self, multithreaded, file_cacher, temp_dir)
 
         # Isolate only accepts ids between 0 and 99. We assign the
         # range [(shard+1)*10, (shard+2)*10) to each Worker and keep
@@ -813,7 +820,6 @@ class IsolateSandbox(SandboxBase):
         self.stack_space = None        # -k
         self.address_space = None      # -m
         self.stdout_file = None        # -o
-        self.max_processes = 1         # -p
         self.stderr_file = None        # -r
         self.timeout = None            # -t
         self.verbosity = 0             # -v

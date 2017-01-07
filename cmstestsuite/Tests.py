@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #

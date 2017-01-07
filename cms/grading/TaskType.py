@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -48,10 +48,11 @@ logger = logging.getLogger(__name__)
 
 ## Sandbox lifecycle. ##
 
-def create_sandbox(file_cacher):
+def create_sandbox(file_cacher, multithreaded=False):
     """Create a sandbox, and return it.
 
     file_cacher (FileCacher): a file cacher instance.
+    multithreaded (boolean): whether the sandbox should allow multithreading.
 
     return (Sandbox): a sandbox.
 
@@ -59,7 +60,7 @@ def create_sandbox(file_cacher):
 
     """
     try:
-        sandbox = Sandbox(file_cacher)
+        sandbox = Sandbox(multithreaded, file_cacher)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)
