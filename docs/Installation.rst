@@ -36,6 +36,8 @@ Then you require the compilation and execution environments for the languages yo
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (for C, C++ and Java, respectively with executables ``gcc``, ``g++`` and ``gcj``);
 
+* alternatively, for Java, your choice of a JDK, for example OpenJDK;
+
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
@@ -53,8 +55,9 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
 
 .. sourcecode:: bash
 
-    sudo apt-get install build-essential fpc postgresql postgresql-client \
-         gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
+    sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk fpc \
+        postgresql postgresql-client gettext python2.7 \
+        iso-codes shared-mime-info stl-manual cgroup-lite
 
     # Only if you will use pip/virtualenv to install python dependencies
     sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev \
@@ -71,7 +74,8 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
 .. sourcecode:: bash
 
-    sudo pacman -S base-devel fpc postgresql postgresql-client python2 \
+    sudo pacman -S base-devel jre8-openjdk jdk8-openjdk fpc \
+         postgresql postgresql-client python2 \
          iso-codes shared-mime-info
 
     # Install the following from AUR.

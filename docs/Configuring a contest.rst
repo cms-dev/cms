@@ -184,23 +184,31 @@ Note also that submissions sent during the extra time will continue to be consid
 Programming languages
 =====================
 
-It is possible to limit the set of programming languages available to contestants by setting the appropriate configuration in the contest page in AWS. By default, the historical set of IOI programming languages is allowed (C, C++, and Pascal). These languages have been used in several contests and with many different types of tasks, and are thus fully tested and safe.
+CMS allows to restrict the set of programming languages available to contestants in a certain contest; the configuration is in the contest page in AWS.
 
-Contestants may be also allowed to use Java, Python and PHP, but these languages have only been tested for Batch tasks, and have not been thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
+CMS offers out of the box the following combination of languages: C, C++, Pascal, Java (in two flavours, either compiled with gcj or using a JDK), Python 2, PHP.
+
+C, C++ and Pascal are the default languages, and, together with Java with gcj, have been tested thoroughly in many contests. PHP and Python have only been tested with Batch task types, and have not thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control. Java with JDK works with Batch and Communication task types.
+
+Other programming languages, or even other versions of the same languages, can be added by creating new specification files in :file:`cms/grading/languages`.
+
+The contest parameter ``multithreaded_sandbox``, configurable in the contest page in AWS, controls whether the sandbox forbids or allow compilation and evaluation of submissions to create more than one threads or processes. If more threads or processes are used, the time limit is checked against the sum of the user times of all threads and processes. If the contest uses Java with a JDK, this option must be enabled.
+
 
 Language details
 ----------------
 
+* C and C++ are supported through the GNU Compiler Collection. Submissions are optimized with ``-O2``, and use the 2011 standards for C and C++.
+
+* Java with gcj is also supported through the GNU Compiled Collection. Programs are compiled with ``gcj``, optimized with ``-O3``, and then run as normal executables. Notice that gcj only fully supports Java 1.4.
+
+* Java with JDK uses the system version of the Java compiler and JVM.
+
 * Pascal support is provided by ``fpc``, and submissions are optimized with ``-O2``.
-
-* C/C++ support is provided by the GNU Compiler Collection. Submissions are optimized with ``-O2``. The standards used by default by CMS are gnu90 for C (that is, C90 with the GNU extension, the default for ``gcc``) and C++11 for C++. Note that C++11 support in ``g++`` is still incomplete and experimental. Please refer to the `C++11 Support in GCC <https://gcc.gnu.org/projects/cxx0x.html>`_ page for more information.
-
-* Java programs are first compiled using ``gcj`` (optimized with ``-O3``), and then run as normal executables. Proper Java support using a JVM will most probably come in the next CMS version.
 
 * Python submissions are interpreted using Python 2 (you need to have ``/usr/bin/python2``).
 
-* PHP submissions are interpreted by ``/usr/bin/php5``.
+* PHP submissions are interpreted by ``/usr/bin/php``.
 
 * Haskell support is provided by ``ghc``, and submissions are optimized with ``-O2``.
 
-The compilation lines can be inspected and amended in :file:`cms/grading/__init__.py` (there is no way of configuring them apart from changing the source code). Possible amendments are changing the Python version from 2 to 3 (there are instructions in the file on how to do it) or changing the standard used by the GCC.
