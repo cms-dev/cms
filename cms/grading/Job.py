@@ -56,8 +56,6 @@ class Job(object):
 
     """
 
-    # TODO Move all common fields inside Job.
-
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
                  language=None, multithreaded_sandbox=False,
