@@ -1212,7 +1212,7 @@ class IsolateSandbox(SandboxBase):
                          pretty_print_cmdline(command), self.path)
             try:
                 prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-                os.chmod(self.path, 0777)
+                os.chmod(self.path, 0700)
                 with io.open(self.relative_path(self.cmd_file), 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
                 p = subprocess.Popen(command, cwd=self.path,
@@ -1238,7 +1238,7 @@ class IsolateSandbox(SandboxBase):
                      pretty_print_cmdline(args))
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-        os.chmod(self.path, 0777)
+        os.chmod(self.path, 0770)
         with io.open(self.relative_path(self.cmd_file), 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
         os.chmod(self.path, prev_permissions)
