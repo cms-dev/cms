@@ -157,14 +157,12 @@ def main():
             return 1
         files[name] = filename
 
-    if add_submission(contest_id=args.contest_id,
-                      username=args.username,
-                      task_name=args.task_name,
-                      timestamp=args.timestamp,
-                      files=files):
-        return 0
-    else:
-        return 1
+    success = add_submission(contest_id=args.contest_id,
+                             username=args.username,
+                             task_name=args.task_name,
+                             timestamp=args.timestamp,
+                             files=files)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":

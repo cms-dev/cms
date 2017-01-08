@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Luca Versari <veluca93@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -91,8 +92,8 @@ def main():
         clean_files(session, args.dry_run)
         if not args.dry_run:
             session.commit()
-    return True
+    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    sys.exit(main())

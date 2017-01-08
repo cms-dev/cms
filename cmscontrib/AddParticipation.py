@@ -121,11 +121,12 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    return add_participation(args.username, args.contest_id,
-                             args.ip, args.delay_time, args.extra_time,
-                             args.password, args.team,
-                             args.hidden, args.unrestricted)
+    success = add_participation(args.username, args.contest_id,
+                                args.ip, args.delay_time, args.extra_time,
+                                args.password, args.team,
+                                args.hidden, args.unrestricted)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    sys.exit(main())

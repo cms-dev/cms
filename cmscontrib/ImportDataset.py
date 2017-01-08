@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,6 +36,7 @@ gevent.monkey.patch_all()
 import argparse
 import logging
 import os
+import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Task
@@ -58,7 +60,7 @@ class DatasetImporter(object):
         # Get the task
         task = self.loader.get_task(get_statement=False)
         if task is None:
-            return
+            return False
 
         # Keep the dataset (and the task name) and delete the task
         dataset = task.active_dataset
@@ -79,7 +81,7 @@ class DatasetImporter(object):
             if old_task is None:
                 logger.error("The specified task does not exist. "
                              "Aborting, no dataset imported.")
-                return
+                return False
 
             # Set the dataset's task to the old task
             dataset.task = None  # apparently, we *need* this
@@ -92,6 +94,7 @@ class DatasetImporter(object):
             dataset_id = dataset.id
 
         logger.info("Import finished (dataset id: %s).", dataset_id)
+        return True
 
 
 def main():
@@ -125,12 +128,12 @@ def main():
         parser.error
     )
 
-    DatasetImporter(
-        path=args.target,
-        description=args.description,
-        loader_class=loader_class
-    ).do_import()
+    importer = DatasetImporter(path=args.target,
+                               description=args.description,
+                               loader_class=loader_class)
+    success = importer.do_import()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

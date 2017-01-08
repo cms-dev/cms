@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -61,8 +61,8 @@ def main():
                         help="username of the user")
     args = parser.parse_args()
 
-    return remove_user(username=args.username)
-
+    success = remove_user(username=args.username)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":

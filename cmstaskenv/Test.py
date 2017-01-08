@@ -26,9 +26,10 @@ from __future__ import unicode_literals
 
 import atexit
 import json
-import os
-import sys
 import logging
+import os
+import select
+import sys
 
 import cmscontrib.loaders
 from cms.db import Executable
@@ -173,13 +174,25 @@ def test_testcases(base_dir, solution, language, assume=None):
         # If we saw two consecutive timeouts, ask wether we want to
         # consider everything to timeout
         if ask_again and status == "timeout" and last_status == "timeout":
-            print("Want to stop and consider everything to timeout? [y/N]",
+            print("Want to stop and consider everything to timeout? [y/N] ",
                   end='')
+            sys.stdout.flush()
+
             if assume is not None:
-                print(assume)
                 tmp = assume
+                print(tmp)
             else:
-                tmp = raw_input().lower()
+                # User input with a timeout of 5 seconds, at the end of which
+                # we automatically say "n". ready will be a list of input ready
+                # for reading, or an empty list if the timeout expired.
+                # See: http://stackoverflow.com/a/2904057
+                ready, _, _ = select.select([sys.stdin], [], [], 5)
+                if ready:
+                    tmp = sys.stdin.readline().strip().lower()
+                else:
+                    tmp = 'n'
+                    print(tmp)
+
             if tmp in ['y', 'yes']:
                 stop = True
             else:
