@@ -73,9 +73,6 @@ class LanguageManager(object):
         ]
         self._by_name = dict(
             (language.name, language) for language in self.languages)
-        self._by_source_ext = dict(
-            (ext, language) for language in self.languages
-            for ext in language.source_extensions)
         self.header_exts = set()
         self.source_exts = set()
         self.object_exts = set()
@@ -94,15 +91,19 @@ class LanguageManager(object):
 
         filename (string): the file to test.
 
-        return (Language|None): one (arbitrary) language matching the given
-            filename, or None if none match.
+        return (Language|None): one (arbitrary, but deterministic)
+            language matching the given filename, or None if none
+            match.
 
         """
         ext_index = filename.rfind(".")
         if ext_index == -1:
             return None
         ext = filename[ext_index:]
-        return self._by_source_ext.get(ext, None)
+        names = sorted([language.name
+                        for language in self.languages
+                        if ext in language.source_extensions])
+        return None if len(names) == 0 else names[0]
 
 
 # We create an instance of the language manager, which will be the
