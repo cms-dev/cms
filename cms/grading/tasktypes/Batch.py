@@ -112,8 +112,14 @@ class Batch(TaskType):
         if self._uses_grader():
             source_filenames.append("grader.%%l")
         source_filenames.append(submission_format[0])
-        return LANGUAGE_MANAGER.get_compilation_commands(
-            source_filenames, submission_format[0].replace(".%l", ""))
+        executable_filename = submission_format[0].replace(".%l", "")
+        res = dict()
+        for language in LANGUAGE_MANAGER.languages:
+            res[language.name] = language.get_compilation_commands(
+                [source.replace(".%l", language.source_extension)
+                 for source in source_filenames],
+                executable_filename)
+        return res
 
     def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""

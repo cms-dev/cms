@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -103,32 +103,6 @@ class LanguageManager(object):
             return None
         ext = filename[ext_index:]
         return self._by_source_ext.get(ext, None)
-
-    def get_compilation_commands(self,
-                                 source_filenames, executable_filename,
-                                 for_evaluation=True):
-        """Return the compilation commands for all languages.
-
-        source_filenames ([string]): a list of the string that are the
-            filenames of the source files to compile; the order is
-            relevant: the first file must be the one that contains the
-            program entry point (with some langages, e.g. Pascal, only
-            the main file must be passed to the compiler).
-        executable_filename (string): the output file.
-        for_evaluation (bool): if True, define EVAL during the
-            compilation; defaults to True.
-
-        return ({string: [[string]]}): for each language name, the
-            list the list of commands, each of which is a list of
-            strings to be passed to subprocess.
-
-        """
-        return {language.name:
-                language.get_compilation_commands(
-                    [source.replace(".%l", language.source_extensions[0])
-                     for source in source_filenames],
-                    executable_filename, for_evaluation)
-                for language in self.languages}
 
 
 # We create an instance of the language manager, which will be the
