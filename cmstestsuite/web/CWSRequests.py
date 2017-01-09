@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
@@ -30,7 +30,7 @@ import random
 import re
 import tempfile
 
-from cms.grading import LANGUAGE_MANAGER
+from cms.grading.languagemanager import filename_to_language
 from cmscommon.crypto import decrypt_number
 from cmstestsuite.web import GenericRequest, LoginRequest
 
@@ -118,7 +118,7 @@ class SubmitRequest(GenericRequest):
         # If not passed, try to recover the language from the filenames.
         if language is None:
             for filename in filenames:
-                lang = LANGUAGE_MANAGER.filename_to_language(filename)
+                lang = filename_to_language(filename)
                 if lang is not None:
                     language = lang.name
                     break
@@ -178,7 +178,7 @@ class SubmitUserTestRequest(GenericRequest):
         # If not passed, try to recover the language from the filenames.
         if language is None:
             for filename in filenames:
-                lang = LANGUAGE_MANAGER.filename_to_language(filename)
+                lang = filename_to_language(filename)
                 if lang is not None:
                     language = lang.name
                     break

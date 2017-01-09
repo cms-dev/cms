@@ -47,7 +47,7 @@ from sqlalchemy import func
 
 from cms import config
 from cms.db import Task, UserTest, UserTestFile, UserTestManager
-from cms.grading import LANGUAGE_MANAGER
+from cms.grading.languagemanager import get_language
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required, format_size
 from cmscommon.archive import Archive
@@ -414,8 +414,7 @@ class UserTestHandler(BaseHandler):
         for filename in task_type.get_user_managers(task.submission_format):
             digest = file_digests[filename]
             if submission_lang is not None:
-                extension = LANGUAGE_MANAGER.get_language(submission_lang)\
-                    .source_extension
+                extension = get_language(submission_lang).source_extension
                 filename = filename.replace(".%l", extension)
             self.sql_session.add(
                 UserTestManager(filename, digest, user_test=user_test))
@@ -600,8 +599,7 @@ class UserTestFileHandler(FileHandler):
         # decode it to 'foo.%l'.
         stored_filename = filename
         if user_test.language is not None:
-            extension = LANGUAGE_MANAGER.get_language(user_test.language)\
-                .source_extension
+            extension = get_language(user_test.language).source_extension
             stored_filename = re.sub(r'%s$' % extension, '.%l', filename)
 
         if stored_filename in user_test.files:

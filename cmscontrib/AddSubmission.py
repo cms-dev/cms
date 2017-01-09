@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,7 +33,7 @@ from cms import utf8_decoder
 from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
-from cms.grading import LANGUAGE_MANAGER
+from cms.grading.languagemanager import filename_to_language
 from cmscommon.datetime import make_datetime
 
 
@@ -77,7 +77,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         # each file and check that they do not mix.
         language = None
         for file_ in files:
-            this_language = LANGUAGE_MANAGER.filename_to_language(files[file_])
+            this_language = filename_to_language(files[file_])
             if this_language is None and ".%l" in file_:
                 logger.critical("Cannot recognize language for file `%s'.",
                                 file_)

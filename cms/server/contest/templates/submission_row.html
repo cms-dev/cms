@@ -90,7 +90,7 @@
         {% elif len(s.files) == 1 %}
             {% set filename = s.files.keys()[0] %}
             {% if s.language is not None %}
-                {% set filename = re.sub("\.%l$", LANGUAGE_MANAGER.get_language(s.language).source_extension, filename) %}
+                {% set filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
             {% end %}
         <a class="btn" href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/files/{{ encode_for_url(filename) }}">
             {{ _("Download") }}
@@ -104,7 +104,7 @@
             <ul class="dropdown-menu">
             {% for filename in s.files %}
                 {% if s.language is not None %}
-                    {% set temp_filename = re.sub("\.%l$", LANGUAGE_MANAGER.get_language(s.language).source_extension, filename) %}
+                    {% set temp_filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
                     {% if temp_filename not in s.files %}
                         {% set filename = temp_filename %}
                     {% end %}

@@ -37,7 +37,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import SCORE_MODE_MAX, config, plugin_list
+from cms import SCORE_MODE_MAX, config
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -56,59 +56,11 @@ __all__ = [
     "white_diff_step",
     "compute_changes_for_dataset", "task_score",
     # language.py
-    "LANGUAGE_MANAGER", "Language", "CompiledLanguage",
+    "Language", "CompiledLanguage",
 ]
 
 
 logger = logging.getLogger(__name__)
-
-
-class LanguageManager(object):
-    """A helper class to use the correct language based on the extension."""
-
-    def __init__(self):
-        self.languages = [
-            language()
-            for language in plugin_list("cms.grading.languages", "languages")
-        ]
-        self._by_name = dict(
-            (language.name, language) for language in self.languages)
-        self.header_exts = set()
-        self.source_exts = set()
-        self.object_exts = set()
-        for lang in self.languages:
-            self.header_exts |= set(lang.header_extensions)
-            self.source_exts |= set(lang.source_extensions)
-            self.object_exts |= set(lang.object_extensions)
-
-    def get_language(self, name):
-        if name not in self._by_name:
-            raise KeyError("Language `%s' not supported." % name)
-        return self._by_name[name]
-
-    def filename_to_language(self, filename):
-        """Return one of the languages inferred from the given filename.
-
-        filename (string): the file to test.
-
-        return (Language|None): one (arbitrary, but deterministic)
-            language matching the given filename, or None if none
-            match.
-
-        """
-        ext_index = filename.rfind(".")
-        if ext_index == -1:
-            return None
-        ext = filename[ext_index:]
-        names = sorted([language.name
-                        for language in self.languages
-                        if ext in language.source_extensions])
-        return None if len(names) == 0 else self.get_language(names[0])
-
-
-# We create an instance of the language manager, which will be the
-# only one created in the lifetime of the process.
-LANGUAGE_MANAGER = LanguageManager()
 
 
 SubmissionScoreDelta = namedtuple(

@@ -38,7 +38,7 @@ from datetime import timedelta
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cms.db import Contest, User, Task, Statement, Attachment, \
     Team, SubmissionFormatElement, Dataset, Manager, Testcase
-from cms.grading import LANGUAGE_MANAGER
+from cms.grading import LANGUAGES, HEADER_EXTS
 from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 
@@ -450,14 +450,14 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # presuming that the task type is Batch, we retrieve graders
         # in the form sol/grader.%l
         graders = False
-        for lang in LANGUAGE_MANAGER:
+        for lang in LANGUAGES:
             if os.path.exists(os.path.join(
                     self.path, "sol", "grader%s" % lang.source_extension)):
                 graders = True
                 break
         if graders:
             # Read grader for each language
-            for lang in LANGUAGE_MANAGER.languages:
+            for lang in LANGUAGES:
                 extension = lang.source_extension
                 grader_filename = os.path.join(
                     self.path, "sol", "grader%s" % extension)
@@ -473,7 +473,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(self.path, "sol")):
                 if any(other_filename.endswith(header)
-                       for header in LANGUAGE_MANAGER.header_exts):
+                       for header in HEADER_EXTS):
                     digest = self.file_cacher.put_file_from_path(
                         os.path.join(self.path, "sol", other_filename),
                         "Manager %s for task %s" % (other_filename, task.name))
@@ -607,7 +607,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         "Manager for task %s" % task.name)
                     args["managers"] += [
                         Manager("manager", digest)]
-                    for lang in LANGUAGE_MANAGER.languages:
+                    for lang in LANGUAGES:
                         stub_name = os.path.join(
                             self.path, "sol", "stub%s" % lang.source_extension)
                         if os.path.exists(stub_name):
@@ -624,7 +624,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     for other_filename in os.listdir(os.path.join(self.path,
                                                                   "sol")):
                         if any(other_filename.endswith(header)
-                               for header in LANGUAGE_MANAGER.header_exts):
+                               for header in HEADER_EXTS):
                             digest = self.file_cacher.put_file_from_path(
                                 os.path.join(self.path, "sol", other_filename),
                                 "Stub %s for task %s" % (other_filename,
@@ -772,12 +772,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         files.append(os.path.join(self.path, "cor", "manager"))
         if not conf.get('output_only', False) and \
                 os.path.isdir(os.path.join(self.path, "sol")):
-            for lang in LANGUAGE_MANAGER.languages:
+            for lang in LANGUAGES:
                 files.append(os.path.join(
                     self.path, "sol", "grader%s" % lang.source_extension))
             for other_filename in os.listdir(os.path.join(self.path, "sol")):
                 if any(other_filename.endswith(header)
-                       for header in LANGUAGE_MANAGER.header_exts):
+                       for header in HEADER_EXTS):
                     files.append(
                         os.path.join(self.path, "sol", other_filename))
 

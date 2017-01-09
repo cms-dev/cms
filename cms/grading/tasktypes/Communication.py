@@ -31,10 +31,12 @@ import tempfile
 
 from cms import config
 from cms.grading.Sandbox import wait_without_std, Sandbox
-from cms.grading import LANGUAGE_MANAGER, compilation_step, \
+from cms.grading import compilation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     merge_evaluation_results
+from cms.grading.languagemanager import \
+    LANGUAGES, HEADER_EXTS, SOURCE_EXTS, OBJECT_EXTS, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
@@ -78,7 +80,7 @@ class Communication(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
-        for language in LANGUAGE_MANAGER.languages:
+        for language in LANGUAGES:
             source_ext = language.source_extension
             source_filenames = []
             source_filenames.append("stub%s" % source_ext)
@@ -106,7 +108,7 @@ class Communication(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = LANGUAGE_MANAGER.get_language(job.language)
+        language = get_language(job.language)
         source_ext = language.source_extension
 
         # Create the sandbox
@@ -128,16 +130,13 @@ class Communication(TaskType):
 
         # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
-            if any(filename.endswith(header)
-                   for header in LANGUAGE_MANAGER.header_exts):
+            if any(filename.endswith(header) for header in HEADER_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(source)
-                     for source in LANGUAGE_MANAGER.source_exts):
+            elif any(filename.endswith(source) for source in SOURCE_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(obj)
-                     for obj in LANGUAGE_MANAGER.object_exts):
+            elif any(filename.endswith(obj) for obj in OBJECT_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
@@ -222,7 +221,7 @@ class Communication(TaskType):
 
         # Second step: we start the user submission compiled with the
         # stub.
-        language = LANGUAGE_MANAGER.get_language(job.language)
+        language = get_language(job.language)
         executable_filename = job.executables.keys()[0]
         executables_to_get = {
             executable_filename:

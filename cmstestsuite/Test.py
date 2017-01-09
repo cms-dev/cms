@@ -26,7 +26,7 @@ import json
 import os
 import re
 
-from cms.grading import LANGUAGE_MANAGER
+from cms.grading.languagemanager import get_language
 
 from cmstestsuite import \
     cws_submit, cws_submit_user_test, \
@@ -161,9 +161,7 @@ class Test(object):
 
         # Choose the correct file to submit.
         filenames = [
-            filename.replace(
-                ".%l",
-                LANGUAGE_MANAGER.get_language(language).source_extension)
+            filename.replace(".%l", get_language(language).source_extension)
             for filename in self.filenames]
 
         full_paths = [os.path.join(path, filename) for filename in filenames]

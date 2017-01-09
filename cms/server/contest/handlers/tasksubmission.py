@@ -48,7 +48,7 @@ from sqlalchemy.orm import joinedload
 
 from cms import config
 from cms.db import File, Submission, SubmissionResult, Task, Token
-from cms.grading import LANGUAGE_MANAGER
+from cms.grading.languagemanager import get_language
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required
@@ -552,8 +552,7 @@ class SubmissionFileHandler(FileHandler):
         # decode it to 'foo.%l'.
         stored_filename = filename
         if submission.language is not None:
-            extension = LANGUAGE_MANAGER.get_language(submission.language)\
-                .source_extension
+            extension = get_language(submission.language).source_extension
             stored_filename = re.sub(r'%s$' % extension, '.%l', filename)
 
         if stored_filename not in submission.files:

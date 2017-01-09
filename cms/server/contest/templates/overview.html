@@ -167,7 +167,7 @@
         </tr>
     </thead>
     <tbody>
-{% set extensions = "[%s]" %  ("|".join(set(LANGUAGE_MANAGER.get_language(lang).source_extension for lang in contest.languages))) %}
+{% set extensions = "[%s]" %  ("|".join(set(get_language(lang).source_extension for lang in contest.languages))) %}
 {% for t_iter in contest.tasks %}
         <tr>
             <th>{{ t_iter.name }}</th>

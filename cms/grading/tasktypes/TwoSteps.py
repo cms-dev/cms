@@ -32,10 +32,11 @@ import tempfile
 from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading import LANGUAGE_MANAGER, compilation_step, \
+from cms.grading import compilation_step, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, \
     extract_outcome_and_text, white_diff_step
+from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
@@ -91,7 +92,7 @@ class TwoSteps(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
-        for language in LANGUAGE_MANAGER.languages:
+        for language in LANGUAGES:
             source_ext = language.source_extension
             header_ext = language.header_extension
             source_filenames = []
@@ -123,7 +124,7 @@ class TwoSteps(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = LANGUAGE_MANAGER.get_language(job.language)
+        language = get_language(job.language)
         source_ext = language.source_extension
         header_ext = language.header_extension
 

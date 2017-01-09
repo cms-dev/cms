@@ -26,9 +26,11 @@ from __future__ import unicode_literals
 
 import logging
 
-from cms.grading import LANGUAGE_MANAGER, compilation_step, evaluation_step, \
+from cms.grading import compilation_step, evaluation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     white_diff_step
+from cms.grading.languagemanager import \
+    LANGUAGES, HEADER_EXTS, SOURCE_EXTS, OBJECT_EXTS, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
@@ -113,7 +115,7 @@ class Batch(TaskType):
         source_filenames.append(submission_format[0])
         executable_filename = submission_format[0].replace(".%l", "")
         res = dict()
-        for language in LANGUAGE_MANAGER.languages:
+        for language in LANGUAGES:
             res[language.name] = language.get_compilation_commands(
                 [source.replace(".%l", language.source_extension)
                  for source in source_filenames],
@@ -136,7 +138,7 @@ class Batch(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = LANGUAGE_MANAGER.get_language(job.language)
+        language = get_language(job.language)
         source_ext = language.source_extension
 
         # TODO: here we are sure that submission.files are the same as
@@ -172,16 +174,13 @@ class Batch(TaskType):
 
         # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
-            if any(filename.endswith(header)
-                   for header in LANGUAGE_MANAGER.header_exts):
+            if any(filename.endswith(header) for header in HEADER_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(source)
-                     for source in LANGUAGE_MANAGER.source_exts):
+            elif any(filename.endswith(source) for source in SOURCE_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(obj)
-                     for obj in LANGUAGE_MANAGER.object_exts):
+            elif any(filename.endswith(obj) for obj in OBJECT_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
@@ -220,7 +219,7 @@ class Batch(TaskType):
 
         # Prepare the execution
         executable_filename = job.executables.keys()[0]
-        language = LANGUAGE_MANAGER.get_language(job.language)
+        language = get_language(job.language)
         commands = language.get_evaluation_commands(
             executable_filename,
             main="grader" if self._uses_grader() else executable_filename)
