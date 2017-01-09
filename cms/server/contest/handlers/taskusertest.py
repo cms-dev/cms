@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -37,6 +37,7 @@ import io
 import logging
 import os
 import pickle
+import re
 
 from urllib import quote
 
@@ -593,24 +594,26 @@ class UserTestFileHandler(FileHandler):
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
-        # filename follows our convention (e.g. 'foo.%l'), real_filename
-        # follows the one we present to the user (e.g. 'foo.c').
-        real_filename = filename
+        # filename is the name used by the browser, hence is something
+        # like 'foo.c' (and the extension is CMS's preferred extension
+        # for the language). To retrieve the right file, we need to
+        # decode it to 'foo.%l'.
+        stored_filename = filename
         if user_test.language is not None:
             extension = LANGUAGE_MANAGER.get_language(user_test.language)\
                 .source_extension
-            real_filename = filename.replace(".%l", extension)
+            stored_filename = re.sub(r'%s$' % extension, '.%l', filename)
 
-        if filename in user_test.files:
-            digest = user_test.files[filename].digest
-        elif filename in user_test.managers:
-            digest = user_test.managers[filename].digest
+        if stored_filename in user_test.files:
+            digest = user_test.files[stored_filename].digest
+        elif stored_filename in user_test.managers:
+            digest = user_test.managers[stored_filename].digest
         else:
             raise tornado.web.HTTPError(404)
         self.sql_session.close()
 
-        mimetype = get_type_for_file_name(real_filename)
+        mimetype = get_type_for_file_name(filename)
         if mimetype is None:
             mimetype = 'application/octet-stream'
 
-        self.fetch(digest, mimetype, real_filename)
+        self.fetch(digest, mimetype, filename)
