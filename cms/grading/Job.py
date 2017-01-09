@@ -348,8 +348,10 @@ class CompilationJob(Job):
 
         # Add the managers to be got from the Task; get_task_type must
         # be imported here to avoid circular dependencies
-        managers = dict(user_test.managers)
         from cms.grading.tasktypes import get_task_type
+        # dict() is required to detach the dictionary that gets added
+        # to the Job from the control of SQLAlchemy
+        managers = dict(user_test.managers)
         task_type = get_task_type(dataset=dataset)
         auto_managers = task_type.get_auto_managers()
         if auto_managers is not None:
@@ -362,8 +364,6 @@ class CompilationJob(Job):
                     managers[manager_filename] = \
                         dataset.managers[manager_filename]
 
-        # dict() is required to detach the dictionary that gets added
-        # to the Job from the control of SQLAlchemy
         return CompilationJob(
             operation=operation.to_dict(),
             task_type=dataset.task_type,
@@ -583,8 +583,10 @@ class EvaluationJob(Job):
 
         # Add the managers to be got from the Task; get_task_type must
         # be imported here to avoid circular dependencies
-        managers = dict(user_test.managers)
         from cms.grading.tasktypes import get_task_type
+        # dict() is required to detach the dictionary that gets added
+        # to the Job from the control of SQLAlchemy
+        managers = dict(user_test.managers)
         task_type = get_task_type(dataset=dataset)
         auto_managers = task_type.get_auto_managers()
         if auto_managers is not None:
@@ -597,8 +599,6 @@ class EvaluationJob(Job):
                     managers[manager_filename] = \
                         dataset.managers[manager_filename]
 
-        # dict() is required to detach the dictionary that gets added
-        # to the Job from the control of SQLAlchemy
         return EvaluationJob(
             operation=operation.to_dict(),
             task_type=dataset.task_type,
