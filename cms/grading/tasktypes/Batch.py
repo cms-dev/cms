@@ -26,14 +26,13 @@ from __future__ import unicode_literals
 
 import logging
 
-from cms.grading import compilation_step, evaluation_step, \
+from cms.grading import LANGUAGE_MANAGER, compilation_step, evaluation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     white_diff_step
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
-from cms.grading import LANGUAGE_MANAGER
 from cms.db import Executable
 
 
