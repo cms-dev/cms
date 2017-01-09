@@ -38,7 +38,7 @@ from datetime import timedelta
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cms.db import Contest, User, Task, Statement, Attachment, \
     Team, SubmissionFormatElement, Dataset, Manager, Testcase
-from cms.grading import LANGUAGES, HEADER_EXTS
+from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 
