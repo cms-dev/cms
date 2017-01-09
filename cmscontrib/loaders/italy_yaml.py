@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
@@ -452,13 +452,13 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         graders = False
         for lang in LANGUAGE_MANAGER:
             if os.path.exists(os.path.join(
-                    self.path, "sol", "grader%s" % lang.source_extensions[0])):
+                    self.path, "sol", "grader%s" % lang.source_extension)):
                 graders = True
                 break
         if graders:
             # Read grader for each language
             for lang in LANGUAGE_MANAGER.languages:
-                extension = lang.source_extensions[0]
+                extension = lang.source_extension
                 grader_filename = os.path.join(
                     self.path, "sol", "grader%s" % extension)
                 if os.path.exists(grader_filename):
@@ -609,8 +609,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         Manager("manager", digest)]
                     for lang in LANGUAGE_MANAGER.languages:
                         stub_name = os.path.join(
-                            self.path, "sol",
-                            "stub%s" % lang.source_extensions[0])
+                            self.path, "sol", "stub%s" % lang.source_extension)
                         if os.path.exists(stub_name):
                             digest = self.file_cacher.put_file_from_path(
                                 stub_name,
@@ -618,8 +617,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                                     task.name, lang.name))
                             args["managers"] += [
                                 Manager(
-                                    "stub%s" % lang.source_extensions[0],
-                                    digest)]
+                                    "stub%s" % lang.source_extension, digest)]
                         else:
                             logger.warning("Stub for language %s not "
                                            "found.", lang.name)
@@ -776,7 +774,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 os.path.isdir(os.path.join(self.path, "sol")):
             for lang in LANGUAGE_MANAGER.languages:
                 files.append(os.path.join(
-                    self.path, "sol", "grader%s" % lang.source_extensions[0]))
+                    self.path, "sol", "grader%s" % lang.source_extension))
             for other_filename in os.listdir(os.path.join(self.path, "sol")):
                 if any(other_filename.endswith(header)
                        for header in LANGUAGE_MANAGER.header_exts):
