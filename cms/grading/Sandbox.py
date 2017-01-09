@@ -213,6 +213,7 @@ class SandboxBase(object):
         self.cmd_file = "commands.log"
 
         # These are not necessarily used, but are here for API compatibility
+        # TODO: move all other common properties here.
         self.box_id = 0
         self.fsize = None
         self.cgroup = False
