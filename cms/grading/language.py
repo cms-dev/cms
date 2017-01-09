@@ -124,6 +124,8 @@ class Language(object):
             need to be executable per se).
         main (string|None): The name of the main file, or none to use
             executable_filename (this is required by Java).
+        args ([string]|None): If not None, a list of arguments to be
+            passed to the executable.
         return ([[string]]): a list of commands, each a list of
             strings to be passed to subprocess.
 
