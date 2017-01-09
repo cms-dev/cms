@@ -103,7 +103,7 @@ class LanguageManager(object):
         names = sorted([language.name
                         for language in self.languages
                         if ext in language.source_extensions])
-        return None if len(names) == 0 else names[0]
+        return None if len(names) == 0 else self.get_language(names[0])
 
 
 # We create an instance of the language manager, which will be the
