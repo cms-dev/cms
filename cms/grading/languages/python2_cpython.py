@@ -28,10 +28,10 @@ import os
 from cms.grading import CompiledLanguage
 
 
-__all__ = ["Python2"]
+__all__ = ["Python2CPython"]
 
 
-class Python2(CompiledLanguage):
+class Python2CPython(CompiledLanguage):
     """This defines the Python programming language, version 2 (more
     precisely, the subversion of Python 2 available on the system,
     usually 2.7) using the default interpeter in the system.
@@ -41,7 +41,7 @@ class Python2(CompiledLanguage):
     @property
     def name(self):
         """See Language.name."""
-        return "Python 2"
+        return "Python 2 / CPython"
 
     @property
     def source_extensions(self):

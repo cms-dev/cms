@@ -40,7 +40,7 @@ LANG_HS = "Haskell / ghc"
 LANG_JAVA = "Java / JDK"
 LANG_PASCAL = "Pascal / fpc"
 LANG_PHP = "PHP"
-LANG_PYTHON = "Python 2"
+LANG_PYTHON = "Python 2 / CPython"
 ALL_LANGUAGES = (
     LANG_CPP, LANG_C, LANG_HS, LANG_JAVA, LANG_PASCAL, LANG_PHP, LANG_PYTHON
 )
