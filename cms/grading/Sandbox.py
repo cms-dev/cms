@@ -764,7 +764,7 @@ class IsolateSandbox(SandboxBase):
     # If the command line starts with this command name, we are just
     # going to execute it without sandboxing, and with all permissions
     # on the current directory.
-    SECURE_COMMANDS = ["/bin/mv", "/usr/bin/zip", "/usr/bin/unzip"]
+    SECURE_COMMANDS = ["/bin/cp", "/bin/mv", "/usr/bin/zip", "/usr/bin/unzip"]
 
     def __init__(self, multithreaded, file_cacher, temp_dir=None):
         """Initialization.
