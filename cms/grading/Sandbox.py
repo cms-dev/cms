@@ -829,7 +829,8 @@ class IsolateSandbox(SandboxBase):
         # Needed on Ubuntu by PHP (and more, ) that
         # have in /usr/bin only a symlink to one out of many
         # alternatives.
-        self.add_mapped_directories(["/etc/alternatives"])
+        if os.path.isdir("/etc/alternatives"):
+            self.add_mapped_directories(["/etc/alternatives"])
 
         # Tell isolate to get the sandbox ready.
         box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
