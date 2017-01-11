@@ -14,6 +14,7 @@
 {% end %}
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/users/add" method="POST">
+  {% module xsrf_form_html() %}
   Add a new user:
   <select name="user_id">
     <option value="null" selected>Select a new user</option>
@@ -31,6 +32,7 @@
 </form>
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/users" method="POST">
+  {% module xsrf_form_html() %}
   Edit selected user:
   <input type="submit"
          name="operation"

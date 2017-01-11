@@ -311,7 +311,8 @@ class BaseHandler(CommonRequestHandler):
         that. So far I'm leaving it to minimize changes.
 
         """
-        self.sql_session.close()
+        if self.sql_session:  # Request was stopped early, no session to close.
+            self.sql_session.close()
         try:
             tornado.web.RequestHandler.finish(self, *args, **kwds)
         except IOError:

@@ -655,17 +655,36 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
 
 
 /**
+ * Sends a request and on success redirect to the page
+ * specified in the response, if present.
+ */
+CMS.AWSUtils.ajax_edit_request = function(type, url) {
+    var settings = {
+        "type": type,
+        headers: {"X-XSRFToken": get_cookie("_xsrf")}
+    };
+    settings["success"] = function(data_redirect_url) {
+        if (data_redirect_url) {
+            window.location.replace(data_redirect_url);
+        }
+    };
+    $.ajax(url, settings);
+};
+
+
+/**
  * Sends a delete request and on success redirect to the page
  * specified in the response, if present.
  */
 CMS.AWSUtils.ajax_delete = function(url) {
-  var settings = {
-    'type': 'DELETE'
-  };
-  settings['success'] = function(data_redirect_url) {
-    if (data_redirect_url) {
-      window.location.replace(data_redirect_url);
-    }
-  };
-  $.ajax(url, settings);
+    CMS.AWSUtils.ajax_edit_request("DELETE", url);
+};
+
+
+/**
+ * Sends a post request and on success. See AWSUtils.ajax_request
+ * for more details.
+ */
+CMS.AWSUtils.ajax_post = function(url) {
+    CMS.AWSUtils.ajax_edit_request("POST", url);
 };

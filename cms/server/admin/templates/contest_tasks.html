@@ -6,6 +6,7 @@
 </div>
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/tasks/add" method="POST">
+  {% module xsrf_form_html() %}
   Add a new task:
   <select name="task_id">
     <option value="null" selected>Select a new task</option>
@@ -23,6 +24,7 @@
 </form>
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/tasks" method="POST">
+  {% module xsrf_form_html() %}
   Edit selected task:
   <input type="submit" name="operation"
 {% if not current_user.permission_all %}

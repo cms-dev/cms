@@ -28,6 +28,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 You are cloning the dataset "{{ original_dataset.description }}".
 <form enctype="multipart/form-data" action="{{ url_root }}/dataset/{{ clone_id }}/clone" method="POST">
 {% end %}
+  {% module xsrf_form_html() %}
   <table>
     <tr><td colspan=2><h2>Dataset information</h2></td></tr>
     <tr>

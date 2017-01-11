@@ -46,6 +46,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}" method="POST" style="display:inline;">
+  {% module xsrf_form_html() %}
   <h2 id="title_task_configuration" class="toggling_on">Task configuration</h2>
   <div id="task_configuration">
     <table>
@@ -287,7 +288,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/delete">[Delete]</a>
       {% end %}
       {% if dataset is not task.active_dataset %}
-        <a href="{{ url_root }}/dataset/{{ dataset.id }}/autojudge">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
+        <a onclick="CMS.AWSUtils.ajax_post('{{ url_root }}/dataset/{{ dataset.id }}/autojudge');">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
       {% end %}
 {% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</a>
@@ -389,7 +390,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               {% for manager in dataset.managers.values() %}
                 <div class="manager">
                   <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
-                  - <a href="{{ url_root }}/dataset/{{ dataset.id }}/manager/{{ manager.id }}/delete">Delete</a>
+                  - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/manager/{{ manager.id }}/delete');">Delete</a>
                 </div>
               {% end %}
             {% end %}
@@ -458,7 +459,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.output }}/output_{{ testcase.codename }}')">Show output</a>
             </td>
             <td>
-              <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete">Delete</a>
+              <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete');">Delete</a>
             </td>
           </tr>
           {% end %}
@@ -477,6 +478,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   <input type="reset" value="Reset" />
 </form>
 <form action="{{ url_root }}/tasks" method="POST" style="display:inline;">
+    {% module xsrf_form_html() %}
     <input type="hidden" name="task_id" value="{{task.id}}"/>
     <input type="submit"
          name="operation"

@@ -6,6 +6,7 @@
 </div>
 
 <form action="{{ url_root }}/dataset/{{ dataset.id }}/delete" method="POST">
+    {% module xsrf_form_html() %}
 
     Are you sure you want to delete the dataset "{{ dataset.description }}" and all associated managers, test cases, and submission results?<br/>
 

@@ -129,6 +129,7 @@
 
     {% if actual_phase == -1 %}
         <form action="{{ url_root }}/start" method="POST" style="margin: 0">
+            {% module xsrf_form_html() %}
             <input type="hidden" name="next" value="{{ url_root + request.path }}">
             <button type="submit" class="btn btn-danger btn-large" style="width:100%;-moz-box-sizing:border-box;box-sizing:border-box;" type="submit">{{ _("Start!") }}</button>
         </form>
