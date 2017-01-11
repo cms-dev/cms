@@ -64,6 +64,11 @@ ALL_TESTS = [
          checks=[CheckOverallScore(100, 100)],
          user_tests=True),
 
+    Test('correct-stdio-inner-class',
+         task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
+         languages=(LANG_JAVA,),
+         checks=[CheckOverallScore(100, 100)]),
+
     Test('correct-fileio',
          task=batch_fileio, filenames=['correct-fileio.%l'],
          languages=ALL_LANGUAGES,

@@ -54,22 +54,24 @@ class JavaJDK(Language):
                                  source_filenames, executable_filename,
                                  for_evaluation=True):
         """See Language.get_compilation_commands."""
-        # class_name = os.path.splitext(source_filenames[0])[0]
-        class_filenames = [f.replace(".java", ".class")
-                           for f in source_filenames]
+        # We need to let the shell expand *.class as javac create
+        # a class file for each inner class.
         compile_command = ["/usr/bin/javac"] + source_filenames
         if JavaJDK.USE_JAR:
-            jar_command = \
-                ["/usr/bin/jar", "cf", "%s.jar" % executable_filename] \
-                + class_filenames
+            jar_command = ["/bin/bash", "-c",
+                           " ".join([
+                               "/usr/bin/jar", "cf",
+                               "%s.jar" % executable_filename,
+                               "*.class"])]
             mv_command = ["/bin/mv",
                           "%s.jar" % executable_filename,
                           executable_filename]
             return [compile_command, jar_command, mv_command]
         else:
-            zip_command = \
-                ["/usr/bin/zip", "-r", "%s.zip" % executable_filename] \
-                + class_filenames
+            zip_command = ["/bin/bash", "-c",
+                           " ".join(["/usr/bin/zip", "-r",
+                                     "%s.zip" % executable_filename,
+                                     "*.class"])]
             mv_command = ["/bin/mv",
                           "%s.zip" % executable_filename,
                           executable_filename]
