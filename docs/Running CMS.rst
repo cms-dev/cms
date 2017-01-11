@@ -4,7 +4,13 @@ Running CMS
 Configuring the DB
 ==================
 
-The first thing to do is to create the user and the database. For PostgreSQL, this is obtained with the following commands (note that the user does not need to be a superuser, nor be able to create databases nor roles):
+The first thing to do is to create the user and the database. If you're on Ubuntu, you need to login as the postgres user first:
+
+.. sourcecode:: bash
+
+    sudo su - postgres
+
+Then, to create the user (which does not need to be a superuser, nor be able to create databases nor roles) and the database, you need the following commands:
 
 .. sourcecode:: bash
 
