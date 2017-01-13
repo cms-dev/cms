@@ -38,8 +38,8 @@ import yaml
 import logging
 
 from cms import utf8_decoder
-from cms.grading import get_compilation_commands
-from cms.grading.languagemanager import SOURCE_EXTS, get_language
+from cms.grading.languagemanager import SOURCE_EXTS, \
+    filename_to_language, get_language
 from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
@@ -193,8 +193,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
             continue
 
         srcs = []
-        # The grader, when present, must be in the first position of
-        # srcs; see docstring of get_compilation_commands().
+        # The grader, when present, must be in the first position of srcs.
         if task_type == ['Batch', 'Grad'] or \
                 task_type == ['Batch', 'GradComp']:
             srcs.append(os.path.join(SOL_DIRNAME,
@@ -241,11 +240,9 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                         shutil.copyfile(lib_path,
                                         os.path.join(tempdir, lib_filename))
                 new_exe = os.path.join(tempdir, task_name)
-                compilation_commands = get_compilation_commands(
-                    lang,
-                    new_srcs,
-                    new_exe,
-                    for_evaluation=for_evaluation)
+                compilation_commands = \
+                    get_language(lang).get_compilation_commands(
+                        new_srcs, new_exe, for_evaluation=for_evaluation)
                 for command in compilation_commands:
                     call(tempdir, command)
                     move_cursor(directions.UP, erase=True, stream=sys.stderr)
@@ -295,12 +292,11 @@ def build_checker_list(base_dir, task_type):
         for src in (os.path.join(CHECK_DIRNAME, x)
                     for x in os.listdir(check_dir)
                     if endswith2(x, SOL_EXTS)):
-            exe, lang = basename2(src, CHECK_EXTS)
-            # Delete the dot
-            lang = lang[1:]
+            lang = filename_to_language(src)
+            exe, ext = basename2(src, CHECK_EXTS)
 
             def compile_check(src, exe, assume=None):
-                commands = get_compilation_commands(lang, [src], exe)
+                commands = lang.get_compilation_commands([src], exe)
                 for command in commands:
                     call(base_dir, command)
 
@@ -402,8 +398,8 @@ def build_gen_list(base_dir, task_type, yaml_conf):
 
     def compile_src(src, exe, lang, assume=None):
         if lang in ['cpp', 'c', 'pas']:
-            commands = get_compilation_commands(lang, [src], exe,
-                                                for_evaluation=False)
+            commands = filename_to_language("." + lang)\
+                .get_compilation_commands([src], exe, for_evaluation=False)
             for command in commands:
                 call(base_dir, command)
         elif lang in ['py', 'sh']:
