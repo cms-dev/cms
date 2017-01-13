@@ -36,7 +36,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (for C, C++ and Java, respectively with executables ``gcc``, ``g++`` and ``gcj``);
 
-* alternatively, for Java, your choice of a JDK, for example OpenJDK;
+* alternatively, for Java, your choice of a JDK, for example OpenJDK (but any other JDK behaving similarly is fine, for example Oracle's);
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
@@ -55,6 +55,7 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
 
 .. sourcecode:: bash
 
+    # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk fpc \
         postgresql postgresql-client gettext python2.7 \
         iso-codes shared-mime-info stl-manual cgroup-lite
