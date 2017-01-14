@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,7 +40,8 @@ from cmscommon.datetime import make_datetime
 logger = logging.getLogger(__name__)
 
 
-def add_submission(contest_id, username, task_name, timestamp, files):
+def add_submission(contest_id, username, task_name,
+                   timestamp, files, language):
     file_cacher = FileCacher()
     with SessionGen() as session:
 
@@ -74,19 +76,27 @@ def add_submission(contest_id, username, task_name, timestamp, files):
 
         # files and elements now coincide. We compute the language for
         # each file and check that they do not mix.
-        language = None
-        for file_ in files:
-            this_language = filename_to_language(files[file_])
-            if this_language is None and "%l" in file_:
-                logger.critical("Cannot recognize language for file `%s'.",
-                                file_)
-                return False
-
-            if language is None:
-                language = this_language
-            elif this_language is not None and language != this_language:
+        if language is None:
+            available_lang = None
+            for file_ in files:
+                this_language = filename_to_language(files[file_])
+                if "%l" in file_:
+                    if len(this_language) == 0:
+                        logger.critical("Cannot recognize language"
+                                        " for file `%s'.",
+                                        file_)
+                    if available_lang is None:
+                        available_lang = this_language
+                    else:
+                        available_lang = [lang for lang in available_lang
+                                          if lang in this_language]
+            if available_lang is None:
+                language = None
+            elif len(available_lang) == 0:
                 logger.critical("Mixed-language submission detected.")
                 return False
+            else:
+                language = available_lang[0]
 
         # Store all files from the arguments, and obtain their digests..
         file_digests = {}
@@ -135,6 +145,8 @@ def main():
     parser.add_argument("-t", "--timestamp", action="store", type=int,
                         help="timestamp of the submission in seconds from "
                         "epoch, e.g. `date +%%s` (now if not set)")
+    parser.add_argument("-l", "--language", action="store", type=utf8_decoder,
+                        help="languge of submission")
 
     args = parser.parse_args()
 
@@ -157,11 +169,13 @@ def main():
             return 1
         files[name] = filename
 
+
     success = add_submission(contest_id=args.contest_id,
                              username=args.username,
                              task_name=args.task_name,
                              timestamp=args.timestamp,
-                             files=files)
+                             files=files,
+                             language=args.language)
     return 0 if success is True else 1
 
 

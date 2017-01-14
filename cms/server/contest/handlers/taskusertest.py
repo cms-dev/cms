@@ -11,6 +11,7 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -124,6 +125,7 @@ class UserTestHandler(BaseHandler):
 
     # The following code has been taken from SubmitHandler and adapted
     # for UserTests.
+    AUTO = "auto"
 
     def _send_error(self, subject, text, task):
         """Shorthand for sending a notification and redirecting."""
@@ -302,15 +304,29 @@ class UserTestHandler(BaseHandler):
         # If we allow partial submissions, implicitly we recover the
         # non-submitted files from the previous submission. And put them
         # in file_digests (i.e. like they have already been sent to FS).
-        submission_lang = None
+        submission_lang = self.get_argument("submission_lang", self.AUTO)
+        chosen_language = submission_lang
         file_digests = {}
-        if task_type.ALLOW_PARTIAL_SUBMISSION and last_user_test_t is not None:
+        if task_type.ALLOW_PARTIAL_SUBMISSION and \
+                last_user_test_t is not None:
             for filename in required.difference(provided):
                 if filename in last_user_test_t.files:
                     # If we retrieve a language-dependent file from
                     # last submission, we take not that language must
                     # be the same.
                     if "%l" in filename:
+                        if chosen_language != self.AUTO \
+                            and last_user_test_t.language is not None and \
+                                chosen_language != last_user_test_t.language:
+                            self.application.service.add_notification(
+                                participation.user.username,
+                                self.timestamp,
+                                self._("Invalid submission!"),
+                                self._("All sources must be"
+                                       " in the same language."),
+                                NOTIFICATION_ERROR)
+                            self.redirect("/testing?%s"
+                                          % quote(task.name, safe=''))
                         submission_lang = last_user_test_t.language
                     file_digests[filename] = \
                         last_user_test_t.files[filename].digest
@@ -319,24 +335,34 @@ class UserTestHandler(BaseHandler):
         # filenames, the user has one amongst ".cpp", ".c", or ".pas,
         # and that all these are the same (i.e., no mixed-language
         # submissions).
-
-        error = None
-        for our_filename in files:
-            user_filename = files[our_filename][0]
-            if our_filename.find(".%l") != -1:
-                lang = filename_to_language(user_filename)
-                if lang is None:
-                    error = self._("Cannot recognize test's language.")
-                    break
-                elif submission_lang is not None and \
-                        submission_lang != lang:
-                    error = self._("All sources must be in the same language.")
-                    break
-                else:
-                    submission_lang = lang
-        if error is not None:
-            self._send_error(self._("Invalid test!"), error, task)
-            return
+        if chosen_language == self.AUTO:
+            if submission_lang == self.AUTO:
+                available_languages = contest.languages
+            else:
+                available_languages = [submission_lang]
+            need_language = False
+            for our_filename in files:
+                user_filename = files[our_filename][0]
+                if our_filename.find(".%l") != -1:
+                    need_language = True
+                    lang = filename_to_language(user_filename)
+                    available_languages = [available_lang
+                                           for available_lang
+                                           in available_languages
+                                           if available_lang in lang]
+            error = None
+            if need_language is False:
+                submission_lang = None
+            elif len(available_languages) == 0:
+                error = self._("Cannot recognize test's language.")
+            elif len(available_languages) > 1:
+                error = self._("Detected more than one possible language."
+                               " Please select your language manually.")
+            else:
+                submission_lang = available_languages[0]
+            if error is not None:
+                self._send_error(self._("Invalid test!"), error, task)
+                return
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length

@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,7 +29,6 @@ from __future__ import unicode_literals
 # something in cms.* it's the best place to setup the logging handlers.
 # By importing the log module we install a handler on stdout. Other
 # handlers will be added by services by calling initialize_logging.
-import cms.log
 
 
 # Define what this package will provide.
@@ -93,17 +93,17 @@ DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 # A reference for extension-based automatic language detection.
 # (It's more difficult with headers because ".h" is ambiguous.)
 SOURCE_EXT_TO_LANGUAGE_MAP = {
-    ".c": LANG_C,
-    ".cpp": LANG_CPP,
-    ".cxx": LANG_CPP,
-    ".cc": LANG_CPP,
-    ".C": LANG_CPP,
-    ".c++": LANG_CPP,
-    ".pas": LANG_PASCAL,
-    ".py": LANG_PYTHON,
-    ".php": LANG_PHP,
-    ".java": LANG_JAVA,
-    ".hs": LANG_HS
+    ".c": [LANG_C],
+    ".cpp": [LANG_CPP],
+    ".cxx": [LANG_CPP],
+    ".cc": [LANG_CPP],
+    ".C": [LANG_CPP],
+    ".c++": [LANG_CPP],
+    ".pas": [LANG_PASCAL],
+    ".py": [LANG_PYTHON],
+    ".php": [LANG_PHP],
+    ".java": [LANG_JAVA],
+    ".hs": [LANG_HS]
 }
 
 # Our preferred source file and header file extension for each language.
@@ -134,14 +134,14 @@ def filename_to_language(filename):
 
     filename (string): the file to test.
 
-    return (string|None): the extension of filename, or None if it is
-        not a recognized language.
+    return (list[string]|None): list of languages that can have the same
+        extension as filename, or None if it is not a recognized language.
 
     """
     for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
         if filename.endswith(source_ext):
             return language
-    return None
+    return []
 
 
 # Task score modes.

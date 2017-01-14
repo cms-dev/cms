@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -51,12 +52,13 @@ class TestCmsInit(unittest.TestCase):
         for lang in LANGUAGE_TO_HEADER_EXT_MAP.iterkeys():
             assert lang in LANGUAGES
         # All values are languages.
-        for lang in SOURCE_EXT_TO_LANGUAGE_MAP.itervalues():
-            assert lang in LANGUAGES
+        for list_lang in SOURCE_EXT_TO_LANGUAGE_MAP.itervalues():
+            for lang in list_lang:
+                assert lang in LANGUAGES
         # Extensions are sane.
         for lang in LANGUAGES:
             assert LANGUAGE_TO_SOURCE_EXT_MAP[lang][0] == "."
-            assert lang == \
+            assert lang in \
                 SOURCE_EXT_TO_LANGUAGE_MAP[LANGUAGE_TO_SOURCE_EXT_MAP[lang]]
         for ext in SOURCE_EXT_TO_LANGUAGE_MAP:
             assert ext[0] == "."
