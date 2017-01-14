@@ -188,7 +188,11 @@ CMS allows to restrict the set of programming languages available to contestants
 
 CMS offers out of the box the following combination of languages: C, C++, Pascal, Java (in two flavours, either compiled with gcj or using a JDK), Python 2, PHP.
 
-C, C++ and Pascal are the default languages, and, together with Java with gcj, have been tested thoroughly in many contests. PHP and Python have only been tested with Batch task types, and have not thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control. Java with JDK works with Batch and Communication task types.
+C, C++ and Pascal are the default languages, and, together with Java with gcj, have been tested thoroughly in many contests.
+
+PHP and Python have only been tested with Batch task types, and have not thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
+
+Java with JDK works with Batch and Communication task types. Under usual conditions (default submission format) contestants must name their class as the short name of the task.
 
 Other programming languages, or even other versions of the same languages, can be added by creating new specification files in :file:`cms/grading/languages`.
 
