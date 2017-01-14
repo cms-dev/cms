@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -39,7 +39,6 @@ from sqlalchemy.orm import relationship, backref
 
 from . import Base, RepeatedUnicode
 
-from cms import DEFAULT_LANGUAGES
 from cmscommon.datetime import make_datetime
 
 
@@ -76,12 +75,18 @@ class Contest(Base):
         nullable=False,
         default=[])
 
-    # The list of languages shorthand allowed in the contest,
-    # e.g. cpp. The codes must be the same as those in cms.LANGUAGES.
+    # The list of names of languages allowed in the contest.
     languages = Column(
         RepeatedUnicode(),
         nullable=False,
-        default=DEFAULT_LANGUAGES)
+        default=["C11 / gcc", "C++11 / g++", "Pascal / fpc"])
+
+    # Whether compilations and evaluations are allowed to use more
+    # than one thread.
+    multithreaded_sandbox = Column(
+        Boolean,
+        nullable=False,
+        default=True)
 
     # Whether contestants allowed to download their submissions.
     submissions_download_allowed = Column(

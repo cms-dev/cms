@@ -265,7 +265,7 @@ CMS.CWSUtils.prototype.rel_to_abs = function(sRelPath) {
         sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp("(?:\\\/+[^\\\/]*){0," + ((nUpLn - 1) / 3) + "}$"), "/");
     }
     return sDir + sPath.substr(nStart);
-}
+};
 
 CMS.CWSUtils.prototype.switch_lang = function() {
     var cookie_path = this.rel_to_abs(this.url_root + "/");
@@ -283,3 +283,51 @@ CMS.CWSUtils.prototype.switch_lang = function() {
     }
     location.reload();
 };
+
+CMS.CWSUtils.filter_languages = function(options, inputs) {
+    var exts = [];
+    for (var i = 0; i < inputs.length; i++) {
+        exts.push('.' + inputs[i].value.match(/[^.]*$/)[0]);
+    }
+    // Find all languages that should be enabled.
+    var enabled = {};
+    var anyEnabled = false;
+    for (var lang in LANGUAGES) {
+        for (i = 0; i < exts.length; i++) {
+            if (LANGUAGES[lang][exts[i]]) {
+                enabled[lang] = true;
+                anyEnabled = true;
+                break;
+            }
+        }
+    }
+    // If no language matches the extension, enable all and let the user
+    // select.
+    if (!anyEnabled) {
+        options.removeAttr('disabled');
+        return;
+    }
+
+    // Otherwise, disable all languages that do not match the extension.
+    var isSelectedDisabled = false;
+    options.each(function(i, option) {
+        if (enabled[option.value]) {
+            $(option).removeAttr('disabled');
+        } else {
+            $(option).attr('disabled', 'disabled');
+            if (option.selected) {
+                isSelectedDisabled = true;
+            }
+        }
+    });
+    // Else, if the current selected is disabled, select one that is enabled.
+    if (isSelectedDisabled) {
+        for (i = 0; i < options.length; i++) {
+            if ($(options[i]).attr('disabled') != 'disabled') {
+                options[i].selected = true;
+                break;
+            }
+        }
+    }
+};
+

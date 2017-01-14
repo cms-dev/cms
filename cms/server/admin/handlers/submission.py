@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -31,6 +31,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cms.db import Dataset, File, Submission
+from cms.grading.languagemanager import get_language
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, FileHandler, require_permission
@@ -79,7 +80,8 @@ class SubmissionFileHandler(FileHandler):
 
         real_filename = sub_file.filename
         if submission.language is not None:
-            real_filename = real_filename.replace("%l", submission.language)
+            real_filename = real_filename.replace(
+                ".%l", get_language(submission.language).source_extension)
         digest = sub_file.digest
 
         self.sql_session.close()

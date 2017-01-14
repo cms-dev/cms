@@ -97,7 +97,8 @@
   </td>
   <td>
     {% for filename, sub_file in s.files.items() %}
-    <a href="javascript:void(0);" onclick="utils.show_file('{{ filename.replace("%l", s.language) if s.language else filename }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) if s.language else filename }}</a><br/>
+      {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
+    <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ real_filename }}</a><br/>
     {% end %}
   </td>
   <td>

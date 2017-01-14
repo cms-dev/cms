@@ -32,8 +32,7 @@ import os
 import sys
 import codecs
 
-from cms import utf8_decoder, LANG_C, LANG_CPP, LANG_JAVA, LANG_PASCAL, \
-    LANG_PHP, LANG_PYTHON
+from cms import utf8_decoder
 from cms.db import Dataset, File, FSObject, Participation, SessionGen, \
     Submission, SubmissionResult, Task, User
 
@@ -52,13 +51,14 @@ _RAW_TEMPLATE_DATA = """
 
 
 TEMPLATE = {
-    LANG_C: "/**%s*/\n" % _RAW_TEMPLATE_DATA,
-    LANG_PASCAL: "(**%s*)\n" % _RAW_TEMPLATE_DATA,
-    LANG_PYTHON: "\"\"\"%s\"\"\"\n" % _RAW_TEMPLATE_DATA,
-    LANG_PHP: "<?php\n/**%s*/\n?>" % _RAW_TEMPLATE_DATA,
+    "c": "/**%s*/\n" % _RAW_TEMPLATE_DATA,
+    "pas": "(**%s*)\n" % _RAW_TEMPLATE_DATA,
+    "py": "\"\"\"%s\"\"\"\n" % _RAW_TEMPLATE_DATA,
+    "php": "<?php\n/**%s*/\n?>" % _RAW_TEMPLATE_DATA,
+    "hs": "{-%s-}\n" % _RAW_TEMPLATE_DATA,
 }
-TEMPLATE[LANG_CPP] = TEMPLATE[LANG_C]
-TEMPLATE[LANG_JAVA] = TEMPLATE[LANG_C]
+TEMPLATE["cpp"] = TEMPLATE["c"]
+TEMPLATE["java"] = TEMPLATE["c"]
 
 
 def filter_top_scoring(results, unique):

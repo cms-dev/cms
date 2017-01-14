@@ -42,7 +42,7 @@
         <td>
           {% for filename in [x.filename for x in ut.task.submission_format] %}
             {% if filename in ut.files %}
-              {% set real_filename = filename if ut.language is None else filename.replace("%l", ut.language) %}
+              {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
           <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/user_test_file/{{ ut.files[filename].id }}')">
             {{ real_filename }}
           </a>
@@ -50,6 +50,15 @@
             {% end %}
           {% end %}
         </td>
+      </tr>
+      <tr>
+        <td>Language</td>
+        <td>
+          {% if ut.language is None %}
+          N/A
+          {% else %}
+          {{ ut.language }}
+          {% end %}
       </tr>
       <tr>
         <td>Status</td>

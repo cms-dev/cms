@@ -49,8 +49,17 @@
       </td>
       <td>
         {% for lang in LANGUAGES %}
-          <label><input type="checkbox" name="languages" value="{{ lang }}" {{ "checked" if lang in contest.languages else "" }}>{{ LANGUAGE_NAMES[lang] }}</label>
+          <label><input type="checkbox" name="languages" value="{{ lang.name }}" {{ "checked" if lang.name in contest.languages else "" }}>{{ lang.name }}</label>
         {% end %}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="info" title="Whether compilations and evaluations are allowed to use multithreading."></span>
+        <label for="multithreaded_sandbox">Multithreaded sandbox</label>
+      </td>
+      <td>
+        <input type="checkbox" id="multithreaded_sandbox" name="multithreaded_sandbox" {{ "checked" if contest.multithreaded_sandbox else "" }}/>
       </td>
     </tr>
     <tr>

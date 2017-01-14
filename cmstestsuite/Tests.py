@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
@@ -30,13 +30,20 @@ import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 import cmstestsuite.tasks.communication2 as communication2
 
-from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
-    LANG_PYTHON, LANG_HS
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
 
 
-ALL_LANGUAGES = tuple(LANGUAGES)
+LANG_CPP = "C++11 / g++"
+LANG_C = "C11 / gcc"
+LANG_HS = "Haskell / ghc"
+LANG_JAVA = "Java / JDK"
+LANG_PASCAL = "Pascal / fpc"
+LANG_PHP = "PHP"
+LANG_PYTHON = "Python 2 / CPython"
+ALL_LANGUAGES = (
+    LANG_CPP, LANG_C, LANG_HS, LANG_JAVA, LANG_PASCAL, LANG_PHP, LANG_PYTHON
+)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 COMPILED_LANGUAGES = (
     LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON, LANG_HS
@@ -56,6 +63,11 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(100, 100)],
          user_tests=True),
+
+    Test('correct-stdio-inner-class',
+         task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
+         languages=(LANG_JAVA,),
+         checks=[CheckOverallScore(100, 100)]),
 
     Test('correct-fileio',
          task=batch_fileio, filenames=['correct-fileio.%l'],
@@ -157,10 +169,14 @@ ALL_TESTS = [
     # caller; we rely on the fact that the test program is designed to
     # produce output only inside the child process
 
-    Test('fork',
-         task=batch_stdio, filenames=['fork.%l'],
-         languages=(LANG_C, LANG_CPP),
-         checks=[CheckOverallScore(0, 100)]),
+    # TODO: since we allow many processes in the sandbox now by default,
+    # these submission rightfully pass. We need to refactor TestRunner
+    # to allow different contests for different tests to re-enable them.
+
+    # Test('fork',
+    #      task=batch_stdio, filenames=['fork.%l'],
+    #      languages=(LANG_C, LANG_CPP),
+    #      checks=[CheckOverallScore(0, 100)]),
 
     # OOM problems.
 

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -26,11 +26,11 @@ from __future__ import unicode_literals
 
 import logging
 
-from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, LANGUAGE_TO_OBJ_EXT_MAP
-from cms.grading import get_compilation_commands, get_evaluation_commands, \
-    compilation_step, evaluation_step, human_evaluation_message, \
-    is_evaluation_passed, extract_outcome_and_text, white_diff_step
+from cms.grading import compilation_step, evaluation_step, \
+    human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
+    white_diff_step
+from cms.grading.languagemanager import \
+    LANGUAGES, HEADER_EXTS, SOURCE_EXTS, OBJECT_EXTS, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
@@ -107,21 +107,19 @@ class Batch(TaskType):
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
+        source_filenames = []
+        # If a grader is specified, we add to the command line (and to
+        # the files to get) the corresponding manager.
+        if self._uses_grader():
+            source_filenames.append("grader.%%l")
+        source_filenames.append(submission_format[0])
+        executable_filename = submission_format[0].replace(".%l", "")
         res = dict()
         for language in LANGUAGES:
-            format_filename = submission_format[0]
-            source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-            source_filenames = []
-            # If a grader is specified, we add to the command line (and to
-            # the files to get) the corresponding manager.
-            if self.parameters[0] == "grader":
-                source_filenames.append("grader%s" % source_ext)
-            source_filenames.append(format_filename.replace(".%l", source_ext))
-            executable_filename = format_filename.replace(".%l", "")
-            commands = get_compilation_commands(language,
-                                                source_filenames,
-                                                executable_filename)
-            res[language] = commands
+            res[language.name] = language.get_compilation_commands(
+                [source.replace(".%l", language.source_extension)
+                 for source in source_filenames],
+                executable_filename)
         return res
 
     def get_user_managers(self, unused_submission_format):
@@ -132,13 +130,16 @@ class Batch(TaskType):
         """See TaskType.get_auto_managers."""
         return None
 
+    def _uses_grader(self):
+        return self.parameters[0] == "grader"
+
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = job.language
-        source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
+        language = get_language(job.language)
+        source_ext = language.source_extension
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -153,7 +154,7 @@ class Batch(TaskType):
             return True
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher)
+        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
@@ -166,23 +167,20 @@ class Batch(TaskType):
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager. The grader must
         # be the first file in source_filenames.
-        if self.parameters[0] == "grader":
+        if self._uses_grader():
             source_filenames.insert(0, "grader%s" % source_ext)
             files_to_get["grader%s" % source_ext] = \
                 job.managers["grader%s" % source_ext].digest
 
         # Also copy all managers that might be useful during compilation.
         for filename in job.managers.iterkeys():
-            if any(filename.endswith(header)
-                   for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+            if any(filename.endswith(header) for header in HEADER_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(source)
-                     for source in LANGUAGE_TO_SOURCE_EXT_MAP.itervalues()):
+            elif any(filename.endswith(source) for source in SOURCE_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
-            elif any(filename.endswith(obj)
-                     for obj in LANGUAGE_TO_OBJ_EXT_MAP.itervalues()):
+            elif any(filename.endswith(obj) for obj in OBJECT_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
@@ -191,9 +189,8 @@ class Batch(TaskType):
 
         # Prepare the compilation command
         executable_filename = format_filename.replace(".%l", "")
-        commands = get_compilation_commands(language,
-                                            source_filenames,
-                                            executable_filename)
+        commands = language.get_compilation_commands(
+            source_filenames, executable_filename)
 
         # Run the compilation
         operation_success, compilation_success, text, plus = \
@@ -218,12 +215,14 @@ class Batch(TaskType):
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher)
+        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
 
         # Prepare the execution
         executable_filename = job.executables.keys()[0]
-        language = job.language
-        commands = get_evaluation_commands(language, executable_filename)
+        language = get_language(job.language)
+        commands = language.get_evaluation_commands(
+            executable_filename,
+            main="grader" if self._uses_grader() else executable_filename)
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest

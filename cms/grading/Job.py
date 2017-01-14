@@ -5,7 +5,7 @@
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -56,11 +56,12 @@ class Job(object):
 
     """
 
-    # TODO Move 'success' inside Job.
-
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
-                 shard=None, sandboxes=None, info=None):
+                 language=None, multithreaded_sandbox=False,
+                 shard=None, sandboxes=None, info=None,
+                 success=None, text=None,
+                 files=None, managers=None, executables=None):
         """Initialization.
 
         operation (dict|None): the operation, in the format that
@@ -68,10 +69,24 @@ class Job(object):
         task_type (string|None): the name of the task type.
         task_type_parameters (string|None): the parameters for the
             creation of the correct task type.
+        language (string|None): the language of the submission / user
+            test.
+        multithreaded_sandbox (boolean): whether the sandbox should
+            allow multithreading.
         shard (int|None): the shard of the Worker completing this job.
         sandboxes ([string]|None): the paths of the sandboxes used in
             the Worker during the execution of the job.
         info (string|None): a human readable description of the job.
+        success (bool|None): whether the job succeeded.
+        text ([object]|None): description of the outcome of the job,
+            to be presented to the user. The first item is a string,
+            potentially with %-escaping; the following items are the
+            values to be %-formatted into the first.
+        files ({string: File}|None): files submitted by the user.
+        managers ({string: Manager}|None): managers provided by the
+            admins.
+        executables ({string: Executable}|None): executables created
+            in the compilation.
 
         """
         if operation is None:
@@ -84,13 +99,28 @@ class Job(object):
             sandboxes = []
         if info is None:
             info = ""
+        if files is None:
+            files = {}
+        if managers is None:
+            managers = {}
+        if executables is None:
+            executables = {}
 
         self.operation = operation
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
+        self.language = language
+        self.multithreaded_sandbox = multithreaded_sandbox
         self.shard = shard
         self.sandboxes = sandboxes
         self.info = info
+
+        self.success = success
+        self.text = text
+
+        self.files = files
+        self.managers = managers
+        self.executables = executables
 
     def export_to_dict(self):
         """Return a dict representing the job."""
@@ -98,9 +128,19 @@ class Job(object):
             'operation': self.operation,
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
+            'language': self.language,
+            'multithreaded_sandbox': self.multithreaded_sandbox,
             'shard': self.shard,
             'sandboxes': self.sandboxes,
             'info': self.info,
+            'success': self.success,
+            'text': self.text,
+            'files': dict((k, v.digest)
+                          for k, v in self.files.iteritems()),
+            'managers': dict((k, v.digest)
+                             for k, v in self.managers.iteritems()),
+            'executables': dict((k, v.digest)
+                                for k, v in self.executables.iteritems()),
             }
         return res
 
@@ -187,62 +227,32 @@ class CompilationJob(Job):
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
-                 language=None, files=None, managers=None,
+                 language=None, multithreaded_sandbox=False,
+                 files=None, managers=None,
                  success=None, compilation_success=None,
                  executables=None, text=None, plus=None):
         """Initialization.
 
         See base class for the remaining arguments.
 
-        language (string|None): the language of the submission / user
-            test.
-        files ({string: File}|None): files submitted by the user.
-        managers ({string: Manager}|None): managers provided by the
-            admins.
-        success (bool|None): whether the job succeeded.
         compilation_success (bool|None): whether the compilation implicit
             in the job succeeded, or there was a compilation error.
-        executables ({string: Executable}|None): executables created
-            in the job.
-        text ([object]|None): description of the outcome of the job,
-            to be presented to the user. The first item is a string,
-            potentially with %-escaping; the following items are the
-            values to be %-formatted into the first.
         plus ({}|None): additional metadata.
 
         """
-        if files is None:
-            files = {}
-        if managers is None:
-            managers = {}
-        if executables is None:
-            executables = {}
 
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     shard, sandboxes, info)
-        self.language = language
-        self.files = files
-        self.managers = managers
-        self.success = success
+                     language, multithreaded_sandbox,
+                     shard, sandboxes, info, success, text,
+                     files, managers, executables)
         self.compilation_success = compilation_success
-        self.executables = executables
-        self.text = text
         self.plus = plus
 
     def export_to_dict(self):
         res = Job.export_to_dict(self)
         res.update({
             'type': 'compilation',
-            'language': self.language,
-            'files': dict((k, v.digest)
-                          for k, v in self.files.iteritems()),
-            'managers': dict((k, v.digest)
-                             for k, v in self.managers.iteritems()),
-            'success': self.success,
             'compilation_success': self.compilation_success,
-            'executables': dict((k, v.digest)
-                                for k, v in self.executables.iteritems()),
-            'text': self.text,
             'plus': self.plus,
             })
         return res
@@ -275,21 +285,20 @@ class CompilationJob(Job):
                          "but the operation is %s.", operation.type_)
             raise ValueError("Operation is not a compilation")
 
-        job = CompilationJob()
+        multithreaded = submission.task.contest.multithreaded_sandbox
 
-        # Job
-        job.operation = operation.to_dict()
-        job.task_type = dataset.task_type
-        job.task_type_parameters = dataset.task_type_parameters
-
-        # CompilationJob; dict() is required to detach the dictionary
-        # that gets added to the Job from the control of SQLAlchemy
-        job.language = submission.language
-        job.files = dict(submission.files)
-        job.managers = dict(dataset.managers)
-        job.info = "compile submission %d" % (submission.id)
-
-        return job
+        # dict() is required to detach the dictionary that gets added
+        # to the Job from the control of SQLAlchemy
+        return CompilationJob(
+            operation=operation.to_dict(),
+            task_type=dataset.task_type,
+            task_type_parameters=dataset.task_type_parameters,
+            language=submission.language,
+            multithreaded_sandbox=multithreaded,
+            files=dict(submission.files),
+            managers=dict(dataset.managers),
+            info="compile submission %d" % (submission.id)
+        )
 
     def to_submission(self, sr):
         """Fill detail of the submission result with the job result.
@@ -335,36 +344,36 @@ class CompilationJob(Job):
                          operation.type_)
             raise ValueError("Operation is not a user test compilation")
 
-        job = CompilationJob()
-
-        # Job
-        job.operation = operation.to_dict()
-        job.task_type = dataset.task_type
-        job.task_type_parameters = dataset.task_type_parameters
-
-        # CompilationJob; dict() is required to detach the dictionary
-        # that gets added to the Job from the control of SQLAlchemy
-        job.language = user_test.language
-        job.files = dict(user_test.files)
-        job.managers = dict(user_test.managers)
-        job.info = "compile user test %d" % (user_test.id)
+        multithreaded = user_test.task.contest.multithreaded_sandbox
 
         # Add the managers to be got from the Task; get_task_type must
         # be imported here to avoid circular dependencies
         from cms.grading.tasktypes import get_task_type
+        # dict() is required to detach the dictionary that gets added
+        # to the Job from the control of SQLAlchemy
+        managers = dict(user_test.managers)
         task_type = get_task_type(dataset=dataset)
         auto_managers = task_type.get_auto_managers()
         if auto_managers is not None:
             for manager_filename in auto_managers:
-                job.managers[manager_filename] = \
+                managers[manager_filename] = \
                     dataset.managers[manager_filename]
         else:
             for manager_filename in dataset.managers:
-                if manager_filename not in job.managers:
-                    job.managers[manager_filename] = \
+                if manager_filename not in managers:
+                    managers[manager_filename] = \
                         dataset.managers[manager_filename]
 
-        return job
+        return CompilationJob(
+            operation=operation.to_dict(),
+            task_type=dataset.task_type,
+            task_type_parameters=dataset.task_type_parameters,
+            language=user_test.language,
+            multithreaded_sandbox=multithreaded,
+            files=dict(user_test.files),
+            managers=managers,
+            info="compile user test %d" % (user_test.id)
+        )
 
     def to_user_test(self, ur):
         """Fill detail of the user test result with the job result.
@@ -409,7 +418,8 @@ class EvaluationJob(Job):
     """
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None, shard=None,
-                 sandboxes=None, info=None, language=None,
+                 sandboxes=None, info=None,
+                 language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
                  input=None, output=None,
                  time_limit=None, memory_limit=None,
@@ -420,24 +430,12 @@ class EvaluationJob(Job):
 
         See base class for the remaining arguments.
 
-        language (string|None): the language of the submission or user
-            test.
-        files ({string: File}|None): files submitted by the user.
-        managers ({string: Manager}|None): managers provided by the
-            admins.
-        executables ({string: Executable}|None): executables created
-            in the compilation.
         input (string|None): digest of the input file.
         output (string|None): digest of the output file.
         time_limit (float|None): user time limit in seconds.
         memory_limit (int|None): memory limit in bytes.
-        success (bool|None): whether the job succeeded.
         outcome (string|None): the outcome of the evaluation, from
             which to compute the score.
-        text ([object]|None): description of the outcome of the job,
-            to be presented to the user. The first item is a string,
-            potentially with %-escaping; the following items are the
-            values to be %-formatted into the first.
         user_output (unicode|None): if requested (with get_output),
             the digest of the file containing the output of the user
             program.
@@ -450,26 +448,15 @@ class EvaluationJob(Job):
             tests).
 
         """
-        if files is None:
-            files = {}
-        if managers is None:
-            managers = {}
-        if executables is None:
-            executables = {}
-
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     shard, sandboxes, info)
-        self.language = language
-        self.files = files
-        self.managers = managers
-        self.executables = executables
+                     language, multithreaded_sandbox,
+                     shard, sandboxes, info, success, text,
+                     files, managers, executables)
         self.input = input
         self.output = output
         self.time_limit = time_limit
         self.memory_limit = memory_limit
-        self.success = success
         self.outcome = outcome
-        self.text = text
         self.user_output = user_output
         self.plus = plus
         self.only_execution = only_execution
@@ -479,20 +466,11 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
             'type': 'evaluation',
-            'language': self.language,
-            'files': dict((k, v.digest)
-                          for k, v in self.files.iteritems()),
-            'managers': dict((k, v.digest)
-                             for k, v in self.managers.iteritems()),
-            'executables': dict((k, v.digest)
-                                for k, v in self.executables.iteritems()),
             'input': self.input,
             'output': self.output,
             'time_limit': self.time_limit,
             'memory_limit': self.memory_limit,
-            'success': self.success,
             'outcome': self.outcome,
-            'text': self.text,
             'user_output': self.user_output,
             'plus': self.plus,
             'only_execution': self.only_execution,
@@ -528,34 +506,34 @@ class EvaluationJob(Job):
                          "but the operation is %s.", operation.type_)
             raise ValueError("Operation is not an evaluation")
 
-        job = EvaluationJob()
-
-        # Job
-        job.operation = operation.to_dict()
-        job.task_type = dataset.task_type
-        job.task_type_parameters = dataset.task_type_parameters
+        multithreaded = submission.task.contest.multithreaded_sandbox
 
         submission_result = submission.get_result(dataset)
-
         # This should have been created by now.
         assert submission_result is not None
 
-        # EvaluationJob; dict() is required to detach the dictionary
-        # that gets added to the Job from the control of SQLAlchemy
-        job.language = submission.language
-        job.files = dict(submission.files)
-        job.managers = dict(dataset.managers)
-        job.executables = dict(submission_result.executables)
-        job.time_limit = dataset.time_limit
-        job.memory_limit = dataset.memory_limit
+        testcase = dataset.testcases[operation.testcase_codename]
 
-        testcase = dataset.testcases[job.operation["testcase_codename"]]
-        job.input = testcase.input
-        job.output = testcase.output
-        job.info = "evaluate submission %d on testcase %s" % \
-                   (submission.id, testcase.codename)
+        info = "evaluate submission %d on testcase %s" % \
+            (submission.id, testcase.codename)
 
-        return job
+        # dict() is required to detach the dictionary that gets added
+        # to the Job from the control of SQLAlchemy
+        return EvaluationJob(
+            operation=operation.to_dict(),
+            task_type=dataset.task_type,
+            task_type_parameters=dataset.task_type_parameters,
+            language=submission.language,
+            multithreaded_sandbox=multithreaded,
+            files=dict(submission.files),
+            managers=dict(dataset.managers),
+            executables=dict(submission_result.executables),
+            time_limit=dataset.time_limit,
+            memory_limit=dataset.memory_limit,
+            input=testcase.input,
+            output=testcase.output,
+            info=info
+        )
 
     def to_submission(self, sr):
         """Fill detail of the submission result with the job result.
@@ -597,48 +575,46 @@ class EvaluationJob(Job):
                          operation.type_)
             raise ValueError("Operation is not a user test evaluation")
 
-        job = EvaluationJob()
-
-        # Job
-        job.operation = operation.to_dict()
-        job.task_type = dataset.task_type
-        job.task_type_parameters = dataset.task_type_parameters
+        multithreaded = user_test.task.contest.multithreaded_sandbox
 
         user_test_result = user_test.get_result(dataset)
-
         # This should have been created by now.
         assert user_test_result is not None
-
-        # EvaluationJob; dict() is required to detach the dictionary
-        # that gets added to the Job from the control of SQLAlchemy
-        job.language = user_test.language
-        job.files = dict(user_test.files)
-        job.managers = dict(user_test.managers)
-        job.executables = dict(user_test_result.executables)
-        job.input = user_test.input
-        job.time_limit = dataset.time_limit
-        job.memory_limit = dataset.memory_limit
-        job.info = "evaluate user test %d" % (user_test.id)
 
         # Add the managers to be got from the Task; get_task_type must
         # be imported here to avoid circular dependencies
         from cms.grading.tasktypes import get_task_type
+        # dict() is required to detach the dictionary that gets added
+        # to the Job from the control of SQLAlchemy
+        managers = dict(user_test.managers)
         task_type = get_task_type(dataset=dataset)
         auto_managers = task_type.get_auto_managers()
         if auto_managers is not None:
             for manager_filename in auto_managers:
-                job.managers[manager_filename] = \
+                managers[manager_filename] = \
                     dataset.managers[manager_filename]
         else:
             for manager_filename in dataset.managers:
-                if manager_filename not in job.managers:
-                    job.managers[manager_filename] = \
+                if manager_filename not in managers:
+                    managers[manager_filename] = \
                         dataset.managers[manager_filename]
 
-        job.get_output = True
-        job.only_execution = True
-
-        return job
+        return EvaluationJob(
+            operation=operation.to_dict(),
+            task_type=dataset.task_type,
+            task_type_parameters=dataset.task_type_parameters,
+            language=user_test.language,
+            multithreaded_sandbox=multithreaded,
+            files=dict(user_test.files),
+            managers=managers,
+            executables=dict(user_test_result.executables),
+            input=user_test.input,
+            time_limit=dataset.time_limit,
+            memory_limit=dataset.memory_limit,
+            info="evaluate user test %d" % (user_test.id),
+            get_output=True,
+            only_execution=True
+        )
 
     def to_user_test(self, ur):
         """Fill detail of the user test result with the job result.

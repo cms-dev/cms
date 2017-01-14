@@ -35,11 +35,6 @@ import cms.log
 
 __all__ = [
     "__version__",
-    "LANG_C", "LANG_CPP", "LANG_PASCAL", "LANG_PYTHON", "LANG_PHP", "LANG_HS",
-    "LANGUAGE_NAMES", "LANGUAGES", "DEFAULT_LANGUAGES",
-    "SOURCE_EXT_TO_LANGUAGE_MAP", "filename_to_language",
-    "LANGUAGE_TO_SOURCE_EXT_MAP", "LANGUAGE_TO_HEADER_EXT_MAP",
-    "LANGUAGE_TO_OBJ_EXT_MAP",
     "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
@@ -58,90 +53,6 @@ __version__ = '1.3.dev0'
 
 
 # Instantiate or import these objects.
-
-# Shorthand codes for all supported languages.
-LANG_C = "c"
-LANG_CPP = "cpp"
-LANG_PASCAL = "pas"
-LANG_PYTHON = "py"
-LANG_PHP = "php"
-LANG_JAVA = "java"
-LANG_HS = "hs"
-
-LANGUAGE_NAMES = {
-    LANG_C: "C",
-    LANG_CPP: "C++",
-    LANG_PASCAL: "Pascal",
-    LANG_PYTHON: "Python",
-    LANG_PHP: "PHP",
-    LANG_JAVA: "Java",
-    LANG_HS: "Haskell",
-}
-
-LANGUAGES = [
-    LANG_C,
-    LANG_CPP,
-    LANG_PASCAL,
-    LANG_PYTHON,
-    LANG_PHP,
-    LANG_JAVA,
-    LANG_HS
-]
-
-DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
-
-# A reference for extension-based automatic language detection.
-# (It's more difficult with headers because ".h" is ambiguous.)
-SOURCE_EXT_TO_LANGUAGE_MAP = {
-    ".c": LANG_C,
-    ".cpp": LANG_CPP,
-    ".cxx": LANG_CPP,
-    ".cc": LANG_CPP,
-    ".C": LANG_CPP,
-    ".c++": LANG_CPP,
-    ".pas": LANG_PASCAL,
-    ".py": LANG_PYTHON,
-    ".php": LANG_PHP,
-    ".java": LANG_JAVA,
-    ".hs": LANG_HS
-}
-
-# Our preferred source file and header file extension for each language.
-LANGUAGE_TO_SOURCE_EXT_MAP = {
-    LANG_C: ".c",
-    LANG_CPP: ".cpp",
-    LANG_PASCAL: ".pas",
-    LANG_PYTHON: ".py",
-    LANG_PHP: ".php",
-    LANG_JAVA: ".java",
-    LANG_HS: ".hs",
-}
-LANGUAGE_TO_HEADER_EXT_MAP = {
-    LANG_C: ".h",
-    LANG_CPP: ".h",
-    LANG_PASCAL: "lib.pas",
-}
-LANGUAGE_TO_OBJ_EXT_MAP = {
-    LANG_C: ".o",
-    LANG_CPP: ".o",
-    LANG_PASCAL: ".o",
-    LANG_HS: ".o",
-}
-
-
-def filename_to_language(filename):
-    """Determine the programming language of filename from its extension.
-
-    filename (string): the file to test.
-
-    return (string|None): the extension of filename, or None if it is
-        not a recognized language.
-
-    """
-    for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
-        if filename.endswith(source_ext):
-            return language
-    return None
 
 
 # Task score modes.
