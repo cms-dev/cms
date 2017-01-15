@@ -465,7 +465,7 @@ def compilation_step(sandbox, commands):
         success = True
         compilation_success = False
         plus["signal"] = signal
-        text = [COMPILATION_MESSAGES.get("signal").message, signal]
+        text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment
@@ -697,7 +697,7 @@ def human_evaluation_message(plus):
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [EVALUATION_MESSAGES.get("signal").message, plus['signal']]
+        return [EVALUATION_MESSAGES.get("signal").message, str(plus['signal'])]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return None
     elif exit_status == Sandbox.EXIT_SYSCALL:
