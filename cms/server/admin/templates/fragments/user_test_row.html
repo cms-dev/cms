@@ -53,7 +53,8 @@
   </td>
   <td>
     {% for filename, sub_file in ut.files.items() %}
-    <a href="javascript:void(0);" onclick="utils.show_file('{{ filename.replace("%l", ut.language) if ut.language else filename }}','{{ url_root }}/user_test_file/{{ sub_file.id }}')">{{ filename.replace("%l", ut.language) if ut.language else filename }}</a><br/>
+      {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
+    <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/user_test_file/{{ sub_file.id }}')">{{ real_filename }}</a><br/>
     {% end %}
   </td>
 </tr>

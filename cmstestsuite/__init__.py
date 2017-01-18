@@ -375,7 +375,7 @@ def cws_submit(contest_id, task_id, user_id, submission_format,
     browser = get_cws_browser(user_id)
     sr = SubmitRequest(browser, task, base_url=CWS_BASE_URL,
                        submission_format=submission_format,
-                       filenames=filenames)
+                       filenames=filenames, language=language)
     sr.execute()
     submission_id = sr.get_submission_id()
 

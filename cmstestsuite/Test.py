@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,6 +25,8 @@ from __future__ import unicode_literals
 import json
 import os
 import re
+
+from cms.grading.languagemanager import get_language
 
 from cmstestsuite import \
     cws_submit, cws_submit_user_test, \
@@ -54,8 +56,10 @@ class CheckOverallScore(Check):
     def check(self, result_info):
         g = CheckOverallScore.score_re.match(result_info['status'])
         if not g:
-            raise TestFailure("Expected total score, got status: %s" %
-                              result_info['status'])
+            raise TestFailure(
+                "Expected total score, got status: %s\n"
+                "Compilation output:\n%s" %
+                (result_info['status'], result_info['compile_output']))
 
         score, total = g.groups()
         try:
@@ -156,8 +160,9 @@ class Test(object):
         path = os.path.join(os.path.dirname(__file__), 'code')
 
         # Choose the correct file to submit.
-        filenames = [filename.replace("%l", language)
-                     for filename in self.filenames]
+        filenames = [
+            filename.replace(".%l", get_language(language).source_extension)
+            for filename in self.filenames]
 
         full_paths = [os.path.join(path, filename) for filename in filenames]
 

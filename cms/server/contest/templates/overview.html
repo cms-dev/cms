@@ -167,7 +167,7 @@
         </tr>
     </thead>
     <tbody>
-{% set extensions = "[%s]" %  ("|".join(LANGUAGE_TO_SOURCE_EXT_MAP[lang][1:] for lang in contest.languages)) %}
+{% set extensions = "[%s]" %  ("|".join(set(get_language(lang).source_extension for lang in contest.languages))) %}
 {% for t_iter in contest.tasks %}
         <tr>
             <th>{{ t_iter.name }}</th>
@@ -191,7 +191,7 @@
     {% end %}
             </td>
             <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
-            <td>{{ " ".join(a.filename.replace("%l", extensions) for a in t_iter.submission_format) }}</td>
+            <td>{{ " ".join(a.filename.replace(".%l", extensions) for a in t_iter.submission_format) }}</td>
     {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td>
         {% if t_iter.token_mode in ("finite", "infinite") %}
