@@ -47,7 +47,7 @@
           <td>
             <input type="radio" name="contest_id" value="{{ p.contest.id }}"/>
           </td>
-          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}/edit">{{ p.user.username }}</a></td>
           <td>{{ p.hidden }}</td>
           <td>{{ p.unrestricted }}</td>
           <td><a href="{{ url_root }}/contest/{{ p.contest.id }}">{{ p.contest.name }}</a></td>
