@@ -166,7 +166,8 @@ def test_testcases(base_dir, solution, language, assume=None):
         points.append(float(job.outcome))
 
         # Avoid printing unneeded newline
-        job.text = [t.rstrip() for t in job.text]
+        job.text = [t.rstrip() if isinstance(t, basestring) else t
+                    for t in job.text]
 
         comments.append(format_status_text(job.text))
         tcnames.append(jobinfo[0])
