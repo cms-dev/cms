@@ -115,8 +115,6 @@ class UserImporter(object):
         try to import the corresponding users.
 
         """
-        success = True
-
         _, _, participations = self.loader.get_contest()
         for p in participations:
             user_path = os.path.join(base_path, p["username"])
@@ -125,8 +123,9 @@ class UserImporter(object):
                 contest_id=self.contest_id,
                 loader_class=get_loader(user_path)
             )
-            success = success and importer.do_import()
-        return success
+            importer.do_import()
+
+        return True
 
 
 def main():
