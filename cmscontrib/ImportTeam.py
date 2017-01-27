@@ -85,7 +85,6 @@ class TeamImporter(object):
 
         """
         added = set()
-        success = True
 
         _, _, participations = self.loader.get_contest()
         for p in participations:
@@ -98,8 +97,9 @@ class TeamImporter(object):
                         path=team_path,
                         loader_class=get_loader(team_path)
                     )
-                    success = success and importer.do_import()
-        return success
+                    importer.do_import()
+
+        return True
 
 
 def main():
