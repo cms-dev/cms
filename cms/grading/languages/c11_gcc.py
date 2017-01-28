@@ -62,7 +62,8 @@ class C11Gcc(CompiledLanguage):
         command = ["/usr/bin/gcc"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-static", "-O2", "-std=c11", "-o", executable_filename]
+        command += ["-std=c11", "-O2", "-pipe", "-static",
+                    "-s", "-o", executable_filename]
         command += source_filenames
         command += ["-lm"]
         return [command]
