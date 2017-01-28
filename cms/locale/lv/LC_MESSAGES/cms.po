@@ -1,22 +1,23 @@
 # Latvian translations for CMS.
-# Copyright (C) 2016 Latvian CMS translators
+# Copyright (C) 2016-2017 Latvian CMS translators
 # This file is distributed under the same license as CMS.
 # Mārtiņš Opmanis <askola@latnet.lv>, 2016.
-# Andrey Vihrov <andrey.vihrov@gmail.com>, 2016.
+# Andrey Vihrov <andrey.vihrov@gmail.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-01 15:57+0900\n"
-"PO-Revision-Date: 2016-11-26 20:08+0200\n"
+"POT-Creation-Date: 2017-01-25 19:14+0000\n"
+"PO-Revision-Date: 2017-01-28 15:44+0200\n"
 "Last-Translator: Andrey Vihrov <andrey.vihrov@gmail.com>\n"
 "Language-Team: Latvian\n"
 "Language: lv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
+"2);\n"
 "X-Generator: Poedit 1.8.11\n"
 
 msgid "Compilation succeeded"
@@ -35,26 +36,28 @@ msgid "Compilation timed out"
 msgstr "Pārsniegts kompilēšanai atvēlētais laiks"
 
 msgid ""
-"Your submission exceeded the time limit while compiling. This might be caused by an "
-"excessive use of C++ templates, for example."
+"Your submission exceeded the time limit while compiling. This might be "
+"caused by an excessive use of C++ templates, for example."
 msgstr ""
-"Jūsu iesūtījums kompilēšanas laikā ir pārsniedzis laika limitu. To, piemēram, var būt "
-"izraisījis pārliecīgs C++ šablonu lietojums."
+"Jūsu iesūtījums kompilēšanas laikā ir pārsniedzis laika limitu. To, "
+"piemēram, var būt izraisījis pārliecīgs C++ šablonu lietojums."
 
 #, python-format
-msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgid ""
+"Compilation killed with signal %s (could be triggered by violating memory "
+"limits)"
 msgstr ""
-"Kompilēšana pārtraukta ar signālu %s (to var būt izraisījusi atmiņas ierobežojumu "
-"pārkāpšana)"
+"Kompilēšana pārtraukta ar signālu %s (to var būt izraisījusi atmiņas "
+"ierobežojumu pārkāpšana)"
 
 msgid ""
-"Your submission was killed with the specified signal. Among other things, this might be "
-"caused by exceeding the memory limit for the compilation, and in turn by an excessive use "
-"of C++ templates, for example."
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit for the compilation, and "
+"in turn by an excessive use of C++ templates, for example."
 msgstr ""
-"Jūsu iesūtījuma izpilde ir pārtraukta ar norādītu signālu. To, cita starpā, var būt "
-"izraisījusi atmiņas apjoma pārsniegšana kompilēšanas laikā, ko, savukārt, var būt izsaucis "
-"pārliecīgs C++ šablonu lietojums."
+"Jūsu iesūtījuma izpilde ir pārtraukta ar norādītu signālu. To, cita starpā, "
+"var būt izraisījusi atmiņas apjoma pārsniegšana kompilēšanas laikā, ko, "
+"savukārt, var būt izsaucis pārliecīgs C++ šablonu lietojums."
 
 msgid "Output is correct"
 msgstr "Izvaddati ir pareizi"
@@ -79,7 +82,8 @@ msgid "Evaluation didn't produce file %s"
 msgstr "Vērtēšanas laikā netika izveidota datne %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr "Jūsu iesūtījums tika izpildīts, bet neierakstīja pareizajā izvada datnē"
+msgstr ""
+"Jūsu iesūtījums tika izpildīts, bet neierakstīja pareizajā izvada datnē"
 
 msgid "Execution timed out"
 msgstr "Pārsniegts izpildes laiks"
@@ -91,53 +95,64 @@ msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Pārsniegts izpildes laiks (pārsniegts reālā laika ierobežojums)"
 
 msgid ""
-"Your submission used too much total time. This might be triggered by undefined code, or "
-"buffer overflow, for example. Note that in this case the CPU time visible in the submission "
-"details might be much smaller than the time limit."
+"Your submission used too much total time. This might be triggered by "
+"undefined code, or buffer overflow, for example. Note that in this case the "
+"CPU time visible in the submission details might be much smaller than the "
+"time limit."
 msgstr ""
-"Jūsu iesūtījums kopumā ir patērējis pārāk daudz laika. Tas var būt noticis, piemēram, "
-"nedefinētas koda uzvedības vai bufera pārpildīšanās dēļ. Šādos gadījumos iesūtījuma detaļās "
-"norādītais procesora laiks var būt ievērojami mazāks nekā izpildes laika ierobežojums."
+"Jūsu iesūtījums kopumā ir patērējis pārāk daudz laika. Tas var būt noticis, "
+"piemēram, nedefinētas koda uzvedības vai bufera pārpildīšanās dēļ. Šādos "
+"gadījumos iesūtījuma detaļās norādītais procesora laiks var būt ievērojami "
+"mazāks nekā izpildes laika ierobežojums."
 
 #, python-format
-msgid "Execution killed with signal %d (could be triggered by violating memory limits)"
+msgid ""
+"Execution killed with signal %d (could be triggered by violating memory "
+"limits)"
 msgstr ""
-"Izpilde pārtraukta ar signālu %d (to var būt izsaukusi atmiņas apjoma ierobežojumu "
-"neievērošana)"
+"Izpilde pārtraukta ar signālu %d (to var būt izsaukusi atmiņas apjoma "
+"ierobežojumu neievērošana)"
 
 msgid ""
-"Your submission was killed with the specified signal. Among other things, this might be "
-"caused by exceeding the memory limit. Note that if this is the reason, the memory usage "
-"visible in the submission details is the usage before the allocation that caused the signal."
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit. Note that if this is the "
+"reason, the memory usage visible in the submission details is the usage "
+"before the allocation that caused the signal."
 msgstr ""
-"Jūsu iesūtījuma izpilde pārtraukta ar norādītu signālu. Cita starpā, to var būt izsaukusi "
-"atmiņas apjoma ierobežojumu neievērošana. Ja tas ir īstais iemesls, tad izmantotās atmiņas "
-"apjoms, kas norādīts iesūtījuma izpildes detaļās, ir apjoms, kas tika atvēlēts pirms tika "
-"mēģināts izdalīt atmiņu, kas izraisīja signālu."
+"Jūsu iesūtījuma izpilde pārtraukta ar norādītu signālu. Cita starpā, to var "
+"būt izsaukusi atmiņas apjoma ierobežojumu neievērošana. Ja tas ir īstais "
+"iemesls, tad izmantotās atmiņas apjoms, kas norādīts iesūtījuma izpildes "
+"detaļās, ir apjoms, kas tika atvēlēts pirms tika mēģināts izdalīt atmiņu, "
+"kas izraisīja signālu."
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
 msgstr "Izpilde pārtraukta aizliegta sistēmas izsaukuma %s dēļ"
 
 msgid ""
-"Your submission was killed because it tried to use the forbidden syscall specified in the "
-"message."
+"Your submission was killed because it tried to use the forbidden syscall "
+"specified in the message."
 msgstr ""
-"Jūsu iesūtījums ir mēģinājis veikt aizliegtu sistēmas izsaukumu, kas norādīts ziņojumā, un "
-"tā izpilde ir pārtraukta."
+"Jūsu iesūtījums ir mēģinājis veikt aizliegtu sistēmas izsaukumu, kas "
+"norādīts ziņojumā, un tā izpilde ir pārtraukta."
 
 msgid "Execution killed because of forbidden file access"
 msgstr "Izpilde pārtraukta neatļautas datņu piekļūšanas dēļ"
 
-msgid "Your submission was killed because it tried to read or write a forbidden file."
+msgid ""
+"Your submission was killed because it tried to read or write a forbidden "
+"file."
 msgstr ""
-"Jūsu iesūtījums ir mēģinājis lasīt vai rakstīt neatļautā datnē, un tā izpilde ir pārtraukta."
+"Jūsu iesūtījums ir mēģinājis lasīt vai rakstīt neatļautā datnē, un tā "
+"izpilde ir pārtraukta."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Izpilde ir nesekmīga, jo atgriešanās kods nav nulle"
 
-msgid "Your submission failed because it exited with a return code different from 0."
-msgstr "Jūsu iesūtījums ir neveiksmīgs, jo tas beidzies ar nenulles atgriešanās kodu."
+msgid ""
+"Your submission failed because it exited with a return code different from 0."
+msgstr ""
+"Jūsu iesūtījums ir neveiksmīgs, jo tas beidzies ar nenulles atgriešanās kodu."
 
 msgid "N/A"
 msgstr "Nav pieejams"
@@ -247,11 +262,11 @@ msgstr "žetoni"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "Jums šim uzdevumam nav %(type_pl)s"
+msgstr "Jums šim uzdevumam nav %(type_pl)s."
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "Šim uzdevumam jums ir bezgalīgi daudz %(type_pl)s"
+msgstr "Šim uzdevumam jums ir bezgalīgi daudz %(type_pl)s."
 
 #, python-format
 msgid "You start with no %(type_pl)s."
@@ -336,15 +351,19 @@ msgstr "Jūs esat sasniedzis jautājuma garuma ierobežojumu."
 msgid "Question received"
 msgstr "Jautājums saņemts"
 
-msgid "Your question has been received, you will be notified when it is answered."
-msgstr "Jūsu jautājums saņemts. Tiklīdz uz to būs atbildēts, jums tiks paziņots."
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr ""
+"Jūsu jautājums saņemts. Tiklīdz uz to būs atbildēts, jums tiks paziņots."
 
 msgid "Too many print jobs!"
 msgstr "Pārāk daudz drukas darbu!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Jūs esat sasniedzis maksimāli pieļaujamo drukas darbu ierobežojumu (%d darbs(i))."
+msgstr ""
+"Jūs esat sasniedzis maksimāli pieļaujamo drukas darbu ierobežojumu (%d "
+"darbs(i))."
 
 msgid "Invalid format!"
 msgstr "Nepareizs formāts!"
@@ -371,25 +390,69 @@ msgstr "Drukas darbs saņemts"
 msgid "Your print job has been received."
 msgstr "Jūsu drukas darbs saņemts."
 
-#, python-format
-msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Jūs esat sasniedzis maksimāli pieļaujamo iesūtījumu skaitu pa visiem uzdevumiem (%d)."
+msgid "Compiling..."
+msgstr "Kompilē…"
+
+msgid "details"
+msgstr "detaļas"
+
+msgid "Evaluating..."
+msgstr "Izpilda…"
+
+msgid "Scoring..."
+msgstr "Vērtē…"
+
+msgid "Evaluated"
+msgstr "Izpildīts"
+
+msgid "Token request discarded"
+msgstr "Žetona pieprasījums noraidīts"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Jūsu pieprasījums ir noraidīts, jo jums nav žetonu."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"Jūsu pieprasījums ir noraidīts, jo jūs jau izmantojāt žetonu šim iesūtījumam."
+
+msgid "Token request received"
+msgstr "Žetona pieprasījums saņemts"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Jūsu pieprasījums ir saņemts un pielietots iesūtījumam."
 
 #, python-format
-msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Jūs esat sasniedzis maksimāli pieļaujamo iesūtījumu skaitu šim uzdevumam (%d)."
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr ""
+"Jūs esat sasniedzis maksimāli pieļaujamo iesūtījumu skaitu pa visiem "
+"uzdevumiem (%d)."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr ""
+"Jūs esat sasniedzis maksimāli pieļaujamo iesūtījumu skaitu šim uzdevumam "
+"(%d)."
 
 msgid "Too many submissions!"
 msgstr "Pārāk daudz iesūtījumu!"
 
 #, python-format
-msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
 msgstr ""
-"Jebkura uzdevuma risinājumu jūs drīkstat iesūtīt %d sekundes pēc iepriekšējā iesūtījuma."
+"Jebkura uzdevuma risinājumu jūs drīkstat iesūtīt %d sekundes pēc iepriekšējā "
+"iesūtījuma."
 
 #, python-format
-msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr "Šī uzdevuma risinājumu jūs drīkstat iesūtīt %d sekundes pēc iepriekšējā iesūtījuma."
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr ""
+"Šī uzdevuma risinājumu jūs drīkstat iesūtīt %d sekundes pēc iepriekšējā "
+"iesūtījuma."
 
 msgid "Submissions too frequent!"
 msgstr "Pārāk bieži iesūtījumi!"
@@ -401,13 +464,10 @@ msgid "Invalid archive format!"
 msgstr "Nepareizs arhīva formāts!"
 
 msgid "The submitted archive could not be opened."
-msgstr "Iesūtīto arhīvu nav iespējams atvērt!"
+msgstr "Iesūtīto arhīvu nav iespējams atvērt."
 
-msgid "Cannot recognize submission's language."
+msgid "Cannot recognize the submission language."
 msgstr "Nav iespējams atpazīt iesūtījuma valodu."
-
-msgid "All sources must be in the same language."
-msgstr "Visiem izejas tekstiem jābūt vienā valodā."
 
 #, python-format
 msgid "Language %s not allowed in this contest."
@@ -432,36 +492,6 @@ msgstr "Iesūtījums saņemts"
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "Jūsu iesūtījums ir saņemts un šobrīd tiek vērtēts."
 
-msgid "Compiling..."
-msgstr "Kompilē…"
-
-msgid "details"
-msgstr "detaļas"
-
-msgid "Evaluating..."
-msgstr "Izpilda…"
-
-msgid "Scoring..."
-msgstr "Vērtē…"
-
-msgid "Evaluated"
-msgstr "Izpildīts"
-
-msgid "Token request discarded"
-msgstr "Žetona pieprasījums noraidīts"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Jūsu pieprasījums ir noraidīts, jo jums nav žetonu."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Jūsu pieprasījums ir noraidīts, jo jūs jau izmantojāt žetonu šim iesūtījumam."
-
-msgid "Token request received"
-msgstr "Žetona pieprasījums saņemts"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "Jūsu pieprasījums ir saņemts un pielietots iesūtījumam."
-
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "Jūs esat sasniedzis maksimālo testu skaitu visiem uzdevumiem (%d)."
@@ -475,7 +505,8 @@ msgstr "Par daudz testu!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "Jebkuru uzdevumu jūs drīkstat testēt %d sekundes pēc iepriekšējā testa."
+msgstr ""
+"Jebkuru uzdevumu jūs drīkstat testēt %d sekundes pēc iepriekšējā testa."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
@@ -487,8 +518,8 @@ msgstr "Pārāk bieži testi!"
 msgid "Invalid test format!"
 msgstr "Nepareizs testa formāts!"
 
-msgid "Cannot recognize test's language."
-msgstr "Nevar noteikt testa valodu."
+msgid "Cannot recognize the user test language."
+msgstr "Nav iespējams atpazīt lietotāja testa valodu."
 
 msgid "Invalid test!"
 msgstr "Nepareizs tests!"
@@ -526,12 +557,16 @@ msgstr "%(seconds)0.3f s"
 msgid "Automatic (%s)"
 msgstr "Automātiski (%s)"
 
-#, python-format
-msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
-msgstr "Pieslēdzies kā <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
-
 msgid "Logout"
 msgstr "Atslēgties"
+
+#, python-format
+msgid ""
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
+msgstr ""
+"Pieslēdzies kā <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Kļūme pieslēdzoties."
@@ -639,6 +674,13 @@ msgstr "Programmēšanas valodas un bibliotēkas"
 msgid "Standard Template Library"
 msgstr "Standarta šablonu bibliotēka (STL)"
 
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
+msgstr ""
+"Risinājuma galvenajai Java klasei ir jābūt nosauktai precīzi tāpat kā pašam "
+"uzdevumam."
+
 msgid "Submission details for compilation"
 msgstr "Iesūtījuma kompilēšanas detaļas"
 
@@ -659,21 +701,23 @@ msgid "An error occured while the server was handling your request."
 msgstr "Serverim apstrādājot jūsu pieprasījumu, ir radusies kļūme."
 
 msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing the server "
-"with customized URLs) may be considered cheating and may lead to disqualification."
+"Note that attempts to tamper with Contest Management System (such as probing "
+"the server with customized URLs) may be considered cheating and may lead to "
+"disqualification."
 msgstr ""
-"Iedarbošanās uz testēšanas sistēmu neatļautā veidā (piemēram, mēģinājums izmantot "
-"modificētas pieprasījuma adreses) var tikt uzskatīta par blēdīšanos un var beigties ar "
-"diskvalifikāciju."
+"Iedarbošanās uz testēšanas sistēmu neatļautā veidā (piemēram, mēģinājums "
+"izmantot modificētas pieprasījuma adreses) var tikt uzskatīta par blēdīšanos "
+"un var beigties ar diskvalifikāciju."
 
 msgid ""
-"If you encountered this error during normal usage, please notify the contest administrators."
+"If you encountered this error during normal usage, please notify the contest "
+"administrators."
 msgstr ""
-"Ja jūs saskārāties ar šo kļūdu parastā situācijā, lūdzu, informējiet sacensību "
-"administratorus."
+"Ja jūs saskārāties ar šo kļūdu parastā situācijā, lūdzu, informējiet "
+"sacensību administratorus."
 
 msgid "General information"
-msgstr "Vispārēja informācija"
+msgstr "Vispārīga informācija"
 
 msgid "The contest hasn't started yet."
 msgstr "Sacensības vēl nav sākušās."
@@ -700,62 +744,74 @@ msgid "You have an infinite number of tokens."
 msgstr "Jums ir neierobežots skaits žetonu."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr "Detalizētus iesūtījuma rezultātus jūs varēsiet aplūkot, ja izmantosiet žetonu."
+msgstr ""
+"Detalizētus iesūtījuma rezultātus jūs varēsiet aplūkot, ja izmantosiet "
+"žetonu."
 
 msgid ""
-"Your score for each task will be the maximum among the tokened submissions and the last one."
+"Your score for each task will be the maximum among the tokened submissions "
+"and the last one."
 msgstr ""
-"Katram uzdevumam iegūtais punktu skaits būs lielākais starp iesūtījumiem, kuriem izmantoti "
-"žetoni, un pēdējo iesūtīto."
+"Katram uzdevumam iegūtais punktu skaits būs lielākais starp iesūtījumiem, "
+"kuriem izmantoti žetoni, un pēdējo iesūtīto."
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "Jums ir atsevišķi žetoni katram uzdevumam."
 
 #, python-format
-msgid "You can find the rules for the %(type_pl)s on each task's description page."
-msgstr "Katra uzdevuma apraksta lapā ir atrodami %(type_pl)s izmantošanas noteikumi."
+msgid ""
+"You can find the rules for the %(type_pl)s on each task's description page."
+msgstr ""
+"Katra uzdevuma apraksta lapā ir atrodami %(type_pl)s izmantošanas noteikumi."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Žetoni ir kopīgi visiem uzdevumiem."
 
 msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a "
-"distinct set of <em>task-tokens</em> for each task."
+"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
+"all tasks and a distinct set of <em>task-tokens</em> for each task."
 msgstr ""
-"Ir divu veidu žetoni: <em>sacensību žetoni</em>, kas derīgi visiem uzdevumiem, un "
-"<em>uzdevumu žetoni</em>, kas derīgi katram atsevišķam uzdevumam."
+"Ir divu veidu žetoni: <em>sacensību žetoni</em>, kas derīgi visiem "
+"uzdevumiem, un <em>uzdevumu žetoni</em>, kas derīgi katram atsevišķam "
+"uzdevumam."
 
 msgid ""
-"You can see the detailed result of a submission by using two tokens on it, one of each type."
+"You can see the detailed result of a submission by using two tokens on it, "
+"one of each type."
 msgstr ""
-"Detalizētus iesūtījuma rezultātus jūs varēsiet aplūkot, ja izmantosiet divus žetonus — pa "
-"vienam no katra žetonu veida."
+"Detalizētus iesūtījuma rezultātus jūs varēsiet aplūkot, ja izmantosiet divus "
+"žetonus — pa vienam no katra žetonu veida."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr "Šo sacensību laikā jūs drīkstat iesūtīt ne vairāk kā %(submissions)s risinājumus."
+msgstr ""
+"Šo sacensību laikā jūs drīkstat iesūtīt ne vairāk kā %(submissions)s "
+"risinājumus."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr "Šo sacensību laikā jūs drīkstat iesūtīt ne vairāk kā %(user_tests)s lietotāja testus."
+msgstr ""
+"Šo sacensību laikā jūs drīkstat iesūtīt ne vairāk kā %(user_tests)s "
+"lietotāja testus."
 
 #, python-format
 msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of "
-"%(per_user_time)s."
+"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
+"time frame of %(per_user_time)s."
 msgstr ""
-"Katram lietotājam ir atļauts sacensties (t.i., iesūtīt risinājumus) %(per_user_time)s ilgā "
-"nepārtrauktā laikaposmā."
+"Katram lietotājam ir atļauts sacensties (t.i., iesūtīt risinājumus) "
+"%(per_user_time)s ilgā nepārtrauktā laikaposmā."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr "Tiklīdz sacensības sāksies, jūs varēsiet izvēlēties sava laikaposma sākumu."
+msgstr ""
+"Tiklīdz sacensības sāksies, jūs varēsiet izvēlēties sava laikaposma sākumu."
 
 msgid ""
-"Once you start, you can submit solutions until the end of the time frame or until the end "
-"of the contest, whatever comes first."
+"Once you start, you can submit solutions until the end of the time frame or "
+"until the end of the contest, whatever comes first."
 msgstr ""
-"Tiklīdz jūs sāksiet, jūs varēsiet iesūtīt risinājumus līdz izvēlētā laikaposma vai "
-"sacensību beigām (kas iestāsies pirmā)."
+"Tiklīdz jūs sāksiet, jūs varēsiet iesūtīt risinājumus līdz izvēlētā "
+"laikaposma vai sacensību beigām (kas iestāsies pirmās)."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Nospiežot zemāk esošo pogu jūs varat sākt savu laikaposmu."
@@ -765,15 +821,16 @@ msgid "You started your time frame at %(start_time)s."
 msgstr "Jūs sākāt savu laikaposmu %(start_time)s."
 
 msgid ""
-"You can submit solutions until the end of the time frame or until the end of the contest, "
-"whatever comes first."
+"You can submit solutions until the end of the time frame or until the end of "
+"the contest, whatever comes first."
 msgstr ""
-"Jūs varat iesūtīt risinājumus līdz izvēlētā laikaposma vai sacensību beigām (kas iestāsies "
-"pirmās)."
+"Jūs varat iesūtīt risinājumus līdz izvēlētā laikaposma vai sacensību beigām "
+"(kas iestāsies pirmās)."
 
 #, python-format
-msgid "You started your time frame at %(start_time)s and you already finished it."
-msgstr "Jūs sākāt savu laikaposmu %(start_time)s un tas ir noslēdzies."
+msgid ""
+"You started your time frame at %(start_time)s and you already finished it."
+msgstr "Jūs sākāt savu laikaposmu %(start_time)s, un tas ir noslēdzies."
 
 msgid "There's nothing you can do now."
 msgstr "Nav nekā, ko jūs tagad varētu iesākt."
@@ -831,16 +888,19 @@ msgstr "Drukāt"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to %(max_pages)d pages each."
+"You can print %(remaining_jobs)d more text or PDF files of up to "
+"%(max_pages)d pages each."
 msgstr ""
-"Jūs drīkstat izdrukāt vēl %(remaining_jobs)d teksta vai PDF datnes (katru ne vairāk kā "
-"%(max_pages)d lappuses)."
+"Jūs drīkstat izdrukāt vēl %(remaining_jobs)d teksta vai PDF datnes (katru ne "
+"garāku par %(max_pages)d lappusēm)."
 
 #, python-format
-msgid "You can print %(remaining_jobs)d more text files of up to %(max_pages)d pages each."
+msgid ""
+"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"pages each."
 msgstr ""
-"Jūs drīkstat izdrukāt vēl %(remaining_jobs)d teksta datnes (katru ne vairāk kā "
-"%(max_pages)d lappuses)."
+"Jūs drīkstat izdrukāt vēl %(remaining_jobs)d teksta datnes (katru ne garāku "
+"par %(max_pages)d lappusēm)."
 
 msgid "File (text or PDF)"
 msgstr "Datne (teksta vai PDF)"
@@ -851,8 +911,11 @@ msgstr "Datne (teksta)"
 msgid "Submit"
 msgstr "Iesūtīt"
 
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Jūs vairs neko nevarat izdrukāt, jo jau esat izdrukājuši atļauto lappušu skaitu."
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr ""
+"Jūs vairs neko nevarat izdrukāt, jo jau esat izlietojuši atļauto lappušu "
+"skaitu."
 
 msgid "Previous print jobs"
 msgstr "Iepriekšējie drukas darbi"
@@ -921,14 +984,18 @@ msgstr "formulējums nav pieejams"
 msgid "Download task statement"
 msgstr "Lejuplādēt uzdevuma formulējumu"
 
-msgid "The statement for this task is available in multiple versions, in different languages."
-msgstr "Šī uzdevuma formulējums ir pieejums vairākās versijās, dažādās valodās."
+msgid ""
+"The statement for this task is available in multiple versions, in different "
+"languages."
+msgstr ""
+"Šī uzdevuma formulējums ir pieejums vairākās versijās, dažādās valodās."
 
 msgid "You can see (and download) all of them using the list on the right."
-msgstr "Jūs varat aplūkot (un lejuplādēt) visas tās izmantojot sarakstu labajā pusē."
+msgstr ""
+"Jūs varat aplūkot (un lejuplādēt) visas tās izmantojot sarakstu labajā pusē."
 
 msgid "Some suggested translations follow."
-msgstr "Seko daži ieteiktie tulkojumi."
+msgstr "Zemāk seko daži ieteiktie tulkojumi."
 
 #, python-format
 msgid "Statement in <b>%s</b>"
@@ -954,18 +1021,18 @@ msgstr "Kompilēšanas komandas"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest "
-"overview page</a>."
+"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"\">contest overview page</a>."
 msgstr ""
-"Jūs varat atrast %(type_pl)s noteikumus <a href=\"%(url_root)s/\">sacensību apskata lapā</"
-"a>."
+"Jūs varat atrast %(type_pl)s noteikumus <a href=\"%(url_root)s/\">sacensību "
+"apskata lapā</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both a contest-"
-"token and a task-token."
+"Remeber that to see the detailed result of a submission you need to use both "
+"a contest-token and a task-token."
 msgstr ""
-"Lai aplūkotu iesūtījuma detalizētus rezultātus, nepieciešams izmantot gan sacensību, gan "
-"uzdevuma žetonu."
+"Lai aplūkotu iesūtījuma detalizētus rezultātus, nepieciešams izmantot gan "
+"sacensību, gan uzdevuma žetonu."
 
 msgid "Attachments"
 msgstr "Piesaistnes"
@@ -999,7 +1066,8 @@ msgstr "Šobrīd šim uzdevumam jums ir pieejami %(tokens)s žetoni."
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
-msgstr "Bet, lai tos izmantotu, nepieciešams pagaidīt līdz %(expiration_time)s."
+msgstr ""
+"Bet, lai tos izmantotu, nepieciešams pagaidīt līdz %(expiration_time)s."
 
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
