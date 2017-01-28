@@ -104,7 +104,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             return False
 
         # Create objects in the DB.
-        submission = Submission(make_datetime(timestamp), language,
+        submission = Submission(make_datetime(timestamp), language.name,
                                 participation=participation, task=task)
         for filename, digest in file_digests.items():
             session.add(File(filename, digest, submission=submission))
