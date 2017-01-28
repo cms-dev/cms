@@ -433,11 +433,14 @@ class SubmissionStatusHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
-        if sr is None:
-            raise tornado.web.HTTPError(404)
-
         data = dict()
-        data["status"] = sr.get_status()
+
+        if sr is None:
+            # implicit compiling state while result is not created
+            data["status"] = SubmissionResult.COMPILING
+        else:
+            data["status"] = sr.get_status()
+
         if data["status"] == SubmissionResult.COMPILING:
             data["status_text"] = self._("Compiling...")
         elif data["status"] == SubmissionResult.COMPILATION_FAILED:
