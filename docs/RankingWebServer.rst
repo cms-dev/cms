@@ -45,19 +45,19 @@ where ``scheme`` can be either ``http`` or ``https``, ``username``, ``password``
 
 You also need to make sure that RWS is able to keep enough simultaneously active connections by checking that the maximum number of open file descriptors is larger than the expected number of clients. You can see the current value with ``ulimit -Sn`` (or ``-Sa`` to see all limitations) and change it with ``ulimit -Sn <value>``. This value will be reset when you open a new shell, so remember to run the command again. Note that there may be a hard limit that you cannot overcome (use ``-H`` instead of ``-S`` to see it). If that's still too low you can start multiple RWSs and use a proxy to distribute clients among them (see :ref:`rankingwebserver_using-a-proxy`).
 
-Managing it
-===========
+Managing data
+=============
 
 RWS doesn't use the PostgreSQL database. Instead, it stores its data in :file:`/var/local/lib/cms/ranking` (or whatever directory is given as ``lib_dir`` in the configuration file) as a collection of JSON files. Thus, if you want to backup the RWS data, just make a copy of that directory. RWS modifies this data in response to specific (authenticated) HTTP requests it receives.
 
-The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ProxyService (PS for short). When PS is started for a certain contest, it will send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and the submissions received so far. Then it will continue to send new submissions as soon as they are scored and it will update them as needed (for example when a user uses a token). Note that hidden users (and their submissions) will not be sent to RWS.
+The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ProxyService (PS for short). When PS is started for a certain contest, it will send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and teams, and the submissions received so far. Then it will continue to send new submissions as soon as they are scored and it will update them as needed (for example when a user uses a token). Note that hidden users (and their submissions) will not be sent to RWS.
 
-There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. They are both discouraged but, at the moment, they are the only way to add team information to RWS (see :gh_issue:`65`).
+There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. For the former, the script `cmsRWSHelper` can be used to handle the low level communication.
 
 Logo, flags and faces
 ---------------------
 
-RWS can also display a custom global logo, a flag for each team and a photo ("face") for each user. Again, the only way to add these is to put them directly in the data directory of RWS:
+RWS can also display a custom global logo, a flag for each team and a photo ("face") for each user. The only way to add these is to put them directly in the data directory of RWS:
 
 * the logo has to be saved right in the data directory, named "logo" with an appropriate extension (e.g. :file:`logo.png`), with a recommended resolution of 200x160;
 * the flag for a team has to be saved in the "flags" subdirectory, named as the team's name with an appropriate extension (e.g. :file:`ITA.png`);
