@@ -58,8 +58,7 @@ options.
    shifted from the original, and the same amount of tokens as other
    contestants will be generated).
 
-Of course it is possible to use both at the same time, but we do not
-see much value in doing so.
+If needed, it is possible to use both at the same time.
 
 Customized-window contests
 ==========================
@@ -97,6 +96,6 @@ advancing ``starting_time`` would not award more time to the
 contestant, because the end would still be capped at ``end_time``. The
 effect on token generation is the same.
 
-Again, there is probably no need to fiddle with more than one of these
+There is probably no need to fiddle with more than one of these
 three parameters, and our suggestion is to just use ``extra_time`` or
 ``delay_time`` to award more time to a contestant.

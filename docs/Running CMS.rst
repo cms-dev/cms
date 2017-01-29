@@ -47,7 +47,7 @@ Configuring CMS
 
 There are two configuration files, one for CMS itself and one for the rankings. Samples for both files are in the directory :gh_tree:`config/`. You want to copy them to the same file names but without the ``.sample`` suffix (that is, to :file:`config/cms.conf` and :file:`config/cms.ranking.conf`) before modifying them.
 
-* :file:`cms.conf` is intended to be the same on all servers; all configurations are explained in the file; of particular importance is the definition of ``core_services``, that specifies where the services are going to be run, and how many of them, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
+* :file:`cms.conf` is intended to be the same on all machines; all configurations options are explained in the file; of particular importance is the definition of ``core_services``, that specifies where and how many services are going to be run, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
 
 * :file:`cms.ranking.conf` is not necessarily meant to be the same on each server that will host a ranking, since it just controls settings relevant for one single server. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.conf`.
 
@@ -55,11 +55,11 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 * you must change the connection string given in ``database``; this usually means to change username, password and database with the ones you chose before;
 
-* if you are running low on disk space, you may want to change ``keep_sandbox`` to ``false``;
+* if you are running low on disk space, you may want to make sure ``keep_sandbox`` is set to ``false``;
 
 * if you want to run CMS without installing it, you need to change ``process_cmdline`` to reflect that.
 
-If you are organizing a real contest, you must also change ``secret_key`` to a random key, for example by running ``cmscommon.crypto.get_hex_random_key()``. You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, using non-trivial username and password.
+If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, using non-trivial username and password.
 
 .. warning::
 
@@ -74,7 +74,7 @@ Here we will assume you installed CMS. If not, you should replace all commands p
 
 At this point, you should have CMS installed on all the machines you want run services on, with the same configuration file, and a running PostgreSQL instance. To run CMS, you need a contest in the database. To create a contest, follow :doc:`these instructions <Creating a contest>`.
 
-CMS is composed of a number of services, potentially replicated several times, and running on several machines. You can run all the services by hand, but this is a tedious task. Luckily, there is a service (ResourceService) that takes care of starting all the services on the machine it is running, limiting thus the number of binaries you have to run. Services started by ResourceService do not show their logs to the standard output; so it is expected that you run LogService to inspect the logs as they arrive (logs are also saved to disk). To start LogService, you need to issue, in the machine specified in cms.conf for LogService, this command:
+CMS is composed of a number of services, potentially replicated several times, and running on several machines. You can start all the services by hand, but this is a tedious task. Luckily, there is a service (ResourceService) that takes care of starting all the services on the machine it is running, limiting thus the number of binaries you have to run. Services started by ResourceService do not show their logs to the standard output; so it is expected that you run LogService to inspect the logs as they arrive (logs are also saved to disk). To start LogService, you need to issue, in the machine specified in cms.conf for LogService, this command:
 
 .. sourcecode:: bash
 
@@ -113,9 +113,11 @@ Of course, the number of servers one needs to run a contest depends on many fact
 
 As for the distribution of services, usually there is one ResourceService for each machine, one instance for each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more instances of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different machines.
 
-We suggest and support out-of-the-box using CMS over Ubuntu 14.10. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
+We suggest using CMS over Ubuntu. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
 
-You can replicate the service handling the contestant-facing web server, :file:`cmsContestWebServer`; in this case, you need to configure a load balancer in front of them. We suggest to use nginx for that, and provide a sample configuration for it at :gh_blob:`config/nginx.conf.sample` (this file also configures nginx to act as a HTTPS endpoint and to force secure connections, by redirecting HTTP to HTTPS). This file probably needs to be adapted to your distribution if it is not Ubuntu: try to merge it with the file you find installed by default. For additional information see the official nginx `documentation <http://wiki.nginx.org/HttpUpstreamModule>`_ and `examples <http://wiki.nginx.org/LoadBalanceExample>`_. Note that without the ``ip_hash`` option some features might not always work as expected.
+We recommend using nginx in front of the (one or more) :file:`cmsContestWebServer` instances serving the contestant interface. Using a load balancer is required when having multiple instances of :file:`cmsContestWebServer`, but even in case of a single instance, we suggest using nginx to secure the connection, providing an HTTPS endpoint and redirecting it to :file:`cmsContestWebServer`'s HTTP interface.
+
+See :gh_blob:`config/nginx.conf.sample` for a sample nginx configuration. This file probably needs to be adapted to your distribution if it is not Ubuntu: try to merge it with the file you find installed by default. For additional information see the official nginx `documentation <http://wiki.nginx.org/HttpUpstreamModule>`_ and `examples <http://wiki.nginx.org/LoadBalanceExample>`_. Note that without the ``ip_hash`` option some CMS features might not always work as expected.
 
 
 Logs
@@ -124,13 +126,13 @@ Logs
 When the services are running, log messages are streamed to the log
 service. This is the meaning of the log levels:
 
-- debug: you can ignore them (in the default configuration, the log service does not show them);
+- debug: they are just for development; in the default configuration, they are not printed;
 
 - info: they inform you on what is going on in the system and that everything is fine;
 
 - warning: something went wrong or was slightly unexpected, but CMS knew how to handle it, or someone fed inappropriate data to CMS (by error or on purpose); you may want to check these as they may evolve into errors or unexpected behaviors, or hint that a contestant is trying to cheat;
 
-- error: an unexpected condition that should not have happened; you are really encouraged to take actions to fix them, but the service will continue to work (most of the time, ignoring the error and the data connected to it);
+- error: an unexpected condition that should not have happened; you are encouraged to take actions to fix them, but the service will continue to work (most of the time, ignoring the error and the data connected to it);
 
 - critical: a condition so unexpected that the service is really startled and refuses to continue working; you are forced to take action because with high probability the service will continue having the same problem upon restarting.
 

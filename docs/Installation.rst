@@ -42,7 +42,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
 
-* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php5``);
+* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
 * `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
 
@@ -90,52 +90,6 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     sudo pacman -S nginx php php-fpm phppgadmin texlive-core a2ps \
         ghc
 
-Debian
-------
-
-While Debian uses (almost) the same packages as Ubuntu, setting up cgroups is more involved.
-Debian requires the memory module of cgroups to be activated via a kernel command line parameter. Add ``cgroup_enable=memory`` to ``GRUB_CMDLINE_LINUX_DEFAULT`` in ``/etc/default/grub`` and then run ``update-grub``.
-
-Also, we need to mount the cgroup filesystems (under Ubuntu, the cgroup-lite package does this). To do this automatically, add the following file into /etc/init.d:
-
-.. sourcecode:: bash
-
-    #! /bin/sh
-    # /etc/init.d/cgroup
-
-    # The following part carries out specific functions depending on arguments.
-    case "$1" in
-      start)
-        mount -t tmpfs none /sys/fs/cgroup/
-        mkdir /sys/fs/cgroup/memory
-        mount -t cgroup none /sys/fs/cgroup/memory -o memory
-        mkdir /sys/fs/cgroup/cpuacct
-        mount -t cgroup none /sys/fs/cgroup/cpuacct -o cpuacct
-        mkdir /sys/fs/cgroup/cpuset
-        mount -t cgroup none /sys/fs/cgroup/cpuset -o cpuset
-        ;;
-      stop)
-        umount /sys/fs/cgroup/cpuset
-        umount /sys/fs/cgroup/cpuacct
-        umount /sys/fs/cgroup/memory
-        umount /sys/fs/cgroup
-        ;;
-      *)
-        echo "Usage: /etc/init.d/foobar {start|stop}"
-        exit 1
-        ;;
-    esac
-
-    exit 0
-
-Then execute ``chmod 755 /etc/init.d/cgroup`` as root and finally ``update-rc.d cgroup defaults`` to add the script to the default scripts.
-The following command should now mount the cgroup filesystem:
-
-.. sourcecode:: bash
-
-    /etc/init.d/cgroup start
-
-
 Python dependencies
 ===================
 
@@ -149,7 +103,7 @@ These are all the python dependencies required to develop CMS:
 .. literalinclude:: ../dev-requirements.txt
    :language: python
 
-There are good reasons to install Python dependencies via pip (Python Package Index) instead of your package manager, for example: two different Linux distributions may "offer" two different versions of ``python-sqlalchemy`` while, when using pip, you can choose to install a version that is known to be working correctly with CMS.
+There are good reasons to install Python dependencies via pip (Python Package Index) instead of your package manager, for example: two different Linux distributions may offer two different versions of ``python-sqlalchemy`` while, when using pip, you can choose to install a version that is known to be working correctly with CMS.
 
 The easy way of installing Python dependencies, assuming you have ``pip`` installed, is this:
 
@@ -206,6 +160,10 @@ After the activation, ``pip`` will *always* be available (even if it was not ava
     .. sourcecode:: bash
 
         deactivate
+
+.. warning::
+
+   At the moment, CMS does not work correctly when installed in a virtual environment. You can use virtual enviroment to run CMS non-installed.
 
 Ubuntu
 ------
@@ -298,6 +256,41 @@ Remember to logout, to make the change effective.
    Users in the group ``cmsuser`` will be able to launch the ``isolate`` program with root permission. They may exploit this to gain root privileges. It is then imperative that no untrusted user is allowed in the group ``cmsuser``.
 
 .. _installation_updatingcms:
+
+Running CMS non-installed
+=========================
+
+To run CMS without installing it in the system, you need first to build the prerequisites:
+
+.. sourcecode:: bash
+
+    ./prerequisites.py build
+
+There are still a few steps to complete manually in this case. First, add CMS and isolate to the path and create the configuration files:
+
+.. sourcecode:: bash
+
+    export PATH=$PATH:./isolate/
+    export PYTHONPATH=./
+    cp config/cms.conf.sample config/cms.conf
+    cp config/cms.ranking.conf.sample config/cms.ranking.conf
+
+Second, perform these tasks (that require root permissions):
+
+* create the ``cmsuser`` user and a group with the same name;
+
+* add your user to the ``cmsuser`` group;
+
+* set isolate to be owned by root:cmsuser, and set its suid bit.
+
+For example:
+
+.. sourcecode:: bash
+
+    sudo useradd cmsuser
+    sudo usermod -a -G cmsuser <your user>
+    sudo chown root:cmsuser ./isolate/isolate
+    sudo chmod u+s ./isolate/isolate
 
 Updating CMS
 ============
