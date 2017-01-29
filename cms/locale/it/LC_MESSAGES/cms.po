@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-25 19:14+0000\n"
-"PO-Revision-Date: 2017-01-26 08:09+0100\n"
+"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"PO-Revision-Date: 2017-01-29 19:41+0100\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -210,6 +210,9 @@ msgstr "%H:%M:%S %d/%m/%Y"
 
 msgid "loading..."
 msgstr "caricamento in corso..."
+
+msgid "unknown"
+msgstr "sconosciuto"
 
 #, python-format
 msgid "%d second"
