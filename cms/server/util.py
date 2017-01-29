@@ -342,9 +342,9 @@ def get_score_class(score, max_score):
 def N_(*unused_args, **unused_kwargs):
     pass
 
-# This is a string in task_submissions.html and test_interface.html
-# that for some reason doesn't get included in cms.pot.
+# Some strings in templates that for some reason don't get included in cms.pot.
 N_("loading...")
+N_("unknown")
 
 N_("%d second", "%d seconds", 0)
 N_("%d minute", "%d minutes", 0)
