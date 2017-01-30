@@ -39,7 +39,7 @@
             {{ _("You can see (and download) all of them using the list on the right.") }}
             {{ _("Some suggested translations follow.") }}
         </p>
-    {% set task_primary = json.loads(task.primary_statements) %}
+    {% set task_primary = primary_statements %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in task_primary %}
         <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large btn-success">
