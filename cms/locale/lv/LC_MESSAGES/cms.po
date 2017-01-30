@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-25 19:14+0000\n"
-"PO-Revision-Date: 2017-01-28 15:44+0200\n"
+"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"PO-Revision-Date: 2017-01-30 17:19+0200\n"
 "Last-Translator: Andrey Vihrov <andrey.vihrov@gmail.com>\n"
 "Language-Team: Latvian\n"
 "Language: lv\n"
@@ -205,6 +205,9 @@ msgstr "%d.%m.%Y %H:%M:%S"
 
 msgid "loading..."
 msgstr "ielādē…"
+
+msgid "unknown"
+msgstr "nezināms"
 
 #, python-format
 msgid "%d second"
