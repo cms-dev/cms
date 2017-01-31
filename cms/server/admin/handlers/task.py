@@ -143,9 +143,9 @@ class TaskHandler(BaseHandler):
             primary_statements = {}
             for statement in task.statements:
                 self.get_bool(primary_statements,
-                              "statement_%s_primary" % statement)
+                              "primary_statement_%s" % statement)
             attrs["primary_statements"] = json.dumps(sorted([
-                k.replace("statement_", "").replace("_primary", "")
+                k.replace("primary_statement_", "", 1)
                 for k in primary_statements
                 if primary_statements[k]
             ]))
