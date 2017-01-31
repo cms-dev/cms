@@ -1,9 +1,9 @@
 Data model
 **********
 
-CMS is used in many different settings: single onsite contests, with remote participations, short training camps, always on training websites, university assignments... Its data model needs to support all of these, and therefore might be a bit surprising if you only think of the first use case.
+CMS is used in many different settings: single onsite contests, with remote participations, short training camps, always-on training websites, university assignments... Its data model needs to support all of these, and therefore might be a bit surprising if you only think of the first use case.
 
-In the following, we explain the main objects in CMS' data model.
+In the following, we explain the main objects in CMS's data model.
 
 Users
 =====
@@ -27,7 +27,7 @@ They are mainly thought as limited in duration to a few hours, but this is not a
 Tasks and datasets
 ==================
 
-A task is one of the problem to solve within a contest. A task cannot be associated to more than one contest, but you can have tasks temporarily not associated to any.
+A task is one of the problems to solve within a contest. A task cannot be associated to more than one contest, but you can have tasks temporarily not associated to any.
 
 Tasks store additional configurations that might override or alter the configurations at the contest level.
 

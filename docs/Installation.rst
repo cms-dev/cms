@@ -266,7 +266,7 @@ To run CMS without installing it in the system, you need first to build the prer
 
     ./prerequisites.py build
 
-There are still a few steps to complete manually in this case. First, make sure that CMS and isolate are in the path, and to create the configuration files:
+There are still a few steps to complete manually in this case. First, add CMS and isolate to the path and create the configuration files:
 
 .. sourcecode:: bash
 

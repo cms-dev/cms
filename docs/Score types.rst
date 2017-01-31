@@ -10,7 +10,7 @@ For every submission, the score type of a task comes into play after the :doc:`t
 Standard score types
 ====================
 
-CMS has built in the following score types: Sum, GroupMin, GroupMul, GroupThreshold.
+CMS ships with the following score types: Sum, GroupMin, GroupMul, GroupThreshold.
 
 The first of the four well-tested score types, Sum, is the simplest you can imagine, just assigning a fixed amount of points for each correct testcase. The other three are useful for grouping together testcases and assigning points for that group only if some conditions held. Groups are also known as subtasks in some contests. The group score types also allow test cases to be weighted, even for groups of size 1.
 
