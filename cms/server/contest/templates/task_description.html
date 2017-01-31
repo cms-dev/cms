@@ -3,7 +3,6 @@
 
 {% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
-{% import json %}
 
 {% if actual_phase == 0 or current_user.unrestricted %}
 
@@ -51,7 +50,6 @@
         </a>
         {% end %}
     {% end %}
-    {% set user_primary = json.loads(current_user.user.preferred_languages) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large">

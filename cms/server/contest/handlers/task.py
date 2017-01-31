@@ -83,6 +83,14 @@ class TaskDescriptionHandler(BaseHandler):
             logger.error("Primary statements for task %s is invalid [%r].",
                          task_name, e)
 
+        try:
+            self.r_params["user_primary"] = \
+                json.loads(self.current_user.user.preferred_languages)
+        except ValueError as e:
+            self.r_params["user_primary"] = []
+            logger.error("Preferred languages for user %s is invalid [%r].",
+                         self.current_user.user.username, e)
+
         self.render("task_description.html", task=task, **self.r_params)
 
 
