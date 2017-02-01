@@ -1,0 +1,1001 @@
+# Language sl/LC translations for PACKAGE package.
+# Copyright (C) 2016 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#  <weiss.simon.1995@gmail.com>,<darko.pevec@gmail.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-03-01 15:57+0900\n"
+"PO-Revision-Date: 2017-01-31 11:27+0100\n"
+"Last-Translator: weiss.simon.1995@gmail.com\n"
+"Language-Team: Language sl/LC\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);\n"
+"X-Generator: Poedit 1.8.11\n"
+
+msgid "Compilation succeeded"
+msgstr "Prevajanje uspešno zaključeno"
+
+msgid "Your submission successfully compiled to an excutable."
+msgstr "Tvoja oddaja se je uspešno prevedla v izvršno datoteko."
+
+msgid "Compilation failed"
+msgstr "Prevajanje ni uspelo"
+
+msgid "Your submission did not compile correctly."
+msgstr "Tvoja oddaja se ni uspešno prevedla."
+
+msgid "Compilation timed out"
+msgstr "Čas prevajanja je potekel"
+
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Tvoja oddaja je presegla časovno omejitev prevajanja. To je lahko posledica npr. prevelike uporabe C++ predlog."
+
+#, python-format
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Prevajanje je bilo zaustavljeno s signalom %s (lahko da je bilo sproženo zaradi prekoračitve spominske omejitve)"
+
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Tvoja oddaja je bila zaustavljena s specifičnim signalom. Med drugim je lahko razlog za to prekoračitev spominske omejitve za prevajanje. Morda zaradi prekomerne uporabe C++ predlog."
+
+msgid "Output is correct"
+msgstr "Izhod je pravilen"
+
+msgid "Your submission ran and gave the correct answer"
+msgstr "Tvoja oddaja je bila pognana in je vrnila pravilen odgovor"
+
+msgid "Output is partially correct"
+msgstr "Izhod je delno pravilen"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr "Tvoja oddaja je bila pognana in je vrnila delno pravilen odgovor"
+
+msgid "Output isn't correct"
+msgstr "Izhod je napačen"
+
+msgid "Your submission ran, but gave the wrong answer"
+msgstr "Tvoja oddaja je bila pognana, vendar je vrnila napačen odgovor"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "Pri ovrednotenju ni nastala datoteka %s"
+
+msgid "Your submission ran, but did not write on the correct output file"
+msgstr "Tvoja oddaja je bila pognana, vendar ni izpisovala v pravilno izhodno datoteko"
+
+msgid "Execution timed out"
+msgstr "Čas izvajanja je potekel"
+
+msgid "Your submission used too much CPU time."
+msgstr "Tvoja oddaja je porabila preveč procesorskega časa."
+
+msgid "Execution timed out (wall clock limit exceeded)"
+msgstr "Čas izvajanja je potekel (dejanjska časovna omejitev je bila presežena)"
+
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "Tvoja oddaja je porabila preveč skupnega časa. To je lahko posledica nedefinirane kode ali preseženega medpomnilnika. V tem primeru je lahko procesorski čas, ki je viden pri podrobnostih o oddaji, precej manjši od dejanjske časovne omejitve."
+
+#, python-format
+msgid "Execution killed with signal %d (could be triggered by violating memory limits)"
+msgstr "Izvajanje je bilo prekinjeno s signalom %d (lahko je posledica prekoračitve omejitve spomina)"
+
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+msgstr "Tvoja oddaja je bila prekinjena s specifičnim signalom. Med drugim je to lahko posledica prekoračitve spominske omejitve. V tem primeru je porabljen spomin, ki je viden pri podrobnostih o oddaji, tisti spomin, ki je bil uporabljen pred dodelitvijo, ki je sporžila signal."
+
+#, python-format
+msgid "Execution killed because of forbidden syscall %s"
+msgstr "Izvajanje je bilo prekinjeno zaradi prepovedanega sistemskega klica %s"
+
+msgid "Your submission was killed because it tried to use the forbidden syscall specified in the message."
+msgstr "Tvoja oddaja je bila prekinjena, ker je poizkušala uporabiti prepovedan sistemski klic omenjen v sporočilu."
+
+msgid "Execution killed because of forbidden file access"
+msgstr "Izvajanje prekinjeno zaradi prepovedanega dostopa do datoteke"
+
+msgid "Your submission was killed because it tried to read or write a forbidden file."
+msgstr "Tvoja oddaja je bila prekinjena, ker je poizkušala brati iz ali pisati v prepovedano datoteko."
+
+msgid "Execution failed because the return code was nonzero"
+msgstr "Izvajanje je spodletelo, ker se je končala z neničelno kodo"
+
+msgid "Your submission failed because it exited with a return code different from 0."
+msgstr "Tvoja oddaja je spodletela, ker se je končala s kodo drugačno od 0."
+
+msgid "N/A"
+msgstr "Ni odgovora"
+
+#, python-format
+msgid "Subtask %d"
+msgstr "Podnaloga %d"
+
+msgid "Outcome"
+msgstr "Rezultat"
+
+msgid "Details"
+msgstr "Podrobnosti"
+
+msgid "Execution time"
+msgstr "Čas izvajanja"
+
+msgid "Memory used"
+msgstr "Porabljen spomin"
+
+msgid "Not correct"
+msgstr "Napačno"
+
+msgid "Correct"
+msgstr "Pravilno"
+
+msgid "Partially correct"
+msgstr "Delno pravilno"
+
+msgid "Invalid files in submission"
+msgstr "Napačne datoteke v oddaji"
+
+msgid "Execution completed successfully"
+msgstr "Izvajanje se je uspešno zaključilo"
+
+msgid "No compilation needed"
+msgstr "Prevajanje ni potrebno"
+
+msgid "File not submitted"
+msgstr "Datoteka ni bila oddana"
+
+msgid "%Y-%m-%d"
+msgstr "%d. %m. %Y"
+
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+msgid "%Y-%m-%d %H:%M:%S"
+msgstr "%d. %m. %Y %H:%M:%S"
+
+msgid "loading..."
+msgstr "nalagam..."
+
+#, python-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d sekunda"
+msgstr[1] "%d sekundi"
+msgstr[2] "%d sekunde"
+msgstr[3] "%d sekund"
+
+#, python-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuta"
+msgstr[1] "%d minuti"
+msgstr[2] "%d minute"
+msgstr[3] "%d minut"
+
+#, python-format
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d ura"
+msgstr[1] "%d uri"
+msgstr[2] "%d ure"
+msgstr[3] "%d ur"
+
+#, python-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d dan"
+msgstr[1] "%d dneva"
+msgstr[2] "%d dnevi"
+msgstr[3] "%d dni"
+
+#, python-format
+msgid "%s and %s"
+msgstr "%s in %s"
+
+#, python-format
+msgid "more than %s"
+msgstr "več kot %s"
+
+msgid "contest-token"
+msgstr "tekmovalni-žeton"
+
+msgid "contest-tokens"
+msgstr "tekmovalni-žetoni"
+
+msgid "task-token"
+msgstr "naloga-žeton"
+
+msgid "task-tokens"
+msgstr "naloga-žetoni"
+
+msgid "token"
+msgstr "žeton"
+
+msgid "tokens"
+msgstr "žetoni"
+
+#, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "Nimaš %(type_pl)s dostopnih za to nalogo."
+
+#, python-format
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "Imaš neomejeno število %(type_pl)s za to nalogo."
+
+#, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "Začel si brez %(type_pl)s."
+
+#, python-format
+msgid "You start with one %(type_s)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
+msgstr[0] "Začneš z enim %(type_s)s."
+msgstr[1] "Začneš z %(gen_initial)d %(type_pl)s."
+msgstr[2] "Začneš z %(gen_initial)d %(type_pl)s."
+msgstr[3] "Začneš z %(gen_initial)d %(type_pl)s."
+
+#, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_interval)g minutes "
+msgstr[0] "Vsako minuto "
+msgstr[1] "Vsaki %(gen_interval)g minuti "
+msgstr[2] "Vsake %(gen_interval)g minute "
+msgstr[3] "Vsakih %(gen_interval)g minut "
+
+#, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "dobiš dodaten %(type_s)s, "
+msgstr[1] "dobiš dodatna %(gen_number)d %(type_ps)s, "
+msgstr[2] "dobiš dodatne %(gen_number)d %(type_ps)s, "
+msgstr[3] "dobiš dodatnih %(gen_number)d %(type_ps)s, "
+
+#, python-format
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
+msgstr[0] "največ en %(type_s)s."
+msgstr[1] "največ %(gen_max)d %(type_pl)s."
+msgstr[2] "največ %(gen_max)d %(type_pl)s."
+msgstr[3] "največ %(gen_max)d %(type_pl)s."
+
+#, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "dobiš dodaten %(type_s)s."
+msgstr[1] "dobiš dodatna %(gen_number)d %(type_ps)s."
+msgstr[2] "dobiš dodatne %(gen_number)d %(type_ps)s."
+msgstr[3] "dobiš dodatnih %(gen_number)d %(type_ps)s."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Ne dobiš več novih %(type_pl)s."
+
+#, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
+msgstr[0] "%(type_s)s lahko uporabiš vsako sekundo"
+msgstr[1] "%(type_s)s lahko uporabiš vsaki %(min_interval)g sekundi "
+msgstr[2] "%(type_s)s lahko uporabiš vsake %(min_interval)g sekunde "
+msgstr[3] "%(type_s)s lahko uporabiš vsakih %(min_interval)g sekund "
+
+#, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "in ne več kot %(max_number)d %(type_s)s skupno."
+msgstr[1] "in ne več kot %(max_number)d %(type_s)s skupno."
+msgstr[2] "in ne več kot %(max_number)d %(type_pl)s skupno."
+msgstr[3] "in ne več kot %(max_number)d %(type_s)s skupno."
+
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "%(type_s)s lahko uporabiš vsako sekundo."
+msgstr[1] "%(type_s)s lahko uporabiš vsaki %(min_interval)g sekundi."
+msgstr[2] "%(type_s)s lahko uporabiš vsake %(min_interval)g sekunde."
+msgstr[3] "%(type_s)s lahko uporabiš vsakih %(min_interval)g sekund."
+
+#, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "Uporabiš lahko največ %(max_number)d %(type_s)s."
+msgstr[1] "Uporabiš lahko največ %(max_number)d %(type_s)sa."
+msgstr[2] "Uporabiš lahko največ %(max_number)d %(type_s)se."
+msgstr[3] "Uporabiš lahko največ %(max_number)d %(type_s)sov."
+
+msgid "You have no limitations on how you use them."
+msgstr "Ni omejitev za uporabo."
+
+msgid "Question too big!"
+msgstr "Preveliko vprašanje!"
+
+msgid "You have reached the question length limit."
+msgstr "Dosegel si dolžinsko omejitev vprašanja."
+
+msgid "Question received"
+msgstr "Vprašanje je bilo prejeto"
+
+msgid "Your question has been received, you will be notified when it is answered."
+msgstr "Tvoje vprašanje je bilo prejeto. O odgovoru boš obveščen(a)"
+
+msgid "Too many print jobs!"
+msgstr "Preveč tiskalniških opravil!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Dosegel(la) si največje število %d tiskanj."
+
+msgid "Invalid format!"
+msgstr "Napačen format!"
+
+msgid "Please select the correct files."
+msgstr "Prosim izberi pravilne datoteke."
+
+msgid "File too big!"
+msgstr "Datoteka je prevelika!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Vsaka datoteka je lahko velika največ %d bajtov."
+
+msgid "Print job storage failed!"
+msgstr "Shranjevanje tiska ni uspelo!"
+
+msgid "Please try again."
+msgstr "Prosim poizkusi znova."
+
+msgid "Print job received"
+msgstr "Tiskalniško opravilo je sprejeto"
+
+msgid "Your print job has been received."
+msgstr "Tvoje tiskalniško opravilo je bilo sprejeto."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Dosegel(la) si največje možno število %d oddaj za vse naloge."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Dosegel(la) si največje število %d oddaj za to nalogo."
+
+msgid "Too many submissions!"
+msgstr "Preveč oddaj!"
+
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Nasednjo oddajo lahko opraviš %d sekund po zadnji oddaji."
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Nasednjo oddajo za to nalogo lahko opraviš %d sekund po zadnji oddaji."
+
+msgid "Submissions too frequent!"
+msgstr "Prepogosto oddajanje!"
+
+msgid "Invalid submission format!"
+msgstr "Napačna oblika oddaje!"
+
+msgid "Invalid archive format!"
+msgstr "Napačna oblika arhiva!"
+
+msgid "The submitted archive could not be opened."
+msgstr "Ne morem odpreti oddanega arhiva."
+
+msgid "Cannot recognize submission's language."
+msgstr "Ne morem prepoznati jezika oddaje."
+
+msgid "All sources must be in the same language."
+msgstr "Vsa izvorna koda mora biti v istem jeziku."
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "%s ni dovoljen."
+
+msgid "Invalid submission!"
+msgstr "Napačna oddaja!"
+
+msgid "Submission too big!"
+msgstr "Prevelika oddaja!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Vsaka izvorna datoteka je lahko velika največ %d bajtov."
+
+msgid "Submission storage failed!"
+msgstr "Shranjevanje oddaje neuspešno!"
+
+msgid "Submission received"
+msgstr "Oddaja je sprejeta"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Tvoja oddaja je bila sprejeta in je v postopku vrednotenja."
+
+msgid "Compiling..."
+msgstr "Prevajam..."
+
+msgid "details"
+msgstr "podrobnosti"
+
+msgid "Evaluating..."
+msgstr "Ovrednotenje poteka..."
+
+msgid "Scoring..."
+msgstr "Točkujem..."
+
+msgid "Evaluated"
+msgstr "Ovrednoteno"
+
+msgid "Token request discarded"
+msgstr "Žeton je opuščen"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Tvoja zahteva je bila zavžena, ker nimaš na voljo žetonov."
+
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Tvoja zahteva je bila zavržena, ker si pri tej oddaji že uporabil žeton."
+
+msgid "Token request received"
+msgstr "Zahteva žetona je sprejeta"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Tvoja zahteva je bila sprejeta in je dodana k oddaji."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "Dosegel si največje možno število %d preizkusov za vse naloge."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "Dosegel si največje možno število %d preizkusov za to nalogo."
+
+msgid "Too many tests!"
+msgstr "Preveč preizkusov!"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "Naslednji preizkus lahko opraviš %d sekund po zadnjem preizkusu."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "Naslednji preizkus lahko opraviš %d sekund po zadnjem preizkusu za to nalogo."
+
+msgid "Tests too frequent!"
+msgstr "Prepogosti preizkusi!"
+
+msgid "Invalid test format!"
+msgstr "Napačna oblika preizkusa!"
+
+msgid "Cannot recognize test's language."
+msgstr "Ne morem prepoznati jezika preizkusa."
+
+msgid "Invalid test!"
+msgstr "Napačen preizkus!"
+
+msgid "Test too big!"
+msgstr "Prevelik preizkus!"
+
+msgid "Input too big!"
+msgstr "Prevelik vhod!"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "Vhodna datoteka je lahko velika največ %d bajtov."
+
+msgid "Test storage failed!"
+msgstr "Shranjevanje preizkusa spodletelo!"
+
+msgid "Test received"
+msgstr "Preizkus sprejet"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Tvoj preizkus je sprejet in se trenutno izvaja."
+
+msgid "Executing..."
+msgstr "Izvajam..."
+
+msgid "Executed"
+msgstr "Izvedeno"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f s"
+
+#, python-format
+msgid "Automatic (%s)"
+msgstr "Avtomatsko (%s)"
+
+#, python-format
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Prijavljen kot <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+
+msgid "Logout"
+msgstr "Odjava"
+
+msgid "Failed to log in."
+msgstr "Prijava ni uspela."
+
+msgid "Welcome"
+msgstr "Pozdravljeni"
+
+msgid "Please log in"
+msgstr "Prosim, prijavi se"
+
+msgid "Username"
+msgstr "Uporabniško ime"
+
+msgid "Password"
+msgstr "Geslo"
+
+msgid "Login"
+msgstr "Vstopi"
+
+msgid "Reset"
+msgstr "Ponastavi"
+
+msgid "New message"
+msgstr "Novo sporočilo"
+
+msgid "New announcement"
+msgstr "Novo obvestilo"
+
+msgid "New answer"
+msgstr "Nov odgovor"
+
+#, python-format
+msgid "%d unread"
+msgstr "%d neprebranih"
+
+msgid "Until contest starts:"
+msgstr "Čas do začetka:"
+
+msgid "Until contest ends:"
+msgstr "Čas do konca:"
+
+msgid "Time left:"
+msgstr "Preostali čas:"
+
+msgid "Server time:"
+msgstr "Strežniški čas:"
+
+msgid "Overview"
+msgstr "Pregled"
+
+msgid "Communication"
+msgstr "Komunikacija"
+
+msgid "Statement"
+msgstr "Naloga"
+
+msgid "Submissions"
+msgstr "Oddaje"
+
+msgid "Documentation"
+msgstr "Dokumentacija"
+
+msgid "Testing"
+msgstr "Preizkušanje"
+
+msgid "Printing"
+msgstr "Tiskanje"
+
+msgid "Contest Management System"
+msgstr "Contest Management System"
+
+msgid "is released under the"
+msgstr "je objavljen pod"
+
+msgid "GNU Affero General Public License"
+msgstr "GNU Affero General Public License"
+
+msgid "Announcements"
+msgstr "Obvestila"
+
+msgid "(no subject)"
+msgstr "(ni zadeve)"
+
+msgid "Questions"
+msgstr "Vprašanja"
+
+msgid "Subject"
+msgstr "Zadeva"
+
+msgid "Text"
+msgstr "Besedilo"
+
+msgid "Ask question"
+msgstr "Zastavi vprašanje"
+
+msgid "no answer yet"
+msgstr "ni odovora"
+
+msgid "Messages"
+msgstr "Sporočila"
+
+msgid "Programming languages and libraries"
+msgstr "Programski jeziki in knjižnice"
+
+msgid "Standard Template Library"
+msgstr "Standardna predložna knjižnica"
+
+msgid "Submission details for compilation"
+msgstr "Podrobnosti oddaje o prevajanju"
+
+msgid "Message"
+msgstr "Sporočilo"
+
+msgid "Explanation"
+msgstr "Obrazložitev"
+
+msgid "Submission details for evaluation"
+msgstr "Podrobnosti oddaje o ovrednotenju"
+
+#, python-format
+msgid "Error %d"
+msgstr "Napaka %d"
+
+msgid "An error occured while the server was handling your request."
+msgstr "Napaka se je zgodila med tem ko je strežnik obravnaval tvojo zahtevo."
+
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Vedi, da je poseg v Contest Management System (kot je preizkušanje strežnika s prirejenimi URL naslovi) lahko tretiran kot goljufija in si zaradi tega lahko prislužiš izključitev."
+
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Če naletiš na to težavo med normalno uporabo, prosim, pošlji e-pošto na weiss.simon.1995@gmail.com ."
+
+msgid "General information"
+msgstr "Splošne informacije"
+
+msgid "The contest hasn't started yet."
+msgstr "Tekmovanje se še ni začelo"
+
+#, python-format
+msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "Tekmovanje se bo začelo ob %(start_time)s in končalo ob %(stop_time)s."
+
+msgid "The contest is currently running."
+msgstr "Tekmovanje je v teku."
+
+#, python-format
+msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
+msgstr "Tekmovanje se je začelo ob %(start_time)s in se bo končalo ob %(stop_time)s."
+
+msgid "The contest has already ended."
+msgstr "Tekmovanje se je že končalo."
+
+#, python-format
+msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr "Tekmovanje se bo začelo ob %(start_time)s in končalo ob %(stop_time)s."
+
+msgid "You have an infinite number of tokens."
+msgstr "Imaš neomejeno število žetonov"
+
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr "Podrobnejši rezultat lahko vidiš, če uporabiš žeton."
+
+msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
+msgstr "Točke za nalogo bodo dodeljene kot največje število točk med oddajami z žetoni in zadnjo oddajo."
+
+msgid "You have a distinct set of tokens for each task."
+msgstr "Za vsako nalogo je na voljo ločen nabor žetonov."
+
+#, python-format
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "Pravila o %(type_pl)sh najdeš na strani pri opisu vsake naloge."
+
+msgid "You have a set of tokens shared among all tasks."
+msgstr "Žetoni se delijo med vsemi nalogami."
+
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Imaš dva različna tipa žetonov: nehaj <em>tekmovalnih-žetonov</em>, ki jih lahko uporabiš pri vseh nalogah, in nekaj <em>žetonov-za-nalogo</em> za vsako nalogo."
+
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Podrobnosti oddaje lahko vidiš, če uporabiš dva žetona - vsakega tipa enega."
+
+#, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr "Med tekmovanjem lahko oddaš največ %(submissions)s rešitev."
+
+#, python-format
+msgid "You can submit at most %(user_tests)s user tests during this contest."
+msgstr "Med tekmovanjem lahko oddaš največ %(user_tests)s svojih preizkusov."
+
+#, python-format
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Vsak lahko tekmuje (t.j. oddaja rešitve) neomejeno znotraj %(per_user_time)s "
+
+msgid "As soon as the contest starts you can choose to start your time frame."
+msgstr "Takoj ko se tekmovanje začne, lahko izbereš, da ti odštevalnik časa začne šteti."
+
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Ko začneš, lahko oddajaš rešitve do konca svojega omejenega časa oz. do konca tekmovanja, katerokoli se izteče prej."
+
+msgid "By clicking on the button below you can start your time frame."
+msgstr "S klikom na gumb spodaj lahko poženeš svoj odštevalnik časa."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s."
+msgstr "Z omejenim časom si pričel(a) ob %(start_time)s."
+
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Rešitve lahko oddajaš do konca svojega omejenega časa oz. do konca tekmovanja, katerokoli se izteče prej."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s and you already finished it."
+msgstr "Tekmovanje si začel(a) ob %(start_time)s in ga tudi že zaključil(a)."
+
+msgid "There's nothing you can do now."
+msgstr "Sedaj ne moreš narediti ničesar."
+
+msgid "You never started your time frame. Now it's too late."
+msgstr "Nikoli nisi pognal(a) odštevalnika časa. Sedaj je že prepozno."
+
+msgid "Start!"
+msgstr "Začni!"
+
+msgid "Task overview"
+msgstr "Pregled naloge"
+
+msgid "Task"
+msgstr "Naloga"
+
+msgid "Name"
+msgstr "Ime"
+
+msgid "Time limit"
+msgstr "Časovna omejitev"
+
+msgid "Memory limit"
+msgstr "Omejitev spomina"
+
+msgid "Type"
+msgstr "Tip"
+
+msgid "Files"
+msgstr "Datoteke"
+
+msgid "Tokens"
+msgstr "Žetoni"
+
+#, python-format
+msgid "%(seconds)g second"
+msgstr "%(seconds)g sekunda"
+
+#, python-format
+msgid "%(seconds)g seconds"
+msgstr "%(seconds)g sekund"
+
+#, python-format
+msgid "%(mb)d MiB"
+msgstr "%(mb)d MiB"
+
+msgid "Yes"
+msgstr "Da"
+
+msgid "No"
+msgstr "Ne"
+
+msgid "Print"
+msgstr "Tiskaj"
+
+#, python-format
+msgid "You can print %(remaining_jobs)d more text or PDF files of up to %(max_pages)d pages each."
+msgstr "Natisneš lahko še %(remaining_jobs)d besedilnih ali PDF datotek z največ %(max_pages)d stranmi."
+
+#, python-format
+msgid "You can print %(remaining_jobs)d more text files of up to %(max_pages)d pages each."
+msgstr "Natisneš lahko še %(remaining_jobs)d besedilnih datotek z največ %(max_pages)d stranmi."
+
+msgid "File (text or PDF)"
+msgstr "Datoteka (besedilna ali PDF)"
+
+msgid "File (text)"
+msgstr "Datoteka (besedilna)"
+
+msgid "Submit"
+msgstr "Oddaj"
+
+msgid "You cannot print anything any more as you have used up your printing quota."
+msgstr "Ne moreš več tiskati, ker si porabil(a) svojo kvoto tiskanja."
+
+msgid "Previous print jobs"
+msgstr "Prejšnja tiskalniška opravila"
+
+msgid "Date and time"
+msgstr "Datum in čas"
+
+msgid "Time"
+msgstr "Čas"
+
+msgid "File name"
+msgstr "Ime datoteke"
+
+msgid "Status"
+msgstr "Stanje"
+
+msgid "no print jobs yet"
+msgstr "ni tiskalniških opravil"
+
+msgid "Preparing..."
+msgstr "Pripravljam..."
+
+msgid "Compilation output"
+msgstr "Izhod prevajalnika"
+
+msgid "Compilation outcome:"
+msgstr "Izzid prevajalnika:"
+
+msgid "Compilation time:"
+msgstr "Čas prevajanja:"
+
+msgid "Memory used:"
+msgstr "Porabljen spomin:"
+
+msgid "Standard output"
+msgstr "Standardni izhod"
+
+msgid "Standard error"
+msgstr "Standardna napaka"
+
+msgid "None"
+msgstr "Brez"
+
+msgid "Download"
+msgstr "Prenesi"
+
+msgid "Played"
+msgstr "Igrano"
+
+msgid "Play!"
+msgstr "Igraj!"
+
+msgid "Wait..."
+msgstr "Počakaj..."
+
+msgid "No tokens"
+msgstr "Ni žetonov"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>opis</small>"
+
+msgid "no statement available"
+msgstr "besedilo ni dostopno"
+
+msgid "Download task statement"
+msgstr "Prenesi besedilo naloge"
+
+msgid "The statement for this task is available in multiple versions, in different languages."
+msgstr "Besedilo naloge je na voljo v različnih jezikih."
+
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "Vidiš (in preneseš) lahko vse, če uporabiš seznam na desni."
+
+msgid "Some suggested translations follow."
+msgstr "Nekaj predlaganih prevodov še sledi."
+
+#, python-format
+msgid "Statement in <b>%s</b>"
+msgstr "Besedilo v <b>%s</b>"
+
+#, python-format
+msgid "Statement in %s"
+msgstr "Besedilo v %s"
+
+#, python-format
+msgid "<b>%s</b>"
+msgstr "<b>%s</b>"
+
+#, python-format
+msgid "%s"
+msgstr "%s"
+
+msgid "Some details"
+msgstr "Nekaj podrobnosti"
+
+msgid "Compilation commands"
+msgstr "Ukazi za prevajanje"
+
+#, python-format
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
+msgstr "Pravila za %(type_pl)s so dostopna na <a href=\"%(url_root)s/\">pregledni strani</a>."
+
+msgid "Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Če želiš videti podrobnejši izzid oddaje, moraš uporabiti oba žetona."
+
+msgid "Attachments"
+msgstr "Priponke"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>submissions</small>"
+msgstr "%(name)s (%(short_name)s) <small>oddaje</small>"
+
+msgid "Submit a solution"
+msgstr "Oddaj rešitev"
+
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr "Oddaš lahko še %(submissions_left)s rešitev."
+
+msgid "submission.zip"
+msgstr "oddaja.zip"
+
+msgid "Previous submissions"
+msgstr "Predhodne oddaje"
+
+msgid "Right now, you have infinite tokens available on this task."
+msgstr "Trenutno imaš na voljo neomejeno število žetonov za to nalogo."
+
+msgid "Right now, you have one token available on this task."
+msgstr "Trenutno nimaš na voljo nobenega žetona za to nalogo."
+
+#, python-format
+msgid "Right now, you have %(tokens)s tokens available on this task."
+msgstr "Trenutno imaš na voljo %(tokens)s žetonov za to nalogo."
+
+#, python-format
+msgid "But you have to wait until %(expiration_time)s to use them."
+msgstr "Vendar moraš počakati do %(expiration_time)s, da jih lahko uporabiš."
+
+#, python-format
+msgid "You will receive a new token at %(gen_time)s."
+msgstr "Nov žeton prejmeš ob %(gen_time)s."
+
+msgid "In the current situation, no more tokens will be generated."
+msgstr "V danih okoliščinah ne bo proizveden noben nov žeton več."
+
+msgid "Right now, you do not have tokens available for this task."
+msgstr "Trenutno nimaš na voljo nobenega žetona za to nalogo."
+
+#, python-format
+msgid "But you will have to wait until %(expiration_time)s to use it."
+msgstr "Vendar moraš počakati do %(expiration_time)s, da ga lahko uporabiš."
+
+msgid "Public score"
+msgstr "Javne točke"
+
+msgid "Total score"
+msgstr "Skupne točke"
+
+msgid "Score"
+msgstr "Točke"
+
+msgid "Token"
+msgstr "Žeton"
+
+msgid "no submissions yet"
+msgstr "trenutno ni oddaj"
+
+msgid "Submission details"
+msgstr "Podrobnosti oddaje"
+
+msgid "Close"
+msgstr "Zapri"
+
+msgid "Submit a test"
+msgstr "Oddaj preizkus"
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
+msgstr "Oddaš lahko še %(user_tests_left)s preizkusov."
+
+msgid "input"
+msgstr "vhod"
+
+msgid "Previous tests"
+msgstr "Predhodni preizkusi"
+
+msgid "Input"
+msgstr "Vhod"
+
+msgid "Output"
+msgstr "Izhod"
+
+msgid "no tests yet"
+msgstr "trenutno ni preizkusov"
+
+msgid "Test details"
+msgstr "Podrobnosti preizkusa"
+
+msgid "Evaluation outcome"
+msgstr "Rezultat ovrednotenja"
