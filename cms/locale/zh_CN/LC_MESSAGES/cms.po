@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-01 07:17+0100\n"
+"POT-Creation-Date: 2017-01-25 19:14+0000\n"
 "PO-Revision-Date: 2014-07-01 07:24+0100\n"
 "Last-Translator: vanshady <faceswilliam@gmail.com>\n"
 "Language-Team: Simplified Chinese\n"
@@ -16,52 +16,119 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "N/A"
-msgstr "(空)"
-
 msgid "Compilation succeeded"
 msgstr "编译成功"
+
+msgid "Your submission successfully compiled to an excutable."
+msgstr "您的提交"
 
 msgid "Compilation failed"
 msgstr "编译失败"
 
+msgid "Your submission did not compile correctly."
+msgstr "您的提交没有正确编译"
+
 msgid "Compilation timed out"
 msgstr "编译超时"
 
-#, python-format
 msgid ""
-"Compilation killed with signal %d (could be triggered by violating memory "
+"Your submission exceeded the time limit while compiling. This might be "
+"caused by an excessive use of C++ templates, for example."
+msgstr "程序编译超时。比如说，这可能是因为过度使用C++模板。"
+
+#, fuzzy, python-format
+msgid ""
+"Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr "编译程序因内存违规存取而强制终止 (信号 %d)"
 
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit for the compilation, and "
+"in turn by an excessive use of C++ templates, for example."
+msgstr "程序因为制定signal而被强制终止。这可能是因为编译所用内存溢出或者过度使用C++模板。"
+
+msgid "Output is correct"
+msgstr "输出正确"
+
+msgid "Your submission ran and gave the correct answer"
+msgstr "程序成功运行并且回答正确"
+
+#, fuzzy
+msgid "Output is partially correct"
+msgstr "输出正确"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr "程序成功运行并且回答部分正确"
+
+msgid "Output isn't correct"
+msgstr "输出错误"
+
+msgid "Your submission ran, but gave the wrong answer"
+msgstr "您的提交运行了"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "执行后并未产生文件 %s"
+
+msgid "Your submission ran, but did not write on the correct output file"
+msgstr "程序成功运行，但没有输出到正确的文件"
+
 msgid "Execution timed out"
 msgstr "超过时间限制"
+
+msgid "Your submission used too much CPU time."
+msgstr "您的提交占用了太多CPU"
+
+msgid "Execution timed out (wall clock limit exceeded)"
+msgstr "运行超时"
+
+msgid ""
+"Your submission used too much total time. This might be triggered by "
+"undefined code, or buffer overflow, for example. Note that in this case the "
+"CPU time visible in the submission details might be much smaller than the "
+"time limit."
+msgstr "程序总耗时超时。这可能是因为undefined代码或者缓存溢出。注意如果是这样的话，在程序报告中的CPU用时可能会小于时限。"
 
 #, python-format
 msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
 "limits)"
-msgstr "测试程序因内存违规存取而强制终止 (信号 %d)"
+msgstr "测试程序因信号%d而被强制终止（可能因为内存溢出）"
+
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit. Note that if this is the "
+"reason, the memory usage visible in the submission details is the usage "
+"before the allocation that caused the signal."
+msgstr "程序因为制定信号而被强制终止。这可能是因为内存溢出。注意如果这是原因的话，程序报告中的内存使用信息是信号被发出前的信息。"
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
-msgstr "测试程序因违规存取系统函数 %s 而强制终止"
+msgstr "程序因违规存取系统函数 %s 而被强制终止"
+
+msgid ""
+"Your submission was killed because it tried to use the forbidden syscall "
+"specified in the message."
+msgstr "程序因违规系统调用而被强制终止"
 
 msgid "Execution killed because of forbidden file access"
-msgstr "测试程序因违规存取文件系统而强制终止"
+msgstr "程序因违规存取文件系统而被强制终止"
+
+msgid ""
+"Your submission was killed because it tried to read or write a forbidden "
+"file."
+msgstr "程序因违规读写文件而被强制终止"
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "执行失败: 程序返回值非零"
 
-msgid "Output is correct"
-msgstr "输出正确"
+msgid ""
+"Your submission failed because it exited with a return code different from 0."
+msgstr "程序因退出时返回值非0而失败"
 
-msgid "Output isn't correct"
-msgstr "输出错误"
-
-#, python-format
-msgid "Evaluation didn't produce file %s"
-msgstr "执行后并未产生文件 %s"
+msgid "N/A"
+msgstr "(空)"
 
 #, python-format
 msgid "Subtask %d"
@@ -99,175 +166,6 @@ msgstr "略过编译程序"
 
 msgid "File not submitted"
 msgstr "文件未送出"
-
-msgid "Question received"
-msgstr "已送出询问"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr "您的询问已成功送出, 待此询问得到回复后将会通知您."
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "您在本竞赛的传送次数已达上限 (%d 次)"
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr "您在本题目的传送次数已达上限 (%d 次)"
-
-msgid "Too many submissions!"
-msgstr "传送次数超出限制!"
-
-#, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "在本竞赛的最后一次传送过后 %d 秒始可再次传送."
-
-#, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr "在本题的最后一次传送过后 %d 秒始可再次传送."
-
-msgid "Submissions too frequent!"
-msgstr "传送过于频繁"
-
-msgid "Invalid submission format!"
-msgstr "文件格式错误"
-
-msgid "Please select the correct files."
-msgstr "请选择正确的文件"
-
-msgid "Invalid archive format!"
-msgstr "封装文件格式错误"
-
-msgid "The submitted archive could not be opened."
-msgstr "封装文件无法正常开启"
-
-msgid "Cannot recognize submission's language."
-msgstr "无法识别本次传送所使用的程序语言"
-
-msgid "All sources must be in the same language."
-msgstr "所有程序码需使用相同的程序语言"
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr ""
-
-msgid "Invalid submission!"
-msgstr "文件不正确"
-
-msgid "Submission too big!"
-msgstr "传送文件过大"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "个別程序码文件容量不得超过 %d bytes."
-
-msgid "Submission storage failed!"
-msgstr "本传送发生文件存取错误"
-
-msgid "Please try again."
-msgstr "请再试一次"
-
-msgid "Submission received"
-msgstr "已收到本次传送"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "已收到您的传送, 等待评测中."
-
-msgid "Token request discarded"
-msgstr "Token 已弃用"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Token 已用完"
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr "本次传送已使用过 Token"
-
-msgid "Token request received"
-msgstr "Token 使用成功"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "请查看本次传送的完整评测结果"
-
-msgid "Compiling..."
-msgstr "编译中..."
-
-msgid "details"
-msgstr "详细资料"
-
-msgid "Evaluating..."
-msgstr "执行中..."
-
-msgid "Scoring..."
-msgstr "评分中..."
-
-msgid "Evaluated"
-msgstr "已评测"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr "在竞赛中, 您最多可以进行 %d 次测试."
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "在本题中, 您最多可以进行 %d 次测试."
-
-msgid "Too many tests!"
-msgstr "测试次数超出限制"
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "在竞赛中, 两次测试之间必须间隔至少 %d 秒."
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr "在本题中, 两次测试之间必须间隔至少 %d 秒."
-
-msgid "Tests too frequent!"
-msgstr "测试过于频繁"
-
-msgid "Invalid test format!"
-msgstr "错误的测试文件格式"
-
-msgid "Cannot recognize test's language."
-msgstr "无法识别本次测试的语言"
-
-msgid "Invalid test!"
-msgstr "无效的测试"
-
-msgid "Test too big!"
-msgstr "测试文件过大"
-
-msgid "Input too big!"
-msgstr "输入文件过大"
-
-#, python-format
-msgid "The input file must be at most %d bytes long."
-msgstr "输入文件不得超过 %d bytes"
-
-msgid "Test storage failed!"
-msgstr "测试文件储存失败"
-
-msgid "Test received"
-msgstr "已收到测试"
-
-msgid "Your test has been received and is currently being executed."
-msgstr "请等待测试结果出炉"
-
-msgid "Executing..."
-msgstr "执行中..."
-
-msgid "Executed"
-msgstr "已评测"
-
-#, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f 秒"
 
 msgid "%Y-%m-%d"
 msgstr "%Y-%m-%d"
@@ -371,11 +269,11 @@ msgstr[1] "至多可以同时拥有 %(gen_max)d 个未使用的 %(type_pl)s."
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "会产生一个额外的 %(type_s)s."
-msgstr[1] "会产生 %d 个额外的 %(type_s)s."
+msgstr[1] "会产生%d个额外的 %(type_s)s."
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "并不再产生新的 %(type_pl)s."
+msgstr "并不再产生新的%(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -404,19 +302,225 @@ msgstr[1] "且一旦产生总共 %(max_number)d 个 %(type_s)s 后将不会再�
 msgid "You have no limitations on how you use them."
 msgstr "使用规则中没有其他额外的限制."
 
+#, fuzzy
+msgid "Question too big!"
+msgstr "测试文件过大"
+
+msgid "You have reached the question length limit."
+msgstr "您的提问超出长度限制"
+
+msgid "Question received"
+msgstr "已送出询问"
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr "您的询问已成功送出, 待此询问得到回复后将会通知您."
+
+#, fuzzy
+msgid "Too many print jobs!"
+msgstr "测试次数超出限制"
+
+#, fuzzy, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "在本题中, 您最多可以进行 %d 次测试."
+
+#, fuzzy
+msgid "Invalid format!"
+msgstr "错误的测试文件格式"
+
+msgid "Please select the correct files."
+msgstr "请选择正确的文件"
+
+#, fuzzy
+msgid "File too big!"
+msgstr "测试文件过大"
+
+#, fuzzy, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "个別程序码文件容量不得超过 %d bytes."
+
+#, fuzzy
+msgid "Print job storage failed!"
+msgstr "测试文件储存失败"
+
+msgid "Please try again."
+msgstr "请再试一次"
+
+#, fuzzy
+msgid "Print job received"
+msgstr "已收到测试"
+
+msgid "Your print job has been received."
+msgstr "已收到打印请求"
+
+msgid "Compiling..."
+msgstr "编译中..."
+
+msgid "details"
+msgstr "详细资料"
+
+msgid "Evaluating..."
+msgstr "执行中..."
+
+msgid "Scoring..."
+msgstr "评分中..."
+
+msgid "Evaluated"
+msgstr "已评测"
+
+msgid "Token request discarded"
+msgstr "Token 已弃用"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Token 已用完"
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr "本次传送已使用过 Token"
+
+msgid "Token request received"
+msgstr "Token 使用成功"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "请查看本次传送的完整评测结果"
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "您在本竞赛的传送次数已达上限 (%d 次)"
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr "您在本题目的传送次数已达上限 (%d 次)"
+
+msgid "Too many submissions!"
+msgstr "传送次数超出限制!"
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "在本竞赛的最后一次传送过后 %d 秒始可再次传送."
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr "在本题的最后一次传送过后 %d 秒始可再次传送."
+
+msgid "Submissions too frequent!"
+msgstr "传送过于频繁"
+
+msgid "Invalid submission format!"
+msgstr "文件格式错误"
+
+msgid "Invalid archive format!"
+msgstr "封装文件格式错误"
+
+msgid "The submitted archive could not be opened."
+msgstr "封装文件无法正常开启"
+
+#, fuzzy
+msgid "Cannot recognize the submission language."
+msgstr "无法识别本次传送所使用的程序语言"
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "本次竞赛不支持语言 %s"
+
+msgid "Invalid submission!"
+msgstr "文件不正确"
+
+msgid "Submission too big!"
+msgstr "传送文件过大"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "个別程序码文件容量不得超过 %d bytes."
+
+msgid "Submission storage failed!"
+msgstr "本传送发生文件存取错误"
+
+msgid "Submission received"
+msgstr "已收到本次传送"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "已收到您的传送, 等待评测中."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "在竞赛中, 您最多可以进行 %d 次测试."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "在本题中, 您最多可以进行 %d 次测试."
+
+msgid "Too many tests!"
+msgstr "测试次数超出限制"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "在竞赛中, 两次测试之间必须间隔至少 %d 秒."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "在本题中, 两次测试之间必须间隔至少 %d 秒."
+
+msgid "Tests too frequent!"
+msgstr "测试过于频繁"
+
+msgid "Invalid test format!"
+msgstr "错误的测试文件格式"
+
+#, fuzzy
+msgid "Cannot recognize the user test language."
+msgstr "无法识别本次测试的语言"
+
+msgid "Invalid test!"
+msgstr "无效的测试"
+
+msgid "Test too big!"
+msgstr "测试文件过大"
+
+msgid "Input too big!"
+msgstr "输入文件过大"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "输入文件不得超过 %d bytes"
+
+msgid "Test storage failed!"
+msgstr "测试文件储存失败"
+
+msgid "Test received"
+msgstr "已收到测试"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "请等待测试结果出炉"
+
+msgid "Executing..."
+msgstr "执行中..."
+
+msgid "Executed"
+msgstr "已评测"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f 秒"
+
 #, python-format
 msgid "Automatic (%s)"
 msgstr "自动检测 (%s)"
 
-#, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
-"</em>"
-msgstr ""
-"使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
-
 msgid "Logout"
 msgstr "登出"
+
+#, python-format
+msgid ""
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
+msgstr ""
+"使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "无法登入"
@@ -482,6 +586,9 @@ msgstr "参考资料"
 msgid "Testing"
 msgstr "线上测试"
 
+msgid "Printing"
+msgstr "打印中"
+
 msgid "Contest Management System"
 msgstr "本系统"
 
@@ -515,8 +622,31 @@ msgstr "尚未回复"
 msgid "Messages"
 msgstr "信息"
 
+msgid "Programming languages and libraries"
+msgstr "编程语言和库"
+
 msgid "Standard Template Library"
 msgstr "STL 标准样板函数库"
+
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
+msgstr "Java的main class应该与题目名称保持一致"
+
+#, fuzzy
+msgid "Submission details for compilation"
+msgstr "程序编译细节"
+
+#, fuzzy
+msgid "Message"
+msgstr "信息"
+
+msgid "Explanation"
+msgstr "解释"
+
+#, fuzzy
+msgid "Submission details for evaluation"
+msgstr "程序评估细节"
 
 #, python-format
 msgid "Error %d"
@@ -577,7 +707,8 @@ msgid "You have a distinct set of tokens for each task."
 msgstr "每题的 Token 额度是独立计算的."
 
 #, python-format
-msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgid ""
+"You can find the rules for the %(type_pl)s on each task's description page."
 msgstr "在题目描述页面中, 可以看到该题目 %(type_pl)s 的使用规则."
 
 msgid "You have a set of tokens shared among all tasks."
@@ -593,7 +724,15 @@ msgstr ""
 msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
 "one of each type."
-msgstr "对于每次传送而言, 使用两类 Token 各一枚即可查看该次详细的评测结果."
+msgstr "对于每次上传而言, 使用两类 Token 各一枚即可查看该次详细的评测结果."
+
+#, fuzzy, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr "您在本题目的上传次数已达上限 (%(submissions)s 次)"
+
+#, python-format
+msgid "You can submit at most %(user_tests)s user tests during this contest."
+msgstr "您可以提交最多%(submissions)s 次用户测试"
 
 #, python-format
 msgid ""
@@ -608,8 +747,8 @@ msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
 msgstr ""
-"开始计时后即可开始提交解答. 此外, 若比赛已经结束, 即使您自己的竞赛计时器尚未结"
-"束, 您也无法提交解答."
+"开始计时后即可开始提交解答. 此外, 若比赛已经结束, 即使您自己的竞赛计时器尚未"
+"结束, 您也无法提交解答."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "点击以下按钮确认开始参加竞赛并开始计时."
@@ -659,7 +798,7 @@ msgid "Files"
 msgstr "传送文件"
 
 msgid "Tokens"
-msgstr ""
+msgstr "Token"
 
 #, python-format
 msgid "%(seconds)g second"
@@ -671,13 +810,65 @@ msgstr "%(seconds)g 秒"
 
 #, python-format
 msgid "%(mb)d MiB"
-msgstr ""
+msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "是"
 
 msgid "No"
 msgstr "否"
+
+msgid "Print"
+msgstr "打印"
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text or PDF files of up to "
+"%(max_pages)d pages each."
+msgstr "您可以再打印%(remaining_jobs)d个文本文件或者PDF，每个文件最多%(max_pages)d页."
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"pages each."
+msgstr "您可以打印%(remaining_jobs)d个文本文件，每个文件最多%(max_pages)d页."
+
+msgid "File (text or PDF)"
+msgstr "文件（文字或PDF）"
+
+msgid "File (text)"
+msgstr "文件（文字）"
+
+msgid "Submit"
+msgstr "提价"
+
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr "由于您的打印次数已用完，您不能再打印了"
+
+#, fuzzy
+msgid "Previous print jobs"
+msgstr "测试记录"
+
+msgid "Date and time"
+msgstr "日期与时间"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "File name"
+msgstr "文件名"
+
+msgid "Status"
+msgstr "状态"
+
+#, fuzzy
+msgid "no print jobs yet"
+msgstr "尚未测试"
+
+#, fuzzy
+msgid "Preparing..."
+msgstr "评分中..."
 
 msgid "Compilation output"
 msgstr "编译信息"
@@ -746,11 +937,11 @@ msgstr "题目描述 in %s"
 
 #, python-format
 msgid "<b>%s</b>"
-msgstr ""
+msgstr "<b>%s</b>"
 
 #, python-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 msgid "Some details"
 msgstr "详细信息"
@@ -759,8 +950,11 @@ msgid "Compilation commands"
 msgstr "编译指令"
 
 #, python-format
-msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
-msgstr "在<a href=\"%(url_root)s/\">竞赛概况</a>中, 可以看到 %(type_pl)s 的使用规则."
+msgid ""
+"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"\">contest overview page</a>."
+msgstr ""
+"在<a href=\"%(url_root)s/\">竞赛概况</a>中, 可以看到 %(type_pl)s 的使用规则."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
@@ -777,11 +971,12 @@ msgstr "%(name)s (%(short_name)s) <small>评测页面</small>"
 msgid "Submit a solution"
 msgstr "提交解答"
 
-msgid "Submit"
-msgstr "提价"
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr "您可以再上传%(submissions_left)个解答"
 
 msgid "submission.zip"
-msgstr ""
+msgstr "submission.zip"
 
 msgid "Previous submissions"
 msgstr "评测记录"
@@ -812,16 +1007,7 @@ msgstr "本题 Token 已用尽."
 
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
-msgstr "但需等待至 %(expiration_time)s 后才可再次使用 Token."
-
-msgid "Date and time"
-msgstr "日期与时间"
-
-msgid "Time"
-msgstr "时间"
-
-msgid "Status"
-msgstr "状态"
+msgstr "但需等待 %(expiration_time)s 后才可再次使用 Token."
 
 msgid "Public score"
 msgstr "公开得分"
@@ -833,7 +1019,7 @@ msgid "Score"
 msgstr "得分"
 
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 msgid "no submissions yet"
 msgstr "尚未传送"
@@ -846,6 +1032,10 @@ msgstr "关闭"
 
 msgid "Submit a test"
 msgstr "传送测试"
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
+msgstr "您可以再提交%(user_tests_left)s次测试"
 
 msgid "input"
 msgstr "输入"
@@ -867,3 +1057,6 @@ msgstr "测试详细资料"
 
 msgid "Evaluation outcome"
 msgstr "测试信息"
+
+#~ msgid "All sources must be in the same language."
+#~ msgstr "所有程序码需使用相同的程序语言"
