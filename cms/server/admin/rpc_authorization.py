@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,9 +30,9 @@ from cms.db import Admin, SessionGen
 
 
 RPCS_ALLOWED_FOR_AUTHENTICATED = [
+    ("AdminWebServer", "submissions_status"),
     ("ResourceService", "get_resources"),
     ("EvaluationService", "workers_status"),
-    ("EvaluationService", "submissions_status"),
     ("EvaluationService", "queue_status"),
     ("LogService", "last_messages"),
 ]

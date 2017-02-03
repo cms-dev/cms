@@ -202,9 +202,9 @@ function update_statuses()
             || update_statuses.submissions_request.state() != "pending") {
         update_statuses.submissions_request =
             cmsrpc_request("{{ url_root }}",
-                           "EvaluationService", 0,
+                           "AdminWebServer", 0,
                            "submissions_status",
-                           {},
+                           {"contest_id": {{ contest.id }}},
                            update_submissions_status);
     }
     {% end %}
