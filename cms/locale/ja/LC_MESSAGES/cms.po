@@ -32,7 +32,7 @@ msgid "Your submission did not compile correctly."
 msgstr "提出されたファイルのコンパイルに失敗しました。"
 
 msgid "Compilation timed out"
-msgstr "コンパイル時間制限超過"
+msgstr "コンパイル時間超過"
 
 msgid ""
 "Your submission exceeded the time limit while compiling. This might be "
@@ -45,9 +45,7 @@ msgstr ""
 msgid ""
 "Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr ""
-"コンパイラはシグナル %s によって強制終了されました (メモリ制限超過が原因かも"
-"しれません)"
+msgstr "シグナル %s による強制終了 (メモリ制限違反の可能性もあります)"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "
@@ -59,19 +57,19 @@ msgstr ""
 "制限の超過が原因かもしれません。"
 
 msgid "Output is correct"
-msgstr "出力は正しいです"
+msgstr "正解"
 
 msgid "Your submission ran and gave the correct answer"
 msgstr "提出されたプログラムは正常終了して、正しい解答を出力しました。"
 
 msgid "Output is partially correct"
-msgstr "出力は部分的に正しいです"
+msgstr "部分的に正解"
 
 msgid "Your submission ran and gave the partially correct answer"
 msgstr "提出されたプログラムは正常終了して、部分的に正しい解答を出力しました。"
 
 msgid "Output isn't correct"
-msgstr "出力は正しくありません"
+msgstr "不正解"
 
 msgid "Your submission ran, but gave the wrong answer"
 msgstr ""
@@ -79,7 +77,7 @@ msgstr ""
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
-msgstr "提出されたプログラムはファイル %s を生成しませんでした"
+msgstr "ファイル %s がありません"
 
 msgid "Your submission ran, but did not write on the correct output file"
 msgstr ""
@@ -87,13 +85,13 @@ msgstr ""
 "せんでした。"
 
 msgid "Execution timed out"
-msgstr "CPU時間制限超過"
+msgstr "実行時間超過"
 
 msgid "Your submission used too much CPU time."
 msgstr "提出されたプログラムの実行が CPU 時間の制限を超えました。"
 
 msgid "Execution timed out (wall clock limit exceeded)"
-msgstr "実時間制限超過"
+msgstr "実行時間超過 (実時間)"
 
 msgid ""
 "Your submission used too much total time. This might be triggered by "
@@ -110,9 +108,7 @@ msgstr ""
 msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
 "limits)"
-msgstr ""
-"提出されたプログラムはシグナル %d によって強制終了されました (メモリ制限超過"
-"が原因かもしれません)"
+msgstr "シグナル %d による強制終了 (メモリ制限違反の可能性もあります)"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "
@@ -127,32 +123,27 @@ msgstr ""
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
-msgstr ""
-"禁止されているシステムコール %s を使用したため、提出されたプログラムは強制終"
-"了されました。"
+msgstr "禁止されたシステムコール %s を発行したことによる強制終了"
 
 msgid ""
 "Your submission was killed because it tried to use the forbidden syscall "
 "specified in the message."
 msgstr ""
-"禁止されているシステムコールを呼び出そうとしたため、提出されたプログラムは強"
-"制終了されました。"
+"禁止されたシステムコールを呼び出そうとしたため、提出されたプログラムは強制終"
+"了されました。"
 
 msgid "Execution killed because of forbidden file access"
-msgstr ""
-"禁止されているファイルアクセスを行ったため、提出されたプログラムは強制終了さ"
-"れました。"
+msgstr "禁止されたファイルアクセスを行ったことによる強制終了"
 
 msgid ""
 "Your submission was killed because it tried to read or write a forbidden "
 "file."
 msgstr ""
-"禁止されているファイルへの読み込みまたは書き込みを行おうとしたため、提出され"
-"たプログラムは強制終了されました。"
+"禁止されたファイルへの読み込みまたは書き込みを行おうとしたため、提出されたプ"
+"ログラムは強制終了されました。"
 
 msgid "Execution failed because the return code was nonzero"
-msgstr ""
-"提出されたプログラムは、ゼロではない戻り値を返して異常終了しました。"
+msgstr "戻り値がゼロでなかったことによる異常終了"
 
 msgid ""
 "Your submission failed because it exited with a return code different from 0."
@@ -177,7 +168,7 @@ msgid "Execution time"
 msgstr "実行時間"
 
 msgid "Memory used"
-msgstr "消費メモリ"
+msgstr "メモリ使用量"
 
 msgid "Not correct"
 msgstr "不正解"
@@ -189,16 +180,16 @@ msgid "Partially correct"
 msgstr "部分的に正解"
 
 msgid "Invalid files in submission"
-msgstr "提出されたファイルの中に無効なものがあります"
+msgstr "無効なファイルを含む提出"
 
 msgid "Execution completed successfully"
-msgstr "実行が正常終了しました"
+msgstr "正常終了"
 
 msgid "No compilation needed"
-msgstr "コンパイルは不要です"
+msgstr "コンパイル不要"
 
 msgid "File not submitted"
-msgstr "ファイルが提出されていません"
+msgstr "ファイル未提出"
 
 msgid "%Y-%m-%d"
 msgstr "%Y-%m-%d"
@@ -234,11 +225,11 @@ msgstr[0] "%d 日"
 
 #, python-format
 msgid "%s and %s"
-msgstr "%s %s"
+msgstr "%s と %s"
 
 #, python-format
 msgid "more than %s"
-msgstr "%s よりも長い"
+msgstr "%s と少し"
 
 msgid "contest-token"
 msgstr "コンテストトークン"
@@ -439,7 +430,7 @@ msgid "Submission received"
 msgstr "提出を受理しました"
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr "あなたの提出を受理しました。提出ファイルの評価が行われています。"
+msgstr "あなたの提出を受理しました。提出ファイルの実行・評価が行われています。"
 
 msgid "Compiling..."
 msgstr "コンパイルしています…"
@@ -448,16 +439,16 @@ msgid "details"
 msgstr "詳細"
 
 msgid "Evaluating..."
-msgstr "評価しています…"
+msgstr "実行・評価しています…"
 
 msgid "Scoring..."
 msgstr "得点を計算しています…"
 
 msgid "Evaluated"
-msgstr "評価完了"
+msgstr "実行・評価完了"
 
 msgid "Token request discarded"
-msgstr "トークン要求は却下されました"
+msgstr "トークン使用要求は却下されました"
 
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "使用可能なトークンがないので、あなたの要求は却下されました。"
@@ -469,7 +460,7 @@ msgstr ""
 "この提出には既にトークンが使用されているため、あなたの要求は却下されました。"
 
 msgid "Token request received"
-msgstr "トークン要求は受理されました"
+msgstr "トークン使用要求は受理されました"
 
 msgid "Your request has been received and applied to the submission."
 msgstr "あなたの要求は受理され、トークンが提出に適用されました。"
@@ -583,7 +574,7 @@ msgstr "新着回答"
 
 #, python-format
 msgid "%d unread"
-msgstr "%d 件の未読"
+msgstr "未読 %d 件"
 
 msgid "Until contest starts:"
 msgstr "コンテスト開始まで:"
@@ -667,7 +658,7 @@ msgid "Explanation"
 msgstr "説明"
 
 msgid "Submission details for evaluation"
-msgstr "評価メッセージの詳細"
+msgstr "実行・評価メッセージの詳細"
 
 #, python-format
 msgid "Error %d"
@@ -693,7 +684,7 @@ msgstr ""
 "ださい。"
 
 msgid "General information"
-msgstr "一般的な情報"
+msgstr "全般的な情報"
 
 msgid "The contest hasn't started yet."
 msgstr "コンテストはまだ始まっていません。"
@@ -823,7 +814,7 @@ msgid "Task"
 msgstr "課題"
 
 msgid "Name"
-msgstr "名称"
+msgstr "名前"
 
 msgid "Time limit"
 msgstr "時間制限"
@@ -832,10 +823,10 @@ msgid "Memory limit"
 msgstr "メモリ制限"
 
 msgid "Type"
-msgstr "課題の種類"
+msgstr "種類"
 
 msgid "Files"
-msgstr "提出ファイル"
+msgstr "ファイル"
 
 msgid "Tokens"
 msgstr "トークン"
@@ -1087,7 +1078,7 @@ msgstr "テストを要求する"
 
 #, python-format
 msgid "You can submit %(user_tests_left)s more test(s)."
-msgstr "あなたはテストをあと $(submissions_left)s 回要求できます。"
+msgstr "あなたはテストをあと %(user_tests_left)s 回要求できます。"
 
 msgid "input"
 msgstr "入力"
@@ -1108,4 +1099,4 @@ msgid "Test details"
 msgstr "テストの詳細"
 
 msgid "Evaluation outcome"
-msgstr "評価結果"
+msgstr "実行結果"
