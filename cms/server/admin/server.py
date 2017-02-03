@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -34,9 +34,13 @@ import base64
 import logging
 import pkg_resources
 
+from sqlalchemy import func, not_
+
 from cms import config, ServiceCoord, get_service_shards
+from cms.db import SessionGen, Dataset, SubmissionResult, Task
 from cms.db.filecacher import FileCacher
-from cms.io import WebService
+from cms.io import WebService, rpc_method
+from cms.service import EvaluationService
 
 from .handlers import HANDLERS
 from .handlers import views
@@ -77,6 +81,8 @@ class AdminWebServer(WebService):
         self.notifications = []
 
         self.file_cacher = FileCacher(self)
+        self.admin_web_server = self.connect_to(
+            ServiceCoord("AdminWebServer", 0))
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
         self.scoring_service = self.connect_to(
@@ -107,3 +113,75 @@ class AdminWebServer(WebService):
 
         """
         self.notifications.append((timestamp, subject, text))
+
+    @staticmethod
+    @rpc_method
+    def submissions_status(contest_id):
+        """Returns a dictionary of statistics about the number of
+        submissions on a specific status. There are seven statuses:
+        evaluated, compilation failed, evaluating, compiling, maximum
+        number of attempts of compilations reached, the same for
+        evaluations, and finally 'I have no idea what's
+        happening'. The last three should not happen and require a
+        check from the admin.
+
+        The status of a submission is checked on its result for the
+        active dataset of its task.
+
+        return (dict): statistics on the submissions.
+
+        """
+        # TODO: at the moment this counts all submission results for
+        # the live datasets. It is interesting to show also numbers
+        # for the datasets with autojudge, and for all datasets.
+        stats = {}
+        with SessionGen() as session:
+            base_query = session\
+                .query(func.count(SubmissionResult.submission_id))\
+                .select_from(SubmissionResult)\
+                .join(Dataset)\
+                .join(Task, Dataset.task_id == Task.id)\
+                .filter(Task.active_dataset_id == SubmissionResult.dataset_id)
+            if contest_id is not None:
+                base_query = base_query\
+                    .filter(Task.contest_id == contest_id)
+
+            compiled = base_query.filter(SubmissionResult.filter_compiled())
+            evaluated = compiled.filter(SubmissionResult.filter_evaluated())
+            not_compiled = base_query.filter(
+                not_(SubmissionResult.filter_compiled()))
+            not_evaluated = compiled.filter(
+                SubmissionResult.filter_compilation_succeeded(),
+                not_(SubmissionResult.filter_evaluated()))
+
+            queries = {}
+            queries['compiling'] = not_compiled.filter(
+                SubmissionResult.compilation_tries <
+                EvaluationService.EvaluationService.MAX_COMPILATION_TRIES)
+            queries['max_compilations'] = not_compiled.filter(
+                SubmissionResult.compilation_tries >=
+                EvaluationService.EvaluationService.MAX_COMPILATION_TRIES)
+            queries['compilation_fail'] = base_query.filter(
+                SubmissionResult.filter_compilation_failed())
+            queries['evaluating'] = not_evaluated.filter(
+                SubmissionResult.evaluation_tries <
+                EvaluationService.EvaluationService.MAX_EVALUATION_TRIES)
+            queries['max_evaluations'] = not_evaluated.filter(
+                SubmissionResult.evaluation_tries >=
+                EvaluationService.EvaluationService.MAX_EVALUATION_TRIES)
+            queries['scoring'] = evaluated.filter(
+                not_(SubmissionResult.filter_scored()))
+            queries['scored'] = evaluated.filter(
+                SubmissionResult.filter_scored())
+            queries['total'] = base_query
+
+            stats = {}
+            keys = queries.keys()
+            results = queries[keys[0]].union_all(
+                *(queries[key] for key in keys[1:])).all()
+
+        for i, k in enumerate(keys):
+            stats[k] = results[i][0]
+        stats['invalid'] = 2 * stats['total'] - sum(stats.itervalues())
+
+        return stats
