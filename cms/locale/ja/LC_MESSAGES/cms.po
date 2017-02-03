@@ -273,29 +273,29 @@ msgstr "%(type_pl)sがない状態から始まります。"
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "開始時に%(gen_initial)d個の%(type_pl)sを使用可能です。"
+msgstr[0] "開始時に %(gen_initial)d 個の%(type_pl)sを使用可能です。"
 
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
-msgstr[0] "%(gen_interval)g分ごとに、"
+msgstr[0] "%(gen_interval)g 分ごとに、"
 
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "新たに%(gen_number)d個の%(type_pl)sが追加されます。"
+msgstr[0] "新たに %(gen_number)d 個の%(type_pl)sが追加されます。"
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] ""
-"ただし、同時に%(gen_max)d個までしか保有できず、持ちきれなくなった%(type_pl)s"
-"は破棄されます。"
+"ただし、同時に %(gen_max)d 個までしか保有できず、持ちきれなくなっ"
+"た%(type_pl)sは破棄されます。"
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "新たに%(gen_number)d個の%(type_pl)sが追加されます。"
+msgstr[0] "新たに %(gen_number)d 個の%(type_pl)sが追加されます。"
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
@@ -305,33 +305,33 @@ msgstr "これ以上%(type_pl)sが追加されることはありません。"
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] ""
-"あなたは%(min_interval)g秒につき一回まで%(type_s)sを使うことができます。"
+"あなたは %(min_interval)g 秒につき一回まで%(type_s)sを使うことができます。"
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "ただし、合計で%(max_number)d個までしか使うことはできません。"
+msgstr[0] "ただし、合計で %(max_number)d 個までしか使うことはできません。"
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] ""
-"あなたは%(min_interval)g秒につき一回まで%(type_s)sを使うことができます。"
+"あなたは %(min_interval)g 秒につき一回まで%(type_s)sを使うことができます。"
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] ""
-"あなたは%(type_pl)sを合計で%(max_number)d個までしか使うことはできません。"
+"あなたは%(type_pl)sを合計で %(max_number)d 個までしか使うことはできません。"
 
 msgid "You have no limitations on how you use them."
 msgstr "%(type_pl)sを使う間隔や回数に制限はありません。"
 
 msgid "Question too big!"
-msgstr "質問が長すぎます"
+msgstr "質問が長すぎます!"
 
 msgid "You have reached the question length limit."
-msgstr "質問の長さに対する制限を超えています"
+msgstr "質問の長さに対する制限を超えています。"
 
 msgid "Question received"
 msgstr "質問を受理しました"
@@ -341,27 +341,27 @@ msgid ""
 msgstr "あなたの質問を受理しました。回答があった場合は通知されます。"
 
 msgid "Too many print jobs!"
-msgstr "印刷が多すぎます"
+msgstr "印刷が多すぎます!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
 msgstr "印刷はひとりあたり最大 %d 回までです。"
 
 msgid "Invalid format!"
-msgstr "無効な形式です"
+msgstr "無効な形式です!"
 
 msgid "Please select the correct files."
 msgstr "正しいファイルを選択してください。"
 
 msgid "File too big!"
-msgstr "ファイルが大きすぎます"
+msgstr "ファイルが大きすぎます!"
 
 #, python-format
 msgid "Each file must be at most %d bytes long."
 msgstr "各ファイルは %d バイト以下である必要があります。"
 
 msgid "Print job storage failed!"
-msgstr "印刷ジョブの保存に失敗しました"
+msgstr "印刷ジョブの保存に失敗しました!"
 
 msgid "Please try again."
 msgstr "もう一度試してください。"
@@ -383,7 +383,7 @@ msgid ""
 msgstr "この課題に対する提出は最大 %d 回までです。"
 
 msgid "Too many submissions!"
-msgstr "提出が多すぎます"
+msgstr "提出が多すぎます!"
 
 #, python-format
 msgid ""
@@ -398,13 +398,13 @@ msgstr ""
 "この課題に関して、最後の提出から %d 秒間は解答を提出することができません。"
 
 msgid "Submissions too frequent!"
-msgstr "提出間隔が短すぎます"
+msgstr "提出間隔が短すぎます!"
 
 msgid "Invalid submission format!"
-msgstr "無効な提出形式です"
+msgstr "無効な提出形式です!"
 
 msgid "Invalid archive format!"
-msgstr "無効なアーカイブ形式です"
+msgstr "無効なアーカイブ形式です!"
 
 msgid "The submitted archive could not be opened."
 msgstr "提出されたアーカイブを開くことができませんでした。"
@@ -423,17 +423,17 @@ msgid "Language %s not allowed in this contest."
 msgstr "プログラミング言語 %s はこのコンテストでは使用できません。"
 
 msgid "Invalid submission!"
-msgstr "無効な提出です"
+msgstr "無効な提出です!"
 
 msgid "Submission too big!"
-msgstr "提出ファイルが大きすぎます"
+msgstr "提出ファイルが大きすぎます!"
 
 #, python-format
 msgid "Each source file must be at most %d bytes long."
 msgstr "各ソースファイルは %d バイト以下である必要があります。"
 
 msgid "Submission storage failed!"
-msgstr "提出ファイルの保存に失敗しました"
+msgstr "提出ファイルの保存に失敗しました!"
 
 msgid "Submission received"
 msgstr "提出を受理しました"
@@ -483,7 +483,7 @@ msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "この課題に対するテストは最大 %d 回までです。"
 
 msgid "Too many tests!"
-msgstr "テスト要求が多すぎます"
+msgstr "テスト要求が多すぎます!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
@@ -496,29 +496,29 @@ msgstr ""
 "この課題に関して、最後の提出から %d 秒間はテストを要求することができません。"
 
 msgid "Tests too frequent!"
-msgstr "テスト要求の間隔が短すぎます"
+msgstr "テスト要求の間隔が短すぎます!"
 
 msgid "Invalid test format!"
-msgstr "無効なテスト形式です"
+msgstr "無効なテスト形式です!"
 
 msgid "Cannot recognize test's language."
 msgstr "テスト用ソースコードのプログラミング言語を判定することができません。"
 
 msgid "Invalid test!"
-msgstr "無効なテスト要求です"
+msgstr "無効なテスト要求です!"
 
 msgid "Test too big!"
-msgstr "テストが大きすぎます"
+msgstr "テストが大きすぎます!"
 
 msgid "Input too big!"
-msgstr "入力が大きすぎます"
+msgstr "入力が大きすぎます!"
 
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr "各入力ファイルは %d バイト以下である必要があります。"
 
 msgid "Test storage failed!"
-msgstr "テスト要求の保存に失敗しました"
+msgstr "テスト要求の保存に失敗しました!"
 
 msgid "Test received"
 msgstr "テスト要求を受理しました"
@@ -545,7 +545,7 @@ msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
 msgstr ""
-"<strong>%(last_name)s %(first_name)s</strong> <em>(%(username)s)</em>としてロ"
+"<strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>としてロ"
 "グインしています"
 
 msgid "Logout"
@@ -561,7 +561,7 @@ msgid "Please log in"
 msgstr "ログインしてください"
 
 msgid "Username"
-msgstr "ユーザー名"
+msgstr "ユーザ名"
 
 msgid "Password"
 msgstr "パスワード"
@@ -771,7 +771,7 @@ msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
 msgstr ""
-"それぞれのユーザーは連続する%(per_user_time)sの時間枠の間、競技に参加する (す"
+"それぞれのユーザは連続する %(per_user_time)s の時間枠の間、競技に参加する (す"
 "なわち、解答を提出する) ことができます。"
 
 msgid "As soon as the contest starts you can choose to start your time frame."
@@ -814,7 +814,7 @@ msgid "You never started your time frame. Now it's too late."
 msgstr "あなたは時間枠を始めませんでした。また、今から始めるには遅すぎます。"
 
 msgid "Start!"
-msgstr "開始！"
+msgstr "開始!"
 
 msgid "Task overview"
 msgstr "課題概要"
@@ -917,13 +917,13 @@ msgid "Compilation output"
 msgstr "コンパイル出力"
 
 msgid "Compilation outcome:"
-msgstr "コンパイル結果"
+msgstr "コンパイル結果:"
 
 msgid "Compilation time:"
-msgstr "コンパイル時間"
+msgstr "コンパイル時間:"
 
 msgid "Memory used:"
-msgstr "消費メモリ"
+msgstr "消費メモリ:"
 
 msgid "Standard output"
 msgstr "標準出力"
@@ -941,7 +941,7 @@ msgid "Played"
 msgstr "解禁済"
 
 msgid "Play!"
-msgstr "解禁！"
+msgstr "解禁!"
 
 msgid "Wait..."
 msgstr "お待ちください…"
@@ -1038,15 +1038,16 @@ msgstr "現在、この課題では1個のトークンが使用できます。"
 
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
-msgstr "現在、この課題では%(tokens)s個のトークンが使用できます。"
+msgstr "現在、この課題では %(tokens)s 個のトークンが使用できます。"
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
-msgstr "しかし、それを使用するためには%(expiration_time)s待つ必要があります。"
+msgstr ""
+"しかし、それを使用するためには %(expiration_time)s 待つ必要があります。"
 
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
-msgstr "新しいトークンを%(gen_time)sに受け取ることができます。"
+msgstr "新しいトークンを %(gen_time)s に受け取ることができます。"
 
 msgid "In the current situation, no more tokens will be generated."
 msgstr "現在の状況では、新規にトークンが生成されることはありません。"
@@ -1057,7 +1058,8 @@ msgstr "現在、この課題で使用可能なトークンはありません。
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr ""
-"しかし、そのトークンを使用するためには%(expiration_time)s待つ必要があります。"
+"しかし、そのトークンを使用するためには %(expiration_time)s 待つ必要がありま"
+"す。"
 
 msgid "Public score"
 msgstr "公開得点"
