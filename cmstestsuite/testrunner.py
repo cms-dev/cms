@@ -57,6 +57,7 @@ class TestRunner(object):
         self.rand = random.randint(0, 999999999)
 
         self.num_users = 0
+        self.workers = workers
 
         # Load config from cms.conf.
         TestRunner.load_cms_conf()
@@ -66,7 +67,7 @@ class TestRunner(object):
             os.chdir("%(TEST_DIR)s" % CONFIG)
             os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
-        self.start_generic_services(workers)
+        self.start_generic_services()
         initialize_aws(self.rand)
 
         if contest_id is None:
@@ -109,18 +110,10 @@ class TestRunner(object):
 
     # Service management.
 
-    def startup(self):
-        self.ps.start("EvaluationService", contest=self.contest_id)
-        self.ps.start("ContestWebServer", contest=self.contest_id)
-        self.ps.start("ProxyService", contest=self.contest_id)
-        self.ps.wait()
-
-    def start_generic_services(self, workers=1):
+    def start_generic_services(self):
         self.ps.start("LogService")
         self.ps.start("ResourceService")
         self.ps.start("Checker")
-        for shard in xrange(workers):
-            self.ps.start("Worker", shard)
         self.ps.start("ScoringService")
         self.ps.start("AdminWebServer")
         # Just to verify it starts successfully.
@@ -294,7 +287,11 @@ class TestRunner(object):
         # tasks and sending them to RWS.
         for test in self.test_list:
             self.create_or_get_task(test.task_module)
-        self.ps.restart("ProxyService", contest=self.contest_id)
+        self.ps.start("EvaluationService", contest=self.contest_id)
+        self.ps.start("ContestWebServer", contest=self.contest_id)
+        self.ps.start("ProxyService", contest=self.contest_id)
+        for shard in xrange(self.workers):
+            self.ps.start("Worker", shard)
         self.ps.wait()
 
         for i, (test, lang) in enumerate(self._all_submissions()):

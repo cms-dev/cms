@@ -95,8 +95,6 @@ def main():
                  for _ in range(args.submissions)]
 
     runner = TestRunner(test_list, workers=args.workers)
-    runner.startup()
-
     runner.submit_tests()
     runner.log_elapsed_time()
 
