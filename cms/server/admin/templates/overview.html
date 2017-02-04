@@ -26,8 +26,6 @@ function update_submissions_status(response)
         strings.push('<tr><td>Cannot compile (please check)</td><td>' + response['data']['max_compilations'] + '</td></tr>');
     if (response['data']['max_evaluations'] != 0)
         strings.push('<tr><td>Cannot evaluate (please check)</td><td>' + response['data']['max_evaluations'] + '</td></tr>');
-    if (response['data']['invalid'] != 0)
-        strings.push('<tr><td>Invalid (please check)</td><td>' + response['data']['invalid'] + '</td></tr>');
 
     table.html(strings.join(""));
 };

@@ -37,7 +37,7 @@ import pkg_resources
 from sqlalchemy import func, not_
 
 from cms import config, ServiceCoord, get_service_shards
-from cms.db import SessionGen, Dataset, SubmissionResult, Task
+from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
 from cms.db.filecacher import FileCacher
 from cms.io import WebService, rpc_method
 from cms.service import EvaluationService
@@ -173,7 +173,10 @@ class AdminWebServer(WebService):
                 not_(SubmissionResult.filter_scored()))
             queries['scored'] = evaluated.filter(
                 SubmissionResult.filter_scored())
-            queries['total'] = base_query
+            queries['total'] = session\
+                .query(func.count(Submission.id))\
+                .select_from(Submission)\
+                .join(Task, Submission.task_id == Task.id)
 
             stats = {}
             keys = queries.keys()
@@ -182,6 +185,6 @@ class AdminWebServer(WebService):
 
         for i, k in enumerate(keys):
             stats[k] = results[i][0]
-        stats['invalid'] = 2 * stats['total'] - sum(stats.itervalues())
+        stats['compiling'] += 2 * stats['total'] - sum(stats.itervalues())
 
         return stats
