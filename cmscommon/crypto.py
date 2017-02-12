@@ -44,7 +44,7 @@ __all__ = [
     "encrypt_string", "decrypt_string",
     "encrypt_number", "decrypt_number",
 
-    "generate_random_password", "generate_random_password_with_method",
+    "generate_random_password", "generate_random_password_text",
 
     "validate_password", "hash_password", "parse_authentication",
 ]
@@ -172,15 +172,15 @@ def generate_random_password():
     return "".join((random.choice(ascii_lowercase) for _ in range(6)))
 
 
-def generate_random_password_with_method(method="text"):
+def generate_random_password_text():
     """Utility method to generate a random password
-    and encrypt with the given method.
+    in the format text:password.
 
     return (string): method:a random string.
 
     """
     return hash_password(password=generate_random_password(),
-                         method=method)
+                         method="text")
 
 
 def parse_authentication(authentication):
