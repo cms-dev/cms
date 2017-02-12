@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2017 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -74,7 +75,7 @@ class ReevaluationButtons(tornado.web.UIModule):
                 invalidate_arguments["dataset_id"] = dataset_id
         elif participation_id is not None:
             # All submissions of the participation.
-            url += "contest/%s/user/%s" % (contest_id, user_id)
+            url += "contest/%s/user/%s/edit" % (contest_id, user_id)
             invalidate_arguments["participation_id"] = participation_id
         elif dataset_id is not None:
             url += "dataset/%s" % dataset_id
