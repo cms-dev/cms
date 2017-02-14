@@ -118,15 +118,18 @@ class AdminWebServer(WebService):
     @rpc_method
     def submissions_status(contest_id):
         """Returns a dictionary of statistics about the number of
-        submissions on a specific status. There are seven statuses:
-        evaluated, compilation failed, evaluating, compiling, maximum
-        number of attempts of compilations reached, the same for
-        evaluations, and finally 'I have no idea what's
-        happening'. The last three should not happen and require a
-        check from the admin.
+        submissions on a specific status in the given contest.
+
+        There are six statuses: evaluated, compilation failed,
+        evaluating, compiling, maximum number of attempts of
+        compilations reached, the same for evaluations. The last two
+        should not happen and require a check from the admin.
 
         The status of a submission is checked on its result for the
         active dataset of its task.
+
+        contest_id (int|None): counts are restricted to this contest,
+            or None for no restrictions.
 
         return (dict): statistics on the submissions.
 
@@ -173,10 +176,15 @@ class AdminWebServer(WebService):
                 not_(SubmissionResult.filter_scored()))
             queries['scored'] = evaluated.filter(
                 SubmissionResult.filter_scored())
-            queries['total'] = session\
+
+            total_query = session\
                 .query(func.count(Submission.id))\
                 .select_from(Submission)\
                 .join(Task, Submission.task_id == Task.id)
+            if contest_id is not None:
+                total_query = total_query\
+                    .filter(Task.contest_id == contest_id)
+            queries['total'] = total_query
 
             stats = {}
             keys = queries.keys()
