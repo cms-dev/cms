@@ -1,16 +1,16 @@
 # Korean translations for CMS.
-# Copyright © 2010-2015 CMS authors
+# Copyright © 2010-2017 CMS authors
 # This file is distributed under the same license as CMS.
 # Hyunmin Choi <auxiliarycode@gmail.com>, 2015.
-# Myungwoo Chun <mc.tamaki@gmail.com>, 2016.
+# Myungwoo Chun <mc.tamaki@gmail.com>, 2016-2017.
 # Hyungsuk Yoon <youhanmir@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-01 15:57+0900\n"
-"PO-Revision-Date: 2016-03-02 15:51+0900\n"
+"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"PO-Revision-Date: 2017-02-18 21:03+0900\n"
 "Last-Translator: Myungwoo Chun <mc.tamaki@gmail.com>\n"
 "Language-Team: Korean\n"
 "Language: ko\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.8.11\n"
 
 msgid "Compilation succeeded"
 msgstr "컴파일에 성공하였습니다."
@@ -109,7 +109,7 @@ msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"시그널 %s로 인하여 실행이 중지되었습니다. (이는 메모리 제한을 초과하면서 발생"
+"시그널 %d로 인하여 실행이 중지되었습니다. (이는 메모리 제한을 초과하면서 발생"
 "할 수 있습니다.)"
 
 msgid ""
@@ -198,6 +198,9 @@ msgstr "%Y-%m-%d %H:%M:%S"
 
 msgid "loading..."
 msgstr "로딩 중..."
+
+msgid "unknown"
+msgstr "알 수 없음"
 
 #, python-format
 msgid "%d second"
@@ -367,6 +370,39 @@ msgstr "프린트 요청이 수신되었습니다."
 msgid "Your print job has been received."
 msgstr "프린트 요청이 수신되었습니다."
 
+msgid "Compiling..."
+msgstr "컴파일 중..."
+
+msgid "details"
+msgstr "세부 사항"
+
+msgid "Evaluating..."
+msgstr "평가 중..."
+
+msgid "Scoring..."
+msgstr "채점 중..."
+
+msgid "Evaluated"
+msgstr "평가가 완료되었습니다."
+
+msgid "Token request discarded"
+msgstr "토큰 사용에 실패하였습니다."
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "더 이상 남은 토큰이 없어서 토큰 사용에 실패하였습니다."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"이미 해당 제출에 대해 토큰을 사용했기 때문에 토큰 사용에 실패하였습니다."
+
+msgid "Token request received"
+msgstr "토큰 사용에 성공하였습니다."
+
+msgid "Your request has been received and applied to the submission."
+msgstr "토큰이 성공적으로 사용되어 제출 결과를 확인할 수 있습니다."
+
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
@@ -406,11 +442,8 @@ msgstr "문서 형식에 맞지 않습니다!"
 msgid "The submitted archive could not be opened."
 msgstr "제출된 문서가 열리지 않습니다."
 
-msgid "Cannot recognize submission's language."
-msgstr "제출 언어를 알 수 없습니다."
-
-msgid "All sources must be in the same language."
-msgstr "모든 소스들은 동일한 프로그래밍 언어를 사용하여야 합니다."
+msgid "Cannot recognize the submission language."
+msgstr "제출 언어를 확인할 수 없습니다."
 
 #, python-format
 msgid "Language %s not allowed in this contest."
@@ -434,39 +467,6 @@ msgstr "제출이 완료되었습니다."
 
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "제출이 완료되어, 지금 채점 중입니다."
-
-msgid "Compiling..."
-msgstr "컴파일 중..."
-
-msgid "details"
-msgstr "세부 사항"
-
-msgid "Evaluating..."
-msgstr "평가 중..."
-
-msgid "Scoring..."
-msgstr "채점 중..."
-
-msgid "Evaluated"
-msgstr "평가가 완료되었습니다."
-
-msgid "Token request discarded"
-msgstr "토큰 사용에 실패하였습니다."
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "더 이상 남은 토큰이 없어서 토큰 사용에 실패하였습니다."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"이미 해당 제출에 대해 토큰을 사용했기 때문에 토큰 사용에 실패하였습니다."
-
-msgid "Token request received"
-msgstr "토큰 사용에 성공하였습니다."
-
-msgid "Your request has been received and applied to the submission."
-msgstr "토큰이 성공적으로 사용되어 제출 결과를 확인할 수 있습니다."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
@@ -497,8 +497,8 @@ msgstr "테스트를 너무 자주 하셨습니다!"
 msgid "Invalid test format!"
 msgstr "테스트 형식에 맞지 않습니다!"
 
-msgid "Cannot recognize test's language."
-msgstr "가능한 확장자들: c, cc, cpp (대소문자도 확인해야 합니다)"
+msgid "Cannot recognize the user test language."
+msgstr "사용자 테스트 언어를 확인할 수 없습니다."
 
 msgid "Invalid test!"
 msgstr "유효하지 않은 테스트입니다!"
@@ -536,6 +536,9 @@ msgstr "%(seconds)0.3f 초"
 msgid "Automatic (%s)"
 msgstr "자동 (%s)"
 
+msgid "Logout"
+msgstr "로그아웃"
+
 #, python-format
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
@@ -543,9 +546,6 @@ msgid ""
 msgstr ""
 "로그인 상태 <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
-
-msgid "Logout"
-msgstr "로그아웃"
 
 msgid "Failed to log in."
 msgstr "로그인 실패"
@@ -652,6 +652,11 @@ msgstr "프로그래밍 언어 및 라이브러리"
 
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
+
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
+msgstr "main 함수가 담긴 클래스 이름은 문제의 이름과 동일해야 합니다."
 
 msgid "Submission details for compilation"
 msgstr "컴파일 세부 사항"
@@ -1087,3 +1092,7 @@ msgstr "테스트 세부 사항"
 
 msgid "Evaluation outcome"
 msgstr "실행 결과"
+
+#~ msgid "All sources must be in the same language."
+#~ msgstr "모든 소스들은 동일한 프로그래밍 언어를 사용하여야 합니다."
+
