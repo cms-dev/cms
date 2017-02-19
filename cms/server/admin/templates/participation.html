@@ -46,7 +46,7 @@ function update_additional_answer(element, invoker)
            user_id=participation.user_id) %}
   </p>
 
-  {% set page_url = "/contest/%s/user/%s" % (contest.id, selected_user.id) %}
+  {% set page_url = "/contest/%s/user/%s/edit" % (contest.id, selected_user.id) %}
   {% include fragments/submission_rows.html %}
 
   <div class="hr"></div>
@@ -56,19 +56,22 @@ function update_additional_answer(element, invoker)
 <h2 id="title_participation_info" class="toggling_on">Participation information</h2>
 <div id="participation_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-  <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}/user/{{ selected_user.id }}" method="POST">
+  <form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit" method="POST">
+    {% module xsrf_form_html() %}
     <table>
       <tr>
         <td>
           <span class="info" title="Code of the team of the contestant in this contest. Only used in the external ranking."></span>
           Team
         </td>
-        <td><input list="teams" name="team" value="{{ participation.team.code if participation.team is not None else "" }}"/></td>
-        <datalist id="teams">
-          {% for t in teams %}
-          <option value="{{ t.code }}">
-          {% end %}
-        </datalist>
+        <td>
+          <input list="teams" name="team" value="{{ participation.team.code if participation.team is not None else "" }}"/>
+          <datalist id="teams">
+            {% for t in teams %}
+            <option value="{{ t.code }}">
+            {% end %}
+          </datalist>
+        </td>
       </tr>
       <tr>
         <td>
@@ -156,7 +159,8 @@ function update_additional_answer(element, invoker)
         <div class="reply_question" >
           <hr/>
           <form class="reply_question_form" action="{{ url_root }}/contest/{{ contest.id }}/question/{{ msg.id }}/reply" method="POST">
-            <input type="hidden" name="ref" value="/contest/{{ contest.id }}/user/{{ selected_user.id }}"/>
+            {% module xsrf_form_html() %}
+            <input type="hidden" name="ref" value="/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit"/>
             Precompiled answer:
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
               <option value="yes">Yes</option>
@@ -193,6 +197,7 @@ function update_additional_answer(element, invoker)
   <div class="notifications">
       <div class="notification communication">
         <form id="send_message_form" action="{{ url_root }}/contest/{{ contest.id }}/user/{{ selected_user.id }}/message" method="POST">
+          {% module xsrf_form_html() %}
           <div class="notification_msg">
             <div class="notification_subject">
               Subject:

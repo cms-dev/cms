@@ -72,7 +72,7 @@
     {% end %}
     </td>
     <td class="files">
-        {% comment We replace '%l' with the actual language only when it occurs as an extension at the end of the string and only when %}
+        {% comment We replace '.%l' with the actual language only when it occurs as an extension at the end of the string and only when %}
         {% comment there isn't another file with that name. This allows to securily reverse the replacement and should work great in %}
         {% comment the common case. Yet, it still allows the marginal case of both 'foo.%l' and 'foo.c' in the submission format. %}
         {% set files = t.files.keys() + t.managers.keys() %}
@@ -82,7 +82,8 @@
         </a>
         {% elif len(files) == 1 %}
             {% set filename = t.files.keys()[0] %}
-        <a class="btn" href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/tests/{{ t_idx }}/files/{{ encode_for_url(filename) }}">
+            {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
+        <a class="btn" href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/tests/{{ t_idx }}/files/{{ encode_for_url(real_filename) }}">
             {{ _("Download") }}
         </a>
         {% else %}
@@ -94,7 +95,7 @@
             <ul class="dropdown-menu">
             {% for filename in files %}
                 {% if t.language is not None %}
-                    {% set real_filename = filename.replace("%l", t.language) %}
+                    {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
                 {% else %}
                     {% set real_filename = filename %}
                 {% end %}

@@ -10,6 +10,7 @@
 <div id="participations">
 
   <form action="{{ url_root }}/user/{{ user.id }}/add_participation" method="POST">
+    {% module xsrf_form_html() %}
     Add a new participation:
     <select name="contest_id">
       <option value="null" selected>Select a contest</option>
@@ -19,8 +20,8 @@
       </option>
       {% end %}
     </select>
-    <input type="checkbox" name="hidden">Hidden</input>
-    <input type="checkbox" name="unrestricted">Unrestricted</input>
+    <input type="checkbox" name="hidden" id="hidden" /><label for="hidden">Hidden</label>
+    <input type="checkbox" name="unrestricted" id="unrestricted" /><label for="unrestricted">Unrestricted</label>
     <input type="submit" value="Add participation" />
   </form>
 
@@ -28,6 +29,7 @@
   <p>No participations found.</p>
   {% else %}
   <form action="{{ url_root }}/user/{{ user.id }}/edit_participation" method="POST">
+    {% module xsrf_form_html() %}
     Edit selected participation:
     <input type="submit" name="operation" value="Remove" />
     <table class="bordered">
@@ -47,7 +49,7 @@
           <td>
             <input type="radio" name="contest_id" value="{{ p.contest.id }}"/>
           </td>
-          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+          <td><a href="{{ url_root }}/contest/{{ p.contest.id }}/user/{{ p.user.id }}/edit">{{ p.user.username }}</a></td>
           <td>{{ p.hidden }}</td>
           <td>{{ p.unrestricted }}</td>
           <td><a href="{{ url_root }}/contest/{{ p.contest.id }}">{{ p.contest.name }}</a></td>
@@ -65,7 +67,8 @@
 <h2 id="title_general_info" class="toggling_on">General Information</h2>
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-  <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ user.id }}" method="POST">
+  <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ user.id }}" method="POST" style="display:inline;">
+    {% module xsrf_form_html() %}
     <table>
       <tr>
         <td>
@@ -122,6 +125,17 @@
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />
+  </form>
+  <form action="{{ url_root }}/users" method="POST" style="display:inline;">
+      {% module xsrf_form_html() %}
+      <input type="hidden" name="user_id" value="{{user.id}}"/>
+      <input type="submit"
+           name="operation"
+           value="Remove" style="float: right;"
+  {% if not current_user.permission_all %}
+           disabled
+  {% end %}
+           />
   </form>
   <div class="hr"></div>
 </div>

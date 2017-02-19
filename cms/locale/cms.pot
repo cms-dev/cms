@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-01 15:57+0900\n"
+"POT-Creation-Date: 2017-01-29 19:38+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -180,6 +180,9 @@ msgstr ""
 msgid "loading..."
 msgstr ""
 
+msgid "unknown"
+msgstr ""
+
 #, python-format
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -348,6 +351,38 @@ msgstr ""
 msgid "Your print job has been received."
 msgstr ""
 
+msgid "Compiling..."
+msgstr ""
+
+msgid "details"
+msgstr ""
+
+msgid "Evaluating..."
+msgstr ""
+
+msgid "Scoring..."
+msgstr ""
+
+msgid "Evaluated"
+msgstr ""
+
+msgid "Token request discarded"
+msgstr ""
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr ""
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+
+msgid "Token request received"
+msgstr ""
+
+msgid "Your request has been received and applied to the submission."
+msgstr ""
+
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
@@ -383,10 +418,7 @@ msgstr ""
 msgid "The submitted archive could not be opened."
 msgstr ""
 
-msgid "Cannot recognize submission's language."
-msgstr ""
-
-msgid "All sources must be in the same language."
+msgid "Cannot recognize the submission language."
 msgstr ""
 
 #, python-format
@@ -410,38 +442,6 @@ msgid "Submission received"
 msgstr ""
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr ""
-
-msgid "Compiling..."
-msgstr ""
-
-msgid "details"
-msgstr ""
-
-msgid "Evaluating..."
-msgstr ""
-
-msgid "Scoring..."
-msgstr ""
-
-msgid "Evaluated"
-msgstr ""
-
-msgid "Token request discarded"
-msgstr ""
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-
-msgid "Token request received"
-msgstr ""
-
-msgid "Your request has been received and applied to the submission."
 msgstr ""
 
 #, python-format
@@ -469,7 +469,7 @@ msgstr ""
 msgid "Invalid test format!"
 msgstr ""
 
-msgid "Cannot recognize test's language."
+msgid "Cannot recognize the user test language."
 msgstr ""
 
 msgid "Invalid test!"
@@ -508,13 +508,13 @@ msgstr ""
 msgid "Automatic (%s)"
 msgstr ""
 
+msgid "Logout"
+msgstr ""
+
 #, python-format
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
-msgstr ""
-
-msgid "Logout"
 msgstr ""
 
 msgid "Failed to log in."
@@ -621,6 +621,11 @@ msgid "Programming languages and libraries"
 msgstr ""
 
 msgid "Standard Template Library"
+msgstr ""
+
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
 msgstr ""
 
 msgid "Submission details for compilation"

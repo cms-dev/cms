@@ -28,7 +28,7 @@ task_info = {
     "official_language": "",
     "submission_format_choice": "other",
     "submission_format": "[\"batchfileio.%l\"]",
-    "time_limit_{{dataset_id}}": "0.2",
+    "time_limit_{{dataset_id}}": "0.5",
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Batch",
     "TaskTypeOptions_{{dataset_id}}_Batch_compilation": "alone",

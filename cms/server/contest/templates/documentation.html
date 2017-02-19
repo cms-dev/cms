@@ -8,7 +8,18 @@
 
 <h2>{{ _("Programming languages and libraries") }}</h2>
 
-<a href="{{ url_root }}/stl/index.html">{{ _("Standard Template Library") }}</a>
+{% if any(".cpp" in get_language(lang).source_extensions for lang in contest.languages) %}
+<h3>C++</h3>
+
+<p><a href="{{ url_root }}/stl/index.html">{{ _("Standard Template Library") }}</a></p>
+{% end %}
+
+{% if any(".java" in get_language(lang).source_extensions for lang in contest.languages) %}
+<h3>Java</h3>
+
+<p>{{ _("The main Java class of the solution should have exactly the same name as the task.") }}</p>
+{% end %}
+
 
 <h2>{{ _("Submission details for compilation") }}</h2>
 

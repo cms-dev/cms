@@ -35,7 +35,7 @@ function get_score_class (score, max_score) {
     } else {
         return "score_0_100";
     }
-}
+};
 
 update_submission_row = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
@@ -56,7 +56,7 @@ update_submission_row = function (submission_id, data) {
     } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
         schedule_update_submission_row(submission_id);
     }
-}
+};
 
 schedule_update_submission_row = function (submission_id) {
     setTimeout(function () {
@@ -64,7 +64,7 @@ schedule_update_submission_row = function (submission_id) {
             update_submission_row(submission_id, data);
         });
     }, 10000);
-}
+};
 
 $(document).ready(function () {
     $('#submission_list tbody tr[data-status][data-status!="{{ SubmissionResult.COMPILATION_FAILED }}"][data-status!="{{ SubmissionResult.SCORED }}"]').each(function (idx, elem) {
@@ -81,7 +81,7 @@ $(document).ready(function () {
 <div class="span9 task_submissions">
 
 <div class="page-header">
-    <h1>{% raw _("%(name)s (%(short_name)s) <small>submissions</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</small></h1>
+    <h1>{% raw _("%(name)s (%(short_name)s) <small>submissions</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</h1>
 </div>
 
 
@@ -98,15 +98,27 @@ $(document).ready(function () {
 <div id="submit_solution" class="row">
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+            {% module xsrf_form_html() %}
             <fieldset>
 {% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
                 <div class="control-group">
-                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
+                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", ": ") }}</label>
                     <div class="controls">
-                        <input type="file" class="input-xlarge" id="input{{ idx }}" name="{{ filename }}"/>
+                        <input type="file" class="input-xlarge"
+                               id="input{{ idx }}" name="{{ filename }}"
+                               onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]'))"/>
                     </div>
                 </div>
 {% end %}
+                <div class="control-group">
+                    <div class="controls">
+                        <select id="language" name="language">
+{% for lang in contest.languages %}
+                            <option value="{{ lang }}">{{ lang }}</option>
+{% end %}
+                        <select>
+                    </div>
+                </div>
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
@@ -116,9 +128,10 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if len(task.submission_format) > 1 %}
+{% if len(task.submission_format) > 1 and not any(x.filename.endswith(".%l") for x in task.submission_format) %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+            {% module xsrf_form_html() %}
             <fieldset>
                 <div class="control-group">
                     <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>

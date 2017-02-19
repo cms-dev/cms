@@ -1,9 +1,11 @@
 {% import time %}
 {% import json %}
-{% from cms import DEFAULT_LANGUAGES, LANGUAGE_NAMES, LANGUAGES, config %}
-{% from cms.db import SubmissionResult %}
+{% from cms import config %}
+{% from cms.db import SubmissionResult, UserTestResult %}
+{% from cms.grading.languagemanager import LANGUAGES, get_language %}
 {% from cmscommon.datetime import make_timestamp %}
 {% from cmscommon.crypto import get_hex_random_key %}
+<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -74,7 +76,7 @@ $(document).ready(init);
         <div id="sidebar_header">
           <div class="login_notice">
             Hello, <a href="{{ url_root }}/admins">{{ current_user.name }}</a>.
-              Logout <a href="{{ url_root }}/logout">here</a>.
+              <form class="inline" action="{{ url_root }}/logout" method="POST">{% module xsrf_form_html() %}<input type="submit" value="Logout"></form>
           </div>
           {% if contest is None %}
           <h1 class="parent">Administration</h1>
@@ -97,7 +99,7 @@ $(document).ready(init);
         <div class="hr"></div>
 
         {% if contest is None %}
-        <h1>Contests</h1>
+        <h1><a class="menu_link" href="{{ url_root }}/contests">Contests</a></h1>
         <ul class="menu">
           {% if len(contest_list) < 1 %}
           <li class="menu_entry">
@@ -130,7 +132,7 @@ $(document).ready(init);
 {% end %}
         </ul>
 
-        <h1>Tasks</h1>
+        <h1><a class="menu_link" href="{{ url_root }}/tasks">Tasks</a></h1>
         <ul class="menu">
           {% if len(task_list) < 1 %}
           <li class="menu_entry">
@@ -163,7 +165,7 @@ $(document).ready(init);
 {% end %}
         </ul>
 
-        <h1>Users</h1>
+        <h1><a class="menu_link" href="{{ url_root }}/users">Users</a></h1>
         <ul class="menu">
           {% if len(user_list) == 0 %}
             <li class="menu_entry">
@@ -190,7 +192,7 @@ $(document).ready(init);
 {% end %}
         </ul>
 
-        <h1>Teams</h1>
+        <h1><a class="menu_link" href="{{ url_root }}/teams">Teams</a></h1>
         <ul class="menu">
           {% if len(team_list) == 0 %}
             <li class="menu_entry">
@@ -221,6 +223,7 @@ $(document).ready(init);
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/ranking">Ranking</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/submissions">Submissions</a></li>
+            {% if contest.allow_user_tests %}<li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/user_tests">User tests</a></li>{% end %}
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/users">Users</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/tasks">Tasks</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/announcements">Announcements</a></li>

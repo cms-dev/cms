@@ -18,6 +18,12 @@
 
 "use strict";
 
+
+function get_cookie(name) {
+    var r = document.cookie.match("(^|;)\\s*" + name + "=([^;]*)(;|$)");
+    return r ? r[2] : void(0);
+}
+
 /**
  * Call a RPC method of a remote service, proxied by AWS.
  *
@@ -36,8 +42,9 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
         type: "POST",
         url: url,
         data: JSON.stringify(args),
-        contentType: 'application/json',
-        dataType: 'json'
+        contentType: "application/json",
+        dataType: "json",
+        headers: {"X-XSRFToken": get_cookie("_xsrf")}
     });
 
     jqxhr.done(function(data) {
@@ -62,4 +69,4 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
     });
 
     return jqxhr;
-};
+}

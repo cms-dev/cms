@@ -8,6 +8,7 @@
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+# Copyright © 2016 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -50,6 +51,7 @@ from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task, \
     UserTest
+from cms.db.filecacher import FileCacher
 from cms.service import get_datasets_to_judge, \
     get_submissions, get_submission_results
 from cms.grading.Job import JobGroup
@@ -581,19 +583,13 @@ class EvaluationService(TriggeredService):
                         continue
                     result_id = (object_id, dataset_id)
                     if result_id not in srs:
-                        srs[result_id] = object_.get_result(dataset)
-                        if srs[result_id] is None:
-                            logger.info("Couldn't find submission %d(%d) "
-                                        "in the database. Creating it.",
-                                        object_id, dataset_id)
-                            srs[result_id] = \
-                                object_.get_result_or_create(dataset)
+                        srs[result_id] = object_.get_result_or_create(dataset)
                     object_result = srs[result_id]
                 else:
                     # We do not cache user tests as they can come up
                     # only once.
                     object_ = UserTest.get_from_id(object_id, session)
-                    object_result = object_.get_result(dataset)
+                    object_result = object_.get_result_or_create(dataset)
 
                 self.write_results_one_object_and_type(
                     session, object_result, operation_results)
@@ -614,14 +610,24 @@ class EvaluationService(TriggeredService):
 
             logger.info("Ending operations for %s objects...",
                         len(by_object_and_type))
-            for type_, submission_id, dataset_id in by_object_and_type:
+            for type_, object_id, dataset_id in by_object_and_type:
                 if type_ == ESOperation.COMPILATION:
-                    submission_result = srs[(submission_id, dataset_id)]
+                    submission_result = srs[(object_id, dataset_id)]
                     self.compilation_ended(submission_result)
                 elif type_ == ESOperation.EVALUATION:
-                    submission_result = srs[(submission_id, dataset_id)]
+                    submission_result = srs[(object_id, dataset_id)]
                     if submission_result.evaluated():
                         self.evaluation_ended(submission_result)
+                elif type_ == ESOperation.USER_TEST_COMPILATION:
+                    user_test_result = UserTest\
+                        .get_from_id(object_id, session)\
+                        .get_result(datasets[dataset_id])
+                    self.user_test_compilation_ended(user_test_result)
+                elif type_ == ESOperation.USER_TEST_EVALUATION:
+                    user_test_result = UserTest\
+                        .get_from_id(object_id, session)\
+                        .get_result(datasets[dataset_id])
+                    self.user_test_evaluation_ended(user_test_result)
 
         logger.info("Done")
 
@@ -668,7 +674,23 @@ class EvaluationService(TriggeredService):
             if result.job_success:
                 result.job.to_submission(object_result)
             else:
-                object_result.evaluation_tries += 1
+                if result.job.plus is not None and \
+                   result.job.plus.get("tombstone") is True:
+                    executable_digests = [
+                        e.digest for e in
+                        object_result.executables.itervalues()]
+                    if FileCacher.TOMBSTONE_DIGEST in executable_digests:
+                        logger.info("Submission %d's compilation on dataset "
+                                    "%d has been invalidated since the "
+                                    "executable was the tombstone",
+                                    object_result.submission_id,
+                                    object_result.dataset_id)
+                        with session.begin_nested():
+                            object_result.invalidate_compilation()
+                        self.submission_enqueue_operations(
+                            object_result.submission)
+                else:
+                    object_result.evaluation_tries += 1
 
         elif operation.type_ == ESOperation.USER_TEST_COMPILATION:
             if result.job_success:
@@ -676,15 +698,11 @@ class EvaluationService(TriggeredService):
             else:
                 object_result.compilation_tries += 1
 
-            self.user_test_compilation_ended(object_result)
-
         elif operation.type_ == ESOperation.USER_TEST_EVALUATION:
             if result.job_success:
                 result.job.to_user_test(object_result)
             else:
                 object_result.evaluation_tries += 1
-
-            self.user_test_evaluation_ended(object_result)
 
         else:
             logger.error("Invalid operation type %r.", operation.type_)
@@ -840,7 +858,7 @@ class EvaluationService(TriggeredService):
         else:
             logger.warning("Worker failed when evaluating submission "
                            "%d(%d).",
-                           user_test_result.submission_id,
+                           user_test_result.user_test_id,
                            user_test_result.dataset_id)
             if user_test_result.evaluation_tries >= \
                     EvaluationService.MAX_USER_TEST_EVALUATION_TRIES:

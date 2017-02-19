@@ -57,6 +57,8 @@ B_TO_MB = 1024.0 * 1024.0
 # which methods, properties, etc. to use.
 PSUTIL2 = psutil.version_info >= (2, 0)
 
+MAX_RESOURCE_SECONDS = 11 * 60  # MAX time window for remote resource query
+
 if PSUTIL2:
     PSUTIL_PROC_ATTRS = \
         ["cmdline", "cpu_times", "create_time", "memory_info", "num_threads"]
@@ -292,11 +294,13 @@ class ResourceService(Service):
 
         data = {}
 
+        def percent_from_delta(v):
+            return int(round(v / delta * 100))
+
         # CPU
         cpu_times = self._get_cpu_times()
-        data["cpu"] = dict((x, int(round((cpu_times[x] -
-                                          self._prev_cpu_times[x])
-                                   / delta * 100.0)))
+        data["cpu"] = dict((x, percent_from_delta(cpu_times[x] -
+                                                  self._prev_cpu_times[x]))
                            for x in cpu_times)
         data["cpu"]["num_cpu"] = \
             psutil.cpu_count() if PSUTIL2 else psutil.NUM_CPUS
@@ -353,14 +357,11 @@ class ResourceService(Service):
                 dic["resident"] = proc_info["memory_info"].rss // B_TO_MB
                 dic["virtual"] = proc_info["memory_info"].vms // B_TO_MB
                 cpu_times = proc_info["cpu_times"]
-                dic["user"] = int(
-                    round((cpu_times[0] -
-                           self._services_prev_cpu_times[service][0])
-                          / delta * 100))
-                dic["sys"] = int(
-                    round((cpu_times[1] -
-                           self._services_prev_cpu_times[service][1])
-                          / delta * 100))
+                dic["user"] = percent_from_delta(
+                    cpu_times[0] - self._services_prev_cpu_times[service][0])
+                dic["sys"] = percent_from_delta(
+                    cpu_times[1] - self._services_prev_cpu_times[service][1])
+
                 self._services_prev_cpu_times[service] = cpu_times
                 try:
                     dic["threads"] = proc_info["num_threads"]
@@ -391,6 +392,8 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._get_resources")
+
+        last_time = max(last_time, time.time() - MAX_RESOURCE_SECONDS)
         index = bisect.bisect_right(self._local_store, (last_time, 0))
         return self._local_store[index:]
 

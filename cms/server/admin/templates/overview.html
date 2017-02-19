@@ -8,7 +8,7 @@ function update_submissions_status(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="2">'+ msg + '</td></tr>');
         return;
     }
 
@@ -38,7 +38,7 @@ function update_queue_status(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="4">'+ msg + '</td></tr>');
         return;
     }
 
@@ -101,14 +101,14 @@ function update_workers_status(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
         return;
     }
 
     var l = response['data'].length;
     if (l == 0)
     {
-        table.html('<tr><td colspan="100">No workers found.</td>');
+        table.html('<tr><td colspan="5">No workers found.</td>');
         return;
     }
 
@@ -132,7 +132,7 @@ function update_workers_status(response)
         strings.push('<td style="text-align: center;">' + connected + '</td>');
         strings.push('<td>' + job + '</td>');
         strings.push('<td>' + start_time + '</td>');
-        if (response['data'][i]['operation'] == "disabled") {
+        if (response['data'][i]['operations'] == "disabled") {
             strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;"' +
 {% if not current_user.permission_all %}
                          ' disabled' +
@@ -163,14 +163,14 @@ function update_logs(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
         return;
     }
 
     var l = response['data'].length;
     if (l == 0)
     {
-        table.html('<tr><td colspan="100">No log entries.</td>');
+        table.html('<tr><td colspan="5">No log entries.</td>');
         return;
     }
 
@@ -254,7 +254,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="2"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -273,7 +273,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="4"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -292,7 +292,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="5"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -312,7 +312,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="5"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>

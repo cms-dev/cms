@@ -7,6 +7,7 @@ Welcome to CMS's documentation!
    Introduction
    Installation
    Running CMS
+   Data model
    Creating a contest
    Configuring a contest
    Detailed timing configuration

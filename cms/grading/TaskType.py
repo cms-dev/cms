@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -48,10 +48,11 @@ logger = logging.getLogger(__name__)
 
 ## Sandbox lifecycle. ##
 
-def create_sandbox(file_cacher):
+def create_sandbox(file_cacher, multithreaded=False):
     """Create a sandbox, and return it.
 
     file_cacher (FileCacher): a file cacher instance.
+    multithreaded (boolean): whether the sandbox should allow multithreading.
 
     return (Sandbox): a sandbox.
 
@@ -59,7 +60,7 @@ def create_sandbox(file_cacher):
 
     """
     try:
-        sandbox = Sandbox(file_cacher)
+        sandbox = Sandbox(multithreaded, file_cacher)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)
@@ -67,14 +68,18 @@ def create_sandbox(file_cacher):
     return sandbox
 
 
-def delete_sandbox(sandbox):
-    """Delete the sandbox, if the configuration allows it to be
-    deleted.
+def delete_sandbox(sandbox, success=True):
+    """Delete the sandbox, if the configuration and job was ok.
 
     sandbox (Sandbox): the sandbox to delete.
+    success (boolean): if the job succeeded (no system errors).
 
     """
-    if not config.keep_sandbox:
+    # If the job was not successful, we keep the sandbox around.
+    if not success:
+        logger.warning("Sandbox %s kept around because job did not succeeded.",
+                       sandbox.outer_temp_dir)
+    elif not config.keep_sandbox:
         try:
             sandbox.delete()
         except (IOError, OSError):
@@ -163,14 +168,15 @@ class TaskType(object):
         submission_format ([string]): the list of files provided by the
             user that have to be compiled (the compilation command may
             contain references to other files like graders, stubs, etc...);
-            they may contain the string "%l" as a language-wildcard.
+            they may contain the string ".%l" as a language-wildcard.
+
         return ({string: [[string]]}|None): for each language (indexed
-            by its shorthand code i.e. one of the cms.LANG_* constants)
-            provide a list of commands, each as a list of tokens. That
-            is because some languages may require multiple operations
-            to compile or because some task types may require multiple
-            independent compilations (e.g. encoder and decoder); return
-            None if no compilation is required (e.g. output only).
+            by its name) provide a list of commands, each as a list of
+            tokens. That is because some languages may require
+            multiple operations to compile or because some task types
+            may require multiple independent compilations
+            (e.g. encoder and decoder); return None if no compilation
+            is required (e.g. output only).
 
         """
         raise NotImplementedError("Please subclass this class.")

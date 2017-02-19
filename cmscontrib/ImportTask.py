@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
@@ -42,6 +42,7 @@ gevent.monkey.patch_all()
 import argparse
 import logging
 import os
+import sys
 
 from cms import utf8_decoder
 from cms.db import Contest, SessionGen, Task
@@ -91,7 +92,7 @@ class TaskImporter(BaseImporter):
         # Get the task
         task = self.loader.get_task(get_statement=not self.no_statement)
         if task is None:
-            return
+            return False
 
         # Override name, if necessary
         if self.override_name:
@@ -120,7 +121,7 @@ class TaskImporter(BaseImporter):
                 else:
                     logger.critical("Task \"%s\" already exists in database.",
                                     task.name)
-                    return
+                    return False
             else:
                 if self.contest_id is not None:
                     contest = session.query(Contest) \
@@ -132,7 +133,7 @@ class TaskImporter(BaseImporter):
                             "The specified contest (id %s) does not exist. "
                             "Aborting, no task imported.",
                             self.contest_id)
-                        return
+                        return False
                     else:
                         logger.info(
                             "Attaching task to contest with id %s.",
@@ -146,6 +147,7 @@ class TaskImporter(BaseImporter):
             task_id = task.id
 
         logger.info("Import finished (task id: %s).", task_id)
+        return True
 
 
 def main():
@@ -202,16 +204,16 @@ def main():
         parser.error
     )
 
-    TaskImporter(
-        path=args.target,
-        update=args.update,
-        no_statement=args.no_statement,
-        contest_id=args.contest_id,
-        prefix=args.prefix,
-        override_name=args.name,
-        loader_class=loader_class
-    ).do_import()
+    importer = TaskImporter(path=args.target,
+                            update=args.update,
+                            no_statement=args.no_statement,
+                            contest_id=args.contest_id,
+                            prefix=args.prefix,
+                            override_name=args.name,
+                            loader_class=loader_class)
+    success = importer.do_import()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

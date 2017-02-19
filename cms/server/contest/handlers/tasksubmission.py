@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -46,8 +46,9 @@ import tornado.web
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
-from cms import config, filename_to_language
+from cms import config
 from cms.db import File, Submission, SubmissionResult, Task, Token
+from cms.grading.languagemanager import get_language
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required
@@ -67,6 +68,19 @@ class SubmitHandler(BaseHandler):
     """Handles the received submissions.
 
     """
+
+    def _send_error(self, subject, text, task):
+        """Shorthand for sending a notification and redirecting."""
+        logger.warning("Sent error: `%s' - `%s'", subject, text)
+        self.application.service.add_notification(
+            self.current_user.user.username,
+            self.timestamp,
+            subject,
+            text,
+            NOTIFICATION_ERROR)
+        task_name = quote(task.name, safe='')
+        self.redirect("/tasks/{0}/submissions".format(task_name))
+
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name):
@@ -107,13 +121,8 @@ class SubmitHandler(BaseHandler):
                                "at most %d submissions on this task.") %
                         task.max_submission_number)
         except ValueError as error:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Too many submissions!"),
-                error.message,
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self._send_error(
+                self._("Too many submissions!"), error.message, task)
             return
 
         # Enforce minimum time between submissions
@@ -151,31 +160,34 @@ class SubmitHandler(BaseHandler):
                                "after %d seconds from last submission.") %
                         task.min_submission_interval.total_seconds())
         except ValueError as error:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Submissions too frequent!"),
-                error.message,
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self._send_error(
+                self._("Submissions too frequent!"), error.message, task)
             return
+
+        # Required files from the user.
+        required = set([sfe.filename for sfe in task.submission_format])
 
         # Ensure that the user did not submit multiple files with the
         # same name.
         if any(len(filename) != 1 for filename in self.request.files.values()):
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+                task)
             return
 
         # If the user submitted an archive, extract it and use content
-        # as request.files.
+        # as request.files. But only valid for "output only" (i.e.,
+        # not for submissions requiring a programming language
+        # identification).
         if len(self.request.files) == 1 and \
                 self.request.files.keys()[0] == "submission":
+            if any(filename.endswith(".%l") for filename in required):
+                self._send_error(
+                    self._("Invalid submission format!"),
+                    self._("Please select the correct files."),
+                    task)
+                return
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
@@ -183,14 +195,10 @@ class SubmitHandler(BaseHandler):
             archive = Archive.from_raw_data(archive_data["body"])
 
             if archive is None:
-                self.application.service.add_notification(
-                    participation.user.username,
-                    self.timestamp,
+                self._send_error(
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
-                    NOTIFICATION_ERROR)
-                self.redirect("/tasks/%s/submissions" % quote(task.name,
-                                                              safe=''))
+                    task)
                 return
 
             # Extract the archive.
@@ -209,17 +217,13 @@ class SubmitHandler(BaseHandler):
         # submission format and no more. Less is acceptable if task
         # type says so.
         task_type = get_task_type(dataset=task.active_dataset)
-        required = set([sfe.filename for sfe in task.submission_format])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+                task)
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -230,67 +234,50 @@ class SubmitHandler(BaseHandler):
         for uploaded, data in self.request.files.iteritems():
             files[uploaded] = (data[0]["filename"], data[0]["body"])
 
-        # If we allow partial submissions, implicitly we recover the
-        # non-submitted files from the previous submission. And put them
-        # in file_digests (i.e. like they have already been sent to FS).
-        submission_lang = None
+        # Read the submission language provided in the request; we
+        # integrate it with the language fetched from the previous
+        # submission (if we use it) and later make sure it is
+        # recognized and allowed.
+        submission_lang = self.get_argument("language", None)
+        need_lang = any(our_filename.find(".%l") != -1
+                        for our_filename in files)
+
+        # If we allow partial submissions, we implicitly recover the
+        # non-submitted files from the previous submission (if it has
+        # the same programming language of the current one), and put
+        # them in file_digests (since they are already in FS).
         file_digests = {}
         if task_type.ALLOW_PARTIAL_SUBMISSION and \
-                last_submission_t is not None:
+                last_submission_t is not None and \
+                (submission_lang is None or
+                 submission_lang == last_submission_t.language):
+            submission_lang = last_submission_t.language
             for filename in required.difference(provided):
                 if filename in last_submission_t.files:
-                    # If we retrieve a language-dependent file from
-                    # last submission, we take not that language must
-                    # be the same.
-                    if "%l" in filename:
-                        submission_lang = last_submission_t.language
                     file_digests[filename] = \
                         last_submission_t.files[filename].digest
 
-        # We need to ensure that everytime we have a .%l in our
-        # filenames, the user has the extension of an allowed
-        # language, and that all these are the same (i.e., no
-        # mixed-language submissions).
-
-        error = None
-        for our_filename in files:
-            user_filename = files[our_filename][0]
-            if our_filename.find(".%l") != -1:
-                lang = filename_to_language(user_filename)
-                if lang is None:
-                    error = self._("Cannot recognize submission's language.")
-                    break
-                elif submission_lang is not None and \
-                        submission_lang != lang:
-                    error = self._("All sources must be in the same language.")
-                    break
-                elif lang not in contest.languages:
-                    error = self._(
-                        "Language %s not allowed in this contest.") % lang
-                    break
-                else:
-                    submission_lang = lang
+        # Throw an error if task needs a language, but we don't have
+        # it or it is not allowed / recognized.
+        if need_lang:
+            error = None
+            if submission_lang is None:
+                error = self._("Cannot recognize the submission language.")
+            elif submission_lang not in contest.languages:
+                error = self._("Language %s not allowed in this contest.") \
+                    % submission_lang
         if error is not None:
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Invalid submission!"),
-                error,
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self._send_error(self._("Invalid submission!"), error, task)
             return
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
                 for f in files.values()]):
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Submission too big!"),
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length,
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+                task)
             return
 
         # All checks done, submission accepted.
@@ -331,13 +318,10 @@ class SubmitHandler(BaseHandler):
         # In case of error, the server aborts the submission
         except Exception as error:
             logger.error("Storage failed! %s", error)
-            self.application.service.add_notification(
-                participation.user.username,
-                self.timestamp,
+            self._send_error(
                 self._("Submission storage failed!"),
                 self._("Please try again."),
-                NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+                task)
             return
 
         # All the files are stored, ready to submit!
@@ -364,7 +348,6 @@ class SubmitHandler(BaseHandler):
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
-        # FIXME is it actually used by something?
         self.redirect("/tasks/%s/submissions?%s" % (
             quote(task.name, safe=''),
             encrypt_number(submission.id)))
@@ -450,11 +433,14 @@ class SubmissionStatusHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
-        if sr is None:
-            raise tornado.web.HTTPError(404)
-
         data = dict()
-        data["status"] = sr.get_status()
+
+        if sr is None:
+            # implicit compiling state while result is not created
+            data["status"] = SubmissionResult.COMPILING
+        else:
+            data["status"] = sr.get_status()
+
         if data["status"] == SubmissionResult.COMPILING:
             data["status_text"] = self._("Compiling...")
         elif data["status"] == SubmissionResult.COMPILATION_FAILED:
@@ -563,29 +549,26 @@ class SubmissionFileHandler(FileHandler):
         # submissions, yet, if the submission_format changes during the
         # competition, this may not hold anymore for old submissions.
 
-        # filename follows our convention (e.g. 'foo.%l'), real_filename
-        # follows the one we present to the user (e.g. 'foo.c').
-        real_filename = filename
+        # filename is the name used by the browser, hence is something
+        # like 'foo.c' (and the extension is CMS's preferred extension
+        # for the language). To retrieve the right file, we need to
+        # decode it to 'foo.%l'.
+        stored_filename = filename
         if submission.language is not None:
-            if filename in submission.files:
-                real_filename = filename.replace("%l", submission.language)
-            else:
-                # We don't recognize this filename. Let's try to 'undo'
-                # the '%l' -> 'c|cpp|pas' replacement before giving up.
-                filename = re.sub(r'\.%s$' % submission.language, '.%l',
-                                  filename)
+            extension = get_language(submission.language).source_extension
+            stored_filename = re.sub(r'%s$' % extension, '.%l', filename)
 
-        if filename not in submission.files:
+        if stored_filename not in submission.files:
             raise tornado.web.HTTPError(404)
 
-        digest = submission.files[filename].digest
+        digest = submission.files[stored_filename].digest
         self.sql_session.close()
 
-        mimetype = get_type_for_file_name(real_filename)
+        mimetype = get_type_for_file_name(filename)
         if mimetype is None:
             mimetype = 'application/octet-stream'
 
-        self.fetch(digest, mimetype, real_filename)
+        self.fetch(digest, mimetype, filename)
 
 
 class UseTokenHandler(BaseHandler):

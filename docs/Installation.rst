@@ -36,11 +36,13 @@ Then you require the compilation and execution environments for the languages yo
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (for C, C++ and Java, respectively with executables ``gcc``, ``g++`` and ``gcj``);
 
+* alternatively, for Java, your choice of a JDK, for example OpenJDK (but any other JDK behaving similarly is fine, for example Oracle's);
+
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
 * `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
 
-* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php5``);
+* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
 * `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
 
@@ -53,9 +55,10 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
 
 .. sourcecode:: bash
 
-    sudo apt-get install build-essential fpc postgresql postgresql-client \
-         gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite \
-         git
+    # Feel free to change OpenJDK packages with your preferred JDK.
+    sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk fpc \
+        postgresql postgresql-client gettext python2.7 \
+        iso-codes shared-mime-info stl-manual cgroup-lite git
 
     # Only if you are going to use pip/virtualenv to install python dependencies
     sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev \
@@ -72,7 +75,8 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
 .. sourcecode:: bash
 
-    sudo pacman -S --needed base-devel fpc postgresql postgresql-client python2 \
+    sudo pacman -S base-devel jre8-openjdk jdk8-openjdk fpc \
+         postgresql postgresql-client python2 \
          iso-codes shared-mime-info git
 
     # Install the following from AUR.
@@ -85,52 +89,6 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     # Optional
     sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core a2ps \
          ghc
-
-Debian
-------
-
-While Debian uses (almost) the same packages as Ubuntu, setting up cgroups is more involved.
-Debian requires the memory module of cgroups to be activated via a kernel command line parameter. Add ``cgroup_enable=memory`` to ``GRUB_CMDLINE_LINUX_DEFAULT`` in ``/etc/default/grub`` and then run ``update-grub``.
-
-Also, we need to mount the cgroup filesystems (under Ubuntu, the cgroup-lite package does this). To do this automatically, add the following file into /etc/init.d:
-
-.. sourcecode:: bash
-
-    #! /bin/sh
-    # /etc/init.d/cgroup
-
-    # The following part carries out specific functions depending on arguments.
-    case "$1" in
-      start)
-        mount -t tmpfs none /sys/fs/cgroup/
-        mkdir /sys/fs/cgroup/memory
-        mount -t cgroup none /sys/fs/cgroup/memory -o memory
-        mkdir /sys/fs/cgroup/cpuacct
-        mount -t cgroup none /sys/fs/cgroup/cpuacct -o cpuacct
-        mkdir /sys/fs/cgroup/cpuset
-        mount -t cgroup none /sys/fs/cgroup/cpuset -o cpuset
-        ;;
-      stop)
-        umount /sys/fs/cgroup/cpuset
-        umount /sys/fs/cgroup/cpuacct
-        umount /sys/fs/cgroup/memory
-        umount /sys/fs/cgroup
-        ;;
-      *)
-        echo "Usage: /etc/init.d/foobar {start|stop}"
-        exit 1
-        ;;
-    esac
-
-    exit 0
-
-Then execute ``chmod 755 /etc/init.d/cgroup`` as root and finally ``update-rc.d cgroup defaults`` to add the script to the default scripts.
-The following command should now mount the cgroup filesystem:
-
-.. sourcecode:: bash
-
-    /etc/init.d/cgroup start
-
 
 Preparation steps
 =================
@@ -178,7 +136,6 @@ Installing CMS and its Python dependencies
 ==========================================
 
 There are a number of ways to install CMS and its Python dependencies:
-
 
 Method 1: Global installation with pip
 --------------------------------------
@@ -241,6 +198,10 @@ After the activation, the ``pip`` command will *always* be available (even if it
 
         deactivate
 
+.. warning::
+
+   At the moment, CMS does not work correctly when installed in a virtual environment. You can use virtual enviroment to run CMS non-installed.
+
 Method 3: Using ``apt-get`` on Ubuntu
 -------------------------------------
 
@@ -290,6 +251,41 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
     # Optionally install the following from AUR.
     # https://aur.archlinux.org/packages/python2-pypdf2/
 
+
+Running CMS non-installed
+=========================
+
+To run CMS without installing it in the system, you need first to build the prerequisites:
+
+.. sourcecode:: bash
+
+    ./prerequisites.py build
+
+There are still a few steps to complete manually in this case. First, add CMS and isolate to the path and create the configuration files:
+
+.. sourcecode:: bash
+
+    export PATH=$PATH:./isolate/
+    export PYTHONPATH=./
+    cp config/cms.conf.sample config/cms.conf
+    cp config/cms.ranking.conf.sample config/cms.ranking.conf
+
+Second, perform these tasks (that require root permissions):
+
+* create the ``cmsuser`` user and a group with the same name;
+
+* add your user to the ``cmsuser`` group;
+
+* set isolate to be owned by root:cmsuser, and set its suid bit.
+
+For example:
+
+.. sourcecode:: bash
+
+    sudo useradd cmsuser
+    sudo usermod -a -G cmsuser <your user>
+    sudo chown root:cmsuser ./isolate/isolate
+    sudo chmod u+s ./isolate/isolate
 
 Updating CMS
 ============

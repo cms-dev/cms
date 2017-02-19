@@ -6,10 +6,20 @@
   <h1>Tasks list</h1>
 </div>
 
-<div id="details">
+<form action="{{ url_root }}/tasks" method="POST">
+  {% module xsrf_form_html() %}
+  Edit selected task:
+   <input type="submit"
+         name="operation"
+         value="Remove"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         />
   <table class="bordered">
     <thead>
       <tr>
+        <th></th>
         <th>Name</th>
         <th>Title</th>
       </tr>
@@ -17,12 +27,15 @@
     <tbody>
       {% for t in task_list %}
       <tr>
+        <td>
+          <input type="radio" name="task_id" value="{{ t.id }}"/>
+        </td>
         <td><a href="{{ url_root}}/task/{{ t.id }}">{{ t.name }}</a></td>
         <td>{{ t.title }}</td>
       </tr>
       {% end %}
     </tbody>
   </table>
-</div>
+</form>
 
 {% end %}

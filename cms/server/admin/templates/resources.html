@@ -24,7 +24,7 @@ var getters = [];
             var msg = utils.standard_response(response);
             if (msg != "")
             {
-                table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
+                table.html('<tr><td style="text-align: center;" colspan="8">'+ msg + '</td></tr>');
                 return;
             }
 
@@ -213,7 +213,7 @@ var getters = [];
 
         kill_service: function(s, link)
         {
-            link.parentNode.innerHTML = '<img src="{{ url_root }}/static/loading.gif" />';
+            link.parentNode.innerHTML = '<img src="{{ url_root }}/static/loading.gif" alt="loading..." />';
             cmsrpc_request("{{ url_root }}",
                            "ResourceService", this.shard,
                            "kill_service",
@@ -269,8 +269,8 @@ var plotOptions = {
 {% end %}
 
 {% block js_init %}
-
-for (var i = 0; i < {{ resource_shards }}; i++)
+var shards = {% raw json_encode(resource_addresses) %};
+for (var i in shards)
 {
     getters[i] = new RSgetter(i, plotOptions);
     var f = utils.bind_func(getters[i], getters[i].update_resources);
@@ -306,7 +306,7 @@ for (var i = 0; i < {{ resource_shards }}; i++)
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="8"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
     </tbody>
   </table>
 

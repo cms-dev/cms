@@ -80,7 +80,7 @@
 {% end %}
 {% if submissions_download_allowed %}
     <td class="files">
-        {% comment We replace '%l' with the actual language only when it occurs as an extension at the end of the string and only when %}
+        {% comment We replace '.%l' with the actual language only when it occurs as an extension at the end of the string and only when %}
         {% comment there isn't another file with that name. This allows to securily reverse the replacement and should work great in %}
         {% comment the common case. Yet, it still allows the marginal case of both 'foo.%l' and 'foo.c' in the submission format. %}
         {% if len(s.files) == 0 %}
@@ -90,7 +90,7 @@
         {% elif len(s.files) == 1 %}
             {% set filename = s.files.keys()[0] %}
             {% if s.language is not None %}
-                {% set filename = re.sub("\.%l$", ".%s" % s.language, filename) %}
+                {% set filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
             {% end %}
         <a class="btn" href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/files/{{ encode_for_url(filename) }}">
             {{ _("Download") }}
@@ -104,7 +104,7 @@
             <ul class="dropdown-menu">
             {% for filename in s.files %}
                 {% if s.language is not None %}
-                    {% set temp_filename = re.sub("\.%l$", ".%s" % s.language, filename) %}
+                    {% set temp_filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
                     {% if temp_filename not in s.files %}
                         {% set filename = temp_filename %}
                     {% end %}
@@ -128,6 +128,7 @@
             {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
             {% if can_play_token and not need_to_wait %}
         <form action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/token" method="POST">
+            {% module xsrf_form_html() %}
             <button type="submit" class="btn btn-warning">{{ _("Play!") }}</button>
         </form>
             {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not None) %}

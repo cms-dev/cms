@@ -6,10 +6,20 @@
   <h1>Users list</h1>
 </div>
 
-<div id="details">
+<form action="{{ url_root }}/users" method="POST">
+  {% module xsrf_form_html() %}
+  Edit selected user:
+   <input type="submit"
+         name="operation"
+         value="Remove"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         />
   <table class="bordered">
     <thead>
       <tr>
+        <th></th>
         <th>Username</th>
         <th>First name</th>
         <th>Last name</th>
@@ -18,6 +28,9 @@
     <tbody>
       {% for u in sorted(user_list, cmp = lambda x, y: cmp(x.username, y.username)) %}
       <tr>
+        <td>
+          <input type="radio" name="user_id" value="{{ u.id }}"/>
+        </td>
         <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
         <td>{{ u.first_name }}</td>
         <td>{{ u.last_name }}</td>
@@ -25,6 +38,6 @@
       {% end %}
     </tbody>
   </table>
-</div>
+</form>
 
 {% end %}

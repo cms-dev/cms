@@ -40,5 +40,7 @@ wafrelka <wafrelka@gmail.com>
 Andrea Cracco <guilucand@gmail.com>
 Petar Veličković <pv273@cam.ac.uk>
 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+Kārlis Seņko <karlis3p70l1ij@gmail.com>
+Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)

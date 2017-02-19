@@ -1,0 +1,37 @@
+{# This snippet shows a table using the list user_tests as input #}
+{% if user_test_count == 0 %}
+<p>No user tests found.</p>
+
+{% else %}
+
+{% if user_test_count > len(user_tests) %}
+<div>
+  Pages:
+  {% for i in range(user_test_pages) %}
+    {% if i != user_test_page %}
+  <a href="{{ url_root }}{{ page_url }}?page={{ i }}">{{ i + 1 }}</a>
+    {% else %}
+  {{ i + 1 }}
+    {% end %}
+  {% end %}
+</div>
+{% end %}
+
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Task</th>
+      <th>Status</th>
+      <th>User input</th>
+      <th>Files</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ut in sorted(user_tests, key=lambda s: s.timestamp, reverse=True) %}
+      {% include user_test_row.html %}
+    {% end %}
+  </tbody>
+</table>
+{% end %}

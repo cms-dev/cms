@@ -1,9 +1,9 @@
 {% import re %}
 {% import time %}
 {% import json %}
-{% from cms import LANGUAGE_NAMES, LANGUAGE_TO_SOURCE_EXT_MAP %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
 {% from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES %}
+{% from cms.grading.languagemanager import get_language %}
 {% from cms.db import SubmissionResult %}
 {% from cmscommon.datetime import make_timestamp, utc %}
 {% from cmscommon.isocodes import translate_language_country_code %}
@@ -24,6 +24,16 @@
         <title>{{ contest.description }}</title>
 
         <script type="text/javascript">
+var LANGUAGES = {
+{% for lang in contest.languages %}
+    '{{ lang }}': {
+{% for extension in get_language(lang).source_extensions %}
+        '{{ extension }}': true,
+{% end %}
+    },
+{% end %}
+};
+
 {% if current_user is None %}
 var utils = new CMS.CWSUtils("{{ url_root }}",
                              0, 0, 0, 0, 0);
@@ -67,9 +77,12 @@ $(document).ready(function () {
                     </p>
 {% end %}
 {% if current_user is not None %}
+                    <form action="{{ url_root }}/logout" method="POST" class="navbar-form pull-right">
+                        {% module xsrf_form_html() %}
+                        <button type="submit" class="btn btn-warning">{{ _('Logout') }}</button>
+                    </form>
                     <p class="navbar-text pull-right">
                         {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": escape(current_user.user.first_name), "last_name": escape(current_user.user.last_name), "username": escape(current_user.user.username)} %}
-                        <a class="btn btn-warning" href="{{ url_root }}/logout">{{ _("Logout") }}</a>
                     </p>
 {% end %}
                 </div>
@@ -89,18 +102,19 @@ $(document).ready(function () {
                 <h1>{{ _("Welcome") }}</h1>
                 <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ url_root }}/login" method="POST">
+                    {% module xsrf_form_html() %}
                     <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
                     <fieldset>
                         <div class="control-group">
-                            <label class="control-label" for="input01">{{ _("Username") }}</label>
+                            <label class="control-label" for="username">{{ _("Username") }}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" name="username">
+                                <input type="text" class="input-xlarge" name="username" id="username">
                             </div>
                         </div>
                         <div class="control-group">
-                            <label class="control-label" for="input01">{{ _("Password") }}</label>
+                            <label class="control-label" for="password">{{ _("Password") }}</label>
                             <div class="controls">
-                                <input type="password" class="input-xlarge" name="password">
+                                <input type="password" class="input-xlarge" name="password" id="password">
                             </div>
                         </div>
                         <div class="control-group">

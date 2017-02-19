@@ -11,6 +11,9 @@ Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a
     <tr>
       <th>Username</th>
       <th>User</th>
+      {% if show_teams %}
+      <th>Team</th>
+      {% end %}
       {% for task in contest.tasks %}
       <th><a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a></th>
       {% end %}
@@ -23,8 +26,15 @@ Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a
     <tr>
       {% set score = 0.0 %}
       {% set partial = False %}
-      <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+      <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}/edit">{{ p.user.username }}</a></td>
       <td>{{ "%s %s" % (p.user.first_name, p.user.last_name) }}</td>
+      {% if show_teams %}
+        {% if p.team %}
+        <td><a href="{{ url_root }}/team/{{ p.team_id }}">{{ p.team.name }}</a></td>
+        {% else %}
+        <td></td>
+        {% end %}
+      {% end %}
       {% for task in contest.tasks %}
         {% set t_score, t_partial = task_score(p, task) %}
         {% set t_score = round(t_score, task.score_precision) %}

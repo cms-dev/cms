@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,10 +32,10 @@ import os
 import sys
 import codecs
 
-from cms import utf8_decoder, LANG_C, LANG_CPP, LANG_JAVA, LANG_PASCAL, \
-    LANG_PHP, LANG_PYTHON
+from cms import utf8_decoder
 from cms.db import Dataset, File, FSObject, Participation, SessionGen, \
     Submission, SubmissionResult, Task, User
+from cms.grading import languagemanager
 
 
 logger = logging.getLogger(__name__)
@@ -51,13 +52,14 @@ _RAW_TEMPLATE_DATA = """
 
 
 TEMPLATE = {
-    LANG_C: "/**%s*/\n" % _RAW_TEMPLATE_DATA,
-    LANG_PASCAL: "(**%s*)\n" % _RAW_TEMPLATE_DATA,
-    LANG_PYTHON: "\"\"\"%s\"\"\"\n" % _RAW_TEMPLATE_DATA,
-    LANG_PHP: "<?php\n/**%s*/\n?>" % _RAW_TEMPLATE_DATA,
+    ".c": "/**%s*/\n" % _RAW_TEMPLATE_DATA,
+    ".pas": "(**%s*)\n" % _RAW_TEMPLATE_DATA,
+    ".py": "\"\"\"%s\"\"\"\n" % _RAW_TEMPLATE_DATA,
+    ".php": "<?php\n/**%s*/\n?>" % _RAW_TEMPLATE_DATA,
+    ".hs": "{-%s-}\n" % _RAW_TEMPLATE_DATA,
 }
-TEMPLATE[LANG_CPP] = TEMPLATE[LANG_C]
-TEMPLATE[LANG_JAVA] = TEMPLATE[LANG_C]
+TEMPLATE[".cpp"] = TEMPLATE[".c"]
+TEMPLATE[".java"] = TEMPLATE[".c"]
 
 
 def filter_top_scoring(results, unique):
@@ -117,8 +119,8 @@ def main():
                         default=0.0)
     parser.add_argument("--filename", action="store", type=utf8_decoder,
                         help="the filename format to use"
-                             " (default: {id}.{name}.{ext})",
-                        default="{id}.{name}.{ext}")
+                             " (default: {id}.{name}{ext})",
+                        default="{id}.{name}{ext}")
     parser.add_argument("output_dir", action="store", type=utf8_decoder,
                         help="directory where to save the submissions")
 
@@ -135,13 +137,13 @@ def main():
     if args.add_info and not args.utf8:
         logger.critical("If --add-info is specified, then --utf8 must be"
                         " specified as well.")
-        sys.exit(1)
+        return 1
 
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
     if not os.path.isdir(args.output_dir):
         logger.critical("The output-dir parameter must point to a directory")
-        sys.exit(1)
+        return 1
 
     with SessionGen() as session:
         q = session.query(Submission)\
@@ -190,8 +192,9 @@ def main():
             name = f_filename
             if name.endswith(".%l"):
                 name = name[:-3]  # remove last 3 chars
+            ext = languagemanager.get_language(s_language).source_extension
 
-            filename = args.filename.format(id=s_id, name=name, ext=s_language,
+            filename = args.filename.format(id=s_id, name=name, ext=ext,
                                             time=s_timestamp, user=u_name)
             filename = os.path.join(args.output_dir, filename)
             if os.path.exists(filename):
@@ -213,7 +216,7 @@ def main():
                         sys.exit(1)
 
                     if args.add_info:
-                        data = TEMPLATE[s_language] % (
+                        data = TEMPLATE[ext] % (
                             u_name,
                             u_fname,
                             u_lname,
@@ -232,6 +235,8 @@ def main():
 
             done += 1
             print(done, "/", len(results))
+
+    return 0
 
 
 if __name__ == "__main__":

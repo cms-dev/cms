@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Petar Veličković <pv273@cam.ac.uk>
@@ -29,14 +29,14 @@ import logging
 import os
 import tempfile
 
-from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, config
+from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading import get_compilation_commands, compilation_step, \
+from cms.grading import compilation_step, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, \
     extract_outcome_and_text, white_diff_step
+from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
@@ -93,8 +93,8 @@ class TwoSteps(TaskType):
         """See TaskType.get_compilation_commands."""
         res = dict()
         for language in LANGUAGES:
-            source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-            header_ext = LANGUAGE_TO_HEADER_EXT_MAP.get(language)
+            source_ext = language.source_extension
+            header_ext = language.header_extension
             source_filenames = []
             # Manager
             manager_source_filename = "manager%s" % source_ext
@@ -114,10 +114,9 @@ class TwoSteps(TaskType):
 
             # Get compilation command and compile.
             executable_filename = "manager"
-            commands = get_compilation_commands(language,
-                                                source_filenames,
-                                                executable_filename)
-            res[language] = commands
+            commands = language.get_compilation_commands(
+                source_filenames, executable_filename)
+            res[language.name] = commands
         return res
 
     def compile(self, job, file_cacher):
@@ -125,9 +124,9 @@ class TwoSteps(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = job.language
-        source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
-        header_ext = LANGUAGE_TO_HEADER_EXT_MAP.get(language)
+        language = get_language(job.language)
+        source_ext = language.source_extension
+        header_ext = language.header_extension
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -142,7 +141,7 @@ class TwoSteps(TaskType):
             return True
 
         # First and only one compilation.
-        sandbox = create_sandbox(file_cacher)
+        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
         files_to_get = {}
 
@@ -177,9 +176,8 @@ class TwoSteps(TaskType):
 
         # Get compilation command and compile.
         executable_filename = "manager"
-        commands = get_compilation_commands(language,
-                                            source_filenames,
-                                            executable_filename)
+        commands = language.get_compilation_commands(
+            source_filenames, executable_filename)
         operation_success, compilation_success, text, plus = \
             compilation_step(sandbox, commands)
 
@@ -197,13 +195,13 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox)
+        delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         # f stand for first, s for second.
-        first_sandbox = create_sandbox(file_cacher)
-        second_sandbox = create_sandbox(file_cacher)
+        first_sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        second_sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
@@ -371,8 +369,8 @@ class TwoSteps(TaskType):
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
 
-        delete_sandbox(first_sandbox)
-        delete_sandbox(second_sandbox)
+        delete_sandbox(first_sandbox, job.success)
+        delete_sandbox(second_sandbox, job.success)
 
     def get_user_managers(self, unused_submission_format):
         """See TaskType.get_user_managers."""

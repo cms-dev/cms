@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-07 12:47+0200\n"
-"PO-Revision-Date: 2015-02-07 17:12+0100\n"
+"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"PO-Revision-Date: 2017-01-29 19:41+0100\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -65,6 +65,14 @@ msgstr "L'output è corretto"
 
 msgid "Your submission ran and gave the correct answer"
 msgstr "La tua sottoposizione è stata eseguita, è ha dato la risposta corretta"
+
+msgid "Output is partially correct"
+msgstr "L'output è parzialmente corretto"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr ""
+"La tua sottoposizione è stata eseguita, è ha dato una risposta parzialmente "
+"corretta"
 
 msgid "Output isn't correct"
 msgstr "L'output non è corretto"
@@ -203,6 +211,9 @@ msgstr "%H:%M:%S %d/%m/%Y"
 msgid "loading..."
 msgstr "caricamento in corso..."
 
+msgid "unknown"
+msgstr "sconosciuto"
+
 #, python-format
 msgid "%d second"
 msgid_plural "%d seconds"
@@ -326,6 +337,12 @@ msgstr[1] "Non puoi usare più di %(max_number)d %(type_pl)s in totale."
 msgid "You have no limitations on how you use them."
 msgstr "Non hai limitazioni sul loro utilizzo."
 
+msgid "Question too big!"
+msgstr "La domanda è troppo lunga!"
+
+msgid "You have reached the question length limit."
+msgstr "Hai raggiunto la lunghezza massima per la domanda."
+
 msgid "Question received"
 msgstr "Domanda ricevuta"
 
@@ -365,6 +382,40 @@ msgstr "Comando di stampa ricevuto"
 
 msgid "Your print job has been received."
 msgstr "Il comando di stampa è stato ricevuto."
+
+msgid "Compiling..."
+msgstr "Compilazione in corso..."
+
+msgid "details"
+msgstr "dettagli"
+
+msgid "Evaluating..."
+msgstr "Valutazione in corso..."
+
+msgid "Scoring..."
+msgstr "Assegnazione del punteggio in corso..."
+
+msgid "Evaluated"
+msgstr "Valutato"
+
+msgid "Token request discarded"
+msgstr "Richiesta del token rifiutata"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "La tua richiesta è stata rifiutata perché non hai token disponibili."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"La tua richiesta è stata rifiutata perché hai già usato un token su questa "
+"sottoposizione."
+
+msgid "Token request received"
+msgstr "Richiesta del token ricevuta"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
 
 #, python-format
 msgid ""
@@ -406,11 +457,8 @@ msgstr "Formato archivio invalido!"
 msgid "The submitted archive could not be opened."
 msgstr "Impossibile aprire l'archivio sottoposto."
 
-msgid "Cannot recognize submission's language."
-msgstr "Impossibile riconoscere il linguaggio della sottoposizione"
-
-msgid "All sources must be in the same language."
-msgstr "Tutti i sorgenti devono essere nello stesso linguaggio."
+msgid "Cannot recognize the submission language."
+msgstr "Impossibile riconoscere il linguaggio della sottoposizione."
 
 #, python-format
 msgid "Language %s not allowed in this contest."
@@ -434,40 +482,6 @@ msgstr "Sottoposizione ricevuta"
 
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "La tua sottoposizione è stata ricevuta e verrà valutata."
-
-msgid "Compiling..."
-msgstr "Compilazione in corso..."
-
-msgid "details"
-msgstr "dettagli"
-
-msgid "Evaluating..."
-msgstr "Valutazione in corso..."
-
-msgid "Scoring..."
-msgstr "Assegnazione del punteggio in corso..."
-
-msgid "Evaluated"
-msgstr "Valutato"
-
-msgid "Token request discarded"
-msgstr "Richiesta del token rifiutata"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "La tua richiesta è stata rifiutata perché non hai token disponibili."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"La tua richiesta è stata rifiutata perché hai già usato un token su questa "
-"sottoposizione."
-
-msgid "Token request received"
-msgstr "Richiesta del token ricevuta"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
@@ -494,8 +508,8 @@ msgstr "Test troppo frequenti!"
 msgid "Invalid test format!"
 msgstr "Formato test invalido!"
 
-msgid "Cannot recognize test's language."
-msgstr "Impossibile riconoscere il linguaggio del test"
+msgid "Cannot recognize the user test language."
+msgstr "Impossibile riconoscere il linguaggio del test."
 
 msgid "Invalid test!"
 msgstr "Test invalido!"
@@ -533,6 +547,9 @@ msgstr "%(seconds)0.3f s"
 msgid "Automatic (%s)"
 msgstr "Automatica (%s)"
 
+msgid "Logout"
+msgstr "Logout"
+
 #, python-format
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
@@ -540,9 +557,6 @@ msgid ""
 msgstr ""
 "Accesso effettuato come <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
-
-msgid "Logout"
-msgstr "Logout"
 
 msgid "Failed to log in."
 msgstr "Accesso fallito."
@@ -649,6 +663,13 @@ msgstr "Linguaggi di programmazione e librerie"
 
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
+
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
+msgstr ""
+"In Java, la classe principale della soluzione deve avere lo stesso nome del "
+"problema."
 
 msgid "Submission details for compilation"
 msgstr "Dettagli della compilazione della sottoposizione"
@@ -1105,3 +1126,6 @@ msgstr "Dettagli del test"
 
 msgid "Evaluation outcome"
 msgstr "Valutazione"
+
+#~ msgid "All sources must be in the same language."
+#~ msgstr "Tutti i sorgenti devono essere nello stesso linguaggio."

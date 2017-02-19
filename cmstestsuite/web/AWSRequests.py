@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -48,8 +48,8 @@ class AWSSubmissionViewRequest(GenericRequest):
     """Load the view of a submission in AWS.
 
     """
-    def __init__(self, browser, submission_id, base_url=None):
-        GenericRequest.__init__(self, browser, base_url)
+    def __init__(self, session, submission_id, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
         self.submission_id = submission_id
         self.url = "%ssubmission/%s" % (self.base_url, submission_id)
 
@@ -80,7 +80,8 @@ class AWSSubmissionViewRequest(GenericRequest):
         tags = soup.findAll(id="compilation")
         if tags:
             content = tags[0]
-            info['compile_output'] = content.pre.text.strip()
+            info['compile_output'] = "\n".join(
+                [pre.text.strip() for pre in content.findAll("pre")])
         else:
             info['compile_output'] = None
 
@@ -96,5 +97,46 @@ class AWSSubmissionViewRequest(GenericRequest):
             })
 
         info['evaluations'] = evaluations
+
+        return info
+
+
+class AWSUserTestViewRequest(GenericRequest):
+    """Load the view of a user test in AWS."""
+    def __init__(self, session, user_test_id, base_url=None):
+        GenericRequest.__init__(self, session, base_url)
+        self.user_test_id = user_test_id
+        self.url = "%suser_test/%s" % (self.base_url, user_test_id)
+
+    def describe(self):
+        return "check user_test %s" % self.user_test_id
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+        try:
+            self.get_user_test_info()
+            return True
+        except:
+            return False
+
+    def get_user_test_info(self):
+        # Only valid after self.execute()
+        # Parse user test information out of response.
+        soup = BeautifulSoup(self.res_data)
+
+        info = {}
+
+        # Get user test status.
+        tag = soup.findAll(id="user_test_status")[0]
+        info['status'] = tag.text.strip()
+
+        # Get compilation text.
+        tags = soup.findAll(id="compilation")
+        if tags:
+            content = tags[0]
+            info['compile_output'] = content.pre.text.strip()
+        else:
+            info['compile_output'] = None
 
         return info

@@ -76,14 +76,14 @@ class StoreHandler(object):
     def __init__(self, store):
         self.store = store
 
-        self.router = Map(
-            [Rule("/<key>", methods=["GET"], endpoint="get"),
-             Rule("/", methods=["GET"], endpoint="get_list"),
-             Rule("/<key>", methods=["PUT"], endpoint="put"),
-             Rule("/", methods=["PUT"], endpoint="put_list"),
-             Rule("/<key>", methods=["DELETE"], endpoint="delete"),
-             Rule("/", methods=["DELETE"], endpoint="delete_list"),
-            ], encoding_errors="strict")
+        self.router = Map([
+            Rule("/<key>", methods=["GET"], endpoint="get"),
+            Rule("/", methods=["GET"], endpoint="get_list"),
+            Rule("/<key>", methods=["PUT"], endpoint="put"),
+            Rule("/", methods=["PUT"], endpoint="put_list"),
+            Rule("/<key>", methods=["DELETE"], endpoint="delete"),
+            Rule("/", methods=["DELETE"], endpoint="delete_list"),
+        ], encoding_errors="strict")
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -342,9 +342,9 @@ class ImageHandler(object):
         self.location = location
         self.fallback = fallback
 
-        self.router = Map(
-            [Rule("/<name>", methods=["GET"], endpoint="get"),
-            ], encoding_errors="strict")
+        self.router = Map([
+            Rule("/<name>", methods=["GET"], endpoint="get"),
+        ], encoding_errors="strict")
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -391,14 +391,14 @@ class ImageHandler(object):
 
 class RoutingHandler(object):
     def __init__(self, event_handler, logo_handler):
-        self.router = Map(
-            [Rule("/", methods=["GET"], endpoint="root"),
-             Rule("/sublist/<user_id>", methods=["GET"], endpoint="sublist"),
-             Rule("/history", methods=["GET"], endpoint="history"),
-             Rule("/scores", methods=["GET"], endpoint="scores"),
-             Rule("/events", methods=["GET"], endpoint="events"),
-             Rule("/logo", methods=["GET"], endpoint="logo"),
-            ], encoding_errors="strict")
+        self.router = Map([
+            Rule("/", methods=["GET"], endpoint="root"),
+            Rule("/sublist/<user_id>", methods=["GET"], endpoint="sublist"),
+            Rule("/history", methods=["GET"], endpoint="history"),
+            Rule("/scores", methods=["GET"], endpoint="scores"),
+            Rule("/events", methods=["GET"], endpoint="events"),
+            Rule("/logo", methods=["GET"], endpoint="logo"),
+        ], encoding_errors="strict")
 
         self.event_handler = event_handler
         self.logo_handler = logo_handler
@@ -439,7 +439,7 @@ class RoutingHandler(object):
 def main():
     """Entry point for RWS.
 
-    return (bool): True if executed successfully.
+    return (int): exit code (0 on success, 1 on error)
 
     """
     parser = argparse.ArgumentParser(
@@ -461,7 +461,7 @@ def main():
             shutil.rmtree(config.lib_dir)
         else:
             print("Not removing directory %s." % config.lib_dir)
-        return False
+        return 1
 
     Contest.store.load_from_disk()
     Task.store.load_from_disk()
@@ -477,19 +477,19 @@ def main():
         os.path.join(config.web_dir, 'img', 'logo.png')))
 
     wsgi_app = SharedDataMiddleware(DispatcherMiddleware(
-        toplevel_handler,
-        {'/contests': StoreHandler(Contest.store),
-         '/tasks': StoreHandler(Task.store),
-         '/teams': StoreHandler(Team.store),
-         '/users': StoreHandler(User.store),
-         '/submissions': StoreHandler(Submission.store),
-         '/subchanges': StoreHandler(Subchange.store),
-         '/faces': ImageHandler(
-             os.path.join(config.lib_dir, 'faces', '%(name)s'),
-             os.path.join(config.web_dir, 'img', 'face.png')),
-         '/flags': ImageHandler(
-             os.path.join(config.lib_dir, 'flags', '%(name)s'),
-             os.path.join(config.web_dir, 'img', 'flag.png')),
+        toplevel_handler, {
+            '/contests': StoreHandler(Contest.store),
+            '/tasks': StoreHandler(Task.store),
+            '/teams': StoreHandler(Team.store),
+            '/users': StoreHandler(User.store),
+            '/submissions': StoreHandler(Submission.store),
+            '/subchanges': StoreHandler(Subchange.store),
+            '/faces': ImageHandler(
+                os.path.join(config.lib_dir, 'faces', '%(name)s'),
+                os.path.join(config.web_dir, 'img', 'face.png')),
+            '/flags': ImageHandler(
+                os.path.join(config.lib_dir, 'flags', '%(name)s'),
+                os.path.join(config.web_dir, 'img', 'flag.png')),
         }), {'/': config.web_dir})
 
     servers = list()
@@ -509,4 +509,4 @@ def main():
         pass
     finally:
         gevent.joinall(list(gevent.spawn(s.stop) for s in servers))
-    return True
+    return 0

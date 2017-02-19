@@ -3,7 +3,6 @@
 
 {% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
-{% import json %}
 
 {% if actual_phase == 0 or current_user.unrestricted %}
 
@@ -39,7 +38,7 @@
             {{ _("You can see (and download) all of them using the list on the right.") }}
             {{ _("Some suggested translations follow.") }}
         </p>
-    {% set task_primary = json.loads(task.primary_statements) %}
+    {% set task_primary = primary_statements %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in task_primary %}
         <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large btn-success">
@@ -51,7 +50,6 @@
         </a>
         {% end %}
     {% end %}
-    {% set user_primary = json.loads(current_user.user.preferred_languages) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large">
@@ -126,7 +124,7 @@
 </tr>
 <tr>
         {% end %}
-    <td>{{ LANGUAGE_NAMES[l] }}</td>
+    <td>{{ get_language(l).name }}</td>
     <td class="compilation_command_cell">
 {% for cmd in c %}
         <code class="compilation_command">{{ " ".join(cmd) }}</code>
@@ -190,9 +188,9 @@
             <li>
                 <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/attachments/{{ encode_for_url(filename) }}" class="btn">
             {% if type_icon is not None %}
-                    <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
+                    <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png" alt="{{ mime_type }}" />
             {% else %}
-                    <img src="{{ url_root }}/static/img/mimetypes/unknown.png"/>
+                    <img src="{{ url_root }}/static/img/mimetypes/unknown.png" alt="{{ _("unknown") }}" />
             {% end %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>

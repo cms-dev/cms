@@ -16,7 +16,7 @@ Standard task types
 
 CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first two are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. Communication should be usable but it is less tested than the first two. The last one, TwoSteps, is probably not ready for usage in a public competition. The first two task types cover all but three of the IOI tasks up to IOI 2012.
 
-OutputOnly does not involve programming languages. Batch works with all supported languages (C, C++, Pascal, Java, Python, PHP), but only the first four if you are using a grader. The other task types have not been tested with Java, Python or PHP.
+OutputOnly does not involve programming languages. Batch works with all supported languages (C, C++, Pascal, Java, Python, PHP), but only the first four if you are using a grader. Communication has been tested with C, C++, Pascal and Java. TwoSteps works only with C, C++ and Pascal.
 
 You can configure, for each task, the behavior of these task types on the task's page in AdminWebServer.
 
@@ -32,7 +32,7 @@ The source file is either standalone or to be compiled with a grader provided by
 
 The three choices (standalone or with a grader, standard input and output or files, diff or comparator) are specified through parameters.
 
-If the admins want to provide a grader that takes care of reading the input and writing the output (so that the contestants only need to write one or more functions), they must provide a manager for each allowed language, called :file:`grader.ext`, where ``ext`` is the standard extension of a source file in that language. If header files for C/C++ or Pascal are needed, they can be provided with names :file:`{task_name}.h` or :file:`{task_name}lib.pas`. See the end of the section for specific issues of Java.
+If the admins want to provide a grader that takes care of reading the input and writing the output (so that the contestants only need to write one or more functions), they must provide a manager for each allowed language, called :file:`grader.%l`, where ``.%l`` is the standard extension of a source file in that language. If header files for C/C++ or Pascal are needed, they can be provided with names :file:`{task_name}.h` or :file:`{task_name}lib.pas`. See the end of the section for specific issues of Java.
 
 If the output is compared with a diff, the outcome will be a float, 0.0 if the output is not correct, 1.0 if it is. If the output is validated by a comparator, you need to provide a manager called :file:`checker`. It must be an executable that:
 
@@ -41,7 +41,7 @@ If the output is compared with a diff, the outcome will be a float, 0.0 if the o
 - writes on standard output the outcome (that is going to be used by the score type, and is usually a float between 0.0 and 1.0);
 - writes on standard error a message to forward to the contestant.
 
-.. note:: The checker can also print the special strings "translate:success", "translate:wrong" or "translate:partial", which will be respectively shown to the contestants as the localized messages for "Output is correct", "Output isn't correct", and "Output is partially correct".
+.. note:: The checker can also print to standard error the special strings "translate:success", "translate:wrong" or "translate:partial", which will be respectively shown to the contestants as the localized messages for "Output is correct", "Output isn't correct", and "Output is partially correct".
 
 The submission format must contain one filename ending with ``.%l``. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
 
@@ -85,7 +85,7 @@ Warning: use this task type only if you know what are you doing.
 
 In a TwoSteps task, contestants submit two source files implementing a function each (the idea is that the first function gets the input and compute some data from it with some restriction, and the second tries to retrieve the original data).
 
-The admins must provide a manager, which is compiled together with both of the contestant-submitted files. The manager needs to be named :file:`manager.ext`, where ``ext`` is the standard extension of a source file in that language. Furthermore, for C/C++ and Pascal, appropriate header files for the two source files given by the contestants need to be provided, as well as manager header files (:file:`manager.h`, :file:`managerlib.pas`)---**even if they are empty**.
+The admins must provide a manager, which is compiled together with both of the contestant-submitted files. The manager needs to be named :file:`manager.%l`, where ``.%l`` is the standard extension of a source file in that language. Furthermore, for C/C++ and Pascal, appropriate header files for the two source files given by the contestants need to be provided, as well as manager header files (:file:`manager.h`, :file:`managerlib.pas`)---**even if they are empty**.
 
 The resulting executable is run twice (one acting as the computer, one acting as the retriever). The manager in the computer executable must take care of reading the input from standard input; the one in the retriever executable of writing the retrieved data to standard output. Both must take responsibility of the communication between them through a pipe.
 

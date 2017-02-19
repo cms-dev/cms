@@ -90,7 +90,7 @@ class LogoutHandler(BaseHandler):
     """Logout handler.
 
     """
-    def get(self):
+    def post(self):
         self.service.auth_handler.clear()
         self.redirect("/")
 

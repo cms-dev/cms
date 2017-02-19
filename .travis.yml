@@ -13,7 +13,7 @@ sudo: required
 
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y build-essential fpc php5-cli gcj-jdk haskell-platform
+  - sudo apt-get install -y build-essential fpc php5-cli haskell-platform
   - sudo apt-get install -y postgresql-client gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
   - sudo apt-get install -y python-dev libpq-dev libcups2-dev libyaml-dev
 

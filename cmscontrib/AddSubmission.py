@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,10 +29,11 @@ import argparse
 import logging
 import sys
 
-from cms import filename_to_language, utf8_decoder
+from cms import utf8_decoder
 from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
+from cms.grading.languagemanager import filename_to_language
 from cmscommon.datetime import make_datetime
 
 
@@ -77,7 +78,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         language = None
         for file_ in files:
             this_language = filename_to_language(files[file_])
-            if this_language is None and "%l" in file_:
+            if this_language is None and ".%l" in file_:
                 logger.critical("Cannot recognize language for file `%s'.",
                                 file_)
                 return False
@@ -103,7 +104,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             return False
 
         # Create objects in the DB.
-        submission = Submission(make_datetime(timestamp), language,
+        submission = Submission(make_datetime(timestamp), language.name,
                                 participation=participation, task=task)
         for filename, digest in file_digests.items():
             session.add(File(filename, digest, submission=submission))
@@ -157,14 +158,12 @@ def main():
             return 1
         files[name] = filename
 
-    if add_submission(contest_id=args.contest_id,
-                      username=args.username,
-                      task_name=args.task_name,
-                      timestamp=args.timestamp,
-                      files=files):
-        return 0
-    else:
-        return 1
+    success = add_submission(contest_id=args.contest_id,
+                             username=args.username,
+                             task_name=args.task_name,
+                             timestamp=args.timestamp,
+                             files=files)
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":

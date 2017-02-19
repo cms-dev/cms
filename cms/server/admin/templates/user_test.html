@@ -1,0 +1,137 @@
+{% extends base.html %}
+
+{% block core %}
+{% from cms.grading import format_status_text %}
+{% set utr = ut.get_result(shown_dataset) %}
+{% set status = UserTestResult.COMPILING %}
+{% if utr is not None %}
+  {% set status = utr.get_status() %}
+{% end %}
+<div class="core_title">
+  <h1>User test {{ ut.id }} (Task: <a href="{{ url_root }}/task/{{ ut.task.id }}">{{ ut.task.name }}</a>)</h1>
+</div>
+
+{% set dataset_selector_par_url = "%s/user_test/%s" % (url_root, ut.id) %}
+{% include fragments/dataset_selector.html %}
+
+<h2 id="title_details" class="toggling_on">User test details</h2>
+<div id="details">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Id</td>
+        <td>{{ ut.id }}</td>
+      </tr>
+      <tr>
+        <td>Task</td>
+        <td><a href="{{ url_root }}/task/{{ ut.task.id }}">{{ ut.task.name }}</a></td>
+      </tr>
+      <tr>
+        <td>User</td>
+        <td><a href="{{ url_root }}/contest/{{ ut.participation.contest.id }}/user/{{ ut.participation.user.id }}/edit">{{ ut.participation.user.username }}</a></td>
+      </tr>
+      <tr>
+        <td>Files</td>
+        <td>
+          {% for filename in [x.filename for x in ut.task.submission_format] %}
+            {% if filename in ut.files %}
+              {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
+          <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/user_test_file/{{ ut.files[filename].id }}')">
+            {{ real_filename }}
+          </a>
+          <br/>
+            {% end %}
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <td>Language</td>
+        <td>
+          {% if ut.language is None %}
+          N/A
+          {% else %}
+          {{ ut.language }}
+          {% end %}
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td id="user_test_status">
+          {% if status == UserTestResult.COMPILING %}
+          Compiling...
+          {% elif status == UserTestResult.COMPILATION_FAILED %}
+          Compilation failed
+          {% elif status == UserTestResult.EVALUATING %}
+          Evaluating...
+          {% elif status == UserTestResult.EVALUATED %}
+          Evaluated
+          {% else %}
+          N/A
+          {% end %}
+        </td>
+      </tr>
+      {% if utr is not None %}
+      <tr>
+        <td>Failures during compilation</td>
+        <td>{{ utr.compilation_tries }}</td>
+      </tr>
+      <tr>
+        <td>Compilation shard</td>
+        <td>{{ utr.compilation_shard }}</td>
+      </tr>
+      <tr>
+        <td>Compilation sandbox</td>
+        <td>{{ utr.compilation_sandbox }}</td>
+      </tr>
+      <tr>
+        <td>Failures during evaluation</td>
+        <td>{{ utr.evaluation_tries }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+
+</div>
+
+  {% if utr is not None and utr.evaluated() %}
+
+<h2 id="title_evaluation" class="toggling_on">Evaluation</h2>
+<div id="evaluation">
+
+  <h3>Outcome</h3>
+  <pre>{% if utr.evaluation_text is not None %}{{ format_status_text(utr.evaluation_text) }}{% end %}</pre>
+
+    {% if utr.output is not None %}
+  <h3>Output</h3>
+  <a href="javascript:void(0);" onclick="utils.show_file('output','{{ url_root }}/file/{{ utr.output }}/output')">See output</a>
+    {% end %}
+
+</div>
+
+  {% end %}
+
+  {% if utr is not None and utr.compiled() %}
+
+<h2 id="title_compilation" class="toggling_on">Compilation</h2>
+<div id="compilation">
+
+  <h3>Outcome</h3>
+  <pre>{% if utr.compilation_text is not None %}{{ format_status_text(utr.compilation_text) }}{% end %}</pre>
+
+  <h3>Standard output</h3>
+  <pre>{% if utr.compilation_stdout is not None %}{{ utr.compilation_stdout }}{% end %}</pre>
+
+  <h3>Standard error</h3>
+  <pre>{% if utr.compilation_stderr is not None %}{{ utr.compilation_stderr }}{% end %}</pre>
+
+</div>
+
+  {% end %}
+
+{% end %}

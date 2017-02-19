@@ -5,15 +5,10 @@
   <h1>Users list</h1>
 </div>
 
-{% if len(config.contest_listen_port) > 0 %}
-  {% set ratio = round(len(contest.participations) * 1.0 / len(config.contest_listen_port), 2) %}
-  {% if ratio >= 40 %}
-    At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>
-    A CWS can handle 40 simultaneous request. This situation might cause many requests to fail.
-  {% end %}
-{% end %}
+{% include fragments/overload_warning.html %}
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/users/add" method="POST">
+  {% module xsrf_form_html() %}
   Add a new user:
   <select name="user_id">
     <option value="null" selected>Select a new user</option>
@@ -31,6 +26,7 @@
 </form>
 
 <form action="{{ url_root }}/contest/{{ contest.id }}/users" method="POST">
+  {% module xsrf_form_html() %}
   Edit selected user:
   <input type="submit"
          name="operation"
@@ -54,7 +50,7 @@
         <td>
           <input type="radio" name="user_id" value="{{ p.user.id }}"/>
         </td>
-        <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}">{{ p.user.username }}</a></td>
+        <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}/edit">{{ p.user.username }}</a></td>
         <td>{{ p.user.first_name }}</td>
         <td>{{ p.user.last_name }}</td>
       </tr>

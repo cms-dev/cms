@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -220,7 +220,8 @@ Options:
 
         print("===== Compiling localization files")
         for locale in glob(os.path.join("cms", "locale", "*")):
-            if os.path.isdir(locale):
+            if os.path.isdir(locale) \
+                    and not os.path.basename(locale).startswith("_"):
                 country_code = os.path.basename(locale)
                 print("  %s" % country_code)
                 path = os.path.join(

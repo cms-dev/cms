@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -39,12 +39,13 @@ import argparse
 import io
 import logging
 import os
+import sys
 import time
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Contest, ask_for_contest
 from cms.db.filecacher import FileCacher
-from cms.grading import task_score
+from cms.grading import languagemanager, task_score
 
 
 logger = logging.getLogger(__name__)
@@ -126,25 +127,23 @@ class SpoolExporter(object):
             timestamp = time.mktime(submission.timestamp.timetuple())
 
             # Get source files to the spool directory.
+            ext = languagemanager.get_language(submission.language)\
+                .source_extension
             submission_dir = os.path.join(
-                self.upload_dir, username, "%s.%d.%s" %
-                (task, timestamp, submission.language))
+                self.upload_dir, username, "%s.%d.%s" % (task, timestamp, ext))
             os.mkdir(submission_dir)
             for filename, file_ in submission.files.iteritems():
                 self.file_cacher.get_file_to_path(
                     file_.digest,
-                    os.path.join(submission_dir,
-                                 filename.replace("%l", submission.language)))
+                    os.path.join(submission_dir, filename.replace(".%l", ext)))
             last_submission_dir = os.path.join(
-                self.upload_dir, username, "%s.%s" %
-                (task, submission.language))
+                self.upload_dir, username, "%s.%s" % (task, ext))
             try:
                 os.unlink(last_submission_dir)
             except OSError:
                 pass
             os.symlink(os.path.basename(submission_dir), last_submission_dir)
-            print("./upload/%s/%s.%d.%s" %
-                  (username, task, timestamp, submission.language),
+            print("./upload/%s/%s.%d.%s" % (username, task, timestamp, ext),
                   file=queue_file)
 
             # Write results file for the submission.
@@ -153,13 +152,11 @@ class SpoolExporter(object):
             if result.evaluated():
                 res_file = io.open(os.path.join(
                     self.spool_dir,
-                    "%d.%s.%s.%s.res" % (timestamp, username,
-                                         task, submission.language)),
+                    "%d.%s.%s.%s.res" % (timestamp, username, task, ext)),
                     "w", encoding="utf-8")
                 res2_file = io.open(
                     os.path.join(self.spool_dir,
-                                 "%s.%s.%s.res" % (username, task,
-                                                   submission.language)),
+                                 "%s.%s.%s.res" % (username, task, ext)),
                     "w", encoding="utf-8")
                 total = 0.0
                 for evaluation in result.evaluations:
@@ -266,9 +263,11 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    SpoolExporter(contest_id=args.contest_id,
-                  spool_dir=args.export_directory).run()
+    exporter = SpoolExporter(contest_id=args.contest_id,
+                             spool_dir=args.export_directory)
+    success = exporter.run()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

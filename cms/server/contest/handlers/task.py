@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -32,6 +32,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+import logging
+
 import tornado.web
 
 from cms.server import actual_phase_required
@@ -41,6 +44,9 @@ from cmscommon.isocodes import is_language_code, translate_language_code, \
 from cmscommon.mimetypes import get_type_for_file_name
 
 from .base import BaseHandler, FileHandler
+
+
+logger = logging.getLogger(__name__)
 
 
 class TaskDescriptionHandler(BaseHandler):
@@ -68,6 +74,22 @@ class TaskDescriptionHandler(BaseHandler):
                     translate_country_code(lang_code, self.locale)
             else:
                 statement.language_name = lang_code
+
+        try:
+            self.r_params["primary_statements"] = \
+                json.loads(task.primary_statements)
+        except ValueError as e:
+            self.r_params["primary_statements"] = []
+            logger.error("Primary statements for task %s is invalid [%r].",
+                         task_name, e)
+
+        try:
+            self.r_params["user_primary"] = \
+                json.loads(self.current_user.user.preferred_languages)
+        except ValueError as e:
+            self.r_params["user_primary"] = []
+            logger.error("Preferred languages for user %s is invalid [%r].",
+                         self.current_user.user.username, e)
 
         self.render("task_description.html", task=task, **self.r_params)
 

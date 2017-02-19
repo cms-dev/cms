@@ -37,14 +37,14 @@
       </tr>
       <tr>
         <td>User</td>
-        <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}">{{ s.participation.user.username }}</a></td>
+        <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}/edit">{{ s.participation.user.username }}</a></td>
       </tr>
       <tr>
         <td>Files</td>
         <td>
           {% for filename in [x.filename for x in s.task.submission_format] %}
             {% if filename in s.files %}
-              {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+              {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
           <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ s.files[filename].id }}')">
             {{ real_filename }}
           </a>
@@ -52,6 +52,15 @@
             {% end %}
           {% end %}
         </td>
+      </tr>
+      <tr>
+        <td>Language</td>
+        <td>
+          {% if s.language is None %}
+          N/A
+          {% else %}
+          {{ s.language }}
+          {% end %}
       </tr>
       <tr>
         <td>Token</td>
@@ -122,7 +131,8 @@
 
 <div id="comment">
   <form enctype="multipart/form-data" action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/comment" method="POST">
-    <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea></br>
+    {% module xsrf_form_html() %}
+    <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea><br/>
     <input
 {% if not current_user.permission_all %}
        disabled

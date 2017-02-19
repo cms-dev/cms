@@ -42,6 +42,7 @@ gevent.monkey.patch_all()
 import argparse
 import logging
 import os
+import sys
 
 from cms import utf8_decoder
 from cms.db import Contest, Participation, SessionGen, User
@@ -70,7 +71,7 @@ class UserImporter(object):
         # Get the user
         user = self.loader.get_user()
         if user is None:
-            return
+            return False
 
         # Store
         logger.info("Creating user %s on the database.", user.username)
@@ -85,7 +86,7 @@ class UserImporter(object):
                         "The specified contest (id %s) does not exist. "
                         "Aborting.",
                         self.contest_id)
-                    return
+                    return False
 
             # Check whether the user already exists
             old_user = session.query(User) \
@@ -93,7 +94,7 @@ class UserImporter(object):
                               .first()
             if old_user is not None:
                 logger.critical("The user already exists.")
-                return
+                return False
 
             session.add(user)
 
@@ -107,19 +108,24 @@ class UserImporter(object):
             user_id = user.id
 
         logger.info("Import finished (new user id: %s).", user_id)
+        return True
 
     def do_import_all(self, base_path, get_loader):
         """Get the participation list from the ContestLoader and then
-        try to import the corresponding users."""
+        try to import the corresponding users.
 
+        """
         _, _, participations = self.loader.get_contest()
         for p in participations:
             user_path = os.path.join(base_path, p["username"])
-            UserImporter(
+            importer = UserImporter(
                 path=user_path,
                 contest_id=self.contest_id,
                 loader_class=get_loader(user_path)
-            ).do_import()
+            )
+            importer.do_import()
+
+        return True
 
 
 def main():
@@ -168,9 +174,11 @@ def main():
     )
 
     if args.all:
-        importer.do_import_all(args.target, get_loader)
+        success = importer.do_import_all(args.target, get_loader)
     else:
-        importer.do_import()
+        success = importer.do_import()
+    return 0 if success is True else 1
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -31,6 +31,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import logging
 import traceback
 
@@ -114,6 +115,11 @@ class TaskHandler(BaseHandler):
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
+        try:
+            self.r_params["primary_statements"] = \
+                json.loads(task.primary_statements)
+        except ValueError:
+            self.r_params["primary_statements"] = []
         self.r_params["submissions"] = \
             self.sql_session.query(Submission)\
                 .join(Task).filter(Task.id == task_id)\
@@ -132,7 +138,17 @@ class TaskHandler(BaseHandler):
 
             assert attrs.get("name") is not None, "No task name specified."
 
-            self.get_string(attrs, "primary_statements")
+            # Parsing of primary statements checkboxes. Their name is
+            # primary_statement_XX, where XX is the language code.
+            primary_statements = {}
+            for statement in task.statements:
+                self.get_bool(primary_statements,
+                              "primary_statement_%s" % statement)
+            attrs["primary_statements"] = json.dumps(sorted([
+                k.replace("primary_statement_", "", 1)
+                for k in primary_statements
+                if primary_statements[k]
+            ]))
 
             self.get_submission_format(attrs)
 
@@ -211,8 +227,8 @@ class AddStatementHandler(BaseHandler):
 
         task = self.safe_get_item(Task, task_id)
 
-        language = self.get_argument("language", None)
-        if language is None:
+        language = self.get_argument("language", "")
+        if language == "":
             self.application.service.add_notification(
                 make_datetime(),
                 "No language code specified",
@@ -425,3 +441,64 @@ class AddDatasetHandler(BaseHandler):
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect(fallback_page)
+
+
+class TaskListHandler(SimpleHandler("tasks.html")):
+    """Get returns the list of all tasks, post perform operations on
+    a specific task (removing them from CMS).
+
+    """
+
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        task_id = self.get_argument("task_id")
+        operation = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = "/tasks/%s/remove" % task_id
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect("/tasks")
+
+
+class RemoveTaskHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the task from CMS.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        submission_query = self.sql_session.query(Submission)\
+            .filter(Submission.task == task)
+
+        self.render_params_for_remove_confirmation(submission_query)
+        self.r_params["task"] = task
+        self.render("task_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        contest_id = task.contest_id
+        num = task.num
+
+        self.sql_session.delete(task)
+        # Keeping the tasks' nums to the range 0... n - 1.
+        if contest_id is not None:
+            following_tasks = self.sql_session.query(Task)\
+                .filter(Task.contest_id == contest_id)\
+                .filter(Task.num > num)\
+                .all()
+            for task in following_tasks:
+                task.num -= 1
+        if self.try_commit():
+            self.application.service.proxy_service.reinitialize()
+
+        # Maybe they'll want to do this again (for another task)
+        self.write("../../tasks")

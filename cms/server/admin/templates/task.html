@@ -45,7 +45,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 </div>
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}" method="POST">
+<form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}" method="POST" style="display:inline;">
+  {% module xsrf_form_html() %}
   <h2 id="title_task_configuration" class="toggling_on">Task configuration</h2>
   <div id="task_configuration">
     <table>
@@ -73,7 +74,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       </tr>
       <tr>
         <td>
-          <span class="info" title="The statements of this task, by language code."></span>
+          <span class="info" title="The statements of this task, by language code. Primary statements are shown prominently to contestants."></span>
           Statements
 {% if current_user.permission_all %}
           [<a href="{{ url_root }}/task/{{ task.id }}/statements/add">add</a>]
@@ -83,22 +84,24 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           {% if len(task.statements) == 0 %}
           No statements uploaded yet
           {% else %}
-          <ul>
+          <table>
+            <tbody>
             {% for statement in task.statements.values() %}
-            <li><a href="{{ url_root }}/file/{{ statement.digest }}/statement.pdf">Statement for language "{{ statement.language }}"</a>
-              - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/statement/{{ statement.id }}'); ">Delete</a></li>
+              <tr>
+                <td><a href="{{ url_root }}/file/{{ statement.digest }}/statement.pdf">Statement for language "{{ statement.language }}"</a></td>
+                <td>
+                  <label>
+                    <input type="checkbox" name="primary_statement_{{ statement.language }}" {% if statement.language in primary_statements %}checked{% end %} />
+                    Primary?
+                  </label>
+                </td>
+                <td><a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/statement/{{ statement.id }}'); ">Delete</a></td>
+              </tr>
             {% end %}
-          </ul>
+            </tbody>
+          </table>
           {% end %}
         </td>
-      </tr>
-      <tr>
-        <td>
-          <span class="info" title="A JSON-encoded list of language codes that are considered primaries with respect to the statements.
-                                    Example: '[&quot;en&quot;, &quot;ja&quot;]'."></span>
-          Primary statements
-        </td>
-        <td><input type="text" name="primary_statements" value="{{ task.primary_statements }}"/></td>
       </tr>
       <tr>
         <td>
@@ -115,7 +118,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% for attachment in task.attachments.values() %}
               <div class="attachment">
                 <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
-                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/attachment/{{ attachment.id }}'); ">Delete</a></li>
+                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/attachment/{{ attachment.id }}'); ">Delete</a>
               </div>
             {% end %}
           {% end %}
@@ -287,7 +290,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/delete">[Delete]</a>
       {% end %}
       {% if dataset is not task.active_dataset %}
-        <a href="{{ url_root }}/dataset/{{ dataset.id }}/autojudge">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
+        <a onclick="CMS.AWSUtils.ajax_post('{{ url_root }}/dataset/{{ dataset.id }}/autojudge');">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
       {% end %}
 {% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</a>
@@ -389,7 +392,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               {% for manager in dataset.managers.values() %}
                 <div class="manager">
                   <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
-                  - <a href="{{ url_root }}/dataset/{{ dataset.id }}/manager/{{ manager.id }}/delete">Delete</a>
+                  - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/manager/{{ manager.id }}/delete');">Delete</a>
                 </div>
               {% end %}
             {% end %}
@@ -458,7 +461,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.output }}/output_{{ testcase.codename }}')">Show output</a>
             </td>
             <td>
-              <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete">Delete</a>
+              <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete');">Delete</a>
             </td>
           </tr>
           {% end %}
@@ -469,12 +472,22 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   </div>
   {% end %}
   </div>
-
   <input type="submit"
 {% if not current_user.permission_all %}
          disabled
 {% end %}
          value="Update" />
   <input type="reset" value="Reset" />
+</form>
+<form action="{{ url_root }}/tasks" method="POST" style="display:inline;">
+    {% module xsrf_form_html() %}
+    <input type="hidden" name="task_id" value="{{task.id}}"/>
+    <input type="submit"
+         name="operation"
+         value="Remove" style="float: right;"
+{% if not current_user.permission_all %}
+         disabled
+{% end %}
+         />
 </form>
 {% end %}

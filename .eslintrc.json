@@ -1,0 +1,24 @@
+{
+    "env": {
+        "browser": true,
+        "jquery": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "indent": ["warn", 4],
+        "linebreak-style": ["error", "unix"],
+        "quotes": ["warn", "double"],
+        "eol-last": ["error"],
+
+        "eqeqeq": ["warn", "smart"],
+        "no-eval": ["error"],
+        "no-extend-native": ["error"],
+        "no-new-func": ["error"],
+        "no-new": ["error"],
+        "no-self-compare": ["error"],
+        "no-useless-escape": ["error"],
+
+        "no-label-var": ["error"],
+        "no-shadow-restricted-names": ["error"]
+    }
+}

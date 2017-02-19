@@ -416,7 +416,7 @@ class BaseHandler(CommonRequestHandler):
         # the data we need to display a basic template with the error
         # information. If r_params is not defined (i.e. something went
         # *really* bad) we simply return a basic textual error notice.
-        if hasattr(self, 'r_params'):
+        if getattr(self, 'r_params', None) is not None:
             self.render("error.html", status_code=status_code, **self.r_params)
         else:
             self.write("A critical error has occurred :-(")

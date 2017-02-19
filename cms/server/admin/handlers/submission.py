@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -31,6 +31,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cms.db import Dataset, File, Submission
+from cms.grading.languagemanager import get_language
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, FileHandler, require_permission
@@ -70,7 +71,8 @@ class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
 
     """
-    # FIXME: Replace with FileFromDigestHandler?
+    # We cannot use FileFromDigestHandler as it does not know how to
+    # set the proper name (i.e., converting %l to the language).
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, file_id):
         sub_file = self.safe_get_item(File, file_id)
@@ -78,7 +80,8 @@ class SubmissionFileHandler(FileHandler):
 
         real_filename = sub_file.filename
         if submission.language is not None:
-            real_filename = real_filename.replace("%l", submission.language)
+            real_filename = real_filename.replace(
+                ".%l", get_language(submission.language).source_extension)
         digest = sub_file.digest
 
         self.sql_session.close()
@@ -110,12 +113,3 @@ class SubmissionCommentHandler(BaseHandler):
         else:
             self.redirect("/submission/%s/%s" % (submission_id,
                                                  dataset_id))
-
-
-class FileFromDigestHandler(FileHandler):
-
-    @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, digest, filename):
-        # TODO: Accept a MIME type
-        self.sql_session.close()
-        self.fetch(digest, "text/plain", filename)

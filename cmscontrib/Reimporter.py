@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Versari <veluca93@gmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -41,7 +41,7 @@ gevent.monkey.patch_all()
 import argparse
 import logging
 import os
-import os.path
+import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Base, Contest, User, Task, Submission, \
@@ -317,7 +317,6 @@ class Reimporter(object):
 
         logger.info("Reimport finished (contest id: %s).",
                     self.old_contest_id)
-
         return True
 
 
@@ -348,12 +347,14 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    Reimporter(path=args.import_directory,
-               contest_id=args.contest_id,
-               force=args.force,
-               loader_class=loader_class,
-               full=args.full).do_reimport()
+    importer = Reimporter(path=args.import_directory,
+                          contest_id=args.contest_id,
+                          force=args.force,
+                          loader_class=loader_class,
+                          full=args.full)
+    success = importer.do_reimport()
+    return 0 if success is True else 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

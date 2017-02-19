@@ -39,7 +39,6 @@ from sqlalchemy.orm import relationship, backref
 
 from . import Base, RepeatedUnicode
 
-from cms import DEFAULT_LANGUAGES
 from cmscommon.datetime import make_datetime
 
 
@@ -76,12 +75,11 @@ class Contest(Base):
         nullable=False,
         default=[])
 
-    # The list of languages shorthand allowed in the contest,
-    # e.g. cpp. The codes must be the same as those in cms.LANGUAGES.
+    # The list of names of languages allowed in the contest.
     languages = Column(
         RepeatedUnicode(),
         nullable=False,
-        default=DEFAULT_LANGUAGES)
+        default=["C11 / gcc", "C++11 / g++", "Pascal / fpc"])
 
     # Whether contestants allowed to download their submissions.
     submissions_download_allowed = Column(
