@@ -1,4 +1,3 @@
-setuptools==15
 tornado==4.1
 psycopg2==2.6
 sqlalchemy>=0.9,<1.1
