@@ -1,6 +1,6 @@
 begin;
 
-create or replace function run_replace(tbl regclass, par varchar) returns void as $$
+create function run_replace(tbl regclass, par varchar) returns void as $$
 begin
     execute format('update %s set %s = regexp_replace(%s, ''(,|^)c(,|$)'', ''\1C11 / gcc\2'')', tbl, par, par);
     execute format('update %s set %s = regexp_replace(%s, ''(,|^)cpp(,|$)'', ''\1C++11 / g++\2'')', tbl, par, par);
