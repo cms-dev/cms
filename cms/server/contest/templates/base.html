@@ -97,6 +97,14 @@ $(document).ready(function () {
             </div>
         </div>
     {% end %}
+        {% if handler.get_argument("signup_successful", "") != "" %}
+        <div id="notifications" class="notifications">
+            <div class="alert alert-block alert-success notification">
+                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+                <h4 class="alert-heading">{{ _("Registration successful. You may now log in.") }}</h4>
+            </div>
+        </div>
+    {% end %}
         <div class="login_container">
             <div class="login_box hero-unit">
                 <h1>{{ _("Welcome") }}</h1>
@@ -125,6 +133,9 @@ $(document).ready(function () {
                         </div>
                     </fieldset>
                 </form>
+              {% if contest.allow_signup and phase == -1 %}
+              <a href="{{ url_root }}/signup">Sign up for the contest</a>
+              {% end %}
             </div>
         </div>
 {% else %}

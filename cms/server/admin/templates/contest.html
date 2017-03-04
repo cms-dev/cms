@@ -76,6 +76,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether to allow people to sign up for the contest."></span>
+        <label for="allow_signup">Allow sign up</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_signup" name="allow_signup" {{ "checked" if contest.allow_signup else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The number of decimal places the scores will be rounded to.
                                   Example: '2' to allow 98.76."></span>
         Score decimal places

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico"/>
+  <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="{{ url_root }}/static/js/bootstrap.js"></script>
+  <script type="text/javascript" src="{{ url_root }}/static/cws_utils.js"></script>
+  <link rel="stylesheet" href="{{ url_root }}/static/css/bootstrap.css">
+  <link rel="stylesheet" href="{{ url_root }}/static/cws_style.css">
+
+  <title>Sign up for {{ contest.description }}</title>
+
+  <script type="text/javascript">
+    var utils = new CMS.CWSUtils("{{ url_root }}",
+                                 0, 0, 0, 0, 0);
+  </script>
+</head>
+<body id="body">
+<div id="navigation_bar" class="navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
+      {% if len(lang_names) > 1 %}
+      <p class="navbar-text pull-right">
+        <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
+          <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }}</option>
+          {% for lang_code, lang_name in sorted(lang_names.iteritems(), key=lambda x: x[1]) %}
+            <option value="{{ lang_code }}"{% if cookie_lang == lang_code %} selected{% end %}>{{ lang_name }}</option>
+          {% end %}
+        </select>
+      </p>
+      {% end %}
+    </div>
+  </div>
+</div>
+
+{% if handler.get_argument("password_no_match", "") != "" %}
+        <div id="notifications" class="notifications">
+            <div class="alert alert-block alert-error notification">
+                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+                <h4 class="alert-heading">{{ _("Passwords do not match") }}</h4>
+            </div>
+        </div>
+{% end %}
+
+{% if handler.get_argument("user_exists", "") != "" %}
+        <div id="notifications" class="notifications">
+            <div class="alert alert-block alert-error notification">
+                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+                <h4 class="alert-heading">{{ _("A user with that username already exists") }}</h4>
+            </div>
+        </div>
+{% end %}
+
+<div class="login_container">
+  <div class="login_box hero-unit">
+    {% if phase == -1 %}
+    <h1>{{ _("Sign up") }}</h1>
+    <p>{{ _("Please enter your data") }}</p>
+    <form class="form-horizontal" action="{{ url_root }}/register" method="POST">
+      {% module xsrf_form_html() %}
+      <input type="hidden" name="next" value="{{ handler.get_argument("next", "/signup_successful=true") }}">
+      <fieldset>
+        <div class="control-group">
+          <label class="control-label" for="first_name">{{ _("First Name") }}</label>
+          <div class="controls">
+            <input type="text" class="input-xlarge" name="first_name" id="first_name">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="last_name">{{ _("Last Name") }}</label>
+          <div class="controls">
+            <input type="text" class="input-xlarge" name="last_name" id="last_name">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="email">{{ _("Email") }}</label>
+          <div class="controls">
+            <input type="text" class="input-xlarge" name="email" id="email">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="username">{{ _("Username") }}</label>
+          <div class="controls">
+            <input type="text" class="input-xlarge" name="username" id="username" required>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="password">{{ _("Password") }}</label>
+          <div class="controls">
+            <input type="password" class="input-xlarge" name="password" id="password" required>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="confirm_password">{{ _("Confirm password") }}</label>
+          <div class="controls">
+            <input type="password" class="input-xlarge" name="confirm_password" id="confirm_password" required>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <button type="submit" class="btn btn-primary btn-large">{{ _("Register") }}</button>
+            <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+    {% end %}
+
+    {% if phase == 0 %}
+    <h1>{{ _("The contest has already begun") }}</h1>
+    <p>{{ _("You can only sign up before the start of the contest") }}</p>
+    {% end %}
+
+    {% if phase == 1 %}
+    <h1>{{ _("The contest has ended") }}</h1>
+    <p>{{ _("You can only sign up before the start of the contest") }}</p>
+    {% end %}
+  </div>
+</div>
+</body>
+</html>
