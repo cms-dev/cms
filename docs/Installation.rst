@@ -51,7 +51,7 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 14.10, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 16.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
@@ -65,7 +65,7 @@ On Ubuntu 14.10, one will need to run the following script to satisfy all depend
          libffi-dev python-pip
 
     # Optional
-    sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
+    sudo apt-get install nginx-full php7.0-cli php5-fpm phppgadmin \
          texlive-latex-base a2ps gcj-jdk haskell-platform
 
 Arch Linux
