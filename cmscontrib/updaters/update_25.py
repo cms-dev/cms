@@ -49,7 +49,7 @@ LANGUAGE_MAP = {
 class Updater(object):
 
     def __init__(self, data):
-        assert data["_version"] == 25
+        assert data["_version"] == 24
         self.objs = data
         self._warned_lang = set()
 
