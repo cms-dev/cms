@@ -50,12 +50,10 @@ GroupMul is almost the same as GroupMin; the only difference is that instead of 
 GroupThreshold
 --------------
 
-GroupThreshold thinks of the outcomes not as a measure of success, but as an amount of resources used by the submission to solve the testcase. The testcase is then successfully solved if the outcome is between 0.0 and a certain number, the threshold, specified separately for each group.
+GroupThreshold thinks of the outcomes not as a measure of success, but as an amount of resources used by the submission to solve the testcase. The testcase is then successfully solved if the outcome is between 0.0 (excluded, as 0.0 is a special value used by many task types, for example when the contestant solution times out) and a certain number, the threshold, specified separately for each group.
 
 The parameter string is of the form :samp:`[[{m1}, {t1}, {T1}], [{m2}, {t2}, {T2}], ...]` where the additional parameter :samp:`{T}` for each group is the threshold.
 
 The task needs to be crafted in such a way that the meaning of the outcome is appropriate for this score type.
 
 For Batch tasks, this means that the tasks creates the outcome through a comparator program. Using diff does not make sense given that its outcomes can only be 0.0 or 1.0.
-
-More importantly, GroupThreshold should not be used with the Communication task type, since it does not support a comparator. If the user solution times out or crashes, the empty outcome will be interpreted as 0.0 and hence get full score.

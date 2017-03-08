@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,10 @@ def N_(message):
 
 class GroupThreshold(ScoreTypeGroup):
     """The score of a submission is the sum of: the multiplier of the
-    range if all outcomes are between 0.0 and the threshold, or 0.0.
+    range if all outcomes are between 0.0 (excluded) and the
+    threshold, or 0.0 otherwise. Zero is excluded as it is a special
+    value used by many task types, for example when the contestant
+    solution times out.
 
     Parameters are [[m, t, T], ... ] (see ScoreTypeGroup), where T is
     the threshold for the group.
@@ -43,7 +46,7 @@ class GroupThreshold(ScoreTypeGroup):
     def get_public_outcome(self, outcome, parameter):
         """See ScoreTypeGroup."""
         threshold = parameter[2]
-        if 0.0 <= outcome <= threshold:
+        if 0.0 < outcome <= threshold:
             return N_("Correct")
         else:
             return N_("Not correct")
@@ -51,8 +54,7 @@ class GroupThreshold(ScoreTypeGroup):
     def reduce(self, outcomes, parameter):
         """See ScoreTypeGroup."""
         threshold = parameter[2]
-        if all(0 <= outcome <= threshold
-               for outcome in outcomes):
+        if all(0 < outcome <= threshold for outcome in outcomes):
             return 1.0
         else:
             return 0.0
