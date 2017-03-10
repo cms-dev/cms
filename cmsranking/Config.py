@@ -63,10 +63,12 @@ class Config(object):
         self.buffer_size = 100  # Needs to be strictly positive.
 
         # File system.
-        self.installed = sys.argv[0].startswith("/usr/") and \
-            sys.argv[0] != '/usr/bin/ipython' and \
-            sys.argv[0] != '/usr/bin/python2' and \
-            sys.argv[0] != '/usr/bin/python'
+        self.installed = (sys.argv[0].startswith("/usr/") and
+            sys.argv[0] != '/usr/bin/ipython' and
+            sys.argv[0] != '/usr/bin/python2' and
+            sys.argv[0] != '/usr/bin/python')
+        # Test for virtualenv (see http://stackoverflow.com/a/1883251/747654)
+        self.installed |= hasattr(sys, 'real_prefix')
 
         self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
         if self.installed:

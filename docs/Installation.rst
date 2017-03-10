@@ -161,8 +161,6 @@ Method 2: Virtual environment
 
 .. warning::
 
-   At the moment, CMS does not work correctly when installed in a virtual environment. You can use virtual enviroment to run CMS non-installed. See :ref:`the instructions <installation_running-cms-non-installed>` on how to run CMS without installing it.
-
 An alternative method to perform the installation is with a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python environment that you can put wherever you like and that can be activated/deactivated at will. The tool you need in order to create a virtual environment is called ``virtualenv``, and can be installed by looking for ``virtualenv`` using your Linux distribution's package manager. For example:
 
 * Ubuntu 14.x: `python-virtualenv <http://packages.ubuntu.com/trusty/python-virtualenv>`_.
