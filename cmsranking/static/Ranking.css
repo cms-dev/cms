@@ -115,10 +115,12 @@ abbr {
             user-select: none;
 }
 
-/* #TimeView:not(.post_cont) #TimeView_selector:hover */
-#TimeView.pre_cont #TimeView_selector:hover,
-#TimeView.cont #TimeView_selector:hover,
-#TimeView_selector.open {
+#TimeView:not(.post_cont) #TimeView_selector {
+    cursor: pointer;
+}
+
+#TimeView:not(.post_cont) #TimeView_selector:hover,
+#TimeView:not(.post_cont) #TimeView_selector.open {
     margin: 2px;
     background-color: #EAEAEC;
     border: 2px solid #FAFAFA;
@@ -145,7 +147,6 @@ abbr {
     width: 8px;
     height: 28px;
     vertical-align: top;
-    cursor: pointer;
     margin: 0 4px 0 2px;
 }
 
@@ -191,9 +192,9 @@ abbr {
     cursor: pointer;
 }
 
-#TimeView.pre_cont #TimeView_selector_elapsed,
-#TimeView.post_cont #TimeView_selector_elapsed,
-#TimeView.post_cont #TimeView_selector_remaining {
+#TimeView:not(.cont) #TimeView_selector_elapsed,
+#TimeView.post_cont #TimeView_selector_remaining,
+#TimeView.post_cont #TimeView_selector_current {
     display: none;
 }
 

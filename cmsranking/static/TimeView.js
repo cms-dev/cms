@@ -45,29 +45,19 @@ var TimeView = new function () {
         }, 1000);
         self.on_timer();
 
-        $("#TimeView_selector_elapsed").click(function () {
-            self.status = 0;
-            self.on_timer();
-            $("#TimeView_selector").removeClass("open");
-        });
+        var bindStatusTo = function(status, id) {
+            $(id).click(function() {
+                self.status = status;
+                self.on_timer();
+            });
+        };
 
-        $("#TimeView_selector_remaining").click(function () {
-            self.status = 1;
-            self.on_timer();
-            $("#TimeView_selector").removeClass("open");
-        });
-
-        $("#TimeView_selector_current").click(function () {
-            self.status = 2;
-            self.on_timer();
-            $("#TimeView_selector").removeClass("open");
-        });
-
-        $("#TimeView_expand").click(function () {
-            $("#TimeView_selector").toggleClass("open");
-        });
+        bindStatusTo(0, "#TimeView_selector_elapsed");
+        bindStatusTo(1, "#TimeView_selector_remaining");
+        bindStatusTo(2, "#TimeView_selector_current");
 
         $("#TimeView_selector").click(function (event) {
+            $(this).toggleClass("open");
             event.stopPropagation();
             return false;
         });
@@ -92,7 +82,7 @@ var TimeView = new function () {
         }
 
         if (c == null) {
-            $("#TimeView_name").text();
+            $("#TimeView_name").text("");
         } else {
             $("#TimeView_name").text(c["name"]);
         }
@@ -107,6 +97,7 @@ var TimeView = new function () {
             // no "next contest": always show the clock
             $("#TimeView").removeClass("elapsed remaining pre_cont cont");
             $("#TimeView").addClass("current post_cont");
+            $("#TimeView_selector").removeClass("open");
             full_time = true;
         } else {
             if (cur_time < c['begin']) {
@@ -141,6 +132,10 @@ var TimeView = new function () {
                 }
             }
         }
+
+        // if the contest has just ended (or has just started) then the chart
+        // on the left is bad positioned: "simulate" window resizing to fix it
+        $(window).trigger('resize');
 
         var time_str = format_time(Math.abs(Math.floor(time)), full_time);
         if (time < 0) {
