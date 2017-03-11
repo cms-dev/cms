@@ -21,6 +21,9 @@
            url_root,
            dataset_id=shown_dataset.id) %}
   </p>
+  {% if submission_count > 0 %}
+  <a href="{{ url_root }}/task/{{ task.id }}/submissions/download">Download all submissions for this task</a>
+  {% end %}
 
   {% set page_url = "/dataset/%s" % shown_dataset.id %}
   {% include fragments/submission_rows.html %}
