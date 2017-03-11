@@ -63,12 +63,14 @@ class Config(object):
         self.buffer_size = 100  # Needs to be strictly positive.
 
         # File system.
-        self.installed = (sys.argv[0].startswith("/usr/") and
-            sys.argv[0] != '/usr/bin/ipython' and
-            sys.argv[0] != '/usr/bin/python2' and
-            sys.argv[0] != '/usr/bin/python')
-        # Test for virtualenv (see http://stackoverflow.com/a/1883251/747654)
-        self.installed |= hasattr(sys, 'real_prefix')
+        # TODO: move to cmscommon as it is used both here and in cms/conf.py
+        bin_path = os.path.join(os.getcwd(), sys.argv[0])
+        bin_name = os.path.basename(bin_path)
+        bin_is_python = bin_name in ["ipython", "python", "python2", "python3"]
+        bin_in_installed_path = bin_path.startswith(sys.prefix) or (
+            hasattr(sys, 'real_prefix')
+            and bin_path.startswith(sys.real_prefix))
+        self.installed = bin_in_installed_path and not bin_is_python
 
         self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
         if self.installed:

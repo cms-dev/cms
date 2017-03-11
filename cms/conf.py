@@ -123,12 +123,16 @@ class Config(object):
         self.pdf_printing_allowed = False
 
         # Installed or from source?
-        self.installed = (sys.argv[0].startswith("/usr/") and
-            sys.argv[0] != '/usr/bin/ipython' and
-            sys.argv[0] != '/usr/bin/python2' and
-            sys.argv[0] != '/usr/bin/python')
-        # Test for virtualenv (see http://stackoverflow.com/a/1883251/747654)
-        self.installed |= hasattr(sys, 'real_prefix')
+        # We declare we are running from installed if the program was
+        # NOT invoked through some python flavor, and the file is in
+        # the prefix (or real_prefix to accommodate virtualenvs).
+        bin_path = os.path.join(os.getcwd(), sys.argv[0])
+        bin_name = os.path.basename(bin_path)
+        bin_is_python = bin_name in ["ipython", "python", "python2", "python3"]
+        bin_in_installed_path = bin_path.startswith(sys.prefix) or (
+            hasattr(sys, 'real_prefix')
+            and bin_path.startswith(sys.real_prefix))
+        self.installed = bin_in_installed_path and not bin_is_python
 
         if self.installed:
             self.log_dir = os.path.join("/", "var", "local", "log", "cms")
