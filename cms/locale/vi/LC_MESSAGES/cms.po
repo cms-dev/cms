@@ -2,21 +2,22 @@
 # Copyright © 2014 THE CMS'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the CMS package.
 # Khanh Do Ngoc <dongockhanh1997@gmail.com>, 2014.
-#
+# Kien Nguyen Tien Trung <kc97ble@gmail.com>, 2017.
+
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-07 12:47+0200\n"
-"PO-Revision-Date: 2016-02-06 21:56+0700\n"
-"Last-Translator: Khanh Do Ngoc <ngockhanhdo1997@gmail.com>\n"
+"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"PO-Revision-Date: 2017-03-13 16:09+0800\n"
+"Last-Translator: Kien Nguyen Tien Trung <kc97ble@gmail.com>\n"
 "Language-Team: Vietnamese\n"
 "Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.8.4\n"
+"Plural-Forms: nplurals=2; plural=(n==1 ? 0 : 1);\n"
+"X-Generator: Poedit 1.8.9\n"
 
 msgid "Compilation succeeded"
 msgstr "Biên dịch thành công"
@@ -62,6 +63,12 @@ msgstr "Kết quả đúng"
 
 msgid "Your submission ran and gave the correct answer"
 msgstr "Bài nộp của bạn chạy thành công và cho kết quả đúng"
+
+msgid "Output is partially correct"
+msgstr "Kết quả đúng một phần"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr "Bài nộp của bạn chạy thành công và cho kết quả đúng một phần"
 
 msgid "Output isn't correct"
 msgstr "Kết quả sai"
@@ -189,25 +196,32 @@ msgstr "%H:%M:%S %d-%m-%Y"
 msgid "loading..."
 msgstr "đang tải..."
 
+msgid "unknown"
+msgstr "không xác định"
+
 #, python-format
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d giây"
+msgstr[1] "%d giây"
 
 #, python-format
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d phút"
+msgstr[1] "%d phút"
 
 #, python-format
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d giờ"
+msgstr[1] "%d giờ"
 
 #, python-format
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] "%d ngày"
+msgstr[1] "%d ngày"
 
 #, python-format
 msgid "%s and %s"
@@ -250,27 +264,32 @@ msgstr "Ban đầu, bạn không có %(type_pl)s nào."
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "Ban đầu, bạn có %(gen_initial)d %(type_pl)s."
+msgstr[0] "Ban đầu, bạn có một %(type_pl)s."
+msgstr[1] "Ban đầu, bạn có %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
-msgstr[0] "Mỗi %(gen_interval)d phút "
+msgstr[0] "Mỗi phút "
+msgstr[1] "Mỗi %(gen_interval)g phút "
 
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "bạn có thêm %(gen_number)d %(type_pl)s, "
+msgstr[0] "bạn có thêm một %(type_pl)s, "
+msgstr[1] "bạn có thêm %(gen_number)d %(type_pl)s, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] "tối đa là %(gen_max)d %(type_pl)s."
+msgstr[0] "tối đa là một %(type_pl)s."
+msgstr[1] "tối đa là %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "bạn có thêm %(gen_number)d %(type_pl)s, "
+msgstr[0] "bạn có thêm một %(type_pl)s, "
+msgstr[1] "bạn có thêm %(gen_number)d %(type_pl)s, "
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
@@ -279,25 +298,35 @@ msgstr "Bạn sẽ không có thêm %(type_pl)s."
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "Bạn có thể sử dụng 1 %(type_s)s mỗi %(min_interval)g giây "
+msgstr[0] "Bạn có thể sử dụng một %(type_s)s trong mỗi một giây "
+msgstr[1] "Bạn có thể sử dụng một %(type_s)s trong mỗi %(min_interval)g giây "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "và tổng cộng không vượt quá %(max_number)d %(type_pl)s."
+msgstr[0] "và tổng cộng tối đa một %(type_pl)s."
+msgstr[1] "và tổng cộng tối đa %(max_number)d %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "Bạn có thể sử dụng 1 %(type_s)s mỗi %(min_interval)g giây."
+msgstr[0] "Bạn có thể sử dụng một %(type_s)s trong mỗi một giây."
+msgstr[1] "Bạn có thể sử dụng một %(type_s)s trong mỗi %(min_interval)g giây."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "Bạn có thể sử dụng tổng cộng không quá %(max_number)d %(type_pl)s."
+msgstr[0] "Bạn có thể sử dụng tổng cộng không quá một %(type_pl)s."
+msgstr[1] "Bạn có thể sử dụng tổng cộng không quá %(max_number)d %(type_pl)s."
 
 msgid "You have no limitations on how you use them."
 msgstr "Bạn có thể tự do sử dụng chúng."
+
+msgid "Question too big!"
+msgstr "Độ dài câu hỏi quá lớn!"
+
+msgid "You have reached the question length limit."
+msgstr "Đã đạt đến độ dài tối đa cho phép đối với một câu hỏi."
 
 msgid "Question received"
 msgstr "Câu hỏi đã được tiếp nhận"
@@ -339,70 +368,6 @@ msgstr "Yêu cầu in đã được tiếp nhận"
 msgid "Your print job has been received."
 msgstr "Yêu cầu in của bạn đã được tiếp nhận."
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho tất cả các bài."
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho bài này."
-
-msgid "Too many submissions!"
-msgstr "Quá nhiều bài nộp!"
-
-#, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "Với tất cả các bài, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
-
-#, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr "Với bài này, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
-
-msgid "Submissions too frequent!"
-msgstr "Thời gian nộp bài quá gần nhau!"
-
-msgid "Invalid submission format!"
-msgstr "Định dạng bài nộp không hợp lệ!"
-
-msgid "Invalid archive format!"
-msgstr "Định dạng file nén không hợp lệ!"
-
-msgid "The submitted archive could not be opened."
-msgstr "Không mở được file nén đã nộp."
-
-msgid "Cannot recognize submission's language."
-msgstr "Không nhận diện được ngôn ngữ sử dụng trong bài nộp."
-
-msgid "All sources must be in the same language."
-msgstr "Tất cả mã nguồn cần sử dụng chung một ngôn ngữ."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Ngôn ngữ %s không được sử dụng trong kì thi này."
-
-msgid "Invalid submission!"
-msgstr "Bài nộp không hợp lệ!"
-
-msgid "Submission too big!"
-msgstr "Kích thước bài nộp quá lớn!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Mỗi file mã nguồn có độ dài tối đa là %d byte."
-
-msgid "Submission storage failed!"
-msgstr "Không thể lưu trữ lại bài nộp!"
-
-msgid "Submission received"
-msgstr "Nộp bài thành công"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "Bài nộp của bạn đã được tiếp nhận và đang được chấm."
-
 msgid "Compiling..."
 msgstr "Đang biên dịch..."
 
@@ -438,6 +403,67 @@ msgid "Your request has been received and applied to the submission."
 msgstr "Yêu cầu của bạn đã được tiếp nhận và áp dụng vào bài nộp."
 
 #, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho tất cả các bài."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho bài này."
+
+msgid "Too many submissions!"
+msgstr "Quá nhiều bài nộp!"
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Với tất cả các bài, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr "Với bài này, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
+
+msgid "Submissions too frequent!"
+msgstr "Thời gian nộp bài quá gần nhau!"
+
+msgid "Invalid submission format!"
+msgstr "Định dạng bài nộp không hợp lệ!"
+
+msgid "Invalid archive format!"
+msgstr "Định dạng file nén không hợp lệ!"
+
+msgid "The submitted archive could not be opened."
+msgstr "Không mở được file nén đã nộp."
+
+msgid "Cannot recognize the submission language."
+msgstr "Không nhận diện được ngôn ngữ sử dụng trong bài nộp."
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "Ngôn ngữ %s không được sử dụng trong kì thi này."
+
+msgid "Invalid submission!"
+msgstr "Bài nộp không hợp lệ!"
+
+msgid "Submission too big!"
+msgstr "Kích thước bài nộp quá lớn!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Mỗi file mã nguồn có độ dài tối đa là %d byte."
+
+msgid "Submission storage failed!"
+msgstr "Không thể lưu trữ lại bài nộp!"
+
+msgid "Submission received"
+msgstr "Nộp bài thành công"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Bài nộp của bạn đã được tiếp nhận và đang được chấm."
+
+#, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "Bạn đã đạt đến giới hạn %d lần chạy thử cho tất cả các bài."
 
@@ -463,7 +489,7 @@ msgstr "Thời gian chạy thử quá gần nhau!"
 msgid "Invalid test format!"
 msgstr "Định dạng yêu cầu chạy thử không hợp lệ!"
 
-msgid "Cannot recognize test's language."
+msgid "Cannot recognize the user test language."
 msgstr "Không nhận diện được ngôn ngữ sử dụng trong yêu cầu chạy thử."
 
 msgid "Invalid test!"
@@ -502,6 +528,9 @@ msgstr "%(seconds)0.3f giây"
 msgid "Automatic (%s)"
 msgstr "Tự động (%s)"
 
+msgid "Logout"
+msgstr "Đăng xuất"
+
 #, python-format
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
@@ -509,9 +538,6 @@ msgid ""
 msgstr ""
 "Đăng nhập dưới tên <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
-
-msgid "Logout"
-msgstr "Đăng xuất"
 
 msgid "Failed to log in."
 msgstr "Đăng nhập không thành công."
@@ -618,6 +644,12 @@ msgstr "Ngôn ngữ lập trình và thư viện"
 
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
+
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
+msgstr ""
+"Lớp chính trong một bài nộp bằng Java phải được đặt tên trùng với tên bài."
 
 msgid "Submission details for compilation"
 msgstr "Chi tiết biên dịch bài nộp"
@@ -1067,3 +1099,6 @@ msgstr "Chi tiết chạy thử"
 
 msgid "Evaluation outcome"
 msgstr "Kết quả chấm"
+
+#~ msgid "All sources must be in the same language."
+#~ msgstr "Tất cả mã nguồn cần sử dụng chung một ngôn ngữ."
