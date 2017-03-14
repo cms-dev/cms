@@ -56,7 +56,8 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
 .. sourcecode:: bash
 
     # Feel free to change OpenJDK packages with your preferred JDK.
-    sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk fpc \
+    sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk \
+        fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl \
         postgresql postgresql-client gettext python2.7 \
         iso-codes shared-mime-info stl-manual cgroup-lite
 
