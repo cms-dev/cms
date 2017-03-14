@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -256,17 +256,22 @@ Options:
             print("[Error] You need to run the install command at least once")
             exit(1)
 
-        print("===== Copying isolate to /usr/local/bin/")
-
         # Check if build_isolate() has been called
         if not os.path.exists(os.path.join("isolate", "isolate")):
             print("[Error] You must run the build_isolate command first")
             exit(1)
 
+        print("===== Copying isolate to /usr/local/bin/")
         makedir(os.path.join(USR_ROOT, "bin"), root, 0755)
         copyfile(os.path.join(".", "isolate", "isolate"),
                  os.path.join(USR_ROOT, "bin", "isolate"),
                  root, 04750, group=cmsuser_grp)
+
+        print("===== Copying isolate config to /usr/local/etc/")
+        makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
+        copyfile(os.path.join(".", "isolate", "default.cf"),
+                 os.path.join(USR_ROOT, "etc", "isolate"),
+                 root, 0640, group=cmsuser_grp)
 
     def build(self):
         """This function builds all the prerequisites by calling:
