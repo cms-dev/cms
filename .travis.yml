@@ -34,11 +34,8 @@ install:
   - psql --username=postgres --dbname=cmsdbfortesting --command='ALTER SCHEMA public OWNER TO cmsuser'
   - psql --username=postgres --dbname=cmsdbfortesting --command='GRANT SELECT ON pg_largeobject TO cmsuser'
 
+# Debugging info
   - sudo chown root:$USER /usr/local/bin/isolate /usr/local/etc/cms.conf
-  - sudo chmod 750 /usr/local/bin/isolate
-  - sudo chmod 640 /usr/local/etc/cms.conf
-  - sudo chmod u+s /usr/local/bin/isolate /usr/local/etc/cms.conf
-
   - ls -al /usr/local/bin/isolate /usr/local/etc/cms.conf
   - groups
 
