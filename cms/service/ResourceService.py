@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
@@ -33,10 +33,12 @@ from __future__ import unicode_literals
 import bisect
 import logging
 import os
+import re
 import time
 
 import psutil
 
+from collections import defaultdict
 from gevent import subprocess
 try:
     from subprocess import DEVNULL  # py3k
@@ -66,6 +68,106 @@ else:
     PSUTIL_PROC_ATTRS = \
         ["cmdline", "get_cpu_times", "create_time",
          "get_memory_info", "get_num_threads"]
+
+
+class ProcessMatcher(object):
+    def __init__(self):
+        # Running processes, lazily loaded.
+        self._procs = None
+
+    def find(self, service, cpu_times=None):
+        """Returns the pid of a given service running on this machine.
+
+        service (ServiceCoord): the service we are interested in.
+        cpu_times ({ServiceCoord: object}|None): if not None, a dict to update
+            with the cputimes of the found process, if found.
+
+        return (psutil.Process|None): the process of service, or None
+             if not found
+
+        """
+        logger.debug("ProcessMatcher.find %s", service)
+        if self._procs is None:
+            self._procs = ProcessMatcher._get_interesting_running_processes()
+        shards = self._procs.get(service.name, {})
+        for shard, proc in shards.iteritems():
+            if get_safe_shard(service.name, shard) == service.shard:
+                logger.debug("Found %s", service)
+                if cpu_times is not None:
+                    cpu_times[service] = proc.cpu_times()
+                return proc
+        return None
+
+    @staticmethod
+    def _get_all_processes():
+        """Wrapper of psutil for testing.
+
+        return (([string], psutil.Process)): generator for tuples
+            (full command line, process).
+
+        """
+        for proc in psutil.process_iter():
+            try:
+                yield proc.cmdline(), proc
+            except psutil.NoSuchProcess:
+                continue
+
+    @staticmethod
+    def _get_interesting_running_processes():
+        """Return the processes that might be CMS services
+
+        return ({string: {int|None: psutil.Process}): maps service
+            names to a map from shards to the corresponding process.
+
+        """
+        logger.debug("_get_interesting_running_processes")
+        ret = defaultdict(dict)
+        for cmdline, proc in ProcessMatcher._get_all_processes():
+            data = ProcessMatcher._is_interesting_command_line(cmdline)
+            if data is not None:
+                service, shard = data
+                ret[service][shard] = proc
+        return ret
+
+    @staticmethod
+    def _is_interesting_command_line(cmdline):
+        """Returns if cmdline can be the command line of a service.
+
+        cmdline ([string]): a command line.
+
+        return ((string, int|None)|None): if cmdline is not a CMS
+            service, None; otherwise, a tuple whose first element is
+            the service name, and the second is the shard number, or
+            None if the default was used.
+
+        """
+        if not cmdline:
+            return None
+
+        start_index = 0
+        if os.path.basename(cmdline[0]) == "env":
+            start_index = 1
+
+        if len(cmdline) - start_index < 2:
+            return None
+
+        cl_interpreter = cmdline[start_index]
+        if "python" not in cl_interpreter:
+            return None
+
+        cl_service = re.search(r"\bcms([a-zA-Z]+)$", cmdline[start_index + 1])
+        if not cl_service:
+            return None
+        cl_service = cl_service.groups()[0]
+
+        # We assume that apart from the shard, all other
+        # options are in the form "-<something> <something>".
+        shard = None
+        for i in xrange(start_index + 2, len(cmdline), 2):
+            if cmdline[i].isdigit():
+                shard = int(cmdline[i])
+                break
+        return (cl_service, shard)
 
 
 class ResourceService(Service):
@@ -127,6 +229,7 @@ class ResourceService(Service):
         self._launched_processes = new_launched_processes
 
         # Look for dead processes, and restart them.
+        matcher = ProcessMatcher()
         for service in self._local_services:
             # We let the user start logservice and resourceservice.
             if service.name == "LogService" or \
@@ -143,7 +246,7 @@ class ResourceService(Service):
             # If we don't have a previously found process for the
             # service, we find it
             if proc is None:
-                proc = self._find_proc(service)
+                proc = matcher.find(service, self._services_prev_cpu_times)
             if proc is None:
                 running = False
             else:
@@ -151,7 +254,7 @@ class ResourceService(Service):
                 # We have a process, but maybe it has been shut down
                 if not proc.is_running():
                     # If so, let us find the new one
-                    proc = self._find_proc(service)
+                    proc = matcher.find(service, self._services_prev_cpu_times)
                     # If there is no new one, continue
                     if proc is None:
                         running = False
@@ -196,70 +299,6 @@ class ResourceService(Service):
                           for x in services
                           if services[x].ip == local_machine]
         return sorted(local_services)
-
-    @staticmethod
-    def _is_service_proc(service, cmdline):
-        """Returns if cmdline can be the command line of service.
-
-        service (ServiceCoord): the service.
-        cmdline ([string]): a command line.
-
-        return (bool): whether service could have been launched with
-            the command line cmdline.
-
-        """
-        if not cmdline:
-            return False
-
-        start_index = 0
-        if cmdline[0] == "/usr/bin/env":
-            start_index = 1
-
-        if len(cmdline) - start_index < 2:
-            return False
-
-        cl_interpreter = cmdline[start_index]
-        cl_service = cmdline[start_index + 1]
-        if "python" not in cl_interpreter or \
-                not cl_service.endswith("cms%s" % service.name):
-            return False
-
-        # We assume that apart from the shard, all other
-        # options are in the form "-<something> <something>".
-        shard = None
-        for i in xrange(start_index + 2, len(cmdline), 2):
-            if cmdline[i].isdigit():
-                shard = int(cmdline[i])
-                break
-        try:
-            if get_safe_shard(service.name, shard) != service.shard:
-                return False
-        except ValueError:
-            return False
-
-        return True
-
-    def _find_proc(self, service):
-        """Returns the pid of a given service running on this machine.
-
-        service (ServiceCoord): the service we are interested in
-
-        return (psutil.Process|None): the process of service, or None
-             if not found
-
-        """
-        logger.debug("ResourceService._find_proc")
-        for proc in psutil.process_iter():
-            try:
-                proc_info = proc.as_dict(attrs=PSUTIL_PROC_ATTRS)
-                if ResourceService._is_service_proc(
-                        service, proc_info["cmdline"]):
-                    self._services_prev_cpu_times[service] = \
-                        proc_info["cpu_times"]
-                    return proc
-            except psutil.NoSuchProcess:
-                continue
-        return None
 
     @staticmethod
     def _get_cpu_times():
@@ -327,7 +366,9 @@ class ResourceService(Service):
             }
 
         data["services"] = {}
+
         # Details of our services
+        matcher = ProcessMatcher()
         for service in self._local_services:
             dic = {"autorestart": self._will_restart[service],
                    "running": True}
@@ -335,14 +376,14 @@ class ResourceService(Service):
             # If we don't have a previously found process for the
             # service, we find it
             if proc is None:
-                proc = self._find_proc(service)
+                proc = matcher.find(service, self._services_prev_cpu_times)
             # If we still do not find it, there is no process
             if proc is None:
                 dic["running"] = False
             # We have a process, but maybe it has been shut down
             elif not proc.is_running():
                 # If so, let us find the new one
-                proc = self._find_proc(service)
+                proc = matcher.find(service, self._services_prev_cpu_times)
                 # If there is no new one, continue
                 if proc is None:
                     dic["running"] = False
