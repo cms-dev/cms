@@ -241,27 +241,15 @@ class ResourceService(Service):
             if not self._will_restart[service]:
                 continue
 
-            running = True
+            # If we don't have a previously found process, or the one
+            # we have terminated, we find the process.
             proc = self._procs[service]
-            # If we don't have a previously found process for the
-            # service, we find it
-            if proc is None:
+            if proc is None or not proc.is_running():
                 proc = matcher.find(service, self._services_prev_cpu_times)
-            if proc is None:
-                running = False
-            else:
                 self._procs[service] = proc
-                # We have a process, but maybe it has been shut down
-                if not proc.is_running():
-                    # If so, let us find the new one
-                    proc = matcher.find(service, self._services_prev_cpu_times)
-                    # If there is no new one, continue
-                    if proc is None:
-                        running = False
-                    else:
-                        self._procs[service] = proc
-
-            if not running:
+            # If we still do not find it, there is no process, and we
+            # have nothing to do.
+            if proc is None or not proc.is_running():
                 # We give contest_id even if the service doesn't need
                 # it, since it causes no trouble.
                 logger.info("Restarting (%s, %s)...",
@@ -373,22 +361,15 @@ class ResourceService(Service):
             dic = {"autorestart": self._will_restart[service],
                    "running": True}
             proc = self._procs[service]
-            # If we don't have a previously found process for the
-            # service, we find it
-            if proc is None:
+
+            # If we don't have a previously found process, or the one
+            # we have terminated, we find the process.
+            if proc is None or not proc.is_running():
                 proc = matcher.find(service, self._services_prev_cpu_times)
-            # If we still do not find it, there is no process
+            # If we still do not find it, there is no process, and we
+            # have nothing to do.
             if proc is None:
                 dic["running"] = False
-            # We have a process, but maybe it has been shut down
-            elif not proc.is_running():
-                # If so, let us find the new one
-                proc = matcher.find(service, self._services_prev_cpu_times)
-                # If there is no new one, continue
-                if proc is None:
-                    dic["running"] = False
-            # If the process is not running, we have nothing to do.
-            if not dic["running"]:
                 data["services"]["%s" % (service,)] = dic
                 continue
 
