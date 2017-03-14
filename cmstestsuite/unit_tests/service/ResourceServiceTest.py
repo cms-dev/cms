@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,9 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for ResourceService.
-
-"""
+"""Tests for ResourceService."""
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -28,21 +26,17 @@ from __future__ import unicode_literals
 import sys
 import unittest
 
+from mock import patch
+
 from cms import ServiceCoord
-from cms.service.ResourceService import ResourceService
+from cms.service.ResourceService import ProcessMatcher
 
 
-class TestResourceService(unittest.TestCase):
+class TestProcessMatcher(unittest.TestCase):
 
     def setUp(self):
-        pass
-
-    def test_is_service_proc(self):
-        """Several tests for identifying the command line of a service.
-
-        """
-        service = ServiceCoord("Worker", 0)
-        good_command_lines = [
+        self.pm = ProcessMatcher()
+        self.w0_cmdlines = [
             "/usr/bin/python2 cmsWorker 0",
             "/usr/bin/python2 cmsWorker",
             "python2 cmsWorker 0 -c 1",
@@ -58,36 +52,49 @@ class TestResourceService(unittest.TestCase):
             sys.executable + " cmsWorker 0 -c 1",
             sys.executable + " cmsWorker -c 1",
             sys.executable + " cmsWorker -c 1 0",
-            ]
-        bad_command_lines = [
+        ]
+        self.bad_cmdlines = [
             "ps",
             "less cmsWorker 0",
             "less /usr/bin/python2 cmsWorker 0",
             "/usr/bin/python2 cmsWorker 1",
             "/usr/bin/python2 cmsAdminWebServer 0",
-            ]
-        for cmdline in good_command_lines:
-            self.assertTrue(ResourceService._is_service_proc(
-                service, cmdline.split(" ")), cmdline)
-        for cmdline in bad_command_lines:
-            self.assertFalse(ResourceService._is_service_proc(
-                service, cmdline.split(" ")), cmdline)
+        ]
+        self.w0 = ServiceCoord("Worker", 0)
 
-        # Test we do not pick the wrong shard.
-        service = ServiceCoord("Worker", 1)
-        cmdline = sys.executable + " cmsWorker"
-        self.assertFalse(ResourceService._is_service_proc(
-            service, cmdline.split(" ")), cmdline)
+    @staticmethod
+    def _get_all_processes_ret(cmdlines_and_maybe_procs):
+        ret = []
+        for c in cmdlines_and_maybe_procs:
+            if isinstance(c, tuple):
+                ret.append((c[0].split(), c[1]))
+            else:
+                ret.append((c.split(), "base"))
+        return ret
 
-        # Test that an empty command line does not cause problems.
-        self.assertFalse(ResourceService._is_service_proc(
-            service, []), "Empty command line.")
+    def test_find_works(self):
+        for c in self.w0_cmdlines:
+            with patch.object(ProcessMatcher, '_get_all_processes') as f:
+                f.return_value = (TestProcessMatcher._get_all_processes_ret(
+                    self.bad_cmdlines + [(c, "good")] + self.bad_cmdlines))
+                self.assertEquals(self.pm.find(self.w0), "good")
 
-        # Simulate a service not running on the same machine.
-        service = ServiceCoord("FakeWorker", 0)
-        cmdline = sys.executable + " cmsFakeWorker 0"
-        self.assertFalse(ResourceService._is_service_proc(
-            service, cmdline.split(" ")), cmdline)
+    def test_find_fails(self):
+        service = ServiceCoord("EvaluationService", 0)
+        for c in self.w0_cmdlines:
+            with patch.object(ProcessMatcher, '_get_all_processes') as f:
+                f.return_value = (TestProcessMatcher._get_all_processes_ret(
+                    self.bad_cmdlines + [(c, "good")] + self.bad_cmdlines))
+                self.assertIsNone(self.pm.find(service))
+
+    def test_get_all_processes_is_called_once(self):
+        with patch.object(ProcessMatcher, '_get_all_processes') as f:
+            f.return_value = (TestProcessMatcher._get_all_processes_ret(
+                self.w0_cmdlines + self.bad_cmdlines))
+            self.assertEqual(self.pm.find(self.w0), "base")
+            self.assertEqual(self.pm.find(self.w0), "base")
+            f.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
