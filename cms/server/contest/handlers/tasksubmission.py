@@ -266,9 +266,9 @@ class SubmitHandler(BaseHandler):
             elif submission_lang not in contest.languages:
                 error = self._("Language %s not allowed in this contest.") \
                     % submission_lang
-        if error is not None:
-            self._send_error(self._("Invalid submission!"), error, task)
-            return
+            if error is not None:
+                self._send_error(self._("Invalid submission!"), error, task)
+                return
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
