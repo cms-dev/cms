@@ -28,7 +28,7 @@ import sys
 import time
 from traceback import format_tb
 
-import gevent.coros
+import gevent.lock
 
 
 class StreamHandler(logging.StreamHandler):
@@ -42,7 +42,7 @@ class StreamHandler(logging.StreamHandler):
         """Set self.lock to a new gevent RLock.
 
         """
-        self.lock = gevent.coros.RLock()
+        self.lock = gevent.lock.RLock()
 
 
 class FileHandler(logging.FileHandler):
@@ -56,7 +56,7 @@ class FileHandler(logging.FileHandler):
         """Set self.lock to a new gevent RLock.
 
         """
-        self.lock = gevent.coros.RLock()
+        self.lock = gevent.lock.RLock()
 
 
 def has_color_support(stream):

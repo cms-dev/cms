@@ -41,7 +41,7 @@ from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
 
-import gevent.coros
+import gevent.lock
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -86,7 +86,7 @@ class EvaluationExecutor(Executor):
         self._currently_executing = []
 
         # Lock used to guard the currently executing operations
-        self._current_execution_lock = gevent.coros.RLock()
+        self._current_execution_lock = gevent.lock.RLock()
 
         # Whether execute need to drop the currently executing
         # operation.
@@ -260,7 +260,7 @@ class EvaluationService(TriggeredService):
         # invalidate_submission, enqueue) are not executed
         # concurrently with action_finished to avoid picking
         # operations in state 4.
-        self.post_finish_lock = gevent.coros.RLock()
+        self.post_finish_lock = gevent.lock.RLock()
 
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))

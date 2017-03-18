@@ -31,6 +31,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
 import psycopg2
 
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -39,6 +40,9 @@ from sqlalchemy.engine.url import make_url
 from cms import config
 
 from . import engine
+
+
+logger = logging.getLogger(__name__)
 
 
 Session = sessionmaker(engine, twophase=config.twophase_commit)
@@ -92,6 +96,9 @@ def custom_psycopg2_connection(**kwargs):
     database_url = make_url(config.database)
     assert database_url.get_dialect().driver == "psycopg2"
     database_url.query.update(kwargs)
+    if database_url.port is None:
+        database_url.port = 5432
+        logger.warning("Using default port 5432 for Postgres DB")
 
     return psycopg2.connect(
         host=database_url.host,
