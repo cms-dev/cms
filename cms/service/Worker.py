@@ -32,7 +32,7 @@ from __future__ import unicode_literals
 import logging
 import time
 
-import gevent.coros
+import gevent.lock
 
 from cms.io import Service, rpc_method
 from cms.db import SessionGen, Contest
@@ -60,7 +60,7 @@ class Worker(Service):
         Service.__init__(self, shard)
         self.file_cacher = FileCacher(self)
 
-        self.work_lock = gevent.coros.RLock()
+        self.work_lock = gevent.lock.RLock()
         self._last_end_time = None
         self._total_free_time = 0
         self._total_busy_time = 0

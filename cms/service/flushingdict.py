@@ -26,11 +26,7 @@ import gevent
 import logging
 
 from datetime import datetime, timedelta
-
-try:
-    from gevent.locks import RLock
-except ImportError:
-    from gevent.coros import RLock
+from gevent.lock import RLock
 
 
 logger = logging.getLogger(__name__)

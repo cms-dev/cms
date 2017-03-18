@@ -51,7 +51,7 @@ from __future__ import unicode_literals
 import logging
 import sys
 
-import gevent.coros
+import gevent.lock
 
 from cmscommon.terminal import colors, add_color_to_string, has_color_support
 
@@ -67,7 +67,7 @@ class StreamHandler(logging.StreamHandler):
         """Set self.lock to a new gevent RLock.
 
         """
-        self.lock = gevent.coros.RLock()
+        self.lock = gevent.lock.RLock()
 
 
 class FileHandler(logging.FileHandler):
@@ -81,7 +81,7 @@ class FileHandler(logging.FileHandler):
         """Set self.lock to a new gevent RLock.
 
         """
-        self.lock = gevent.coros.RLock()
+        self.lock = gevent.lock.RLock()
 
 
 class LogServiceHandler(logging.Handler):
@@ -119,7 +119,7 @@ class LogServiceHandler(logging.Handler):
         """Set self.lock to a new gevent RLock.
 
         """
-        self.lock = gevent.coros.RLock()
+        self.lock = gevent.lock.RLock()
 
     # Taken from CPython, combining emit and makePickle, and adapted to
     # not pickle the dictionary and use its items as keyword parameters

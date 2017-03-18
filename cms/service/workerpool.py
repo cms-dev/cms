@@ -35,7 +35,7 @@ import random
 
 from datetime import timedelta
 
-import gevent.coros
+import gevent.lock
 
 from gevent.event import Event
 
@@ -100,7 +100,7 @@ class WorkerPool(object):
 
         # A lock to ensure that the reverse lookup stays in sync with
         # the operations lists.
-        self._operation_lock = gevent.coros.RLock()
+        self._operation_lock = gevent.lock.RLock()
 
         # Event set when there are workers available to take jobs. It
         # is only guaranteed that if a worker is available, then this

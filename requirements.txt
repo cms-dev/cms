@@ -1,21 +1,21 @@
-tornado==4.1
-psycopg2==2.6
-sqlalchemy>=0.9,<1.1
-netifaces==0.10.4
-pycrypto==2.6.1
-pytz==2015.4
-psutil>=0.6,<4.3
-six==1.9
-requests==2.7
-gevent==1.0.2
-werkzeug==0.10.4
-patool==1.7
-bcrypt==2.0
-chardet==2.3
+tornado>=4.2,<4.3  # http://www.tornadoweb.org/en/stable/releases.html
+psycopg2>=2.6,<2.7  # http://initd.org/psycopg/articles/tag/release/
+sqlalchemy>=1.0,<1.1  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
+netifaces>=0.10,<0.11  # https://bitbucket.org/al45tair/netifaces/src/
+pycrypto>=2.6,<2.7  # https://github.com/dlitz/pycrypto/blob/master/ChangeLog
+pytz>=2014.10,<2014.11  # https://pypi.python.org/pypi/pytz
+psutil>=3.4,<3.5  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
+six>=1.10,<1.11  # https://github.com/benjaminp/six/blob/master/CHANGES
+requests>=2.9,<2.10  # https://pypi.python.org/pypi/requests
+gevent>=1.1,<1.2  # http://www.gevent.org/changelog.html
+werkzeug>=0.10,<0.11  # https://github.com/pallets/werkzeug/blob/master/CHANGES
+patool>=1.10,<1.11  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
+bcrypt>=2.0,<2.1  # https://github.com/pyca/bcrypt/
+chardet>=2.3,<2.4  # https://pypi.python.org/pypi/chardet
 
 # Only for some importers:
-pyyaml==3.11
+pyyaml>=3.11,<3.12  # http://pyyaml.org/wiki/PyYAML
 
 # Only for printing:
-pycups==1.9.72
-PyPDF2==1.24
+pycups>=1.9,<1.10  # https://pypi.python.org/pypi/pycups
+PyPDF2>=1.25,<1.26  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG

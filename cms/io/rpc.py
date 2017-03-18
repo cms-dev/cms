@@ -33,7 +33,7 @@ import uuid
 from weakref import WeakSet
 
 import gevent
-import gevent.coros
+import gevent.lock
 import gevent.socket
 import gevent.event
 
@@ -99,8 +99,8 @@ class RemoteServiceBase(object):
         self._reader = None
         self._writer = None
 
-        self._read_lock = gevent.coros.RLock()
-        self._write_lock = gevent.coros.RLock()
+        self._read_lock = gevent.lock.RLock()
+        self._write_lock = gevent.lock.RLock()
 
     def add_on_connect_handler(self, handler):
         """Register a callback for connection establishment.
