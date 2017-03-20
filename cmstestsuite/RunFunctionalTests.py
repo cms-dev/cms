@@ -5,6 +5,7 @@
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,13 +24,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import io
 import logging
 import os
 import re
 import sys
-
-from argparse import ArgumentParser
 
 from cms import utf8_decoder
 from cmstestsuite import CONFIG, combine_coverage, sh
@@ -147,9 +147,10 @@ def write_test_case_list(test_list, filename):
 
 
 def main():
-    parser = ArgumentParser(description="Runs the CMS functional test suite.")
+    parser = argparse.ArgumentParser(
+        description="Runs the CMS functional test suite.")
     parser.add_argument(
-        "regex", action="store", type=utf8_decoder, nargs='*', metavar="regex",
+        "regex", action="store", type=utf8_decoder, nargs='*',
         help="a regex to match to run a subset of tests")
     parser.add_argument(
         "-l", "--languages", action="store", type=utf8_decoder, default="",

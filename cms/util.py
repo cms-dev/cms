@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import chardet
 import errno
 import logging
@@ -32,7 +33,6 @@ import netifaces
 import os
 import sys
 import grp
-from argparse import ArgumentParser
 from collections import namedtuple
 
 import six
@@ -212,7 +212,7 @@ def default_argument_parser(description, cls, ask_contest=None):
     return (object): an instance of a service.
 
     """
-    parser = ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=description)
     parser.add_argument("shard", action="store", type=int, nargs="?")
 
     # We need to allow using the switch "-c" also for services that do

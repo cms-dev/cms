@@ -25,6 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import ast
 import io
 import os
@@ -32,8 +33,6 @@ import sys
 import threading
 import random
 import time
-
-from argparse import ArgumentParser
 
 from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
@@ -278,26 +277,34 @@ DEFAULT_METRICS = {'time_coeff': 10.0,
 
 
 def main():
-    parser = ArgumentParser(description="Stress tester for CMS")
-    parser.add_argument("-c", "--contest-id", type=int, required=True,
-                        help="ID of the contest to test against")
-    parser.add_argument("-n", "--actor-num", type=int,
-                        help="the number of actors to spawn")
+    parser = argparse.ArgumentParser(description="Stress tester for CMS")
+    parser.add_argument(
+        "-c", "--contest-id", action="store", type=int, required=True,
+        help="ID of the contest to test against")
+    parser.add_argument(
+        "-n", "--actor-num", action="store", type=int,
+        help="the number of actors to spawn")
     parser.add_argument(
         "-s", "--sort-actors", action="store_true",
         help="sort usernames alphabetically before slicing them")
-    parser.add_argument("-u", "--base-url",
-                        help="base URL for placing HTTP requests")
-    parser.add_argument("-S", "--submissions-path",
-                        help="base path for submission to send")
-    parser.add_argument("-p", "--prepare-path",
-                        help="file to put contest info to")
-    parser.add_argument("-r", "--read-from",
-                        help="file to read contest info from")
-    parser.add_argument("-t", "--time-coeff", type=float, default=10.0,
-                        help="average wait between actions")
-    parser.add_argument("-o", "--only-submit", action="store_true",
-                        help="whether the actor only submits solutions")
+    parser.add_argument(
+        "-u", "--base-url", action="store", type=utf8_decoder,
+        help="base URL for placing HTTP requests")
+    parser.add_argument(
+        "-S", "--submissions-path", action="store", type=utf8_decoder,
+        help="base path for submission to send")
+    parser.add_argument(
+        "-p", "--prepare-path", action="store", type=utf8_decoder,
+        help="file to put contest info to")
+    parser.add_argument(
+        "-r", "--read-from", action="store", type=utf8_decoder,
+        help="file to read contest info from")
+    parser.add_argument(
+        "-t", "--time-coeff", action="store", type=float, default=10.0,
+        help="average wait between actions")
+    parser.add_argument(
+        "-o", "--only-submit", action="store_true",
+        help="whether the actor only submits solutions")
     args = parser.parse_args()
 
     # If prepare_path is specified we only need to save some useful
