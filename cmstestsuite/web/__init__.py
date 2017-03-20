@@ -264,7 +264,7 @@ class LoginRequest(GenericRequest):
     def test_success(self):
         if not GenericRequest.test_success(self):
             return False
-        # Additional checks needs to be done from the subclasses.
+        # Additional checks need to be done by the subclasses.
         return True
 
     def specific_info(self):
