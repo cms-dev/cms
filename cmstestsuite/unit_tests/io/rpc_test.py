@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -91,7 +91,7 @@ class TestRPC(unittest.TestCase):
         port (int): the port (0 causes any available port to be chosen)
 
         """
-        self._server = StreamServer((host, port), self.get_server)
+        self._server = StreamServer((host, port), self.handle_new_connection)
         self._server.start()
         self.host = self._server.server_host
         self.port = self._server.server_port
@@ -107,23 +107,21 @@ class TestRPC(unittest.TestCase):
             del self._server
         # We leave self.host and self.port.
 
-    def get_server(self, socket_, address):
-        """Obtain a new RemoteServiceServer to handle a new connection.
+    def handle_new_connection(self, socket_, address):
+        """Create a new RemoteServiceServer to handle a new connection.
 
-        Instantiate a RemoteServiceServer, spawn its greenlet and add
-        it to self.servers. It will listen on the given socket, that
-        represents a connection opened by a remote host at the given
-        address.
+        Instantiate a RemoteServiceServer, add it to self.servers and
+        have it listen on the given socket (which is for a connection
+        opened by a remote host from the given address). This method
+        will block until the socket gets closed.
 
         socket_ (socket): the socket to use
         address (tuple): the (ip address, port) of the remote part
-        return (RemoteServiceServer): a server
 
         """
         server = RemoteServiceServer(self.service, address)
-        server.handle(socket_)
         self.servers.append(server)
-        return server
+        server.handle(socket_)
 
     def get_client(self, coord, auto_retry=None):
         """Obtain a new RemoteServiceClient to connect to a server.
