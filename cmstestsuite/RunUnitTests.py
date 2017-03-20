@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,13 +22,13 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import io
 import logging
 import os
 import sys
 import subprocess
 import datetime
-from argparse import ArgumentParser
 
 from cms import utf8_decoder
 from cmstestsuite import CONFIG, FrameworkException, sh
@@ -135,7 +136,7 @@ def time_difference(start_time, end_time):
 
 
 def main():
-    parser = ArgumentParser(description="Runs the CMS unittest suite.")
+    parser = argparse.ArgumentParser(description="Runs the CMS unittest suite.")
     parser.add_argument(
         "-n", "--dry-run", action="store_true",
         help="show what tests would be run, but do not run them")
@@ -149,7 +150,7 @@ def main():
 
     # Unused parameters.
     parser.add_argument(
-        "regex", action="store", type=utf8_decoder, nargs='*', metavar="regex",
+        "regex", action="store", type=utf8_decoder, nargs='*',
         help="unused")
     parser.add_argument(
         "-l", "--languages", action="store", type=utf8_decoder, default="",

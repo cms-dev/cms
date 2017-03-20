@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -41,13 +42,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import io
 import os
 import shutil
 import sys
 import zipfile
-
-from argparse import ArgumentParser
 from glob import glob
 
 from cms import utf8_decoder
@@ -71,10 +71,11 @@ def main():
     walk around the filesystem building the events file.
 
     """
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Translate from a filesystem format to the Replay format.")
-    parser.add_argument("source", action="store", type=utf8_decoder,
-                        help="source directory")
+    parser.add_argument(
+        "source", action="store", type=utf8_decoder,
+        help="source directory")
     args = parser.parse_args()
 
     all_events = []
