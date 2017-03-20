@@ -39,6 +39,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import io
 import os
 import json
@@ -47,8 +48,6 @@ import shutil
 import sys
 import tempfile
 import time
-
-from argparse import ArgumentParser
 from threading import Thread, RLock
 
 from cms import config, utf8_decoder
@@ -302,17 +301,22 @@ class ContestReplayer(object):
 
 
 def main():
-    parser = ArgumentParser(description="Replayer of CMS contests.")
-    parser.add_argument("cws_address", action="store", type=utf8_decoder,
-                        default="http://127.0.0.1:8888",
-                        help="http address of CWS")
-    parser.add_argument("import_source", action="store", type=utf8_decoder,
-                        help="source directory or compressed file")
-    parser.add_argument("-i", "--no-import", action="store_true",
-                        help="assume the contest is already in the database")
-    parser.add_argument("-r", "--resume", action="store", type=utf8_decoder,
-                        help="start from (%%H:%%M:%%S)")
+    parser = argparse.ArgumentParser(description="Replayer of CMS contests.")
+    parser.add_argument(
+        "cws_address", action="store", type=utf8_decoder,
+        default="http://127.0.0.1:8888",
+        help="http address of CWS")
+    parser.add_argument(
+        "import_source", action="store", type=utf8_decoder,
+        help="source directory or compressed file")
+    parser.add_argument(
+        "-i", "--no-import", action="store_true",
+        help="assume the contest is already in the database")
+    parser.add_argument(
+        "-r", "--resume", action="store", type=utf8_decoder,
+        help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
+
     start_from = None
     if args.resume is not None:
         try:

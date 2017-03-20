@@ -44,11 +44,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import io
 import sys
 import time
-
-from argparse import ArgumentParser
 from threading import Thread
 
 from cms import utf8_decoder
@@ -195,14 +194,18 @@ def main():
     global start, speed, old_speed
 
     parser = ArgumentParser(description="Replay a contest.")
-    parser.add_argument("address", action="store", type=utf8_decoder,
-                        default="http://127.0.0.1:8888",
-                        help="http address of CWS")
-    parser.add_argument("source", action="store", type=utf8_decoder,
-                        help="events file")
-    parser.add_argument("-r", "--resume", action="store", type=utf8_decoder,
-                        help="start from (%%H:%%M:%%S)")
+    parser.add_argument(
+        "address", action="store", type=utf8_decoder,
+        default="http://127.0.0.1:8888",
+        help="http address of CWS")
+    parser.add_argument(
+        "source", action="store", type=utf8_decoder,
+        help="events file")
+    parser.add_argument(
+        "-r", "--resume", action="store", type=utf8_decoder,
+        help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
+
     start_from = None
     if args.resume is not None:
         try:
