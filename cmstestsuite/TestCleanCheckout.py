@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,13 +23,13 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import atexit
 import tempfile
 import subprocess
 import shutil
 import sys
 import os
-from argparse import ArgumentParser
 
 from cms import utf8_decoder
 from cmstestsuite import info, sh, configure_cms, read_cms_config, CONFIG
@@ -93,13 +94,13 @@ def setup_cms():
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="This utility tests a clean checkout of CMS.")
     parser.add_argument(
         "-r", "--revision", action="store", type=utf8_decoder,
         help="Test a specific git revision.")
     parser.add_argument(
-        "-k", "--keep-working", action="store_true", default=False,
+        "-k", "--keep-working", action="store_true",
         help="Do not delete the working directory.")
     parser.add_argument(
         "arguments", action="store", type=utf8_decoder, nargs="*",
