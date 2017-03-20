@@ -253,7 +253,7 @@ class TokenRequest(GenericRequest):
             GenericRequest.specific_info(self)
 
 
-class SubmitRandomRequest(SubmitRequest):
+class SubmitRandomRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """
