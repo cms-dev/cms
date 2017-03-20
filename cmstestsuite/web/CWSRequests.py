@@ -190,7 +190,8 @@ class SubmitUserTestRequest(GenericRequest):
     def _prepare(self):
         GenericRequest._prepare(self)
         # Let's generate an arbitrary input file.
-        temp_file, temp_filename = tempfile.mkstemp()
+        # TODO: delete this file once we're done with it.
+        _, temp_filename = tempfile.mkstemp()
         self.files = \
             list(zip(self.submission_format, self.filenames)) + \
             [("input", temp_filename)]
@@ -253,7 +254,7 @@ class TokenRequest(GenericRequest):
             GenericRequest.specific_info(self)
 
 
-class SubmitRandomRequest(SubmitRequest):
+class SubmitRandomRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """

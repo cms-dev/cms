@@ -58,7 +58,7 @@ def mkdir(path):
     try:
         os.mkdir(path)
         try:
-            os.chmod(path, 0770)
+            os.chmod(path, 0o770)
             cmsuser_gid = grp.getgrnam('cmsuser').gr_gid
             os.chown(path, -1, cmsuser_gid)
         except OSError as error:

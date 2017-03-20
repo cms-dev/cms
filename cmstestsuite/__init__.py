@@ -106,8 +106,8 @@ class FrameworkException(Exception):
 
 def read_cms_config():
     global cms_config
-    cms_config = json.load(io.open("%(CONFIG_PATH)s" % CONFIG,
-                                   "rt", encoding="utf-8"))
+    with io.open("%(CONFIG_PATH)s" % CONFIG, "rt") as f:
+        cms_config = json.load(f)
 
 
 def get_cms_config():
