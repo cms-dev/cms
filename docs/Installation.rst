@@ -26,9 +26,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
 
-* `TeX Live <https://www.tug.org/texlive/>`_ (only for printing)
+* `TeX Live <https://www.tug.org/texlive/>`_ (only for printing);
 
-* `a2ps <https://www.gnu.org/software/a2ps/>`_ (only for printing)
+* `a2ps <https://www.gnu.org/software/a2ps/>`_ (only for printing).
 
 You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``. It is anyway suggested to use Linux kernel version at least 3.8.
 
