@@ -25,7 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import optparse
+import argparse
 
 from cms.db import Contest, SessionGen
 
@@ -74,38 +74,41 @@ def release_test(username, password, task, submission_num, base_url=None):
 
 
 def main():
-    parser = optparse.OptionParser(
-        usage="usage: %prog [options] <user name> <task name> <files>")
-    parser.add_option("-c", "--contest",
-                      help="contest ID to export", dest="contest_id",
-                      action="store", type="int", default=None)
-    parser.add_option("-l", "--language",
-                      help="submission language",
-                      action="store", default=None, dest="language")
-    parser.add_option("-u", "--base-url",
-                      help="base URL for placing HTTP requests",
-                      action="store", default=None, dest="base_url")
-    options, args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--contest", action="store", type=int, dest="contest_id",
+        help="contest ID to export")
+    parser.add_argument(
+        "-l", "--language", action="store", type=utf8_decoder,
+        help="submission language")
+    parser.add_argument(
+        "-u", "--base-url", action="store", type=utf8_decoder,
+        help="base URL for placing HTTP requests")
+    parser.add_argument(
+        "username", action="store", type=utf8_decoder,
+        help="")
+    parser.add_argument(
+        "taskname", action="store", type=utf8_decoder,
+        help="")
+    parser.add_argument(
+        "files", action="store", type=utf8_decoder, nargs="+",
+        help="")
+    args = parser.parse_args()
 
-    if len(args) < 3:
-        parser.error("Not enough arguments.")
-    username = args[0]
-    taskname = args[1]
-    files = args[2:]
+    users, tasks = harvest_contest_data(args.contest_id)
+    if args.username not in users:
+        parser.error("User '%s' unknown." % args.username)
 
-    users, tasks = harvest_contest_data(options.contest_id)
-    if username not in users:
-        parser.error("User '%s' unknown." % username)
-
-    task = [(tid, tname) for tid, tname in tasks if tname == taskname]
+    task = [(tid, tname) for tid, tname in tasks if tname == args.taskname]
     if len(task) != 1:
-        parser.error("Task '%s' does not identify a unique task." % taskname)
+        parser.error("Task '%s' does not identify a unique task."
+                     % args.taskname)
     task = task[0]
 
-    password = users[username]['password']
+    password = users[args.username]['password']
 
-    submit_solution(username, password, task, files, args.language,
-                    base_url=options.base_url)
+    submit_solution(args.username, password, task, args.files, args.language,
+                    base_url=args.base_url)
 
 
 if __name__ == '__main__':
