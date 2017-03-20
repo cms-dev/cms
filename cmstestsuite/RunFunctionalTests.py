@@ -211,7 +211,7 @@ def main():
 
     # Clear out any old coverage data.
     logging.info("Clearing old coverage data.")
-    sh(sys.executable + " -m coverage erase")
+    sh([sys.executable, "-m", "coverage", "erase"])
 
     # Startup the test runner.
     runner = TestRunner(test_list, contest_id=args.contest, workers=4)
