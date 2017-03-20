@@ -125,17 +125,14 @@ def sh(cmdline, ignore_failure=False):
 
     """
     if CONFIG["VERBOSITY"] >= 1:
-        logger.info(str('$' + cmdline))
+        logger.info('$ ' + ' '.join(cmdline))
     if CONFIG["VERBOSITY"] >= 3:
-        cmdline += ' > /dev/null 2>&1'
-    if isinstance(cmdline, list):
-        ret = subprocess.call(cmdline)
-    else:
-        ret = os.system(cmdline)
+        cmdline.append(' > /dev/null 2>&1')
+    ret = subprocess.call(cmdline)
     if not ignore_failure and ret != 0:
         raise FrameworkException(
             "Execution failed with %d/%d. Tried to execute:\n%s\n" %
-            (ret & 0xff, ret >> 8, cmdline))
+            (ret & 0xff, ret >> 8, ' '.join(cmdline)))
 
 
 def configure_cms(options):
@@ -174,7 +171,7 @@ def configure_cms(options):
 
 def combine_coverage():
     logger.info("Combining coverage results.")
-    sh(sys.executable + " -m coverage combine")
+    sh([sys.executable, "-m", "coverage", "combine"])
 
 
 def initialize_aws(rand):
@@ -186,8 +183,8 @@ def initialize_aws(rand):
     logger.info("Creating admin...")
     admin_info["username"] = "admin%s" % rand
     admin_info["password"] = "adminpwd"
-    sh(sys.executable + " cmscontrib/AddAdmin.py %(username)s -p %(password)s"
-       % admin_info)
+    sh([sys.executable, "cmscontrib/AddAdmin.py", "%(username)s" % admin_info,
+        "-p", "%(password)s" % admin_info])
 
 
 def admin_req(path, args=None, files=None):
