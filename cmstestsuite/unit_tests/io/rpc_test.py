@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2014-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -121,9 +121,8 @@ class TestRPC(unittest.TestCase):
 
         """
         server = RemoteServiceServer(self.service, address)
-        server.handle(socket_)
         self.servers.append(server)
-        return server
+        server.handle(socket_)
 
     def get_client(self, coord, auto_retry=None):
         """Obtain a new RemoteServiceClient to connect to a server.
