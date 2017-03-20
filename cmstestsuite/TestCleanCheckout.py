@@ -47,7 +47,8 @@ CONFIG.update({
 
 def drop_old_data():
     info("Dropping any old databases called %(DB_NAME)s." % CONFIG)
-    sh("sudo -u postgres dropdb %(DB_NAME)s" % CONFIG, ignore_failure=True)
+    sh(["sudo", "-u", "postgres", "dropdb", "%(DB_NAME)s" % CONFIG],
+       ignore_failure=True)
 
     info("Purging old checkout from %(TEST_DIR)s." % CONFIG)
     shutil.rmtree("%(TEST_DIR)s" % CONFIG)
@@ -56,7 +57,7 @@ def drop_old_data():
 def setup_cms():
     info("Creating database called %(DB_NAME)s accessible by %(DB_USER)s." %
          CONFIG)
-    sh("sudo -u postgres createdb %(DB_NAME)s -O %(DB_USER)s" % CONFIG)
+    sh(["sudo", "-u", "postgres", "createdb", "%(DB_NAME)s" % CONFIG, "-O", "%(DB_USER)s" % CONFIG])
 
     info("Checking out code.")
     sh(["git", "clone", "--recursive", CONFIG["GIT_ORIGIN"],
@@ -79,10 +80,10 @@ def setup_cms():
     os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
     info("Building cms.")
-    sh("./prerequisites.py build")
+    sh(["./prerequisites.py", "build"])
     # Add permission bits to isolate.
-    sh("sudo chown root:root isolate/isolate")
-    sh("sudo chmod 4755 isolate/isolate")
+    sh(["sudo", "chown", "root:root", "./isolate/isolate"])
+    sh(["sudo", "chmod", "4755", "./isolate/isolate"])
 
     # Ensure our logs get preserved. Point them into the checkout instead of
     # the tempdir that we blow away.
@@ -90,7 +91,7 @@ def setup_cms():
     sh(["ln", "-s", "%(GIT_ORIGIN)s/log" % CONFIG, "log"])
 
     info("Creating tables.")
-    sh(sys.executable + " scripts/cmsInitDB")
+    sh([sys.executable, "./scripts/cmsInitDB"])
 
 
 if __name__ == "__main__":
@@ -150,5 +151,5 @@ if __name__ == "__main__":
     sh(["./cmstestsuite/RunTests.py", "-c", "2"] + args.arguments)
 
     # Export coverage results.
-    sh("python -m coverage xml --include 'cms*'")
+    sh([sys.executable, "-m", "coverage", "xml", "--include", "cms*")
     shutil.copyfile("coverage.xml", "%(GIT_ORIGIN)s/coverage.xml" % CONFIG)
