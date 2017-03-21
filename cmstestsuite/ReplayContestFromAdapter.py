@@ -35,9 +35,6 @@ submission_num
 
 All users have empty passwords.
 
-TODO: currently only works with tasks with one file per submission
-(this is a limitation of SubmitRequest).
-
 """
 
 from __future__ import absolute_import
@@ -52,6 +49,7 @@ from argparse import ArgumentParser
 from threading import Thread
 
 from cms import utf8_decoder
+from cms.grading.languagemanager import filename_to_language
 from cmstestsuite.web import Browser
 from cmstestsuite.web.CWSRequests import \
     LoginRequest, SubmitRequest, TokenRequest
@@ -107,11 +105,17 @@ def submit(timestamp, username, t_id, t_short, files, base_url):
     """
     print("\n%s - Submitting for %s on task %s" %
           (to_time(timestamp), username, t_short), end='')
+
+    language = filename_to_language(files[0])
+    submission_format = list(
+        os.path.basename(f).replace(language.source_extension, ".%l")
+        for f in files)
+
     browser = Browser()
     LoginRequest(browser, username, "", base_url=base_url).execute()
     SubmitRequest(browser,
                   (int(t_id), t_short),
-                  filename=files[0],
+                  submission_format, files, language=language.name,
                   base_url=base_url).execute()
 
 
