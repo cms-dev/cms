@@ -202,33 +202,18 @@ class ContestReplayer(object):
         """
         logger.info("%s - Submitting for %s on task %s.",
                     to_time(timestamp), username, t_short)
-        if len(files) != 1:
-            logger.error("We cannot submit more than one file.")
-            return
 
-        # Copying submission files into a temporary directory with the
-        # correct name. Otherwise, SubmissionRequest does not know how
-        # to interpret the file (and which language are they in).
-        temp_dir = tempfile.mkdtemp(dir=config.temp_dir)
-        for file_ in files:
-            temp_filename = os.path.join(temp_dir,
-                                         file_["filename"].replace("%l",
-                                                                   language))
-            shutil.copy(
-                os.path.join(self.import_source, "files", files[0]["digest"]),
-                temp_filename
-                )
-            file_["filename"] = temp_filename
+        submission_format = list(f["filename"] for f in files)
+        filenames = list(os.path.join(self.import_source, "files", f["digest"])
+                         for f in files)
 
-        filename = os.path.join(files[0]["filename"])
         browser = Browser()
         LoginRequest(browser, username, password,
                      base_url=self.cws_address).execute()
         SubmitRequest(browser,
                       (int(t_id), t_short),
-                      filename=filename,
+                      submission_format, filenames,
                       base_url=self.cws_address).execute()
-        shutil.rmtree(temp_dir)
 
     def token(self, timestamp, username, password, t_id, t_short,
               submission_num):
