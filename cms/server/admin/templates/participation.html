@@ -103,7 +103,7 @@ function update_additional_answer(element, invoker)
                                     Used for IP-based login restrictions and/or for autologin (in this case, it must be a single address)."></span>
           IP address or subnet
         </td>
-        <td><input type="text" name="ip" value="{{ participation.ip if participation.ip is not None else "" }}"/></td>
+        <td><input type="text" name="ip" value="{{ ", ".join("%s" % network for network in participation.ip) if participation.ip is not None else "" }}"/></td>
       </tr>
       <tr>
         <td>

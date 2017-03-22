@@ -28,7 +28,7 @@ from __future__ import unicode_literals
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Boolean, Integer, Unicode
 
-from . import Base
+from . import Base, CodenameConstraint
 
 
 class Admin(Base):
@@ -55,6 +55,7 @@ class Admin(Base):
     # Username used to log in in AWS.
     username = Column(
         Unicode,
+        CodenameConstraint("username"),
         nullable=False,
         unique=True)
 

@@ -29,7 +29,7 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Unicode, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, Participation
+from . import Base, Participation, FilenameConstraint, DigestConstraint
 
 
 class PrintJob(Base):
@@ -64,9 +64,11 @@ class PrintJob(Base):
     # Filename and digest of the submitted file.
     filename = Column(
         Unicode,
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)
 
     done = Column(

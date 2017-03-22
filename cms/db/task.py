@@ -39,7 +39,8 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from . import Base, Contest
+from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
+    DigestConstraint
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
 
@@ -95,6 +96,7 @@ class Task(Base):
     # Short name and long human readable title of the task.
     name = Column(
         Unicode,
+        CodenameConstraint("name"),
         nullable=False,
         unique=True)
     title = Column(
@@ -264,6 +266,7 @@ class Statement(Base):
     # Digest of the file.
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -300,9 +303,11 @@ class Attachment(Base):
     # Filename and digest of the provided attachment.
     filename = Column(
         Unicode,
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -335,6 +340,7 @@ class SubmissionFormatElement(Base):
     # Format of the given submission file.
     filename = Column(
         Unicode,
+        FilenameConstraint("filename"),
         nullable=False)
 
 
@@ -505,9 +511,11 @@ class Manager(Base):
     # Filename and digest of the provided manager.
     filename = Column(
         Unicode,
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -543,6 +551,7 @@ class Testcase(Base):
     # Codename identifying the testcase.
     codename = Column(
         Unicode,
+        CodenameConstraint("codename"),
         nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even
@@ -555,7 +564,9 @@ class Testcase(Base):
     # Digests of the input and output files.
     input = Column(
         String,
+        DigestConstraint("input"),
         nullable=False)
     output = Column(
         String,
+        DigestConstraint("output"),
         nullable=False)

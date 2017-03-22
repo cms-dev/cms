@@ -33,7 +33,8 @@ from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from . import Base, Participation, Task, Dataset
+from . import Base, Participation, Task, Dataset, FilenameConstraint, \
+    DigestConstraint
 
 
 class UserTest(Base):
@@ -87,6 +88,7 @@ class UserTest(Base):
     # Input (provided by the user) file's digest for this test.
     input = Column(
         String,
+        DigestConstraint("input"),
         nullable=False)
 
     # Follows the description of the fields automatically added by
@@ -172,9 +174,11 @@ class UserTestFile(Base):
     # Filename and digest of the submitted file.
     filename = Column(
         String,
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -211,9 +215,11 @@ class UserTestManager(Base):
     # Filename and digest of the submitted manager.
     filename = Column(
         String,
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -265,6 +271,7 @@ class UserTestResult(Base):
     # Output file's digest for this test
     output = Column(
         String,
+        DigestConstraint("output"),
         nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
@@ -526,7 +533,9 @@ class UserTestExecutable(Base):
     # Filename and digest of the generated executable.
     filename = Column(
         String,
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint("digest"),
         nullable=False)

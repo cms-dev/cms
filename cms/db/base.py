@@ -36,7 +36,7 @@ from sqlalchemy.types import \
 
 import six
 
-from . import RepeatedUnicode, engine
+from . import CastingArray, RepeatedUnicode, engine
 
 
 _TYPE_MAP = {
@@ -49,6 +49,7 @@ _TYPE_MAP = {
     Interval: timedelta,
     Enum: six.string_types,  # TODO Use six.text_type.
     RepeatedUnicode: list,  # TODO Use a type that checks also the content.
+    CastingArray: list,  # TODO Use a type that checks also the content.
 }
 
 

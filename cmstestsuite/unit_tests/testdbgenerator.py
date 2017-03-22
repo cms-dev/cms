@@ -48,7 +48,7 @@ cms.config.database += "fortesting"
 import cms.db
 
 from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
-    unique_unicode_id
+    unique_unicode_id, unique_digest
 
 from cms.db import Contest, Dataset, Evaluation, Participation, Session, \
     Submission, SubmissionResult, Task, Testcase, User, UserTest, \
@@ -151,8 +151,8 @@ class TestCaseWithDatabase(unittest.TestCase):
         args = {
             "dataset": dataset,
             "codename": unique_unicode_id(),
-            "input": unique_unicode_id(),
-            "output": unique_unicode_id(),
+            "input": unique_digest(),
+            "output": unique_digest(),
         }
         args.update(kwargs)
         testcase = Testcase(**args)
@@ -224,7 +224,7 @@ class TestCaseWithDatabase(unittest.TestCase):
         args = {
             "task": task,
             "participation": participation,
-            "input": unique_unicode_id(),
+            "input": unique_digest(),
             "timestamp": (task.contest.start + timedelta(0, unique_long_id())),
         }
         args.update(kwargs)

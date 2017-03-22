@@ -23,6 +23,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import hashlib
 import random
 
 
@@ -37,3 +38,10 @@ def unique_long_id():
 def unique_unicode_id():
     """Return a unique id of type unicode."""
     return unicode(unique_long_id())
+
+
+def unique_digest():
+    """Return a unique digest-like string."""
+    hasher = hashlib.sha1()
+    hasher.update(str(unique_long_id()))
+    return hasher.hexdigest()

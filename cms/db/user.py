@@ -37,10 +37,11 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.dialects.postgresql import CIDR
 
 from cmscommon.crypto import generate_random_password
 
-from . import Base, Contest
+from . import Base, Contest, CastingArray, CodenameConstraint
 
 
 class User(Base):
@@ -66,6 +67,7 @@ class User(Base):
     # Username and password to log in the CWS.
     username = Column(
         Unicode,
+        CodenameConstraint("username"),
         nullable=False,
         unique=True)
     password = Column(
@@ -123,6 +125,7 @@ class Team(Base):
     # Team code (e.g. the ISO 3166-1 code of a country)
     code = Column(
         Unicode,
+        CodenameConstraint("code"),
         nullable=False,
         unique=True)
 
@@ -148,7 +151,7 @@ class Participation(Base):
 
     # The user can log in CWS only from this IP address or subnet.
     ip = Column(
-        Unicode,
+        CastingArray(CIDR),
         nullable=True)
 
     # Starting time: for contests where every user has at most x hours

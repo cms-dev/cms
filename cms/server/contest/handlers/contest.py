@@ -66,26 +66,23 @@ NOTIFICATION_WARNING = "warning"
 NOTIFICATION_SUCCESS = "success"
 
 
-def check_ip(ip, whitelist):
-    """Return if client IP belongs to one of the accepted subnets.
+def check_ip(address, networks):
+    """Return if client IP belongs to one of the accepted networks.
 
-    ip (string): IP address to verify.
-    whitelist (string): IP addresses or subnets to check against (separated
-        by a comma).
+    address (string): IP address to verify.
+    networks ([ipaddress.IPv4Network|ipaddress.IPv6Network]): IP
+        networks (addresses w/ subnets) to check against.
 
-    return (bool): whether client is equal to one of the IPs in the whitelist
-        or client belongs to one of the subnets in the whitelist.
+    return (bool): whether the address belongs to one of the networks.
 
     """
-    for wanted in whitelist.split(","):
-        wanted, sep, subnet = wanted.partition('/')
+    try:
+        address = ipaddress.ip_address(address)
+    except ValueError:
+        return False
 
-        subnet = 32 if sep == "" else int(subnet)
-        snmask = 2 ** 32 - 2 ** (32 - subnet)
-        wanted = struct.unpack(">I", socket.inet_aton(wanted))[0]
-        client = struct.unpack(">I", socket.inet_aton(ip))[0]
-
-        if (wanted & snmask) == (client & snmask):
+    for network in networks:
+        if address in network:
             return True
 
     return False
