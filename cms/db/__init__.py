@@ -53,6 +53,9 @@ __all__ = [
     "metadata", "Base",
     # types
     "RepeatedUnicode",
+    # validation
+    "CodenameConstraint", "FilenameConstraint", "DigestConstraint",
+    "IPv4Constraint",
     # contest
     "Contest", "Announcement",
     # user
@@ -78,7 +81,7 @@ __all__ = [
     "drop_db",
     # util
     "test_db_connection", "get_contest_list", "is_contest_id",
-    "ask_for_contest",
+    "ask_for_contest"
 ]
 
 
@@ -95,6 +98,8 @@ from .session import Session, ScopedSession, SessionGen, \
 
 from .types import RepeatedUnicode
 from .base import metadata, Base
+from .validation import CodenameConstraint, FilenameConstraint, \
+    DigestConstraint, IPv4Constraint
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin

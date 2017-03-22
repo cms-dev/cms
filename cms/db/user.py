@@ -40,7 +40,7 @@ from sqlalchemy.orm import relationship, backref
 
 from cmscommon.crypto import generate_random_password
 
-from . import Base, Contest
+from . import Base, Contest, CodenameConstraint, IPv4Constraint
 
 
 class User(Base):
@@ -66,6 +66,7 @@ class User(Base):
     # Username and password to log in the CWS.
     username = Column(
         Unicode,
+        CodenameConstraint(),
         nullable=False,
         unique=True)
     password = Column(
@@ -123,6 +124,7 @@ class Team(Base):
     # Team code (e.g. the ISO 3166-1 code of a country)
     code = Column(
         Unicode,
+        CodenameConstraint(),
         nullable=False,
         unique=True)
 
@@ -149,6 +151,7 @@ class Participation(Base):
     # The user can log in CWS only from this IP address or subnet.
     ip = Column(
         Unicode,
+        IPv4Constraint(),
         nullable=True)
 
     # Starting time: for contests where every user has at most x hours
