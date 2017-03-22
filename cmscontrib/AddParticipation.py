@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -51,6 +51,11 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
     logger.info("Creating the user's participation in the database.")
     delay_time = delay_time if delay_time is not None else 0
     extra_time = extra_time if extra_time is not None else 0
+
+    if hidden:
+        logger.warning("The participation will be hidden")
+    if unrestricted:
+        logger.warning("The participation will be unrestricted")
 
     try:
         with SessionGen() as session:
@@ -111,9 +116,9 @@ def main():
                         help="how much additional time, in seconds")
     parser.add_argument("-t", "--team", action="store", type=utf8_decoder,
                         help="code of the team for this participation")
-    parser.add_argument("-n", "--hidden", action="store_true",
+    parser.add_argument("--hidden", action="store_true",
                         help="if the participation is hidden")
-    parser.add_argument("-u", "--unrestricted", action="store_true",
+    parser.add_argument("--unrestricted", action="store_true",
                         help="if the participation is unrestricted")
 
     args = parser.parse_args()
