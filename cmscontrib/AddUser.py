@@ -45,12 +45,12 @@ from sqlalchemy.exc import IntegrityError
 logger = logging.getLogger(__name__)
 
 
-def add_user(first_name, last_name, username, password, use_bcrypt, email,
-             timezone, preferred_languages):
+def add_user(first_name, last_name, username, password, use_bcrypt, is_raw,
+             email, timezone, preferred_languages):
     logger.info("Creating the user in the database.")
     if password is None:
         password = generate_random_password_with_method()
-    else:
+    elif not is_raw:
         method = "bcrypt" if use_bcrypt else "text"
         password = hash_password(password, method)
 
@@ -101,12 +101,15 @@ def main():
                         help="comma-separated list of preferred languages")
     parser.add_argument("-B", "--bcrypt", action="store_true",
                         help="use bcrypt to encrypt user password")
+    parser.add_argument("-r", "--raw", action="store_true",
+                        help="raw password")
 
     args = parser.parse_args()
 
     success = add_user(args.first_name, args.last_name,
                        args.username, args.password, args.bcrypt,
-                       args.email, args.timezone, args.languages)
+                       args.raw, args.email, args.timezone,
+                       args.languages)
     return 0 if success is True else 1
 
 
