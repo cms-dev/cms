@@ -37,7 +37,7 @@ import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, User
-from cmscommon.crypto import generate_random_password_with_method, \
+from cmscommon.crypto import generate_random_password_text, \
     hash_password
 
 from sqlalchemy.exc import IntegrityError
