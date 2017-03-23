@@ -199,6 +199,8 @@ class ParticipationHandler(BaseHandler):
                 participation.password = ""
         else:
             participation.method = "text"
+            participation.password = ""
+
         self.r_params["participation"] = participation
         self.r_params["selected_user"] = participation.user
         self.r_params["teams"] = self.sql_session.query(Team).all()
@@ -228,7 +230,7 @@ class ParticipationHandler(BaseHandler):
             password = attrs["password"]
             if password is not None:
                 attrs["password"] = hash_password(password, attrs["method"])
-                del attrs["method"]
+            del attrs["method"]
 
             self.get_ip_address_or_subnet(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
