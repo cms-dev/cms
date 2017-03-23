@@ -50,9 +50,7 @@ def make_gh_tree(app):
         full_url = 'https://github.com/cms-dev/cms/tree/v%s/%s' % (app.config.release, part)
 
         refnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
-        retnode = nodes.literal(role=typ.lower(), classes=[typ])
-        retnode += refnode
-        return [retnode], []
+        return [refnode], []
     return gh_tree
 
 def make_gh_blob(app):
@@ -64,9 +62,7 @@ def make_gh_blob(app):
         full_url = 'https://github.com/cms-dev/cms/blob/v%s/%s' % (app.config.release, part)
 
         refnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
-        retnode = nodes.literal(role=typ.lower(), classes=[typ])
-        retnode += refnode
-        return [retnode], []
+        return [refnode], []
     return gh_blob
 
 def setup_roles(app):

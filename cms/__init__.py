@@ -49,7 +49,7 @@ __all__ = [
 ]
 
 
-__version__ = '1.3.dev0'
+__version__ = '1.3.rc0'
 
 
 # Instantiate or import these objects.

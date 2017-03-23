@@ -59,7 +59,7 @@ There is only one parameter for OutputOnly tasks, namely how correctness of the 
 
 OutputOnly tasks usually have many uncorrelated files to be submitted. Contestants may submit the first output in a submission, and the second in another submission, but it is easy to forget  the first output in the other submission; it is also tedious to add every output every time. Hence, OutputOnly tasks have a feature that, if a submission lacks the output for a certain testcase, the current submission is completed with the most recently submitted output for that testcase (if it exists). This has the effect that contestants can work on a testcase at a time, submitting only what they did from the last submission.
 
-The submission format must contain all the filenames of the form :file:`output_{num}.txt` where :samp:`{num}` is a three digit decimal number (padded with zeroes, and goes from 0 (included) to the number of testcases (excluded). Again, you can add other files that are stored but ignored. For example, a valid submission format for an OutputOnly task with three testcases is ``["output_000.txt", "output_001.txt", "output_002.txt"]``.
+The submission format must contain all the filenames (one for each testcase) of the form :file:`output_{codename}.txt` where :samp:`{codename}` is the codename for the testcase. Again, you can add other files that are stored but ignored. For example, a valid submission format for an OutputOnly task with three testcases having codenames ``abc``, ``000`` and ``cms`` is ``["output_abc.txt", "output_000.txt", "output_cms.txt"]``.
 
 
 .. _tasktypes_communication:
