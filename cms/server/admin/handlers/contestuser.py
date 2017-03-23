@@ -175,11 +175,7 @@ class ParticipationHandler(BaseHandler):
     """
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id, user_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation = self.get_participation(contest_id, user_id)
 
         # Check that the participation is valid.
         if participation is None:
@@ -206,15 +202,29 @@ class ParticipationHandler(BaseHandler):
         self.r_params["teams"] = self.sql_session.query(Team).all()
         self.render("participation.html", **self.r_params)
 
+    def get_participation(self, contest_id, user_id):
+        """Sets the contest of the current object and return
+        the participation of the user in the contest with
+        the specified id.
+
+        contest_id (int): Id of the contest
+        user_id (int): Id of the user in the contest
+
+        return (participation): participation type object representing
+        the participation of the user in the contest
+        """
+        self.contest = self.safe_get_item(Contest, contest_id)
+        participation = self.sql_session.query(Participation) \
+            .filter(Participation.contest_id == contest_id) \
+            .filter(Participation.user_id == user_id) \
+            .first()
+        return participation
+
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id, user_id):
         fallback_page = "/contest/%s/user/%s/edit" % (contest_id, user_id)
 
-        self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation = self.get_participation(contest_id, user_id)
 
         # Check that the participation is valid.
         if participation is None:
@@ -227,9 +237,15 @@ class ParticipationHandler(BaseHandler):
             self.get_string(attrs, "method", empty="text")
             if "method" not in attrs:
                 attrs["method"] = "text"
+            method = attrs["method"]
             password = attrs["password"]
             if password is not None:
-                attrs["password"] = hash_password(password, attrs["method"])
+                attrs["password"] = hash_password(password, method)
+            elif method != "text":
+                # Preserve old password if password is empty
+                # and method is not text
+                attrs["password"] = participation.password
+
             del attrs["method"]
 
             self.get_ip_address_or_subnet(attrs, "ip")

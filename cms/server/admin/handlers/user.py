@@ -83,8 +83,16 @@ class UserHandler(BaseHandler):
             self.get_string(attrs, "method", empty="text")
             if "method" not in attrs:
                 attrs["method"] = "text"
-            attrs["password"] = hash_password(attrs["password"],
-                                              method=attrs["method"])
+
+            password = attrs["password"]
+            method = attrs["method"]
+            if method != "text" and password == "":
+                # Preserve old password if password is empty
+                # and method is not text
+                attrs["password"] = user.password
+            else:
+                attrs["password"] = hash_password(password, method)
+
             del attrs["method"]
             self.get_string(attrs, "email")
             self.get_string(attrs, "preferred_languages")
