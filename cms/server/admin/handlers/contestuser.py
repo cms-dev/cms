@@ -11,6 +11,7 @@
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,6 +40,7 @@ import tornado.web
 
 from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
+from cmscommon.crypto import parse_authentication, hash_password
 
 from .base import BaseHandler, require_permission
 
@@ -188,6 +190,15 @@ class ParticipationHandler(BaseHandler):
         page = int(self.get_query_argument("page", 0))
         self.render_params_for_submissions(submission_query, page)
 
+        if participation.password is not None:
+            method, payload = parse_authentication(participation.password)
+            participation.method = method
+            if method == 'text':
+                participation.password = payload
+            else:
+                participation.password = ""
+        else:
+            participation.method = "text"
         self.r_params["participation"] = participation
         self.r_params["selected_user"] = participation.user
         self.r_params["teams"] = self.sql_session.query(Team).all()
@@ -211,6 +222,14 @@ class ParticipationHandler(BaseHandler):
             attrs = participation.get_attrs()
 
             self.get_string(attrs, "password", empty=None)
+            self.get_string(attrs, "method", empty="text")
+            if "method" not in attrs:
+                attrs["method"] = "text"
+            password = attrs["password"]
+            if password is not None:
+                attrs["password"] = hash_password(password, attrs["method"])
+                del attrs["method"]
+
             self.get_ip_address_or_subnet(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")

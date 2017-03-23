@@ -97,7 +97,15 @@
           Password
         </td>
         <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ user.password }}"/></td>
+        <td><input type="text" name="password"
+                   value="{{ user.password }}"
+                   placeholder="{{ 'Password is encrypted. Type the password here to change it' if user.method != 'text' else '' }}"/>
+        <select name="method">
+            <option value="text">text</option>
+            <option value="bcrypt">bcrypt</option>
+          </select>
+          <script>$("[name='method']").val("{{ user.method }}");</script>
+        </td>
       </tr>
       <tr>
         <td>
