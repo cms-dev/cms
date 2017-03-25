@@ -13,10 +13,15 @@ sudo: required
 
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y build-essential php5-cli haskell-platform
+  - sudo apt-get install -y build-essential php5-cli haskell-platform curl
   - sudo apt-get install -y fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl
   - sudo apt-get install -y postgresql-client gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite
   - sudo apt-get install -y python-dev libpq-dev libcups2-dev libyaml-dev
+
+  - curl https://sh.rustup.rs -sSf > rustup.sh
+  - chmod +x rustup.sh
+  - ./rustup.sh -y
+  - export PATH="$PATH:$HOME/.cargo/bin"
 
   - cp ./config/cms.conf.sample ./config/cms.conf
   - sudo ./prerequisites.py install -y
