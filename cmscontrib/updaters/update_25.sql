@@ -9,6 +9,7 @@ begin
     execute format('update %s set %s = regexp_replace(%s, ''(,|^)php(,|$)'', ''\1PHP\2'')', tbl, par, par);
     execute format('update %s set %s = regexp_replace(%s, ''(,|^)java(,|$)'', ''\1Java 1.4 / gcj\2'')', tbl, par, par);
     execute format('update %s set %s = regexp_replace(%s, ''(,|^)hs(,|$)'', ''\1Haskell / ghc\2'')', tbl, par, par);
+    execute format('update %s set %s = regexp_replace(%s, ''(,|^)rs(,|$)'', ''\1Rust\2'')', tbl, par, par);
 end
 $$ language plpgsql;
 

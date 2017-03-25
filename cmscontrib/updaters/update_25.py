@@ -43,6 +43,7 @@ LANGUAGE_MAP = {
     "php": "PHP",
     "java": "Java 1.4 / gcj",
     "hs": "Haskell / ghc",
+    "rs": "Rust"
 }
 
 
