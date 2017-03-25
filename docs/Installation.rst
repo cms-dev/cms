@@ -44,7 +44,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
-* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
+* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``);
+
+* `Rust <https://www.rust-lang.org/>`_ (for Rust, with executable ``rustc``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
