@@ -22,6 +22,8 @@ install:
   - chmod +x rustup.sh
   - ./rustup.sh -y
   - export PATH="$PATH:$HOME/.cargo/bin"
+  - rustup toolchain install stable
+  - rustup default stable
 
   - cp ./config/cms.conf.sample ./config/cms.conf
   - sudo ./prerequisites.py install -y
