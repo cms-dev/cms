@@ -658,11 +658,14 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
  * Sends a request and on success redirect to the page
  * specified in the response, if present.
  */
-CMS.AWSUtils.ajax_edit_request = function(type, url) {
+CMS.AWSUtils.ajax_edit_request = function(type, url, data) {
     var settings = {
         "type": type,
-        headers: {"X-XSRFToken": get_cookie("_xsrf")}
+        headers: {"X-XSRFToken": get_cookie("_xsrf")},
     };
+    if (typeof data !== 'undefined') {
+        settings.data = data;
+    }
     settings["success"] = function(data_redirect_url) {
         if (data_redirect_url) {
             window.location.replace(data_redirect_url);
@@ -676,8 +679,8 @@ CMS.AWSUtils.ajax_edit_request = function(type, url) {
  * Sends a delete request and on success redirect to the page
  * specified in the response, if present.
  */
-CMS.AWSUtils.ajax_delete = function(url) {
-    CMS.AWSUtils.ajax_edit_request("DELETE", url);
+CMS.AWSUtils.ajax_delete = function(url, data) {
+    CMS.AWSUtils.ajax_edit_request("DELETE", url, data);
 };
 
 

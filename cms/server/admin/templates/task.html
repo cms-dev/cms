@@ -453,10 +453,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           var str = "";
           str += sel[0];
           for (var i = 1; i < sel.length; i++)
-              str += '-' + sel[i];
-          CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/testcase/' + str + '/delete');
-          // TODO: Remove this
-          console.log(str + " sent");
+              str += ',' + sel[i];
+          var data = 'selected_testcases=' + str;
+          CMS.AWSUtils.ajax_delete("{{ url_root }}/dataset/{{ dataset.id }}/testcases/delete", data);
       }
   </script>
 
@@ -465,7 +464,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if current_user.permission_all %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
-      <a href="" onclick="sendDeleteTestcases()">Delete selected testcases</a>
+      <input type="button" onclick="sendDeleteTestcases()">Delete selected testcases</input>
 {% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/download">Download all testcases</a>
       <table class="bordered" style="text-align:center">

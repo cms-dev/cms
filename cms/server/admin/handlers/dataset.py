@@ -549,19 +549,24 @@ class DeleteTestcasesHandler(BaseHandler):
 
     """
     @require_permission(BaseHandler.PERMISSION_ALL)
-    def delete(self, dataset_id, testcase_list_str):
-        dataset = self.safe_get_item(Dataset, dataset_id)
+    def delete(self, dataset_id):
+        testcase_list_str = str(self.get_argument('selected_testcases', "None"))
 
-        testcase_list = testcase_list_str.split('-')
+        # Protect against requests providing incompatible parameters.
+        if testcase_list_str == 'None':
+            raise tornado.web.HTTPError(404)
+
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        testcase_list = testcase_list_str.split(',')
         task_id = -1
         for testcase_id in testcase_list:
-            # Protect against URLs providing incompatible parameters.
+            # Protect against requests providing incompatible parameters.
             if not testcase_id:
                 continue
 
             testcase = self.safe_get_item(Testcase, testcase_id)
 
-            # Protect against URLs providing incompatible parameters.
+            # Protect against requests providing incompatible parameters.
             if dataset is not testcase.dataset:
                 raise tornado.web.HTTPError(404)
 
