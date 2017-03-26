@@ -426,11 +426,46 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
   <!-- Test cases for this dataset -->
 
+  <script type="text/javascript">
+      selectedTestcases = [];
+      function addSelectedTestcases(testcase_id)
+      {
+          for (var i = 0; i < selectedTestcases.length; i++)
+              if (selectedTestcases[i] == testcase_id)
+              {
+                  selectedTestcases[i] = -1;
+                  return;
+              }
+          selectedTestcases[selectedTestcases.length] = testcase_id;
+      }
+
+      function sendDeleteTestcases()
+      {
+          var sel = [];
+          for (var i = 0; i < selectedTestcases.length; i++)
+              if (selectedTestcases[i] != -1)
+                  sel[sel.length] = selectedTestcases[i];
+          if (sel.length < 1)
+          {
+              alert("Please select at least one testcase to delete!");
+              return;
+          }
+          var str = "";
+          str += sel[0];
+          for (var i = 1; i < sel.length; i++)
+              str += '-' + sel[i];
+          CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/testcase/' + str + '/delete');
+          // TODO: Remove this
+          console.log(str + " sent");
+      }
+  </script>
+
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
 {% if current_user.permission_all %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
+      <a href="" onclick="sendDeleteTestcases()">Delete selected testcases</a>
 {% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/download">Download all testcases</a>
       <table class="bordered" style="text-align:center">
@@ -461,7 +496,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.output }}/output_{{ testcase.codename }}')">Show output</a>
             </td>
             <td>
-              <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete');">Delete</a>
+                <input type="checkbox" name="testcase_{{ testcase.id }}_delete" onchange="addSelectedTestcases({{ testcase.id }})" />
             </td>
           </tr>
           {% end %}
