@@ -656,7 +656,8 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
 
 /**
  * Sends a request and on success redirect to the page
- * specified in the response, if present.
+ * specified in the response, if present. Passing the variable
+ * 'data' to the function is optional.
  */
 CMS.AWSUtils.ajax_edit_request = function(type, url, data) {
     var settings = {
@@ -677,7 +678,8 @@ CMS.AWSUtils.ajax_edit_request = function(type, url, data) {
 
 /**
  * Sends a delete request and on success redirect to the page
- * specified in the response, if present.
+ * specified in the response, if present. Passing the variable
+ * 'data' to the function is optional.
  */
 CMS.AWSUtils.ajax_delete = function(url, data) {
     CMS.AWSUtils.ajax_edit_request("DELETE", url, data);
@@ -685,9 +687,11 @@ CMS.AWSUtils.ajax_delete = function(url, data) {
 
 
 /**
- * Sends a post request and on success. See AWSUtils.ajax_request
+ * Sends a post request and on success redirect to the page
+ * specified in the response, if present. Passing the variable
+ * 'data' to the function is optional. See AWSUtils.ajax_request
  * for more details.
  */
-CMS.AWSUtils.ajax_post = function(url) {
-    CMS.AWSUtils.ajax_edit_request("POST", url);
+CMS.AWSUtils.ajax_post = function(url, data) {
+    CMS.AWSUtils.ajax_edit_request("POST", url, data);
 };

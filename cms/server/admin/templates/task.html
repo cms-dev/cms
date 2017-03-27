@@ -454,7 +454,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           str += sel[0];
           for (var i = 1; i < sel.length; i++)
               str += ',' + sel[i];
-          var data = 'selected_testcases=' + str;
+          var data = {selected_testcases: str};
           CMS.AWSUtils.ajax_delete("{{ url_root }}/dataset/{{ dataset.id }}/testcases/delete", data);
       }
   </script>
