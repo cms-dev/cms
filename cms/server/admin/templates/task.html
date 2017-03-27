@@ -464,7 +464,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if current_user.permission_all %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
-      <input type="button" onclick="sendDeleteTestcases()">Delete selected testcases</input>
+      <a href="javascript:void(0);" onclick="sendDeleteTestcases()">Delete selected testcases</a>
 {% end %}
       <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/download">Download all testcases</a>
       <table class="bordered" style="text-align:center">
