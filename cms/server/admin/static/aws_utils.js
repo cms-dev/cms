@@ -662,7 +662,7 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
 CMS.AWSUtils.ajax_edit_request = function(type, url, data) {
     var settings = {
         "type": type,
-        headers: {"X-XSRFToken": get_cookie("_xsrf")},
+        headers: {"X-XSRFToken": get_cookie("_xsrf")}
     };
     if (typeof data !== 'undefined') {
         settings.data = data;

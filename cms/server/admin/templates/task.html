@@ -450,11 +450,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               alert("Please select at least one testcase to delete!");
               return;
           }
-          var str = "";
-          str += sel[0];
-          for (var i = 1; i < sel.length; i++)
-              str += ',' + sel[i];
-          var data = {selected_testcases: str};
+          var data = {'selected_testcases': JSON.stringify(sel)};
           CMS.AWSUtils.ajax_delete("{{ url_root }}/dataset/{{ dataset.id }}/testcases/delete", data);
       }
   </script>

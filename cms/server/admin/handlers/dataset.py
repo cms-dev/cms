@@ -550,14 +550,14 @@ class DeleteTestcasesHandler(BaseHandler):
     """
     @require_permission(BaseHandler.PERMISSION_ALL)
     def delete(self, dataset_id):
-        testcase_list_str = str(self.get_argument('selected_testcases', "None"))
+        testcase_json = self.get_argument('selected_testcases', None)
 
         # Protect against requests providing incompatible parameters.
-        if testcase_list_str == 'None':
+        if testcase_json is None:
             raise tornado.web.HTTPError(404)
 
         dataset = self.safe_get_item(Dataset, dataset_id)
-        testcase_list = testcase_list_str.split(',')
+        testcase_list = json.loads(testcase_json)
         task_id = -1
         for testcase_id in testcase_list:
             # Protect against requests providing incompatible parameters.
