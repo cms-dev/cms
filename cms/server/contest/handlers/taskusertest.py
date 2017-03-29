@@ -73,7 +73,7 @@ class UserTestInterfaceHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(404)
 
         user_tests = dict()
         user_tests_left = dict()
@@ -145,7 +145,7 @@ class UserTestHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(404)
 
         try:
             task = self.contest.get_task(task_name)

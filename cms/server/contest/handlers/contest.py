@@ -41,6 +41,8 @@ import struct
 
 from datetime import timedelta
 
+import tornado.web
+
 from sqlalchemy.orm import contains_eager
 from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
@@ -50,8 +52,11 @@ from cms.db import Contest, Participation, User
 from cms.server import compute_actual_phase, file_handler_gen
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
+from cmscommon.isocodes import translate_language_code, \
+    translate_language_country_code
 
 from .base import BaseHandler
+
 
 logger = logging.getLogger(__name__)
 
@@ -91,35 +96,37 @@ class ContestHandler(BaseHandler):
 
     Most of the RequestHandler classes in this application will be a
     child of this class.
+
     """
     def prepare(self):
         super(ContestHandler, self).prepare()
 
         self.choose_contest()
 
-    def choose_contest(self, contest_name=None):
-        if self.application.service.contest is None:
-            if contest_name is None:
-                # Choose the contest found in the path argument
-                # see: https://github.com/tornadoweb/tornado/issues/1673
-                contest_name = self.path_args[0]
+    def choose_contest(self):
+        """Fill self.contest using contest passed as argument or path.
+
+        If a contest was specified as argument to CWS, fill
+        self.contest with that; otherwise extract it from the URL path.
+
+        """
+        if self.is_multi_contest():
+            # Choose the contest found in the path argument
+            # see: https://github.com/tornadoweb/tornado/issues/1673
+            contest_name = self.path_args[0]
 
             # Select the correct contest or return an error
             try:
                 self.contest = self.contest_list[contest_name]
             except KeyError:
-                # The right thing here would be:
-                #    raise tornado.web.HTTPError(404)
-                # however, that would make the "error.html" page fail because
-                # there is no self.contest available
-
-                # So, let's return to the contest list
-                self.redirect("/")
-                return
+                self.contest = Contest(
+                    name=contest_name, description=contest_name)
+                self.r_params = self.render_params()
+                raise tornado.web.HTTPError(404)
         else:
             # Select the contest specified on the command line
-            self.contest = Contest.get_from_id(self.application.service.contest,
-                                               self.sql_session)
+            self.contest = Contest.get_from_id(
+                self.application.service.contest_id, self.sql_session)
 
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name
@@ -129,11 +136,17 @@ class ContestHandler(BaseHandler):
         ret = super(ContestHandler, self).render_params()
 
         ret["contest"] = self.contest
+
+        # Relative path to the root of the contest (e.g. ../../<contest_name>)
         ret["contest_root"] = ret["url_root"]
+        # Absolute path to the root of the contest within the
+        # application, regardless of the actual external URL
+        # (e.g. /<contest_name>).
         ret["real_contest_root"] = "/"
-        if self.application.service.contest is None:
+        if self.is_multi_contest():
             ret["contest_root"] += "/" + self.contest.name
             ret["real_contest_root"] += self.contest.name
+
         ret["phase"] = self.contest.phase(self.timestamp)
 
         ret["printing_enabled"] = (config.printer is not None)

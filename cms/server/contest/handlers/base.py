@@ -74,10 +74,12 @@ class BaseHandler(CommonRequestHandler):
         self._ = self.locale.translate
 
         # We need this to be computed for each request because we want to be
-        # able to import new contests without having to restart CWS.
+        # able to import new contests without having to restart CWS. But only
+        # in multi-contest mode.
         self.contest_list = {}
-        for contest in self.sql_session.query(Contest).all():
-            self.contest_list[contest.name] = contest
+        if self.is_multi_contest():
+            for contest in self.sql_session.query(Contest).all():
+                self.contest_list[contest.name] = contest
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
@@ -134,17 +136,27 @@ class BaseHandler(CommonRequestHandler):
             self.write("A critical error has occurred :-(")
             self.finish()
 
+    def is_multi_contest(self):
+        """Return whether CWS serves all contests."""
+        return self.application.service.contest_id is None
+
 
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
     """Handle files which may be gzip-compressed on the filesystem.
 
     """
-    def get_absolute_path(self, root, path):
-        if self.application.service.contest is None:
-            # The path argument is actually contest_name, so we don't use it
+    def is_multi_contest(self):
+        """Return whether CWS serves all contests."""
+        return self.application.service.contest_id is None
+
+    def get_absolute_path(self, root, path_or_contest_name):
+        if self.is_multi_contest():
+            # In multi contest mode, the second argument is the contest name,
+            # and we retrieve the file path from path_args.
             return os.path.abspath(os.path.join(root, self.path_args[1]))
         else:
-            return os.path.abspath(os.path.join(root, path))
+            # Otherwise, we can just use the second argument.
+            return os.path.abspath(os.path.join(root, path_or_contest_name))
 
     def validate_absolute_path(self, root, absolute_path):
         self.is_gzipped = False
