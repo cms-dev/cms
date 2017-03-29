@@ -181,14 +181,18 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
             actual_start, actual_stop)
 
 
+# TODO: multi_contest and actual_phase_required are only relevant for CWS
+
+
 def multi_contest(f):
     """Return decorator allowing not to specify the "contest_name"
     parameter, whenever a method requires it.
 
     """
+    @wraps(f)
     def wrapped_f(*args):
-        # If no contest was selected
-        if args[0].application.service.contest is None:
+        # args[0] is the instance of the handler
+        if args[0].is_multi_contest():
             # Send all URL parameters
             f(*args)
         else:

@@ -63,7 +63,7 @@ class ContestWebServer(WebService):
     """Service that runs the web server serving the contestants.
 
     """
-    def __init__(self, shard, contest=None):
+    def __init__(self, shard, contest_id=None):
         parameters = {
             "template_path": pkg_resources.resource_filename(
                 "cms.server.contest", "templates"),
@@ -85,10 +85,9 @@ class ContestWebServer(WebService):
                               "contest_listen_address and contest_listen_port "
                               "in cms.conf." % __name__)
 
-        self.contest = contest
-        del contest
+        self.contest_id = contest_id
 
-        if self.contest is None:
+        if self.contest_id is None:
             HANDLERS.append((r"", MainHandler))
             handlers = [(r'/', BaseHandler)]
             for h in HANDLERS:

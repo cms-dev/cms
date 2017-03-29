@@ -248,7 +248,7 @@ class PrintingHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            raise tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(404)
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -270,7 +270,7 @@ class PrintingHandler(ContestHandler):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            raise tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(404)
 
         fallback_page = os.path.join(self.r_params["real_contest_root"],
                                      "printing")
