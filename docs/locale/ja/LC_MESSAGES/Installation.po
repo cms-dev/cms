@@ -1,0 +1,202 @@
+# Japanese translations for CMS package.
+# Copyright (C) 2013, The CMS development team
+# This file is distributed under the same license as the CMS package.
+# U-QNIGHY-TOUKA\qnighy <ackie.h.gmai@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CMS 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-03-01 08:16\n"
+"PO-Revision-Date: 2013-03-01 17:36+0900\n"
+"Last-Translator: U-QNIGHY-TOUKA\\qnighy <ackie.h.gmai@gmail.com>\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# 1c29845e62ed41ca82565bd9e1647694
+#: ..\..\Installation.rst:2
+msgid "Installation"
+msgstr "インストール"
+
+# f3f8df52cea742f08afcf15e7a09507e
+#: ..\..\Installation.rst:7
+msgid "Dependencies"
+msgstr "依存関係"
+
+# de358e43860b41d4ba87b2270b66bf72
+#: ..\..\Installation.rst:9
+msgid ""
+"These are our requirements (in particular we highlight those that are not "
+"usually installed by default) - previous versions may or may not work:"
+msgstr "依存関係は以下の通りです。(特に、普通デフォルトではインストールされていないものをハイライトしています。) ここに記載されているより古いバージョンでは動くかもしれないし、動かないかもしれません。"
+
+# 4ef458f30e284c7cac8f3518362ef193
+#: ..\..\Installation.rst:11
+msgid ""
+"build environment for the programming languages allowed in the competition;"
+msgstr "競技で使用を許可するそれぞれのプログラミング言語のためのビルド環境。"
+
+# 528bc9b100504d2ca7b0f6176c4a3d21
+#: ..\..\Installation.rst:13
+msgid "`PostgreSQL <http://www.postgresql.org/>`_ >= 8.4;"
+msgstr ""
+
+# e15eeb98787a4076addd7ae6cb4442e8
+#: ..\..\Installation.rst:15
+msgid "`gettext <http://www.gnu.org/software/gettext/>`_ >= 0.18;"
+msgstr ""
+
+# 2c38c14050944671915af0f486adb170
+#: ..\..\Installation.rst:17
+msgid "`Python <http://www.python.org/>`_ >= 2.7, < 3.0;"
+msgstr ""
+
+# d8a3dffd8f424ddaa49d6b7498ef3098
+#: ..\..\Installation.rst:19
+msgid "`setuptools <http://pypi.python.org/pypi/setuptools>`_ >= 0.6;"
+msgstr ""
+
+# 8bbc041fc7dd4800a469c66ac015081f
+#: ..\..\Installation.rst:21
+msgid "`Tornado <http://www.tornadoweb.org/>`_ >= 2.0;"
+msgstr ""
+
+# 834e7b1717db4bb19298702057babba5
+#: ..\..\Installation.rst:23
+msgid "`Psycopg <http://initd.org/psycopg/>`_ >= 2.4;"
+msgstr ""
+
+# a321bd1d6cc547928a2bb45fc0ed375c
+#: ..\..\Installation.rst:25
+msgid "`simplejson <https://github.com/simplejson/simplejson>`_ >= 2.1;"
+msgstr ""
+
+# 72a345b2b925434cbf66ea27dba1482f
+#: ..\..\Installation.rst:27
+msgid "`SQLAlchemy <http://www.sqlalchemy.org/>`_ >= 0.7;"
+msgstr ""
+
+# 5fc49ba2ba124c6ca7d1101b891b0718
+#: ..\..\Installation.rst:29
+msgid "`psutil <https://code.google.com/p/psutil/>`_ >= 0.2;"
+msgstr ""
+
+# 804a07eddc0c4294bab04dcca6f2d7b4
+#: ..\..\Installation.rst:31
+msgid "`netifaces <http://alastairs-place.net/projects/netifaces/>`_ >= 0.5;"
+msgstr ""
+
+# 02686a08388e4b7a8f07444f9a536cbe
+#: ..\..\Installation.rst:33
+msgid "`PyCrypto <https://www.dlitz.net/software/pycrypto/>`_ >= 2.3;"
+msgstr ""
+
+# 7fa760c7fcc34d25a4ddac7e9cd62d6b
+#: ..\..\Installation.rst:35
+msgid "`pytz <http://pytz.sourceforge.net/>`_;"
+msgstr ""
+
+# c8cdd95e2a6c41019c955be919661571
+#: ..\..\Installation.rst:37
+msgid "`iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;"
+msgstr ""
+
+# 3be7183c6d294dd2ad6b7c31e79f3ad6
+#: ..\..\Installation.rst:39
+msgid ""
+"`shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;"
+msgstr ""
+
+# d75d8e3c04f048e1896c5f995d4ea02f
+#: ..\..\Installation.rst:41
+msgid ""
+"`PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for YamlImporter);"
+msgstr ""
+
+# 0c3b7ac5cb824e9d901ea594709bd8d7
+#: ..\..\Installation.rst:43
+msgid ""
+"`BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_ >= 3.2 "
+"(only for running tests);"
+msgstr ""
+
+# 6977f8d423a54828b6c34eb7f8dfdf65
+#: ..\..\Installation.rst:45
+msgid ""
+"`mechanize <http://wwwsearch.sourceforge.net/mechanize/>`_ >= 0.2 (only for "
+"running tests);"
+msgstr ""
+
+# 645f57511b9f46c8beb4c55935651933
+#: ..\..\Installation.rst:47
+msgid ""
+"`coverage <http://nedbatchelder.com/code/coverage/>`_ >= 3.4 (only for "
+"running tests);"
+msgstr ""
+
+# be053d009e8645b0ab9b05a51c88cd4f
+#: ..\..\Installation.rst:49
+msgid "`Sphinx <http://sphinx-doc.org/>`_ (only for building documentation)."
+msgstr ""
+
+# fa852d999b084e98947e5aa4b00d5ca8
+#: ..\..\Installation.rst:51
+msgid ""
+"On Ubuntu 12.04, one will need to run the following script to satisfy all "
+"dependencies:"
+msgstr "Ubuntu 12.04では、全ての依存関係を満たすために以下のスクリプトを実行するといいかもしれません："
+
+# 60cb94be7d5b4494b225755152459b64
+#: ..\..\Installation.rst:64
+msgid ""
+"On Arch Linux, the following command will install almost all dependencies "
+"(two of them can be found in the AUR):"
+msgstr "Arch Linuxでは、以下のコマンドを実行することでほとんど全ての依存関係をインストールできるでしょう (これらのうち2つはAURにあります)："
+
+# a0e79c06be9e4d43809d7352e8b1ee93
+#: ..\..\Installation.rst:81
+msgid ""
+"If you prefer using Python Package Index, you can retrieve all Python "
+"dependencies with this line:"
+msgstr "Python Package Index (PIP) を使ってインストールしたい場合は、Pythonに関係する依存関係を以下のコマンドでインストールすることができます："
+
+# bb465874efd544b98d519e196f276689
+#: ..\..\Installation.rst:89
+msgid "Installing CMS"
+msgstr "CMSのインストール"
+
+# f70b7962b44049c8a0e963b777cc7c4d
+#: ..\..\Installation.rst:91
+msgid ""
+"You can download CMS |release| from :gh_download:`GitHub` and extract it on "
+"your filesystem. After that, you can install it (recommended, not necessary "
+"though):"
+msgstr "CMS |release| を :gh_download:`GitHub` からダウンロードできるので、これをファイルシステム上に展開してください。そのあと、次のようにしてインストールできます (インストールが推奨されているが、必ず必要というわけではない) ："
+
+# fb626cdbd9f548038bdd2d6a3a65c28d
+#: ..\..\Installation.rst:98
+msgid ""
+"If you install CMS, you also need to add your user to the ``cmsuser`` group "
+"and logout to make the change effective:"
+msgstr "CMSをインストールして使うときは、ユーザーを ``cmsuser`` グループに追加し、変更を反映するためにいったんログアウトする必要があります："
+
+# 584312c0d273476d9a11dc83843dccb3
+#: ..\..\Installation.rst:104
+msgid "You can verify to be in the group by issuing the command:"
+msgstr "自分のユーザーが ``cmsuser`` グループに追加されたことを確認するには、以下のコマンドを実行します："
+
+# 60572a03a0944b1bb211335d7cf95b32
+#: ..\..\Installation.rst:114
+msgid "Updating CMS"
+msgstr "CMSのアップデート"
+
+# 5345fb6afe0246eb9c842265abf02669
+#: ..\..\Installation.rst:116
+msgid ""
+"If you were using CMS before the release of version |release|, you can "
+"update the content of your database with:"
+msgstr "リリースバージョン |release| より前にCMSを使っていたならば、データベースの中身を以下のようにしてアップデートできます："

@@ -1,0 +1,321 @@
+# Japanese translations for CMS package.
+# Copyright (C) 2013, The CMS development team
+# This file is distributed under the same license as the CMS package.
+# U-QNIGHY-TOUKA\qnighy <ackie.h.gmai@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CMS 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-03-01 08:16\n"
+"PO-Revision-Date: 2013-03-01 17:37+0900\n"
+"Last-Translator: U-QNIGHY-TOUKA\\qnighy <ackie.h.gmai@gmail.com>\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# 5b51d130b85f4ef1a5b289a2d7485886
+# 36d1fd4a4c9c4affa3453805561455c6
+#: ..\..\Running CMS.rst:2 CMS.rst:51
+msgid "Running CMS"
+msgstr "CMSの実行"
+
+# 048cfb090459477d83e96268f3c598dd
+#: ..\..\Running CMS.rst:5
+msgid "Configuring the DB"
+msgstr "データベースの設定"
+
+# 0fd5a21e62174ddab81ae25989e66502
+#: ..\..\Running CMS.rst:7
+msgid ""
+"The first thing to do is to create the user and the database. For "
+"PostgreSQL, this is obtained with the following commands (note that the user "
+"doesn't need to be a superuser, nor be able to create databases nor roles):"
+msgstr "はじめに、ユーザーとデータベースを作成します。PostgreSQLでは、以下のコマンドでそれを行えます。 (ユーザーはスーパーユーザーである必要もなければ、データベースを作る権限やロールを作る権限も必要でないことに注意してください。)"
+
+# ec2bc8fb57b14ba7aac0bae96e895081
+#: ..\..\Running CMS.rst:15
+msgid ""
+"If you are going to use CMS services on different hosts from the one where "
+"PostgreSQL is running, you also need to instruct it to accept the "
+"connections from the services. To do so, you need to change the listening "
+"address of PostgreSQL in :file:`postgresql.conf`, for example like this::"
+msgstr "PostgreSQLが実行されているものとは異なるホストでCMSサービスを実行しようとしている場合は、PostgreSQLがそれらのサービスからの接続を受け入れるように設定する必要があります。そのためには、 :file:`postgresql.conf` に書かれているPostgreSQLの接続待ちのアドレスを、例えば次のように変更する必要があります："
+
+# 4498f2e3751846519f3c2b3a1a2eb9c5
+#: ..\..\Running CMS.rst:19
+msgid ""
+"Moreover, you need to change the HBA (a sort of access control list for "
+"PostgreSQL) to accept login requests from outside localhost. Open the file :"
+"file:`pg_hba.conf` and add a line like this one::"
+msgstr "それに加えて、localhost以外からのログイン要求を受け入れるために、HBA (PostgresqlにおけるACL、アクセス制御リストのようなもの) を変更する必要があります。ファイル :file:`pg_hba.conf` を開いて、次のような行を追加します："
+
+# d9215b797a744d179cf33e04adbcb9f1
+#: ..\..\Running CMS.rst:25
+msgid "Configuring CMS"
+msgstr "CMSの設定"
+
+# 0dd6761bbded4c07840f710b6fd31336
+#: ..\..\Running CMS.rst:27
+msgid ""
+"There are two configuration files, one for CMS itself and one for the "
+"rankings. Samples for both files are in the directory :gh_tree:`examples/`. "
+"You want to copy them to the same file names but without the ``.sample`` "
+"suffix (that is, to :file:`examples/cms.conf` and :file:`examples/cms."
+"ranking.conf`) before modifying them."
+msgstr "CMSには、CMS自身の設定をするファイルとランキングサーバーの設定をするファイルの、2種類の設定ファイルがあります。どちらのファイルも、サンプルがディレクトリ :gh_tree:`examples/` に入っています。まずこれを、末尾の ``.sample`` を取り除いたファイル名 (つまり、 :file:`examples/cms.conf` および :file:`examples/cms.ranking.conf` )にコピーし、それからそのファイルを編集します。"
+
+# 90793b11c92b440bbf6505a589bba56d
+#: ..\..\Running CMS.rst:29
+msgid ""
+":file:`cms.conf` is intended to be the same on all servers; all "
+"configurations are explained in the file; of particular importance is the "
+"definition of ``core_services``, that specifies where the services are going "
+"to be run, and how many of them, and the connecting line for the database, "
+"in which you need to specify the name of the user created above and its "
+"password."
+msgstr ":file:`cms.conf` は全てのサーバーで同じファイルを使うことが意図されています。全ての設定項目はファイルの中に説明があります。特に重要なのが ``core_services`` の定義です。これはそれぞれのサービスがどこで、いくつ実行されるかが説明されています。また、 ``database`` では、データベースとの接続方法を指定しています。ここでは、先ほど作成したユーザーとそのパスワードを指定する必要があります。"
+
+# 7185e1a551cf48bb9f856d32dbd48ad2
+#: ..\..\Running CMS.rst:31
+msgid ""
+":file:`cms.ranking.conf` is intended to be different on each server that "
+"will host a ranking. The addresses and log-in information of each ranking "
+"must be the same as the ones found in :file:`cms.conf`."
+msgstr ":file:`cms.ranking.conf` はランキングを提供するサーバーごとに異なる内容を使うことが意図されています。ただし、それぞれのランキングサーバーの設定ファイルにあるアドレスとログイン情報は、:file:`cms.conf` の中にあるものと同じでなければいけません。"
+
+# bb68e7b27a2b4c67b118acb4ad25b372
+#: ..\..\Running CMS.rst:33
+msgid ""
+"These files are a pretty good starting point if you want to try CMS. There "
+"are some mandatory changes to do though:"
+msgstr "このサンプルファイルは、CMSを試すにあたってはよいスタート地点となるでしょう。しかし、いくつか必ず変更しなければいけない点があります："
+
+# 8c57609bd6b2449ca7a2f94b32c3207f
+#: ..\..\Running CMS.rst:35
+msgid ""
+"you must change the connection string given in ``database``; this usually "
+"means to change username and password with the ones you chose before;"
+msgstr "``database`` で指定されている接続情報を変更する必要があります。これは普通、ユーザー名とパスワードを、先ほど設定したものに変更することになります。"
+
+# 3eae937f8c9c418c9119cc56a8993f39
+#: ..\..\Running CMS.rst:37
+msgid ""
+"if you are running low on disk space, you may want to change "
+"``keep_sandbox`` to ``false``;"
+msgstr "ディスクの容量が少ない環境でCMSを動かす場合は、 ``keep_sandbox`` を ``false`` に設定したほうがよいかもしれません。"
+
+# e8450e17c4cf4b68a58d050768222860
+#: ..\..\Running CMS.rst:39
+msgid ""
+"if you want to run CMS without installing it, you need to change "
+"``process_cmdline`` to reflect that."
+msgstr "CMSをインストールせずに動かしたい場合は、 ``process_cmdline`` を適切な値に設定する必要があります。"
+
+# 38d5e77f2c7f4df79d4da060f079f26d
+#: ..\..\Running CMS.rst:41
+msgid ""
+"If you are organizing a real contest, you must change ``secret_key`` from "
+"the default, and also you will need to think about how to distribute your "
+"services and change accordingly ``core_services``. Finally, you should "
+"change the ranking section of :file:`cms.conf`, and :file:`cms.ranking."
+"conf`, to use a non-trivial username and password."
+msgstr "もし実際にコンテストを運営する場合には、 ``secret_key`` をデフォルト以外の値に変更しなければいけません。また、サービスを複数のマシンにどのように分散させるかを考えて、それにあわせて ``core_services`` の項目を変更する必要があるでしょう。最後に、 :file:`cms.conf` のランキング関係の項目と、 :file:`cms.ranking.conf` の対応する項目を、すぐには破られないようなユーザー名とパスワードを使うよう変更するべきです。"
+
+# ecd9d8fc68ea4cf881b0756842035a68
+#: ..\..\Running CMS.rst:43
+msgid ""
+"After having modified :file:`cms.conf` and :file:`cms.ranking.conf` in :"
+"gh_tree:`examples/`, you can reinstall CMS in order to make these changes "
+"effective, with"
+msgstr "gh_tree:`examples/` 中の :file:`cms.conf` と :file:`cms.ranking.conf` を変更しおえたら、変更を反映するためにCMSをもう一度インストールします："
+
+# ee1dfa451bcf45639b7f844607c6c9d7
+#: ..\..\Running CMS.rst:53
+msgid ""
+"Here we will assume you installed CMS. If not, you should replace all "
+"commands path with the appropriate local versions (for example, "
+"``cmsLogService`` becomes ``./cms/service/LogService.py``)."
+msgstr "ここから先はCMSをインストールしていた場合を仮定しています。もしインストールしないときは、コマンドのパスを対応するローカルのファイル (例えば、 ``cmsLogService`` を ``./cms/service/LogService.py`` にする) で置き換えます。"
+
+# ba5e82dc51d4472e8228372489130589
+#: ..\..\Running CMS.rst:55
+msgid ""
+"At this point, you should have CMS installed on all the machines you want "
+"run services on, with the same configuration file, and a running PostgreSQL "
+"instance. To run CMS, you need a contest in the database. To create a "
+"contest, follow :doc:`these instructions <Creating a contest>`."
+msgstr "この時点で、CMSのサービスを動かす予定の全てのマシンに、CMSが同一の設定ファイルとともにインストールされていて、PostgreSQLが動作しているはずです。CMSを動かすには、データベース内にコンテストがある必要があります。コンテストを作成するには、:doc:`この指示 <Creating a contest>` に従ってください。"
+
+# 59547ce042a343f7bd9b7eb5a107efaa
+#: ..\..\Running CMS.rst:57
+msgid ""
+"CMS is composed of a number of services, potentially replicated several "
+"times, and running on several machines. You can run all the services by "
+"hand, but this is a tedious task. Luckily, there is a service "
+"(ResourceService) that takes care of starting all the services on the "
+"machine it is running, limiting thus the number of binaries you have to run. "
+"Services started by ResourceService do not show their logs to the standard "
+"output; so it is expected that you run LogService to inspect the logs as "
+"they arrive (logs are also saved to disk). To start LogService, you need to "
+"issue, in the machine specified in cms.conf for LogService, this command:"
+msgstr "CMSは多数のサービスからなり、いくつかは複数個に複製されたり複数のマシン上で実行されたりすることもあります。これらのサービスを全て手作業で実行することもできますが、それは単調な作業です。さいわい、ResourceServiceというサービスがあり、これが各マシン上で動作する全てのサービスの開始を管理してくれるので、直接実行しなければいけないサービスの数を減らすことができます。ResourceServiceによって開始されたサービスは、標準出力にはログを出力しません。そのため、LogServiceを起動して、到着したログを見られるようにするとよいでしょう(ログはディスクにも保存されます)。LogServiceを起動するには、LogServiceを実行するようcms.confによって指定されたマシン上で、次のコマンドを実行する必要があります："
+
+# 3edccc11d2d44f25b247770f3128887e
+#: ..\..\Running CMS.rst:63
+msgid ""
+"where ``0`` is the \"shard\" of LogService you want to run. Since there must "
+"be only one instance of LogService, it is safe to let CMS infer that the "
+"shard you want is the 0-th, and so an equivalent command is"
+msgstr "ここで、 ``0`` は 実行したいLogServiceの「かけらの番号(shard)」を意味します。LogServiceのインスタンスはただ1つしか存在しないはずなので、ここで必要な番号は0番だとCMSに推測させても安全だから、次のコマンドでも同じ意味になります："
+
+# 3d9c921371ac4cb8bc5b95242ba1ab91
+#: ..\..\Running CMS.rst:69
+msgid ""
+"After LogService is running, you can start ResourceService on each machine "
+"involved, instructing it to load all the other services:"
+msgstr "LogServiceが開始したら、サービスを実行したいそれぞれのマシン上で、ResourceServiceを実行することで、他の全てのサービスを読み込むことができます："
+
+# 4f5fa9f3c51b4e6a92c76d85765590da
+#: ..\..\Running CMS.rst:75
+msgid ""
+"The flag ``-a`` informs ResourceService that it has to start all other "
+"services, and we have omitted again the shard number since, even if "
+"ResourceService is replicated, there must be only one of it in each machine. "
+"If you have a funny network configuration that confuses CMS, just give "
+"explicitly the shard number. In any case, ResourceService will ask you the "
+"contest to load, and will start all the other services. You should start see "
+"logs flowing in the LogService terminal."
+msgstr "フラグ ``-a`` は、ResourceServiceが他の全てのサービスを起動するべきであるということを意味します。ResourceServerは複数のマシンで動くとはいえ、それぞれのマシン上ではただ1つしか動かさないはずなので、ここでもshard番号を省略しました。もしCMSが混乱するような奇妙なネットワーク構成のときは、shard番号を与えればよいでしょう。ともかく、ResourceServiceは読み込むコンテストの番号を尋ねたあと、他の全てのサービスを起動します。そうしたら、LogServiceを起動している端末に流れてくるログを眺めましょう。"
+
+# cd7e8a80947343d3b700958d8757ceef
+#: ..\..\Running CMS.rst:77
+msgid ""
+"Note that it is your duty to keep CMS's configuration synchronized among the "
+"machines."
+msgstr "CMSの設定ファイルを、全てのマシンで同一のものに保つのは、あなた自身がやるべきことだということに注意してください。"
+
+# 9db6efb540d04b32b3165d88c4bde652
+#: ..\..\Running CMS.rst:81
+msgid "Recommended setup"
+msgstr "推奨される構成"
+
+# 31876a45123a46e8a5d597bcc9f9c6d8
+#: ..\..\Running CMS.rst:83
+msgid ""
+"Of course, the number of servers one needs to run a contest depends on many "
+"factors (number of participants, length of the contest, economical issues, "
+"more technical matters...). We recommend that, for fairness, there is at "
+"least one server associated only to a Worker."
+msgstr "もちろん、コンテストを開催するために必要なサーバーの数は様々な要因に左右されます(参加者の数、コンテスト期間の長さ、経済的な条件、より技術的な問題)。 しかし、公平さのために、少なくとも1つのサーバーは1つのWorkerのみのためのサーバーとすることを推奨します。"
+
+# 3b67a5a7cc5a445182f214abf7104709
+#: ..\..\Running CMS.rst:85
+msgid ""
+"As for the distribution of services, usually there is one ResourceService "
+"for each server, one copy each of LogService, ScoringService, Checker, "
+"EvaluationService, AdminWebServer, and one or more of ContestWebServer and "
+"Worker. Again, if there are more than one Worker, we recommend to run them "
+"on different servers."
+msgstr "サービスの分散に関してはふつう、ResourceServiceを各サーバーに配置し、LogService、ScoringService、Checker、EvaluationService、AdminWebServerのインスタンスが1つずつ、そして1つ以上のContestWebServerとWorkerを用意します。繰り返しますが、Workerを2つ以上動かすときは、それらを異なるサーバーの上で動かすことを私たちは推奨します。"
+
+# 7bddf1ba53594c6aa74210e624c4374e
+#: ..\..\Running CMS.rst:87
+msgid ""
+"Our preferred distribution is Ubuntu >= 12.04 LTS.  We will hopefully "
+"support Ubuntu 12.04.x out of the box for the length of Ubuntu's support "
+"duration, that is five years."
+msgstr "推奨ディストリビューションは、Ubuntu >= 12.04 LTS です。私たちは願わくば、Ubuntu 12.04.xを、Ubuntu自体のサポート期間より長く、5年間はサポートしていきたいと考えています。"
+
+# 113a2b4d473c409b97598eb6d948165e
+#: ..\..\Running CMS.rst:89
+msgid "Very important note: up to now, we support only 32 bit distributions."
+msgstr "重要な注意： これまで、私たちは32bitディストリビューションのみをサポートしています。"
+
+# ff8be772ca684df0ac038cffaa1e9b23
+#: ..\..\Running CMS.rst:91
+msgid ""
+"Saying that, one is not forced to follow the previous rules, and it should "
+"not be very hard to successfully run CMS on different distributions or even "
+"on 64 bit installations (see :gh_blob:`docs/32bits_sandbox_howto.txt` to "
+"read how to set up a 32 bits chroot)."
+msgstr "とは言っても、以前のルールに従う必要はないし、CMSをUbuntu以外のディストリビューションや、64bit環境でうまく動作させるのも、とても難しいことというわけではないでしょう。 (32bitのchroot環境をセットアップする方法については、 :gh_blob:`docs/32bits_sandbox_howto.txt` を参照してください。)"
+
+# e0eb077c94ea4f9a8591212fdadf6c2b
+#: ..\..\Running CMS.rst:93
+msgid ""
+"You can replicate the service handling the contestant-facing web server, :"
+"file:`cmsContestWebServer`; in this case, you need to configure a load "
+"balancer in front of them. We suggest to use nginx for that, and provide a "
+"sample configuration for it at :gh_blob:`examples/nginx.conf.sample` (this "
+"file also configures nginx to act as a HTTPS endpoint and to force secure "
+"connections, by redirecting HTTP to HTTPS). This file probably needs to be "
+"adapted to your distribution if it's not Ubuntu: try to merge it with the "
+"file you find installed by default. For additional information see the "
+"official nginx `documentation <http://wiki.nginx.org/HttpUpstreamModule>`_ "
+"and `examples <http://wiki.nginx.org/LoadBalanceExample>`_. Note that "
+"without the ``ip_hash`` option some features might not always work as "
+"expected."
+msgstr "参加者と対面するWebサーバー :file:`cmsContestWebServer` をハンドルするサービスを複製することもできます。この場合、それらの前にロードバランサーを配置する必要があります。私たちはロードバランサーとしてnginxを使うことを提案していて、そのための設定ファイルのサンプルを :gh_blob:`examples/nginx.conf.sample` においています。なおこのファイルは、HTTPをHTTPSにリダイレクトすることによってセキュアな接続を強制するHTTPSエンドポイントとして機能するような設定もしています。もしディストリビューションがUbuntuでない場合は、ディストリビューションにあわせて変更をする必要があるかもしれません。その場合、デフォルトでインストールされているファイルとのマージを試してみてください。追加の情報に関しては、公式のnginxの `ドキュメント <http://wiki.nginx.org/HttpUpstreamModule>`_ と `サンプル <http://wiki.nginx.org/LoadBalanceExample>`_ を参照してください。なお、 ``ip_hash`` オプションをつけない場合、いくつかの機能が期待通りに動作しないかもしれないことに注意してください。"
+
+# fca7300b9d414ca490583ebbbb157019
+#: ..\..\Running CMS.rst:97
+msgid "Logs"
+msgstr "ログ"
+
+# c4d39cc733f14f2f8cfc19fe17d536dc
+#: ..\..\Running CMS.rst:99
+msgid ""
+"When the services are running, log messages are streamed to the log service. "
+"This is the meaning of the log levels:"
+msgstr "サービスが動いているときは、ログメッセージはログサービスに流れてきます。以下がログのレベルの意味です："
+
+# e650912685ab4389b5eaf2e5d555c60d
+#: ..\..\Running CMS.rst:102
+msgid ""
+"debug: you can ignore them (in the default configuration, the log service "
+"does not show them);"
+msgstr "debug(デバッグ): 無視して構いません。 (デフォルトの設定では、ログサービスはこれを表示しません。)"
+
+# 639f7d6f7a2b472d8aba08fab761eee8
+#: ..\..\Running CMS.rst:104
+msgid ""
+"info: they inform you on what is going on in the system and that everything "
+"is fine;"
+msgstr "info(情報): システムで何が起こっているかを報告し、事が順調に運んでいることを伝えています。"
+
+# 0f36020f88cb4651ba7079c674537251
+#: ..\..\Running CMS.rst:106
+msgid ""
+"warning: something went wrong or was slightly unexpected, but CMS knew how "
+"to handle it, or someone fed inappropriate data to CMS (by error or on "
+"purpose); you may want to check these as they may evolve into errors or "
+"unexpected behaviors, or hint that a contestant is trying to cheat;"
+msgstr "warning(警告): 何かがおかしいか、ちょっとだけ期待通りでないことが起こっているが、CMSは対処方法を知っています。または、誰かがCMSに不適切なデータを食べさせました(間違いによって、あるいは意図的に)。もしかしたら、それがエラーや予期しない動作に繋がるかもしれないし、参加者が不正を試みている形跡かもしれないので、これらのメッセージはチェックしたほうがいいかもしれません。"
+
+# 40ef153431004c959ad1455b63cff55a
+#: ..\..\Running CMS.rst:108
+msgid ""
+"error: an unexpected condition that should not have happened; you are really "
+"encouraged to take actions to fix them, but the service will continue to "
+"work (most of the time, ignoring the error and the data connected to it);"
+msgstr "error(エラー): 起こるべきでなかった予期しない状況にあります。あなたは本当に、これを解決するための行動をとるべきですが、サービスは動作を続けます。 (ほとんどの場合、エラーとそれに関連するデータを無視して。)"
+
+# 231da2ac340c49f6aab2c5ff3502ed45
+#: ..\..\Running CMS.rst:110
+msgid ""
+"critical: a condition so unexpected that the service is really startled and "
+"refuses to continue working; you are forced to take action because with high "
+"probability the service will continue having the same problem upon "
+"restarting."
+msgstr "critical(致命的): サービスが驚くほど不可解な状態にあり、動作を続けることができなくなりました。高い確率で、再起動しても同じ問題が発生し続けると考えられるので、あなたは何かしらの行動を取らざるをえません。"
+
+# 1c142107524c4404a05787ecee791cbb
+#: ..\..\Running CMS.rst:112
+msgid ""
+"Warning, error, and critical logs are also displayed in the main page of "
+"AdminWebServer."
+msgstr "warning(警告)、error(エラー)、critical(致命的)のログはAdminWebServerのメインページにも表示されます。"
