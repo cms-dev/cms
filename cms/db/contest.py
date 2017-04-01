@@ -378,8 +378,8 @@ class Contest(Base):
                           token_gen_interval, token_gen_max, start, timestamp):
         """Do exactly the same computation stated in tokens_available,
         but ensuring only a single set of token_* directive.
-        Basically, tokens_available call this twice for contest-wise
-        and task-wise parameters and then assemble the result.
+        Basically, tokens_available calls this twice for contest-wise
+        and task-wise parameters and then assembles the result.
 
         token_timestamps ([datetime]): list of timestamps of used
             tokens, sorted in chronological order.
