@@ -148,14 +148,14 @@ Assuming you have ``pip`` installed, you can do this:
 .. sourcecode:: bash
 
     sudo pip2 install -r requirements.txt
-    sudo pip2 setup.py install
+    sudo python2 setup.py install
 
 This command installs python dependencies globally. Note that on some distros, like Arch Linux, this might interfere with the system package manager. If you want to perform the installation in your home folder instead, then you can do this instead:
 
 .. sourcecode:: bash
 
     pip2 install --user -r requirements.txt
-    pip2 setup.py install --user
+    python2 setup.py install --user
 
 Method 2: Virtual environment
 -----------------------------
