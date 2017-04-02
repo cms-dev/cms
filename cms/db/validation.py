@@ -26,6 +26,8 @@ from sqlalchemy.event import listens_for
 from sqlalchemy.orm import mapper
 from sqlalchemy.schema import CheckConstraint
 
+from cms.db.filecacher import FileCacher
+
 
 class ValidationConstraint(object):
     """Constraint adding server-side validation to a SQLAlchemy Column.
@@ -92,7 +94,8 @@ class DigestConstraint(ValidationConstraint):
     """Check that the column is a valid SHA1 hex digest."""
     @staticmethod
     def get_condition(column):
-        return column.op("~")("^[0-9a-f]{40}$")
+        return column.op("~")("^([0-9a-f]{40}|%s)$"
+                              % FileCacher.TOMBSTONE_DIGEST)
 
 
 class IPv4Constraint(ValidationConstraint):
