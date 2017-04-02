@@ -36,10 +36,10 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
 from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from . import Base, Contest
-from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
 
@@ -244,12 +244,13 @@ class Statement(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = smc_sa10_workaround(relationship(
+    task = relationship(
         Task,
         backref=backref('statements',
-                        collection_class=smart_mapped_collection('language'),
+                        collection_class=
+                            attribute_mapped_collection('language'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Code for the language the statement is written in.
     # It can be an arbitrary string, but if it's in the form "en" or "en_US"
@@ -288,12 +289,13 @@ class Attachment(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = smc_sa10_workaround(relationship(
+    task = relationship(
         Task,
         backref=backref('attachments',
-                        collection_class=smart_mapped_collection('filename'),
+                        collection_class=
+                            attribute_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Filename and digest of the provided attachment.
     filename = Column(
@@ -492,12 +494,13 @@ class Manager(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = smc_sa10_workaround(relationship(
+    dataset = relationship(
         Dataset,
         backref=backref('managers',
-                        collection_class=smart_mapped_collection('filename'),
+                        collection_class=
+                            attribute_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Filename and digest of the provided manager.
     filename = Column(
@@ -529,12 +532,13 @@ class Testcase(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = smc_sa10_workaround(relationship(
+    dataset = relationship(
         Dataset,
         backref=backref('testcases',
-                        collection_class=smart_mapped_collection('codename'),
+                        collection_class=
+                            attribute_mapped_collection('codename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Codename identifying the testcase.
     codename = Column(

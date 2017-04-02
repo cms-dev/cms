@@ -338,7 +338,7 @@ class CompilationJob(Job):
         sr.compilation_shard = self.shard
         sr.compilation_sandbox = ":".join(self.sandboxes)
         for executable in self.executables.itervalues():
-            sr.executables += [executable]
+            sr.executables.set(executable)
 
     @staticmethod
     def from_user_test(operation, user_test, dataset):
@@ -415,7 +415,7 @@ class CompilationJob(Job):
         for executable in self.executables.itervalues():
             u_executable = UserTestExecutable(
                 executable.filename, executable.digest)
-            ur.executables += [u_executable]
+            ur.executables.set(u_executable)
 
 
 class EvaluationJob(Job):

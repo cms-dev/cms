@@ -31,9 +31,9 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from . import Base, Participation, Task, Dataset
-from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 
 
 class UserTest(Base):
@@ -161,12 +161,13 @@ class UserTestFile(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = smc_sa10_workaround(relationship(
+    user_test = relationship(
         UserTest,
         backref=backref('files',
-                        collection_class=smart_mapped_collection('filename'),
+                        collection_class=
+                            attribute_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Filename and digest of the submitted file.
     filename = Column(
@@ -199,12 +200,13 @@ class UserTestManager(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = smc_sa10_workaround(relationship(
+    user_test = relationship(
         UserTest,
         backref=backref('managers',
-                        collection_class=smart_mapped_collection('filename'),
+                        collection_class=
+                            attribute_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Filename and digest of the submitted manager.
     filename = Column(
@@ -513,12 +515,13 @@ class UserTestExecutable(Base):
         viewonly=True)
 
     # UserTestResult owning the executable.
-    user_test_result = smc_sa10_workaround(relationship(
+    user_test_result = relationship(
         UserTestResult,
         backref=backref('executables',
-                        collection_class=smart_mapped_collection('filename'),
+                        collection_class=
+                            attribute_mapped_collection('filename'),
                         cascade="all, delete-orphan",
-                        passive_deletes=True)))
+                        passive_deletes=True))
 
     # Filename and digest of the generated executable.
     filename = Column(
