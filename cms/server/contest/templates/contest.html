@@ -11,46 +11,46 @@
 {% import json %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
 {% from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES %}
-{% from cms.db import SubmissionResult %}
 {% from cms.grading.languagemanager import get_language %}
+{% from cms.db import SubmissionResult %}
 {% from cmscommon.datetime import make_timestamp, utc %}
 {% from cmscommon.isocodes import translate_language_country_code %}
 
     <script type="text/javascript">
-    var LANGUAGES = {
-    {% for lang in contest.languages %}
-        '{{ lang }}': {
-    {% for extension in get_language(lang).source_extensions %}
-            '{{ extension }}': true,
-    {% end %}
-        },
-    {% end %}
-    };
+var LANGUAGES = {
+{% for lang in contest.languages %}
+    '{{ lang }}': {
+{% for extension in get_language(lang).source_extensions %}
+        '{{ extension }}': true,
+{% end %}
+    },
+{% end %}
+};
 
-    {% if current_user is None %}
-    var utils = new CMS.CWSUtils("{{ contest_root }}",
-                                 0, 0, 0, 0, 0);
-    {% else %}
-    // FIXME use Date objects
-    var utils = new CMS.CWSUtils("{{ contest_root }}",
-                                 {{ make_timestamp(timestamp) }},
-                                 {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
-                                 {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
-                                 {{ make_timestamp(current_phase_begin) }},
-                                 {{ make_timestamp(current_phase_end) }},
-                                 {{ actual_phase }});
-    $(document).ready(function () {
+{% if current_user is None %}
+var utils = new CMS.CWSUtils("{{ contest_root }}",
+                             0, 0, 0, 0, 0);
+{% else %}
+// FIXME use Date objects
+var utils = new CMS.CWSUtils("{{ contest_root }}",
+                             {{ make_timestamp(timestamp) }},
+                             {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
+                             {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
+                             {{ make_timestamp(current_phase_begin) }},
+                             {{ make_timestamp(current_phase_end) }},
+                             {{ actual_phase }});
+$(document).ready(function () {
+    utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+    setInterval(function() {
         utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
-        setInterval(function() {
-            utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
-        }, 1000);
-        utils.update_notifications();
-        setInterval(function() { utils.update_notifications(); }, 30000);
-        $('#main').css('top', $('#navigation_bar').outerHeight());
-    });
+    }, 1000);
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 30000);
+    $('#main').css('top', $('#navigation_bar').outerHeight());
+});
     {% end%}
 
-    {% block additional_js %}{% end %}
+{% block additional_js %}{% end %}
     </script>
 {% end %}
 

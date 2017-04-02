@@ -140,90 +140,6 @@ class ContestHandler(BaseHandler):
         # because we need contest_name
         self.r_params = self.render_params()
 
-    def render_params(self):
-        ret = super(ContestHandler, self).render_params()
-
-        ret["contest"] = self.contest
-
-        # Relative path to the root of the contest (e.g. ../../<contest_name>)
-        ret["contest_root"] = ret["url_root"]
-        # Absolute path to the root of the contest within the
-        # application, regardless of the actual external URL
-        # (e.g. /<contest_name>).
-        ret["real_contest_root"] = "/"
-        if self.is_multi_contest():
-            ret["contest_root"] += "/" + self.contest.name
-            ret["real_contest_root"] += self.contest.name
-
-        ret["phase"] = self.contest.phase(self.timestamp)
-
-        ret["printing_enabled"] = (config.printer is not None)
-        ret["questions_enabled"] = self.contest.allow_questions
-        ret["testing_enabled"] = self.contest.allow_user_tests
-
-        if self.current_user is not None:
-            participation = self.current_user
-
-            res = compute_actual_phase(
-                self.timestamp, self.contest.start, self.contest.stop,
-                self.contest.per_user_time, participation.starting_time,
-                participation.delay_time, participation.extra_time)
-
-            ret["actual_phase"], ret["current_phase_begin"], \
-                ret["current_phase_end"], ret["valid_phase_begin"], \
-                ret["valid_phase_end"] = res
-
-            if ret["actual_phase"] == 0:
-                ret["phase"] = 0
-
-            # set the timezone used to format timestamps
-            ret["timezone"] = get_timezone(participation.user, self.contest)
-
-        # some information about token configuration
-        ret["tokens_contest"] = self._get_token_status(self.contest)
-
-        t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
-        if t_tokens == 0:
-            ret["tokens_tasks"] = 0  # all disabled
-        elif t_tokens == 2 * len(self.contest.tasks):
-            ret["tokens_tasks"] = 2  # all infinite
-        else:
-            ret["tokens_tasks"] = 1  # all finite or mixed
-
-        # TODO Now all language names are shown in the active language.
-        # It would be better to show them in the corresponding one.
-        ret["lang_names"] = {}
-
-        # Get language codes for allowed localizations
-        lang_codes = self.langs.keys()
-        if len(self.contest.allowed_localizations) > 0:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
-        for lang_code, trans in self.langs.iteritems():
-            language_name = None
-            # Filter lang_codes with allowed localizations
-            if lang_code not in lang_codes:
-                continue
-            try:
-                language_name = translate_language_country_code(
-                    lang_code, trans)
-            except ValueError:
-                language_name = translate_language_code(
-                    lang_code, trans)
-            ret["lang_names"][lang_code.replace("_", "-")] = language_name
-
-        ret["cookie_lang"] = self.cookie_lang
-        ret["browser_lang"] = self.browser_lang
-
-        return ret
-
-    def get_login_url(self):
-        """The login url depends on the contest name, so we can't just
-        use the "login_url" application parameter.
-
-        """
-        return self.r_params["real_contest_root"]
-
     def get_current_user(self):
         """Return the currently logged in participation.
 
@@ -353,7 +269,6 @@ class ContestHandler(BaseHandler):
             .filter(Participation.contest == self.contest)\
             .filter(User.username == username)\
             .first()
-
         if participation is None:
             return None
 
@@ -363,7 +278,6 @@ class ContestHandler(BaseHandler):
             correct_password = participation.user.password
         else:
             correct_password = participation.password
-
         if password != correct_password:
             return None
 
@@ -422,6 +336,90 @@ class ContestHandler(BaseHandler):
             return 2
         else:
             raise RuntimeError("Unknown token_mode value.")
+
+    def render_params(self):
+        ret = super(ContestHandler, self).render_params()
+
+        ret["contest"] = self.contest
+
+        # Relative path to the root of the contest (e.g. ../../<contest_name>)
+        ret["contest_root"] = ret["url_root"]
+        # Absolute path to the root of the contest within the
+        # application, regardless of the actual external URL
+        # (e.g. /<contest_name>).
+        ret["real_contest_root"] = "/"
+        if self.is_multi_contest():
+            ret["contest_root"] += "/" + self.contest.name
+            ret["real_contest_root"] += self.contest.name
+
+        ret["phase"] = self.contest.phase(self.timestamp)
+
+        ret["printing_enabled"] = (config.printer is not None)
+        ret["questions_enabled"] = self.contest.allow_questions
+        ret["testing_enabled"] = self.contest.allow_user_tests
+
+        if self.current_user is not None:
+            participation = self.current_user
+
+            res = compute_actual_phase(
+                self.timestamp, self.contest.start, self.contest.stop,
+                self.contest.per_user_time, participation.starting_time,
+                participation.delay_time, participation.extra_time)
+
+            ret["actual_phase"], ret["current_phase_begin"], \
+                ret["current_phase_end"], ret["valid_phase_begin"], \
+                ret["valid_phase_end"] = res
+
+            if ret["actual_phase"] == 0:
+                ret["phase"] = 0
+
+            # set the timezone used to format timestamps
+            ret["timezone"] = get_timezone(participation.user, self.contest)
+
+        # some information about token configuration
+        ret["tokens_contest"] = self._get_token_status(self.contest)
+
+        t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
+        if t_tokens == 0:
+            ret["tokens_tasks"] = 0  # all disabled
+        elif t_tokens == 2 * len(self.contest.tasks):
+            ret["tokens_tasks"] = 2  # all infinite
+        else:
+            ret["tokens_tasks"] = 1  # all finite or mixed
+
+        # TODO Now all language names are shown in the active language.
+        # It would be better to show them in the corresponding one.
+        ret["lang_names"] = {}
+
+        # Get language codes for allowed localizations
+        lang_codes = self.langs.keys()
+        if len(self.contest.allowed_localizations) > 0:
+            lang_codes = filter_language_codes(
+                lang_codes, self.contest.allowed_localizations)
+        for lang_code, trans in self.langs.iteritems():
+            language_name = None
+            # Filter lang_codes with allowed localizations
+            if lang_code not in lang_codes:
+                continue
+            try:
+                language_name = translate_language_country_code(
+                    lang_code, trans)
+            except ValueError:
+                language_name = translate_language_code(
+                    lang_code, trans)
+            ret["lang_names"][lang_code.replace("_", "-")] = language_name
+
+        ret["cookie_lang"] = self.cookie_lang
+        ret["browser_lang"] = self.browser_lang
+
+        return ret
+
+    def get_login_url(self):
+        """The login url depends on the contest name, so we can't just
+        use the "login_url" application parameter.
+
+        """
+        return self.r_params["real_contest_root"]
 
 
 FileHandler = file_handler_gen(ContestHandler)
