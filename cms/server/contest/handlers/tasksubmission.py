@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -51,25 +51,25 @@ from cms.db import File, Submission, SubmissionResult, Task, Token
 from cms.grading.languagemanager import get_language
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
-from cms.server import actual_phase_required
+from cms.server import actual_phase_required, multi_contest
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .base import BaseHandler, FileHandler, \
-    NOTIFICATION_ERROR, NOTIFICATION_SUCCESS, NOTIFICATION_WARNING
+from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
+    NOTIFICATION_SUCCESS, NOTIFICATION_WARNING
 
 
 logger = logging.getLogger(__name__)
 
 
-class SubmitHandler(BaseHandler):
+class SubmitHandler(ContestHandler):
     """Handles the received submissions.
 
     """
 
-    def _send_error(self, subject, text, task):
+    def _send_error(self, subject, text):
         """Shorthand for sending a notification and redirecting."""
         logger.warning("Sent error: `%s' - `%s'", subject, text)
         self.application.service.add_notification(
@@ -78,17 +78,21 @@ class SubmitHandler(BaseHandler):
             subject,
             text,
             NOTIFICATION_ERROR)
-        task_name = quote(task.name, safe='')
-        self.redirect("/tasks/{0}/submissions".format(task_name))
+        self.redirect(self.fallback_page)
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, task_name):
         participation = self.current_user
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
+
+        self.fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
+        self.fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                          self.fallback_page)
 
         # Alias for easy access
         contest = self.contest
@@ -122,7 +126,7 @@ class SubmitHandler(BaseHandler):
                         task.max_submission_number)
         except ValueError as error:
             self._send_error(
-                self._("Too many submissions!"), error.message, task)
+                self._("Too many submissions!"), error.message)
             return
 
         # Enforce minimum time between submissions
@@ -161,7 +165,7 @@ class SubmitHandler(BaseHandler):
                         task.min_submission_interval.total_seconds())
         except ValueError as error:
             self._send_error(
-                self._("Submissions too frequent!"), error.message, task)
+                self._("Submissions too frequent!"), error.message)
             return
 
         # Required files from the user.
@@ -172,8 +176,7 @@ class SubmitHandler(BaseHandler):
         if any(len(filename) != 1 for filename in self.request.files.values()):
             self._send_error(
                 self._("Invalid submission format!"),
-                self._("Please select the correct files."),
-                task)
+                self._("Please select the correct files."))
             return
 
         # If the user submitted an archive, extract it and use content
@@ -197,8 +200,7 @@ class SubmitHandler(BaseHandler):
             if archive is None:
                 self._send_error(
                     self._("Invalid archive format!"),
-                    self._("The submitted archive could not be opened."),
-                    task)
+                    self._("The submitted archive could not be opened."))
                 return
 
             # Extract the archive.
@@ -222,8 +224,7 @@ class SubmitHandler(BaseHandler):
                                          and required.issuperset(provided))):
             self._send_error(
                 self._("Invalid submission format!"),
-                self._("Please select the correct files."),
-                task)
+                self._("Please select the correct files."))
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -267,7 +268,7 @@ class SubmitHandler(BaseHandler):
                 error = self._("Language %s not allowed in this contest.") \
                     % submission_lang
             if error is not None:
-                self._send_error(self._("Invalid submission!"), error, task)
+                self._send_error(self._("Invalid submission!"), error)
                 return
 
         # Check if submitted files are small enough.
@@ -276,8 +277,7 @@ class SubmitHandler(BaseHandler):
             self._send_error(
                 self._("Submission too big!"),
                 self._("Each source file must be at most %d bytes long.") %
-                config.max_submission_length,
-                task)
+                config.max_submission_length)
             return
 
         # All checks done, submission accepted.
@@ -320,8 +320,7 @@ class SubmitHandler(BaseHandler):
             logger.error("Storage failed! %s", error)
             self._send_error(
                 self._("Submission storage failed!"),
-                self._("Please try again."),
-                task)
+                self._("Please try again."))
             return
 
         # All the files are stored, ready to submit!
@@ -345,20 +344,20 @@ class SubmitHandler(BaseHandler):
             self._("Your submission has been received "
                    "and is currently being evaluated."),
             NOTIFICATION_SUCCESS)
+
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
-        self.redirect("/tasks/%s/submissions?%s" % (
-            quote(task.name, safe=''),
-            encrypt_number(submission.id)))
+        self.redirect(self.fallback_page + "?" + encrypt_number(submission.id))
 
 
-class TaskSubmissionsHandler(BaseHandler):
+class TaskSubmissionsHandler(ContestHandler):
     """Shows the data of a task in the contest.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name):
         participation = self.current_user
 
@@ -409,12 +408,13 @@ class TaskSubmissionsHandler(BaseHandler):
                     **self.r_params)
 
 
-class SubmissionStatusHandler(BaseHandler):
+class SubmissionStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, submission_num):
         participation = self.current_user
 
@@ -475,12 +475,13 @@ class SubmissionStatusHandler(BaseHandler):
         self.write(data)
 
 
-class SubmissionDetailsHandler(BaseHandler):
+class SubmissionDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, submission_num):
         participation = self.current_user
 
@@ -524,6 +525,7 @@ class SubmissionFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
             raise tornado.web.HTTPError(404)
@@ -571,12 +573,13 @@ class SubmissionFileHandler(FileHandler):
         self.fetch(digest, mimetype, filename)
 
 
-class UseTokenHandler(BaseHandler):
+class UseTokenHandler(ContestHandler):
     """Called when the user try to use a token on a submission.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self, task_name, submission_num):
         participation = self.current_user
 
@@ -584,6 +587,10 @@ class UseTokenHandler(BaseHandler):
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
+
+        fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     fallback_page)
 
         submission = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\
@@ -609,7 +616,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Your request has been discarded because you have no "
                        "tokens available."),
                 NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         if submission.token is None:
@@ -624,7 +631,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Your request has been discarded because you already "
                        "used a token on that submission."),
                 NOTIFICATION_WARNING)
-            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            self.redirect(fallback_page)
             return
 
         # Inform ProxyService and eventually the ranking that the
@@ -644,4 +651,4 @@ class UseTokenHandler(BaseHandler):
                    "and applied to the submission."),
             NOTIFICATION_SUCCESS)
 
-        self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+        self.redirect(fallback_page)

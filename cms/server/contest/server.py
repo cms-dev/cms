@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -52,6 +52,8 @@ from cms.db.filecacher import FileCacher
 from cms.locale import get_translations, wrap_translations_for_tornado
 
 from .handlers import HANDLERS
+from .handlers.base import BaseHandler
+from .handlers.main import MainHandler
 
 
 logger = logging.getLogger(__name__)
@@ -61,9 +63,8 @@ class ContestWebServer(WebService):
     """Service that runs the web server serving the contestants.
 
     """
-    def __init__(self, shard, contest):
+    def __init__(self, shard, contest_id=None):
         parameters = {
-            "login_url": "/",
             "template_path": pkg_resources.resource_filename(
                 "cms.server.contest", "templates"),
             "static_files": [("cms.server", "static"),
@@ -84,14 +85,23 @@ class ContestWebServer(WebService):
                               "contest_listen_address and contest_listen_port "
                               "in cms.conf." % __name__)
 
+        self.contest_id = contest_id
+
+        if self.contest_id is None:
+            HANDLERS.append((r"", MainHandler))
+            handlers = [(r'/', BaseHandler)]
+            for h in HANDLERS:
+                handlers.append((r'/([^/]+)' + h[0],) + h[1:])
+        else:
+            HANDLERS.append((r"/", MainHandler))
+            handlers = HANDLERS
+
         super(ContestWebServer, self).__init__(
             listen_port,
-            HANDLERS,
+            handlers,
             parameters,
             shard=shard,
             listen_address=listen_address)
-
-        self.contest = contest
 
         # This is a dictionary (indexed by username) of pending
         # notification. Things like "Yay, your submission went

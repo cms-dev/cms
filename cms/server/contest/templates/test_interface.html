@@ -1,7 +1,6 @@
-{% extends base.html %}
+{% extends contest.html %}
 
-{% block js %}
-
+{% block additional_js %}
 $(document).on("click", ".user_test_list tbody tr td.status .details", function (event) {
     var $this = $(this);
     var task_id = $this.parent().parent().parent().parent().attr("data-task");
@@ -9,7 +8,7 @@ $(document).on("click", ".user_test_list tbody tr td.status .details", function 
     var modal = $("#user_test_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>');
-    modal_body.load("{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id + "/details");
+    modal_body.load("{{ contest_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id + "/details");
     modal.modal("show");
 });
 
@@ -22,7 +21,7 @@ update_user_test_row = function (task_id, user_test_id, data) {
             var btn = row.children("td.output").children("a.btn");
             btn.text('{{ _("Download") }}');
             btn.removeClass("disabled");
-            btn.attr("href", "{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id + "/output");
+            btn.attr("href", "{{ contest_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id + "/output");
         } else {
             row.children("td.output").children("a.btn").text("{{ _("N/A") }}");
         }
@@ -43,7 +42,7 @@ update_user_test_row = function (task_id, user_test_id, data) {
 
 schedule_update_user_test_row = function (task_id, user_test_id) {
     setTimeout(function () {
-        $.get("{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id, function (data) {
+        $.get("{{ contest_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id, function (data) {
             update_user_test_row(task_id, user_test_id, data);
         });
     }, 2000);
@@ -55,7 +54,6 @@ $(document).ready(function () {
         schedule_update_user_test_row($this.parent().parent().attr("data-task"), $this.attr("data-user-test"));
     });
 });
-
 {% end %}
 
 {% block core %}
@@ -98,7 +96,7 @@ $(document).ready(function () {
 
 <div class="submit_test row">
     <div class="span5">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
 {% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format)) %}
@@ -137,7 +135,7 @@ $(document).ready(function () {
     </div>
 {% if not any(x.filename.endswith(".%l") for x in task.submission_format) %}
     <div class="span4">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
                 <div class="control-group">

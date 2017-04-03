@@ -1,0 +1,219 @@
+{% extends base.html %}
+
+{% block title %}
+    {{ contest.description }}
+{% end %}
+
+{% block js %}
+
+{% import re %}
+{% import time %}
+{% import json %}
+{% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
+{% from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES %}
+{% from cms.grading.languagemanager import get_language %}
+{% from cms.db import SubmissionResult %}
+{% from cmscommon.datetime import make_timestamp, utc %}
+{% from cmscommon.isocodes import translate_language_country_code %}
+
+    <script type="text/javascript">
+var LANGUAGES = {
+{% for lang in contest.languages %}
+    '{{ lang }}': {
+{% for extension in get_language(lang).source_extensions %}
+        '{{ extension }}': true,
+{% end %}
+    },
+{% end %}
+};
+
+{% if current_user is None %}
+var utils = new CMS.CWSUtils("{{ contest_root }}",
+                             0, 0, 0, 0, 0);
+{% else %}
+// FIXME use Date objects
+var utils = new CMS.CWSUtils("{{ contest_root }}",
+                             {{ make_timestamp(timestamp) }},
+                             {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
+                             {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
+                             {{ make_timestamp(current_phase_begin) }},
+                             {{ make_timestamp(current_phase_end) }},
+                             {{ actual_phase }});
+$(document).ready(function () {
+    utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+    setInterval(function() {
+        utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+    }, 1000);
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 30000);
+    $('#main').css('top', $('#navigation_bar').outerHeight());
+});
+    {% end%}
+
+{% block additional_js %}{% end %}
+    </script>
+{% end %}
+
+{% block body %}
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="{{ contest_root }}">{{ contest.description }}</a>
+{% if len(lang_names) > 1 %}
+                    <p class="navbar-text pull-right">
+                        <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
+                            <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }}</option>
+                        {% for lang_code, lang_name in sorted(lang_names.iteritems(), key=lambda x: x[1]) %}
+                            <option value="{{ lang_code }}"{% if cookie_lang == lang_code %} selected{% end %}>{{ lang_name }}</option>
+                        {% end %}
+                        </select>
+                    </p>
+{% end %}
+{% if current_user is not None %}
+                    <form action="{{ contest_root }}/logout" method="POST" class="navbar-form pull-right">
+                        {% module xsrf_form_html() %}
+                        <button type="submit" class="btn btn-warning">{{ _('Logout') }}</button>
+                    </form>
+                    <p class="navbar-text pull-right">
+                        {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": escape(current_user.user.first_name), "last_name": escape(current_user.user.last_name), "username": escape(current_user.user.username)} %}
+                    </p>
+{% end %}
+                </div>
+            </div>
+        </div>
+{% if current_user is None %}
+    {% if handler.get_argument("login_error", "") != "" %}
+        <div id="notifications" class="notifications">
+            <div class="alert alert-block alert-error notification">
+                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+                <h4 class="alert-heading">{{ _("Failed to log in.") }}</h4>
+            </div>
+        </div>
+    {% end %}
+        <div class="login_container">
+            <div class="login_box hero-unit">
+                <h1>{{ _("Welcome") }}</h1>
+                <p>{{ _("Please log in") }}</p>
+                <form class="form-horizontal" action="{{ contest_root }}/login" method="POST">
+                    {% module xsrf_form_html() %}
+                    <input type="hidden" name="next" value="{{ handler.get_argument("next", real_contest_root) }}">
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="input01">{{ _("Username") }}</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" name="username">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="input01">{{ _("Password") }}</label>
+                            <div class="controls">
+                                <input type="password" class="input-xlarge" name="password">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <button type="submit" class="btn btn-primary btn-large">{{ _("Login") }}</button>
+                                <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+{% else %}
+        <div id="notifications" class="notifications"></div>
+        <!-- Some hidden divs to provide translations of strings used by JS -->
+        <div style="display: none" id="translation_new_message">
+            {{ _("New message") }}
+        </div>
+        <div style="display: none" id="translation_new_announcement">
+            {{ _("New announcement") }}
+        </div>
+        <div style="display: none" id="translation_new_answer">
+            {{ _("New answer") }}
+        </div>
+        <div style="display: none" id="translation_unread">
+            {{ _("%d unread") }}
+        </div>
+        <div style="display: none" id="translation_until_contest_starts">
+            {{ _("Until contest starts:") }}
+        </div>
+        <div style="display: none" id="translation_until_contest_ends">
+            {{ _("Until contest ends:") }}
+        </div>
+        <div style="display: none" id="translation_time_left">
+            {{ _("Time left:") }}
+        </div>
+        <!-- End -->
+        <div id="main" class="container">
+            <div class="row">
+                <div class="span3">
+                    <h3 id="server_time_box">
+                        <span id="server_time_label">{{ _("Server time:") }}</span>
+                        <span id="server_time"></span>
+                    </h3>
+                    <h3 id="countdown_box">
+                        <span id="countdown_label"></span>
+                        <span id="countdown"></span>
+                    </h3>
+                    <div class="well" style="padding: 8px 0;">
+                        <ul class="nav nav-list">
+
+                            <li{% if request.path == '/' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}">{{ _("Overview") }}</a>
+                            </li>
+    {% set unread_count = handler.get_secure_cookie("unread_count") %}
+                            <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/communication">{{ _("Communication") }}
+    {% if unread_count is None or int(unread_count) == 0 %}
+                                    <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
+    {% else %}
+                                    <script>$(document).ready(function () { utils.unread_count = {{ int(unread_count) }};});</script>
+                                    <span id="unread_count" class="label label-warning">{{ _("%d unread") % int(unread_count) }}</span>
+    {% end %}
+                                    </a>
+                            </li>
+    {% if actual_phase == 0 or current_user.unrestricted %}
+        {% for t_iter in contest.tasks %}
+                            <li class="nav-header">
+                                {{ t_iter.name }}
+                            </li>
+                            <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/description">{{ _("Statement") }}</a>
+                            </li>
+                            <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/submissions">{{ _("Submissions") }}</a>
+                            </li>
+        {% end %}
+    {% end %}
+                            <li class="divider"></li>
+                            <li{% if request.path == '/documentation' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/documentation">{{ _("Documentation") }}</a>
+                            </li>
+    {% if actual_phase == 0 or current_user.unrestricted %}{% comment FIXME maybe >= 0? %}
+        {% if testing_enabled %}
+                            <li{% if request.path == '/testing' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/testing">{{ _("Testing") }}</a>
+                            </li>
+        {% end %}
+        {% if printing_enabled %}
+                            <li{% if request.path == '/printing' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/printing">{{ _("Printing") }}</a>
+                            </li>
+        {% end %}
+    {% end %}
+                        </ul>
+                    </div>
+                    <span class="license_notice">
+                    <a href="http://github.com/cms-dev/cms/" rel="author noreferrer" target="_blank">{{ _("Contest Management System") }}</a>
+                    {{ _("is released under the") }}
+                    <a href="http://www.gnu.org/licenses/agpl" rel="license noreferrer" target="_blank">{{ _("GNU Affero General Public License") }}</a>
+                    .
+                    </span>
+                </div>
+    {% block core %}{% end %}
+            </div>
+        </div>
+
+{% end %}
+{% end %}

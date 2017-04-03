@@ -9,7 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -34,38 +34,43 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import os
 import pickle
 
 import tornado.web
 
 from cms import config
 from cms.db import Participation, PrintJob, User
-from cms.server import actual_phase_required, filter_ascii
+from cms.server import actual_phase_required, filter_ascii, multi_contest
 from cmscommon.datetime import make_datetime, make_timestamp
 
-from .base import BaseHandler, check_ip, \
+from .contest import ContestHandler, check_ip, \
     NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
 
 
-class MainHandler(BaseHandler):
+class MainHandler(ContestHandler):
     """Home page handler.
 
     """
+    @multi_contest
     def get(self):
         self.render("overview.html", **self.r_params)
 
 
-class LoginHandler(BaseHandler):
+class LoginHandler(ContestHandler):
     """Login handler.
 
     """
+    @multi_contest
     def post(self):
+        fallback_page = self.r_params["real_contest_root"]
+
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        next_page = self.get_argument("next", "/")
+        next_page = self.get_argument("next", fallback_page)
         user = self.sql_session.query(User)\
             .filter(User.username == username)\
             .first()
@@ -76,12 +81,12 @@ class LoginHandler(BaseHandler):
 
         if user is None:
             # TODO: notify the user that they don't exist
-            self.redirect("/?login_error=true")
+            self.redirect(fallback_page + "?login_error=true")
             return
 
         if participation is None:
             # TODO: notify the user that they're uninvited
-            self.redirect("/?login_error=true")
+            self.redirect(fallback_page + "?login_error=true")
             return
 
         # If a contest-specific password is defined, use that. If it's
@@ -97,26 +102,26 @@ class LoginHandler(BaseHandler):
         if password != correct_password:
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
                         (filtered_user, filtered_pass, self.request.remote_ip))
-            self.redirect("/?login_error=true")
+            self.redirect(fallback_page + "?login_error=true")
             return
 
         if self.contest.ip_restriction and participation.ip is not None \
                 and not check_ip(self.request.remote_ip, participation.ip):
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)
-            self.redirect("/?login_error=true")
+            self.redirect(fallback_page + "?login_error=true")
             return
 
         if participation.hidden and self.contest.block_hidden_participations:
             logger.info("Hidden user login attempt: "
                         "user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)
-            self.redirect("/?login_error=true")
+            self.redirect(fallback_page + "?login_error=true")
             return
 
         logger.info("User logged in: user=%s remote_ip=%s.",
                     filtered_user, self.request.remote_ip)
-        self.set_secure_cookie("login",
+        self.set_secure_cookie(self.contest.name + "_login",
                                pickle.dumps((user.username,
                                              correct_password,
                                              make_timestamp())),
@@ -124,7 +129,7 @@ class LoginHandler(BaseHandler):
         self.redirect(next_page)
 
 
-class StartHandler(BaseHandler):
+class StartHandler(ContestHandler):
     """Start handler.
 
     Used by a user who wants to start his per_user_time.
@@ -132,6 +137,7 @@ class StartHandler(BaseHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(-1)
+    @multi_contest
     def post(self):
         participation = self.current_user
 
@@ -139,19 +145,20 @@ class StartHandler(BaseHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect("/")
+        self.redirect(self.r_params["real_contest_root"])
 
 
-class LogoutHandler(BaseHandler):
+class LogoutHandler(ContestHandler):
     """Logout handler.
 
     """
+    @multi_contest
     def post(self):
-        self.clear_cookie("login")
-        self.redirect("/")
+        self.clear_cookie(self.contest.name + "_login")
+        self.redirect(self.r_params["real_contest_root"])
 
 
-class NotificationsHandler(BaseHandler):
+class NotificationsHandler(ContestHandler):
     """Displays notifications.
 
     """
@@ -159,6 +166,7 @@ class NotificationsHandler(BaseHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
+    @multi_contest
     def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
@@ -208,10 +216,11 @@ class NotificationsHandler(BaseHandler):
 
         # Update the unread_count cookie before taking notifications
         # into account because we don't want to count them.
-        prev_unread_count = self.get_secure_cookie("unread_count")
+        cookie_name = self.contest.name + "_unread_count"
+        prev_unread_count = self.get_secure_cookie(cookie_name)
         next_unread_count = len(res) + (
             int(prev_unread_count) if prev_unread_count is not None else 0)
-        self.set_secure_cookie("unread_count", "%d" % next_unread_count)
+        self.set_secure_cookie(cookie_name, "%d" % next_unread_count)
 
         # Simple notifications
         notifications = self.application.service.notifications
@@ -228,18 +237,18 @@ class NotificationsHandler(BaseHandler):
         self.write(json.dumps(res))
 
 
-class PrintingHandler(BaseHandler):
+class PrintingHandler(ContestHandler):
     """Serve the interface to print and handle submitted print jobs.
 
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def get(self):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(404)
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -256,12 +265,15 @@ class PrintingHandler(BaseHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
+    @multi_contest
     def post(self):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            self.redirect("/")
-            return
+            raise tornado.web.HTTPError(404)
+
+        fallback_page = os.path.join(self.r_params["real_contest_root"],
+                                     "printing")
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -275,7 +287,7 @@ class PrintingHandler(BaseHandler):
                 self._("You have reached the maximum limit of "
                        "at most %d print jobs.") % config.max_jobs_per_user,
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -289,7 +301,7 @@ class PrintingHandler(BaseHandler):
                 self._("Invalid format!"),
                 self._("Please select the correct files."),
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         filename = self.request.files["file"][0]["filename"]
@@ -304,7 +316,7 @@ class PrintingHandler(BaseHandler):
                 self._("Each file must be at most %d bytes long.") %
                 config.max_print_length,
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         # We now have to send the file to the destination...
@@ -324,7 +336,7 @@ class PrintingHandler(BaseHandler):
                 self._("Print job storage failed!"),
                 self._("Please try again."),
                 NOTIFICATION_ERROR)
-            self.redirect("/printing")
+            self.redirect(fallback_page)
             return
 
         # The file is stored, ready to submit!
@@ -346,14 +358,15 @@ class PrintingHandler(BaseHandler):
             self._("Print job received"),
             self._("Your print job has been received."),
             NOTIFICATION_SUCCESS)
-        self.redirect("/printing")
+        self.redirect(fallback_page)
 
 
-class DocumentationHandler(BaseHandler):
+class DocumentationHandler(ContestHandler):
     """Displays the instruction (compilation lines, documentation,
     ...) of the contest.
 
     """
     @tornado.web.authenticated
+    @multi_contest
     def get(self):
         self.render("documentation.html", **self.r_params)
