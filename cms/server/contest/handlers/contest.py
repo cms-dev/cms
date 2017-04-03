@@ -100,8 +100,10 @@ class ContestHandler(BaseHandler):
     """
     def prepare(self):
         super(ContestHandler, self).prepare()
-
         self.choose_contest()
+        # Run render_params() now, not at the beginning of the request,
+        # because we need contest_name
+        self.r_params = self.render_params()
 
     def choose_contest(self):
         """Fill self.contest using contest passed as argument or path.
@@ -127,10 +129,6 @@ class ContestHandler(BaseHandler):
             # Select the contest specified on the command line
             self.contest = Contest.get_from_id(
                 self.application.service.contest_id, self.sql_session)
-
-        # Run render_params() now, not at the beginning of the request,
-        # because we need contest_name
-        self.r_params = self.render_params()
 
     def get_current_user(self):
         """Return the currently logged in participation.
