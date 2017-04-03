@@ -230,22 +230,39 @@ def default_argument_parser(description, cls, ask_contest=None):
     except ValueError:
         raise ConfigError("Couldn't autodetect shard number and "
                           "no shard specified for service %s, "
-                          "quitting." % (cls.__name__))
+                          "quitting." % (cls.__name__, ))
 
-    if args.contest_id is not None:
-        contest_id = args.contest_id
-    elif ask_contest is not None:
-        contest_id = ask_contest()
-    else:
+    if ask_contest is None:
         return cls(args.shard)
+    else:
+        return cls(args.shard,
+                   contest_id_from_args(args.contest_id, ask_contest))
+
+
+def contest_id_from_args(args_contest_id, ask_contest):
+    """Return a valid contest_id from the arguments
+
+    If the passed value is missing, ask the admins with ask_contest.
+    If the contest id is invalid, print a message and exit.
+
+    args_contest_id (int|None): the contest_id passed as argument.
+    ask_contest (function|None): a function that returns a contest_id.
+
+    """
+    assert ask_contest is not None
+
+    if args_contest_id is not None:
+        contest_id = args_contest_id
+    else:
+        contest_id = ask_contest()
 
     # Test if there is a contest with the given contest id.
     from cms.db import is_contest_id
     if not is_contest_id(contest_id):
-        print("There is no contest with the specified id. "
-              "Please try again.", file=sys.stderr)
+        logger.critical("There is no contest with the specified id. "
+                        "Please try again.")
         sys.exit(1)
-    return cls(args.shard, contest_id)
+    return contest_id
 
 
 def _find_local_addresses():
