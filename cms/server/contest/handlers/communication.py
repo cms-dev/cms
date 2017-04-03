@@ -53,7 +53,7 @@ class CommunicationHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @multi_contest
-    def get(self, contest_name):
+    def get(self):
         self.set_secure_cookie(self.contest.name + "_unread_count", "0")
         self.render("communication.html", **self.r_params)
 
@@ -64,7 +64,7 @@ class QuestionHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @multi_contest
-    def post(self, contest_name):
+    def post(self):
         participation = self.current_user
 
         # User can post only if we want.

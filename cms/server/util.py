@@ -190,14 +190,14 @@ def multi_contest(f):
 
     """
     @wraps(f)
-    def wrapped_f(*args):
+    def wrapped_f(self, *args):
         # args[0] is the instance of the handler
-        if args[0].is_multi_contest():
+        if self.is_multi_contest():
             # Send all URL parameters
-            f(*args)
+            f(self, *(args[1:]))
         else:
             # Send a fake "contest_name" URL parameter
-            f(args[0], None, *(args[1:]))
+            f(self, *args)
     return wrapped_f
 
 

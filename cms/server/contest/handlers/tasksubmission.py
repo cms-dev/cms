@@ -83,7 +83,7 @@ class SubmitHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def post(self, contest_name, task_name):
+    def post(self, task_name):
         participation = self.current_user
         try:
             task = self.contest.get_task(task_name)
@@ -358,7 +358,7 @@ class TaskSubmissionsHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name):
+    def get(self, task_name):
         participation = self.current_user
 
         try:
@@ -415,7 +415,7 @@ class SubmissionStatusHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, submission_num):
+    def get(self, task_name, submission_num):
         participation = self.current_user
 
         try:
@@ -482,7 +482,7 @@ class SubmissionDetailsHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, submission_num):
+    def get(self, task_name, submission_num):
         participation = self.current_user
 
         try:
@@ -526,7 +526,7 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, submission_num, filename):
+    def get(self, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
             raise tornado.web.HTTPError(404)
 
@@ -580,7 +580,7 @@ class UseTokenHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def post(self, contest_name, task_name, submission_num):
+    def post(self, task_name, submission_num):
         participation = self.current_user
 
         try:

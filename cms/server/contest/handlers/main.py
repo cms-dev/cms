@@ -56,7 +56,7 @@ class MainHandler(ContestHandler):
 
     """
     @multi_contest
-    def get(self, contest_name):
+    def get(self):
         self.render("overview.html", **self.r_params)
 
 
@@ -65,7 +65,7 @@ class LoginHandler(ContestHandler):
 
     """
     @multi_contest
-    def post(self, contest_name):
+    def post(self):
         fallback_page = self.r_params["real_contest_root"]
 
         username = self.get_argument("username", "")
@@ -138,7 +138,7 @@ class StartHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(-1)
     @multi_contest
-    def post(self, contest_name):
+    def post(self):
         participation = self.current_user
 
         logger.info("Starting now for user %s", participation.user.username)
@@ -153,7 +153,7 @@ class LogoutHandler(ContestHandler):
 
     """
     @multi_contest
-    def post(self, contest_name):
+    def post(self):
         self.clear_cookie(self.contest.name + "_login")
         self.redirect(self.r_params["real_contest_root"])
 
@@ -167,7 +167,7 @@ class NotificationsHandler(ContestHandler):
 
     @tornado.web.authenticated
     @multi_contest
-    def get(self, contest_name):
+    def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
 
@@ -244,7 +244,7 @@ class PrintingHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name):
+    def get(self):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
@@ -266,7 +266,7 @@ class PrintingHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def post(self, contest_name):
+    def post(self):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
@@ -368,5 +368,5 @@ class DocumentationHandler(ContestHandler):
     """
     @tornado.web.authenticated
     @multi_contest
-    def get(self, contest_name):
+    def get(self):
         self.render("documentation.html", **self.r_params)

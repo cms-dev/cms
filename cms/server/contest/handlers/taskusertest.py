@@ -69,7 +69,7 @@ class UserTestInterfaceHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name):
+    def get(self):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -141,7 +141,7 @@ class UserTestHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def post(self, contest_name, task_name):
+    def post(self, task_name):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -440,7 +440,7 @@ class UserTestStatusHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, user_test_num):
+    def get(self, task_name, user_test_num):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -499,7 +499,7 @@ class UserTestDetailsHandler(ContestHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, user_test_num):
+    def get(self, task_name, user_test_num):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -531,7 +531,7 @@ class UserTestIOHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, user_test_num, io):
+    def get(self, task_name, user_test_num, io):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
@@ -573,7 +573,7 @@ class UserTestFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, contest_name, task_name, user_test_num, filename):
+    def get(self, task_name, user_test_num, filename):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
