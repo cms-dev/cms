@@ -31,7 +31,7 @@ import argparse
 import logging
 import sys
 
-from cms import ConfigError, contest_id_from_args, get_safe_shard
+from cms import ConfigError, contest_id_from_args, get_safe_shard, utf8_decoder
 from cms.db import ask_for_contest, test_db_connection
 from cms.server.contest import ContestWebServer
 
@@ -46,10 +46,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Contestants' web server for CMS.")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-c", "--contest-id", action="store", type=int,
-                       help="id of the contest to automatically load")
-    group.add_argument("-a", "--all-contests", action="store_true",
-                       help="allow contestants to access all contests")
+    group.add_argument("-c", "--contest-id", action="store", type=utf8_decoder,
+                       help="id of the contest to automatically load, "
+                       "or ALL to serve all contests")
     parser.add_argument("shard", action="store", type=int, nargs="?")
     args = parser.parse_args()
 
@@ -62,9 +61,15 @@ def main():
 
     test_db_connection()
 
-    if args.all_contests:
+    if args.contest_id == "ALL":
         success = ContestWebServer(args.shard).run()
     else:
+        try:
+            if args.contest_id is not None:
+                args.contest_id = int(args.contest_id)
+        except ValueError:
+            logger.critical("Unable to parse contest id `%s'", args.contest_id)
+            return 1
         success = ContestWebServer(
             args.shard,
             contest_id_from_args(args.contest_id, ask_for_contest)).run()
