@@ -93,7 +93,7 @@ class TestProcessMatcher(unittest.TestCase):
                 self.w0_cmdlines + self.bad_cmdlines))
             self.assertEqual(self.pm.find(self.w0), "base")
             self.assertEqual(self.pm.find(self.w0), "base")
-            f.assert_called_once()
+            self.assertEqual(f.call_count, 1)
 
 
 if __name__ == "__main__":
