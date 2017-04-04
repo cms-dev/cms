@@ -37,7 +37,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 import six
 
-from . import CastingArray, RepeatedUnicode, engine
+from . import CastingArray, engine
 
 
 _TYPE_MAP = {
@@ -51,7 +51,6 @@ _TYPE_MAP = {
     Enum: six.string_types,  # TODO Use six.text_type.
     JSONB: object,
     ARRAY: list,
-    RepeatedUnicode: list,  # TODO Use a type that checks also the content.
     CastingArray: list,  # TODO Use a type that checks also the content.
 }
 
