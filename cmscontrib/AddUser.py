@@ -49,12 +49,11 @@ def add_user(first_name, last_name, username, password, email, timezone,
     logger.info("Creating the user in the database.")
     if password is None:
         password = generate_random_password()
-    if preferred_languages is None or preferred_languages == "":
-        preferred_languages = "[]"
+    if preferred_languages is None:
+        preferred_languages = []
     else:
         preferred_languages = \
-            "[" + ",".join("\"" + lang + "\""
-                           for lang in preferred_languages.split(",")) + "]"
+            list(lang.strip() for lang in preferred_languages.split(","))
     user = User(first_name=first_name,
                 last_name=last_name,
                 username=username,
