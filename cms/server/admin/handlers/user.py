@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
@@ -74,7 +74,7 @@ class UserHandler(BaseHandler):
             self.get_password(attrs, user.password, False)
 
             self.get_string(attrs, "email", empty=None)
-            self.get_string(attrs, "preferred_languages")
+            self.get_string_list(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
 
             assert attrs.get("username") is not None, \
@@ -245,7 +245,7 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
 
             self.get_string(attrs, "timezone", empty=None)
 
-            self.get_string(attrs, "preferred_languages")
+            self.get_string_list(attrs, "preferred_languages")
 
             # Create the user.
             user = User(**attrs)
