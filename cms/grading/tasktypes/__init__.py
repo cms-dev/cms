@@ -50,7 +50,7 @@ def get_task_type(name=None, parameters=None,
     they are obtained from the dataset.
 
     name (unicode|None): the name of the TaskType class.
-    parameters (unicode|None): the JSON-encoded parameters.
+    parameters ([object]|None): the parameters.
     dataset (Dataset|None): the dataset whose TaskType we want (if
         None, use the other parameters to find the task type).
 
@@ -71,11 +71,5 @@ def get_task_type(name=None, parameters=None,
         raise ValueError("Need exactly one way to get the task type.")
 
     class_ = get_task_type_class(name)
-
-    try:
-        parameters = json.loads(parameters)
-    except ValueError as error:
-        logger.error("Cannot decode task type parameters.\n%r.", error)
-        raise
 
     return class_(parameters)

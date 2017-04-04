@@ -60,7 +60,7 @@ class ScoreType(object):
     def __init__(self, parameters, public_testcases):
         """Initializer.
 
-        parameters (object): format is specified in the subclasses.
+        parameters ([object]): format is specified in the subclasses.
         public_testcases (dict): associate to each testcase's codename
                                  a boolean indicating if the testcase
                                  is public.
@@ -168,7 +168,7 @@ class ScoreTypeAlone(ScoreType):
 class ScoreTypeGroup(ScoreTypeAlone):
     """Intermediate class to manage tasks whose testcases are
     subdivided in groups (or subtasks). The score type parameters must
-    be in the form [[m, t, ...], [...], ...], where m is the maximum
+    be in the form [m, t, ...], [...], ..., where m is the maximum
     score for the given subtask and t is the parameter for specifying
     testcases.
 

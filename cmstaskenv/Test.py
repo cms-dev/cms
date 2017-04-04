@@ -25,7 +25,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import atexit
-import json
 import logging
 import os
 import select
@@ -128,7 +127,7 @@ def test_testcases(base_dir, solution, language, assume=None):
             dataset.testcases[t].codename).to_dict(),
         language=language.name,
         task_type=dataset.task_type,
-        task_type_parameters=json.loads(dataset.task_type_parameters),
+        task_type_parameters=dataset.task_type_parameters,
         managers=dict(dataset.managers),
         executables=executables,
         input=dataset.testcases[t].input, output=dataset.testcases[t].output,
@@ -202,7 +201,7 @@ def test_testcases(base_dir, solution, language, assume=None):
         move_cursor(directions.UP, erase=True)
 
     # Subtasks scoring
-    subtasks = json.loads(dataset.score_type_parameters)
+    subtasks = dataset.score_type_parameters
     if not isinstance(subtasks, list) or len(subtasks) == 0:
         subtasks = [[100, len(info)]]
 

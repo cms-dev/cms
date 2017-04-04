@@ -136,9 +136,9 @@ class TestCaseWithDatabase(unittest.TestCase):
             "task": task,
             "description": unique_unicode_id(),
             "task_type": "",
-            "task_type_parameters": "",
+            "task_type_parameters": [],
             "score_type": "",
-            "score_type_parameters": "",
+            "score_type_parameters": [],
         }
         args.update(kwargs)
         dataset = Dataset(**args)
