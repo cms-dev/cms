@@ -33,7 +33,7 @@ from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 import six
 
@@ -50,6 +50,7 @@ _TYPE_MAP = {
     Interval: timedelta,
     Enum: six.string_types,  # TODO Use six.text_type.
     JSONB: object,
+    ARRAY: list,
     RepeatedUnicode: list,  # TODO Use a type that checks also the content.
     CastingArray: list,  # TODO Use a type that checks also the content.
 }
