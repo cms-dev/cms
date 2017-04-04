@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,7 +31,6 @@ import ipaddress
 import psycopg2.extras
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.types import TypeDecorator, Unicode
 
 
 # Have psycopg2 use the types in ipaddress to represent the CIDR type.
@@ -84,42 +83,3 @@ except AttributeError:
 class CastingArray(ARRAY):
     def bind_expression(self, bindvalue):
         return sqlalchemy.cast(bindvalue, self)
-
-
-class RepeatedUnicode(TypeDecorator):
-    """Implement (short) lists of unicode strings.
-
-    All values need to contain some non-whitespace characters and no
-    comma. Leading and trailing whitespace will be stripped.
-
-    """
-    impl = Unicode
-
-    def process_bind_param(self, value, unused_dialect):
-        """Encode value in a single unicode.
-
-        value ([unicode]): the list to encode.
-
-        return (unicode): the unicode string encoding value.
-
-        raise (ValueError): if some string contains "," or is composed
-            only by whitespace.
-
-        """
-        # This limitation may be removed if necessary.
-        if any("," in val for val in value):
-            raise ValueError("Comma cannot be encoded.")
-        if any(len(val) == 0 or val.isspace() for val in value):
-            raise ValueError("Cannot be only whitespace.")
-        return ",".join(val.strip() for val in value)
-
-    def process_result_value(self, value, unused_dialect):
-        """Decode values from a single unicode.
-
-        value (unicode): the unicode string to decode.
-
-        return ([unicode]): the decoded list.
-
-        """
-        return list(val.strip() for val in value.split(",")
-                    if len(val) > 0 and not val.isspace())
