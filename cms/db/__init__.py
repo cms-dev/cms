@@ -50,7 +50,7 @@ __all__ = [
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # types
-    "CastingArray", "RepeatedUnicode",
+    "CastingArray",
     # base
     "metadata", "Base",
     # fsobject
@@ -95,7 +95,7 @@ engine = create_engine(config.database, echo=config.database_debug,
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
-from .types import CastingArray, RepeatedUnicode
+from .types import CastingArray
 from .base import metadata, Base
 from .fsobject import FSObject
 from .validation import CodenameConstraint, FilenameConstraint, DigestConstraint

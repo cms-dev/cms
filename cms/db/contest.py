@@ -34,10 +34,11 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
-    Boolean
+    Boolean, String
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Base, RepeatedUnicode, CodenameConstraint
+from . import Base, CodenameConstraint
 
 from cmscommon.datetime import make_datetime
 
@@ -72,13 +73,13 @@ class Contest(Base):
     # The list of language codes of the localizations that contestants
     # are allowed to use (empty means all).
     allowed_localizations = Column(
-        RepeatedUnicode(),
+        ARRAY(String),
         nullable=False,
         default=[])
 
     # The list of names of languages allowed in the contest.
     languages = Column(
-        RepeatedUnicode(),
+        ARRAY(String),
         nullable=False,
         default=["C11 / gcc", "C++11 / g++", "Pascal / fpc"])
 
