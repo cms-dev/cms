@@ -31,7 +31,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import logging
 import traceback
 
@@ -115,11 +114,7 @@ class TaskHandler(BaseHandler):
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
-        try:
-            self.r_params["primary_statements"] = \
-                json.loads(task.primary_statements)
-        except ValueError:
-            self.r_params["primary_statements"] = []
+        self.r_params["primary_statements"] = task.primary_statements
         self.r_params["submissions"] = \
             self.sql_session.query(Submission)\
                 .join(Task).filter(Task.id == task_id)\
@@ -144,7 +139,7 @@ class TaskHandler(BaseHandler):
             for statement in task.statements:
                 self.get_bool(primary_statements,
                               "primary_statement_%s" % statement)
-            attrs["primary_statements"] = json.dumps(sorted([
+            attrs["primary_statements"] = list(sorted([
                 k.replace("primary_statement_", "", 1)
                 for k in primary_statements
                 if primary_statements[k]

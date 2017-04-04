@@ -24,7 +24,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import io
 import logging
 import os
@@ -132,7 +131,6 @@ class PolygonTaskLoader(TaskLoader):
                                                               language))
                     args["statements"][lang] = Statement(lang, digest)
                     args["primary_statements"].append(lang)
-            args["primary_statements"] = json.dumps(args["primary_statements"])
 
         args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
 
