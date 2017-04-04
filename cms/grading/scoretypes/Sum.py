@@ -24,8 +24,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
-
 from cms.grading.ScoreType import ScoreTypeAlone
 
 
@@ -139,9 +137,7 @@ class Sum(ScoreTypeAlone):
             else:
                 public_testcases.append({"idx": idx})
 
-        return score, json.dumps(testcases), \
-            public_score, json.dumps(public_testcases), \
-            []
+        return score, testcases, public_score, public_testcases, []
 
     def get_public_outcome(self, outcome):
         """Return a public outcome from an outcome.
