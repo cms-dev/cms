@@ -365,7 +365,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 sys.exit(1)
             args["statements"] = [Statement(primary_language, digest)]
 
-            args["primary_statements"] = '["%s"]' % (primary_language)
+            args["primary_statements"] = [primary_language]
 
         args["attachments"] = []  # FIXME Use auxiliary
 
