@@ -108,7 +108,7 @@ class CloneDatasetHandler(BaseHandler):
         self.r_params["clone_id"] = dataset_id_to_copy
         self.r_params["original_dataset"] = original_dataset
         self.r_params["original_dataset_task_type_parameters"] = \
-            json.loads(original_dataset.task_type_parameters)
+            original_dataset.task_type_parameters
         self.r_params["default_description"] = description
         self.render("add_dataset.html", **self.r_params)
 

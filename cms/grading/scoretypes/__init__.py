@@ -51,7 +51,7 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
     they are obtained from the dataset.
 
     name (unicode|None): the name of the ScoreType class.
-    parameters (unicode|None): the JSON-encoded parameters.
+    parameters ([object]|None): the parameters.
     public_testcases ({str: bool}|None): for each testcase (identified
         by its codename) a flag telling whether it's public or not.
     dataset (Dataset|None): the dataset whose ScoreType we want.
@@ -72,11 +72,5 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
         raise ValueError("Need exactly one way to get the score type.")
 
     class_ = get_score_type_class(name)
-
-    try:
-        parameters = json.loads(parameters)
-    except ValueError as error:
-        logger.error("Cannot decode score type parameters.\n%r.", error)
-        raise
 
     return class_(parameters, public_testcases)

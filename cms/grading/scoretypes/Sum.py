@@ -101,8 +101,8 @@ class Sum(ScoreTypeAlone):
         score = 0.0
         for public in self.public_testcases.itervalues():
             if public:
-                public_score += self.parameters
-            score += self.parameters
+                public_score += self.parameters[0]
+            score += self.parameters[0]
         return score, public_score, []
 
     def compute_score(self, submission_result):
@@ -121,7 +121,7 @@ class Sum(ScoreTypeAlone):
         public_score = 0.0
 
         for idx in indices:
-            this_score = float(evaluations[idx].outcome) * self.parameters
+            this_score = float(evaluations[idx].outcome) * self.parameters[0]
             tc_outcome = self.get_public_outcome(this_score)
             score += this_score
             testcases.append({
@@ -151,7 +151,7 @@ class Sum(ScoreTypeAlone):
         """
         if outcome <= 0.0:
             return N_("Not correct")
-        elif outcome >= self.parameters:
+        elif outcome >= self.parameters[0]:
             return N_("Correct")
         else:
             return N_("Partially correct")

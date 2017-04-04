@@ -61,7 +61,7 @@ def get_dataset():
     dataset.testcases = dict(
         (get_string(), get_testcase()) for _ in xrange(10))
     dataset.score_type = "Sum"
-    dataset.score_type_parameters = "100"
+    dataset.score_type_parameters = [100]
     return dataset
 
 

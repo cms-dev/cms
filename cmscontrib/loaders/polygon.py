@@ -215,8 +215,7 @@ class PolygonTaskLoader(TaskLoader):
 
             args["task_type"] = "Batch"
             args["task_type_parameters"] = \
-                '["%s", ["%s", "%s"], "%s"]' % \
-                ("alone", infile_param, outfile_param, evaluation_param)
+                ["alone", [infile_param, outfile_param], evaluation_param]
 
             args["score_type"] = "Sum"
             total_value = 100.0
@@ -227,7 +226,7 @@ class PolygonTaskLoader(TaskLoader):
             n_input = testcases
             if n_input != 0:
                 input_value = total_value / n_input
-            args["score_type_parameters"] = str(input_value)
+            args["score_type_parameters"] = [input_value]
 
             args["testcases"] = []
 

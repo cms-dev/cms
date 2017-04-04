@@ -473,7 +473,7 @@ class BaseHandler(CommonRequestHandler):
             class_ = get_task_type_class(name)
         except KeyError:
             raise ValueError("Task type not recognized: %s." % name)
-        params = json.dumps(class_.parse_handler(self, params + name + "_"))
+        params = class_.parse_handler(self, params + name + "_")
         dest["task_type"] = name
         dest["task_type_parameters"] = params
 
@@ -501,6 +501,10 @@ class BaseHandler(CommonRequestHandler):
         params = self.get_argument(params, None)
         if params is None:
             raise ValueError("Score type parameters not found.")
+        try:
+            params = json.loads(params)
+        except ValueError:
+            raise ValueError("Score type parameters are invalid JSON.")
         dest["score_type"] = name
         dest["score_type_parameters"] = params
 
