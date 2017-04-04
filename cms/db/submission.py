@@ -35,7 +35,8 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from . import Base, Participation, Task, Dataset, Testcase
+from . import Base, Participation, Task, Dataset, Testcase, \
+    FilenameConstraint, DigestConstraint
 from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 
 from cmscommon.datetime import make_datetime
@@ -190,9 +191,11 @@ class File(Base):
     # Filename and digest of the submitted file.
     filename = Column(
         Unicode,
+        FilenameConstraint(),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint(),
         nullable=False)
 
 
@@ -608,9 +611,11 @@ class Executable(Base):
     # Filename and digest of the generated executable.
     filename = Column(
         Unicode,
+        FilenameConstraint(),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint(),
         nullable=False)
 
 

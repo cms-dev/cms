@@ -38,7 +38,8 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from . import Base, Contest
+from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
+    DigestConstraint
 from .smartmappedcollection import smart_mapped_collection, smc_sa10_workaround
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
@@ -95,6 +96,7 @@ class Task(Base):
     # Short name and long human readable title of the task.
     name = Column(
         Unicode,
+        CodenameConstraint(),
         nullable=False,
         unique=True)
     title = Column(
@@ -263,6 +265,7 @@ class Statement(Base):
     # Digest of the file.
     digest = Column(
         String,
+        DigestConstraint(),
         nullable=False)
 
 
@@ -298,9 +301,11 @@ class Attachment(Base):
     # Filename and digest of the provided attachment.
     filename = Column(
         Unicode,
+        FilenameConstraint(),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint(),
         nullable=False)
 
 
@@ -333,6 +338,7 @@ class SubmissionFormatElement(Base):
     # Format of the given submission file.
     filename = Column(
         Unicode,
+        FilenameConstraint(),
         nullable=False)
 
 
@@ -502,9 +508,11 @@ class Manager(Base):
     # Filename and digest of the provided manager.
     filename = Column(
         Unicode,
+        FilenameConstraint(),
         nullable=False)
     digest = Column(
         String,
+        DigestConstraint(),
         nullable=False)
 
 
@@ -539,6 +547,7 @@ class Testcase(Base):
     # Codename identifying the testcase.
     codename = Column(
         Unicode,
+        CodenameConstraint(),
         nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even
@@ -551,7 +560,9 @@ class Testcase(Base):
     # Digests of the input and output files.
     input = Column(
         String,
+        DigestConstraint(),
         nullable=False)
     output = Column(
         String,
+        DigestConstraint(),
         nullable=False)

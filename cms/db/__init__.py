@@ -49,10 +49,15 @@ __all__ = [
     "version", "engine",
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
-    # base
-    "metadata", "Base",
     # types
     "RepeatedUnicode",
+    # base
+    "metadata", "Base",
+    # fsobject
+    "FSObject",
+    # validation
+    "CodenameConstraint", "FilenameConstraint", "DigestConstraint",
+    "IPv4Constraint",
     # contest
     "Contest", "Announcement",
     # user
@@ -70,21 +75,19 @@ __all__ = [
     "UserTestExecutable",
     # printjob
     "PrintJob",
-    # fsobject
-    "FSObject",
     # init
     "init_db",
     # drop
     "drop_db",
     # util
     "test_db_connection", "get_contest_list", "is_contest_id",
-    "ask_for_contest",
+    "ask_for_contest"
 ]
 
 
 # Instantiate or import these objects.
 
-version = 25
+version = 26
 
 engine = create_engine(config.database, echo=config.database_debug,
                        pool_timeout=60, pool_recycle=120)
@@ -95,6 +98,9 @@ from .session import Session, ScopedSession, SessionGen, \
 
 from .types import RepeatedUnicode
 from .base import metadata, Base
+from .fsobject import FSObject
+from .validation import CodenameConstraint, FilenameConstraint, \
+    DigestConstraint, IPv4Constraint
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin
@@ -105,7 +111,6 @@ from .submission import Submission, File, Token, SubmissionResult, \
 from .usertest import UserTest, UserTestFile, UserTestManager, \
     UserTestResult, UserTestExecutable
 from .printjob import PrintJob
-from .fsobject import FSObject
 
 from .init import init_db
 from .drop import drop_db
