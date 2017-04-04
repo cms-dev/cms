@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,7 +32,6 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import gevent
-import json
 import random
 import unittest
 from mock import Mock, call
@@ -67,14 +66,14 @@ class TestScoringService(unittest.TestCase):
                 sr.score_details,
                 sr.public_score,
                 sr.public_score_details,
-                json.loads(sr.ranking_score_details)) == score_info
+                sr.ranking_score_details) == score_info
 
     def test_new_evaluation_two(self):
         """More than one submissions in the queue.
 
         """
         score_type = Mock()
-        score_type.compute_score.return_value = (1, "1", 2, "2", ["1", "2"])
+        score_type.compute_score.return_value = (1, 1, 2, 2, ["1", "2"])
         sr_a = TestScoringService.new_sr_to_score()
         sr_b = TestScoringService.new_sr_to_score()
         TestScoringService.set_up_db([sr_a, sr_b], score_type)
@@ -92,7 +91,7 @@ class TestScoringService(unittest.TestCase):
         """
         sr = TestScoringService.new_sr_scored()
         score_type = Mock()
-        score_type.compute_score.return_value = (1, "1", 2, "2", ["1", "2"])
+        score_type.compute_score.return_value = (1, 1, 2, 2, ["1", "2"])
         TestScoringService.set_up_db([sr], score_type)
 
         self.service.new_evaluation(123, 456)
@@ -119,9 +118,9 @@ class TestScoringService(unittest.TestCase):
     def new_score_info():
         return (
             random.randint(1, 1000),
-            "%d" % random.randint(1, 1000),
             random.randint(1, 1000),
-            "%d" % random.randint(1, 1000),
+            random.randint(1, 1000),
+            random.randint(1, 1000),
             ["%d" % random.randint(1, 1000), "%d" % random.randint(1, 1000)]
         )
 
