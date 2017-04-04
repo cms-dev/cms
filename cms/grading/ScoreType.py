@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 wafrelka <wafrelka@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ class ScoreType(object):
     def __init__(self, parameters, public_testcases):
         """Initializer.
 
-        parameters (object): format is specified in the subclasses.
+        parameters ([object]): format is specified in the subclasses.
         public_testcases (dict): associate to each testcase's codename
                                  a boolean indicating if the testcase
                                  is public.
@@ -166,7 +166,7 @@ class ScoreTypeAlone(ScoreType):
 class ScoreTypeGroup(ScoreTypeAlone):
     """Intermediate class to manage tasks whose testcases are
     subdivided in groups (or subtasks). The score type parameters must
-    be in the form [[m, t, ...], [...], ...], where m is the maximum
+    be in the form [m, t, ...], [...], ..., where m is the maximum
     score for the given subtask and t is the parameter for specifying
     testcases.
 
