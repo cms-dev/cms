@@ -395,8 +395,7 @@ class ProxyService(TriggeredService):
         if submission_result is not None and submission_result.scored():
             # We're sending the unrounded score to RWS
             subchange_data["score"] = submission_result.score
-            subchange_data["extra"] = \
-                json.loads(submission_result.ranking_score_details)
+            subchange_data["extra"] = submission_result.ranking_score_details
 
         self.scores_sent_to_rankings.add(submission.id)
 

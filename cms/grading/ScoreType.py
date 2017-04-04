@@ -102,7 +102,7 @@ class ScoreType(object):
         """Return an HTML string representing the score details of a
         submission.
 
-        score_details (unicode): the data saved by the score type
+        score_details (object): the data saved by the score type
             itself in the database; can be public or private.
         translator (function|None): the function to localize strings,
             or None to use the identity.
@@ -112,11 +112,8 @@ class ScoreType(object):
         """
         if translator is None:
             translator = lambda string: string
-        try:
-            score_details = json.loads(score_details)
-        except (TypeError, ValueError):
-            # TypeError raised if score_details is None
-            logger.error("Found a null or non-JSON score details string. "
+        if score_details is None:
+            logger.error("Found a null score details string. "
                          "Try invalidating scores.")
             return translator("Score details temporarily unavailable.")
         else:
@@ -143,7 +140,7 @@ class ScoreType(object):
         unused_submission_result (SubmissionResult): the submission
             result of which we want the score
 
-        returns (float, str, float, str, [str]): respectively: the
+        return (float, object, float, object, [str]): respectively: the
             score, the opaque data with additional information (e.g.
             testcases' and subtasks' score) that will be converted to
             HTML by get_html_details, and the same information from the
@@ -398,9 +395,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                            for st in public_subtasks
                            if "score" in st)
 
-        return score, json.dumps(subtasks), \
-            public_score, json.dumps(public_subtasks), \
-            ranking_details
+        return score, subtasks, public_score, public_subtasks, ranking_details
 
     def get_public_outcome(self, unused_outcome, unused_parameter):
         """Return a public outcome from an outcome.
