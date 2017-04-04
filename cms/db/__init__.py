@@ -50,14 +50,13 @@ __all__ = [
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # types
-    "RepeatedUnicode",
+    "CastingArray", "RepeatedUnicode",
     # base
     "metadata", "Base",
     # fsobject
     "FSObject",
     # validation
     "CodenameConstraint", "FilenameConstraint", "DigestConstraint",
-    "IPv4Constraint",
     # contest
     "Contest", "Announcement",
     # user
@@ -96,11 +95,10 @@ engine = create_engine(config.database, echo=config.database_debug,
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
-from .types import RepeatedUnicode
+from .types import CastingArray, RepeatedUnicode
 from .base import metadata, Base
 from .fsobject import FSObject
-from .validation import CodenameConstraint, FilenameConstraint, \
-    DigestConstraint, IPv4Constraint
+from .validation import CodenameConstraint, FilenameConstraint, DigestConstraint
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin

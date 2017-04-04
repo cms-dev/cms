@@ -12,6 +12,7 @@ werkzeug>=0.10,<0.11  # https://github.com/pallets/werkzeug/blob/master/CHANGES
 patool>=1.10,<1.11  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
 bcrypt>=2.0,<2.1  # https://github.com/pyca/bcrypt/
 chardet>=2.3,<2.4  # https://pypi.python.org/pypi/chardet
+ipaddress>=1.0,<1.1  # https://pypi.python.org/pypi/ipaddress
 
 # Only for some importers:
 pyyaml>=3.11,<3.12  # http://pyyaml.org/wiki/PyYAML

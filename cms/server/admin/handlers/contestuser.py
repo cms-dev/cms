@@ -211,7 +211,7 @@ class ParticipationHandler(BaseHandler):
             attrs = participation.get_attrs()
 
             self.get_string(attrs, "password", empty=None)
-            self.get_ip_address_or_subnet(attrs, "ip")
+            self.get_ip_networks(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
             self.get_timedelta_sec(attrs, "extra_time")

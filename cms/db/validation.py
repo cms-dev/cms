@@ -96,15 +96,3 @@ class DigestConstraint(ValidationConstraint):
     def get_condition(column):
         return column.op("~")("^([0-9a-f]{40}|%s)$"
                               % FileCacher.TOMBSTONE_DIGEST)
-
-
-class IPv4Constraint(ValidationConstraint):
-    """Check that the column is a valid IPv4 address (plus subnet?)."""
-    RE255 = "[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
-    RE32 = "[0-9]|[1-2][0-9]|3[0-2]"
-
-    @staticmethod
-    def get_condition(column):
-        return column.op("~")(
-            "^(%(re255)s)\.(%(re255)s)\.(%(re255)s)\.(%(re255)s)(/(%(re32)s))?$"
-            % {"re255": IPv4Constraint.RE255, "re32": IPv4Constraint.RE32})

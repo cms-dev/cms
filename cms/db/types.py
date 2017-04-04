@@ -26,7 +26,21 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import psycopg2.extras
+import sqlalchemy
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import TypeDecorator, Unicode
+
+
+# Have psycopg2 use the types in ipaddress to represent the CIDR type.
+psycopg2.extras.register_ipaddress()
+
+
+# Taken from:
+# http://docs.sqlalchemy.org/en/rel_1_0/dialects/postgresql.html#using-json-jsonb-with-array
+class CastingArray(ARRAY):
+    def bind_expression(self, bindvalue):
+        return sqlalchemy.cast(bindvalue, self)
 
 
 class RepeatedUnicode(TypeDecorator):

@@ -29,6 +29,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import ipaddress
 import logging
 import re
 import string
@@ -93,12 +94,6 @@ def encode_codename(s):
 
 class Updater(object):
 
-    RE255 = "[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
-    RE32 = "[0-9]|[1-2][0-9]|3[0-2]"
-    IP_ADDRESS_REGEXP = (
-        "^(%(re255)s)\.(%(re255)s)\.(%(re255)s)\.(%(re255)s)(/(%(re32)s))?$"
-        % {"re255": RE255, "re32": RE32})
-
     def __init__(self, data):
         assert data["_version"] == 25
         self.objs = data
@@ -127,13 +122,18 @@ class Updater(object):
                             "field contains an invalid SHA-1 digest: %s",
                             cls, col, v[col])
                         sys.exit(1)
+
             for cls, col in IP_ADDRESSES:
                 if v["_class"] == cls and v[col] is not None:
-                    if not re.match(Updater.IP_ADDRESS_REGEXP, v[col]):
-                        logger.critical(
-                            "The dump contains an instance of %s whose %s "
-                            "field contains an invalid IPv4 address: %s",
-                            cls, col, v[col])
-                        sys.exit(1)
+                    v[col] = list(network.strip() for network in v[col].split())
+                    for network in v[col]:
+                        try:
+                            ipaddress.ip_network(network)
+                        except ValueError:
+                            logger.critical(
+                                "The dump contains an instance of %s whose %s "
+                                "field contains an invalid IPv4 address: %s",
+                                cls, col, v[col])
+                            sys.exit(1)
 
         return self.objs
