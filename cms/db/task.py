@@ -38,7 +38,7 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
     DigestConstraint
@@ -104,12 +104,12 @@ class Task(Base):
         Unicode,
         nullable=False)
 
-    # A JSON-encoded lists of strings: the language codes of the
-    # statements that will be highlighted to all users for this task.
+    # The language codes of the statements that will be highlighted to
+    # all users for this task.
     primary_statements = Column(
-        String,
+        ARRAY(String),
         nullable=False,
-        default="[]")
+        default=[])
 
     # The parameters that control task-tokens follow. Note that their
     # effect during the contest depends on the interaction with the
