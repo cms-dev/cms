@@ -35,6 +35,7 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from . import Base, Participation, Task, Dataset, Testcase, \
     FilenameConstraint, DigestConstraint
@@ -346,13 +347,13 @@ class SubmissionResult(Base):
         Float,
         nullable=True)
 
-    # Score details. It's a JSON-encoded string containing information
+    # Score details. It's a JSON-like structure containing information
     # that is given to ScoreType.get_html_details to generate an HTML
     # snippet that is shown on AWS and, if the user used a token, on
     # CWS to display the details of the submission.
     # For example, results for each testcases, subtask, etc.
     score_details = Column(
-        String,
+        JSONB,
         nullable=True)
 
     # The same as the last two fields, but from the point of view of
@@ -361,14 +362,13 @@ class SubmissionResult(Base):
         Float,
         nullable=True)
     public_score_details = Column(
-        String,
+        JSONB,
         nullable=True)
 
     # Ranking score details. It is a list of strings that are going to
-    # be shown in a single row in the table of submission in RWS. JSON
-    # encoded.
+    # be shown in a single row in the table of submission in RWS.
     ranking_score_details = Column(
-        String,
+        ARRAY(String),
         nullable=True)
 
     # Follows the description of the fields automatically added by

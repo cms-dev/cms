@@ -104,10 +104,8 @@ class ScoringExecutor(Executor):
                 submission_result.score_details, \
                 submission_result.public_score, \
                 submission_result.public_score_details, \
-                ranking_score_details = \
+                submission_result.ranking_score_details = \
                 score_type.compute_score(submission_result)
-            submission_result.ranking_score_details = \
-                json.dumps(ranking_score_details)
 
             # Store it.
             session.commit()

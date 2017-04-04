@@ -96,7 +96,7 @@ scores. No notifications will be sent.</p>
         Public score: {{ c.old_public_score }} -&gt; {{ c.new_public_score }}<br/>
         {% end %}
         {% if c.old_ranking_score_details is not None or c.new_ranking_score_details is not None %}
-        Ranking score: {{ c.old_ranking_score_details }} -&gt; {{ c.new_ranking_score_details }}<br/>
+        Ranking score: {{ json.dumps(c.old_ranking_score_details) }} -&gt; {{ json.dumps(c.new_ranking_score_details) }}<br/>
         {% end %}
       </td>
     </tr>
