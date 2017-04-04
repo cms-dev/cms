@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
@@ -32,7 +32,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import logging
 import os
 import re
@@ -108,7 +107,7 @@ class CloneDatasetHandler(BaseHandler):
         self.r_params["clone_id"] = dataset_id_to_copy
         self.r_params["original_dataset"] = original_dataset
         self.r_params["original_dataset_task_type_parameters"] = \
-            json.loads(original_dataset.task_type_parameters)
+            original_dataset.task_type_parameters
         self.r_params["default_description"] = description
         self.render("add_dataset.html", **self.r_params)
 

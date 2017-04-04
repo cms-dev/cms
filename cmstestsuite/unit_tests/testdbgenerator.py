@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -136,9 +137,9 @@ class TestCaseWithDatabase(unittest.TestCase):
             "task": task,
             "description": unique_unicode_id(),
             "task_type": "",
-            "task_type_parameters": "",
+            "task_type_parameters": [],
             "score_type": "",
-            "score_type_parameters": "",
+            "score_type_parameters": [],
         }
         args.update(kwargs)
         dataset = Dataset(**args)
