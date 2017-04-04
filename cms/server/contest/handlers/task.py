@@ -33,7 +33,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import logging
 
 import tornado.web
@@ -77,13 +76,7 @@ class TaskDescriptionHandler(ContestHandler):
             else:
                 statement.language_name = lang_code
 
-        try:
-            self.r_params["primary_statements"] = \
-                json.loads(task.primary_statements)
-        except ValueError as e:
-            self.r_params["primary_statements"] = []
-            logger.error("Primary statements for task %s is invalid [%r].",
-                         task_name, e)
+        self.r_params["primary_statements"] = task.primary_statements
 
         try:
             self.r_params["user_primary"] = \

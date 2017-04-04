@@ -371,7 +371,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 primary_language: Statement(primary_language, digest)
             }
 
-            args["primary_statements"] = '["%s"]' % (primary_language)
+            args["primary_statements"] = [primary_language]
 
         args["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name)]
