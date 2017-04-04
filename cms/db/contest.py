@@ -61,7 +61,7 @@ class Contest(Base):
     # Short name of the contest.
     name = Column(
         Unicode,
-        CodenameConstraint(),
+        CodenameConstraint("name"),
         nullable=False,
         unique=True)
     # Description of the contest (human readable).

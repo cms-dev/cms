@@ -68,7 +68,7 @@ class User(Base):
     # Username and password to log in the CWS.
     username = Column(
         Unicode,
-        CodenameConstraint(),
+        CodenameConstraint("username"),
         nullable=False,
         unique=True)
     password = Column(
@@ -126,7 +126,7 @@ class Team(Base):
     # Team code (e.g. the ISO 3166-1 code of a country)
     code = Column(
         Unicode,
-        CodenameConstraint(),
+        CodenameConstraint("code"),
         nullable=False,
         unique=True)
 

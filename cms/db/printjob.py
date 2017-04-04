@@ -64,11 +64,11 @@ class PrintJob(Base):
     # Filename and digest of the submitted file.
     filename = Column(
         Unicode,
-        FilenameConstraint(),
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("digest"),
         nullable=False)
 
     done = Column(

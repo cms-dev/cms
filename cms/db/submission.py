@@ -191,11 +191,11 @@ class File(Base):
     # Filename and digest of the submitted file.
     filename = Column(
         Unicode,
-        FilenameConstraint(),
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -611,11 +611,11 @@ class Executable(Base):
     # Filename and digest of the generated executable.
     filename = Column(
         Unicode,
-        FilenameConstraint(),
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("digest"),
         nullable=False)
 
 

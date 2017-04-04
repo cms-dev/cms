@@ -88,7 +88,7 @@ class UserTest(Base):
     # Input (provided by the user) file's digest for this test.
     input = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("input"),
         nullable=False)
 
     # Follows the description of the fields automatically added by
@@ -173,11 +173,11 @@ class UserTestFile(Base):
     # Filename and digest of the submitted file.
     filename = Column(
         String,
-        FilenameConstraint(),
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -213,11 +213,11 @@ class UserTestManager(Base):
     # Filename and digest of the submitted manager.
     filename = Column(
         String,
-        FilenameConstraint(),
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("digest"),
         nullable=False)
 
 
@@ -269,7 +269,7 @@ class UserTestResult(Base):
     # Output file's digest for this test
     output = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("output"),
         nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
@@ -530,9 +530,9 @@ class UserTestExecutable(Base):
     # Filename and digest of the generated executable.
     filename = Column(
         String,
-        FilenameConstraint(),
+        FilenameConstraint("filename"),
         nullable=False)
     digest = Column(
         String,
-        DigestConstraint(),
+        DigestConstraint("digest"),
         nullable=False)

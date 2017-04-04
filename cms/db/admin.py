@@ -55,7 +55,7 @@ class Admin(Base):
     # Username used to log in in AWS.
     username = Column(
         Unicode,
-        CodenameConstraint(),
+        CodenameConstraint("username"),
         nullable=False,
         unique=True)
 

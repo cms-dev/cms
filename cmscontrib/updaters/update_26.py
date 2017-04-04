@@ -82,10 +82,10 @@ IP_ADDRESSES = [
 
 # Encodes any unicode string using only "A-Za-z0-9_-". The encoding is
 # injective if the input values aren't allowed to contain a double "_".
-def encode_codename(s):
+def encode_codename(s, extra=""):
     encoded_s = ""
     for char in s.encode('utf-8'):
-        if char not in string.ascii_letters + string.digits + "_-":
+        if char not in string.ascii_letters + string.digits + "_-" + extra:
             encoded_s += "__%x" % ord(char)
         else:
             encoded_s += unicode(char)
@@ -102,18 +102,21 @@ class Updater(object):
         for k, v in self.objs.iteritems():
             if k.startswith("_"):
                 continue
+
             for cls, col in CODENAMES:
                 if v["_class"] == cls and v[col] is not None:
                     v[col] = encode_codename(v[col])
+
             for cls, col in FILENAMES:
                 if v["_class"] == cls and v[col] is not None:
-                    if re.match("^\.{,2}$", v[col]) \
-                            or "/" in v[col] or "\0" in v[col]:
+                    v[col] = encode_codename(v[col], extra="%.")
+                    if v[col] in {"", ".", ".."}:
                         logger.critical(
                             "The dump contains an instance of %s whose %s "
                             "field contains an invalid filename: %s",
                             cls, col, v[col])
                         sys.exit(1)
+
             for cls, col in DIGESTS:
                 if v["_class"] == cls and v[col] is not None:
                     if not re.match("^([0-9a-f]{40}|x)$", v[col]):
