@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
@@ -37,7 +37,7 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.dialects.postgresql import CIDR
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 from cmscommon.crypto import generate_random_password, build_password
 
@@ -90,16 +90,16 @@ class User(Base):
         Unicode,
         nullable=True)
 
-    # A JSON-encoded list of strings: the language codes accepted by
-    # this user (from the "most preferred" to the "least preferred").
-    # If in a contest there is a statement available in some of these
-    # languages, then the most preferred of them will be highlighted.
+    # The language codes accepted by this user (from the "most
+    # preferred" to the "least preferred"). If in a contest there is a
+    # statement available in some of these languages, then the most
+    # preferred of them will be highlighted.
     # FIXME: possibly move it to Participation and change it back to
     # primary_statements
     preferred_languages = Column(
-        String,
+        ARRAY(String),
         nullable=False,
-        default="[]")
+        default=[])
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

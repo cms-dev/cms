@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -87,7 +87,7 @@ class TaskDescriptionHandler(ContestHandler):
 
         try:
             self.r_params["user_primary"] = \
-                json.loads(self.current_user.user.preferred_languages)
+                self.current_user.user.preferred_languages
         except ValueError as e:
             self.r_params["user_primary"] = []
             logger.error("Preferred languages for user %s is invalid [%r].",
