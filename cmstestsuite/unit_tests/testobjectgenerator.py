@@ -112,7 +112,7 @@ def get_participation(hidden=False, user=None):
 def get_sr(scored=True):
     sr = Mock()
     sr.scored.return_value = scored
-    sr.ranking_score_details = "0"
+    sr.ranking_score_details = ["0"]
     sr.score = get_int(100) if scored else None
     sr.token = None
     return sr
