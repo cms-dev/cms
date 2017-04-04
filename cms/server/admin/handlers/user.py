@@ -71,7 +71,7 @@ class UserHandler(BaseHandler):
             self.get_string(attrs, "username", empty=None)
             self.get_string(attrs, "password")
             self.get_string(attrs, "email")
-            self.get_string(attrs, "preferred_languages")
+            self.get_string_list(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
 
             assert attrs.get("username") is not None, \

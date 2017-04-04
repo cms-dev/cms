@@ -86,7 +86,7 @@ class TaskDescriptionHandler(ContestHandler):
 
         try:
             self.r_params["user_primary"] = \
-                json.loads(self.current_user.user.preferred_languages)
+                self.current_user.user.preferred_languages
         except ValueError as e:
             self.r_params["user_primary"] = []
             logger.error("Preferred languages for user %s is invalid [%r].",
