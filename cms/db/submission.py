@@ -34,7 +34,7 @@ from __future__ import unicode_literals
 from sqlalchemy import Boolean
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
-from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
+from sqlalchemy.types import Integer, Float, String, Unicode, DateTime, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -297,7 +297,7 @@ class SubmissionResult(Base):
     # compilation successful and we can evaluate, "fail" =
     # compilation unsuccessful, throw it away).
     compilation_outcome = Column(
-        String,
+        Enum("ok", "fail", name="compilation_outcome"),
         nullable=True)
 
     # The output from the sandbox (to allow localization the first item
@@ -345,7 +345,7 @@ class SubmissionResult(Base):
     # evaluation successful). At any time, this should be equal to
     # evaluations != [].
     evaluation_outcome = Column(
-        String,
+        Enum("ok", name="evaluation_outcome"),
         nullable=True)
 
     # Number of failures during evaluation.
