@@ -119,11 +119,11 @@
       </tr>
       <tr>
         <td>
-          <span class="info" title="JSON-encoded list of language codes, from the most to the least preferred.
-                                    Example: '[&quot;en&quot;, &quot;ja&quot;]'."></span>
+          <span class="info" title="Comma-separated list of language codes, from the most to the least preferred.
+                                    Example: 'en, ja'."></span>
           Preferred languages
         </td>
-        <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages }}"></td>
+        <td><input type="text" name="preferred_languages" value="{{ ", ".join(user.preferred_languages) }}"></td>
       </tr>
     </table>
     <input type="submit" value="Update" />

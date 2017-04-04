@@ -88,6 +88,11 @@ def argument_reader(func, empty=None):
     return helper
 
 
+def parse_string_list(value):
+    """Parse a comma-separated list of strings."""
+    return list(x.strip() for x in value.split(",") if x.strip())
+
+
 def parse_int(value):
     """Parse and validate an integer."""
     try:
@@ -331,6 +336,8 @@ class BaseHandler(CommonRequestHandler):
         self.render("error.html", status_code=status_code, **self.r_params)
 
     get_string = argument_reader(lambda a: a, empty="")
+
+    get_string_list = argument_reader(parse_string_list, empty=[])
 
     # When a checkbox isn't active it's not sent at all, making it
     # impossible to distinguish between missing and False.

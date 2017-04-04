@@ -96,9 +96,9 @@ Languages
 Statements
 ----------
 
-When there are many statements for a certain task (which are often different translations of the same statement) contest administrators may want to highlight some of them to the users. These may include, for example, the "official" version of the statement (the one that is considered the reference version in case of questions or appeals) or the translations for the languages understood by that particular user. To do that the ``primary_statements`` field of the tasks and the users has to be used.
+When there are many statements for a certain task (which are often different translations of the same statement) contest administrators may want to highlight some of them to the users. These may include, for example, the "official" version of the statement (the one that is considered the reference version in case of questions or appeals) or the translations for the languages understood by that particular user. To do that the ``primary_statements`` field of the tasks and the ``preferred_languages`` field of the users has to be used.
 
-The ``primary_statements`` field for the tasks is a JSON-encoded list of strings: it specifies the language codes of the statements that will be highlighted to all users. A valid example is ``["en_US", "it"]``. The ``primary_statements`` field for the users is a JSON-encoded object of lists of strings. Each item in this object specifies a task by its name and provides a list of language codes of the statements to highlight. For example ``{"task1": ["de"], "task2": ["de_CH"]}``.
+The ``primary_statements`` field for the tasks is a JSON-encoded list of strings: it specifies the language codes of the statements that will be highlighted to all users. A valid example is ``["en_US", "it"]``. The ``preferred_languages`` field for the users is a list of strings: it specifies the language codes of the statements to highlight. For example ``de, de_CH``.
 
 Note that users will always be able to access all statements, regardless of the ones that are highlighted. Note also that language codes in the form ``xx`` or ``xx_YY`` (where ``xx`` is an `ISO 639-1 code <http://www.iso.org/iso/language_codes.htm>`_ and ``YY`` is an `ISO 3166-1 code <http://www.iso.org/iso/country_codes.htm>`_) will be recognized and presented accordingly. For example ``en_AU`` will be shown as "English (Australia)".
 
