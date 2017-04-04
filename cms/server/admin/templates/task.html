@@ -358,7 +358,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <option value="{{ task_type.__name__ }}" {% if dataset.task_type == task_type.__name__ %}selected{% end %}>{{ task_type.__name__ }}</option>
               {% end %}
             </select>
-          {% set parameters = json.loads(dataset.task_type_parameters) if dataset.task_type_parameters != '' else None %}
+          {% set parameters = dataset.task_type_parameters %}
 
           {% for task_type in task_type_list %}
           <table class="TaskTypeOptions TaskTypeOptions_{{ dataset.id }} bordered" id="TaskType{{ task_type.__name__ }}Options_{{ dataset.id }}" style="display: none;">
@@ -418,7 +418,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <span class="info" title="Please see the score type documentation."></span>
             Score Parameters
           </td>
-          <td><textarea name="score_type_parameters_{{ dataset.id }}">{{ dataset.score_type_parameters }}</textarea></td>
+          <td><textarea name="score_type_parameters_{{ dataset.id }}">{{ json.dumps(dataset.score_type_parameters) }}</textarea></td>
         </tr>
       </table>
       <div class="hr"></div>

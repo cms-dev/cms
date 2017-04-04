@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,6 +33,7 @@ from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
+from sqlalchemy.dialects.postgresql import JSONB
 
 import six
 
@@ -48,6 +49,7 @@ _TYPE_MAP = {
     DateTime: datetime,
     Interval: timedelta,
     Enum: six.string_types,  # TODO Use six.text_type.
+    JSONB: object,
     RepeatedUnicode: list,  # TODO Use a type that checks also the content.
     CastingArray: list,  # TODO Use a type that checks also the content.
 }

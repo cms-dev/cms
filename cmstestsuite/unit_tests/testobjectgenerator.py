@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -62,7 +63,7 @@ def get_dataset():
     dataset.testcases = dict(
         (get_string(), get_testcase()) for _ in xrange(10))
     dataset.score_type = "Sum"
-    dataset.score_type_parameters = "100"
+    dataset.score_type_parameters = 100
     return dataset
 
 

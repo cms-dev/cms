@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -38,6 +38,7 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.dialects.postgresql import JSONB
 
 from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
     DigestConstraint
@@ -399,9 +400,9 @@ class Dataset(Base):
         String,
         nullable=False)
 
-    # Parameters for the task type class, JSON encoded.
+    # Parameters for the task type class.
     task_type_parameters = Column(
-        String,
+        JSONB,
         nullable=False)
 
     # Name of the ScoreType child class suited for the task.
@@ -409,9 +410,9 @@ class Dataset(Base):
         String,
         nullable=False)
 
-    # Parameters for the score type class, JSON encoded.
+    # Parameters for the score type class.
     score_type_parameters = Column(
-        String,
+        JSONB,
         nullable=False)
 
     # Follows the description of the fields automatically added by

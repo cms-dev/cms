@@ -136,7 +136,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
         <span class="info" title="Please see the score type documentation."></span>
         Score Parameters
       </td>
-      <td><textarea name="score_type_parameters">{{ original_dataset.score_type_parameters if original_dataset is not None else "" }}</textarea></td>
+      <td><textarea name="score_type_parameters">{{ json.dumps(original_dataset.score_type_parameters) if original_dataset is not None else "" }}</textarea></td>
     </tr>
   </table>
 <input type="submit" value="Create"/>

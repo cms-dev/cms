@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
@@ -454,7 +454,7 @@ class BaseHandler(CommonRequestHandler):
             class_ = get_task_type_class(name)
         except KeyError:
             raise ValueError("Task type not recognized: %s." % name)
-        params = json.dumps(class_.parse_handler(self, params + name + "_"))
+        params = class_.parse_handler(self, params + name + "_")
         dest["task_type"] = name
         dest["task_type_parameters"] = params
 
@@ -482,6 +482,10 @@ class BaseHandler(CommonRequestHandler):
         params = self.get_argument(params, None)
         if params is None:
             raise ValueError("Score type parameters not found.")
+        try:
+            params = json.loads(params)
+        except ValueError:
+            raise ValueError("Score type parameters are invalid JSON.")
         dest["score_type"] = name
         dest["score_type_parameters"] = params
 

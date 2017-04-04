@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
@@ -562,13 +562,13 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     n_input = testcases
                     if n_input != 0:
                         input_value = total_value / n_input
-                    args["score_type_parameters"] = "%s" % input_value
+                    args["score_type_parameters"] = input_value
                 else:
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
                     n_input = sum([int(st[1]) for st in subtasks])
                     args["score_type"] = "GroupMin"
-                    args["score_type_parameters"] = "%s" % subtasks
+                    args["score_type_parameters"] = subtasks
 
                 if "n_input" in conf:
                     assert int(conf['n_input']) == n_input
@@ -581,14 +581,14 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             n_input = int(conf['n_input'])
             if n_input != 0:
                 input_value = total_value / n_input
-            args["score_type_parameters"] = "%s" % input_value
+            args["score_type_parameters"] = input_value
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
             args["task_type"] = "OutputOnly"
             args["time_limit"] = None
             args["memory_limit"] = None
-            args["task_type_parameters"] = '["%s"]' % evaluation_param
+            args["task_type_parameters"] = [evaluation_param]
             task.submission_format = [
                 SubmissionFormatElement("output_%03d.txt" % i)
                 for i in xrange(n_input)]
@@ -605,7 +605,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         num_processes = 1
                     logger.info("Task type Communication")
                     args["task_type"] = "Communication"
-                    args["task_type_parameters"] = '[%d]' % num_processes
+                    args["task_type_parameters"] = [num_processes]
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Manager for task %s" % task.name)
@@ -641,9 +641,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             else:
                 args["task_type"] = "Batch"
                 args["task_type_parameters"] = \
-                    '["%s", ["%s", "%s"], "%s"]' % \
-                    (compilation_param, infile_param, outfile_param,
-                     evaluation_param)
+                    [compilation_param, [infile_param, outfile_param],
+                     evaluation_param]
 
         args["testcases"] = []
         for i in xrange(n_input):
