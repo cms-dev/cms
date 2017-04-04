@@ -130,7 +130,6 @@ class PolygonTaskLoader(TaskLoader):
                                                               language))
                     args["statements"].append(Statement(lang, digest))
                     args["primary_statements"].append(lang)
-            args["primary_statements"] = json.dumps(args["primary_statements"])
 
         args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
 
