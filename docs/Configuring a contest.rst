@@ -121,12 +121,14 @@ When CWS needs to show a timestamp to the user it first tries to show it accordi
 User login
 ==========
 
-Users log into CWS using their credentials (username and a password), or automatically, matching their IP address.
+Users can log into CWS manually, using their credentials (username and a password), or they can get logged in automatically by CMS based on the IP addresses their requests are coming from.
 
-Logging in with IP based autologin
+Logging in with IP-based autologin
 ----------------------------------
 
-If the "IP based autologin" option in the contest configuration is set, CWS tries to find a user with the IP address of the request, and if it finds exactly one, the requester is automatically logged in as the user. If zero or more than one user match, CWS does not let the user in (and the incident is logged to allow troubleshooting).
+If the "IP-based autologin" option in the contest configuration is set, CWS tries to find a user that matches the IP address the request is coming from. If it finds exactly one user, the requester is automatically logged in as that user. If zero or more than one user match, CWS does not let the user in (and the incident is logged to allow troubleshooting).
+
+In general, each user can have multiple ranges of IP addresses associated to it. These are defined as a list of subnets in CIDR format (e.g., `192.168.1.0/24`). Only the subnets whose mask is maximal (i.e., `/32` for IPv4 or `/128` for IPv6) are considered for autologin purposes (subnets with non-maximal mask are still useful for IP-based restrictions, see below). The autologin will kick in if *any* of the subnets matches the IP of the request.
 
 .. warning::
 
@@ -146,9 +148,9 @@ Failure to login
 
 The following are some common reasons for login failures, all of them coming with some useful log message from CWS.
 
-- IP address mismatch (with IP based autologin): if the participation has the wrong IP address, or if more than one participation has the same IP address, then the login fails. Note that if the user is using the IP address of a different user, CWS will happily log them in without noticing anything.
+- IP address mismatch (with IP based autologin): if IP address doesn't match any subnet of any participation or if it matches some subnets of more than one participation, then the login fails. Note that if the user is using the IP address of a different user, CWS will happily log them in without noticing anything.
 
-- IP address mismatch (using IP based login restrictions): the login fails if the participation has the wrong IP address or subnet.
+- IP address mismatch (using IP based login restrictions): the login fails if the request comes from an IP address that doesn't match any of the participation's IP subnets (non-maximal masks are taken into consideration here).
 
 - Blocked hidden participations: users whose participation is hidden cannot log in if "Block hidden participations" is set in the contest configuration.
 
