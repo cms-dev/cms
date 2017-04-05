@@ -6,6 +6,7 @@
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,7 +36,6 @@ from string import ascii_lowercase
 
 from Crypto.Cipher import AES
 
-
 __all__ = [
     "is_random_secure",
 
@@ -44,16 +44,16 @@ __all__ = [
     "encrypt_string", "decrypt_string",
     "encrypt_number", "decrypt_number",
 
-    "generate_random_password",
+    "generate_random_password", "generate_random_password_text",
 
-    "validate_password", "hash_password",
-    ]
-
+    "validate_password", "hash_password", "parse_authentication",
+]
 
 # Some older versions of pycrypto don't provide a Random module
 # If that's the case, fallback to weak standard library PRG
 try:
     from Crypto import Random
+
     get_random_bits = Random.new().read
     is_random_secure = True
 except ImportError:
@@ -172,6 +172,35 @@ def generate_random_password():
     return "".join((random.choice(ascii_lowercase) for _ in range(6)))
 
 
+def generate_random_password_text():
+    """Utility method to generate a random password
+    in the format text:password.
+
+    return (string): method:a random string.
+
+    """
+    return hash_password(password=generate_random_password(),
+                         method="text")
+
+
+def parse_authentication(authentication):
+    """Parse the given password and return the method
+    used for hashing and and payload field
+
+    authentication (string): an authentication string as stored in the db.
+
+    return (string, string): the method and the payload
+
+    raise (ValueError): when the authentication string is not valid.
+
+    """
+    if authentication.find(":") == -1:
+        raise ValueError("Authentication string not parsable.")
+
+    method, payload = authentication.split(":", 1)
+    return method, payload
+
+
 def validate_password(authentication, password):
     """Validate the given password for the required authentication.
 
@@ -184,14 +213,13 @@ def validate_password(authentication, password):
         the method is not known.
 
     """
-    if authentication.find(":") == -1:
-        raise ValueError("Authentication string not parsable.")
-
-    method, payload = authentication.split(":", 1)
+    method, payload = parse_authentication(authentication)
     if method == "bcrypt":
         password = password.encode('utf-8')
         payload = payload.encode('utf-8')
         return bcrypt.hashpw(password, payload) == payload
+    elif method == "text":
+        return payload == password
     else:
         raise ValueError("Authentication method not known.")
 
@@ -210,6 +238,8 @@ def hash_password(password, method="bcrypt"):
     if method == "bcrypt":
         password = password.encode('utf-8')
         payload = bcrypt.hashpw(password, bcrypt.gensalt())
+    elif method == "text":
+        payload = password.encode('utf-8')
     else:
         raise ValueError("Authentication method not known.")
 

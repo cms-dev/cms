@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,6 +34,8 @@ from __future__ import unicode_literals
 
 from cms.db import Contest, Participation, Submission, Team, User
 from cmscommon.datetime import make_datetime
+from cmscommon.crypto import hash_password
+from cmscommon.crypto import parse_authentication
 
 from .base import BaseHandler, SimpleHandler, require_permission
 
@@ -44,6 +47,13 @@ class UserHandler(BaseHandler):
 
         self.r_params = self.render_params()
         self.r_params["user"] = user
+        method, payload = parse_authentication(user.password)
+        user.method = method
+        if method == 'text':
+            user.password = payload
+        else:
+            user.password = ""
+
         self.r_params["participations"] = \
             self.sql_session.query(Participation)\
                 .filter(Participation.user == user)\
@@ -70,6 +80,20 @@ class UserHandler(BaseHandler):
             self.get_string(attrs, "last_name")
             self.get_string(attrs, "username", empty=None)
             self.get_string(attrs, "password")
+            self.get_string(attrs, "method", empty="text")
+            if "method" not in attrs:
+                attrs["method"] = "text"
+
+            password = attrs["password"]
+            method = attrs["method"]
+            if method != "text" and password == "":
+                # Preserve old password if password is empty
+                # and method is not text
+                attrs["password"] = user.password
+            else:
+                attrs["password"] = hash_password(password, method)
+
+            del attrs["method"]
             self.get_string(attrs, "email")
             self.get_string(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
@@ -233,6 +257,12 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
             self.get_string(attrs, "last_name")
             self.get_string(attrs, "username", empty=None)
             self.get_string(attrs, "password")
+            self.get_string(attrs, "method", empty="text")
+            if "method" not in attrs:
+                attrs["method"] = "text"
+            attrs["password"] = hash_password(attrs["password"],
+                                              method=attrs["method"])
+            del attrs["method"]
             self.get_string(attrs, "email")
 
             assert attrs.get("username") is not None, \

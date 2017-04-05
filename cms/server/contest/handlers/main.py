@@ -43,6 +43,7 @@ from cms import config
 from cms.db import Participation, PrintJob, User
 from cms.server import actual_phase_required, filter_ascii, multi_contest
 from cmscommon.datetime import make_datetime, make_timestamp
+from cmscommon.crypto import validate_password
 
 from .contest import ContestHandler, check_ip, \
     NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
@@ -99,7 +100,7 @@ class LoginHandler(ContestHandler):
         filtered_user = filter_ascii(username)
         filtered_pass = filter_ascii(password)
 
-        if password != correct_password:
+        if not validate_password(correct_password, password):
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
                         (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect(fallback_page + "?login_error=true")

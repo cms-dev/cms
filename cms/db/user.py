@@ -38,7 +38,7 @@ from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
 
-from cmscommon.crypto import generate_random_password
+from cmscommon.crypto import generate_random_password_text
 
 from . import Base, Contest
 
@@ -71,7 +71,7 @@ class User(Base):
     password = Column(
         Unicode,
         nullable=False,
-        default=generate_random_password)
+        default=generate_random_password_text)
 
     # Email for any communications in case of remote contest.
     email = Column(

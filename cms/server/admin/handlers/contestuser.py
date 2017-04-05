@@ -11,6 +11,7 @@
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,6 +40,7 @@ import tornado.web
 
 from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
+from cmscommon.crypto import parse_authentication, hash_password
 
 from .base import BaseHandler, require_permission
 
@@ -173,11 +175,7 @@ class ParticipationHandler(BaseHandler):
     """
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id, user_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation = self.get_participation(contest_id, user_id)
 
         # Check that the participation is valid.
         if participation is None:
@@ -188,20 +186,45 @@ class ParticipationHandler(BaseHandler):
         page = int(self.get_query_argument("page", 0))
         self.render_params_for_submissions(submission_query, page)
 
+        if participation.password is not None:
+            method, payload = parse_authentication(participation.password)
+            participation.method = method
+            if method == 'text':
+                participation.password = payload
+            else:
+                participation.password = ""
+        else:
+            participation.method = "text"
+            participation.password = ""
+
         self.r_params["participation"] = participation
         self.r_params["selected_user"] = participation.user
         self.r_params["teams"] = self.sql_session.query(Team).all()
         self.render("participation.html", **self.r_params)
 
+    def get_participation(self, contest_id, user_id):
+        """Sets the contest of the current object and return
+        the participation of the user in the contest with
+        the specified id.
+
+        contest_id (int): Id of the contest
+        user_id (int): Id of the user in the contest
+
+        return (participation): participation type object representing
+        the participation of the user in the contest
+        """
+        self.contest = self.safe_get_item(Contest, contest_id)
+        participation = self.sql_session.query(Participation) \
+            .filter(Participation.contest_id == contest_id) \
+            .filter(Participation.user_id == user_id) \
+            .first()
+        return participation
+
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id, user_id):
         fallback_page = "/contest/%s/user/%s/edit" % (contest_id, user_id)
 
-        self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation = self.get_participation(contest_id, user_id)
 
         # Check that the participation is valid.
         if participation is None:
@@ -211,6 +234,20 @@ class ParticipationHandler(BaseHandler):
             attrs = participation.get_attrs()
 
             self.get_string(attrs, "password", empty=None)
+            self.get_string(attrs, "method", empty="text")
+            if "method" not in attrs:
+                attrs["method"] = "text"
+            method = attrs["method"]
+            password = attrs["password"]
+            if password is not None:
+                attrs["password"] = hash_password(password, method)
+            elif method != "text":
+                # Preserve old password if password is empty
+                # and method is not text
+                attrs["password"] = participation.password
+
+            del attrs["method"]
+
             self.get_ip_address_or_subnet(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")

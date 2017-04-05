@@ -39,6 +39,7 @@ import sys
 from cms import utf8_decoder
 from cms.db import Contest, Participation, SessionGen, Team, User, \
     ask_for_contest
+from cmscommon.crypto import hash_password
 
 from sqlalchemy.exc import IntegrityError
 
@@ -47,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 def add_participation(username, contest_id, ip, delay_time, extra_time,
-                      password, team_code, hidden, unrestricted):
+                      password, use_bcrypt, team_code, hidden, unrestricted):
     logger.info("Creating the user's participation in the database.")
     delay_time = delay_time if delay_time is not None else 0
     extra_time = extra_time if extra_time is not None else 0
@@ -75,6 +76,10 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
                 if team is None:
                     logger.error("No team with code `%s' found.", team_code)
                     return False
+            if password is not None:
+                method = "bcrypt" if use_bcrypt else "text"
+                password = hash_password(password, method)
+
             participation = Participation(
                 user=user,
                 contest=contest,
@@ -120,6 +125,8 @@ def main():
                         help="if the participation is hidden")
     parser.add_argument("--unrestricted", action="store_true",
                         help="if the participation is unrestricted")
+    parser.add_argument("-B", "--bcrypt", action="store_true",
+                        help="use bcrypt to encrypt participation password")
 
     args = parser.parse_args()
 
@@ -128,7 +135,7 @@ def main():
 
     success = add_participation(args.username, args.contest_id,
                                 args.ip, args.delay_time, args.extra_time,
-                                args.password, args.team,
+                                args.password, args.bcrypt, args.team,
                                 args.hidden, args.unrestricted)
     return 0 if success is True else 1
 

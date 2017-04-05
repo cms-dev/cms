@@ -80,7 +80,13 @@ function update_additional_answer(element, invoker)
           Password
         </td>
         <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ participation.password if participation.password is not None else "" }}"/></td>
+        <td><input type="text" name="password" value="{{ participation.password }}" placeholder="{{ 'Password is encrypted. Type the password here to change it' if participation.method != 'text' else '' "" }}"/>
+            <select name="method">
+              <option value="text">text</option>
+              <option value="bcrypt">bcrypt</option>
+            </select>
+          <script>$("[name='method']").val("{{ participation.method }}");</script>
+        </td>
       </tr>
       <tr>
         <td>
