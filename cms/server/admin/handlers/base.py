@@ -122,7 +122,17 @@ def parse_datetime(value):
 
 
 def parse_ip_networks(networks):
-    """Parse and validate a comma-separated list of IP networks."""
+    """Parse and validate a comma-separated list of IP networks.
+
+    networks (unicode): a comma-separated list of IP networks, which
+        are IP addresses (both in v4 and v6 formats) with, possibly, a
+        subnet mask specified as a "/<int>" suffix (in that case all
+        unmasked bits of the address have to be zeros).
+
+    return ([ipaddress.IPv4Network|ipaddress.IPv6Network]): the parsed
+        and normalized networks converted to an appropriate type.
+
+    """
     result = list()
     for network in networks.split(","):
         network = network.strip()

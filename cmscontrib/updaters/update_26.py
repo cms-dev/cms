@@ -106,6 +106,12 @@ class Updater(object):
             for cls, col in CODENAMES:
                 if v["_class"] == cls and v[col] is not None:
                     v[col] = encode_codename(v[col])
+                    if v[col] == "":
+                        logger.critical(
+                            "The dump contains an instance of %s whose %s "
+                            "field contains an invalid codename: `%s'.",
+                            cls, col, v[col])
+                        sys.exit(1)
 
             for cls, col in FILENAMES:
                 if v["_class"] == cls and v[col] is not None:
@@ -113,7 +119,7 @@ class Updater(object):
                     if v[col] in {"", ".", ".."}:
                         logger.critical(
                             "The dump contains an instance of %s whose %s "
-                            "field contains an invalid filename: %s",
+                            "field contains an invalid filename: `%s'.",
                             cls, col, v[col])
                         sys.exit(1)
 
@@ -122,7 +128,7 @@ class Updater(object):
                     if not re.match("^([0-9a-f]{40}|x)$", v[col]):
                         logger.critical(
                             "The dump contains an instance of %s whose %s "
-                            "field contains an invalid SHA-1 digest: %s",
+                            "field contains an invalid SHA-1 digest: `%s'.",
                             cls, col, v[col])
                         sys.exit(1)
 
@@ -135,7 +141,7 @@ class Updater(object):
                         except ValueError:
                             logger.critical(
                                 "The dump contains an instance of %s whose %s "
-                                "field contains an invalid IPv4 address: %s",
+                                "field contains an invalid IPv4 address: `%s'.",
                                 cls, col, v[col])
                             sys.exit(1)
 

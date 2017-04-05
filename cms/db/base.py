@@ -33,7 +33,6 @@ from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 import six
 
