@@ -34,6 +34,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddress
 import logging
 import pickle
 import socket
@@ -69,7 +70,7 @@ NOTIFICATION_SUCCESS = "success"
 def check_ip(address, networks):
     """Return if client IP belongs to one of the accepted networks.
 
-    address (string): IP address to verify.
+    address (bytes): IP address to verify.
     networks ([ipaddress.IPv4Network|ipaddress.IPv6Network]): IP
         networks (addresses w/ subnets) to check against.
 
@@ -77,7 +78,7 @@ def check_ip(address, networks):
 
     """
     try:
-        address = ipaddress.ip_address(address)
+        address = ipaddress.ip_address(unicode(address))
     except ValueError:
         return False
 
@@ -196,10 +197,16 @@ class ContestHandler(BaseHandler):
             matching the remote IP address.
 
         """
-        remote_ip = self.request.remote_ip
+        try:
+            # We encode it as a network (i.e., we assign it a /32 or
+            # /128 mask) since we're comparing it for equality with
+            # other networks.
+            remote_ip = ipaddress.ip_network(unicode(self.request.remote_ip))
+        except ValueError:
+            return None
         participations = self.sql_session.query(Participation)\
             .filter(Participation.contest == self.contest)\
-            .filter(Participation.ip == remote_ip)
+            .filter(Participation.ip.any(remote_ip))
 
         # If hidden users are blocked we ignore them completely.
         if self.contest.block_hidden_participations:

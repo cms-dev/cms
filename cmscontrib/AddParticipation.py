@@ -33,6 +33,7 @@ gevent.monkey.patch_all()
 
 import argparse
 import datetime
+import ipaddress
 import logging
 import sys
 
@@ -78,7 +79,7 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
             participation = Participation(
                 user=user,
                 contest=contest,
-                ip=ip,
+                ip=[ipaddress.ip_network(ip)] if ip is not None else None,
                 delay_time=datetime.timedelta(seconds=delay_time),
                 extra_time=datetime.timedelta(seconds=extra_time),
                 password=password,
