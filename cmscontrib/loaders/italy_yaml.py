@@ -423,13 +423,13 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
         # Attachments
-        args["attachments"] = []
+        args["attachments"] = dict()
         if os.path.exists(os.path.join(self.path, "att")):
             for filename in os.listdir(os.path.join(self.path, "att")):
                 digest = self.file_cacher.put_file_from_path(
                     os.path.join(self.path, "att", filename),
                     "Attachment %s for task %s" % (filename, name))
-                args["attachments"] += [Attachment(filename, digest)]
+                args["attachments"][filename] = Attachment(filename, digest)
 
         task = Task(**args)
 
@@ -662,6 +662,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         elif public_testcases != "":
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
+        args["testcases"] = dict((tc.codename, tc) for tc in args["testcases"])
+        args["managers"] = dict((tc.filename, mg) for mg in args["managers"])
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
