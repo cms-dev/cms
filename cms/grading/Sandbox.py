@@ -864,17 +864,17 @@ class IsolateSandbox(SandboxBase):
         """Set permissions in such a way that any operation is allowed.
 
         """
-        os.chmod(self.path, 0777)
+        os.chmod(self.path, 0o777)
         for filename in os.listdir(self.path):
-            os.chmod(os.path.join(self.path, filename), 0777)
+            os.chmod(os.path.join(self.path, filename), 0o777)
 
     def allow_writing_none(self):
         """Set permissions in such a way that the user cannot write anything.
 
         """
-        os.chmod(self.path, 0755)
+        os.chmod(self.path, 0o755)
         for filename in os.listdir(self.path):
-            os.chmod(os.path.join(self.path, filename), 0755)
+            os.chmod(os.path.join(self.path, filename), 0o755)
 
     def allow_writing_only(self, paths):
         """Set permissions in so that the user can write only some paths.
@@ -892,7 +892,7 @@ class IsolateSandbox(SandboxBase):
         # Close everything, then open only the specified.
         self.allow_writing_none()
         for path in (os.path.join(self.path, path) for path in paths):
-            os.chmod(path, 0722)
+            os.chmod(path, 0o722)
 
     def get_root_path(self):
         """Return the toplevel path of the sandbox.
@@ -1214,7 +1214,7 @@ class IsolateSandbox(SandboxBase):
                          pretty_print_cmdline(command), self.path)
             try:
                 prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-                os.chmod(self.path, 0700)
+                os.chmod(self.path, 0o700)
                 with io.open(self.relative_path(self.cmd_file), 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
                 p = subprocess.Popen(command, cwd=self.path,
@@ -1240,7 +1240,7 @@ class IsolateSandbox(SandboxBase):
                      pretty_print_cmdline(args))
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-        os.chmod(self.path, 0770)
+        os.chmod(self.path, 0o770)
         with io.open(self.relative_path(self.cmd_file), 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
         os.chmod(self.path, prev_permissions)
