@@ -55,7 +55,7 @@ def copyfile(src, dest, owner, perm, group=None):
     dest (string): the complete path of the destination file (i.e.,
                    not the destination directory).
     owner (as given by pwd.getpwnam): the owner we want for dest.
-    perm (integer): the permission for dest (example: 0660).
+    perm (integer): the permission for dest (example: 0o660).
     group (as given by grp.getgrnam): the group we want for dest; if
                                       not specified, use owner's
                                       group.
@@ -92,7 +92,7 @@ def makedir(dir_path, owner=None, perm=None):
 
     dir_path (string): the new directory to create.
     owner (as given by pwd.getpwnam): the owner we want for dest.
-    perm (integer): the permission for dest (example: 0660).
+    perm (integer): the permission for dest (example: 0o660).
 
     """
     if not os.path.exists(dir_path):
@@ -262,16 +262,16 @@ Options:
             exit(1)
 
         print("===== Copying isolate to /usr/local/bin/")
-        makedir(os.path.join(USR_ROOT, "bin"), root, 0755)
+        makedir(os.path.join(USR_ROOT, "bin"), root, 0o755)
         copyfile(os.path.join(".", "isolate", "isolate"),
                  os.path.join(USR_ROOT, "bin", "isolate"),
-                 root, 04750, group=cmsuser_grp)
+                 root, 0o4750, group=cmsuser_grp)
 
         print("===== Copying isolate config to /usr/local/etc/")
-        makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
+        makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
         copyfile(os.path.join(".", "isolate", "default.cf"),
                  os.path.join(USR_ROOT, "etc", "isolate"),
-                 root, 0640, group=cmsuser_grp)
+                 root, 0o640, group=cmsuser_grp)
 
     def build(self):
         """This function builds all the prerequisites by calling:
@@ -289,7 +289,7 @@ Options:
         print("===== Copying configuration to /usr/local/etc/")
         root = pwd.getpwnam("root")
         cmsuser = pwd.getpwnam("cmsuser")
-        makedir(os.path.join(USR_ROOT, "etc"), root, 0755)
+        makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
         for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
             conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
             # Skip if destination is a symlink
@@ -302,11 +302,11 @@ Options:
                     continue
             if os.path.exists(os.path.join(".", "config", conf_file_name)):
                 copyfile(os.path.join(".", "config", conf_file_name),
-                         conf_file, cmsuser, 0660)
+                         conf_file, cmsuser, 0o660)
             else:
                 conf_file_name = "%s.sample" % conf_file_name
                 copyfile(os.path.join(".", "config", conf_file_name),
-                         conf_file, cmsuser, 0660)
+                         conf_file, cmsuser, 0o660)
 
     def install(self):
         """This function prepares all that's needed to run CMS:
@@ -340,7 +340,7 @@ Options:
 
         # We set permissions for each manually installed files, so we want
         # max liberty to change them.
-        old_umask = os.umask(0000)
+        old_umask = os.umask(0o000)
 
         if "--no-conf" not in sys.argv:
             self.install_conf()
@@ -356,14 +356,14 @@ Options:
             # Skip if destination is a symlink
             if os.path.islink(os.path.join(_dir, "cms")):
                 continue
-            makedir(_dir, root, 0755)
+            makedir(_dir, root, 0o755)
             _dir = os.path.join(_dir, "cms")
-            makedir(_dir, cmsuser, 0770)
+            makedir(_dir, cmsuser, 0o770)
 
         print("===== Copying Polygon testlib")
         path = os.path.join("cmscontrib", "loaders", "polygon", "testlib.h")
         dest_path = os.path.join(USR_ROOT, "include", "cms", "testlib.h")
-        copyfile(path, dest_path, root, 0644)
+        copyfile(path, dest_path, root, 0o644)
 
         os.umask(old_umask)
 
