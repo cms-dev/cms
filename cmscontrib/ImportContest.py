@@ -203,7 +203,7 @@ class ContestImporter(BaseImporter):
                     if "hidden" in p:
                         args["hidden"] = p["hidden"]
                     if "ip" in p:
-                        args["ip"] = [ipaddress.ip_address(p["ip"])]
+                        args["ip"] = [ipaddress.ip_network(p["ip"])]
                     if "password" in p:
                         args["password"] = p["password"]
 
