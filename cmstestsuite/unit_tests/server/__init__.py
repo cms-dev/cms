@@ -87,7 +87,8 @@ def test(contest_start, contest_stop, per_user_time, starting_time,
     contest_stop (string): the contest's stop.
     per_user_time (string|None): the amount of time allocated to each
         user; contest is USACO-like if given and traditional if not.
-    starting_time (string|None): when the user started his time frame.
+    starting_time (string|None): when the user started their time
+        frame.
     delay_time (string): how much the user's start is delayed.
     extra_time (string): how much extra time is given to the user at
         the end.

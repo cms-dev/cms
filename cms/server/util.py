@@ -86,7 +86,7 @@ def compute_actual_phase(timestamp, contest_start, contest_stop, per_user_time,
     per_user_time (timedelta|None): the amount of time allocated to
         each user; if it's None the contest is traditional, otherwise
         it's USACO-like.
-    starting_time (datetime|None): when the user started his time
+    starting_time (datetime|None): when the user started their time
         frame.
     delay_time (timedelta): how much the user's start is delayed.
     extra_time (timedelta): how much extra time is given to the user at

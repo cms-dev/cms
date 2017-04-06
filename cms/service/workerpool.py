@@ -368,7 +368,7 @@ class WorkerPool(object):
     def check_timeouts(self):
         """Check if some worker is not responding in too much time. If
         this is the case, the worker is scheduled for disabling, and
-        we send him a message trying to shut it down.
+        we send it a message trying to shut it down.
 
         return ([ESOperation]): list of operations assigned to worker
             that timeout.
@@ -401,7 +401,7 @@ class WorkerPool(object):
                                 lost_operations.append(operation)
 
                     # Also, we are not trusting it, so we are not
-                    # assigning him new operations even if it comes back to
+                    # assigning it new operations even if it comes back to
                     # life.
                     self._schedule_disabling[shard] = True
                     self._ignore[shard] = True

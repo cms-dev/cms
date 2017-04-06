@@ -727,7 +727,7 @@ var DataStore = new function () {
 
     self.update_rank = function (u_id, user) {
         /* The rank of a user is defined as the number of other users that have
-           a score greater than his/hers, plus one. Note that:
+           a score greater than theirs, plus one. Note that:
                a.score < b.score if and only if a.rank > b.rank
                a.score = b.score if and only if a.rank = b.rank
                a.score > b.score if and only if a.rank < b.rank

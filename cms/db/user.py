@@ -156,7 +156,7 @@ class Participation(Base):
 
     # Starting time: for contests where every user has at most x hours
     # of the y > x hours totally available, this is the time the user
-    # decided to start his/her time-frame.
+    # decided to start their time-frame.
     starting_time = Column(
         DateTime,
         nullable=True)

@@ -314,7 +314,7 @@ var Scoreboard = new function () {
 
 
     // Suppose the scoreboard is correctly sorted except for the given user.
-    // Move this user (up or down) to put it in his correct position.
+    // Move this user (up or down) to put it in their correct position.
     self.move_user = function (user) {
         var list = self.user_list;
         var compare = self.compare_users;

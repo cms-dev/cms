@@ -355,8 +355,9 @@ class SubmissionResult(Base):
         String,
         nullable=True)
 
-    # The same as the last two fields, but from the point of view of
-    # the user (when he/she did not play a token).
+    # The same as the last two fields, but only showing information
+    # visible to the user (assuming they did not use a token on this
+    # submission).
     public_score = Column(
         Float,
         nullable=True)

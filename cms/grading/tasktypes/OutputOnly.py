@@ -135,7 +135,7 @@ class OutputOnly(TaskType):
                 sandbox, "output.txt", "res.txt")
 
         elif self.parameters[0] == "comparator":
-            # Manager present: wonderful, he'll do all the job.
+            # Manager present: wonderful, it will do all the work.
             manager_filename = "checker"
             if manager_filename not in job.managers:
                 logger.error("Configuration error: missing or "

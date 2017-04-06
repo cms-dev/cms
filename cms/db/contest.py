@@ -491,7 +491,7 @@ class Contest(Base):
 
         [1] the next time in which a token will be generated (or
             None); from the user perspective, i.e.: if the user will
-            do nothing, [1] is the first time in which his number of
+            do nothing, [1] is the first time in which their number of
             available tokens will be greater than [0];
 
         [2] the time when the min_interval will expire, or None
@@ -544,7 +544,7 @@ class Contest(Base):
             if token.submission.task.name == task.name])
 
         # If the contest is USACO-style (i.e., the time for each user
-        # start when he/she logs in for the first time), then we start
+        # start when they log in for the first time), then we start
         # accumulating tokens from the user starting time; otherwise,
         # from the start of the contest.
         start = self.start

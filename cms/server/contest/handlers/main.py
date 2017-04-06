@@ -132,7 +132,7 @@ class LoginHandler(ContestHandler):
 class StartHandler(ContestHandler):
     """Start handler.
 
-    Used by a user who wants to start his per_user_time.
+    Used by a user who wants to start their per_user_time.
 
     """
     @tornado.web.authenticated
