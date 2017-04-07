@@ -5,7 +5,7 @@
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
@@ -50,15 +50,14 @@ from datetime import timedelta
 
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import cms.db as class_hook
 
 from cms import utf8_decoder
 from cms.db import version as model_version
-from cms.db import Contest, RepeatedUnicode, SessionGen, \
-    Submission, SubmissionResult, UserTest, UserTestResult, \
-    init_db, drop_db
+from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
+    UserTest, UserTestResult, init_db, drop_db
 from cms.db.filecacher import FileCacher
 
 from cmscontrib import sha1sum
@@ -70,7 +69,6 @@ logger = logging.getLogger(__name__)
 
 
 def find_root_of_archive(file_names):
-
     """Given a list of file names (the content of an archive) find the
     name of the root directory, i.e., the only file that would be
     created in a directory if we extract there the archive.
@@ -106,8 +104,7 @@ def decode_value(type_, value):
     """
     if value is None:
         return None
-    elif isinstance(type_,
-                    (Boolean, Integer, Float, Unicode, Enum,RepeatedUnicode)):
+    elif isinstance(type_, (Boolean, Integer, Float, Unicode, Enum, JSONB)):
         return value
     elif isinstance(type_, String):
         return value.encode('latin1')
