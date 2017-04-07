@@ -363,11 +363,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             else:
                 logger.critical("Couldn't find any task statement, aborting.")
                 sys.exit(1)
-            args["statements"] = [Statement(primary_language, digest)]
+            args["statements"] = {
+                primary_language: Statement(primary_language, digest)
+            }
 
             args["primary_statements"] = '["%s"]' % (primary_language)
-
-        args["attachments"] = []  # FIXME Use auxiliary
 
         args["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name)]
@@ -652,8 +652,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["testcases"] += [
                 Testcase("%03d" % i, False, input_digest, output_digest)]
             if args["task_type"] == "OutputOnly":
-                task.attachments += [
-                    Attachment("input_%03d.txt" % i, input_digest)]
+                task.attachments.set(
+                    Attachment("input_%03d.txt" % i, input_digest))
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
                                 conv=lambda x: "" if x is None else x)
         if public_testcases == "all":
@@ -663,7 +663,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
         args["testcases"] = dict((tc.codename, tc) for tc in args["testcases"])
-        args["managers"] = dict((tc.filename, mg) for mg in args["managers"])
+        args["managers"] = dict((mg.filename, mg) for mg in args["managers"])
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
