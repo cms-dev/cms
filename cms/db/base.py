@@ -38,7 +38,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import six
 
-from . import CastingArray, engine
+from . import engine
 
 
 # Ordered from most specific to least specific.
