@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,13 +46,12 @@ import tempfile
 
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 from cms import utf8_decoder
 from cms.db import version as model_version
-from cms.db import SessionGen, Contest, User, Task, \
-    Submission, UserTest, SubmissionResult, UserTestResult, \
-    RepeatedUnicode
+from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
+    SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -65,7 +64,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_archive_info(file_name):
-
     """Return information about the archive name.
 
     file_name (string): the file name of the archive to analyze.
@@ -120,8 +118,7 @@ def encode_value(type_, value):
     """
     if value is None:
         return None
-    elif isinstance(type_,
-                    (Boolean, Integer, Float, Unicode, Enum, RepeatedUnicode)):
+    elif isinstance(type_, (Boolean, Integer, Float, Unicode, Enum, JSONB)):
         return value
     elif isinstance(type_, String):
         return value.decode('latin1')
@@ -132,7 +129,7 @@ def encode_value(type_, value):
     elif isinstance(type_, ARRAY):
         return list(encode_value(type_.item_type, item) for item in value)
     elif isinstance(type_, CIDR):
-        return "%s" % value
+        return str(value)
     else:
         raise RuntimeError("Unknown SQLAlchemy column type: %s" % type_)
 
@@ -310,7 +307,6 @@ class DumpExporter(object):
 
         for prp in cls._col_props:
             col, = prp.columns
-            col_type = type(col.type)
 
             val = getattr(obj, prp.key)
             data[prp.key] = encode_value(col.type, val)
