@@ -35,7 +35,7 @@ task_info = {
     "TaskTypeOptions_{{dataset_id}}_Batch_io_1_outputfile": "",
     "TaskTypeOptions_{{dataset_id}}_Batch_output_eval": "diff",
     "score_type_{{dataset_id}}": "Sum",
-    "score_type_parameters_{{dataset_id}}": "1",
+    "score_type_parameters_{{dataset_id}}": "[1]",
 }
 
 test_cases = [

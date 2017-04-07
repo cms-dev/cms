@@ -33,7 +33,7 @@ task_info = {
     "task_type_{{dataset_id}}": "Communication",
     "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "1",
     "score_type_{{dataset_id}}": "Sum",
-    "score_type_parameters_{{dataset_id}}": "50",
+    "score_type_parameters_{{dataset_id}}": "[50]",
 }
 
 managers = [
