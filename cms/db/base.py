@@ -24,6 +24,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import ipaddress
 from datetime import datetime, timedelta
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -32,26 +33,27 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+    Boolean, Integer, Float, String, Unicode, Enum, DateTime, Interval
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import six
 
-from . import CastingArray, engine
+from . import engine, CastingArray
 
 
 _TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
     Float: float,
+    Enum: six.text_type,
+    Unicode: six.text_type,
     String: six.string_types,  # TODO Use six.binary_type.
-    Unicode: six.string_types,  # TODO Use six.text_type.
     DateTime: datetime,
     Interval: timedelta,
-    Enum: six.string_types,  # TODO Use six.text_type.
-    JSONB: object,
     ARRAY: list,
-    CastingArray: list,  # TODO Use a type that checks also the content.
+    CastingArray: list,
+    CIDR: (ipaddress.IPv4Network, ipaddress.IPv6Network),
+    JSONB: object,
 }
 
 
@@ -98,17 +100,16 @@ class Base(object):
                         "Unexpected number of columns for ColumnProperty %s of"
                         " %s: %d" % (prp.key, cls.__name__, len(prp.columns)))
                 col = prp.columns[0]
-                col_type = type(col.type)
 
                 # Ignore IDs and foreign keys
                 if col.primary_key or col.foreign_keys:
                     continue
 
                 # Check that we understand the type
-                if col_type not in _TYPE_MAP:
+                if not isinstance(col.type, tuple(_TYPE_MAP.iterkeys())):
                     raise RuntimeError(
                         "Unknown SQLAlchemy column type for ColumnProperty "
-                        "%s of %s: %s" % (prp.key, cls.__name__, col_type))
+                        "%s of %s: %s" % (prp.key, cls.__name__, col.type))
 
                 cls._col_props.append(prp)
             elif isinstance(prp, RelationshipProperty):
@@ -176,7 +177,6 @@ class Base(object):
 
         for prp in self._col_props:
             col = prp.columns[0]
-            col_type = type(col.type)
 
             if prp.key not in kwargs:
                 # We're assuming the default value, if specified, has
@@ -204,15 +204,25 @@ class Base(object):
                             " which is not nullable" % (cls.__name__, prp.key))
                     setattr(self, prp.key, val)
                 else:
-                    # TODO col_type.python_type contains the type that
+                    # TODO col.type.python_type contains the type that
                     # SQLAlchemy thinks is more appropriate. We could
                     # use that and drop _TYPE_MAP...
-                    if not isinstance(val, _TYPE_MAP[col_type]):
+                    py_type = _TYPE_MAP[type(col.type)]
+                    if not isinstance(val, py_type):
                         raise TypeError(
                             "%s.__init__() got a '%s' for keyword argument "
                             "'%s', which requires a '%s'" %
-                            (cls.__name__, type(val), prp.key,
-                             _TYPE_MAP[col_type]))
+                            (cls.__name__, type(val), prp.key, py_type))
+                    if isinstance(col.type, ARRAY):
+                        py_item_type = _TYPE_MAP[type(col.type.item_type)]
+                        for item in val:
+                            if not isinstance(item, py_item_type):
+                                raise TypeError(
+                                    "%s.__init__() got a '%s' inside the list "
+                                    "for keyword argument '%s', which requires "
+                                    "a list of '%s'"
+                                    % (cls.__name__, type(item),
+                                       prp.key, py_item_type))
                     setattr(self, prp.key, val)
 
         for prp in self._rel_props:
@@ -301,7 +311,6 @@ class Base(object):
 
         for prp in self._col_props:
             col = prp.columns[0]
-            col_type = type(col.type)
 
             if prp.key in attrs:
                 val = attrs.pop(prp.key)
@@ -313,14 +322,24 @@ class Base(object):
                             " which is not nullable" % prp.key)
                     setattr(self, prp.key, val)
                 else:
-                    # TODO col_type.python_type contains the type that
+                    # TODO col.type.python_type contains the type that
                     # SQLAlchemy thinks is more appropriate. We could
                     # use that and drop _TYPE_MAP...
-                    if not isinstance(val, _TYPE_MAP[col_type]):
+                    py_type = _TYPE_MAP[type(col.type)]
+                    if not isinstance(val, py_type):
                         raise TypeError(
                             "set_attrs() got a '%s' for keyword argument "
                             "'%s', which requires a '%s'" %
-                            (type(val), prp.key, _TYPE_MAP[col_type]))
+                            (type(val), prp.key, py_type))
+                    if isinstance(col.type, ARRAY):
+                        py_item_type = _TYPE_MAP[type(col.type.item_type)]
+                        for item in val:
+                            if not isinstance(item, py_item_type):
+                                raise TypeError(
+                                    "set_attrs() got a '%s' inside the list "
+                                    "for keyword argument '%s', which requires "
+                                    "a list of '%s'"
+                                    % (type(item), prp.key, py_item_type))
                     setattr(self, prp.key, val)
 
         for prp in self._rel_props:
