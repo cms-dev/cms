@@ -1,15 +1,15 @@
 dist: trusty
 sudo: required
 
-# FIXME: The following travis setting would automatically use a virtualenv,
-#        and CMS would think it is not installed, see this github issue:
-#        https://github.com/cms-dev/cms/issues/559
-#        (while it stays commented out, travis will think we're using ruby)
-#        when the issue is fixed, we will be able to take advantage of
-#        multi-version testing (testing against many python versions)
-#language: python
-#python:
-#  - 2.7
+language: python
+python:
+  - 2.7
+
+# Use the PostgreSQL version that is provided in Ubuntu 16.04.
+# We need at least version 9.4 as that is the one that introduced the
+# JSONB type. By default Ubuntu 14.04 comes with version 9.3.
+addons:
+  postgresql: "9.5"
 
 install:
   - sudo apt-get update -qq
