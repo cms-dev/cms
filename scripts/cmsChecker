@@ -44,7 +44,7 @@ def main():
     """Parse arguments and launch service.
 
     """
-    success =  default_argument_parser(
+    success = default_argument_parser(
         "Checker for aliveness of other CMS service.", Checker).run()
     return 0 if success is True else 1
 
