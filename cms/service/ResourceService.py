@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
-import bisect
+from collections import defaultdict, deque
 import logging
 import os
 import re
@@ -42,7 +42,6 @@ import time
 
 import psutil
 
-from collections import defaultdict
 from gevent import subprocess
 try:
     from subprocess import DEVNULL  # py3k
@@ -181,7 +180,7 @@ class ResourceService(Service):
         self.autorestart = autorestart or (contest_id is not None)
 
         # _local_store is a dictionary indexed by time in int(epoch)
-        self._local_store = []
+        self._local_store = deque()
         # Floating point epoch using for precise measurement of percents
         self._last_saved_time = time.time()
         # Starting point for cpu times
@@ -400,9 +399,10 @@ class ResourceService(Service):
             data["services"]["%s" % (service,)] = dic
 
         if store:
-            if len(self._local_store) >= 5000:  # almost 7 hours
-                self._local_store = self._local_store[1:]
-            self._local_store.append((now, data))
+            while self._local_store \
+                    and self._local_store[-1][0] < now - MAX_RESOURCE_SECONDS:
+                self._local_store.pop()
+            self._local_store.appendleft((now, data))
 
         return True
 
@@ -418,8 +418,12 @@ class ResourceService(Service):
         logger.debug("ResourceService._get_resources")
 
         last_time = max(last_time, time.time() - MAX_RESOURCE_SECONDS)
-        index = bisect.bisect_right(self._local_store, (last_time, 0))
-        return self._local_store[index:]
+        result = list()
+        for sample_time, data in self._local_store:
+            if sample_time > last_time:
+                result.append((sample_time, data))
+        result.reverse()
+        return result
 
     @rpc_method
     def kill_service(self, service):
