@@ -58,20 +58,10 @@ logger = logging.getLogger(__name__)
 
 B_TO_MB = 1024 * 1024
 
-# As psutil-2.0 introduced many backward-incompatible changes to its
-# API we define this global flag to make it easier later on to decide
-# which methods, properties, etc. to use.
-PSUTIL2 = psutil.version_info >= (2, 0)
-
 MAX_RESOURCE_SECONDS = 11 * 60  # MAX time window for remote resource query
 
-if PSUTIL2:
-    PSUTIL_PROC_ATTRS = \
-        ["cmdline", "cpu_times", "create_time", "memory_info", "num_threads"]
-else:
-    PSUTIL_PROC_ATTRS = \
-        ["cmdline", "get_cpu_times", "create_time",
-         "get_memory_info", "get_num_threads"]
+PSUTIL_PROC_ATTRS = \
+    ["cmdline", "cpu_times", "create_time", "memory_info", "num_threads"]
 
 
 class ProcessMatcher(object):
@@ -342,8 +332,7 @@ class ResourceService(Service):
         data["cpu"] = dict((x, percent_from_delta(cpu_times[x] -
                                                   self._prev_cpu_times[x]))
                            for x in cpu_times)
-        data["cpu"]["num_cpu"] = \
-            psutil.cpu_count() if PSUTIL2 else psutil.NUM_CPUS
+        data["cpu"]["num_cpu"] = psutil.cpu_count()
         self._prev_cpu_times = cpu_times
 
         # Memory. The following relations hold (I think... I only
