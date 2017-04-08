@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
+import sys
 import time
 import platform
 from datetime import tzinfo, timedelta, datetime
@@ -189,9 +190,17 @@ local = LocalTimezone()
 # A monotonic clock, i.e., the time elapsed since an arbitrary and
 # unknown starting moment, that doesn't change when setting the real
 # clock time. It is guaranteed to be increasing (it's not clear to me
-# whether to very close call can return the same number).
+# whether two very close calls can return the same number).
+if sys.version_info >= (3, 3):
+    def monotonic_time():
+        """
+        Clock that cannot be set and represents monotonic time since some
+        unspecified starting point. The unit is a second.
+        """
+        return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+
 # Taken from http://bugs.python.org/file19461/monotonic.py
-if platform.system() not in ('Windows', 'Darwin'):
+elif platform.system() not in ('Windows', 'Darwin'):
     from ctypes import Structure, c_long, CDLL, c_int, POINTER, byref
     from ctypes.util import find_library
 
