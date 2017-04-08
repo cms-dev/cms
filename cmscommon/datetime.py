@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
+import sys
 import time
 import platform
 from datetime import tzinfo, timedelta, datetime
@@ -186,12 +187,27 @@ class LocalTimezone(tzinfo):
 local = LocalTimezone()
 
 
-# A monotonic clock, i.e., the time elapsed since an arbitrary and
-# unknown starting moment, that doesn't change when setting the real
-# clock time. It is guaranteed to be increasing (it's not clear to me
-# whether to very close call can return the same number).
+if sys.version_info >= (3, 3):
+    def monotonic_time():
+        """Get the number of seconds passed since a fixed past moment.
+
+        A monotonic clock measures the time elapsed since an arbitrary
+        but immutable instant in the past. The value itself has no
+        direct intrinsic meaning but the difference between two such
+        values does, as it is guaranteed to accurately represent the
+        amount of time passed between when those two measurements were
+        taken, no matter the adjustments to the clock that occurred in
+        between. Even NTP adjustments are ignored, meaning that the
+        flow of time here is dictated only by the system clock and thus
+        subject to any drift it may have.
+
+        return (float): the value of the clock, in seconds.
+
+        """
+        return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+
 # Taken from http://bugs.python.org/file19461/monotonic.py
-if platform.system() not in ('Windows', 'Darwin'):
+elif platform.system() not in ('Windows', 'Darwin'):
     from ctypes import Structure, c_long, CDLL, c_int, POINTER, byref
     from ctypes.util import find_library
 
