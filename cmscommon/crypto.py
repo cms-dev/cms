@@ -6,6 +6,7 @@
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,7 +47,7 @@ __all__ = [
 
     "generate_random_password",
 
-    "validate_password", "hash_password",
+    "validate_password", "hash_password", "parse_authentication",
     ]
 
 
@@ -172,6 +173,24 @@ def generate_random_password():
     return "".join((random.choice(ascii_lowercase) for _ in range(6)))
 
 
+def parse_authentication(authentication):
+    """Split the given method:password field into its components.
+
+    authentication (string): an authentication string as stored in the DB.
+
+    return (string, string): the method and the payload
+
+    raise (ValueError): when the authentication string is not valid.
+
+    """
+    method, sep, payload = authentication.partition(":")
+
+    if sep != ":":
+        raise ValueError("Authentication string not parsable.")
+
+    return method, payload
+
+
 def validate_password(authentication, password):
     """Validate the given password for the required authentication.
 
@@ -184,14 +203,16 @@ def validate_password(authentication, password):
         the method is not known.
 
     """
-    if authentication.find(":") == -1:
-        raise ValueError("Authentication string not parsable.")
-
-    method, payload = authentication.split(":", 1)
+    method, payload = parse_authentication(authentication)
     if method == "bcrypt":
         password = password.encode('utf-8')
         payload = payload.encode('utf-8')
-        return bcrypt.hashpw(password, payload) == payload
+        try:
+            return bcrypt.hashpw(password, payload) == payload
+        except ValueError:
+            return False
+    elif method == "text":
+        return payload == password
     else:
         raise ValueError("Authentication method not known.")
 
@@ -210,6 +231,8 @@ def hash_password(password, method="bcrypt"):
     if method == "bcrypt":
         password = password.encode('utf-8')
         payload = bcrypt.hashpw(password, bcrypt.gensalt())
+    elif method == "text":
+        payload = password.encode('utf-8')
     else:
         raise ValueError("Authentication method not known.")
 

@@ -5,12 +5,13 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,6 +40,7 @@ import tornado.web
 
 from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
+from cmscommon.crypto import hash_password, parse_authentication
 
 from .base import BaseHandler, require_permission
 
@@ -210,7 +212,21 @@ class ParticipationHandler(BaseHandler):
         try:
             attrs = participation.get_attrs()
 
-            self.get_string(attrs, "password", empty=None)
+            if participation.password is not None:
+                old_method, _ = parse_authentication(participation.password)
+            else:
+                old_method = None
+            password = self.get_argument("password")
+            method = self.get_argument("method")
+            if password != "":
+                attrs["password"] = hash_password(password, method)
+            elif old_method is None or old_method == "text" \
+                    or method != old_method:
+                # If the password was set and hashed and the admin left
+                # it untouched then we don't change it. Otherwise they
+                # must have meant to clear it.
+                attrs["password"] = None
+
             self.get_ip_networks(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
