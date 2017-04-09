@@ -53,6 +53,7 @@ from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
 from cmscommon.datetime import make_datetime
+from cmscommon.crypto import hash_password, parse_authentication
 
 
 logger = logging.getLogger(__name__)
@@ -503,6 +504,63 @@ class BaseHandler(CommonRequestHandler):
             raise ValueError("Score type parameters not found.")
         dest["score_type"] = name
         dest["score_type_parameters"] = params
+
+    def get_password(self, dest, old_password, allow_unset):
+        """Parse a (possibly hashed) password.
+
+        Parse the value of the password and the method that should be
+        used to hash it (if any) and fill it into the given destination
+        making sure that a hashed password can be left unchanged and,
+        if allowed, unset.
+
+        dest (dict): a place to store the result in.
+        old_password (string|None): the current password for the object
+            if any, with a "<method>:" prefix.
+        allow_unset (bool): whether the password is allowed to be left
+            unset, which is represented as a value of None in dest.
+
+        """
+        # The admin leaving the password field empty could mean one of
+        # two things: they want the password to be unset (this applies
+        # to participations only and it means they inherit the user's
+        # password) or, if a password was set and it was hashed, they
+        # want to keep using that old password. We distinguish between
+        # the two essentially by looking at the method: an empty
+        # plaintext means "unset", an empty hashed means "keep".
+
+        # Find out whether a password was set and whether it was
+        # plaintext or hashed.
+        if old_password is not None:
+            try:
+                old_method, _ = parse_authentication(old_password)
+            except ValueError:
+                # Treated as if no password was set.
+                old_method = None
+        else:
+            old_method = None
+
+        password = self.get_argument("password")
+        method = self.get_argument("method")
+
+        # If a password is given, we use that.
+        if password != "":
+            dest["password"] = hash_password(password, method)
+        # If the password was set and was hashed, and the admin kept
+        # the method unchanged and didn't specify anything, they must
+        # have meant to keep the old password unchanged.
+        elif old_method is not None and old_method != "plaintext" \
+                and method == old_method:
+            # Since the content of dest overwrites the current values
+            # of the participation, by not adding anything to dest we
+            # cause the current values to be kept.
+            pass
+        # Otherwise the fact that the password is empty means that the
+        # admin wants the password to be unset.
+        elif allow_unset:
+            dest["password"] = None
+        # Or that they really mean the password to be the empty string.
+        else:
+            dest["password"] = hash_password("", method)
 
     def render_params_for_submissions(self, query, page, page_size=50):
         """Add data about the requested submissions to r_params.

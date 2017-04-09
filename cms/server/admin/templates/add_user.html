@@ -36,8 +36,13 @@
           <span class="info" title="Contestant password. Caution: stored in plain text."></span>
           Password
         </td>
-        <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" /></td>
+        <td>
+          <input type="text" name="password" />
+          <select name="method">
+            <option value="plaintext">Plain text</option>
+            <option value="bcrypt" selected>Hashed (bcrypt)</option>
+          </select>
+        </td>
       </tr>
       <tr>
         <td>

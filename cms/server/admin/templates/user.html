@@ -1,6 +1,7 @@
 {% extends base.html %}
 
 {% block core %}
+{% from cmscommon.crypto import parse_authentication %}
 {% from cms.grading.scoretypes import get_score_type %}
 {% set score_types = {} %}
 
@@ -96,8 +97,10 @@
           <span class="info" title="Contestant password. Caution: stored in plain text."></span>
           Password
         </td>
-        <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ user.password }}"/></td>
+        <td>
+          {% set hashed_password = user.password %}
+          {% include fragments/hashed_password_form.html %}
+        </td>
       </tr>
       <tr>
         <td>

@@ -28,6 +28,7 @@ function update_additional_answer(element, invoker)
 {% end %}
 
 {% block core %}
+{% from cmscommon.crypto import parse_authentication %}
 {% from cms.grading.scoretypes import get_score_type %}
 {% set score_types = {} %}
 
@@ -79,8 +80,10 @@ function update_additional_answer(element, invoker)
                                      Caution: stored in plain text."></span>
           Password
         </td>
-        <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ participation.password if participation.password is not None else "" }}"/></td>
+        <td>
+          {% set hashed_password = participation.password %}
+          {% include fragments/hashed_password_form.html %}
+        </td>
       </tr>
       <tr>
         <td>

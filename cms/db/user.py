@@ -39,7 +39,7 @@ from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.postgresql import CIDR
 
-from cmscommon.crypto import generate_random_password
+from cmscommon.crypto import generate_random_password, build_password
 
 from . import Base, Contest, CastingArray, CodenameConstraint
 
@@ -73,7 +73,7 @@ class User(Base):
     password = Column(
         Unicode,
         nullable=False,
-        default=generate_random_password)
+        default=lambda: build_password(generate_random_password()))
 
     # Email for any communications in case of remote contest.
     email = Column(

@@ -5,10 +5,11 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -69,7 +70,9 @@ class UserHandler(BaseHandler):
             self.get_string(attrs, "first_name")
             self.get_string(attrs, "last_name")
             self.get_string(attrs, "username", empty=None)
-            self.get_string(attrs, "password")
+
+            self.get_password(attrs, user.password, False)
+
             self.get_string(attrs, "email")
             self.get_string(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
@@ -232,7 +235,9 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
             self.get_string(attrs, "first_name")
             self.get_string(attrs, "last_name")
             self.get_string(attrs, "username", empty=None)
-            self.get_string(attrs, "password")
+
+            self.get_password(attrs, None, False)
+
             self.get_string(attrs, "email")
 
             assert attrs.get("username") is not None, \

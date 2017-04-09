@@ -5,12 +5,13 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -210,7 +211,8 @@ class ParticipationHandler(BaseHandler):
         try:
             attrs = participation.get_attrs()
 
-            self.get_string(attrs, "password", empty=None)
+            self.get_password(attrs, participation.password, True)
+
             self.get_ip_networks(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
             self.get_timedelta_sec(attrs, "delay_time")
