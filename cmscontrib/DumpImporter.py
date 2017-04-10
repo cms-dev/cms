@@ -5,7 +5,7 @@
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
@@ -40,6 +40,7 @@ gevent.monkey.patch_all()
 
 import argparse
 import io
+import ipaddress
 import json
 import logging
 import os
@@ -49,6 +50,7 @@ from datetime import timedelta
 
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 import cms.db as class_hook
 
@@ -89,6 +91,37 @@ def find_root_of_archive(file_names):
             else:
                 return None
     return current_root
+
+
+def decode_value(type_, value):
+    """Decode a given value in a JSON-compatible form to a given type.
+
+    type_ (sqlalchemy.types.TypeEngine): the SQLAlchemy type of the
+        column that will hold the value.
+    value (object): the value, encoded as bool, int, float, string,
+        list, dict or any other JSON-compatible format.
+
+    return (object): the value, decoded.
+
+    """
+    if value is None:
+        return None
+    elif isinstance(type_,
+                    (Boolean, Integer, Float, Unicode, Enum,RepeatedUnicode)):
+        return value
+    elif isinstance(type_, String):
+        return value.encode('latin1')
+    elif isinstance(type_, DateTime):
+        return make_datetime(value)
+    elif isinstance(type_, Interval):
+        return timedelta(seconds=value)
+    elif isinstance(type_, ARRAY):
+        return list(decode_value(type_.item_type, item) for item in value)
+    elif isinstance(type_, CIDR):
+        return ipaddress.ip_network(value)
+    else:
+        raise RuntimeError(
+            "Unknown SQLAlchemy column type: %s" % type_)
 
 
 class DumpImporter(object):
@@ -337,24 +370,9 @@ class DumpImporter(object):
                 continue
 
             col = prp.columns[0]
-            col_type = type(col.type)
 
             val = data[prp.key]
-            if col_type in \
-                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, Enum]:
-                args[prp.key] = val
-            elif col_type is String:
-                args[prp.key] = \
-                    val.encode('latin1') if val is not None else None
-            elif col_type is DateTime:
-                args[prp.key] = \
-                    make_datetime(val) if val is not None else None
-            elif col_type is Interval:
-                args[prp.key] = \
-                    timedelta(seconds=val) if val is not None else None
-            else:
-                raise RuntimeError(
-                    "Unknown SQLAlchemy column type: %s" % col_type)
+            args[prp.key] = decode_value(col.type, val)
 
         return cls(**args)
 

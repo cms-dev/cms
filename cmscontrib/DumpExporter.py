@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,6 +46,7 @@ import tempfile
 
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 from cms import utf8_decoder
 from cms.db import version as model_version
@@ -104,6 +105,36 @@ def get_archive_info(file_name):
         ret["write_mode"] = ""
 
     return ret
+
+
+def encode_value(type_, value):
+    """Encode a given value of a given type to a JSON-compatible form.
+
+    type_ (sqlalchemy.types.TypeEngine): the SQLAlchemy type of the
+        column that held the value.
+    value (object): the value.
+
+    return (object): the value, encoded as bool, int, float, string,
+        list, dict or any other JSON-compatible format.
+
+    """
+    if value is None:
+        return None
+    elif isinstance(type_,
+                    (Boolean, Integer, Float, Unicode, Enum, RepeatedUnicode)):
+        return value
+    elif isinstance(type_, String):
+        return value.decode('latin1')
+    elif isinstance(type_, DateTime):
+        return make_timestamp(value)
+    elif isinstance(type_, Interval):
+        return value.total_seconds()
+    elif isinstance(type_, ARRAY):
+        return list(encode_value(type_.item_type, item) for item in value)
+    elif isinstance(type_, CIDR):
+        return "%s" % value
+    else:
+        raise RuntimeError("Unknown SQLAlchemy column type: %s" % type_)
 
 
 class DumpExporter(object):
@@ -282,21 +313,7 @@ class DumpExporter(object):
             col_type = type(col.type)
 
             val = getattr(obj, prp.key)
-            if col_type in \
-                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, Enum]:
-                data[prp.key] = val
-            elif col_type is String:
-                data[prp.key] = \
-                    val.decode('latin1') if val is not None else None
-            elif col_type is DateTime:
-                data[prp.key] = \
-                    make_timestamp(val) if val is not None else None
-            elif col_type is Interval:
-                data[prp.key] = \
-                    val.total_seconds() if val is not None else None
-            else:
-                raise RuntimeError("Unknown SQLAlchemy column type: %s"
-                                   % col_type)
+            data[prp.key] = encode_value(col.type, val)
 
         for prp in cls._rel_props:
             other_cls = prp.mapper.class_
