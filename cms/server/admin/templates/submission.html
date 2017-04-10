@@ -80,25 +80,19 @@
             {% if s.official is False %}
               <input type="hidden" name="official" value="yes"/>
               No
-              <button
+              <input
               {% if not current_user.permission_all %}
                   disabled
               {% end %}
-               onclick="document.official_status_form.submit()"
-              >
-                Make official
-              </button>
+               type="submit" value="Make official" />
             {% else %}
               <input type="hidden" name="official" value="no"/>
               Yes
-              <button
+              <input
               {% if not current_user.permission_all %}
                   disabled
               {% end %}
-               onclick="document.official_status_form.submit()"
-              >
-                Make unofficial
-              </button>
+               type="submit" value="Make unofficial" />
             {% end %}
             </form>
         </td>

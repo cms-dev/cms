@@ -212,10 +212,8 @@ HANDLERS = [
 
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
-    (
-        r"/submission/([0-9]+)(?:/([0-9]+))?/official",
-        SubmissionOfficialStatusHandler
-    ),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?/official",
+     SubmissionOfficialStatusHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
 
     # User tests

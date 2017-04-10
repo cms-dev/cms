@@ -31,13 +31,14 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
+
 from cms.db import Dataset, File, Submission
 from cms.grading.languagemanager import get_language
 from cmscommon.datetime import make_datetime
 
-import logging
-
 from .base import BaseHandler, FileHandler, require_permission
+
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +136,7 @@ class SubmissionOfficialStatusHandler(BaseHandler):
                         submission.id,
                         submission.participation.user.username,
                         submission.participation.contest.name,
-                        ["unofficial", "official"][should_make_official])
+                        "official" if should_make_official else "unofficial")
 
         if dataset_id is None:
             self.redirect("/submission/%s" % submission_id)

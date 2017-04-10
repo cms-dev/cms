@@ -78,7 +78,7 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
     "labels" for the time interval delimited by the datetime preceding
     and following the label. Additionally we will also consider the
     intervals [-infty, intervals[0]] (labeled -2) and [intervals[-1],
-    +infty] (labeled +2).
+    +infty] (labeled +4).
 
     This function selects a sample of datetimes inside each interval
     (more "dense" near the boundaries), calls compute_actual_phase on
@@ -212,6 +212,14 @@ class TestComputeActualPhase(unittest.TestCase):
              ("4", -1, "6", 0, "14", 2, "17", 3, "20"))
         test("4", "12", "17", "20", None, "7", "2", "2",
              ("4", -1, "6", 0, "16", 2, "17", 3, "20"))
+
+        # Test for overlapping of contest and analysis for this users
+        test("4", "12", "12", "20", None, None, "2", "0",
+             ("4", -1, "6", 0, "14", 3, "20"))
+        test("4", "12", "12", "20", None, None, "0", "2",
+             ("4", 0, "14", 3, "20"))
+        test("4", "12", "12", "20", None, None, "1", "1",
+             ("4", -1, "5", 0, "14", 3, "20"))
 
     @staticmethod
     def test_usaco_like():

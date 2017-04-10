@@ -260,7 +260,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
         $("#countdown").text(
             this.format_timedelta(this.current_phase_end - server_time));
         break;
-        case +3:
+    case +3:
         // Contest has already finished. Analysis mode is running.
         if (server_time >= this.current_phase_end) {
             window.location.href = this.contest_root;

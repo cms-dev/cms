@@ -157,9 +157,6 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
 
         assert contest_start <= actual_start <= actual_stop
 
-        if analysis_start is not None:
-            assert actual_stop <= analysis_start
-
         if actual_start <= timestamp <= actual_stop:
             actual_phase = 0
             current_phase_begin = actual_start
@@ -189,16 +186,24 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
     if actual_phase == +2:
         if analysis_start is not None:
             assert contest_stop <= analysis_start
+            assert analysis_stop is not None
+            assert analysis_start <= analysis_stop
             if timestamp < analysis_start:
                 current_phase_end = analysis_start
             elif analysis_start <= timestamp <= analysis_stop:
                 current_phase_begin = analysis_start
+                # actual_stop might be greater than analysis_start in case
+                # of extra_time or delay_time.
+                if actual_stop is not None:
+                    current_phase_begin = max(analysis_start, actual_stop)
                 current_phase_end = analysis_stop
                 actual_phase = +3
             elif analysis_stop < timestamp:
                 current_phase_begin = analysis_stop
                 current_phase_end = None
                 actual_phase = +4
+            else:
+                raise RuntimeError("Logic doesn't seem to be working...")
         else:
             actual_phase = +4
 

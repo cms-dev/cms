@@ -387,15 +387,13 @@ class ProxyService(TriggeredService):
         submission_data = {
             "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
-            "time": int(make_timestamp(submission.timestamp)),
-        }
+            "time": int(make_timestamp(submission.timestamp))}
 
         subchange_id = "%d%ss" % (make_timestamp(submission.timestamp),
                                   submission_id)
         subchange_data = {
             "submission": submission_id,
-            "time": int(make_timestamp(submission.timestamp)),
-        }
+            "time": int(make_timestamp(submission.timestamp))}
 
         # This check is probably useless.
         if submission_result is not None and submission_result.scored():
@@ -424,8 +422,7 @@ class ProxyService(TriggeredService):
         submission_data = {
             "user": encode_id(submission.participation.user.username),
             "task": encode_id(submission.task.name),
-            "time": int(make_timestamp(submission.timestamp)),
-        }
+            "time": int(make_timestamp(submission.timestamp))}
 
         subchange_id = "%d%st" % (make_timestamp(submission.token.timestamp),
                                   submission_id)

@@ -199,8 +199,7 @@ class Contest(Base):
     analysis_enabled = Column(
         Boolean,
         nullable=False,
-        default=False,
-    )
+        default=False)
     analysis_start = Column(
         DateTime,
         nullable=False,
@@ -387,15 +386,14 @@ class Contest(Base):
         return (int): contest phase as above.
 
         """
-        if self.start is not None and self.start > timestamp:
+        if timestamp < self.start:
             return -1
-        if self.stop is None or self.stop > timestamp:
+        if timestamp <= self.stop:
             return 0
         if self.analysis_enabled:
-            if self.analysis_start is not None and \
-                    self.analysis_start > timestamp:
+            if timestamp < self.analysis_start:
                 return 1
-            elif self.analysis_stop is None or self.analysis_stop > timestamp:
+            elif timestamp <= self.analysis_stop:
                 return 2
         return 3
 
