@@ -9,6 +9,7 @@
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -875,7 +876,8 @@ def task_score(participation, task):
     # / evaluated / scored.
     partial = False
 
-    submissions = [s for s in participation.submissions if s.task is task]
+    submissions = [s for s in participation.submissions
+                   if s.task is task and s.official]
     submissions.sort(key=lambda s: s.timestamp)
 
     if submissions == []:

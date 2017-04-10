@@ -9,6 +9,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -284,6 +285,9 @@ class ProxyService(TriggeredService):
                 if submission.participation.hidden:
                     continue
 
+                if not submission.official:
+                    continue
+
                 # The submission result can be None if the dataset has
                 # been just made live.
                 sr = submission.get_result()
@@ -473,6 +477,12 @@ class ProxyService(TriggeredService):
                             submission_id)
                 return
 
+            if not submission.official:
+                logger.info("[submission_scored] Score for submission %d "
+                            "not sent because the submission is not official.",
+                            submission_id)
+                return
+
             # Update RWS.
             for operation in self.operations_for_score(submission):
                 self.enqueue(operation)
@@ -499,6 +509,12 @@ class ProxyService(TriggeredService):
             if submission.participation.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
                             "not sent because participation is hidden.",
+                            submission_id)
+                return
+
+            if not submission.official:
+                logger.info("[submission_tokened] Token for submission %d "
+                            "not sent because the submission is not official.",
                             submission_id)
                 return
 
@@ -533,6 +549,7 @@ class ProxyService(TriggeredService):
             for submission in task.submissions:
                 # Update RWS.
                 if not submission.participation.hidden and \
+                        submission.official and \
                         submission.get_result() is not None and \
                         submission.get_result().scored():
                     for operation in self.operations_for_score(submission):

@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,11 +31,16 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
+
 from cms.db import Dataset, File, Submission
 from cms.grading.languagemanager import get_language
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, FileHandler, require_permission
+
+
+logger = logging.getLogger(__name__)
 
 
 class SubmissionHandler(BaseHandler):
@@ -107,6 +113,30 @@ class SubmissionCommentHandler(BaseHandler):
 
         else:
             self.try_commit()
+
+        if dataset_id is None:
+            self.redirect("/submission/%s" % submission_id)
+        else:
+            self.redirect("/submission/%s/%s" % (submission_id,
+                                                 dataset_id))
+
+
+class SubmissionOfficialStatusHandler(BaseHandler):
+    """Called when the admin changes the official status of a submission."""
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, submission_id, dataset_id=None):
+        submission = self.safe_get_item(Submission, submission_id)
+
+        should_make_official = self.get_argument("official", "yes") == "yes"
+
+        submission.official = should_make_official
+        if self.try_commit():
+            logger.info("Submission '%s' by user %s in contest %s has "
+                        "been made %s",
+                        submission.id,
+                        submission.participation.user.username,
+                        submission.participation.contest.name,
+                        "official" if should_make_official else "unofficial")
 
         if dataset_id is None:
             self.redirect("/submission/%s" % submission_id)

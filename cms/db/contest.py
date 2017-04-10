@@ -8,6 +8,7 @@
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -50,6 +51,8 @@ class Contest(Base):
     __tablename__ = 'contests'
     __table_args__ = (
         CheckConstraint("start <= stop"),
+        CheckConstraint("stop <= analysis_start"),
+        CheckConstraint("analysis_start <= analysis_stop"),
         CheckConstraint("token_gen_initial <= token_gen_max"),
     )
 
@@ -188,6 +191,20 @@ class Contest(Base):
         nullable=False,
         default=datetime(2000, 1, 1))
     stop = Column(
+        DateTime,
+        nullable=False,
+        default=datetime(2100, 1, 1))
+
+    # Beginning and ending of the contest anaylsis mode.
+    analysis_enabled = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+    analysis_start = Column(
+        DateTime,
+        nullable=False,
+        default=datetime(2100, 1, 1))
+    analysis_stop = Column(
         DateTime,
         nullable=False,
         default=datetime(2100, 1, 1))
@@ -359,17 +376,26 @@ class Contest(Base):
     def phase(self, timestamp):
         """Return: -1 if contest isn't started yet at time timestamp,
                     0 if the contest is active at time timestamp,
-                    1 if the contest has ended.
+                    1 if the contest has ended but analysis mode
+                      hasn't started yet
+                    2 if the contest has ended and analysis mode is active
+                    3 if the contest has ended and analysis mode is disabled or
+                      has ended
 
         timestamp (datetime): the time we are iterested in.
         return (int): contest phase as above.
 
         """
-        if self.start is not None and self.start > timestamp:
+        if timestamp < self.start:
             return -1
-        if self.stop is None or self.stop > timestamp:
+        if timestamp <= self.stop:
             return 0
-        return 1
+        if self.analysis_enabled:
+            if timestamp < self.analysis_start:
+                return 1
+            elif timestamp <= self.analysis_stop:
+                return 2
+        return 3
 
     @staticmethod
     def _tokens_available(token_timestamps, token_mode,

@@ -86,7 +86,7 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 26
+version = 27
 
 engine = create_engine(config.database, echo=config.database_debug,
                        pool_timeout=60, pool_recycle=120)
@@ -98,7 +98,8 @@ from .session import Session, ScopedSession, SessionGen, \
 from .types import CastingArray, RepeatedUnicode
 from .base import metadata, Base
 from .fsobject import FSObject
-from .validation import CodenameConstraint, FilenameConstraint, DigestConstraint
+from .validation import CodenameConstraint, FilenameConstraint, \
+    DigestConstraint
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin

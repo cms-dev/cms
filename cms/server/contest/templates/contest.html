@@ -141,6 +141,12 @@ $(document).ready(function () {
         <div style="display: none" id="translation_until_contest_ends">
             {{ _("Until contest ends:") }}
         </div>
+        <div style="display: none" id="translation_until_analysis_starts">
+            {{ _("Until analysis starts:") }}
+        </div>
+        <div style="display: none" id="translation_until_analysis_ends">
+            {{ _("Until analysis ends:") }}
+        </div>
         <div style="display: none" id="translation_time_left">
             {{ _("Time left:") }}
         </div>
@@ -173,7 +179,7 @@ $(document).ready(function () {
     {% end %}
                                     </a>
                             </li>
-    {% if actual_phase == 0 or current_user.unrestricted %}
+    {% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
         {% for t_iter in contest.tasks %}
                             <li class="nav-header">
                                 {{ t_iter.name }}

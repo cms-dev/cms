@@ -251,7 +251,28 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
             this.format_timedelta(this.current_phase_end - server_time));
         break;
     case +2:
-        // Contest has already finished.
+        // Contest has already finished but analysis mode hasn't started yet.
+        if (server_time >= this.current_phase_end) {
+            window.location.href = this.contest_root;
+        }
+        $("#countdown_label").text(
+            $("#translation_until_analysis_starts").text());
+        $("#countdown").text(
+            this.format_timedelta(this.current_phase_end - server_time));
+        break;
+    case +3:
+        // Contest has already finished. Analysis mode is running.
+        if (server_time >= this.current_phase_end) {
+            window.location.href = this.contest_root;
+        }
+        $("#countdown_label").text(
+            $("#translation_until_analysis_ends").text());
+        $("#countdown").text(
+            this.format_timedelta(this.current_phase_end - server_time));
+        break;
+    case +4:
+        // Contest has already finished and analysis mode is either disabled
+        // or finished.
         $("#countdown_box").addClass("hidden");
         break;
     }
