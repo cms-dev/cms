@@ -36,14 +36,19 @@
 function init()
 {
     {% if contest is None %}
-    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }}, 0, 0, -1);
+    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }}, 0, 0, 0, 0, -1);
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);
     {% else %}
-    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }}, {{ phase }});
+    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }},
+        {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }},
+        {{ make_timestamp(contest.analysis_start) }}, {{ make_timestamp(contest.analysis_stop) }},
+        {{ phase }});
 
+    {% if phase < 3 %}
     utils.update_remaining_time();
     setInterval(function() { utils.update_remaining_time(); }, 1000);
+    {% end %}
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);
     {% end %}
@@ -236,10 +241,10 @@ $(document).ready(init);
             </li>
           </ul>
           <div class="hr"></div>
-          {% comment TODO: Add time left for analysis mode %}
-          {% if phase < 1 %}
-          <div class="footer">Time left: <span id="remaining"></span></div>
-          {% end %}
+          <div class="footer">
+            <span id="remaining_text"></span>
+            <span id="remaining_value"></span>
+          </div>
         {% end %}
 {% end %}
         <div class="cr_notice">CMS <a href="http://github.com/cms-dev/cms/">codebase</a> is released under the<br/><a href="http://www.gnu.org/licenses/agpl.txt">GNU Affero General Public License</a>.</div>

@@ -27,15 +27,18 @@
 var CMS = CMS || {};
 
 CMS.AWSUtils = function(url_root, timestamp,
-                        contest_start, contest_stop, phase) {
+                        contest_start, contest_stop,
+                        analysis_start, analysis_stop,
+                        phase) {
     this.url_root = url_root;
     this.first_date = new Date();
     this.last_notification = timestamp;
     this.timestamp = timestamp;
     this.contest_start = contest_start;
     this.contest_stop = contest_stop;
+    this.analysis_start = analysis_start;
+    this.analysis_stop = analysis_stop;
     this.phase = phase;
-    this.remaining_div = null;
     this.file_asked_name = "";
     this.file_asked_url = "";
 
@@ -317,35 +320,41 @@ CMS.AWSUtils.prototype.two_digits = function(n) {
  * Update the remaining time showed in the "remaining" div.
  */
 CMS.AWSUtils.prototype.update_remaining_time = function() {
-    var sec_to_end = Infinity;
-    if (this.contest_stop != null) {
-        sec_to_end = this.contest_stop - this.timestamp ;
+    // We assume this.phase always is the correct phase (since this
+    // method also refreshes the page when the phase changes).
+    var relevant_timestamp = null;
+    var text = null;
+    if (this.phase === -1) {
+        relevant_timestamp = this.contest_start;
+        text = "To start of contest: "
+    } else if (this.phase === 0) {
+        relevant_timestamp = this.contest_stop;
+        text = "To end of contest: "
+    } else if (this.phase === 1) {
+        relevant_timestamp = this.analysis_start;
+        text = "To start of analysis: "
+    } else if (this.phase === 2) {
+        relevant_timestamp = this.analysis_stop;
+        text = "To end of analysis: "
     }
 
-    var sec_to_start = -Infinity;
-    if (this.contest_start != null) {
-        sec_to_start = this.contest_start - this.timestamp;
+    // We are in phase 3, nothing to show.
+    if (relevant_timestamp === null) {
+        return;
     }
 
+    // Compute actual seconds to next phase value, and if negative we
+    // refresh to update the phase.
     var now = new Date();
-    var nowsec_to_end = sec_to_end - (now - this.first_date) / 1000;
-    var nowsec_to_start = sec_to_start - (now - this.first_date) / 1000;
-    if ((nowsec_to_end <= 0 && this.phase == 0 ) ||
-        (nowsec_to_start <= 0 && this.phase == -1 )) {
-        window.location.href = this.url_root + "/";
+    var countdown_sec =
+        relevant_timestamp - this.timestamp - (now - this.first_date) / 1000;
+    if (countdown_sec <= 0) {
+        location.reload();
+        return;
     }
 
-    var countdown = nowsec_to_end;
-    if (this.phase == -1) {
-        countdown = nowsec_to_start;
-    }
-
-    if (this.remaining_div == null) {
-        this.remaining_div = $("#remaining");
-    }
-    if (this.remaining_div != null) {
-        this.remaining_div.text(this.format_countdown(countdown));
-    }
+    $("#remaining_text").text(text);
+    $("#remaining_value").text(this.format_countdown(countdown_sec));
 };
 
 
