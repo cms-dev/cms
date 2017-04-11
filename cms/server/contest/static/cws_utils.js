@@ -104,14 +104,13 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
 
     // Trigger a desktop notification as well (but only if it's needed)
     if (type !== "notification") {
-        this.desktop_notification(type, timestamp, subject, text, level);
+        this.desktop_notification(type, timestamp, subject, text);
     }
 };
 
 
 CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
-                                                       subject, text,
-                                                       level) {
+                                                       subject, text) {
     // Check desktop notifications support
     if (!("Notification" in window)) {
         return;
@@ -124,7 +123,7 @@ CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
 
     // Create notification
     if (Notification.permission === "granted") {
-        var notification = new Notification(subject, {
+        new Notification(subject, {
             "body": text,
             "icon": "/favicon.ico"
         });
