@@ -187,14 +187,13 @@ CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
 
     // Trigger a desktop notification as well (but only if it's needed)
     if (type !== "notification") {
-        this.desktop_notification(type, timestamp, subject, text, contest_id);
+        this.desktop_notification(type, timestamp, subject, text);
     }
 };
 
 
 CMS.AWSUtils.prototype.desktop_notification = function(type, timestamp,
-                                                       subject, text,
-                                                       contest_id) {
+                                                       subject, text) {
     // Check desktop notifications support
     if (!("Notification" in window)) {
         return;
@@ -207,7 +206,7 @@ CMS.AWSUtils.prototype.desktop_notification = function(type, timestamp,
 
     // Create notification
     if (Notification.permission === "granted") {
-        var notification = new Notification(subject, {
+        new Notification(subject, {
             "body": text,
             "icon": "/favicon.ico"
         });
@@ -225,10 +224,8 @@ CMS.AWSUtils.prototype.desktop_notification = function(type, timestamp,
 CMS.AWSUtils.prototype.update_unread_counts = function(delta_public, delta_private) {
     var unread_public = $("#unread_public");
     var unread_private = $("#unread_private");
-    var msgs_public = "";
-    var msgs_private = "";
     if (unread_public) {
-        var msg_public = parseInt(unread_public.text());
+        var msgs_public = parseInt(unread_public.text());
         msgs_public += delta_public;
         unread_public.text(msgs_public);
         if (msgs_public > 0) {
@@ -238,7 +235,7 @@ CMS.AWSUtils.prototype.update_unread_counts = function(delta_public, delta_priva
         }
     }
     if (unread_private) {
-        var msg_private = parseInt(unread_private.text());
+        var msgs_private = parseInt(unread_private.text());
         msgs_private += delta_private;
         unread_private.text(msgs_private);
         if (msgs_private > 0) {
