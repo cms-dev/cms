@@ -579,9 +579,9 @@ def clean(base_dir, generated_list):
         pass
 
     # Delete compiled and/or backup files
-    os.system("find %s -name '*.o' -delete" % (base_dir))
-    os.system("find %s -name '*.pyc' -delete" % (base_dir))
-    os.system("find %s -name '*~' -delete" % (base_dir))
+    os.system("find \"%s\" -name '*.o' -delete" % (base_dir))
+    os.system("find \"%s\" -name '*.pyc' -delete" % (base_dir))
+    os.system("find \"%s\" -name '*~' -delete" % (base_dir))
 
 
 def build_execution_tree(actions):
