@@ -39,10 +39,10 @@ from sqlalchemy.types import TypeDecorator, Unicode
 # before that we do it ourselves. See:
 # https://github.com/psycopg/psycopg2/commit/643ba70bad0f19a68c06ec95de2691c28e060e48
 
-if tuple(int(x) for x in psycopg2.__version__.split('.')[:2]) >= (2, 7):
+try:
     psycopg2.extras.register_ipaddress()
 
-else:
+except AttributeError:
     from psycopg2.extensions import new_type, new_array_type, register_type, \
         register_adapter, QuotedString
 
