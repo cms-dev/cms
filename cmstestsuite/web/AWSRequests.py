@@ -7,6 +7,7 @@
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2017 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -52,7 +53,7 @@ class AWSSubmissionViewRequest(GenericRequest):
     def __init__(self, browser, submission_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.submission_id = submission_id
-        self.url = "%ssubmission/%s" % (self.base_url, submission_id)
+        self.url = "%s/submission/%s" % (self.base_url, submission_id)
 
     def describe(self):
         return "check submission %s" % self.submission_id
@@ -109,7 +110,7 @@ class AWSUserTestViewRequest(GenericRequest):
     def __init__(self, browser, user_test_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.user_test_id = user_test_id
-        self.url = "%suser_test/%s" % (self.base_url, user_test_id)
+        self.url = "%s/user_test/%s" % (self.base_url, user_test_id)
 
     def describe(self):
         return "check user_test %s" % self.user_test_id

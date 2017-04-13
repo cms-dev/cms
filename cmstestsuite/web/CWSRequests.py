@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2017 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -80,7 +81,7 @@ class TaskRequest(GenericRequest):
     """
     def __init__(self, browser, task_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%stasks/%s/description" % (self.base_url, task_id)
+        self.url = "%s/tasks/%s/description" % (self.base_url, task_id)
         self.task_id = task_id
 
     def describe(self):
@@ -93,8 +94,8 @@ class TaskStatementRequest(GenericRequest):
     """
     def __init__(self, browser, task_id, language_code, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%stasks/%s/statements/%s" % (self.base_url,
-                                                 task_id, language_code)
+        self.url = "%s/tasks/%s/statements/%s" % (self.base_url,
+                                                  task_id, language_code)
         self.task_id = task_id
 
     def describe(self):
@@ -111,7 +112,7 @@ class SubmitRequest(GenericRequest):
     def __init__(self, browser, task, submission_format,
                  filenames, language=None, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%stasks/%s/submit" % (self.base_url, task[1])
+        self.url = "%s/tasks/%s/submit" % (self.base_url, task[1])
         self.task = task
         self.submission_format = submission_format
         self.filenames = filenames
@@ -171,7 +172,7 @@ class SubmitUserTestRequest(GenericRequest):
     def __init__(self, browser, task, submission_format,
                  filenames, language=None, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%stasks/%s/test" % (self.base_url, task[1])
+        self.url = "%s/tasks/%s/test" % (self.base_url, task[1])
         self.task = task
         self.submission_format = submission_format
         self.filenames = filenames
@@ -237,9 +238,9 @@ class TokenRequest(GenericRequest):
     """
     def __init__(self, browser, task, submission_num, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%stasks/%s/submissions/%s/token" % (self.base_url,
-                                                        task[1],
-                                                        submission_num)
+        self.url = "%s/tasks/%s/submissions/%s/token" % (self.base_url,
+                                                         task[1],
+                                                         submission_num)
         self.task = task
         self.submission_num = submission_num
         self.data = {}
@@ -261,7 +262,7 @@ class SubmitRandomRequest(GenericRequest):
     def __init__(self, browser, task, base_url=None,
                  submissions_path=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%stasks/%s/submit" % (self.base_url, task[1])
+        self.url = "%s/tasks/%s/submit" % (self.base_url, task[1])
         self.task = task
         self.submissions_path = submissions_path
         self.data = {}

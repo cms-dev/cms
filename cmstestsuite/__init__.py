@@ -8,6 +8,7 @@
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2017 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -67,8 +68,8 @@ admin_info = {}
 
 
 # Base URLs for AWS and CWS
-AWS_BASE_URL = "http://localhost:8889/"
-CWS_BASE_URL = "http://localhost:8888/"
+AWS_BASE_URL = "http://localhost:8889"
+CWS_BASE_URL = "http://localhost:8888"
 
 
 # Persistent browsers to access AWS and CWS.
@@ -194,7 +195,7 @@ def initialize_aws(rand):
 
 def admin_req(path, args=None, files=None):
     browser = get_aws_browser()
-    return browser.do_request(AWS_BASE_URL + path, args, files)
+    return browser.do_request(AWS_BASE_URL + '/' + path, args, files)
 
 
 def get_tasks():
