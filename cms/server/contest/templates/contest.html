@@ -168,7 +168,7 @@ $(document).ready(function () {
                             <li{% if request.path == '/' %} class="active"{% end %}>
                                 <a href="{{ contest_root }}">{{ _("Overview") }}</a>
                             </li>
-    {% set unread_count = handler.get_secure_cookie("unread_count") %}
+    {% set unread_count = handler.get_secure_cookie("%s_unread_count" % contest.name) %}
                             <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
                                 <a href="{{ contest_root }}/communication">{{ _("Communication") }}
     {% if unread_count is None or int(unread_count) == 0 %}
