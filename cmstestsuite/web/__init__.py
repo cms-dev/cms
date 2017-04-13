@@ -7,6 +7,7 @@
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2017 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,8 +47,8 @@ class Browser(object):
         self.session = requests.Session()
 
     def read_xsrf_token(self, url):
-        response = self.session.get(url)
-        for cookie in response.cookies:
+        self.session.get(url)
+        for cookie in self.session.cookies:
             if cookie.name == "_xsrf":
                 self.xsrf_token = cookie.value
 
@@ -56,10 +57,9 @@ class Browser(object):
         login_request.execute()
 
     def do_request(self, url, data=None, file_names=None):
-        """Open an URL in a mechanize browser, optionally passing the
-        specified data and files as POST arguments.
+        """Open an URL, optionally passing the specified data and files as
+           POST arguments.
 
-        browser (mechanize.Browser): the browser to use.
         url (string): the URL to open.
         data (dict): a dictionary of parameters to pass as POST
             arguments.
@@ -253,10 +253,9 @@ class LoginRequest(GenericRequest):
         GenericRequest.__init__(self, browser, base_url)
         self.username = username
         self.password = password
-        self.url = '%slogin' % self.base_url
+        self.url = '%s/login' % self.base_url
         self.data = {'username': self.username,
-                     'password': self.password,
-                     'next': '/'}
+                     'password': self.password}
 
     def describe(self):
         return "try to login"
