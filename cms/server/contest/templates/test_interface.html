@@ -6,7 +6,7 @@ $(document).on("click", ".user_test_list tbody tr td.status .details", function 
     var task_id = $this.parent().parent().parent().parent().attr("data-task");
     var user_test_id = $this.parent().parent().attr("data-user-test");
     var modal = $("#user_test_detail");
-    var modal_body = modal.children(".modal-body");
+    var modal_body = $("#submission_detail_body");
     modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>');
     modal_body.load("{{ contest_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id + "/details");
     modal.modal("show");
@@ -62,7 +62,7 @@ $(document).ready(function () {
 
 {% if actual_phase == 0 or current_user.unrestricted %}
 
-<div class="span9 test_interface">
+<div class="test_interface">
 
 <div class="page-header">
     <h1>{{ _("Testing") }}</h1>
@@ -84,84 +84,75 @@ $(document).ready(function () {
     {% if task_type.testable %}
 <div class="tab-pane{% if task == default_task %} active{% end %}" id="test_{{ task.name }}">
 
-<h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
+<h2>{{ _("Submit a test") }}</h2>
 
 {% if user_tests_left[task.id] is not None %}
-    <div class="span5">
         <p>
         {{ _("You can submit %(user_tests_left)s more test(s).") % {"user_tests_left": user_tests_left[task.id]} }}
         </p>
-    </div>
 {% end %}
 
-<div class="submit_test row">
-    <div class="span5">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
-            {% module xsrf_form_html() %}
-            <fieldset>
+<div class="submit_test">
+    <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
+        {% module xsrf_form_html() %}
 {% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format)) %}
-                <div class="control-group">
-                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
-                    <div class="controls">
-                        <input type="file" class="input-xlarge"
-                               id="input{{ idx }}" name="{{ filename }}"
-                               onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]').not('#input_file'))"/>
-                    </div>
-                </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
+            <div class="col-sm-4">
+                <input type="file" class="form-control" id="input{{ idx }}" name="{{ filename }}" onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]').not('#input_file'))" style="height: auto;" />
+            </div>
+        </div>
 {% end %}
-                <div class="control-group">
-                    <label class="control-label" for="input_file">{{ _("input") }}</label>
-                    <div class="controls">
-                        <input type="file" class="input-xlarge" id="input_file" name="input"/>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <select id="language" name="language">
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="input_file">{{ _("input") }}</label>
+            <div class="col-sm-4">
+                <input type="file" class="form-control" id="input_file" name="input" style="height: auto;" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-4">
+                <select id="language" class="form-control" name="language">
 {% for lang in contest.languages %}
-                            <option value="{{ lang }}">{{ lang }}</option>
+                    <option value="{{ lang }}">{{ lang }}</option>
 {% end %}
-                        <select>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-    </div>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-4">
+                <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
+            </div>
+        </div>
+    </form>
+    
+    
 {% if not any(x.filename.endswith(".%l") for x in task.submission_format) %}
-    <div class="span4">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
-            {% module xsrf_form_html() %}
-            <fieldset>
-                <div class="control-group">
-                    <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
-                    <div class="controls">
-                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <select id="zip_language" name="language">
+    <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
+        {% module xsrf_form_html() %}
+        <div class="form-group">
+            <label class="control-label cols-sm-2" for="input_zip">{{ _("submission.zip") }}</label>
+            <div class="col-sm-4">
+                <input type="file" class="form-control" id="input_zip" name="submission"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-4">
+                <select id="zip_language" class="form-control" name="language">
 {% for lang in contest.languages %}
-                            <option value="{{ lang }}">{{ lang }}</option>
+                    <option value="{{ lang }}">{{ lang }}</option>
 {% end %}
-                        <select>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-    </div>
+                </select>
+            </div>
+        </div>
+    
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-4">
+                <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
+            </div>
+        </div>
+    </form>
+</div>
 {% end %}
 </div>
 
@@ -224,18 +215,21 @@ $(document).ready(function () {
 {% end %}
 </div>
 
-<div class="modal fade hide" id="user_test_detail">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
-        <h3>{{ _("Test details") }}</h3>
+<div class="modal fade" id="submission_detail" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+                <h4 class="modal-title">{{ _("Submission details") }}</h4>
+            </div>
+            <div class="modal-body" id="submission_detail_body">
+                <div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" href="#" class="btn btn-default" data-dismiss="modal">{{ _("Close") }}</buttons>
+            </div>
+        </div>
     </div>
-    <div class="modal-body">
-    </div>
-    <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
-    </div>
-</div>
-
 </div>
 {% end %}
 

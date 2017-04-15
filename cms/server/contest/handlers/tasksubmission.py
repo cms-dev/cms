@@ -11,7 +11,6 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
-# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -82,7 +81,7 @@ class SubmitHandler(ContestHandler):
         self.redirect(self.fallback_page)
 
     @tornado.web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0)
     @multi_contest
     def post(self, task_name):
         participation = self.current_user
@@ -327,16 +326,10 @@ class SubmitHandler(ContestHandler):
         # All the files are stored, ready to submit!
         logger.info("All files stored for submission sent by %s",
                     participation.user.username)
-
-        # Only set the official bit when the user can compete and we are not in
-        # analysis mode.
-        official = self.r_params["actual_phase"] == 0
-
         submission = Submission(self.timestamp,
                                 submission_lang,
                                 task=task,
-                                participation=participation,
-                                official=official)
+                                participation=participation)
 
         for filename, digest in file_digests.items():
             self.sql_session.add(File(filename, digest, submission=submission))
@@ -363,7 +356,7 @@ class TaskSubmissionsHandler(ContestHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0)
     @multi_contest
     def get(self, task_name):
         participation = self.current_user
@@ -420,7 +413,7 @@ class SubmissionStatusHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, submission_num):
         participation = self.current_user
@@ -487,7 +480,7 @@ class SubmissionDetailsHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, submission_num):
         participation = self.current_user
@@ -531,7 +524,7 @@ class SubmissionFileHandler(FileHandler):
 
     """
     @tornado.web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:

@@ -1,6 +1,5 @@
 {% extends contest.html %}
 {% block core %}
-<div class="span9">
 
 {% from cms import config %}
 
@@ -33,36 +32,28 @@
 
 <h2>{{ _("Questions") }}</h2>
 <div class="well question_submit">
-    <form class="form-horizontal" action="{{ contest_root }}/question" method="POST">
-        {% module xsrf_form_html() %}
-        <fieldset>
-            <div class="control-group">
+        <form action="{{ contest_root }}/question" method="POST">
+            {% module xsrf_form_html() %}
+            <div class="form-group">
                 <label class="control-label" for="input_subject">{{ _("Subject") }}</label>
-                <div class="controls">
-                    <input type="text" name="question_subject" id="input_subject" class="input-xlarge" maxlength="50" list="task_names_list" autocomplete="off">
-                    <datalist id="task_names_list">
-                        {% for task in contest.tasks %}
-                        <option value="{{ task.name }}">
-                        {% end %}
-                    </datalist>
-                </div>
+                <input type="text" name="question_subject" id="input_subject" class="form-control" maxlength="50" list="task_names_list" autocomplete="off">
+                <datalist id="task_names_list">
+                    {% for task in contest.tasks %}
+                    <option value="{{ task.name }}">
+                    {% end %}
+                </datalist>
             </div>
-            <div class="control-group">
+        
+            <div class="form-group">
                 <label class="control-label" for="input_text">{{ _("Text") }}</label>
-                <div class="controls">
-                    <textarea id="input_text" class="input-xlarge" name="question_text" rows="5" maxlength="2000"></textarea>
-                </div>
+                <textarea id="input_text" class="form-control" name="question_text" rows="5" maxlength="2000"></textarea>
             </div>
-            <div class="control-group">
-                <div class="controls">
-                    <button type="submit" class="btn btn-primary">{{ _("Ask question") }}</button>
-                    <button type="reset" class="btn">{{ _("Reset") }}</button>
-                </div>
+        
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">{{ _("Ask question") }}</button>
             </div>
-        </fieldset>
-    </form>
+        </form>
 </div>
-
 
 {% if len (current_user.questions) > 0 %}
 <div class="question_list">
@@ -122,5 +113,4 @@
 {% end %}
 
 
-</div>
 {% end %}

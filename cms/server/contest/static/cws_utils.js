@@ -77,8 +77,8 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
 
     // TODO somehow display timestamp, subject and text
 
-    var alert = $('<div class="alert alert-block notification">' +
-                  '<a class="close" data-dismiss="alert" href="#">×</a>' +
+    var alert = $('<div class="alert alert-dismissible" role="alert">' +
+                  '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
                   '<h4 class="alert-heading"></h4>' +
                   '</div>');
 
@@ -95,7 +95,7 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
 
     // The "warning" level is the default, so no check needed.
     if (level == "error") {
-        alert.addClass("alert-error");
+        alert.addClass("alert-danger");
     } else if (level == "success") {
         alert.addClass("alert-success");
     }
@@ -104,13 +104,14 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
 
     // Trigger a desktop notification as well (but only if it's needed)
     if (type !== "notification") {
-        this.desktop_notification(type, timestamp, subject, text);
+        this.desktop_notification(type, timestamp, subject, text, level);
     }
 };
 
 
 CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
-                                                       subject, text) {
+                                                       subject, text,
+                                                       level) {
     // Check desktop notifications support
     if (!("Notification" in window)) {
         return;
@@ -123,7 +124,7 @@ CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
 
     // Create notification
     if (Notification.permission === "granted") {
-        new Notification(subject, {
+        var notification = new Notification(subject, {
             "body": text,
             "icon": "/favicon.ico"
         });
@@ -250,28 +251,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
             this.format_timedelta(this.current_phase_end - server_time));
         break;
     case +2:
-        // Contest has already finished but analysis mode hasn't started yet.
-        if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
-        }
-        $("#countdown_label").text(
-            $("#translation_until_analysis_starts").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
-        break;
-    case +3:
-        // Contest has already finished. Analysis mode is running.
-        if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
-        }
-        $("#countdown_label").text(
-            $("#translation_until_analysis_ends").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
-        break;
-    case +4:
-        // Contest has already finished and analysis mode is either disabled
-        // or finished.
+        // Contest has already finished.
         $("#countdown_box").addClass("hidden");
         break;
     }

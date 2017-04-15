@@ -4,9 +4,9 @@
 {% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
 
-{% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
+{% if actual_phase == 0 or current_user.unrestricted %}
 
-<div class="span9 task_description">
+<div class="task_description">
 
 
 <div class="page-header">
@@ -18,17 +18,15 @@
 
 {% if len(task.statements) == 0 %}
 <div class="row statement no_statements">
-    <div class="span9">
+    <div class="col-md-9">
         {{ _("no statement available") }}
     </div>
 </div>
 {% elif len(task.statements) == 1 %}
-<div class="row statement one_statement">
-    <div class="span9">
+<div class="statement one_statement">
     {% for lang_code in task.statements %}
         <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(lang_code) }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
     {% end %}
-    </div>
 </div>
 {% else %}
 <div class="statement many_statements">

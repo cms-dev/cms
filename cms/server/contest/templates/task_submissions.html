@@ -2,11 +2,12 @@
 
 {% block additional_js %}
 
+
 $(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
-    var modal_body = modal.children(".modal-body");
-    modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>');
+    //var modal_body = modal.children(".modal-body");
+    var modal_body = $("#submission_detail_body");
     modal_body.load("{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/" + submission_id + "/details", function() {
         $(".score_details .subtask .subtask-head").each(function () {
             $(this).prepend("<i class=\"icon-chevron-right\"></i>");
@@ -24,7 +25,6 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
             $(this).html("<span class=\"outcome\">" + $(this).text() + "</span>");
         });
     });
-    modal.modal("show");
 });
 
 function get_score_class (score, max_score) {
@@ -76,9 +76,9 @@ $(document).ready(function () {
 
 {% block core %}
 
-{% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
+{% if actual_phase == 0 or current_user.unrestricted %}
 
-<div class="span9 task_submissions">
+<div class="task_submissions">
 
 <div class="page-header">
     <h1>{% raw _("%(name)s (%(short_name)s) <small>submissions</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</h1>
@@ -88,64 +88,54 @@ $(document).ready(function () {
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
 
 {% if submissions_left is not None %}
-    <div class="span5">
-        <p>
+    <p>
         {{ _("You can submit %(submissions_left)s more solution(s).") % {"submissions_left": submissions_left} }}
-        </p>
-    </div>
+    </p>
 {% end %}
 
-<div id="submit_solution" class="row">
-    <div class="span5">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
-            {% module xsrf_form_html() %}
-            <fieldset>
+<div id="submit_solution">
+    <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
+        {% module xsrf_form_html() %}
 {% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
-                <div class="control-group">
-                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", ": ") }}</label>
-                    <div class="controls">
-                        <input type="file" class="input-xlarge"
-                               id="input{{ idx }}" name="{{ filename }}"
-                               onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]'))"/>
-                    </div>
-                </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="input{{ idx }}">{{ filename.replace(".%l", ": ") }}</label>
+            <div class="col-sm-4">
+                <input type="file" class="form-control" id="input{{ idx }}" name="{{ filename }}" onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]'))" style="height: auto;"/>
+            </div>
+        </div>
 {% end %}
-                <div class="control-group">
-                    <div class="controls">
-                        <select id="language" name="language">
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-4">
+                <select id="language" class="form-control" name="language">
 {% for lang in contest.languages %}
-                            <option value="{{ lang }}">{{ lang }}</option>
+                    <option value="{{ lang }}">{{ lang }}</option>
 {% end %}
-                        <select>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-    </div>
-{% if len(task.submission_format) > 1 and not any(x.filename.endswith(".%l") for x in task.submission_format) %}
-    <div class="span4">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-4">
+                <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+    {% if len(task.submission_format) > 1 and not any(x.filename.endswith(".%l") for x in task.submission_format) %}
+    <div class="col-md-4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">
             {% module xsrf_form_html() %}
-            <fieldset>
-                <div class="control-group">
-                    <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
-                    <div class="controls">
-                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
-                    </div>
+            <div class="form-group">
+                <label class="control-label cols-sm-2" for="input_zip">{{ _("submission.zip") }}</label>
+                <div class="col-sm-4">
+                    <input type="file" class="form-control" id="input_zip" name="submission"/>
                 </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
-                    </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-4">
+                    <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
                 </div>
-            </fieldset>
+            </div>
         </form>
     </div>
 {% end %}
@@ -154,10 +144,10 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous submissions") }}</h2>
 
-{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
 <div style="padding-bottom:10px">
     {% set tokens_info = contest.tokens_available(current_user, task, timestamp) %}
-    {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
+    {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}
     {% set need_to_wait = tokens_info[2] is not None %}
     {% if can_play_token %}
         {% if tokens_info[0] == -1 %}
@@ -179,7 +169,7 @@ $(document).ready(function () {
         {% end %}
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
-        {% if actual_phase == 0 and tokens_info[1] is not None %}
+        {% if tokens_info[1] is not None %}
             {% set t = format_datetime_smart(tokens_info[1], timezone, locale=locale) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
             {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
@@ -219,13 +209,10 @@ $(document).ready(function () {
 {% else %}
         <col class="total_score"/>
 {% end %}
-{% if actual_phase >= +3 %}
-        <col class="considered_in_score"/>
-{% end %}
 {% if submissions_download_allowed %}
         <col class="files"/>
 {% end %}
-{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
         <col class="token"/>
 {% end %}
     </colgroup>
@@ -243,13 +230,10 @@ $(document).ready(function () {
 {% else %}
             <th class="total_score">{{ _("Score") }}</th>
 {% end %}
-{% if actual_phase >= +3 %}
-            <th class="considered_in_score">{{ _("Official") }}</th>
-{% end %}
 {% if submissions_download_allowed %}
             <th class="files">{{ _("Files") }}</th>
 {% end %}
-{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
             <th class="token">{{ _("Token") }}</th>
 {% end %}
         </tr>
@@ -273,18 +257,21 @@ $(document).ready(function () {
     </tbody>
 </table>
 
-<div class="modal fade hide wide" id="submission_detail">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
-        <h3>{{ _("Submission details") }}</h3>
+<div class="modal fade" id="submission_detail" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+                <h4 class="modal-title">{{ _("Submission details") }}</h4>
+            </div>
+            <div class="modal-body" id="submission_detail_body">
+                <div class="loading"><img src="{{ url_root }}/static/loading.gif"/>{{ _("loading...") }}</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" href="#" class="btn btn-default" data-dismiss="modal">{{ _("Close") }}</buttons>
+            </div>
+        </div>
     </div>
-    <div class="modal-body">
-    </div>
-    <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
-    </div>
-</div>
-
 </div>
 {% end %}
 
