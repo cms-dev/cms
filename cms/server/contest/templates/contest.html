@@ -197,6 +197,7 @@ $(document).ready(function () {
                         <div class="" style="padding: 8px 0;">
                             <ul class="nav nav-pills nav-stacked">
 
+
                                
         {% if actual_phase == 0 or current_user.unrestricted %}
             {% for t_iter in contest.tasks %}
@@ -210,6 +211,49 @@ $(document).ready(function () {
                                     <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/submissions">{{ _("Submissions") }}</a>
                                 </li>
             {% end %}
+
+                            <li{% if request.path == '/' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}">{{ _("Overview") }}</a>
+                            </li>
+    {% set unread_count = handler.get_secure_cookie("%s_unread_count" % contest.name) %}
+                            <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/communication">{{ _("Communication") }}
+    {% if unread_count is None or int(unread_count) == 0 %}
+                                    <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
+    {% else %}
+                                    <script>$(document).ready(function () { utils.unread_count = {{ int(unread_count) }};});</script>
+                                    <span id="unread_count" class="label label-warning">{{ _("%d unread") % int(unread_count) }}</span>
+    {% end %}
+                                    </a>
+                            </li>
+    {% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
+        {% for t_iter in contest.tasks %}
+                            <li class="nav-header">
+                                {{ t_iter.name }}
+                            </li>
+                            <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/description">{{ _("Statement") }}</a>
+                            </li>
+                            <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/submissions">{{ _("Submissions") }}</a>
+                            </li>
+        {% end %}
+    {% end %}
+                            <li class="divider"></li>
+                            <li{% if request.path == '/documentation' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/documentation">{{ _("Documentation") }}</a>
+                            </li>
+    {% if actual_phase == 0 or current_user.unrestricted %}{% comment FIXME maybe >= 0? %}
+        {% if testing_enabled %}
+                            <li{% if request.path == '/testing' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/testing">{{ _("Testing") }}</a>
+                            </li>
+        {% end %}
+        {% if printing_enabled %}
+                            <li{% if request.path == '/printing' %} class="active"{% end %}>
+                                <a href="{{ contest_root }}/printing">{{ _("Printing") }}</a>
+                            </li>
+
         {% end %}
                             </ul>
                         </div>
