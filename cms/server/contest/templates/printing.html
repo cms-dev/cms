@@ -4,7 +4,7 @@
 
 {% from cms.grading import format_status_text %}
 
-<div class="span9 printing">
+<div class="printing">
 
 <div class="page-header">
     <h1>{{ _("Printing") }}</h1>
@@ -19,23 +19,15 @@
     {{ _("You can print %(remaining_jobs)d more text files of up to %(max_pages)d pages each.") % {"remaining_jobs": remaining_jobs, "max_pages": max_pages} }}
     {% end %}
 
-<div id="print" class="row">
-    <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_root }}/printing" method="POST">
+<div id="print">
+    <form class="form-inline" enctype="multipart/form-data" action="{{ contest_root }}/printing" method="POST">
         {% module xsrf_form_html() %}
-        <fieldset>
-            <div class="control-group">
-                <label class="control-label" for="input">{% if pdf_printing_allowed %}{{ _("File (text or PDF)") }}{% else %}{{ _("File (text)") }}{% end %}</label>
-                <div class="controls">
-                    <input type="file" class="input-xlarge" id="input" name="file"/>
-                </div>
-            </div>
-            <div class="control-group">
-                <div class="controls">
-                    <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                    <button type="reset" class="btn">{{ _("Reset") }}</button>
-                </div>
-            </div>
-        </fieldset>
+        <div class="form-group">
+            <label class="control-label" for="input">{% if pdf_printing_allowed %}{{ _("File (text or PDF)") }}{% else %}{{ _("File (text)") }}{% end %}</label>
+            <input type="file" class="form-control" id="input" name="file" style="height: auto;" />
+        </div>
+        
+        <button type="submit" class="btn btn-success" style="-webkit-appearance:none;">{{ _("Submit") }}</button>
     </form>
 </div>
 {% else %}

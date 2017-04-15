@@ -15,7 +15,7 @@
     {% raw col1 %}
     <td class="status">
         {{ _("Compilation failed") }}
-        <a class="details">{{ _("details") }}</a>
+        <a class="details" data-toggle="modal" data-target="#submission_detail">{{ _("details") }}</a>
     </td>
 {% elif not tr.evaluated() %}
 <tr data-user-test="{{ t_idx }}" data-status="3">
@@ -28,7 +28,7 @@
     {% raw col1 %}
     <td class="status">
         {{ _("Executed") }}
-        <a class="details">{{ _("details") }}</a>
+        <a class="details" data-toggle="modal" data-target="#submission_detail">{{ _("details") }}</a>
     </td>
 {% end %}
 {% if tr is None or tr.execution_time is None %}

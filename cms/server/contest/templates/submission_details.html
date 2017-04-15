@@ -25,6 +25,7 @@
 {% end %}
             </td>
         </tr>
+        <tr>
             <th>{{ _("Memory used:") }}</th>
             <td>
 {% if sr.compilation_memory is None %}
@@ -42,6 +43,6 @@
 {% end %}
 {% if sr.compilation_stderr is not None %}
 <h4>{{ _("Standard error") }}</h4>
-<pre>{{ sr.compilation_stderr }}</pre>
+<pre style="white-space: pre-wrap;">{{ sr.compilation_stderr }}</pre>
 {% end %}
 {% end %}

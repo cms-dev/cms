@@ -262,7 +262,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 </tr>
         {% else %}
                 <tr class="undefined">
-                    <td colspan="5">
+                    <td colspan="6">
                         {{ _("N/A") }}
                     </td>
                 </tr>

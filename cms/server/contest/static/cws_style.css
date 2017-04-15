@@ -1,8 +1,8 @@
 /* Always show the scrollbar */
 
-body {
+/*body {
     overflow-y: scroll;
-}
+}*/
 
 /* Add some padding to the top of the page to avoid the static navbar from
    covering the content on the top. Since (due to responsive CSS) the navbar
@@ -10,12 +10,13 @@ body {
    media-query rule
  */
 
-@media (min-width: 980px) {
+/*@media (min-width: 980px) {
     #main {
         position: relative;
         padding-top: 20px;
     }
-}
+}*/
+
 
 /* Remove the on-hover coloring of rows in tables with table-nohover class */
 .table.table-nohover > tbody > tr:hover > td, .table.table-nohover > tbody > tr:hover > th {
@@ -114,16 +115,16 @@ div.page-header + h2 {
 
 /* Enhancements to the question form */
 
-div.question_submit form {
+/*div.question_submit form {
     width: 100%;
     margin: 0;
 }
 
 div.question_submit div.control-group:last-child {
     margin: 0;
-}
+}*/
 
-@media (min-width: 768px) and (max-width: 979px) {
+/*@media (min-width: 768px) and (max-width: 979px) {
     div.question_submit input,
     div.question_submit textarea {
         width: 328px;
@@ -142,7 +143,7 @@ div.question_submit div.control-group:last-child {
     div.question_submit textarea {
         width: 660px;
     }
-}
+}*/
 
 div.question_submit textarea {
     resize: vertical;
@@ -151,7 +152,7 @@ div.question_submit textarea {
 }
 
 /** Login **/
-
+/*
 div.login_box form {
     margin-bottom: 0;
 }
@@ -167,8 +168,8 @@ div.login_container {
 div.login_box {
     max-width: 450px;
     margin: 0 auto;
-}
-
+}*/
+/*
 @media (max-width: 979px) {
     div.navbar.navbar-fixed-top {
         margin-bottom: 20px;
@@ -195,7 +196,7 @@ div.login_box {
     div.login_box {
         /* The total height of the box is 2*60 (padding) + 60 (h2) +
            (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
-        margin-top: -174px;
+       /* margin-top: -174px;
     }
 }
 
@@ -213,7 +214,7 @@ div.login_box {
     div.login_box {
         /* The total height of the box is 2*60 (padding) + 60 (h2) +
            (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
-        margin-top: -174px;
+       /* margin-top: -174px;
     }
 }
 
@@ -256,7 +257,7 @@ div.login_box {
 }
 
 /*** Task statement */
-
+/*
 .task_description .statement.no_statement {
     font-size: 1.2em;
     font-style: italic;
@@ -359,9 +360,9 @@ div.login_box {
 .task_description .statement.many_statements .all_statements div ul {
     margin: 5px 5px 5px 25px;
 }
-
+*/
 /*** Compilation commands */
-
+/*
 .compilation_command_cell {
     padding: 5px !important;
 }
@@ -392,25 +393,8 @@ td.token_rules p:last-child {
 
 /*** Notifications */
 
-.notifications {
-    position: fixed;
-    top: 60px;
-    width: 0;
-    right: 0;
-    bottom: 0;
-    overflow: visible;
-    z-index: 1;
-}
-
-.notifications .notification {
-    width: 160px;
-    float: right;
-    margin-right: 20px;
-    clear: both;
-}
-
 /*** Submit a solution */
-
+/*
 #submit_solution {
     margin-bottom: 20px;
 }
@@ -441,7 +425,7 @@ td.token_rules p:last-child {
     height: auto;
     line-height: 18px;
 }
-
+*/
 
 /*** Submissions table */
 
@@ -702,13 +686,13 @@ td.token_rules p:last-child {
 
 
 /*** per-user time box */
-
+/*
 .per_user_time p:last-child {
     margin-bottom: 0;
 }
 
 /*** Countdown */
-
+/*
 #countdown_box {
     text-align: center;
     color: #333333;
@@ -724,7 +708,7 @@ td.token_rules p:last-child {
 }
 
 /*** Server time */
-
+/*
 #server_time_box {
     text-align: center;
     color: #333333;
@@ -740,8 +724,8 @@ td.token_rules p:last-child {
 .license_notice {
     display: block;
     text-align: center;
-    padding: 0 6%;
-    font-size: 11px;
+   
+    
 }
 
 /*** Attachments */
@@ -840,37 +824,6 @@ td.token_rules p:last-child {
     overflow: visible;
 }
 
-.submit_test {
-    margin-bottom: 20px;
-}
-
-.submit_test form {
-    margin-bottom: 0;
-}
-
-.submit_test .control-group {
-    margin-bottom: 0;
-}
-
-.submit_test .control-group:last-of-type {
-    margin-top: 10px;
-}
-
-.submit_test .control-label {
-    width: 100px;
-    padding-top: 4px;
-    margin-bottom: 4px;
-}
-
-.submit_test .controls {
-    margin-left: 110px;
-}
-
-.submit_test input[type="file"] {
-    height: auto;
-    line-height: 18px;
-}
-
 .user_test_list colgroup col.time,
 .user_test_list colgroup col.datetime {
     width: 1%;
@@ -935,7 +888,7 @@ td.token_rules p:last-child {
     width: 100%;
     white-space: nowrap;
 }
-
+/*
 #user_test_detail .modal-body {
     position: relative;
     height: 400px;
@@ -950,17 +903,13 @@ td.token_rules p:last-child {
     font-size: 16px;
     font-style: italic;
     margin-top: -16px; /* half the height of the image */
-}
+}/*
 
 #user_test_detail .modal-body .loading img {
     display: block;
     height: 32px;
     width: 32px;
     margin: 0 auto 12px;
-}
-
-#lang {
-    width: 100px;
 }
 
 /* Contest selection page */
