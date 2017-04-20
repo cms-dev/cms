@@ -1016,10 +1016,10 @@ msgstr "Comandos de compilación"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Puede consultar las reglas de los %(type_pl)s <a href=\"%(url_root)s/"
+"Puede consultar las reglas de los %(type_pl)s <a href=\"%(contest_root)s/"
 "\">aquí</a>."
 
 msgid ""

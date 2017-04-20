@@ -810,10 +810,10 @@ msgstr "Команды компиляции"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Вы можете найти правила для %(type_pl)s на <a href=\"%(url_root)s/"
+"Вы можете найти правила для %(type_pl)s на <a href=\"%(contest_root)s/"
 "\">странице информации о контесте</a>."
 
 msgid ""

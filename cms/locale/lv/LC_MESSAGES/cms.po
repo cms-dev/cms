@@ -1024,10 +1024,10 @@ msgstr "Kompilēšanas komandas"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Jūs varat atrast %(type_pl)s noteikumus <a href=\"%(url_root)s/\">sacensību "
+"Jūs varat atrast %(type_pl)s noteikumus <a href=\"%(contest_root)s/\">sacensību "
 "apskata lapā</a>."
 
 msgid ""

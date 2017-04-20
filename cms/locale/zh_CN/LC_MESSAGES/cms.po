@@ -951,10 +951,10 @@ msgstr "编译指令"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"在<a href=\"%(url_root)s/\">竞赛概况</a>中, 可以看到 %(type_pl)s 的使用规则."
+"在<a href=\"%(contest_root)s/\">竞赛概况</a>中, 可以看到 %(type_pl)s 的使用规则."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "

@@ -1028,10 +1028,10 @@ msgstr "Commandes utilisées pour compiler"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Vous pouvez trouver les règles des %(type_pl)s sur <a href=\"%(url_root)s/"
+"Vous pouvez trouver les règles des %(type_pl)s sur <a href=\"%(contest_root)s/"
 "\">la page générale du concours</a>."
 
 msgid ""

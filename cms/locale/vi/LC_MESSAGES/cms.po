@@ -989,10 +989,10 @@ msgstr "Lệnh biên dịch"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Bạn có thể đọc quy định về %(type_pl)s tại <a href=\"%(url_root)s/\">trang "
+"Bạn có thể đọc quy định về %(type_pl)s tại <a href=\"%(contest_root)s/\">trang "
 "tổng quan kì thi</a>."
 
 msgid ""
