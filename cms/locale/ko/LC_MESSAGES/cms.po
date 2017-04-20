@@ -983,10 +983,10 @@ msgstr "컴파일 명령어"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"%(type_pl)s를 위한 규칙은 <a href=\"%(url_root)s/\">시험 개요 페이지</a>에서 "
+"%(type_pl)s를 위한 규칙은 <a href=\"%(contest_root)s/\">시험 개요 페이지</a>에서 "
 "찾을 수 있습니다."
 
 msgid ""

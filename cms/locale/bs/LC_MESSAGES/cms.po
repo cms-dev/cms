@@ -734,8 +734,8 @@ msgid "Compilation commands"
 msgstr "Naredbe kompajlera"
 
 #, python-format
-msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
-msgstr "Možete pronaći pravila za %(type_pl)s na <a href=\"%(url_root)s/\">stranici pregleda takmičenja</a>."
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/\">contest overview page</a>."
+msgstr "Možete pronaći pravila za %(type_pl)s na <a href=\"%(contest_root)s/\">stranici pregleda takmičenja</a>."
 
 msgid "Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token."
 msgstr "Zapamtite da ne možete vidjeti detaljan rezultat prijave osim ako iskoristite i contest-token i task-token."

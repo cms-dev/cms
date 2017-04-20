@@ -1014,10 +1014,10 @@ msgstr "Commando's voor compilatie"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Je kan de regels voor de %(type_pl)s op de <a href=\"%(url_root)s/"
+"Je kan de regels voor de %(type_pl)s op de <a href=\"%(contest_root)s/"
 "\">overzichtspagina van de wedstrijd</a> vinden."
 
 msgid ""

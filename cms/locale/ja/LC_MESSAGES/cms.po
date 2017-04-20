@@ -994,10 +994,10 @@ msgstr "コンパイル時のコマンド"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"%(type_pl)sの使用に関する規則は、<a href=\"%(url_root)s/\">コンテストの概要"
+"%(type_pl)sの使用に関する規則は、<a href=\"%(contest_root)s/\">コンテストの概要"
 "ページ</a>を参照してください。"
 
 msgid ""

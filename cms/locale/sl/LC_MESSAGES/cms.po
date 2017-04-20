@@ -897,8 +897,8 @@ msgid "Compilation commands"
 msgstr "Ukazi za prevajanje"
 
 #, python-format
-msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/\">contest overview page</a>."
-msgstr "Pravila za %(type_pl)s so dostopna na <a href=\"%(url_root)s/\">pregledni strani</a>."
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/\">contest overview page</a>."
+msgstr "Pravila za %(type_pl)s so dostopna na <a href=\"%(contest_root)s/\">pregledni strani</a>."
 
 msgid "Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token."
 msgstr "Če želiš videti podrobnejši izzid oddaje, moraš uporabiti oba žetona."
