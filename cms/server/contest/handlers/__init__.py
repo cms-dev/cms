@@ -10,6 +10,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2017 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -59,7 +60,8 @@ from .taskusertest import \
     UserTestFileHandler
 from .communication import \
     CommunicationHandler, \
-    QuestionHandler
+    QuestionHandler, \
+    CallHandler
 
 
 HANDLERS = [
@@ -104,6 +106,7 @@ HANDLERS = [
 
     (r"/communication", CommunicationHandler),
     (r"/question", QuestionHandler),
+    (r"/callstaff", CallHandler)
 ]
 
 
