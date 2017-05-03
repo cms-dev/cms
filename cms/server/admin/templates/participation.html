@@ -81,24 +81,8 @@ function update_additional_answer(element, invoker)
           Password
         </td>
         <td>
-          {% set method, password = parse_authentication(participation.password) if participation.password is not None else ("", "text") %}
-          <input type="text" name="password" value="{{ password if method == "text" else "" }}" />
-          <select name="method">
-            <option value="text" {{ "selected" if method == "text" else "" }}>Plain text</option>
-            <option value="bcrypt" {{ "selected" if method == "bcrypt" else "" }}>Hashed (bcrypt)</option>
-          </select>
-          {% if method != "text" %}
-          <script>
-            $("[name=method]").change(function (e) {
-              if (e.target.value != "{{ method }}") {
-                $("[name=password]").attr("placeholder", "");
-              }
-              else {
-                $("[name=password]").attr("placeholder", "The password is hashed, type a new one in here to change it");
-              }});
-            $("[name=method]").change();
-          </script>
-          {% end %}
+          {% set hashed_password = participation.password %}
+          {% include fragments/hashed_password_form.html %}
         </td>
       </tr>
       <tr>

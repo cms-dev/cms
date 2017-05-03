@@ -47,7 +47,8 @@ __all__ = [
 
     "generate_random_password",
 
-    "validate_password", "hash_password", "parse_authentication",
+    "validate_password", "build_password", "hash_password",
+    "parse_authentication",
     ]
 
 
@@ -211,19 +212,32 @@ def validate_password(authentication, password):
             return bcrypt.hashpw(password, payload) == payload
         except ValueError:
             return False
-    elif method == "text":
+    elif method == "plaintext":
         return payload == password
     else:
         raise ValueError("Authentication method not known.")
 
 
-def hash_password(password, method="bcrypt"):
-    """Return a hash for password.
+def build_password(password, method="plaintext"):
+    """Build an auth string from an already-hashed password.
 
-    password (string): the password provided by the user.
+    password (string): the hashed password.
+    method (string): the hasing method to use.
+
+    return (string): the string embedding the method and the password.
+
+    """
+    # TODO make sure it's a valid bcrypt hash if method is bcrypt.
+    return "%s:%s" % (method, password)
+
+
+def hash_password(password, method="bcrypt"):
+    """Hash and build an auth string from a plaintext password.
+
+    password (string): the password in plaintext.
     method (string): the hashing method to use.
 
-    return (string): the hashed password.
+    return (string): the auth string containing the hashed password.
 
     raise (ValueError): if the method is not supported.
 
@@ -231,9 +245,9 @@ def hash_password(password, method="bcrypt"):
     if method == "bcrypt":
         password = password.encode('utf-8')
         payload = bcrypt.hashpw(password, bcrypt.gensalt())
-    elif method == "text":
+    elif method == "plaintext":
         payload = password.encode('utf-8')
     else:
         raise ValueError("Authentication method not known.")
 
-    return ":".join((method, payload))
+    return build_password(payload, method)

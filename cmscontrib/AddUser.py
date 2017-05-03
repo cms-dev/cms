@@ -37,7 +37,8 @@ import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, User
-from cmscommon.crypto import generate_random_password, hash_password
+from cmscommon.crypto import generate_random_password, build_password, \
+    hash_password
 
 from sqlalchemy.exc import IntegrityError
 
@@ -53,8 +54,7 @@ def add_user(first_name, last_name, username, password, method, is_hashed,
         password = generate_random_password()
         pwd_generated = True
     if is_hashed:
-        # TODO make sure it's a valid bcrypt hash if method is bcrypt.
-        stored_password = "%s:%s" % (method, password)
+        stored_password = build_password(password, method)
     else:
         stored_password = hash_password(password, method)
 
@@ -108,7 +108,8 @@ def main():
         help="password of the user in plain text")
     password_group.add_argument(
         "-H", "--hashed-password", action="store", type=utf8_decoder,
-        help="password of the user, already hashed (using the given algorithm)")
+        help="password of the user, already hashed using the given algorithm "
+             "(currently only --bcrypt)")
     method_group = parser.add_mutually_exclusive_group()
     method_group.add_argument(
         "--bcrypt", dest="method", action="store_const", const="bcrypt",
@@ -122,8 +123,9 @@ def main():
 
     success = add_user(args.first_name, args.last_name, args.username,
                        args.plaintext_password or args.hashed_password,
-                       args.method or "text", args.hashed_password is not None,
-                       args.email, args.timezone, args.languages)
+                       args.method or "plaintext",
+                       args.hashed_password is not None, args.email,
+                       args.timezone, args.languages)
     return 0 if success is True else 1
 
 

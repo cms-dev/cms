@@ -34,7 +34,6 @@ from __future__ import unicode_literals
 
 from cms.db import Contest, Participation, Submission, Team, User
 from cmscommon.datetime import make_datetime
-from cmscommon.crypto import hash_password, parse_authentication
 
 from .base import BaseHandler, SimpleHandler, require_permission
 
@@ -72,16 +71,7 @@ class UserHandler(BaseHandler):
             self.get_string(attrs, "last_name")
             self.get_string(attrs, "username", empty=None)
 
-            old_method, _ = parse_authentication(user.password)
-            password = self.get_argument("password")
-            method = self.get_argument("method")
-            if password != "":
-                attrs["password"] = hash_password(password, method)
-            elif old_method == "text" or method != old_method:
-                # If the password was hashed and the administrator left
-                # it untouched then we don't change it. Otherwise they
-                # must have really meant to set an empty password.
-                attrs["password"] = hash_password("", method)
+            self.get_password(attrs, user.password, False)
 
             self.get_string(attrs, "email")
             self.get_string(attrs, "preferred_languages")
@@ -246,9 +236,7 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
             self.get_string(attrs, "last_name")
             self.get_string(attrs, "username", empty=None)
 
-            password = self.get_argument("password")
-            method = self.get_argument("method")
-            attrs["password"] = hash_password(password, method)
+            self.get_password(attrs, None, False)
 
             self.get_string(attrs, "email")
 

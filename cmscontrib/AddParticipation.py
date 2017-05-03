@@ -41,7 +41,7 @@ import sys
 from cms import utf8_decoder
 from cms.db import Contest, Participation, SessionGen, Team, User, \
     ask_for_contest
-from cmscommon.crypto import hash_password
+from cmscommon.crypto import build_password, hash_password
 
 from sqlalchemy.exc import IntegrityError
 
@@ -81,9 +81,7 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
                     return False
             if password is not None:
                 if is_hashed:
-                    # TODO make sure it's a valid bcrypt hash if method
-                    # is bcrypt.
-                    password = "%s:%s" % (method, password)
+                    password = build_password(password, method)
                 else:
                     password = hash_password(password, method)
 
@@ -136,7 +134,8 @@ def main():
         help="password of the user in plain text")
     password_group.add_argument(
         "-H", "--hashed-password", action="store", type=utf8_decoder,
-        help="password of the user, already hashed (using the given algorithm)")
+        help="password of the user, already hashed using the given algorithm "
+             "(currently only --bcrypt)")
     method_group = parser.add_mutually_exclusive_group()
     method_group.add_argument(
         "--bcrypt", dest="method", action="store_const", const="bcrypt",
@@ -154,7 +153,7 @@ def main():
     success = add_participation(args.username, args.contest_id,
                                 args.ip, args.delay_time, args.extra_time,
                                 args.plaintext_password or args.hashed_password,
-                                args.method or "text",
+                                args.method or "plaintext",
                                 args.hashed_password is not None, args.team,
                                 args.hidden, args.unrestricted)
     return 0 if success is True else 1

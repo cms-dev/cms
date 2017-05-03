@@ -40,7 +40,6 @@ import tornado.web
 
 from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
-from cmscommon.crypto import hash_password, parse_authentication
 
 from .base import BaseHandler, require_permission
 
@@ -212,20 +211,7 @@ class ParticipationHandler(BaseHandler):
         try:
             attrs = participation.get_attrs()
 
-            if participation.password is not None:
-                old_method, _ = parse_authentication(participation.password)
-            else:
-                old_method = None
-            password = self.get_argument("password")
-            method = self.get_argument("method")
-            if password != "":
-                attrs["password"] = hash_password(password, method)
-            elif old_method is None or old_method == "text" \
-                    or method != old_method:
-                # If the password was set and hashed and the admin left
-                # it untouched then we don't change it. Otherwise they
-                # must have meant to clear it.
-                attrs["password"] = None
+            self.get_password(attrs, participation.password, True)
 
             self.get_ip_networks(attrs, "ip")
             self.get_datetime(attrs, "starting_time")
