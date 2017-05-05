@@ -71,8 +71,7 @@ class QuestionHandler(ContestHandler):
         if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     "communication")
+        fallback_page = self.make_unprefixed_contest_href("communication")
 
         subject_length = len(self.get_argument("question_subject", ""))
         text_length = len(self.get_argument("question_text", ""))

@@ -45,6 +45,18 @@ CMS.CWSUtils = function(contest_root, timestamp, timezoned_timestamp,
 };
 
 
+CMS.CWSUtils.prototype.make_contest_href = function() {
+    var url = this.contest_root;
+    for (let component of arguments) {
+        if (url.substr(-1) != "/") {
+            url += "/";
+        }
+        url += encodeURIComponent(component);
+    }
+    return url;
+};
+
+
 CMS.CWSUtils.prototype.update_notifications = function() {
     var self = this;
     $.get(

@@ -67,7 +67,7 @@ class LoginHandler(ContestHandler):
     """
     @multi_contest
     def post(self):
-        fallback_page = self.r_params["real_contest_root"]
+        fallback_page = self.make_unprefixed_contest_href()
 
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
@@ -146,7 +146,7 @@ class StartHandler(ContestHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect(self.r_params["real_contest_root"])
+        self.redirect(self.make_unprefixed_contest_href())
 
 
 class LogoutHandler(ContestHandler):
@@ -156,7 +156,7 @@ class LogoutHandler(ContestHandler):
     @multi_contest
     def post(self):
         self.clear_cookie(self.contest.name + "_login")
-        self.redirect(self.r_params["real_contest_root"])
+        self.redirect(self.make_unprefixed_contest_href())
 
 
 class NotificationsHandler(ContestHandler):
@@ -273,8 +273,7 @@ class PrintingHandler(ContestHandler):
         if not self.r_params["printing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     "printing")
+        fallback_page = self.make_unprefixed_contest_href("printing")
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\

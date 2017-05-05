@@ -91,9 +91,8 @@ class SubmitHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        self.fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
-        self.fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                          self.fallback_page)
+        self.fallback_page = \
+            self.make_unprefixed_contest_href("tasks", task.name, "submissions")
 
         # Alias for easy access
         contest = self.contest
@@ -595,9 +594,8 @@ class UseTokenHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = "tasks/%s/submissions" % quote(task.name, safe='')
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     fallback_page)
+        fallback_page = \
+            self.make_unprefixed_contest_href("tasks", task.name, "submissions")
 
         submission = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\

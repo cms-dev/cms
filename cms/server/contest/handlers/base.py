@@ -41,7 +41,7 @@ import traceback
 import tornado.web
 
 from cms.db import Contest
-from cms.server import CommonRequestHandler, get_url_root
+from cms.server import CommonRequestHandler, get_url_root, make_href_generator
 
 
 logger = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class BaseHandler(CommonRequestHandler):
         """
         ret = {}
         ret["timestamp"] = self.timestamp
-        ret["url_root"] = get_url_root(self.request.path)
+        ret["make_absolute_href"] = self.make_absolute_href
 
         ret["contest_list"] = self.contest_list
 

@@ -152,9 +152,8 @@ class UserTestHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        self.fallback_page = os.path.join(
-            self.r_params["real_contest_root"],
-            "testing?%s" % quote(task.name, safe=''))
+        self.fallback_page = \
+            self.make_unprefixed_contest_href("testing", task_name=task.name)
 
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)

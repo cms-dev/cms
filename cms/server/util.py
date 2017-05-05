@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
@@ -34,7 +34,8 @@ from __future__ import unicode_literals
 import time
 import logging
 from datetime import datetime, timedelta
-from urllib import quote
+from urllib import quote, urlencode
+from urlparse import urljoin
 
 from functools import wraps
 from tornado.web import RequestHandler
@@ -712,6 +713,31 @@ def get_url_root(request_path):
         return "."
 
 
+def make_href_generator(url_root):
+    """Return a function that builds an URL relative to the given root.
+
+    Generate a function that assembles an URL using its positional
+    parameters as URL components and its keyword arguments as the query
+    string. The URL will be relative to the root given here.
+
+    url_root (str): the root of all paths that are generated.
+
+    return (function): an URL generator.
+
+    """
+    assert not url_root.endswith("/") or url_root == "/"
+    def result(*args, **kwargs):
+        url = url_root
+        for component in args:
+            if not url.endswith("/"):
+                url += "/"
+            url += quote("%s" % component, safe="")
+        if kwargs:
+            url += "&" + urlencode(kwargs)
+        return url
+    return result
+
+
 class CommonRequestHandler(RequestHandler):
     """Encapsulates shared RequestHandler functionality.
 
@@ -728,6 +754,9 @@ class CommonRequestHandler(RequestHandler):
         self.sql_session = None
         self.r_params = None
         self.contest = None
+        self.url_root = None
+        self.make_absolute_href = None
+        self.make_unprefixed_absolute_href = None
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -738,6 +767,9 @@ class CommonRequestHandler(RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.sql_session = Session()
         self.sql_session.expire_all()
+        self.url_root = get_url_root(self.request.path)
+        self.make_absolute_href = make_href_generator(self.url_root)
+        self.make_unprefixed_absolute_href = make_href_generator("/")
 
     @property
     def service(self):
@@ -756,7 +788,7 @@ class CommonRequestHandler(RequestHandler):
         """
         # We don't use os.path.join here, because we need something like this:
         # ".." + "/stuff" to become: "../stuff" not: "/stuff"
-        url = get_url_root(self.request.path) + url
+        url = self.url_root + url
 
         self.set_status(302)
         self.set_header("Location", url)

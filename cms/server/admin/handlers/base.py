@@ -51,7 +51,7 @@ from cms.db import Admin, Contest, Participation, Question, \
     UserTest
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
-from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
+from cms.server import CommonRequestHandler, file_handler_gen
 from cmscommon.datetime import make_datetime
 from cmscommon.crypto import hash_password, parse_authentication
 
@@ -290,7 +290,7 @@ class BaseHandler(CommonRequestHandler):
                                 else "v" + __version__[:3]
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
-        params["url_root"] = get_url_root(self.request.path)
+        params["url_root"] = self.url_root
         if self.current_user is not None:
             params["current_user"] = self.current_user
         if self.contest is not None:
