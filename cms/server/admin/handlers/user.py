@@ -73,7 +73,7 @@ class UserHandler(BaseHandler):
 
             self.get_password(attrs, user.password, False)
 
-            self.get_string(attrs, "email")
+            self.get_string(attrs, "email", empty=None)
             self.get_string(attrs, "preferred_languages")
             self.get_string(attrs, "timezone", empty=None)
 
@@ -238,7 +238,7 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
 
             self.get_password(attrs, None, False)
 
-            self.get_string(attrs, "email")
+            self.get_string(attrs, "email", empty=None)
 
             assert attrs.get("username") is not None, \
                 "No username specified."
