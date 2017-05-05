@@ -72,7 +72,7 @@ def _admin_attrs(handler):
 class AddAdminHandler(SimpleHandler("add_admin.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
-        fallback_page = "/admins/add"
+        fallback_page = self.url("admins", "add")
 
         try:
             attrs = _admin_attrs(self)
@@ -89,7 +89,7 @@ class AddAdminHandler(SimpleHandler("add_admin.html", permission_all=True)):
             return
 
         if self.try_commit():
-            self.redirect("/admins")
+            self.redirect(self.url("admins"))
         else:
             self.redirect(fallback_page)
 
@@ -138,7 +138,7 @@ class AdminHandler(BaseHandler):
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/admin/%s" % admin_id)
+            self.redirect(self.url("admin", admin_id))
             return
 
         # If the admin is allowed here because has permission_all,
@@ -153,9 +153,9 @@ class AdminHandler(BaseHandler):
 
         if self.try_commit():
             logger.info("Admin %s updated.", admin.id)
-            self.redirect("/admins")
+            self.redirect(self.url("admins"))
         else:
-            self.redirect("/admin/%s" % admin_id)
+            self.redirect(self.url("admin", admin_id))
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def delete(self, admin_id):

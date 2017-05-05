@@ -60,7 +60,7 @@ class UserHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
-        fallback_page = "/user/%s" % user_id
+        fallback_page = self.url("user", user_id)
 
         user = self.safe_get_item(User, user_id)
 
@@ -109,13 +109,13 @@ class UserListHandler(SimpleHandler("users.html")):
         operation = self.get_argument("operation")
 
         if operation == self.REMOVE:
-            asking_page = "/users/%s/remove" % user_id
+            asking_page = self.url("users", user_id, "remove")
             # Open asking for remove page
             self.redirect(asking_page)
         else:
             self.application.service.add_notification(
                 make_datetime(), "Invalid operation %s" % operation, "")
-            self.redirect("/contests")
+            self.redirect(self.url("contests"))
 
 
 class RemoveUserHandler(BaseHandler):
@@ -164,7 +164,7 @@ class TeamHandler(BaseHandler):
         self.render("team.html", **self.r_params)
 
     def post(self, team_id):
-        fallback_page = "/team/%s" % team_id
+        fallback_page = self.url("team", team_id)
 
         team = self.safe_get_item(Team, team_id)
 
@@ -195,7 +195,7 @@ class TeamHandler(BaseHandler):
 class AddTeamHandler(SimpleHandler("add_team.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
-        fallback_page = "/teams/add"
+        fallback_page = self.url("teams", "add")
 
         try:
             attrs = dict()
@@ -227,7 +227,7 @@ class AddTeamHandler(SimpleHandler("add_team.html", permission_all=True)):
 class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
-        fallback_page = "/users/add"
+        fallback_page = self.url("users", "add")
 
         try:
             attrs = dict()
@@ -260,7 +260,7 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
         if self.try_commit():
             # Create the user on RWS.
             self.application.service.proxy_service.reinitialize()
-            self.redirect("/user/%s" % user.id)
+            self.redirect(self.url("user", user.id))
         else:
             self.redirect(fallback_page)
 
@@ -268,7 +268,7 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
 class AddParticipationHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
-        fallback_page = "/user/%s" % user_id
+        fallback_page = self.url("user", user_id)
 
         user = self.safe_get_item(User, user_id)
 
@@ -305,7 +305,7 @@ class AddParticipationHandler(BaseHandler):
 class EditParticipationHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
-        fallback_page = "/user/%s" % user_id
+        fallback_page = self.url("user", user_id)
 
         user = self.safe_get_item(User, user_id)
 

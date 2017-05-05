@@ -10,10 +10,10 @@
   {% set status = sr.get_status() %}
 {% end %}
 <div class="core_title">
-  <h1>Submission {{ s.id }} (Task: <a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a>)</h1>
+  <h1>Submission {{ s.id }} (Task: <a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a>)</h1>
 </div>
 
-{% set dataset_selector_par_url = "%s/submission/%s" % (url_root, s.id) %}
+{% set dataset_selector_par_url = url("submission", s.id) %}
 {% include fragments/dataset_selector.html %}
 
 <h2 id="title_details" class="toggling_on">Submission details</h2>
@@ -33,11 +33,11 @@
       </tr>
       <tr>
         <td>Task</td>
-        <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+        <td><a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a></td>
       </tr>
       <tr>
         <td>User</td>
-        <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}/edit">{{ s.participation.user.username }}</a></td>
+        <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
       </tr>
       <tr>
         <td>Files</td>
@@ -45,7 +45,7 @@
           {% for filename in [x.filename for x in s.task.submission_format] %}
             {% if filename in s.files %}
               {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
-          <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ s.files[filename].id }}')">
+          <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", s.files[filename].id) }}')">
             {{ real_filename }}
           </a>
           <br/>
@@ -75,7 +75,7 @@
       <tr>
         <td>Official</td>
         <td>
-            <form action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/official" name="official_status_form" method="POST">
+            <form action="{{ url("submission", s.id, shown_dataset.id, "official") }}" name="official_status_form" method="POST">
             {% module xsrf_form_html() %}
             {% if s.official %}
               <input type="hidden" name="official" value="no"/>
@@ -142,7 +142,7 @@
         <td>Reevaluate</td>
         <td>
           {% module ReevaluationButtons(
-                 url_root,
+                 url,
                  submission_id=s.id,
                  dataset_id=shown_dataset.id) %}
         </td>
@@ -155,7 +155,7 @@
 <h2 id="title_comment" class="toggling_on">Comment</h2>
 
 <div id="comment">
-  <form enctype="multipart/form-data" action="{{ url_root }}/submission/{{ s.id }}/{{ shown_dataset.id }}/comment" method="POST">
+  <form enctype="multipart/form-data" action="{{ url("submission", s.id, shown_dataset.id, "comment") }}" method="POST">
     {% module xsrf_form_html() %}
     <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea><br/>
     <input

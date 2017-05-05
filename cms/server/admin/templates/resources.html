@@ -204,8 +204,7 @@ var getters = [];
         update_resources: function()
         {
             var f = utils.bind_func(this, this.update_resources_cb);
-            cmsrpc_request("{{ url_root }}",
-                           "ResourceService", this.shard,
+            cmsrpc_request("ResourceService", this.shard,
                            "get_resources",
                            {"last_time": this.last_time},
                            f);
@@ -213,17 +212,15 @@ var getters = [];
 
         kill_service: function(s, link)
         {
-            link.parentNode.innerHTML = '<img src="{{ url_root }}/static/loading.gif" alt="loading..." />';
-            cmsrpc_request("{{ url_root }}",
-                           "ResourceService", this.shard,
+            link.parentNode.innerHTML = '<img src="{{ url("static", "loading.gif") }}" alt="loading..." />';
+            cmsrpc_request("ResourceService", this.shard,
                            "kill_service",
                            {"service": s});
         },
 
         toggle_autorestart: function(s, checkbox)
         {
-            cmsrpc_request("{{ url_root }}",
-                           "ResourceService", this.shard,
+            cmsrpc_request("ResourceService", this.shard,
                            "toggle_autorestart",
                            {"service": s});
         }
@@ -306,7 +303,7 @@ for (var i in shards)
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="8"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
+      <tr><td style="text-align: center;" colspan="8"><img src="{{ url("static", "loading.gif") }}" alt="loading..." /></td></tr>
     </tbody>
   </table>
 

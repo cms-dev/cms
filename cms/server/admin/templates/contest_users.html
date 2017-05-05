@@ -7,7 +7,7 @@
 
 {% include fragments/overload_warning.html %}
 
-<form action="{{ url_root }}/contest/{{ contest.id }}/users/add" method="POST">
+<form action="{{ url("contest", contest.id, "users", "add") }}" method="POST">
   {% module xsrf_form_html() %}
   Add a new user:
   <select name="user_id">
@@ -25,7 +25,7 @@
          value="Add user" />
 </form>
 
-<form action="{{ url_root }}/contest/{{ contest.id }}/users" method="POST">
+<form action="{{ url("contest", contest.id, "users") }}" method="POST">
   {% module xsrf_form_html() %}
   Edit selected user:
   <input type="submit"
@@ -50,7 +50,7 @@
         <td>
           <input type="radio" name="user_id" value="{{ p.user.id }}"/>
         </td>
-        <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}/edit">{{ p.user.username }}</a></td>
+        <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
         <td>{{ p.user.first_name }}</td>
         <td>{{ p.user.last_name }}</td>
       </tr>

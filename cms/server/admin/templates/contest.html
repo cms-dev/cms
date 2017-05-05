@@ -8,7 +8,7 @@
 {% include fragments/overload_warning.html %}
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest" style="display:inline;">
+<form enctype="multipart/form-data" action="{{ url("contest", contest.id) }}" method="POST" name="edit_contest" style="display:inline;">
   {% module xsrf_form_html() %}
   <table class="sub_table">
     <tr><td colspan=2><h2>Contest information</h2></td></tr>
@@ -287,9 +287,9 @@
          >
   <input type="reset" value="Reset">
 </form>
-<form action="{{ url_root }}/contests" method="POST" style="display:inline;">
+<form action="{{ url("contests") }}" method="POST" style="display:inline;">
     {% module xsrf_form_html() %}
-    <input type="hidden" name="contest_id" value="{{contest.id}}"/>
+    <input type="hidden" name="contest_id" value="{{ contest.id }}"/>
     <input type="submit"
          name="operation"
          value="Remove" style="float: right;"

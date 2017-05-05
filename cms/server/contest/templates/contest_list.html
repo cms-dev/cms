@@ -8,7 +8,7 @@
         <ul class="nav nav-list">
     {% for c_name, c_iter in contest_list.iteritems() %}
             <li>
-                <a {% if c_iter.stop < datetime.datetime.now() %} style="color: #adadad" {% end %} href="{{ url_root }}/{{ c_iter.name }}">{{ c_iter.description }}</a>
+                <a {% if c_iter.stop < datetime.datetime.now() %} style="color: #adadad" {% end %} href="{{ url(c_iter.name) }}">{{ c_iter.description }}</a>
             </li>
     {% end %}
         </ul>

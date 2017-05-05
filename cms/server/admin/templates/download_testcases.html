@@ -2,9 +2,9 @@
 
 {% block core %}
 <div class="core_title">
-  <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Download all testcases</h1>
+  <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Download all testcases</h1>
 </div>
-<form action="{{ url_root }}/dataset/{{ dataset.id }}/testcases/download" method="POST">
+<form action="{{ url("dataset", dataset.id, "testcases", "download") }}" method="POST">
   {% module xsrf_form_html() %}
   <table>
     <tr>

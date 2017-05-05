@@ -6,7 +6,7 @@
   <h1>Contests list</h1>
 </div>
 
-<form action="{{ url_root }}/contests" method="POST">
+<form action="{{ url("contests") }}" method="POST">
   {% module xsrf_form_html() %}
   Edit selected contest:
    <input type="submit"
@@ -30,7 +30,7 @@
         <td>
           <input type="radio" name="contest_id" value="{{ c.id }}"/>
         </td>
-        <td><a href="{{ url_root}}/contest/{{ c.id }}">{{ c.name }}</a></td>
+        <td><a href="{{ url("contest", c.id) }}">{{ c.name }}</a></td>
         <td>{{ c.description }}</td>
       </tr>
       {% end %}

@@ -46,7 +46,7 @@ utils.show_page("questions", 1);
   <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
       <div class="notification_timestamp">
-        <a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ msg.participation.user.id }}/edit" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ str(msg.question_timestamp) }}
+        <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ str(msg.question_timestamp) }}
       </div>
       <div class="notification_subject">{{ msg.subject }}</div>
       <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
@@ -59,9 +59,8 @@ utils.show_page("questions", 1);
 {% if current_user.permission_all or current_user.permission_messaging %}
       {% if msg.reply_timestamp is None %}
       <div class="ignore_reply">
-        <form class="ignore_question_form" action="{{ url_root }}/contest/{{ contest.id }}/question/{{ msg.id }}/ignore" name="ignore{{ msg.id }}" method="POST">
+        <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
           {% module xsrf_form_html() %}
-          <input type="hidden" name="ref" value="/contest/{{ contest.id }}/questions"/>
           {% if not msg.ignored %}
           <input type="hidden" name="ignore" value="yes"/>
           <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
@@ -77,9 +76,8 @@ utils.show_page("questions", 1);
       </div>
       <div class="reply_question" >
         <hr/>
-        <form class="reply_question_form" action="{{ url_root }}/contest/{{ contest.id }}/question/{{ msg.id }}/reply" method="POST">
+        <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
           {% module xsrf_form_html() %}
-          <input type="hidden" name="ref" value="/contest/{{ contest.id }}/questions"/>
           Precompiled answer:
           <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
             <option value="yes">Yes</option>

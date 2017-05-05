@@ -51,7 +51,7 @@ from cms.db import Admin, Contest, Participation, Question, \
     UserTest
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
-from cms.server import CommonRequestHandler, file_handler_gen, get_url_root
+from cms.server import CommonRequestHandler, file_handler_gen
 from cmscommon.datetime import make_datetime
 from cmscommon.crypto import hash_password, parse_authentication
 
@@ -290,7 +290,7 @@ class BaseHandler(CommonRequestHandler):
                                 else "v" + __version__[:3]
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
-        params["url_root"] = get_url_root(self.request.path)
+        params["url"] = self.url
         if self.current_user is not None:
             params["current_user"] = self.current_user
         if self.contest is not None:
@@ -632,6 +632,12 @@ class BaseHandler(CommonRequestHandler):
         if self.r_params is None:
             self.r_params = self.render_params()
         self.r_params["submission_count"] = count
+
+    def get_login_url(self):
+        """Return the URL unauthenticated users are redirected to.
+
+        """
+        return self.url("login")
 
 
 FileHandler = file_handler_gen(BaseHandler)

@@ -26,19 +26,19 @@ setDefaultNotifyCheckboxes();
 {% set current_score_type = None %}
 
 <div class="core_title">
-  <h1>Preview dataset change for {{ task.title }} (<a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a>)</h1>
+  <h1>Preview dataset change for {{ task.title }} (<a href="{{ url("task", task.id) }}">{{ task.name }}</a>)</h1>
 </div>
 
 <table style="width: auto;">
 <tr>
   <td>Current dataset:</td>
   <td><strong>{{ task.active_dataset.description }}</strong></td>
-  <td><a href="{{ url_root }}/dataset/{{ task.active_dataset_id }}">[View results]</td>
+  <td><a href="{{ url("dataset", task.active_dataset_id) }}">[View results]</td>
 </tr>
 <tr>
   <td>New dataset:</td>
   <td><strong>{{ dataset.description }}</strong></td>
-  <td><a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</td>
+  <td><a href="{{ url("dataset", dataset.id) }}">[View results]</td>
 </tr>
 </table>
 
@@ -53,11 +53,11 @@ below, and wait for it to complete.
 <p>
     Reevaluate all submissions for the dataset "{{ dataset.description }}":
     {% module ReevaluationButtons(
-           url_root,
+           url,
            dataset_id = dataset.id) %}
 </p>
 
-<form action="{{ url_root }}/dataset/{{ dataset.id }}/activate" method="POST">
+<form action="{{ url("dataset", dataset.id, "activate") }}" method="POST">
 {% module xsrf_form_html() %}
 {% if len(changes) == 0 %}
 <p>Good news! At present, switching to this dataset will have no effect on the
@@ -79,15 +79,15 @@ scores. No notifications will be sent.</p>
     <tr>
       <td style="text-align: right;">
         {% if c.submission.participation.id != prev_id %}
-        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.id in default_notify_participations else "off" }}" name="notify_{{ c.submission.participation.id}}"/>
+        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.id in default_notify_participations else "off" }}" name="notify_{{ c.submission.participation.id }}"/>
         {% end %}
       </td>
       <td>
         {% if c.submission.participation.id != prev_id %}
-        <a href="{{ url_root }}/user/{{ c.submission.participation.user.id }}">{{ c.submission.participation.user.username }}</a>
+        <a href="{{ url("user", c.submission.participation.user.id) }}">{{ c.submission.participation.user.username }}</a>
         {% end %}
       </td>
-      <td><a href="{{ url_root }}/submission/{{ c.submission.id }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
+      <td><a href="{{ url("submission", c.submission.id) }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
       <td>
         {% if c.old_score is not None or c.new_score is not None %}
         Score: {{ c.old_score }} -&gt; {{ c.new_score }}<br/>

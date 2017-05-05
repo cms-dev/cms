@@ -2,10 +2,10 @@
 
 {% block core %}
 <div class="core_title">
-  <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Rename dataset</h1>
+  <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Rename dataset</h1>
 </div>
 
-<form action="{{ url_root }}/dataset/{{ dataset.id }}/rename" method="POST">
+<form action="{{ url("dataset", dataset.id, "rename") }}" method="POST">
   {% module xsrf_form_html() %}
   <table>
     <tr>

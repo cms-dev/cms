@@ -50,7 +50,7 @@
     </td>
 {% end %}
     <td class="input">
-        <a class="btn" href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/tests/{{ t_idx }}/input">
+        <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "input") }}">
             {{ _("Download") }}
         </a>
     </td>
@@ -65,7 +65,7 @@
             {{ _("N/A") }}
         </a>
         {% else %}
-        <a class="btn btn-primary" href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/tests/{{ t_idx }}/output">
+        <a class="btn btn-primary" href="{{ contest_url("tasks", task.name, "tests", t_idx, "output") }}">
             {{ _("Download") }}
         </a>
         {% end %}
@@ -83,7 +83,7 @@
         {% elif len(files) == 1 %}
             {% set filename = t.files.keys()[0] %}
             {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
-        <a class="btn" href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/tests/{{ t_idx }}/files/{{ encode_for_url(real_filename) }}">
+        <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
             {{ _("Download") }}
         </a>
         {% else %}
@@ -100,7 +100,7 @@
                     {% set real_filename = filename %}
                 {% end %}
                 <li>
-                    <a href="{{ contest_root }}/tasks/{{ encode_for_url(task.name) }}/tests/{{ t_idx }}/files/{{ encode_for_url(filename) }}">
+                    <a href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", filename) }}">
                         {{ real_filename }}
                     </a>
                 </li>

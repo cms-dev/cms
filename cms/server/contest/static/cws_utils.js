@@ -25,9 +25,10 @@
 
 var CMS = CMS || {};
 
-CMS.CWSUtils = function(contest_root, timestamp, timezoned_timestamp,
+CMS.CWSUtils = function(url_root, contest_root, timestamp, timezoned_timestamp,
                         current_phase_begin, current_phase_end, phase) {
-    this.contest_root = contest_root;
+    this.url = CMS.CWSUtils.create_url_builder(url_root);
+    this.contest_url = CMS.CWSUtils.create_url_builder(contest_root);
     this.last_notification = timestamp;
     this.server_timestamp = timestamp;
     this.server_timezoned_timestamp = timezoned_timestamp;
@@ -45,10 +46,24 @@ CMS.CWSUtils = function(contest_root, timestamp, timezoned_timestamp,
 };
 
 
+CMS.CWSUtils.create_url_builder = function(url_root) {
+    return function() {
+        var url = url_root;
+        for (let component of arguments) {
+            if (url.substr(-1) != "/") {
+                url += "/";
+            }
+            url += encodeURIComponent(component);
+        }
+        return url;
+    };
+};
+
+
 CMS.CWSUtils.prototype.update_notifications = function() {
     var self = this;
     $.get(
-        this.contest_root + "/notifications",
+        this.contest_url("notifications"),
         {"last_notification": this.last_notification},
         function(data) {
             var counter = 0;
@@ -125,7 +140,7 @@ CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
     if (Notification.permission === "granted") {
         new Notification(subject, {
             "body": text,
-            "icon": "/favicon.ico"
+            "icon": this.url("static", "favicon.ico")
         });
     }
 };
@@ -208,7 +223,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case -2:
         // Contest hasn't started yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
+            window.location.href = this.contest_url();
         }
         $("#countdown_label").text(
             $("#translation_until_contest_starts").text());
@@ -232,7 +247,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case 0:
         // Contest is currently running.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
+            window.location.href = this.contest_url();
         }
         $("#countdown_label").text($("#translation_time_left").text());
         $("#countdown").text(
@@ -242,7 +257,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
         // User has already finished its time but contest hasn't
         // finished yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
+            window.location.href = this.contest_url();
         }
         $("#countdown_label").text(
             $("#translation_until_contest_ends").text());
@@ -252,7 +267,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case +2:
         // Contest has already finished but analysis mode hasn't started yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
+            window.location.href = this.contest_url();
         }
         $("#countdown_label").text(
             $("#translation_until_analysis_starts").text());
@@ -262,7 +277,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case +3:
         // Contest has already finished. Analysis mode is running.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_root;
+            window.location.href = this.contest_url();
         }
         $("#countdown_label").text(
             $("#translation_until_analysis_ends").text());
@@ -288,7 +303,7 @@ CMS.CWSUtils.prototype.rel_to_abs = function(sRelPath) {
 };
 
 CMS.CWSUtils.prototype.switch_lang = function() {
-    var cookie_path = this.rel_to_abs(this.contest_root);
+    var cookie_path = this.rel_to_abs(this.contest_url());
     var lang = $("#lang").val();
     if (lang === "") {
         document.cookie = "language="

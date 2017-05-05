@@ -23,7 +23,7 @@
         <td>{{ a.enabled }}</td>
         <td>
           {% if current_user.permission_all or current_user.id == a.id %}
-          <a href="{{ url_root}}/admin/{{ a.id }}">{{ a.username }}</a>
+          <a href="{{ url("admin", a.id) }}">{{ a.username }}</a>
           {% else %}
           {{ a.username }}
           {% end %}
@@ -40,7 +40,7 @@
 {% if current_user.permission_all %}
 <hr/>
 
-<a href="{{ url_root }}/admins/add">Add a new admin</a>
+<a href="{{ url("admins", "add") }}">Add a new admin</a>
 {% end %}
 
 <hr/>

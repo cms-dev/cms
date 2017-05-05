@@ -5,7 +5,7 @@
 <div class="core_title">
   <h1>Ranking</h1>
 </div>
-Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a>, <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/txt">text</a>.
+Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>, <a href="{{ url("contest", contest.id, "ranking", "txt") }}">text</a>.
 <table class="bordered">
   <thead>
     <tr>
@@ -15,7 +15,7 @@ Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a
       <th>Team</th>
       {% end %}
       {% for task in contest.tasks %}
-      <th><a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a></th>
+      <th><a href="{{ url("task", task.id) }}">{{ task.name }}</a></th>
       {% end %}
       <th>Global</th>
     </tr>
@@ -26,11 +26,11 @@ Download as <a href="{{ url_root }}/contest/{{ contest.id }}/ranking/csv">csv</a
     <tr>
       {% set score = 0.0 %}
       {% set partial = False %}
-      <td><a href="{{ url_root }}/contest/{{ contest.id }}/user/{{ p.user.id }}/edit">{{ p.user.username }}</a></td>
+      <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
       <td>{{ "%s %s" % (p.user.first_name, p.user.last_name) }}</td>
       {% if show_teams %}
         {% if p.team %}
-        <td><a href="{{ url_root }}/team/{{ p.team_id }}">{{ p.team.name }}</a></td>
+        <td><a href="{{ url("team", p.team_id) }}">{{ p.team.name }}</a></td>
         {% else %}
         <td></td>
         {% end %}

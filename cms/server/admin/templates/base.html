@@ -9,21 +9,21 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/aws_style.css">
-    <script type="text/javascript" src="{{ url_root }}/static/web_rpc.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/aws_utils.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery.jqplot.min.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.dateAxisRenderer.min.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.enhancedLegendRenderer.min.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/sh/shCore.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushCpp.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushDelphi.js"></script>
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/jq/jquery.jqplot.min.css"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shCore.css"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shThemeDefault.css"/>
+    <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "reset.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "aws_style.css") }}">
+    <script type="text/javascript" src="{{ url("static", "web_rpc.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "aws_utils.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "jq", "jquery-1.7.1.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "jq", "jquery.jqplot.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "sh", "shCore.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "sh", "shBrushCpp.js") }}"></script>
+    <script type="text/javascript" src="{{ url("static", "sh", "shBrushDelphi.js") }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "jq", "jquery.jqplot.min.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shCore.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shThemeDefault.css") }}"/>
 
     {% if contest is None %}
     <title>Admin</title>
@@ -36,11 +36,11 @@
 function init()
 {
     {% if contest is None %}
-    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }}, 0, 0, 0, 0, -1);
+    utils = new CMS.AWSUtils("{{ url() }}", {{ make_timestamp(timestamp) }}, 0, 0, 0, 0, -1);
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);
     {% else %}
-    utils = new CMS.AWSUtils("{{ url_root }}", {{ make_timestamp(timestamp) }},
+    utils = new CMS.AWSUtils("{{ url() }}", {{ make_timestamp(timestamp) }},
         {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }},
         {{ make_timestamp(contest.analysis_start) }}, {{ make_timestamp(contest.analysis_stop) }},
         {{ phase }});
@@ -80,13 +80,13 @@ $(document).ready(init);
 {% else %}
         <div id="sidebar_header">
           <div class="login_notice">
-            Hello, <a href="{{ url_root }}/admins">{{ current_user.name }}</a>.
-              <form class="inline" action="{{ url_root }}/logout" method="POST">{% module xsrf_form_html() %}<input type="submit" value="Logout"></form>
+            Hello, <a href="{{ url("admins") }}">{{ current_user.name }}</a>.
+              <form class="inline" action="{{ url("logout") }}" method="POST">{% module xsrf_form_html() %}<input type="submit" value="Logout"></form>
           </div>
           {% if contest is None %}
           <h1 class="parent">Administration</h1>
           {% else %}
-          <h1 class="parent"><a href="{{ url_root }}">Administration</a></h1>
+          <h1 class="parent"><a href="{{ url() }}">Administration</a></h1>
           <h1 class="child">{{ contest.name }}</h1>
           {% end %}
         </div>
@@ -98,13 +98,18 @@ $(document).ready(init);
         </div>
         {% end %}
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}contest/{{ contest.id }}/overview{% end %}">Overview</a></li>
-          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is None %}resourceslist{% else %}contest/{{ contest.id }}/resourceslist{% end %}">Resource usage</a></li>
+        {% if contest is None %}
+          <li class="menu_entry"><a class="menu_link" href="{{ url() }}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url("resourceslist") }}">Resource usage</a></li>
+        {% else %}
+          <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "overview") }}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "resourceslist") }}">Resource usage</a></li>
+        {% end %}
         </ul>
         <div class="hr"></div>
 
         {% if contest is None %}
-        <h1><a class="menu_link" href="{{ url_root }}/contests">Contests</a></h1>
+        <h1><a class="menu_link" href="{{ url("contests") }}">Contests</a></h1>
         <ul class="menu">
           {% if len(contest_list) < 1 %}
           <li class="menu_entry">
@@ -114,7 +119,7 @@ $(document).ready(init);
 
           {% for c in contest_list[:5] %}
           <li class="menu_entry">
-            <a class="menu_link bold" href="{{ url_root }}/contest/{{ c.id }}" title="{{ c.description }}">
+            <a class="menu_link bold" href="{{ url("contest", c.id) }}" title="{{ c.description }}">
               {{ c.name }}
             </a>
           </li>
@@ -122,7 +127,7 @@ $(document).ready(init);
 
           {% if len(contest_list) > 5 %}
           <li>
-            <a class="menu_link" href="{{ url_root }}/contests">
+            <a class="menu_link" href="{{ url("contests") }}">
               (show more...)
             </a>
           </li>
@@ -130,14 +135,14 @@ $(document).ready(init);
 
 {% if current_user.permission_all %}
           <li class="menu_entry">
-            <a class="menu_link" href="{{ url_root }}/contests/add">
+            <a class="menu_link" href="{{ url("contests", "add") }}">
               (create new contest...)
             </a>
           </li>
 {% end %}
         </ul>
 
-        <h1><a class="menu_link" href="{{ url_root }}/tasks">Tasks</a></h1>
+        <h1><a class="menu_link" href="{{ url("tasks") }}">Tasks</a></h1>
         <ul class="menu">
           {% if len(task_list) < 1 %}
           <li class="menu_entry">
@@ -147,7 +152,7 @@ $(document).ready(init);
 
           {% for t in task_list[:5] %}
           <li class="menu_entry">
-            <a class="menu_link bold" href="{{ url_root }}/task/{{ t.id }}" title="{{ t.title }}">
+            <a class="menu_link bold" href="{{ url("task", t.id) }}" title="{{ t.title }}">
               {{ t.name }}
             </a>
           </li>
@@ -155,7 +160,7 @@ $(document).ready(init);
 
           {% if len(task_list) > 5 %}
           <li>
-            <a class="menu_link" href="{{ url_root }}/tasks">
+            <a class="menu_link" href="{{ url("tasks") }}">
               (show more...)
             </a>
           </li>
@@ -163,14 +168,14 @@ $(document).ready(init);
 
 {% if current_user.permission_all %}
           <li class="menu_entry">
-            <a class="menu_link" href="{{ url_root }}/tasks/add">
+            <a class="menu_link" href="{{ url("tasks", "add") }}">
               (create new task...)
             </a>
           </li>
 {% end %}
         </ul>
 
-        <h1><a class="menu_link" href="{{ url_root }}/users">Users</a></h1>
+        <h1><a class="menu_link" href="{{ url("users") }}">Users</a></h1>
         <ul class="menu">
           {% if len(user_list) == 0 %}
             <li class="menu_entry">
@@ -178,7 +183,7 @@ $(document).ready(init);
             </li>
           {% else %}
             <li>
-              <a class="menu_link" href="{{ url_root }}/users">
+              <a class="menu_link" href="{{ url("users") }}">
                 {% if len(user_list) == 1 %}
                   (show the only user...)
                 {% else %}
@@ -190,14 +195,14 @@ $(document).ready(init);
 
 {% if current_user.permission_all %}
           <li class="menu_entry">
-            <a class="menu_link" href="{{ url_root }}/users/add">
+            <a class="menu_link" href="{{ url("users", "add") }}">
               (create new user...)
             </a>
           </li>
 {% end %}
         </ul>
 
-        <h1><a class="menu_link" href="{{ url_root }}/teams">Teams</a></h1>
+        <h1><a class="menu_link" href="{{ url("teams") }}">Teams</a></h1>
         <ul class="menu">
           {% if len(team_list) == 0 %}
             <li class="menu_entry">
@@ -205,7 +210,7 @@ $(document).ready(init);
             </li>
           {% else %}
             <li>
-              <a class="menu_link" href="{{ url_root }}/teams">
+              <a class="menu_link" href="{{ url("teams") }}">
                 {% if len(team_list) == 1 %}
                   (show the only team...)
                 {% else %}
@@ -217,7 +222,7 @@ $(document).ready(init);
 
 {% if current_user.permission_all %}
           <li class="menu_entry">
-            <a class="menu_link" href="{{ url_root }}/teams/add">
+            <a class="menu_link" href="{{ url("teams", "add") }}">
               (create new team...)
             </a>
           </li>
@@ -225,19 +230,19 @@ $(document).ready(init);
         </ul>
         {% else %}
           <ul class="menu">
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/ranking">Ranking</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/submissions">Submissions</a></li>
-            {% if contest.allow_user_tests %}<li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/user_tests">User tests</a></li>{% end %}
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/users">Users</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/tasks">Tasks</a></li>
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/announcements">Announcements</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id) }}">General</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "ranking") }}">Ranking</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "submissions") }}">Submissions</a></li>
+            {% if contest.allow_user_tests %}<li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "user_tests") }}">User tests</a></li>{% end %}
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "users") }}">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "tasks") }}">Tasks</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "announcements") }}">Announcements</a></li>
             <li class="menu_entry">
               <span id="unanswered_questions" class="unread"
                 {% if unanswered == 0 %} style="display: none;" {% end %}>
                 {{ unanswered }}
               </span>
-              <a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}/questions">Questions</a>
+              <a class="menu_link" href="{{ url("contest", contest.id, "questions") }}">Questions</a>
             </li>
           </ul>
           <div class="hr"></div>

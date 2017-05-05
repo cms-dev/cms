@@ -57,7 +57,7 @@ class AddAnnouncementHandler(BaseHandler):
         else:
             self.application.service.add_notification(
                 make_datetime(), "Subject is mandatory.", "")
-        self.redirect("/contest/%s/announcements" % contest_id)
+        self.redirect(self.url("contest", contest_id, "announcements"))
 
 
 class AnnouncementHandler(BaseHandler):

@@ -11,11 +11,11 @@
   <p>
     Reevaluate all {{ submission_count }} submissions in this contest (for all datasets)
     {% module ReevaluationButtons(
-           url_root,
+           url,
            contest.id) %}
   </p>
 
-  {% set page_url = "/contest/%s/submissions" % contest.id %}
+  {% set page_url = ["contest", contest.id, "submissions"] %}
   {% include fragments/submission_rows.html %}
 </div>
 

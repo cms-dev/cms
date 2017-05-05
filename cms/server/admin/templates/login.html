@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/aws_style.css">
+    <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "reset.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "aws_style.css") }}">
     <title>Admin</title>
   </head>
   <body class="admin">
@@ -16,9 +16,12 @@
 <h4 class="alert">Failed to log in.</h4>
     {% end %}
 <p>Please log in:</p>
-<form action="{{ url_root }}/login" method="POST">
+<form action="{{ url("login") }}" method="POST">
   {% module xsrf_form_html() %}
-  <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
+  {% set next_page = handler.get_argument("next", None) %}
+  {% if next_page is not None %}
+  <input type="hidden" name="next" value="{{ next_page }}">
+  {% end %}
   <div class="section">
     <label>
       <span>Username</span>
@@ -38,8 +41,8 @@
 </form>
 {% else %}
 
-You are already logged in. <a href="{{ url_root }}/logout">Logout</a>
-or go to the <a href="{{ url_root }}/">overview</a>.
+You are already logged in. <a href="{{ url("logout") }}">Logout</a>
+or go to the <a href="{{ url() }}">overview</a>.
 
 {% end %}
 

@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
-        fallback_page = "/tasks/add"
+        fallback_page = self.url("tasks", "add")
 
         try:
             attrs = dict()
@@ -99,7 +99,7 @@ class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
         if self.try_commit():
             # Create the task on RWS.
             self.application.service.proxy_service.reinitialize()
-            self.redirect("/task/%s" % task.id)
+            self.redirect(self.url("task", task.id))
         else:
             self.redirect(fallback_page)
 
@@ -175,7 +175,7 @@ class TaskHandler(BaseHandler):
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
-            self.redirect("/task/%s" % task_id)
+            self.redirect(self.url("task", task_id))
             return
 
         for dataset in task.datasets:
@@ -195,7 +195,7 @@ class TaskHandler(BaseHandler):
             except Exception as error:
                 self.application.service.add_notification(
                     make_datetime(), "Invalid field(s)", repr(error))
-                self.redirect("/task/%s" % task_id)
+                self.redirect(self.url("task", task_id))
                 return
 
             for testcase in dataset.testcases.itervalues():
@@ -206,7 +206,7 @@ class TaskHandler(BaseHandler):
             # Update the task and score on RWS.
             self.application.service.proxy_service.dataset_updated(
                 task_id=task.id)
-        self.redirect("/task/%s" % task_id)
+        self.redirect(self.url("task", task_id))
 
 
 class AddStatementHandler(BaseHandler):
@@ -223,7 +223,7 @@ class AddStatementHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, task_id):
-        fallback_page = "/task/%s/statements/add" % task_id
+        fallback_page = self.url("task", task_id, "statements", "add")
 
         task = self.safe_get_item(Task, task_id)
 
@@ -269,7 +269,7 @@ class AddStatementHandler(BaseHandler):
         self.sql_session.add(statement)
 
         if self.try_commit():
-            self.redirect("/task/%s" % task_id)
+            self.redirect(self.url("task", task_id))
         else:
             self.redirect(fallback_page)
 
@@ -310,7 +310,7 @@ class AddAttachmentHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, task_id):
-        fallback_page = "/task/%s/attachments/add" % task_id
+        fallback_page = self.url("task", task_id, "attachments", "add")
 
         task = self.safe_get_item(Task, task_id)
 
@@ -340,7 +340,7 @@ class AddAttachmentHandler(BaseHandler):
         self.sql_session.add(attachment)
 
         if self.try_commit():
-            self.redirect("/task/%s" % task_id)
+            self.redirect(self.url("task", task_id))
         else:
             self.redirect(fallback_page)
 
@@ -394,7 +394,7 @@ class AddDatasetHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, task_id):
-        fallback_page = "/task/%s/add_dataset" % task_id
+        fallback_page = self.url("task", task_id, "add_dataset")
 
         task = self.safe_get_item(Task, task_id)
 
@@ -438,7 +438,7 @@ class AddDatasetHandler(BaseHandler):
 
         if self.try_commit():
             # self.application.service.scoring_service.reinitialize()
-            self.redirect("/task/%s" % task_id)
+            self.redirect(self.url("task", task_id))
         else:
             self.redirect(fallback_page)
 
@@ -457,13 +457,13 @@ class TaskListHandler(SimpleHandler("tasks.html")):
         operation = self.get_argument("operation")
 
         if operation == self.REMOVE:
-            asking_page = "/tasks/%s/remove" % task_id
+            asking_page = self.url("tasks", task_id, "remove")
             # Open asking for remove page
             self.redirect(asking_page)
         else:
             self.application.service.add_notification(
                 make_datetime(), "Invalid operation %s" % operation, "")
-            self.redirect("/tasks")
+            self.redirect(self.url("tasks"))
 
 
 class RemoveTaskHandler(BaseHandler):

@@ -2,10 +2,10 @@
 
 {% block core %}
 <div class="core_title">
-  <h1>Tasks list of <a href="{{ url_root }}/contest/{{ contest.id }}">{{ contest.name }}</a></h1>
+  <h1>Tasks list of <a href="{{ url("contest", contest.id) }}">{{ contest.name }}</a></h1>
 </div>
 
-<form action="{{ url_root }}/contest/{{ contest.id }}/tasks/add" method="POST">
+<form action="{{ url("contest", contest.id, "tasks", "add") }}" method="POST">
   {% module xsrf_form_html() %}
   Add a new task:
   <select name="task_id">
@@ -23,7 +23,7 @@
          value="Add task" />
 </form>
 
-<form action="{{ url_root }}/contest/{{ contest.id }}/tasks" method="POST">
+<form action="{{ url("contest", contest.id, "tasks") }}" method="POST">
   {% module xsrf_form_html() %}
   Edit selected task:
   <input type="submit" name="operation"
@@ -55,7 +55,7 @@
         <td>
           <input type="radio" name="task_id" value="{{ t.id }}"/>
         </td>
-        <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
+        <td><a href="{{ url("task", t.id) }}">{{ t.name }}</a></td>
         <td>{{ t.title }}</td>
       </tr>
       {% end %}

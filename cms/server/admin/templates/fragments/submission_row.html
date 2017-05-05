@@ -21,9 +21,9 @@
   {% set score_types[s.task.name] = score_type %}
 {% end %}
 <tr>
-  <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
-  <td><a href="{{ url_root }}/contest/{{ s.participation.contest.id }}/user/{{ s.participation.user.id }}/edit">{{ s.participation.user.username }}</a></td>
-  <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+  <td><a href="{{ url("submission", s.id) }}">{{ str(s.timestamp) }}</a></td>
+  <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
+  <td><a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a></td>
   <td>
     {% if status == SubmissionResult.COMPILING %}
     Compiling...
@@ -98,7 +98,7 @@
   <td>
     {% for filename, sub_file in s.files.items() %}
       {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
-    <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ real_filename }}</a><br/>
+    <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
     {% end %}
   </td>
   <td>
@@ -120,7 +120,7 @@
   </td>
   <td>
     {% module ReevaluationButtons(
-           url_root,
+           url,
            submission_id=s.id,
            dataset_id=dataset.id) %}
   </td>

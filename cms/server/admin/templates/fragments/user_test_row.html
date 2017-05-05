@@ -15,9 +15,9 @@
   {% set status = utr.get_status() %}
 {% end %}
 <tr>
-  <td><a href="{{ url_root }}/user_test/{{ ut.id }}">{{ str(ut.timestamp) }}</a></td>
-  <td><a href="{{ url_root }}/contest/{{ ut.participation.contest.id }}/user/{{ ut.participation.user.id }}/edit">{{ ut.participation.user.username }}</a></td>
-  <td><a href="{{ url_root }}/task/{{ ut.task.id }}">{{ ut.task.name }}</a></td>
+  <td><a href="{{ url("user_test", ut.id) }}">{{ str(ut.timestamp) }}</a></td>
+  <td><a href="{{ url("contest", ut.participation.contest.id, "user", ut.participation.user.id, "edit") }}">{{ ut.participation.user.username }}</a></td>
+  <td><a href="{{ url("task", ut.task.id) }}">{{ ut.task.name }}</a></td>
   <td>
     {% if status == UserTestResult.COMPILING %}
     Compiling...
@@ -49,12 +49,12 @@
     {% end %}
   </td>
   <td>
-    <a href="javascript:void(0);" onclick="utils.show_file('input','{{ url_root }}/file/{{ ut.input }}/input')">See input</a>
+    <a href="javascript:void(0);" onclick="utils.show_file('input','{{ url("file", ut.input, "input") }}')">See input</a>
   </td>
   <td>
     {% for filename, sub_file in ut.files.items() %}
       {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
-    <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/user_test_file/{{ sub_file.id }}')">{{ real_filename }}</a><br/>
+    <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("user_test_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
     {% end %}
   </td>
 </tr>

@@ -8,10 +8,10 @@
   {% set status = utr.get_status() %}
 {% end %}
 <div class="core_title">
-  <h1>User test {{ ut.id }} (Task: <a href="{{ url_root }}/task/{{ ut.task.id }}">{{ ut.task.name }}</a>)</h1>
+  <h1>User test {{ ut.id }} (Task: <a href="{{ url("task", ut.task.id) }}">{{ ut.task.name }}</a>)</h1>
 </div>
 
-{% set dataset_selector_par_url = "%s/user_test/%s" % (url_root, ut.id) %}
+{% set dataset_selector_par_url = url("user_test", ut.id) %}
 {% include fragments/dataset_selector.html %}
 
 <h2 id="title_details" class="toggling_on">User test details</h2>
@@ -31,11 +31,11 @@
       </tr>
       <tr>
         <td>Task</td>
-        <td><a href="{{ url_root }}/task/{{ ut.task.id }}">{{ ut.task.name }}</a></td>
+        <td><a href="{{ url("task", ut.task.id) }}">{{ ut.task.name }}</a></td>
       </tr>
       <tr>
         <td>User</td>
-        <td><a href="{{ url_root }}/contest/{{ ut.participation.contest.id }}/user/{{ ut.participation.user.id }}/edit">{{ ut.participation.user.username }}</a></td>
+        <td><a href="{{ url("contest", ut.participation.contest.id, "user", ut.participation.user.id, "edit") }}">{{ ut.participation.user.username }}</a></td>
       </tr>
       <tr>
         <td>Files</td>
@@ -43,7 +43,7 @@
           {% for filename in [x.filename for x in ut.task.submission_format] %}
             {% if filename in ut.files %}
               {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
-          <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/user_test_file/{{ ut.files[filename].id }}')">
+          <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("user_test_file", ut.files[filename].id) }}')">
             {{ real_filename }}
           </a>
           <br/>
@@ -109,7 +109,7 @@
 
     {% if utr.output is not None %}
   <h3>Output</h3>
-  <a href="javascript:void(0);" onclick="utils.show_file('output','{{ url_root }}/file/{{ utr.output }}/output')">See output</a>
+  <a href="javascript:void(0);" onclick="utils.show_file('output','{{ url("file", utr.output, "output") }}')">See output</a>
     {% end %}
 
 </div>

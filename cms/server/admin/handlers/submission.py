@@ -115,10 +115,9 @@ class SubmissionCommentHandler(BaseHandler):
             self.try_commit()
 
         if dataset_id is None:
-            self.redirect("/submission/%s" % submission_id)
+            self.redirect(self.url("submission", submission_id))
         else:
-            self.redirect("/submission/%s/%s" % (submission_id,
-                                                 dataset_id))
+            self.redirect(self.url("submission", submission_id, dataset_id))
 
 
 class SubmissionOfficialStatusHandler(BaseHandler):
@@ -139,7 +138,6 @@ class SubmissionOfficialStatusHandler(BaseHandler):
                         "official" if should_make_official else "unofficial")
 
         if dataset_id is None:
-            self.redirect("/submission/%s" % submission_id)
+            self.redirect(self.url("submission", submission_id))
         else:
-            self.redirect("/submission/%s/%s" % (submission_id,
-                                                 dataset_id))
+            self.redirect(self.url("submission", submission_id, dataset_id))

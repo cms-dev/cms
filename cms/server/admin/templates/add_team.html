@@ -7,7 +7,7 @@
 <h2 id="title_general_info" class="toggling_on">General information</h2>
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-  <form enctype="multipart/form-data" action="{{ url_root }}/teams/add" method="POST">
+  <form enctype="multipart/form-data" action="{{ url("teams", "add") }}" method="POST">
     {% module xsrf_form_html() %}
     <table>
       <tr>

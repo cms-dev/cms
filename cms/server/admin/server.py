@@ -58,7 +58,6 @@ class AdminWebServer(WebService):
     def __init__(self, shard):
         parameters = {
             "ui_modules": views,
-            "login_url": "/login",
             "template_path": pkg_resources.resource_filename(
                 "cms.server.admin", "templates"),
             "static_files": [("cms.server", "static"),

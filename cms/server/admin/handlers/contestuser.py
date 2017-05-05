@@ -67,7 +67,7 @@ class ContestUsersHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = "/contest/%s/users" % contest_id
+        fallback_page = self.url("contest", contest_id, "users")
 
         try:
             user_id = self.get_argument("user_id")
@@ -82,7 +82,8 @@ class ContestUsersHandler(BaseHandler):
             return
 
         if operation == self.REMOVE_FROM_CONTEST:
-            asking_page = "/contest/%s/user/%s/remove" % (contest_id, user_id)
+            asking_page = \
+                self.url("contest", contest_id, "user", user_id, "remove")
             # Open asking for remove page
             self.redirect(asking_page)
             return
@@ -140,7 +141,7 @@ class RemoveParticipationHandler(BaseHandler):
 class AddContestUserHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = "/contest/%s/users" % contest_id
+        fallback_page = self.url("contest", contest_id, "users")
 
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -196,7 +197,8 @@ class ParticipationHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id, user_id):
-        fallback_page = "/contest/%s/user/%s/edit" % (contest_id, user_id)
+        fallback_page = \
+            self.url("contest", contest_id, "user", user_id, "edit")
 
         self.contest = self.safe_get_item(Contest, contest_id)
         participation = self.sql_session.query(Participation)\
@@ -269,4 +271,4 @@ class MessageHandler(BaseHandler):
             logger.info("Message submitted to user %s in contest %s.",
                         user.username, self.contest.name)
 
-        self.redirect("/contest/%s/user/%s/edit" % (self.contest.id, user.id))
+        self.redirect(self.url("contest", contest_id, "user", user_id, "edit"))

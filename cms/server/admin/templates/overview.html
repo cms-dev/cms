@@ -63,13 +63,11 @@ function update_queue_status(response)
 
 function enable_worker(shard) {
     if (confirm("Do you really want to enable worker " + shard + "?")) {
-        cmsrpc_request("{{ url_root }}",
-                       "EvaluationService", 0,
+        cmsrpc_request("EvaluationService", 0,
                        "enable_worker",
                        {"shard":shard},
                        function() {
-                          cmsrpc_request("{{ url_root }}",
-                                         "EvaluationService", 0,
+                          cmsrpc_request("EvaluationService", 0,
                                          "workers_status",
                                          {},
                                          update_workers_status);
@@ -79,13 +77,11 @@ function enable_worker(shard) {
 
 function disable_worker(shard) {
     if (confirm("Do you really want to disable worker " + shard + "?")) {
-        cmsrpc_request("{{ url_root }}",
-                       "EvaluationService", 0,
+        cmsrpc_request("EvaluationService", 0,
                        "disable_worker",
                        {"shard":shard},
                        function() {
-                          cmsrpc_request("{{ url_root }}",
-                                         "EvaluationService", 0,
+                          cmsrpc_request("EvaluationService", 0,
                                          "workers_status",
                                          {},
                                          update_workers_status);
@@ -152,7 +148,9 @@ function update_workers_status(response)
 function link_submissions(s)
 {
     return s.replace(/submission ([0-9]+)/g,
-                     'submission <a href="{{ url_root }}/submission/$1">\$1</a>');
+                     function (match, n, offset, string) {
+                         return 'submission <a href="' + utils.url("submission", n) + '">' + n + '</a>';
+                     });
 }
 
 function update_logs(response)
@@ -199,8 +197,7 @@ function update_statuses()
     if (!update_statuses.submissions_request
             || update_statuses.submissions_request.state() != "pending") {
         update_statuses.submissions_request =
-            cmsrpc_request("{{ url_root }}",
-                           "AdminWebServer", 0,
+            cmsrpc_request("AdminWebServer", 0,
                            "submissions_status",
                            {"contest_id": {{ contest.id }}},
                            update_submissions_status);
@@ -209,19 +206,16 @@ function update_statuses()
     if (!update_statuses.queue_request
             || update_statuses.queue_request.state() != "pending") {
         update_statuses.queue_request =
-            cmsrpc_request("{{ url_root }}",
-                           "EvaluationService", 0,
+            cmsrpc_request("EvaluationService", 0,
                            "queue_status",
                            {},
                            update_queue_status);
     }
-    cmsrpc_request("{{ url_root }}",
-                   "EvaluationService", 0,
+    cmsrpc_request("EvaluationService", 0,
                    "workers_status",
                    {},
                    update_workers_status);
-    cmsrpc_request("{{ url_root }}",
-                   "LogService", 0,
+    cmsrpc_request("LogService", 0,
                    "last_messages",
                    {},
                    update_logs);
@@ -252,7 +246,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="2"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
+      <tr><td style="text-align: center;" colspan="2"><img src="{{ url("static", "loading.gif") }}" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -271,7 +265,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="4"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
+      <tr><td style="text-align: center;" colspan="4"><img src="{{ url("static", "loading.gif") }}" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -290,7 +284,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="5"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
+      <tr><td style="text-align: center;" colspan="5"><img src="{{ url("static", "loading.gif") }}" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -310,7 +304,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="5"><img src="{{ url_root }}/static/loading.gif" alt="loading..." /></td></tr>
+      <tr><td style="text-align: center;" colspan="5"><img src="{{ url("static", "loading.gif") }}" alt="loading..." /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>

@@ -7,7 +7,7 @@
 </div>
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/admin/{{ admin.id }}" method="POST">
+<form enctype="multipart/form-data" action="{{ url("admin", admin.id) }}" method="POST">
   {% module xsrf_form_html() %}
   <h2>Admin information</h2>
 
@@ -24,7 +24,7 @@
 {% if current_user.permission_all %}
 <hr/>
 
-<a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/admin/{{ admin.id }}'); ">Delete this admin</a>
+<a onclick="CMS.AWSUtils.ajax_delete('{{ url("admin", admin.id) }}'); ">Delete this admin</a>
 {% end %}
 
 {% end %}

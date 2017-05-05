@@ -14,8 +14,8 @@
   This operation cannot be undone.
 </p>
 <br>
-<a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/contest/{{ contest.id }}/user/{{ user.id }}/remove');" class="button-link">Yes, remove</a>
-<a href="{{ url_root }}/contest/{{ contest.id }}/users" class="button-link">No</a>
+<a onclick="CMS.AWSUtils.ajax_delete('{{ url("contest", contest.id, "user", user.id, "remove") }}');" class="button-link">Yes, remove</a>
+<a href="{{ url("contest", contest.id, "users") }}" class="button-link">No</a>
 
 {% else %}
 You do not have permission to remove a participation.

@@ -7,9 +7,10 @@
 
 See resource usage of the machines:
 <ul>
+  {% set url_suffix = [] if contest is None else [contest.id] %}
   {% for shard in resource_addresses %}
-  <li><a href="{{ url_root }}/resources/{{ shard }}{% if contest is not None %}/{{ contest.id }}{% end %}">{{ resource_addresses[shard] }}</a> ({{ shard }})</li>
+  <li><a href="{{ url(*(["resources", shard] + url_suffix)) }}">{{ resource_addresses[shard] }}</a> ({{ shard }})</li>
   {% end %}
-  <li><a href="{{ url_root }}/resources/all{% if contest is not None %}/{{ contest.id }}{% end %}">All</a></li>
+  <li><a href="{{ url(*(["resources", "all"] + url_suffix)) }}">All</a></li>
 </ul>
 {% end %}

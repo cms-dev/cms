@@ -33,7 +33,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   {% if len(submissions) == 0 %}
   <p>No submissions for this task yet.</p>
   {% else %}
-    <a href="{{ url_root }}/dataset/{{ task.active_dataset_id }}">
+    <a href="{{ url("dataset", task.active_dataset_id) }}">
       {% if len(submissions) == 1 %}
       1 submission
       {% else %}
@@ -45,7 +45,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 </div>
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}" method="POST" style="display:inline;">
+<form enctype="multipart/form-data" action="{{ url("task", task.id) }}" method="POST" style="display:inline;">
   {% module xsrf_form_html() %}
   <h2 id="title_task_configuration" class="toggling_on">Task configuration</h2>
   <div id="task_configuration">
@@ -77,7 +77,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <span class="info" title="The statements of this task, by language code. Primary statements are shown prominently to contestants."></span>
           Statements
 {% if current_user.permission_all %}
-          [<a href="{{ url_root }}/task/{{ task.id }}/statements/add">add</a>]
+          [<a href="{{ url("task", task.id, "statements", "add") }}">add</a>]
 {% end %}
         </td>
         <td>
@@ -88,14 +88,14 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <tbody>
             {% for statement in task.statements.values() %}
               <tr>
-                <td><a href="{{ url_root }}/file/{{ statement.digest }}/statement.pdf">Statement for language "{{ statement.language }}"</a></td>
+                <td><a href="{{ url("file", statement.digest, "statement.pdf") }}">Statement for language "{{ statement.language }}"</a></td>
                 <td>
                   <label>
                     <input type="checkbox" name="primary_statement_{{ statement.language }}" {% if statement.language in primary_statements %}checked{% end %} />
                     Primary?
                   </label>
                 </td>
-                <td><a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/statement/{{ statement.id }}'); ">Delete</a></td>
+                <td><a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "statement", statement.id) }}'); ">Delete</a></td>
               </tr>
             {% end %}
             </tbody>
@@ -108,7 +108,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <span class="info" title="Attachments for this task. Contestant can view and download attachments from the task page."></span>
           Attachments
 {% if current_user.permission_all %}
-          [<a href="{{ url_root }}/task/{{ task.id }}/attachments/add">add</a>]
+          [<a href="{{ url("task", task.id, "attachments", "add") }}">add</a>]
 {% end %}
         </td>
         <td>
@@ -117,8 +117,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           {% else %}
             {% for attachment in task.attachments.values() %}
               <div class="attachment">
-                <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
-                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/task/{{ task.id }}/attachment/{{ attachment.id }}'); ">Delete</a>
+                <a href="{{ url("file", attachment.digest, attachment.filename) }}">{{ attachment.filename }}</a>
+                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "attachment", attachment.id) }}'); ">Delete</a>
               </div>
             {% end %}
           {% end %}
@@ -266,7 +266,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     No datasets have been created for this task.<br/>
 {% end %}
 {% if current_user.permission_all %}
-    <a href="{{ url_root }}/task/{{ task.id }}/add_dataset">Create a new dataset</a><br/>
+    <a href="{{ url("task", task.id, "add_dataset") }}">Create a new dataset</a><br/>
 {% end %}
     </p>
 
@@ -280,20 +280,20 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       {% if dataset is task.active_dataset %}
       [Make Live ...]
       {% else %}
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/activate">[Make Live ...]</a>
+      <a href="{{ url("dataset", dataset.id, "activate") }}">[Make Live ...]</a>
       {% end %}
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/clone">[Clone]</a>
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/rename">[Rename]</a>
+      <a href="{{ url("dataset", dataset.id, "clone") }}">[Clone]</a>
+      <a href="{{ url("dataset", dataset.id, "rename") }}">[Rename]</a>
       {% if dataset is task.active_dataset %}
       [Delete]
       {% else %}
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/delete">[Delete]</a>
+      <a href="{{ url("dataset", dataset.id, "delete") }}">[Delete]</a>
       {% end %}
       {% if dataset is not task.active_dataset %}
-        <a onclick="CMS.AWSUtils.ajax_post('{{ url_root }}/dataset/{{ dataset.id }}/autojudge');">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
+        <a onclick="CMS.AWSUtils.ajax_post('{{ url("dataset", dataset.id, "autojudge") }}');">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
       {% end %}
 {% end %}
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</a>
+      <a href="{{ url("dataset", dataset.id) }}">[View results]</a>
     </p>
 
   <!-- Task type and score type settings -->
@@ -382,7 +382,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <span class="info" title="Managers for this task. Managers are sources, headers, libraries or binaries used during the evaluation."></span>
             Managers
 {% if current_user.permission_all %}
-            [<a href="{{ url_root }}/dataset/{{ dataset.id }}/managers/add">add</a>]
+            [<a href="{{ url("dataset", dataset.id, "managers", "add") }}">add</a>]
 {% end %}
           </td>
           <td>
@@ -391,8 +391,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% else %}
               {% for manager in dataset.managers.values() %}
                 <div class="manager">
-                  <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
-                  - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/manager/{{ manager.id }}/delete');">Delete</a>
+                  <a href="{{ url("file", manager.digest, manager.filename) }}">{{ manager.filename }}</a>
+                  - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "manager", manager.id, "delete") }}');">Delete</a>
                 </div>
               {% end %}
             {% end %}
@@ -429,10 +429,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
 {% if current_user.permission_all %}
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add">Add a testcase</a>
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/add_multiple">Add multiple testcases</a>
+      <a href="{{ url("dataset", dataset.id, "testcases", "add") }}">Add a testcase</a>
+      <a href="{{ url("dataset", dataset.id, "testcases", "add_multiple") }}">Add multiple testcases</a>
 {% end %}
-      <a href="{{ url_root }}/dataset/{{ dataset.id }}/testcases/download">Download all testcases</a>
+      <a href="{{ url("dataset", dataset.id, "testcases", "download") }}">Download all testcases</a>
       <table class="bordered" style="text-align:center">
         <thead>
           <tr>
@@ -455,13 +455,13 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <input type="checkbox" name="testcase_{{ testcase.id }}_public" {% if testcase.public %}checked{% end %} />
             </td>
             <td>
-              <a href="javascript:void(0);" onclick="utils.show_file('input_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.input }}/input_{{ testcase.codename }}')">Show input</a>
+              <a href="javascript:void(0);" onclick="utils.show_file('input_{{ testcase.codename }}','{{ url("file", testcase.input, "input_%s" % testcase.codename) }}')">Show input</a>
             </td>
             <td>
-              <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.output }}/output_{{ testcase.codename }}')">Show output</a>
+              <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url("file", testcase.output, "output_%s" % testcase.codename) }}')">Show output</a>
             </td>
             <td>
-              <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/testcase/{{ testcase.id }}/delete');">Delete</a>
+              <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "testcase", testcase.id, "delete") }}');">Delete</a>
             </td>
           </tr>
           {% end %}
@@ -479,9 +479,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
          value="Update" />
   <input type="reset" value="Reset" />
 </form>
-<form action="{{ url_root }}/tasks" method="POST" style="display:inline;">
+<form action="{{ url("tasks") }}" method="POST" style="display:inline;">
     {% module xsrf_form_html() %}
-    <input type="hidden" name="task_id" value="{{task.id}}"/>
+    <input type="hidden" name="task_id" value="{{ task.id }}"/>
     <input type="submit"
          name="operation"
          value="Remove" style="float: right;"

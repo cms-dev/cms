@@ -34,10 +34,8 @@ function get_cookie(name) {
  * callback: a function to call with the result of the request.
  * return: the XHR object.
  */
-function cmsrpc_request(url_root, service, shard, method, args, callback) {
-    var url = url_root + "/rpc/" + encodeURIComponent(service) +
-                             "/" + encodeURIComponent(shard) +
-                             "/" + encodeURIComponent(method);
+function cmsrpc_request(service, shard, method, args, callback) {
+    var url = utils.url("rpc", service, shard, method);
     var jqxhr = $.ajax({
         type: "POST",
         url: url,

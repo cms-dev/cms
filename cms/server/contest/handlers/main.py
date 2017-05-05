@@ -34,7 +34,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import os
 import pickle
 
 import tornado.web
@@ -67,11 +66,20 @@ class LoginHandler(ContestHandler):
     """
     @multi_contest
     def post(self):
-        fallback_page = self.r_params["real_contest_root"]
+        error_args = {"login_error": "true"}
+        next_page = self.get_argument("next", None)
+        if next_page is not None:
+            error_args["next"] = next_page
+            if next_page != "/":
+                next_page = self.url(*next_page.strip("/").split("/"))
+            else:
+                next_page = self.url()
+        else:
+            next_page = self.contest_url()
+        error_page = self.contest_url(**error_args)
 
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        next_page = self.get_argument("next", fallback_page)
         user = self.sql_session.query(User)\
             .filter(User.username == username)\
             .first()
@@ -82,12 +90,12 @@ class LoginHandler(ContestHandler):
 
         if user is None:
             # TODO: notify the user that they don't exist
-            self.redirect(fallback_page + "?login_error=true")
+            self.redirect(error_page)
             return
 
         if participation is None:
             # TODO: notify the user that they're uninvited
-            self.redirect(fallback_page + "?login_error=true")
+            self.redirect(error_page)
             return
 
         # If a contest-specific password is defined, use that. If it's
@@ -103,21 +111,21 @@ class LoginHandler(ContestHandler):
         if not validate_password(correct_password, password):
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
                         (filtered_user, filtered_pass, self.request.remote_ip))
-            self.redirect(fallback_page + "?login_error=true")
+            self.redirect(error_page)
             return
 
         if self.contest.ip_restriction and participation.ip is not None \
                 and not check_ip(self.request.remote_ip, participation.ip):
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)
-            self.redirect(fallback_page + "?login_error=true")
+            self.redirect(error_page)
             return
 
         if participation.hidden and self.contest.block_hidden_participations:
             logger.info("Hidden user login attempt: "
                         "user=%s pass=%s remote_ip=%s.",
                         filtered_user, filtered_pass, self.request.remote_ip)
-            self.redirect(fallback_page + "?login_error=true")
+            self.redirect(error_page)
             return
 
         logger.info("User logged in: user=%s remote_ip=%s.",
@@ -146,7 +154,7 @@ class StartHandler(ContestHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect(self.r_params["real_contest_root"])
+        self.redirect(self.contest_url())
 
 
 class LogoutHandler(ContestHandler):
@@ -156,7 +164,7 @@ class LogoutHandler(ContestHandler):
     @multi_contest
     def post(self):
         self.clear_cookie(self.contest.name + "_login")
-        self.redirect(self.r_params["real_contest_root"])
+        self.redirect(self.contest_url())
 
 
 class NotificationsHandler(ContestHandler):
@@ -273,8 +281,7 @@ class PrintingHandler(ContestHandler):
         if not self.r_params["printing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     "printing")
+        fallback_page = self.contest_url("printing")
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\

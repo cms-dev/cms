@@ -9,7 +9,7 @@
   Pages:
   {% for i in range(user_test_pages) %}
     {% if i != user_test_page %}
-  <a href="{{ url_root }}{{ page_url }}?page={{ i }}">{{ i + 1 }}</a>
+  <a href="{{ url(*page_url, page=i) }}">{{ i + 1 }}</a>
     {% else %}
   {{ i + 1 }}
     {% end %}

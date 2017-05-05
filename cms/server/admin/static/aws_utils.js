@@ -30,7 +30,7 @@ CMS.AWSUtils = function(url_root, timestamp,
                         contest_start, contest_stop,
                         analysis_start, analysis_stop,
                         phase) {
-    this.url_root = url_root;
+    this.url = CMS.AWSUtils.create_url_builder(url_root);
     this.first_date = new Date();
     this.last_notification = timestamp;
     this.timestamp = timestamp;
@@ -46,6 +46,20 @@ CMS.AWSUtils = function(url_root, timestamp,
     if ("Notification" in window) {
         Notification.requestPermission();
     }
+};
+
+
+CMS.AWSUtils.create_url_builder = function(url_root) {
+    return function() {
+        var url = url_root;
+        for (let component of arguments) {
+            if (url.substr(-1) != "/") {
+                url += "/";
+            }
+            url += encodeURIComponent(component);
+        }
+        return url;
+    };
 };
 
 
@@ -162,7 +176,7 @@ CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
         subject_string = $("<span>").text("Reply to your question. ");
     } else if (type == "new_question") {
         subject_string = $("<a>").text("New question: ")
-            .prop("href", this.url_root + '/contest/' + contest_id + '/questions');
+            .prop("href", this.url("contest", contest_id, "questions"));
     }
 
     var self = this;
@@ -208,7 +222,7 @@ CMS.AWSUtils.prototype.desktop_notification = function(type, timestamp,
     if (Notification.permission === "granted") {
         new Notification(subject, {
             "body": text,
-            "icon": "/favicon.ico"
+            "icon": this.url("static", "favicon.ico")
         });
     }
 };
@@ -255,7 +269,7 @@ CMS.AWSUtils.prototype.update_notifications = function() {
     var display_notification = this.bind_func(this, this.display_notification);
     var update_unread_counts = this.bind_func(this, this.update_unread_counts);
     this.ajax_request(
-        this.url_root + "/notifications",
+        this.url("notifications"),
         "last_notification=" + this.last_notification,
         function(response, error) {
             if (error == null) {
@@ -401,11 +415,10 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
     }
 
     if (object_type == 'submission') {
-        return job_type + ' the <a href="' + this.url_root + '/submission/'
-            + job["object_id"] + '/' + job["dataset_id"] + '">result</a> of <a href="' + this.url_root
-            + '/submission/' + job["object_id"] + '">submission ' + job["object_id"]
-            + '</a> on <a href="' + this.url_root + '/dataset/' + job["dataset_id"]
-            + '">dataset ' + job["dataset_id"] + '</a>'
+        return job_type
+            + ' the <a href="' + this.url("submission", job["object_id"], job["dataset_id"]) + '">result</a>'
+            + ' of <a href="' + this.url("submission", job["object_id"]) + '">submission ' + job["object_id"] + '</a>'
+            + ' on <a href="' + this.url("dataset", job["dataset_id"]) + '">dataset ' + job["dataset_id"] + '</a>'
             + (job["multiplicity"]
                ? " [" + job["multiplicity"] + " time(s) in queue]"
                : "")
@@ -413,9 +426,10 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
                ? " [testcase: `" + job["testcase_codename"] + "']"
                : "");
     } else {
-        return job_type + ' the result of user_test ' + job["object_id"]
-            + ' on <a href="' + this.url_root + '/dataset/' + job["dataset_id"]
-            + '">dataset ' + job["dataset_id"] + '</a>';
+        return job_type
+            + ' the result'
+            + ' of user_test ' + job["object_id"]
+            + ' on <a href="' + this.url("dataset", job["dataset_id"]) + '">dataset ' + job["dataset_id"] + '</a>';
     }
 };
 

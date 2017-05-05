@@ -39,8 +39,6 @@ import os
 import pickle
 import re
 
-from urllib import quote
-
 import tornado.web
 
 from sqlalchemy import func
@@ -90,7 +88,7 @@ class UserTestInterfaceHandler(ContestHandler):
                 self.contest.max_user_test_number - user_test_c
 
         for task in self.contest.tasks:
-            if self.request.query == task.name:
+            if self.get_argument("task_name", None) == task.name:
                 default_task = task
             user_tests[task.id] = self.sql_session.query(UserTest)\
                 .filter(UserTest.participation == participation)\
@@ -136,7 +134,8 @@ class UserTestHandler(ContestHandler):
             subject,
             text,
             NOTIFICATION_ERROR)
-        self.redirect(self.fallback_page)
+        self.redirect(self.contest_url(*self.fallback_page,
+                                       **self.fallback_args))
 
     @tornado.web.authenticated
     @actual_phase_required(0)
@@ -152,9 +151,8 @@ class UserTestHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        self.fallback_page = os.path.join(
-            self.r_params["real_contest_root"],
-            "testing?%s" % quote(task.name, safe=''))
+        self.fallback_page = ["testing"]
+        self.fallback_args = {"task_name": task.name}
 
         # Check that the task is testable
         task_type = get_task_type(dataset=task.active_dataset)
@@ -430,7 +428,9 @@ class UserTestHandler(ContestHandler):
         # The argument (encripted user test id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the user test id).
-        self.redirect(self.fallback_page + "&" + encrypt_number(user_test.id))
+        self.redirect(self.contest_url(
+            *self.fallback_page, user_test_id=encrypt_number(user_test.id),
+            **self.fallback_args))
 
 
 class UserTestStatusHandler(ContestHandler):

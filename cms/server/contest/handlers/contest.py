@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -37,8 +37,6 @@ from __future__ import unicode_literals
 import ipaddress
 import logging
 import pickle
-import socket
-import struct
 
 from datetime import timedelta
 
@@ -50,7 +48,8 @@ from werkzeug.http import parse_accept_header
 
 from cms import config
 from cms.db import Contest, Participation, User
-from cms.server import compute_actual_phase, file_handler_gen
+from cms.server import compute_actual_phase, file_handler_gen, \
+    create_url_builder
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 from cmscommon.isocodes import translate_language_code, \
@@ -99,6 +98,13 @@ class ContestHandler(BaseHandler):
     def prepare(self):
         super(ContestHandler, self).prepare()
         self.choose_contest()
+
+        if self.is_multi_contest():
+            self.contest_url = \
+                create_url_builder(self.url(self.contest.name))
+        else:
+            self.contest_url = self.url
+
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name
         self.r_params = self.render_params()
@@ -336,15 +342,8 @@ class ContestHandler(BaseHandler):
 
         ret["contest"] = self.contest
 
-        # Relative path to the root of the contest (e.g. ../../<contest_name>)
-        ret["contest_root"] = ret["url_root"]
-        # Absolute path to the root of the contest within the
-        # application, regardless of the actual external URL
-        # (e.g. /<contest_name>).
-        ret["real_contest_root"] = "/"
-        if self.is_multi_contest():
-            ret["contest_root"] += "/" + self.contest.name
-            ret["real_contest_root"] += self.contest.name
+        if hasattr(self, "contest_url"):
+            ret["contest_url"] = self.contest_url
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
@@ -417,7 +416,7 @@ class ContestHandler(BaseHandler):
         use the "login_url" application parameter.
 
         """
-        return self.r_params["real_contest_root"]
+        return self.contest_url()
 
 
 FileHandler = file_handler_gen(ContestHandler)

@@ -10,7 +10,7 @@
     There are {{ user_test_count }} user tests in this contest
   </p>
 
-  {% set page_url = "/contest/%s/user_tests" % contest.id %}
+  {% set page_url = ["contest", contest.id, "user_tests"] %}
   {% include fragments/user_test_rows.html %}
 </div>
 

@@ -33,7 +33,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import os
 
 import tornado.web
 
@@ -71,8 +70,7 @@ class QuestionHandler(ContestHandler):
         if not self.contest.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = os.path.join(self.r_params["real_contest_root"],
-                                     "communication")
+        fallback_page = self.contest_url("communication")
 
         subject_length = len(self.get_argument("question_subject", ""))
         text_length = len(self.get_argument("question_text", ""))

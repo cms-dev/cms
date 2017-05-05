@@ -7,7 +7,7 @@
 </div>
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url_root }}/tasks/add" method="post" >
+<form enctype="multipart/form-data" action="{{ url("tasks", "add") }}" method="post" >
   {% module xsrf_form_html() %}
   <span class="info" title="A short name for the task, preferably using only letters, numbers and underscores."></span>
   Name:

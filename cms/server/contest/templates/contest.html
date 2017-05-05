@@ -28,11 +28,11 @@ var LANGUAGES = {
 };
 
 {% if current_user is None %}
-var utils = new CMS.CWSUtils("{{ contest_root }}",
+var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}",
                              0, 0, 0, 0, 0);
 {% else %}
 // FIXME use Date objects
-var utils = new CMS.CWSUtils("{{ contest_root }}",
+var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}",
                              {{ make_timestamp(timestamp) }},
                              {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
                              {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
@@ -58,7 +58,7 @@ $(document).ready(function () {
         <div id="navigation_bar" class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="brand" href="{{ contest_root }}">{{ contest.description }}</a>
+                    <a class="brand" href="{{ contest_url() }}">{{ contest.description }}</a>
 {% if len(lang_names) > 1 %}
                     <p class="navbar-text pull-right">
                         <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
@@ -70,7 +70,7 @@ $(document).ready(function () {
                     </p>
 {% end %}
 {% if current_user is not None %}
-                    <form action="{{ contest_root }}/logout" method="POST" class="navbar-form pull-right">
+                    <form action="{{ contest_url("logout") }}" method="POST" class="navbar-form pull-right">
                         {% module xsrf_form_html() %}
                         <button type="submit" class="btn btn-warning">{{ _('Logout') }}</button>
                     </form>
@@ -94,9 +94,12 @@ $(document).ready(function () {
             <div class="login_box hero-unit">
                 <h1>{{ _("Welcome") }}</h1>
                 <p>{{ _("Please log in") }}</p>
-                <form class="form-horizontal" action="{{ contest_root }}/login" method="POST">
+                <form class="form-horizontal" action="{{ contest_url("login") }}" method="POST">
                     {% module xsrf_form_html() %}
-                    <input type="hidden" name="next" value="{{ handler.get_argument("next", real_contest_root) }}">
+                    {% set next_page = handler.get_argument("next", None) %}
+                    {% if next_page is not None %}
+                    <input type="hidden" name="next" value="{{ next_page }}">
+                    {% end %}
                     <fieldset>
                         <div class="control-group">
                             <label class="control-label" for="input01">{{ _("Username") }}</label>
@@ -166,11 +169,11 @@ $(document).ready(function () {
                         <ul class="nav nav-list">
 
                             <li{% if request.path == '/' %} class="active"{% end %}>
-                                <a href="{{ contest_root }}">{{ _("Overview") }}</a>
+                                <a href="{{ contest_url() }}">{{ _("Overview") }}</a>
                             </li>
     {% set unread_count = handler.get_secure_cookie("%s_unread_count" % contest.name) %}
                             <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
-                                <a href="{{ contest_root }}/communication">{{ _("Communication") }}
+                                <a href="{{ contest_url("communication") }}">{{ _("Communication") }}
     {% if unread_count is None or int(unread_count) == 0 %}
                                     <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
     {% else %}
@@ -185,26 +188,26 @@ $(document).ready(function () {
                                 {{ t_iter.name }}
                             </li>
                             <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% end %}>
-                                <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/description">{{ _("Statement") }}</a>
+                                <a href="{{ contest_url("tasks", t_iter.name, "description") }}">{{ _("Statement") }}</a>
                             </li>
                             <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% end %}>
-                                <a href="{{ contest_root }}/tasks/{{ encode_for_url(t_iter.name) }}/submissions">{{ _("Submissions") }}</a>
+                                <a href="{{ contest_url("tasks", t_iter.name, "submissions") }}">{{ _("Submissions") }}</a>
                             </li>
         {% end %}
     {% end %}
                             <li class="divider"></li>
                             <li{% if request.path == '/documentation' %} class="active"{% end %}>
-                                <a href="{{ contest_root }}/documentation">{{ _("Documentation") }}</a>
+                                <a href="{{ contest_url("documentation") }}">{{ _("Documentation") }}</a>
                             </li>
     {% if actual_phase == 0 or current_user.unrestricted %}{% comment FIXME maybe >= 0? %}
         {% if testing_enabled %}
                             <li{% if request.path == '/testing' %} class="active"{% end %}>
-                                <a href="{{ contest_root }}/testing">{{ _("Testing") }}</a>
+                                <a href="{{ contest_url("testing") }}">{{ _("Testing") }}</a>
                             </li>
         {% end %}
         {% if printing_enabled %}
                             <li{% if request.path == '/printing' %} class="active"{% end %}>
-                                <a href="{{ contest_root }}/printing">{{ _("Printing") }}</a>
+                                <a href="{{ contest_url("printing") }}">{{ _("Printing") }}</a>
                             </li>
         {% end %}
     {% end %}
