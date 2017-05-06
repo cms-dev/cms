@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -37,6 +37,7 @@ import time
 
 from cms import config, ServiceCoord, get_service_address, utf8_decoder
 from cms.db import Contest, SessionGen
+from cmscommon.crypto import parse_authentication
 
 import cmstestsuite.web
 from cmstestsuite.web import Browser
@@ -269,7 +270,17 @@ def harvest_contest_data(contest_id):
         contest = Contest.get_from_id(contest_id, session)
         for participation in contest.participations:
             user = participation.user
-            users[user.username] = {'password': user.password}
+            # Pick participation's password if present, or the user's.
+            password_source = participation.password
+            if password_source is None:
+                password_source = user.password
+            # We can log in only if we know the plaintext password.
+            method, password = parse_authentication(password_source)
+            if method != "plaintext":
+                print("Not using user %s with non-plaintext password."
+                      % user.username)
+                continue
+            users[user.username] = {'password': password}
         for task in contest.tasks:
             tasks.append((task.id, task.name, task.statements.keys()))
     return users, tasks
@@ -337,6 +348,10 @@ def main():
             contest_data = ast.literal_eval(file_.read())
         users = contest_data['users']
         tasks = contest_data['tasks']
+
+    if len(users) == 0:
+        print("No viable users, terminating.")
+        return
 
     if args.actor_num is not None:
         user_items = users.items()

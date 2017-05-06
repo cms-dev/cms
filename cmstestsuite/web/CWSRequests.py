@@ -44,7 +44,7 @@ class CWSLoginRequest(LoginRequest):
     def test_success(self):
         if not LoginRequest.test_success(self):
             return False
-        if self.redirected_to != self.base_url:
+        if self.redirected_to.rstrip("/") != self.base_url.rstrip("/"):
             return False
         return True
 
@@ -285,6 +285,9 @@ class SubmitRandomRequest(GenericRequest):
         task_path = os.path.join(self.submissions_path, self.task[1])
         sources = os.listdir(task_path)
         source = random.choice(sources)
+        lang = filename_to_language(source)
+        if lang is not None:
+            self.data["language"] = lang.name
         self.source_path = os.path.join(task_path, source)
 
         # Compose the submission format
