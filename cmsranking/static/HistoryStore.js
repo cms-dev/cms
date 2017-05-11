@@ -173,10 +173,10 @@ var HistoryStore = new function () {
                         above -= 1;
                         changed = true;
                     }
-                    if (d[user] == d[user_id]) {
+                    if (d[user] == d[user_id] && score != d[user_id]) {
                         equal -= 1;
                         changed = true;
-                    } else if (score == d[user_id]) {
+                    } else if (d[user] != d[user_id] && score == d[user_id]) {
                         equal += 1;
                         changed = true;
                     }
@@ -234,10 +234,10 @@ var HistoryStore = new function () {
                         above -= 1;
                         changed = true;
                     }
-                    if (d[user] == d[user_id]) {
+                    if (d[user] == d[user_id] && score != d[user_id]) {
                         equal -= 1;
                         changed = true;
-                    } else if (score == d[user_id]) {
+                    } else if (d[user] != d[user_id] && score == d[user_id]) {
                         equal += 1;
                         changed = true;
                     }
@@ -293,10 +293,10 @@ var HistoryStore = new function () {
                     above -= 1;
                     changed = true;
                 }
-                if (d[user] == d[user_id]) {
+                if (d[user] == d[user_id] && score != d[user_id]) {
                     equal -= 1;
                     changed = true;
-                } else if (score == d[user_id]) {
+                } else if (d[user] != d[user_id] && score == d[user_id]) {
                     equal += 1;
                     changed = true;
                 }
