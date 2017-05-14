@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -579,9 +579,10 @@ def clean(base_dir, generated_list):
         pass
 
     # Delete compiled and/or backup files
-    os.system("find %s -name '*.o' -delete" % (base_dir))
-    os.system("find %s -name '*.pyc' -delete" % (base_dir))
-    os.system("find %s -name '*~' -delete" % (base_dir))
+    for dirname, _, filenames in os.walk(base_dir):
+        for filename in filenames:
+            if any(filename.endswith(ext) for ext in {".o", ".pyc", "~"}):
+                os.remove(os.path.join(dirname, filename)
 
 
 def build_execution_tree(actions):
