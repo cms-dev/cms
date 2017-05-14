@@ -26,19 +26,19 @@ setDefaultNotifyCheckboxes();
 {% set current_score_type = None %}
 
 <div class="core_title">
-  <h1>Preview dataset change for {{ task.title }} (<a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a>)</h1>
+  <h1>Preview dataset change for {{ task.title }} (<a href="{{ make_absolute_href("task", task.id) }}">{{ task.name }}</a>)</h1>
 </div>
 
 <table style="width: auto;">
 <tr>
   <td>Current dataset:</td>
   <td><strong>{{ task.active_dataset.description }}</strong></td>
-  <td><a href="{{ url_root }}/dataset/{{ task.active_dataset_id }}">[View results]</td>
+  <td><a href="{{ make_absolute_href("dataset", task.active_dataset_id) }}">[View results]</td>
 </tr>
 <tr>
   <td>New dataset:</td>
   <td><strong>{{ dataset.description }}</strong></td>
-  <td><a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</td>
+  <td><a href="{{ make_absolute_href("dataset", dataset.id) }}">[View results]</td>
 </tr>
 </table>
 
@@ -53,11 +53,11 @@ below, and wait for it to complete.
 <p>
     Reevaluate all submissions for the dataset "{{ dataset.description }}":
     {% module ReevaluationButtons(
-           url_root,
+           make_absolute_href,
            dataset_id = dataset.id) %}
 </p>
 
-<form action="{{ url_root }}/dataset/{{ dataset.id }}/activate" method="POST">
+<form action="{{ make_absolute_href("dataset", dataset.id, "activate") }}" method="POST">
 {% module xsrf_form_html() %}
 {% if len(changes) == 0 %}
 <p>Good news! At present, switching to this dataset will have no effect on the
@@ -84,10 +84,10 @@ scores. No notifications will be sent.</p>
       </td>
       <td>
         {% if c.submission.participation.id != prev_id %}
-        <a href="{{ url_root }}/user/{{ c.submission.participation.user.id }}">{{ c.submission.participation.user.username }}</a>
+        <a href="{{ make_absolute_href("user", c.submission.participation.user.id) }}">{{ c.submission.participation.user.username }}</a>
         {% end %}
       </td>
-      <td><a href="{{ url_root }}/submission/{{ c.submission.id }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
+      <td><a href="{{ make_absolute_href("submission", c.submission.id) }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
       <td>
         {% if c.old_score is not None or c.new_score is not None %}
         Score: {{ c.old_score }} -&gt; {{ c.new_score }}<br/>

@@ -1,4 +1,4 @@
-<button onclick="cmsrpc_request('{{ url_root }}',
+<button onclick="cmsrpc_request('{{ make_absolute_href() }}',
                  'EvaluationService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
@@ -11,7 +11,7 @@
         disabled
 {% end %}
         title="Compilation" >C</button>
-<button onclick="cmsrpc_request('{{ url_root }}',
+<button onclick="cmsrpc_request('{{ make_absolute_href() }}',
                  'EvaluationService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
@@ -24,7 +24,7 @@
         disabled
 {% end %}
         title="Evaluation" >E</button>
-<button onclick="cmsrpc_request('{{ url_root }}',
+<button onclick="cmsrpc_request('{{ make_absolute_href() }}',
                  'ScoringService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}

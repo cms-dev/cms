@@ -67,7 +67,7 @@ class ContestUsersHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = "/contest/%s/users" % contest_id
+        fallback_page = self.make_unprefixed_absolute_href("contest", contest_id, "users")
 
         try:
             user_id = self.get_argument("user_id")
@@ -140,7 +140,7 @@ class RemoveParticipationHandler(BaseHandler):
 class AddContestUserHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = "/contest/%s/users" % contest_id
+        fallback_page = self.make_unprefixed_absolute_href("contest", contest_id, "users")
 
         self.contest = self.safe_get_item(Contest, contest_id)
 

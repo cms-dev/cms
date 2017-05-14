@@ -733,7 +733,7 @@ def make_href_generator(url_root):
                 url += "/"
             url += quote("%s" % component, safe="")
         if kwargs:
-            url += "&" + urlencode(kwargs)
+            url += "?" + urlencode(kwargs)
         return url
     return result
 

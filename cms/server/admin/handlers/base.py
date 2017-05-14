@@ -290,7 +290,7 @@ class BaseHandler(CommonRequestHandler):
                                 else "v" + __version__[:3]
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
-        params["url_root"] = self.url_root
+        params["make_absolute_href"] = self.make_absolute_href
         if self.current_user is not None:
             params["current_user"] = self.current_user
         if self.contest is not None:

@@ -49,6 +49,18 @@ CMS.AWSUtils = function(url_root, timestamp,
 };
 
 
+CMS.AWSUtils.prototype.make_absolute_href = function() {
+    var url = this.url_root;
+    for (let component of arguments) {
+        if (url.substr(-1) != "/") {
+            url += "/";
+        }
+        url += encodeURIComponent(component);
+    }
+    return url;
+};
+
+
 /**
  * Displays a subpage over the current page with the specified
  * content.

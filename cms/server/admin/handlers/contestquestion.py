@@ -74,7 +74,7 @@ class QuestionReplyHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        ref = self.get_argument("ref", "/")
+        ref = self.get_argument("ref", self.make_unprefixed_absolute_href())
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -114,7 +114,7 @@ class QuestionIgnoreHandler(BaseHandler):
     """
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        ref = self.get_argument("ref", "/")
+        ref = self.get_argument("ref", self.make_unprefixed_absolute_href())
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 

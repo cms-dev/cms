@@ -28,7 +28,7 @@ import tornado.web
 
 class ReevaluationButtons(tornado.web.UIModule):
     def render(self,
-               url_root,
+               make_absolute_href,
                contest_id=None,
                submission_id=None,
                dataset_id=None,
@@ -49,7 +49,8 @@ class ReevaluationButtons(tornado.web.UIModule):
           and contest_id are used only for rendering the correct
           link, as they are implied by the participation_id).
 
-        url_root (unicode): path to the root of the server.
+        make_absolute_href (function): a function that takes some URL
+            components and encodes them into an URL string.
         contest_id (int|None): the id of the contest containing the
             submission results to invalidate, or None not to filter
             for contest.
@@ -63,32 +64,32 @@ class ReevaluationButtons(tornado.web.UIModule):
             is given, to write the redirect).
 
         """
-        url = "%s/" % url_root
+        url = []
         invalidate_arguments = {}
         if submission_id is not None:
             # A specific submission for a specific dataset (if
             # specified) or for the live dataset.
-            url += "submission/%s" % submission_id
+            url += ["submission", submission_id]
             invalidate_arguments["submission_id"] = submission_id
             if dataset_id is not None:
-                url += "/%s" % dataset_id
+                url += [dataset_id]
                 invalidate_arguments["dataset_id"] = dataset_id
         elif participation_id is not None:
             # All submissions of the participation.
-            url += "contest/%s/user/%s/edit" % (contest_id, user_id)
+            url += ["contest", contest_id, "user", user_id, "edit"]
             invalidate_arguments["participation_id"] = participation_id
         elif dataset_id is not None:
-            url += "dataset/%s" % dataset_id
+            url += ["dataset", dataset_id]
             invalidate_arguments["dataset_id"] = dataset_id
         else:
             # Reevaluate all submission in the specified contest.
             # TODO: block request to invalidate contests different
             # from those running in ES/SS.
-            url += "contest/%s/submissions" % (contest_id)
+            url += ["contest", contest_id, "submissions"]
             invalidate_arguments["contest_id"] = contest_id
 
         return self.render_string(
             "views/reevaluation_buttons.html",
-            url_root=url_root,
-            url=url,
+            make_absolute_href=make_absolute_href,
+            url=make_absolute_href(*url),
             invalidate_arguments=invalidate_arguments)
