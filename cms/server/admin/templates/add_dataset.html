@@ -58,14 +58,14 @@ You are cloning the dataset "{{ original_dataset.description }}".
         <span class="info" title="Total maximum time for each evaluation, in seconds."></span>
         Time limit
       </td>
-      <td><input type="text" name="time_limit" value="{{ 1 if original_dataset is None else original_dataset.time_limit }}"/> second(s)</td>
+      <td><input type="text" name="time_limit" value="{{ 1 if original_dataset is None else original_dataset.time_limit or "" }}"/> second(s)</td>
     </tr>
     <tr>
       <td>
         <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
         Memory limit
       </td>
-      <td><input type="text" name="memory_limit" value="{{ 512 if original_dataset is None else original_dataset.memory_limit }}"/> MiB</td>
+      <td><input type="text" name="memory_limit" value="{{ 512 if original_dataset is None else original_dataset.memory_limit or "" }}"/> MiB</td>
     </tr>
 
     <tr><td colspan=2><h2>Task type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Task%20types.html" target="_blank">documentation</a>)</h2></td></tr>
