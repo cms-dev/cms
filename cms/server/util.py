@@ -245,7 +245,7 @@ def actual_phase_required(*actual_phases):
                     (self.current_user is None or
                      not self.current_user.unrestricted):
                 # TODO maybe return some error code?
-                self.redirect(self.abs_contest_url())
+                self.redirect(self.contest_url())
             else:
                 return func(self, *args, **kwargs)
         return wrapped
@@ -753,9 +753,7 @@ class CommonRequestHandler(RequestHandler):
         self.sql_session = None
         self.r_params = None
         self.contest = None
-        self.url_root = None
         self.url = None
-        self.abs_url = None
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -766,9 +764,7 @@ class CommonRequestHandler(RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.sql_session = Session()
         self.sql_session.expire_all()
-        self.url_root = get_url_root(self.request.path)
-        self.url = create_url_builder(self.url_root)
-        self.abs_url = create_url_builder("/")
+        self.url = create_url_builder(get_url_root(self.request.path))
 
     @property
     def service(self):

@@ -50,16 +50,27 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
 
     """
     def post(self):
+        error_args = {"login_error": "true"}
+        next_page = self.get_argument("next", None)
+        if next_page is not None:
+            error_args["next"] = next_page
+            if next_page != "/":
+                next_page = self.url(*next_page.strip("/").split("/"))
+            else:
+                next_page = self.url()
+        else:
+            next_page = self.url()
+        error_page = self.url("login", **error_args)
+
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        next_page = self.get_argument("next", self.abs_url())
         admin = self.sql_session.query(Admin)\
             .filter(Admin.username == username)\
             .first()
 
         if admin is None:
             logger.warning("Nonexistent admin account: %s", username)
-            self.redirect(self.abs_url("login", login_error="true"))
+            self.redirect(error_page)
             return
 
         try:
@@ -77,7 +88,7 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
                 logger.info("Login successful for admin %s from IP %s, "
                             "but account is disabled.",
                             filter_ascii(username), self.request.remote_ip)
-            self.redirect(self.abs_url("login", login_error="true"))
+            self.redirect(error_page)
             return
 
         logger.info("Admin logged in: %s from IP %s.",
@@ -92,7 +103,7 @@ class LogoutHandler(BaseHandler):
     """
     def post(self):
         self.service.auth_handler.clear()
-        self.redirect(self.abs_url())
+        self.redirect(self.url())
 
 
 class ResourcesHandler(BaseHandler):
@@ -121,7 +132,7 @@ class ResourcesHandler(BaseHandler):
                 address = get_service_address(
                     ServiceCoord("ResourceService", shard))
             except KeyError:
-                self.redirect(self.abs_url(*(["resourceslist"] + contest_address)))
+                self.redirect(self.url(*(["resourceslist"] + contest_address)))
                 return
             self.r_params["resource_addresses"][shard] = address.ip
 

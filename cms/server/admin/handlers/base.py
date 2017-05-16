@@ -633,6 +633,12 @@ class BaseHandler(CommonRequestHandler):
             self.r_params = self.render_params()
         self.r_params["submission_count"] = count
 
+    def get_login_url(self):
+        """Return the URL unauthenticated users are redirected to.
+
+        """
+        return self.url("login")
+
 
 FileHandler = file_handler_gen(BaseHandler)
 

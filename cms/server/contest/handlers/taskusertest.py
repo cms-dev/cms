@@ -136,7 +136,7 @@ class UserTestHandler(ContestHandler):
             subject,
             text,
             NOTIFICATION_ERROR)
-        self.redirect(self.abs_contest_url(*self.fallback_page,
+        self.redirect(self.contest_url(*self.fallback_page,
                                            **self.fallback_args))
 
     @tornado.web.authenticated
@@ -430,7 +430,7 @@ class UserTestHandler(ContestHandler):
         # The argument (encripted user test id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the user test id).
-        self.redirect(self.abs_contest_url(
+        self.redirect(self.contest_url(
             *self.fallback_page, user_test_id=encrypt_number(user_test.id),
             **self.fallback_args))
 

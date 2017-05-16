@@ -63,13 +63,11 @@ function update_queue_status(response)
 
 function enable_worker(shard) {
     if (confirm("Do you really want to enable worker " + shard + "?")) {
-        cmsrpc_request("{{ url() }}",
-                       "EvaluationService", 0,
+        cmsrpc_request("EvaluationService", 0,
                        "enable_worker",
                        {"shard":shard},
                        function() {
-                          cmsrpc_request("{{ url() }}",
-                                         "EvaluationService", 0,
+                          cmsrpc_request("EvaluationService", 0,
                                          "workers_status",
                                          {},
                                          update_workers_status);
@@ -79,13 +77,11 @@ function enable_worker(shard) {
 
 function disable_worker(shard) {
     if (confirm("Do you really want to disable worker " + shard + "?")) {
-        cmsrpc_request("{{ url() }}",
-                       "EvaluationService", 0,
+        cmsrpc_request("EvaluationService", 0,
                        "disable_worker",
                        {"shard":shard},
                        function() {
-                          cmsrpc_request("{{ url() }}",
-                                         "EvaluationService", 0,
+                          cmsrpc_request("EvaluationService", 0,
                                          "workers_status",
                                          {},
                                          update_workers_status);
@@ -201,8 +197,7 @@ function update_statuses()
     if (!update_statuses.submissions_request
             || update_statuses.submissions_request.state() != "pending") {
         update_statuses.submissions_request =
-            cmsrpc_request("{{ url() }}",
-                           "AdminWebServer", 0,
+            cmsrpc_request("AdminWebServer", 0,
                            "submissions_status",
                            {"contest_id": {{ contest.id }}},
                            update_submissions_status);
@@ -211,19 +206,16 @@ function update_statuses()
     if (!update_statuses.queue_request
             || update_statuses.queue_request.state() != "pending") {
         update_statuses.queue_request =
-            cmsrpc_request("{{ url() }}",
-                           "EvaluationService", 0,
+            cmsrpc_request("EvaluationService", 0,
                            "queue_status",
                            {},
                            update_queue_status);
     }
-    cmsrpc_request("{{ url() }}",
-                   "EvaluationService", 0,
+    cmsrpc_request("EvaluationService", 0,
                    "workers_status",
                    {},
                    update_workers_status);
-    cmsrpc_request("{{ url() }}",
-                   "LogService", 0,
+    cmsrpc_request("LogService", 0,
                    "last_messages",
                    {},
                    update_logs);

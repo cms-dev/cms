@@ -103,11 +103,8 @@ class ContestHandler(BaseHandler):
         if self.is_multi_contest():
             self.contest_url = \
                 create_url_builder(self.url(self.contest.name))
-            self.abs_contest_url = \
-                create_url_builder(self.abs_url(self.contest.name))
         else:
             self.contest_url = self.url
-            self.abs_contest_url = self.abs_url
 
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name
@@ -420,7 +417,7 @@ class ContestHandler(BaseHandler):
         use the "login_url" application parameter.
 
         """
-        return self.abs_contest_url()
+        return self.contest_url()
 
 
 FileHandler = file_handler_gen(ContestHandler)

@@ -47,7 +47,7 @@ class AddContestHandler(
     """
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self):
-        fallback_page = self.abs_url("contests", "add")
+        fallback_page = self.url("contests", "add")
 
         try:
             attrs = dict()
@@ -69,7 +69,7 @@ class AddContestHandler(
         if self.try_commit():
             # Create the contest on RWS.
             self.application.service.proxy_service.reinitialize()
-            self.redirect(self.abs_url("contest", contest.id))
+            self.redirect(self.url("contest", contest.id))
         else:
             self.redirect(fallback_page)
 
@@ -136,13 +136,13 @@ class ContestHandler(SimpleContestHandler("contest.html")):
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(), "Invalid field(s).", repr(error))
-            self.redirect(self.abs_url("contest", contest_id))
+            self.redirect(self.url("contest", contest_id))
             return
 
         if self.try_commit():
             # Update the contest on RWS.
             self.application.service.proxy_service.reinitialize()
-        self.redirect(self.abs_url("contest", contest_id))
+        self.redirect(self.url("contest", contest_id))
 
 
 class OverviewHandler(BaseHandler):
@@ -187,13 +187,13 @@ class ContestListHandler(SimpleHandler("contests.html")):
         operation = self.get_argument("operation")
 
         if operation == self.REMOVE:
-            asking_page = self.abs_url("contests", contest_id, "remove")
+            asking_page = self.url("contests", contest_id, "remove")
             # Open asking for remove page
             self.redirect(asking_page)
         else:
             self.application.service.add_notification(
                 make_datetime(), "Invalid operation %s" % operation, "")
-            self.redirect(self.abs_url("contests"))
+            self.redirect(self.url("contests"))
 
 
 class RemoveContestHandler(BaseHandler):

@@ -71,10 +71,13 @@ class LoginHandler(ContestHandler):
         next_page = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            next_page = next_page
+            if next_page != "/":
+                next_page = self.url(*next_page.strip("/").split("/"))
+            else:
+                next_page = self.url()
         else:
-            next_page = self.abs_contest_url()
-        error_page = self.abs_contest_url(**error_args)
+            next_page = self.contest_url()
+        error_page = self.contest_url(**error_args)
 
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
@@ -152,7 +155,7 @@ class StartHandler(ContestHandler):
         participation.starting_time = self.timestamp
         self.sql_session.commit()
 
-        self.redirect(self.abs_contest_url())
+        self.redirect(self.contest_url())
 
 
 class LogoutHandler(ContestHandler):
@@ -162,7 +165,7 @@ class LogoutHandler(ContestHandler):
     @multi_contest
     def post(self):
         self.clear_cookie(self.contest.name + "_login")
-        self.redirect(self.abs_contest_url())
+        self.redirect(self.contest_url())
 
 
 class NotificationsHandler(ContestHandler):
@@ -279,7 +282,7 @@ class PrintingHandler(ContestHandler):
         if not self.r_params["printing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        fallback_page = self.abs_contest_url("printing")
+        fallback_page = self.contest_url("printing")
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\

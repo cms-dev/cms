@@ -30,7 +30,7 @@ CMS.AWSUtils = function(url_root, timestamp,
                         contest_start, contest_stop,
                         analysis_start, analysis_stop,
                         phase) {
-    this.url_root = url_root;
+    this.url = CMS.AWSUtils.create_url_builder(url_root);
     this.first_date = new Date();
     this.last_notification = timestamp;
     this.timestamp = timestamp;
@@ -49,15 +49,17 @@ CMS.AWSUtils = function(url_root, timestamp,
 };
 
 
-CMS.AWSUtils.prototype.url = function() {
-    var url = this.url_root;
-    for (let component of arguments) {
-        if (url.substr(-1) != "/") {
-            url += "/";
+CMS.AWSUtils.create_url_builder = function(url_root) {
+    return function() {
+        var url = url_root;
+        for (let component of arguments) {
+            if (url.substr(-1) != "/") {
+                url += "/";
+            }
+            url += encodeURIComponent(component);
         }
-        url += encodeURIComponent(component);
-    }
-    return url;
+        return url;
+    };
 };
 
 
