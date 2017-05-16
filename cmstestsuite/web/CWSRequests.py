@@ -31,6 +31,7 @@ import os
 import random
 import re
 import tempfile
+import urlparse
 
 from cms.grading.languagemanager import filename_to_language
 from cmscommon.crypto import decrypt_number
@@ -153,13 +154,13 @@ class SubmitRequest(GenericRequest):
         if self.redirected_to is None:
             return None
 
-        p = self.redirected_to.split("?")
-        if len(p) != 2:
+        query = urlparse.parse_qs(urlparse.urlsplit(self.redirected_to).query)
+        if "submission_id" not in query or len(query["submission_id"]) != 1:
             logger.warning("Redirected to an unexpected page: `%s'",
                            self.redirected_to)
             return None
         try:
-            submission_id = decrypt_number(p[-1])
+            submission_id = decrypt_number(query["submission_id"][0])
         except Exception:
             logger.warning("Unable to decrypt submission id from page: `%s'",
                            self.redirected_to)
@@ -218,13 +219,13 @@ class SubmitUserTestRequest(GenericRequest):
         if self.redirected_to is None:
             return None
 
-        p = self.redirected_to.split("&")
-        if len(p) != 2:
+        query = urlparse.parse_qs(urlparse.urlsplit(self.redirected_to).query)
+        if "user_test_id" not in query or len(query["user_test_id"]) != 1:
             logger.warning("Redirected to an unexpected page: `%s'",
                            self.redirected_to)
             return None
         try:
-            user_test_id = decrypt_number(p[-1])
+            user_test_id = decrypt_number(query["user_test_id"][0])
         except Exception:
             logger.warning("Unable to decrypt user test id from page: `%s'",
                            self.redirected_to)

@@ -35,7 +35,6 @@ import time
 import logging
 from datetime import datetime, timedelta
 from urllib import quote, urlencode
-from urlparse import urljoin
 
 from functools import wraps
 from tornado.web import RequestHandler
@@ -246,7 +245,7 @@ def actual_phase_required(*actual_phases):
                     (self.current_user is None or
                      not self.current_user.unrestricted):
                 # TODO maybe return some error code?
-                self.redirect("/")
+                self.redirect(self.abs_contest_url())
             else:
                 return func(self, *args, **kwargs)
         return wrapped
@@ -713,7 +712,7 @@ def get_url_root(request_path):
         return "."
 
 
-def make_href_generator(url_root):
+def create_url_builder(url_root):
     """Return a function that builds an URL relative to the given root.
 
     Generate a function that assembles an URL using its positional
@@ -755,8 +754,8 @@ class CommonRequestHandler(RequestHandler):
         self.r_params = None
         self.contest = None
         self.url_root = None
-        self.make_absolute_href = None
-        self.make_unprefixed_absolute_href = None
+        self.url = None
+        self.abs_url = None
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -768,28 +767,9 @@ class CommonRequestHandler(RequestHandler):
         self.sql_session = Session()
         self.sql_session.expire_all()
         self.url_root = get_url_root(self.request.path)
-        self.make_absolute_href = make_href_generator(self.url_root)
-        self.make_unprefixed_absolute_href = make_href_generator("/")
+        self.url = create_url_builder(self.url_root)
+        self.abs_url = create_url_builder("/")
 
     @property
     def service(self):
         return self.application.service
-
-    def redirect(self, url):
-        """This method overrides tornado.web.RequestHandler.redirect()
-
-        We would prefer not to override this, but the parent method assumes it
-        knows the full path to the current page to generate an absolute URL.
-        This may not be the case if we are hidden behind a proxy which is
-        remapping part of its URL space to us.
-
-        url (string): a URL starting with a forward slash, e.g. "/stuff"
-
-        """
-        # We don't use os.path.join here, because we need something like this:
-        # ".." + "/stuff" to become: "../stuff" not: "/stuff"
-        url = self.url_root + url
-
-        self.set_status(302)
-        self.set_header("Location", url)
-        self.finish()

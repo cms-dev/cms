@@ -50,7 +50,7 @@ from werkzeug.http import parse_accept_header
 
 from cms import config
 from cms.db import Contest, Participation, User
-from cms.server import compute_actual_phase, file_handler_gen, make_href_generator, get_url_root
+from cms.server import compute_actual_phase, file_handler_gen, create_url_builder
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 from cmscommon.isocodes import translate_language_code, \
@@ -101,13 +101,13 @@ class ContestHandler(BaseHandler):
         self.choose_contest()
 
         if self.is_multi_contest():
-            self.make_contest_href = \
-                make_href_generator(self.make_absolute_href(self.contest.name))
-            self.make_unprefixed_contest_href = \
-                make_href_generator(self.make_unprefixed_absolute_href(self.contest.name))
+            self.contest_url = \
+                create_url_builder(self.url(self.contest.name))
+            self.abs_contest_url = \
+                create_url_builder(self.abs_url(self.contest.name))
         else:
-            self.make_contest_href = self.make_absolute_href
-            self.make_unprefixed_contest_href = self.make_unprefixed_absolute_href
+            self.contest_url = self.url
+            self.abs_contest_url = self.abs_url
 
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name
@@ -346,7 +346,8 @@ class ContestHandler(BaseHandler):
 
         ret["contest"] = self.contest
 
-        ret["make_contest_href"] = self.make_contest_href
+        if hasattr(self, "contest_url"):
+            ret["contest_url"] = self.contest_url
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
@@ -419,7 +420,7 @@ class ContestHandler(BaseHandler):
         use the "login_url" application parameter.
 
         """
-        return self.make_unprefixed_contest_href()
+        return self.abs_contest_url()
 
 
 FileHandler = file_handler_gen(ContestHandler)

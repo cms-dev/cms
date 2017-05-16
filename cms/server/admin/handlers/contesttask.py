@@ -55,7 +55,7 @@ class ContestTasksHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = self.make_unprefixed_absolute_href("contest", contest_id, "tasks")
+        fallback_page = self.abs_url("contest", contest_id, "tasks")
 
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -121,7 +121,7 @@ class ContestTasksHandler(BaseHandler):
 class AddContestTaskHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = self.make_unprefixed_absolute_href("contest", contest_id, "tasks")
+        fallback_page = self.abs_url("contest", contest_id, "tasks")
 
         self.contest = self.safe_get_item(Contest, contest_id)
 

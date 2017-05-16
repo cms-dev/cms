@@ -52,14 +52,14 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        next_page = self.get_argument("next", self.make_unprefixed_absolute_href())
+        next_page = self.get_argument("next", self.abs_url())
         admin = self.sql_session.query(Admin)\
             .filter(Admin.username == username)\
             .first()
 
         if admin is None:
             logger.warning("Nonexistent admin account: %s", username)
-            self.redirect(self.make_unprefixed_absolute_href("login", login_error="true"))
+            self.redirect(self.abs_url("login", login_error="true"))
             return
 
         try:
@@ -77,7 +77,7 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
                 logger.info("Login successful for admin %s from IP %s, "
                             "but account is disabled.",
                             filter_ascii(username), self.request.remote_ip)
-            self.redirect(self.make_unprefixed_absolute_href("login", login_error="true"))
+            self.redirect(self.abs_url("login", login_error="true"))
             return
 
         logger.info("Admin logged in: %s from IP %s.",
@@ -92,7 +92,7 @@ class LogoutHandler(BaseHandler):
     """
     def post(self):
         self.service.auth_handler.clear()
-        self.redirect(self.make_unprefixed_absolute_href(""))
+        self.redirect(self.abs_url())
 
 
 class ResourcesHandler(BaseHandler):
@@ -121,7 +121,7 @@ class ResourcesHandler(BaseHandler):
                 address = get_service_address(
                     ServiceCoord("ResourceService", shard))
             except KeyError:
-                self.redirect(self.make_unprefixed_absolute_href(*(["resourceslist"] + contest_address)))
+                self.redirect(self.abs_url(*(["resourceslist"] + contest_address)))
                 return
             self.r_params["resource_addresses"][shard] = address.ip
 

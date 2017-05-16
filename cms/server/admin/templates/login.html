@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="{{ make_absolute_href("static", "favicon.ico") }}" />
-    <link rel="stylesheet" type="text/css" href="{{ make_absolute_href("static", "reset.css") }}">
-    <link rel="stylesheet" type="text/css" href="{{ make_absolute_href("static", "aws_style.css") }}">
+    <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "reset.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "aws_style.css") }}">
     <title>Admin</title>
   </head>
   <body class="admin">
@@ -16,7 +16,7 @@
 <h4 class="alert">Failed to log in.</h4>
     {% end %}
 <p>Please log in:</p>
-<form action="{{ make_absolute_href("login") }}" method="POST">
+<form action="{{ url("login") }}" method="POST">
   {% module xsrf_form_html() %}
   {% set next_page = handler.get_argument("next", None) %}
   {% if next_page is not None %}
@@ -41,8 +41,8 @@
 </form>
 {% else %}
 
-You are already logged in. <a href="{{ make_absolute_href("logout") }}">Logout</a>
-or go to the <a href="{{ make_absolute_href() }}">overview</a>.
+You are already logged in. <a href="{{ url("logout") }}">Logout</a>
+or go to the <a href="{{ url() }}">overview</a>.
 
 {% end %}
 

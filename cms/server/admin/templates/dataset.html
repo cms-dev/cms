@@ -7,10 +7,10 @@
 {% set score_types = {} %}
 
 <div class="core_title">
-  <h1>{{ task.title }} (<a href="{{ make_absolute_href("task", task.id) }}">{{ task.name }}</a>)</h1>
+  <h1>{{ task.title }} (<a href="{{ url("task", task.id) }}">{{ task.name }}</a>)</h1>
 </div>
 
-{% set dataset_selector_par_url = make_absolute_href("dataset") %}
+{% set dataset_selector_par_url = url("dataset") %}
 {% include fragments/dataset_selector.html %}
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
@@ -18,7 +18,7 @@
   <p>
     Reevaluate all {{ submission_count }} submissions for this dataset
     {% module ReevaluationButtons(
-           make_absolute_href,
+           url,
            dataset_id=shown_dataset.id) %}
   </p>
 

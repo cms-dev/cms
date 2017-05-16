@@ -25,8 +25,9 @@
 
 var CMS = CMS || {};
 
-CMS.CWSUtils = function(contest_root, timestamp, timezoned_timestamp,
+CMS.CWSUtils = function(url_root, contest_root, timestamp, timezoned_timestamp,
                         current_phase_begin, current_phase_end, phase) {
+    this.url_root = url_root;
     this.contest_root = contest_root;
     this.last_notification = timestamp;
     this.server_timestamp = timestamp;
@@ -45,7 +46,19 @@ CMS.CWSUtils = function(contest_root, timestamp, timezoned_timestamp,
 };
 
 
-CMS.CWSUtils.prototype.make_contest_href = function() {
+CMS.CWSUtils.prototype.url = function() {
+    var url = this.url_root;
+    for (let component of arguments) {
+        if (url.substr(-1) != "/") {
+            url += "/";
+        }
+        url += encodeURIComponent(component);
+    }
+    return url;
+};
+
+
+CMS.CWSUtils.prototype.contest_url = function() {
     var url = this.contest_root;
     for (let component of arguments) {
         if (url.substr(-1) != "/") {
@@ -60,7 +73,7 @@ CMS.CWSUtils.prototype.make_contest_href = function() {
 CMS.CWSUtils.prototype.update_notifications = function() {
     var self = this;
     $.get(
-        this.contest_root + "/notifications",
+        this.contest_url("notifications"),
         {"last_notification": this.last_notification},
         function(data) {
             var counter = 0;
@@ -137,7 +150,7 @@ CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
     if (Notification.permission === "granted") {
         new Notification(subject, {
             "body": text,
-            "icon": "/favicon.ico"
+            "icon": this.url("static", "favicon.ico")
         });
     }
 };

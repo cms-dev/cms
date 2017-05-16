@@ -79,7 +79,7 @@ class SubmitHandler(ContestHandler):
             subject,
             text,
             NOTIFICATION_ERROR)
-        self.redirect(self.fallback_page)
+        self.redirect(self.abs_contest_url(*self.fallback_page))
 
     @tornado.web.authenticated
     @actual_phase_required(0, 3)
@@ -91,8 +91,7 @@ class SubmitHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        self.fallback_page = \
-            self.make_unprefixed_contest_href("tasks", task.name, "submissions")
+        self.fallback_page = ["tasks", task.name, "submissions"]
 
         # Alias for easy access
         contest = self.contest
@@ -354,7 +353,8 @@ class SubmitHandler(ContestHandler):
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
-        self.redirect(self.fallback_page + "?" + encrypt_number(submission.id))
+        self.redirect(self.abs_contest_url(
+            *self.fallback_page, submission_id=encrypt_number(submission.id)))
 
 
 class TaskSubmissionsHandler(ContestHandler):
@@ -595,7 +595,7 @@ class UseTokenHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         fallback_page = \
-            self.make_unprefixed_contest_href("tasks", task.name, "submissions")
+            self.abs_contest_url("tasks", task.name, "submissions")
 
         submission = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\

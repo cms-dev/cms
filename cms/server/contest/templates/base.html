@@ -6,13 +6,13 @@
 
         <title>{% block title %}{% end %}</title>
 
-        <link rel="shortcut icon" href="{{ make_absolute_href("static", "favicon.ico") }}" />
-        <link rel="stylesheet" href="{{ make_absolute_href("static", "css", "bootstrap.css") }}">
-        <link rel="stylesheet" href="{{ make_absolute_href("static", "cws_style.css") }}">
+        <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
+        <link rel="stylesheet" href="{{ url("static", "css", "bootstrap.css") }}">
+        <link rel="stylesheet" href="{{ url("static", "cws_style.css") }}">
 
-        <script type="text/javascript" src="{{ make_absolute_href("static", "jq", "jquery-1.7.1.min.js") }}"></script>
-        <script type="text/javascript" src="{{ make_absolute_href("static", "js", "bootstrap.js") }}"></script>
-        <script type="text/javascript" src="{{ make_absolute_href("static", "cws_utils.js") }}"></script>
+        <script type="text/javascript" src="{{ url("static", "jq", "jquery-1.7.1.min.js") }}"></script>
+        <script type="text/javascript" src="{{ url("static", "js", "bootstrap.js") }}"></script>
+        <script type="text/javascript" src="{{ url("static", "cws_utils.js") }}"></script>
 
         {% block js %}{% end %}
     </head>

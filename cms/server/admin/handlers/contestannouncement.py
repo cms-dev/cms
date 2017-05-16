@@ -57,7 +57,7 @@ class AddAnnouncementHandler(BaseHandler):
         else:
             self.application.service.add_notification(
                 make_datetime(), "Subject is mandatory.", "")
-        self.redirect(self.make_unprefixed_absolute_href("contest", contest_id, "announcements"))
+        self.redirect(self.abs_url("contest", contest_id, "announcements"))
 
 
 class AnnouncementHandler(BaseHandler):

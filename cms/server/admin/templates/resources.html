@@ -204,7 +204,7 @@ var getters = [];
         update_resources: function()
         {
             var f = utils.bind_func(this, this.update_resources_cb);
-            cmsrpc_request("{{ make_absolute_href() }}",
+            cmsrpc_request("{{ url() }}",
                            "ResourceService", this.shard,
                            "get_resources",
                            {"last_time": this.last_time},
@@ -213,8 +213,8 @@ var getters = [];
 
         kill_service: function(s, link)
         {
-            link.parentNode.innerHTML = '<img src="{{ make_absolute_href("static", "loading.gif") }}" alt="loading..." />';
-            cmsrpc_request("{{ make_absolute_href() }}",
+            link.parentNode.innerHTML = '<img src="{{ url("static", "loading.gif") }}" alt="loading..." />';
+            cmsrpc_request("{{ url() }}",
                            "ResourceService", this.shard,
                            "kill_service",
                            {"service": s});
@@ -222,7 +222,7 @@ var getters = [];
 
         toggle_autorestart: function(s, checkbox)
         {
-            cmsrpc_request("{{ make_absolute_href() }}",
+            cmsrpc_request("{{ url() }}",
                            "ResourceService", this.shard,
                            "toggle_autorestart",
                            {"service": s});
@@ -306,7 +306,7 @@ for (var i in shards)
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="8"><img src="{{ make_absolute_href("static", "loading.gif") }}" alt="loading..." /></td></tr>
+      <tr><td style="text-align: center;" colspan="8"><img src="{{ url("static", "loading.gif") }}" alt="loading..." /></td></tr>
     </tbody>
   </table>
 
