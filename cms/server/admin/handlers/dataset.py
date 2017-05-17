@@ -498,7 +498,8 @@ class AddTestcasesHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, dataset_id):
-        fallback_page = self.url("dataset", dataset_id, "testcases", "add_multiple")
+        fallback_page = \
+            self.url("dataset", dataset_id, "testcases", "add_multiple")
 
         # TODO: this method is quite long, some splitting is needed.
         dataset = self.safe_get_item(Dataset, dataset_id)

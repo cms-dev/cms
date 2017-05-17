@@ -41,7 +41,7 @@ import traceback
 import tornado.web
 
 from cms.db import Contest
-from cms.server import CommonRequestHandler, create_url_builder
+from cms.server import CommonRequestHandler
 
 
 logger = logging.getLogger(__name__)

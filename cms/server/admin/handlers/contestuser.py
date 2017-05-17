@@ -82,7 +82,8 @@ class ContestUsersHandler(BaseHandler):
             return
 
         if operation == self.REMOVE_FROM_CONTEST:
-            asking_page = self.url("contest", contest_id, "user", user_id, "remove")
+            asking_page = \
+                self.url("contest", contest_id, "user", user_id, "remove")
             # Open asking for remove page
             self.redirect(asking_page)
             return

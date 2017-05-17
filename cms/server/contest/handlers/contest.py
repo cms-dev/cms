@@ -50,7 +50,8 @@ from werkzeug.http import parse_accept_header
 
 from cms import config
 from cms.db import Contest, Participation, User
-from cms.server import compute_actual_phase, file_handler_gen, create_url_builder
+from cms.server import compute_actual_phase, file_handler_gen, \
+    create_url_builder
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 from cmscommon.isocodes import translate_language_code, \
