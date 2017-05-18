@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2017 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -430,11 +431,13 @@ class Dataset(Base):
         return self is self.task.active_dataset
 
     def clone_from(self, old_dataset, clone_managers=True,
-                   clone_testcases=True, clone_results=False):
+                   clone_private_attachments=True, clone_testcases=True,
+                   clone_results=False):
         """Overwrite the data with that in dataset.
 
         old_dataset (Dataset): original dataset to copy from.
         clone_managers (bool): copy dataset managers.
+        clone_private_attachments (bool): copy dataset private attachments.
         clone_testcases (bool): copy dataset testcases.
         clone_results (bool): copy submission results (will also copy
             managers and testcases).
@@ -449,6 +452,11 @@ class Dataset(Base):
 
         if clone_managers or clone_results:
             for old_m in old_dataset.managers.itervalues():
+                new_m = old_m.clone()
+                new_m.dataset = self
+
+        if clone_private_attachments or clone_results:
+            for old_m in old_dataset.private_attachments.itervalues():
                 new_m = old_m.clone()
                 new_m.dataset = self
 
@@ -509,6 +517,46 @@ class Manager(Base):
                         passive_deletes=True))
 
     # Filename and digest of the provided manager.
+    filename = Column(
+        Unicode,
+        FilenameConstraint("filename"),
+        nullable=False)
+    digest = Column(
+        String,
+        DigestConstraint("digest"),
+        nullable=False)
+
+
+class PrivateAttachment(Base):
+    """Class to store additional files.
+
+    """
+    __tablename__ = 'private_attachments'
+    __table_args__ = (
+        UniqueConstraint('dataset_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Dataset (id and object) owning the private_attachment.
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    dataset = relationship(
+        Dataset,
+        backref=backref('private_attachments',
+                        collection_class=
+                            attribute_mapped_collection('filename'),
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Filename and digest of the provided private attachment.
     filename = Column(
         Unicode,
         FilenameConstraint("filename"),

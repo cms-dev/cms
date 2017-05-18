@@ -65,7 +65,7 @@ __all__ = [
     "Admin",
     # task
     "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
-    "Manager", "Testcase",
+    "Manager", "PrivateAttachment", "Testcase",
     # submission
     "Submission", "File", "Token", "SubmissionResult", "Executable",
     "Evaluation",
@@ -104,7 +104,7 @@ from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
-    Dataset, Manager, Testcase
+    Dataset, Manager, PrivateAttachment, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
     Executable, Evaluation
 from .usertest import UserTest, UserTestFile, UserTestManager, \

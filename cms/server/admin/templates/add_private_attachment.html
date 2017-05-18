@@ -1,0 +1,13 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Upload private attachment</h1>
+</div>
+<form enctype="multipart/form-data" action="{{ url_root }}/dataset/{{ dataset.id }}/private_attachments/add" method="POST">
+  {% module xsrf_form_html() %}
+  <input type="file" name="private_attachment"/><br/>
+  <input type="submit" value="Upload">
+  <input type="Reset" >
+</form>
+{% end %}
