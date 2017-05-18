@@ -80,6 +80,8 @@ from .dataset import \
     ToggleAutojudgeDatasetHandler, \
     AddManagerHandler, \
     DeleteManagerHandler, \
+    AddPrivateAttachmentHandler, \
+    DeletePrivateAttachmentHandler, \
     AddTestcaseHandler, \
     AddTestcasesHandler, \
     DeleteTestcaseHandler, \
@@ -185,6 +187,10 @@ HANDLERS = [
     (r"/dataset/([0-9]+)/autojudge", ToggleAutojudgeDatasetHandler),
     (r"/dataset/([0-9]+)/managers/add", AddManagerHandler),
     (r"/dataset/([0-9]+)/manager/([0-9]+)/delete", DeleteManagerHandler),
+    (r"/dataset/([0-9]+)/private_attachments/add",
+     AddPrivateAttachmentHandler),
+    (r"/dataset/([0-9]+)/private_attachment/([0-9]+)/delete",
+     DeletePrivateAttachmentHandler),
     (r"/dataset/([0-9]+)/testcases/add", AddTestcaseHandler),
     (r"/dataset/([0-9]+)/testcases/add_multiple", AddTestcasesHandler),
     (r"/dataset/([0-9]+)/testcase/([0-9]+)/delete", DeleteTestcaseHandler),

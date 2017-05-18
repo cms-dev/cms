@@ -399,6 +399,29 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           </td>
         </tr>
 
+        <tr>
+          <td>
+            <span class="info" title="All files that you want to keep them in cms database."></span>
+            Private Attachments
+{% if current_user.permission_all %}
+            [<a href="{{ url_root }}/dataset/{{ dataset.id }}/private_attachments/add">add</a>]
+{% end %}
+          </td>
+          <td>
+            {% if len(dataset.private_attachments) == 0 %}
+              No private attachments.
+            {% else %}
+              {% for private_attachment in dataset.private_attachments.values() %}
+                <div class="manager">
+                  <a href="{{ url_root }}/file/{{ private_attachment.digest }}/{{ private_attachment.filename }}">{{ private_attachment.filename }}</a>
+                  - <a onclick="CMS.AWSUtils.ajax_delete('{{ url_root }}/dataset/{{ dataset.id }}/private_attachment/{{ private_attachment.id }}/delete');">Delete</a>
+                </div>
+              {% end %}
+            {% end %}
+          </td>
+        </tr>
+
+
         <tr><td colspan=2><h3>Score type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Score%20types.html" target="_blank">documentation</a>)</h3></td></tr>
         <tr>
           <td>

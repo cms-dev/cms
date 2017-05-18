@@ -29,8 +29,8 @@ import argparse
 import logging
 import sys
 
-from cms.db import Attachment, Executable, File, Manager, PrintJob, \
-    SessionGen, Statement, Testcase, UserTest, UserTestExecutable, \
+from cms.db import Attachment, Executable, File, Manager, PrivateAttachment, \
+    PrintJob, SessionGen, Statement, Testcase, UserTest, UserTestExecutable, \
     UserTestFile, UserTestManager, UserTestResult
 from cms.db.filecacher import FileCacher
 from cms.server.util import format_size
@@ -53,8 +53,8 @@ def clean_files(session, dry_run):
     files = set(file[0] for file in filecacher.list())
     logger.info("A total number of %d files are present in the file store",
                 len(files))
-    for cls in [Attachment, Executable, File, Manager, PrintJob,
-                Statement, Testcase, UserTest, UserTestExecutable,
+    for cls in [Attachment, Executable, File, Manager, PrivateAttachment,
+                PrintJob, Statement, Testcase, UserTest, UserTestExecutable,
                 UserTestFile, UserTestManager, UserTestResult]:
         for col in ["input", "output", "digest"]:
             if hasattr(cls, col):

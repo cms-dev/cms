@@ -9,7 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
-# Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2016-2017 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -44,8 +44,8 @@ from StringIO import StringIO
 import tornado.web
 
 from cms import config
-from cms.db import Dataset, Manager, Message, Participation, \
-    Session, Submission, Task, Testcase
+from cms.db import Dataset, Manager, PrivateAttachment, Message, \
+    Participation, Session, Submission, Task, Testcase
 from cms.grading import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 from cmscommon.importers import import_testcases_from_zipfile
@@ -160,11 +160,12 @@ class CloneDatasetHandler(BaseHandler):
             return
 
         if original_dataset is not None:
-            # If we were cloning the dataset, copy all managers and
-            # testcases across too. If the user insists, clone all
-            # evaluation information too.
+            # If we were cloning the dataset, copy all managers and private
+            # attachments and testcases across too. If the user insists,
+            # clone all evaluation information too.
             clone_results = bool(self.get_argument("clone_results", False))
-            dataset.clone_from(original_dataset, True, True, clone_results)
+            dataset.clone_from(original_dataset, True,
+                               True, True, clone_results)
 
         # If the task does not yet have an active dataset, make this
         # one active.
@@ -406,6 +407,79 @@ class DeleteManagerHandler(BaseHandler):
         task_id = dataset.task_id
 
         self.sql_session.delete(manager)
+
+        self.try_commit()
+        self.write("./%d" % task_id)
+
+
+class AddPrivateAttachmentHandler(BaseHandler):
+    """Add a private_attachment to a dataset.
+
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.r_params["dataset"] = dataset
+        self.render("add_private_attachment.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, dataset_id):
+        fallback_page = "/dataset/%s/private_attachments/add" % dataset_id
+
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+
+        private_attachment = self.request.files["private_attachment"][0]
+        task_name = task.name
+        self.sql_session.close()
+
+        try:
+            digest = self.application.service.file_cacher.put_file_content(
+                private_attachment["body"],
+                "Private attachment for %s" % task_name)
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Private attachment storage failed",
+                repr(error))
+            self.redirect(fallback_page)
+            return
+
+        self.sql_session = Session()
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+
+        private_attachment = PrivateAttachment(private_attachment["filename"],
+                                               digest, dataset=dataset)
+        self.sql_session.add(private_attachment)
+
+        if self.try_commit():
+            self.redirect("/task/%s" % task.id)
+        else:
+            self.redirect(fallback_page)
+
+
+class DeletePrivateAttachmentHandler(BaseHandler):
+    """Delete a private attachment.
+
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, dataset_id, private_attachment_id):
+        private_attachment = self.safe_get_item(PrivateAttachment,
+                                                private_attachment_id)
+        dataset = self.safe_get_item(Dataset, dataset_id)
+
+        # Protect against URLs providing incompatible parameters.
+        if private_attachment.dataset is not dataset:
+            raise tornado.web.HTTPError(404)
+
+        task_id = dataset.task_id
+
+        self.sql_session.delete(private_attachment)
 
         self.try_commit()
         self.write("./%d" % task_id)
