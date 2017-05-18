@@ -72,6 +72,8 @@ class TwoSteps(TaskType):
     """
     ALLOW_PARTIAL_SUBMISSION = False
 
+    SUBMISSION_PAGE_MESSAGE = ""
+
     _EVALUATION = ParameterTypeChoice(
         "Output evaluation",
         "output_eval",

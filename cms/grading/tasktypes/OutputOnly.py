@@ -6,6 +6,7 @@
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2017 Peyman Jabbarzade Ganje <peyman.jabbarzade@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -56,6 +57,10 @@ class OutputOnly(TaskType):
 
     """
     ALLOW_PARTIAL_SUBMISSION = True
+
+    SUBMISSION_PAGE_MESSAGE = """<span style='color: red'>
+You may submit any subset of outputs in a single submission.
+</span>"""
 
     _EVALUATION = ParameterTypeChoice(
         "Output evaluation",
