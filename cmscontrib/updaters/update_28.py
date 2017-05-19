@@ -42,9 +42,9 @@ class Updater(object):
                 continue
 
             if v["_class"] == "User":
-                v["password"] = "text:%s" % v["password"]
+                v["password"] = "plaintext:%s" % v["password"]
 
             if v["_class"] == "Participation" and v["password"] is not None:
-                v["password"] = "text:%s" % v["password"]
+                v["password"] = "plaintext:%s" % v["password"]
 
         return self.objs

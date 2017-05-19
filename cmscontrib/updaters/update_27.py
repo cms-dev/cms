@@ -45,6 +45,6 @@ class Updater(object):
                 v["official"] = True
             if v["_class"] == "Contest":
                 v["analysis_enabled"] = False
-                v["analysis_start"] = v["contest_stop"]
-                v["analysis_stop"] = v["contest_stop"]
+                v["analysis_start"] = v["stop"]
+                v["analysis_stop"] = v["stop"]
         return self.objs
