@@ -755,11 +755,13 @@ class EvaluationService(Service):
                 level, submissions, dataset_id)
             for operation in operations:
                 try:
-                    self.dequeue(operation)
+                    self.queue_service.dequeue(operation=operation.to_dict())
                 except KeyError:
                     pass  # Ok, the operation wasn't in the queue.
                 try:
-                    self.get_executor().pool.ignore_operation(operation)
+                    self.queue_service.ignore_operation(
+                        operation=operation.to_dict()
+                    )
                 except LookupError:
                     pass  # Ok, the operation wasn't in the pool.
 

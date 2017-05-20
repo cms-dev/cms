@@ -562,6 +562,16 @@ class QueueService(TriggeredService):
         return True
 
     @rpc_method
+    def dequeue(self, operation):
+        self.get_executor().dequeue(ESOperation.from_dict(operation))
+
+    @rpc_method
+    def ignore_operation(self, operation):
+        self.get_executor().pool.ignore_operation(
+            ESOperation.from_dict(operation)
+        )
+
+    @rpc_method
     def queue_status(self):
         """Return the status of the queue.
 
