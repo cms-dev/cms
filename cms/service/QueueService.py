@@ -128,7 +128,7 @@ class PendingResults(object):
 class EvaluationExecutor(Executor):
 
     # Real maximum number of operations to be sent to a worker.
-    MAX_OPERATIONS_PER_BATCH = 25
+    MAX_OPERATIONS_PER_BATCH = 1
 
     def __init__(self, evaluation_service):
         """Create the single executor for ES.
