@@ -8,6 +8,12 @@
     <h1>{{ _("Communication") }}</h1>
 </div>
 
+<h2>{{ _("Call staffs") }}</h2>
+<form class="form-horizontal" action="{{ contest_root }}/callstaff" method="POST">
+  {% module xsrf_form_html() %}
+  <button type="submit" class="btn btn-primary">{{ _("WC") }}</button>
+</form>
+
 {% if len (contest.announcements) > 0 %}
 <h2>{{ _("Announcements") }}</h2>
 <div class="announcement_list">
