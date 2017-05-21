@@ -34,14 +34,20 @@ from __future__ import unicode_literals
 import json
 import logging
 import traceback
+import os
+import shutil
+import tempfile
+import zipfile
 
 import tornado.web
 
+from cms import config
 from cms.db import Attachment, Dataset, Session, Statement, Submission, \
     SubmissionFormatElement, Task
 from cmscommon.datetime import make_datetime
+from cms.grading.languagemanager import get_language
 
-from .base import BaseHandler, SimpleHandler, require_permission
+from .base import BaseHandler, SimpleHandler, FileHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -502,3 +508,43 @@ class RemoveTaskHandler(BaseHandler):
 
         # Maybe they'll want to do this again (for another task)
         self.write("../../tasks")
+
+
+class DownloadSubmissionsHandler(FileHandler):
+    """Download submissions for a dataset in a zip file.
+    """
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+
+        zip_filename = "%s.zip" % task.name
+        source_template = "%s_%s%s"
+
+        tempdir = tempfile.mkdtemp(dir=config.temp_dir)
+        zip_path = os.path.join(tempdir, zip_filename)
+
+        users = {}
+
+        with zipfile.ZipFile(zip_path, "w") as zip_file:
+            for submission in task.submissions:
+                user = submission.participation.user.username
+                if user not in users:
+                    users[user] = 1
+                else:
+                    users[user] += 1
+                for _, sub_file in submission.files.items():
+                    source_path = self.application.service.file_cacher.\
+                        get_file(sub_file.digest).name
+                    zip_file.write(
+                        source_path,
+                        source_template % (
+                            submission.participation.user.username,
+                            users[user],
+                            get_language(submission.language).source_extension
+                        )
+                    )
+            zip_file.close()
+
+        self.fetch_from_filesystem(zip_path, "application/zip", zip_filename)
+
+        shutil.rmtree(tempdir)

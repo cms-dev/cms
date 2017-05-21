@@ -70,7 +70,8 @@ from .task import \
     AddAttachmentHandler, \
     AttachmentHandler, \
     TaskListHandler, \
-    RemoveTaskHandler
+    RemoveTaskHandler, \
+    DownloadSubmissionsHandler
 from .dataset import \
     DatasetSubmissionsHandler, \
     CloneDatasetHandler, \
@@ -174,6 +175,7 @@ HANDLERS = [
     (r"/task/([0-9]+)/statement/([0-9]+)", StatementHandler),
     (r"/task/([0-9]+)/attachments/add", AddAttachmentHandler),
     (r"/task/([0-9]+)/attachment/([0-9]+)", AttachmentHandler),
+    (r"/task/([0-9]+)/submissions/download", DownloadSubmissionsHandler),
 
     # Datasets
 
