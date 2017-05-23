@@ -582,7 +582,7 @@ def clean(base_dir, generated_list):
     for dirname, _, filenames in os.walk(base_dir):
         for filename in filenames:
             if any(filename.endswith(ext) for ext in {".o", ".pyc", "~"}):
-                os.remove(os.path.join(dirname, filename)
+                os.remove(os.path.join(dirname, filename))
 
 
 def build_execution_tree(actions):
