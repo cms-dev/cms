@@ -99,6 +99,8 @@ class ContestHandler(BaseHandler):
         super(ContestHandler, self).prepare()
         self.choose_contest()
 
+        self._ = self.locale.translate
+
         if self.is_multi_contest():
             self.contest_url = \
                 create_url_builder(self.url(self.contest.name))
@@ -294,14 +296,14 @@ class ContestHandler(BaseHandler):
         self.langs = self.application.service.langs
         lang_codes = self.langs.keys()
 
-        if self.contest and len(self.contest.allowed_localizations) > 0:
+        if self.contest.allowed_localizations:
             lang_codes = filter_language_codes(
                 lang_codes, self.contest.allowed_localizations)
 
         # Select the one the user likes most.
         basic_lang = 'en'
 
-        if self.contest and len(self.contest.allowed_localizations):
+        if self.contest.allowed_localizations:
             basic_lang = lang_codes[0].replace("_", "-")
 
         http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]

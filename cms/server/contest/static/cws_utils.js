@@ -303,7 +303,7 @@ CMS.CWSUtils.prototype.rel_to_abs = function(sRelPath) {
 };
 
 CMS.CWSUtils.prototype.switch_lang = function() {
-    var cookie_path = this.rel_to_abs(this.contest_url());
+    var cookie_path = this.rel_to_abs(this.contest_url() + "/").slice(0, -1) || "/";
     var lang = $("#lang").val();
     if (lang === "") {
         document.cookie = "language="

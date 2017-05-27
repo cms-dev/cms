@@ -71,8 +71,6 @@ class BaseHandler(CommonRequestHandler):
         """
         super(BaseHandler, self).prepare()
 
-        self._ = self.locale.translate
-
         # We need this to be computed for each request because we want to be
         # able to import new contests without having to restart CWS. But only
         # in multi-contest mode.
