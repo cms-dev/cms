@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2017 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -182,7 +183,7 @@ def main():
 
         print("%s file(s) will be created." % len(results))
         if raw_input("Continue? [Y/n] ").lower() not in ["y", ""]:
-            sys.exit(0)
+            return 0
 
         done = 0
         for row in results:
@@ -200,6 +201,13 @@ def main():
             if os.path.exists(filename):
                 logger.warning("Skipping file '%s' because it already exists",
                                filename)
+                continue
+            filedir = os.path.dirname(filename)
+            if not os.path.exists(filedir):
+                os.makedirs(filedir)
+            if not os.path.isdir(filedir):
+                logger.warning("%s is not a directory, skipped.", filedir)
+                continue
 
             fso = FSObject.get_from_digest(f_digest, session)
             assert fso is not None
