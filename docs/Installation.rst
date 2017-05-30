@@ -66,7 +66,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
          libffi-dev python-pip
 
     # Optional
-    sudo apt-get install nginx-full php7.0-cli php5-fpm phppgadmin \
+    sudo apt-get install nginx-full php7.0-cli php7.0-fpm phppgadmin \
          texlive-latex-base a2ps gcj-jdk haskell-platform
 
 Arch Linux

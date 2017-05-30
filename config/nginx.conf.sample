@@ -104,7 +104,7 @@ http {
             try_files $uri $uri/ =404;
 
             location ~ \.php$ {
-                fastcgi_pass unix:/var/run/php5-fpm.sock;
+                fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
                 fastcgi_index index.php;
                 include fastcgi_params;
             }
