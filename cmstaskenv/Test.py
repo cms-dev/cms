@@ -40,6 +40,7 @@ from cms.grading.tasktypes import get_task_type
 from cms.service.esoperations import ESOperation
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
+from unidecode import unidecode
 
 
 # TODO - Use a context object instead of global variables
@@ -260,7 +261,7 @@ def test_testcases(base_dir, solution, language, assume=None):
                     "%5.2lf" % p,
                     colors.RED if abs(p - 1) > 0.01 else colors.BLACK
                 ),
-                "--- %s [Time:" % c.ljust(clen),
+                "--- %s [Time:" % unidecode(c).ljust(clen),
                 add_color_to_string(
                     ("%5.3f" % w[0]) if w[0] is not None else "N/A",
                     colors.BLUE if w[0] is not None and w[0] >= 0.95 * d[3][0]
