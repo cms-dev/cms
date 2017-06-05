@@ -25,11 +25,13 @@ from future.builtins import *
 from six import itervalues, iteritems
 
 from .italy_yaml import YamlLoader
+from .cps import CpsTaskLoader
 from .polygon import PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
 
 LOADERS = dict(
     (loader_class.short_name, loader_class) for loader_class in [
-        YamlLoader, PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
+        YamlLoader, PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader,
+        CpsTaskLoader
     ]
 )
 
