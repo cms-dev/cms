@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2017 Kiarash Golezardi <kiarashgolezardi@gmail.com>
+# Copyright © 2017 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,10 +29,12 @@ import io
 import json
 import logging
 import os
+import re
 
 from datetime import timedelta
 
-from cms.db import Task, SubmissionFormatElement, Dataset, Manager, Testcase
+from cms.db import Task, SubmissionFormatElement, Dataset, Manager, \
+    Testcase, Attachment
 
 from .base_loader import TaskLoader
 
@@ -51,7 +54,6 @@ class TpsTaskLoader(TaskLoader):
     short_name = 'tps_task'
     description = 'TPS task format'
 
-    # FIXME: stay?
     @staticmethod
     def detect(path):
         """See docstring in class Loader.
@@ -76,7 +78,7 @@ class TpsTaskLoader(TaskLoader):
             par_input = '%s_io_0_inputfile' % par_prefix
             par_output = '%s_io_1_outputfile' % par_prefix
             if par_compilation not in task_type_parameters:
-                task_type_parameters[par_compilation] = 'alone'
+                task_type_parameters[par_compilation] = 'grader'
             if par_input not in task_type_parameters:
                 task_type_parameters[par_input] = ''
             if par_output not in task_type_parameters:
@@ -115,7 +117,32 @@ class TpsTaskLoader(TaskLoader):
 
         # TODO: import statements
 
-        args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
+        # Setting the submission format
+        # Obtaining testcases' codename
+        testcases_dir = os.path.join(self.path, 'tests')
+        testcase_codenames = [filename[:-3]
+                              for filename in os.listdir(testcases_dir)
+                              if filename[-3:] == '.in']
+        if data["task_type"] == 'OutputOnly':
+            args["submission_format"] = list()
+            for codename in testcase_codenames:
+                args["submission_format"] += \
+                    SubmissionFormatElement("output_%s.txt" % codename)
+        elif data["task_type"] == 'Notice':
+            args["submission_format"] = list()
+        else:
+            args["submission_format"] = [
+                SubmissionFormatElement("%s.%%l" % name)]
+
+        # Attachments
+        args["attachments"] = dict()
+        attachments_dir = os.path.join(self.path, 'attachments')
+        if os.path.exists(attachments_dir):
+            for filename in os.listdir(attachments_dir):
+                digest = self.file_cacher.put_file_from_path(
+                    os.path.join(attachments_dir, filename),
+                    "Attachment %s for task %s" % (filename, name))
+                args["attachments"][filename] = Attachment(filename, digest)
 
         # These options cannot be configured in the TPS format.
         # Uncomment the following to set specific values for them.
@@ -130,6 +157,15 @@ class TpsTaskLoader(TaskLoader):
         # args['token_gen_number'] = 1
         # args['token_gen_interval'] = make_timedelta(1800)
         # args['token_gen_max'] = 2
+
+        args['max_submission_number'] = 50
+        args['max_user_test_number'] = 50
+        if data["task_type"] == 'OutputOnly':
+            args['max_submission_number'] = 100
+            args['max_user_test_number'] = 100
+
+        args['min_submission_interval'] = make_timedelta(60)
+        args['min_user_test_interval'] = make_timedelta(60)
 
         # TODO: additional cms config files
 
@@ -153,9 +189,8 @@ class TpsTaskLoader(TaskLoader):
         if os.path.exists(checker_src):
             logger.info("Checker found, compiling")
             checker_exe = os.path.join(checker_dir, "checker")
-            os.system("cat %s | \
-                g++ -x c++ -O2 -static -o %s -" %
-                      (checker_src, checker_exe))
+            os.system("g++ -x c++ -O2 -static -o %s %s" %
+                      (checker_exe, checker_src))
             digest = self.file_cacher.put_file_from_path(
                 checker_exe,
                 "Manager for task %s" % name)
@@ -166,6 +201,9 @@ class TpsTaskLoader(TaskLoader):
             evaluation_param = "diff"
 
         args["task_type"] = data['task_type']
+        if data['task_type'] != 'OutputOnly' \
+                and data['task_type'] != 'Notice':
+            args["task_type"] += '2017'
         args["task_type_parameters"] = \
             self._get_task_type_parameters(
                 data, data['task_type'], evaluation_param)
@@ -195,14 +233,9 @@ class TpsTaskLoader(TaskLoader):
             digest = self.file_cacher.put_file_from_path(
                 manager_exe,
                 "Manager for task %s" % name)
-            args["managers"] += [Manager("manager", digest)]
+            args["managers"]["manager"] = Manager("manager", digest)
 
         # Testcases
-        testcases_dir = os.path.join(self.path, 'tests')
-        testcase_codenames = [filename[:-3]
-                              for filename in os.listdir(testcases_dir)
-                              if filename[-3:] == '.in']
-
         args["testcases"] = {}
 
         for codename in testcase_codenames:
@@ -226,7 +259,7 @@ class TpsTaskLoader(TaskLoader):
 
         # Score Type
         subtasks_dir = os.path.join(self.path, 'subtasks')
-        subtasks = os.listdir(subtasks_dir)
+        subtasks = sorted(os.listdir(subtasks_dir))
 
         if len(subtasks) == 0:
             number_tests = len(testcase_codenames)
@@ -234,7 +267,18 @@ class TpsTaskLoader(TaskLoader):
             args["score_type_parameters"] = str(100 / number_tests)
         else:
             args["score_type"] = "GroupMin"
-            # FIXME: create the score_type_parameters
+            parsed_data = []
+            for subtask in subtasks:
+                with io.open(os.path.join(subtasks_dir, subtask), 'rt',
+                             encoding='utf-8') as subtask_json:
+                    subtask_data = json.load(subtask_json)
+                    score = int(subtask_data["score"])
+                    testcases = "|".join(
+                        re.escape(testcase)
+                        for testcase in subtask_data["testcases"]
+                    )
+                    parsed_data.append([score, testcases])
+            args["score_type_parameters"] = json.dumps(parsed_data)
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
