@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
-# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -117,18 +117,17 @@ class PolygonTaskLoader(TaskLoader):
         args["title"] = root.find('names').find("name").attrib['value']
 
         if get_statement:
-            args["statements"] = []
+            args["statements"] = {}
             args["primary_statements"] = []
-            for language, language_code in LANGUAGE_MAP.iteritems():
+            for language, lang in LANGUAGE_MAP.iteritems():
                 path = os.path.join(self.path, 'statements',
                                     '.pdf', language, 'problem.pdf')
                 if os.path.exists(path):
-                    lang = LANGUAGE_MAP[language]
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Statement for task %s (lang: %s)" % (name,
                                                               language))
-                    args["statements"].append(Statement(lang, digest))
+                    args["statements"][lang] = Statement(lang, digest)
                     args["primary_statements"].append(lang)
             args["primary_statements"] = json.dumps(args["primary_statements"])
 
@@ -182,7 +181,7 @@ class PolygonTaskLoader(TaskLoader):
             args["time_limit"] = tl * 0.001
             args["memory_limit"] = int(ml / (1024 * 1024))
 
-            args["managers"] = []
+            args["managers"] = {}
             infile_param = judging.attrib['input-file']
             outfile_param = judging.attrib['output-file']
 
@@ -206,8 +205,7 @@ class PolygonTaskLoader(TaskLoader):
                 digest = self.file_cacher.put_file_from_path(
                     checker_exe,
                     "Manager for task %s" % name)
-                args["managers"] += [
-                    Manager("checker", digest)]
+                args["managers"]["checker"] = Manager("checker", digest)
                 evaluation_param = "comparator"
             else:
                 logger.info("Checker not found, using diff")
@@ -229,7 +227,7 @@ class PolygonTaskLoader(TaskLoader):
                 input_value = total_value / n_input
             args["score_type_parameters"] = str(input_value)
 
-            args["testcases"] = []
+            args["testcases"] = {}
 
             for i in xrange(testcases):
                 infile = os.path.join(self.path, testset_name,
@@ -248,7 +246,7 @@ class PolygonTaskLoader(TaskLoader):
                 testcase = Testcase("%03d" % (i, ), False,
                                     input_digest, output_digest)
                 testcase.public = True
-                args["testcases"] += [testcase]
+                args["testcases"][testcase.codename] = testcase
 
             if task_cms_conf is not None and \
                hasattr(task_cms_conf, "datasets") and \
