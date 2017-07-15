@@ -138,7 +138,10 @@ def replay_contest(contest_id, start_from, duration, cws_address,
                 submissions[ind].timestamp - contest.start)
             if start_from is not None and timestamp < start_from:
                 continue
-            if duration is not None and timestamp > start_from+duration:
+            end_time = duration
+            if start_from is not None:
+                end_time += start_from
+            if duration is not None and timestamp > end_time:
                 break
             if start is None:
                 if start_from is not None:
@@ -146,7 +149,12 @@ def replay_contest(contest_id, start_from, duration, cws_address,
                 else:
                     start = time.time()
             username = submissions[ind].participation.user.username
-            password = submissions[ind].participation.password[10:]
+            if submissions[ind].participation.password is not None:
+                password = submissions[ind].participation.password[10:]
+            elif submissions[ind].participation.user.password is not None:
+                password = submissions[ind].participation.user.password[10:]
+            else:
+                password = ""
             task = submissions[ind].task
             files = session.query(File)\
                 .filter(File.submission == submissions[ind]).all()
