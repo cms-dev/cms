@@ -211,6 +211,8 @@ def main():
             msg = "Invalid resume time %s, format is %%H:%%M:%%S" % args.resume
             logger.critical(msg)
             return 1
+
+    duration = None
     if args.duration is not None:
         try:
             duration = int(args.duration[6:8]) + \
