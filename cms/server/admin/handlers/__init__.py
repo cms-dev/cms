@@ -6,6 +6,7 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2017 Kiarash Golezardi <kiarashgolezardi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -82,7 +83,7 @@ from .dataset import \
     DeleteManagerHandler, \
     AddTestcaseHandler, \
     AddTestcasesHandler, \
-    DeleteTestcaseHandler, \
+    DeleteTestcasesHandler, \
     DownloadTestcasesHandler
 from .user import \
     AddUserHandler, \
@@ -187,7 +188,7 @@ HANDLERS = [
     (r"/dataset/([0-9]+)/manager/([0-9]+)/delete", DeleteManagerHandler),
     (r"/dataset/([0-9]+)/testcases/add", AddTestcaseHandler),
     (r"/dataset/([0-9]+)/testcases/add_multiple", AddTestcasesHandler),
-    (r"/dataset/([0-9]+)/testcase/([0-9]+)/delete", DeleteTestcaseHandler),
+    (r"/dataset/([0-9]+)/testcases/delete", DeleteTestcasesHandler),
     (r"/dataset/([0-9]+)/testcases/download", DownloadTestcasesHandler),
 
     # Users/Teams
