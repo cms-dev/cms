@@ -426,11 +426,33 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
   <!-- Test cases for this dataset -->
 
+  <script type="text/javascript">
+      function deleteTestcases()
+      {
+          var sel = [];
+          var checks = document.getElementsByName('testcase_delete_check');
+          for (var i = 0; i < checks.length; i++) {
+              if (!checks[i].checked)
+                  continue;
+              var testcase_id = checks[i].getAttribute('data-testcase-id');
+              sel[sel.length] = testcase_id;
+          }
+          if (sel.length < 1) {
+              alert("Please select at least one testcase to delete!");
+              return;
+          }
+          var data = {'selected_testcases': JSON.stringify(sel)};
+          CMS.AWSUtils.ajax_delete("{{ url("dataset", dataset.id, "testcases", "delete") }}", data);
+      }
+  </script>
+
+
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
 {% if current_user.permission_all %}
       <a href="{{ url("dataset", dataset.id, "testcases", "add") }}">Add a testcase</a>
       <a href="{{ url("dataset", dataset.id, "testcases", "add_multiple") }}">Add multiple testcases</a>
+       <a href="" onclick="deleteTestcases()">Delete selected testcases</a>
 {% end %}
       <a href="{{ url("dataset", dataset.id, "testcases", "download") }}">Download all testcases</a>
       <table class="bordered" style="text-align:center">
@@ -441,7 +463,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <th>Public</th>
             <th>Input</th>
             <th>Output</th>
-            <th>Ops</th>
+            <th>Selection</th>
           </tr>
         </thead>
         <tbody>
@@ -461,7 +483,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url("file", testcase.output, "output_%s" % testcase.codename) }}')">Show output</a>
             </td>
             <td>
-              <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "testcase", testcase.id, "delete") }}');">Delete</a>
+               <input type="checkbox" name="testcase_delete_check" data-testcase-id="{{ testcase.id }}" />
             </td>
           </tr>
           {% end %}

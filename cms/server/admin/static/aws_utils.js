@@ -3,6 +3,7 @@
  * Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
  * Copyright © 2013 Fabian Gundlach <320pointsguy@gmail.com>
  * Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+ * Copyright © 2017 Kiarash Golezardi <kiarashgolezardi@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -676,13 +677,17 @@ CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
 
 /**
  * Sends a request and on success redirect to the page
- * specified in the response, if present.
+ * specified in the response, if present. Passing the variable
+ * 'data' to the function is optional.
  */
-CMS.AWSUtils.ajax_edit_request = function(type, url) {
+CMS.AWSUtils.ajax_edit_request = function(type, url, data) {
     var settings = {
         "type": type,
         headers: {"X-XSRFToken": get_cookie("_xsrf")}
     };
+    if (typeof data !== 'undefined') {
+        settings.data = data;
+    }
     settings["success"] = function(data_redirect_url) {
         if (data_redirect_url) {
             window.location.replace(data_redirect_url);
@@ -694,10 +699,11 @@ CMS.AWSUtils.ajax_edit_request = function(type, url) {
 
 /**
  * Sends a delete request and on success redirect to the page
- * specified in the response, if present.
+ * specified in the response, if present. Passing the variable
+ * 'data' to the function is optional.
  */
-CMS.AWSUtils.ajax_delete = function(url) {
-    CMS.AWSUtils.ajax_edit_request("DELETE", url);
+CMS.AWSUtils.ajax_delete = function(url, data) {
+    CMS.AWSUtils.ajax_edit_request("DELETE", url, data);
 };
 
 
