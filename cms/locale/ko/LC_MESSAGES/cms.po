@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-29 19:38+0000\n"
-"PO-Revision-Date: 2017-02-18 21:03+0900\n"
+"POT-Creation-Date: 2017-04-09 15:50+0100\n"
+"PO-Revision-Date: 2017-07-25 07:50+0900\n"
 "Last-Translator: Myungwoo Chun <mc.tamaki@gmail.com>\n"
 "Language-Team: Korean\n"
 "Language: ko\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 1.8.7.1\n"
 
 msgid "Compilation succeeded"
 msgstr "컴파일에 성공하였습니다."
@@ -267,7 +267,7 @@ msgstr "%(type_pl)s 없이 시작합니다."
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "한 개의 %(type_s)로 시작합니다."
+msgstr[0] "한 개의 %(type_s)s로 시작합니다."
 msgstr[1] "%(gen_initial)d개의 %(type_pl)s로 시작합니다."
 
 #, python-format
@@ -587,6 +587,12 @@ msgstr "콘테스트가 시작하기 전까지:"
 msgid "Until contest ends:"
 msgstr "콘테스트가 끝나기 전까지:"
 
+msgid "Until analysis starts:"
+msgstr "리뷰가 시작하기 전까지:"
+
+msgid "Until analysis ends:"
+msgstr "리뷰가 끝나기 전까지:"
+
 msgid "Time left:"
 msgstr "남은 시간:"
 
@@ -715,6 +721,29 @@ msgstr "콘테스트는 이미 끝났습니다."
 #, python-format
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr "콘테스트는 %(start_time)s에 시작하였고 %(stop_time)s에 끝났습니다."
+
+msgid "The analysis mode hasn't started yet."
+msgstr "리뷰가 아직 시작하지 않았습니다."
+
+#, python-format
+msgid ""
+"The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "리뷰는 %(start_time)s에 시작하여 %(stop_time)s에 끝이 날 것입니다."
+
+msgid "The analysis mode is currently running."
+msgstr "리뷰가 현재 진행 중에 있습니다."
+
+#, python-format
+msgid ""
+"The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr "리뷰는 %(start_time)s에 시작하였고 %(stop_time)s에 끝이 날 것입니다."
+
+msgid "The analysis mode has already ended."
+msgstr "리뷰는 이미 끝났습니다."
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
+msgstr "리뷰는 %(start_time)s에 시작하였고 %(stop_time)s에 끝났습니다."
 
 msgid "You have an infinite number of tokens."
 msgstr "토큰을 무제한으로 사용할 수 있습니다."
@@ -983,11 +1012,11 @@ msgstr "컴파일 명령어"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
 "\">contest overview page</a>."
 msgstr ""
-"%(type_pl)s를 위한 규칙은 <a href=\"%(contest_root)s/\">시험 개요 페이지</a>에서 "
-"찾을 수 있습니다."
+"%(type_pl)s를 위한 규칙은 <a href=\"%(contest_root)s/\">시험 개요 페이지</a>"
+"에서 찾을 수 있습니다."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
@@ -1053,6 +1082,9 @@ msgstr "총 점수"
 msgid "Score"
 msgstr "점수"
 
+msgid "Official"
+msgstr "공식"
+
 msgid "Token"
 msgstr "토큰"
 
@@ -1095,4 +1127,3 @@ msgstr "실행 결과"
 
 #~ msgid "All sources must be in the same language."
 #~ msgstr "모든 소스들은 동일한 프로그래밍 언어를 사용하여야 합니다."
-
