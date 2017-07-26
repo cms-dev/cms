@@ -169,7 +169,7 @@ class CpsTaskLoader(TaskLoader):
         if data["task_type"] == 'OutputOnly':
             args["submission_format"] = list()
             for codename in testcase_codenames:
-                args["submission_format"].append(SubmissionFormatElement("output_%s.txt" % codename))
+                args["submission_format"].append(SubmissionFormatElement("%s.out" % codename))
         elif data["task_type"] == 'Notice':
             args["submission_format"] = list()
         else:
@@ -193,8 +193,10 @@ class CpsTaskLoader(TaskLoader):
         # args['token_gen_number'] = 1
         # args['token_gen_interval'] = make_timedelta(1800)
         # args['token_gen_max'] = 2
-
-        args['score_precision'] = 2
+        if "score_precision" in data:
+            args['score_precision'] = int(data["score_precision"])
+        else:
+            args['score_precision'] = 2
         args['max_submission_number'] = 50
         args['max_user_test_number'] = 50
         if data["task_type"] == 'OutputOnly':
@@ -225,7 +227,7 @@ class CpsTaskLoader(TaskLoader):
         if os.path.exists(checker_src):
             logger.info("Checker found, compiling")
             checker_exe = os.path.join(checker_dir, "checker")
-            os.system("g++ -x c++ -O2 -static -o %s %s" %
+            os.system("g++ -x c++ -std=gnu++14 -O2 -static -o %s %s" %
                       (checker_exe, checker_src))
             digest = self.file_cacher.put_file_from_path(
                 checker_exe,
@@ -250,7 +252,7 @@ class CpsTaskLoader(TaskLoader):
             pas_manager_path = os.path.join(graders_dir, pas_manager)
             if not os.path.exists(pas_manager_path):
                 digest = self.file_cacher.put_file_content(
-                    '', 'Pascal manager for task %s' % name)
+                    ''.encode('utf-8'), 'Pascal manager for task %s' % name)
                 args["managers"][pas_manager] = Manager(pas_manager, digest)
 
         if not os.path.exists(graders_dir):
