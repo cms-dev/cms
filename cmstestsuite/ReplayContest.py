@@ -101,11 +101,6 @@ def submit(timestamp, username, password, t_id, t_short,
     shutil.rmtree(temp_dir)
 
 
-def convert_to_float(time):
-    h, m, s = str(time).split(':')
-    return float(h)*3600 + float(m)*60 + float(s)
-
-
 def replay_contest(contest_id, start_from, duration, cws_address,
                    speed, task_id, user_id, submission_id):
     with SessionGen() as session:
@@ -134,8 +129,8 @@ def replay_contest(contest_id, start_from, duration, cws_address,
                     submissions = valid_submission.\
                         order_by(Submission.timestamp).\
                         slice(index, index + NUMBER_OF_SUBMISSION_IN_RAM)
-            timestamp = convert_to_float(
-                submissions[ind].timestamp - contest.start)
+            timestamp = (submissions[ind].timestamp - contest.start)\
+                .total_seconds()
             if start_from is not None and timestamp < start_from:
                 continue
             end_time = duration
