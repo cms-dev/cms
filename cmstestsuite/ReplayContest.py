@@ -131,18 +131,12 @@ def replay_contest(contest_id, start_from, duration, cws_address,
                         slice(index, index + NUMBER_OF_SUBMISSION_IN_RAM)
             timestamp = (submissions[ind].timestamp - contest.start)\
                 .total_seconds()
-            if start_from is not None and timestamp < start_from:
+            if timestamp < start_from:
                 continue
-            end_time = duration
-            if start_from is not None:
-                end_time += start_from
-            if duration is not None and timestamp > end_time:
+            if duration is not None and timestamp > duration + start_from:
                 break
             if start is None:
-                if start_from is not None:
-                    start = time.time() - start_from
-                else:
-                    start = time.time()
+                start = time.time() - start_from
             username = submissions[ind].participation.user.username
             if submissions[ind].participation.password is not None:
                 password = submissions[ind].participation.password[10:]
@@ -204,12 +198,11 @@ def main():
     args = parser.parse_args()
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
-    start_from = None
+    start_from = 0
     if args.resume is not None:
         try:
-            start_from = int(args.resume[6:8]) + \
-                         int(args.resume[3:5]) * 60 + \
-                         int(args.resume[0:2]) * 3600
+            h, m, s = args.resume.split(':')
+            start_from = int(h)*3600 + int(m)*60 + int(s)
         except:
             msg = "Invalid resume time %s, format is %%H:%%M:%%S" % args.resume
             logger.critical(msg)
@@ -218,9 +211,8 @@ def main():
     duration = None
     if args.duration is not None:
         try:
-            duration = int(args.duration[6:8]) + \
-                         int(args.duration[3:5]) * 60 + \
-                         int(args.duration[0:2]) * 3600
+            h, m, s = args.duration.split(':')
+            duration = int(h)*3600 + int(m)*60 + int(s)
         except:
             msg = "Invalid duration %s, format is %%H:%%M:%%S" % args.duration
             logger.critical(msg)
