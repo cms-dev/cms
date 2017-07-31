@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2017 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,6 +38,8 @@ from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Submission, Dataset
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results
+
+from cmscommon.datetime import make_datetime
 
 from .scoringoperations import ScoringOperation, get_operations
 
@@ -114,6 +117,9 @@ class ScoringExecutor(Executor):
 
             # If dataset is the active one, update RWS.
             if dataset is submission.task.active_dataset:
+                logger.info(
+                    "Submission scored %.1f seconds after submission",
+                    (make_datetime() - submission.timestamp).total_seconds())
                 self.proxy_service.submission_scored(
                     submission_id=submission.id)
 
