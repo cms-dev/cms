@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-09 15:50+0100\n"
+"POT-Creation-Date: 2017-08-01 09:52+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,25 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#, python-format
+msgid "Subtask %d"
+msgstr ""
+
+msgid "Outcome"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Execution time"
+msgstr ""
+
+msgid "Memory used"
+msgstr ""
+
+msgid "N/A"
+msgstr ""
 
 msgid "Compilation succeeded"
 msgstr ""
@@ -126,25 +145,6 @@ msgstr ""
 
 msgid ""
 "Your submission failed because it exited with a return code different from 0."
-msgstr ""
-
-msgid "N/A"
-msgstr ""
-
-#, python-format
-msgid "Subtask %d"
-msgstr ""
-
-msgid "Outcome"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "Execution time"
-msgstr ""
-
-msgid "Memory used"
 msgstr ""
 
 msgid "Not correct"
@@ -306,6 +306,21 @@ msgstr[1] ""
 msgid "You have no limitations on how you use them."
 msgstr ""
 
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Answered in task description"
+msgstr ""
+
+msgid "Invalid question"
+msgstr ""
+
+msgid "No comment"
+msgstr ""
+
 msgid "Question too big!"
 msgstr ""
 
@@ -349,38 +364,6 @@ msgid "Print job received"
 msgstr ""
 
 msgid "Your print job has been received."
-msgstr ""
-
-msgid "Compiling..."
-msgstr ""
-
-msgid "details"
-msgstr ""
-
-msgid "Evaluating..."
-msgstr ""
-
-msgid "Scoring..."
-msgstr ""
-
-msgid "Evaluated"
-msgstr ""
-
-msgid "Token request discarded"
-msgstr ""
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-
-msgid "Token request received"
-msgstr ""
-
-msgid "Your request has been received and applied to the submission."
 msgstr ""
 
 #, python-format
@@ -444,6 +427,38 @@ msgstr ""
 msgid "Your submission has been received and is currently being evaluated."
 msgstr ""
 
+msgid "Compiling..."
+msgstr ""
+
+msgid "details"
+msgstr ""
+
+msgid "Evaluating..."
+msgstr ""
+
+msgid "Scoring..."
+msgstr ""
+
+msgid "Evaluated"
+msgstr ""
+
+msgid "Token request discarded"
+msgstr ""
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr ""
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+
+msgid "Token request received"
+msgstr ""
+
+msgid "Your request has been received and applied to the submission."
+msgstr ""
+
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr ""
@@ -504,6 +519,36 @@ msgstr ""
 msgid "%(seconds)0.3f s"
 msgstr ""
 
+msgid "Communication"
+msgstr ""
+
+msgid "Announcements"
+msgstr ""
+
+msgid "(no subject)"
+msgstr ""
+
+msgid "Questions"
+msgstr ""
+
+msgid "Subject"
+msgstr ""
+
+msgid "Text"
+msgstr ""
+
+msgid "Ask question"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "no answer yet"
+msgstr ""
+
+msgid "Messages"
+msgstr ""
+
 #, python-format
 msgid "Automatic (%s)"
 msgstr ""
@@ -533,9 +578,6 @@ msgid "Password"
 msgstr ""
 
 msgid "Login"
-msgstr ""
-
-msgid "Reset"
 msgstr ""
 
 msgid "New message"
@@ -572,9 +614,6 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
-msgid "Communication"
-msgstr ""
-
 msgid "Statement"
 msgstr ""
 
@@ -597,30 +636,6 @@ msgid "is released under the"
 msgstr ""
 
 msgid "GNU Affero General Public License"
-msgstr ""
-
-msgid "Announcements"
-msgstr ""
-
-msgid "(no subject)"
-msgstr ""
-
-msgid "Questions"
-msgstr ""
-
-msgid "Subject"
-msgstr ""
-
-msgid "Text"
-msgstr ""
-
-msgid "Ask question"
-msgstr ""
-
-msgid "no answer yet"
-msgstr ""
-
-msgid "Messages"
 msgstr ""
 
 msgid "Programming languages and libraries"
@@ -825,12 +840,6 @@ msgstr ""
 
 #, python-format
 msgid "%(mb)d MiB"
-msgstr ""
-
-msgid "Yes"
-msgstr ""
-
-msgid "No"
 msgstr ""
 
 msgid "Print"

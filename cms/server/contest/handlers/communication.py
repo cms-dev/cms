@@ -53,6 +53,13 @@ class CommunicationHandler(ContestHandler):
     @tornado.web.authenticated
     @multi_contest
     def get(self):
+        # Call translate function for precompiled answer
+        self._("Yes")
+        self._("No")
+        self._("Answered in task description")
+        self._("Invalid question")
+        self._("No comment")
+
         self.set_secure_cookie(self.contest.name + "_unread_count", "0")
         self.render("communication.html", **self.r_params)
 
