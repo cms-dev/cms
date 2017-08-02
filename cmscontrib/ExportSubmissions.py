@@ -42,6 +42,9 @@ from cms.grading import languagemanager
 logger = logging.getLogger(__name__)
 
 
+# Templates for the comment at the beginning of the exported submission.
+# Note that output only submissions will contain an initial, C-style formatted
+# comment, so to recover the original file one will need to use tail -n +6.
 _RAW_TEMPLATE_DATA = """
 * user:  %s
 * fname: %s
@@ -50,8 +53,6 @@ _RAW_TEMPLATE_DATA = """
 * score: %s
 * date:  %s
 """
-
-
 TEMPLATE = {
     ".c": "/**%s*/\n" % _RAW_TEMPLATE_DATA,
     ".pas": "(**%s*)\n" % _RAW_TEMPLATE_DATA,
@@ -61,6 +62,7 @@ TEMPLATE = {
 }
 TEMPLATE[".cpp"] = TEMPLATE[".c"]
 TEMPLATE[".java"] = TEMPLATE[".c"]
+TEMPLATE[".txt"] = TEMPLATE[".c"]
 
 
 def filter_top_scoring(results, unique):
@@ -193,10 +195,12 @@ def main():
             name = f_filename
             if name.endswith(".%l"):
                 name = name[:-3]  # remove last 3 chars
-            ext = languagemanager.get_language(s_language).source_extension
+            ext = languagemanager.get_language(s_language).source_extension \
+                if s_language else '.txt'
 
             filename = args.filename.format(id=s_id, name=name, ext=ext,
-                                            time=s_timestamp, user=u_name)
+                                            time=s_timestamp, user=u_name,
+                                            task=t_name)
             filename = os.path.join(args.output_dir, filename)
             if os.path.exists(filename):
                 logger.warning("Skipping file '%s' because it already exists",
