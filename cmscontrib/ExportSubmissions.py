@@ -61,6 +61,7 @@ TEMPLATE = {
 }
 TEMPLATE[".cpp"] = TEMPLATE[".c"]
 TEMPLATE[".java"] = TEMPLATE[".c"]
+TEMPLATE[".txt"] = TEMPLATE[".c"]
 
 
 def filter_top_scoring(results, unique):
@@ -193,10 +194,12 @@ def main():
             name = f_filename
             if name.endswith(".%l"):
                 name = name[:-3]  # remove last 3 chars
-            ext = languagemanager.get_language(s_language).source_extension
+            ext = languagemanager.get_language(s_language).source_extension \
+                  if s_language else '.txt'
 
             filename = args.filename.format(id=s_id, name=name, ext=ext,
-                                            time=s_timestamp, user=u_name)
+                                            time=s_timestamp, user=u_name,
+                                            task=t_name)
             filename = os.path.join(args.output_dir, filename)
             if os.path.exists(filename):
                 logger.warning("Skipping file '%s' because it already exists",
