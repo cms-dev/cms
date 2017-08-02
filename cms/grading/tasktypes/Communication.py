@@ -191,7 +191,7 @@ class Communication(TaskType):
             os.chmod(fifo_in[i], 0o666)
             os.chmod(fifo_out[i], 0o666)
 
-        # First step: we start the manager.
+        # First step: prepare the manager.
         manager_filename = "manager"
         manager_command = ["./%s" % manager_filename]
         for i in indices:
@@ -210,6 +210,21 @@ class Communication(TaskType):
                 filename, digest, executable=True)
         for filename, digest in manager_files_to_get.iteritems():
             sandbox_mgr.create_file_from_storage(filename, digest)
+
+        # Second step: load the executables for the user processes
+        # (done before launching the manager so that it does not
+        # impact its wall clock time).
+        executable_filename = job.executables.keys()[0]
+        executables_to_get = {
+            executable_filename:
+            job.executables[executable_filename].digest
+            }
+        for i in indices:
+            for filename, digest in executables_to_get.iteritems():
+                sandbox_user[i].create_file_from_storage(
+                    filename, digest, executable=True)
+
+        # Third step: start the manager.
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
@@ -219,14 +234,8 @@ class Communication(TaskType):
             writable_files=["output.txt"],
             stdin_redirect="input.txt")
 
-        # Second step: we start the user submission compiled with the
-        # stub.
+        # Fourth step: start the user submissions compiled with the stub.
         language = get_language(job.language)
-        executable_filename = job.executables.keys()[0]
-        executables_to_get = {
-            executable_filename:
-            job.executables[executable_filename].digest
-            }
         processes = [None for i in indices]
         for i in indices:
             args = [fifo_out[i], fifo_in[i]]
@@ -237,9 +246,6 @@ class Communication(TaskType):
                 main="stub",
                 args=args)
             user_allow_dirs = [fifo_dir[i]]
-            for filename, digest in executables_to_get.iteritems():
-                sandbox_user[i].create_file_from_storage(
-                    filename, digest, executable=True)
             # Assumes that the actual execution of the user solution
             # is the last command in commands, and that the previous
             # are "setup" that doesn't need tight control.
