@@ -92,7 +92,7 @@ def add_testcases(archive, input_template, output_template,
 
 def main():
     """Parse arguments and launch process."""
-    parser = argparse.ArgumentParser(description="Add an admin to CMS.")
+    parser = argparse.ArgumentParser(description="Add testcases to CMS.")
     parser.add_argument("task_name", action="store", type=utf8_decoder,
                         help="task testcases will be attached to")
     parser.add_argument("file", action="store", type=utf8_decoder,
