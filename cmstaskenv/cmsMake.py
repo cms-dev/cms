@@ -77,6 +77,7 @@ def detect_data_dir():
         if os.path.exists(_dir):
             return os.path.abspath(_dir)
 
+
 DATA_DIR = detect_data_dir()
 
 
@@ -340,6 +341,7 @@ def iter_GEN(name):
 
         else:
             testcase, comment = splitted
+            is_trivial = comment.startswith(" ")
             testcase = testcase.strip()
             comment = comment.strip()
             testcase_detected = testcase != ''
@@ -349,9 +351,15 @@ def iter_GEN(name):
             flags = [testcase_detected,
                      copy_testcase_detected,
                      subtask_detected]
-            if len([x for x in flags if x]) > 1:
+
+            flags_count = len([x for x in flags if x])
+
+            if flags_count > 1:
                 raise Exception("No testcase and command in"
                                 " the same line allowed")
+
+            if flags_count == 0 and not is_trivial:
+                raise Exception("Unrecognized non-trivial line")
 
             if testcase_detected:
                 yield (False, testcase, st)
@@ -756,6 +764,7 @@ def main():
         # After all work, possibly clean the left-overs of testing
         finally:
             clean_test_env()
+
 
 if __name__ == '__main__':
     main()
