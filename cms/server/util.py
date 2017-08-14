@@ -46,6 +46,7 @@ import io
 from cms.db import Session
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_datetime, utc
+from cms.locale import locale_format
 
 
 logger = logging.getLogger(__name__)
@@ -256,7 +257,7 @@ UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 DIMS = list(1024 ** x for x in xrange(9))
 
 
-def format_size(n):
+def format_size(n, _=lambda s: s):
     """Format the given number of bytes.
 
     Return a size, given as a number of bytes, properly formatted
@@ -275,11 +276,12 @@ def format_size(n):
     n = float(n) / DIMS[unit_index]
 
     if n < 10:
-        return "%g %s" % (round(n, 2), UNITS[unit_index])
+        d = 2
     elif n < 100:
-        return "%g %s" % (round(n, 1), UNITS[unit_index])
+        d = 1
     else:
-        return "%g %s" % (round(n, 0), UNITS[unit_index])
+        d = 0
+    return locale_format(_, "{0:g} {1}", round(n, d), UNITS[unit_index])
 
 
 def format_date(dt, timezone, locale=None):

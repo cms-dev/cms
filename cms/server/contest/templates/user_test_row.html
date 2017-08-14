@@ -1,4 +1,5 @@
 {% from cms.server import format_size %}
+{% from cms.locale import locale_format %}
 {% if show_date %}
     {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(t.timestamp, timezone, locale=locale) %}
 {% else %}
@@ -37,7 +38,7 @@
     </td>
 {% else %}
     <td class="time">
-        {{ _("%(seconds)0.3f s") % {'seconds': tr.execution_time} }}
+        {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tr.execution_time) }}
     </td>
 {% end %}
 {% if tr is None or tr.execution_memory is None %}
@@ -46,7 +47,7 @@
     </td>
 {% else %}
     <td class="memory">
-        {{ format_size(tr.execution_memory) }}
+        {{ format_size(tr.execution_memory, _) }}
     </td>
 {% end %}
     <td class="input">

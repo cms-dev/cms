@@ -38,6 +38,7 @@ import gettext
 import io
 import logging
 import os
+import string
 
 from cms import config
 
@@ -174,3 +175,38 @@ def filter_language_codes(lang_codes, prefix_filter):
         lang_codes = ["en"]
 
     return lang_codes
+
+
+class Formatter(string.Formatter):
+    """Locale-aware string formatter class.
+
+    Currently it handles locale-specific decimal marks in decimal numbers.
+
+    """
+    def __init__(self, _):
+        """Initializer.
+
+        _ (function): translation function.
+
+        """
+        # Decimal mark in decimal numbers (e.g., in "3.14")
+        self.decimal_mark = _(".")
+
+    def format_field(self, value, format_spec):
+        """Customized format_field() override."""
+        res = super(Formatter, self).format_field(value, format_spec)
+        if isinstance(value, float):
+            return res.replace(".", self.decimal_mark)
+        else:
+            return res
+
+
+def locale_format(_, fmt, *args, **kwargs):
+    """Locale-aware format function. See the Formatter class
+    for more information.
+
+    _ (function): translation function.
+    fmt (string): format string.
+
+    """
+    return Formatter(_).format(fmt, *args, **kwargs)
