@@ -44,7 +44,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
-* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
+* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``);
+
+* `Rust <https://www.rust-lang.org/>`_ (for Rust, with executable ``rustc``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
@@ -67,7 +69,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
 
     # Optional
     sudo apt-get install nginx-full php7.0-cli php7.0-fpm phppgadmin \
-         texlive-latex-base a2ps gcj-jdk haskell-platform
+         texlive-latex-base a2ps gcj-jdk haskell-platform rustc
 
 Arch Linux
 ----------
@@ -89,7 +91,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
     # Optional
     sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core a2ps \
-         ghc
+         ghc rust
 
 Preparation steps
 =================
