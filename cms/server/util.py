@@ -256,7 +256,8 @@ COMMA_LANGS = [ "et", "lv", "lt", "ru" ]
 
 
 def format_decimal(x, fmt="%g", locale=None):
-    """Return the supplied floating point number formatted according to the given locale.
+    """Return the supplied floating point number formatted according to
+       the given locale.
 
        x (float): the number to format.
        fmt (str): optional format specifier.
@@ -302,11 +303,13 @@ def format_size(n, locale=None):
     n = float(n) / DIMS[unit_index]
 
     if n < 10:
-        return "%s %s" % (format_decimal(round(n, 2), locale=locale), UNITS[unit_index])
+        d = 2
     elif n < 100:
-        return "%s %s" % (format_decimal(round(n, 1), locale=locale), UNITS[unit_index])
+        d = 1
     else:
-        return "%s %s" % (format_decimal(round(n, 0), locale=locale), UNITS[unit_index])
+        d = 0
+    return "%s %s" % \
+        (format_decimal(round(n, d), locale=locale), UNITS[unit_index])
 
 
 def format_date(dt, timezone, locale=None):

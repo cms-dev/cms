@@ -98,8 +98,9 @@ class ScoreType(object):
         return (string): the message to show.
 
         """
-        return "%s / %s" % (format_decimal(round(score, score_precision), locale=locale),
-                            format_decimal(round(max_score, score_precision), locale=locale))
+        return "%s / %s" % \
+            (format_decimal(round(score, score_precision), locale=locale),
+            format_decimal(round(max_score, score_precision), locale=locale))
 
     def get_html_details(self, score_details, locale=None):
         """Return an HTML string representing the score details of a
