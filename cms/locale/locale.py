@@ -133,6 +133,12 @@ def wrap_translations_for_tornado(trans):
         return translate(message, plural_message, count)
     trans.pgettext = pgettext
 
+    # Add the "code" field
+    if isinstance(trans, gettext.GNUTranslations) and "language" in trans.info():
+        trans.code = trans.info()["language"]
+    else:
+        trans.code = ""
+
     return trans
 
 

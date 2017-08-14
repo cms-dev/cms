@@ -1,7 +1,7 @@
 {% extends contest.html %}
 {% block core %}
 
-{% from cms.server import format_token_rules, format_datetime_smart %}
+{% from cms.server import format_token_rules, format_datetime_smart, format_decimal %}
 {% from cms.grading.tasktypes import get_task_type %}
 
 <div class="span9">
@@ -198,9 +198,9 @@
             <td>
     {% if t_iter.active_dataset.time_limit is not None %}
         {% if t_iter.active_dataset.time_limit == 1.0 %}
-            {{ _("%(seconds)g second") % {"seconds": t_iter.active_dataset.time_limit} }}
+            {{ _("%s second") % format_decimal(t_iter.active_dataset.time_limit, locale=locale) }}
         {% else %}
-            {{ _("%(seconds)g seconds") % {"seconds": t_iter.active_dataset.time_limit} }}
+            {{ _("%s seconds") % format_decimal(t_iter.active_dataset.time_limit, locale=locale) }}
         {% end %}
     {% else %}
         {{ _("N/A") }}

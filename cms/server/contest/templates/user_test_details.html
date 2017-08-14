@@ -1,5 +1,5 @@
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size %}
+{% from cms.server import format_size, format_decimal %}
 
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
@@ -20,7 +20,7 @@
 {% if tr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ _("%(seconds)0.3f s") % {'seconds': tr.compilation_time} }}
+    {{ _("%s s") % format_decimal(tr.compilation_time, "%0.3f", locale=locale) }}
 {% end %}
             </td>
         </tr>
@@ -29,7 +29,7 @@
 {% if tr.compilation_memory is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ format_size(tr.compilation_memory) }}
+    {{ format_size(tr.compilation_memory, locale=locale) }}
 {% end %}
             </td>
         </tr>

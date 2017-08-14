@@ -46,7 +46,7 @@ class Sum(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size %}
+{% from cms.server import format_size, format_decimal %}
 <table class="testcase-list">
     <thead>
         <tr>
@@ -72,14 +72,14 @@ class Sum(ScoreTypeAlone):
             <td class="details">{{ format_status_text(tc["text"], _) }}</td>
             <td class="execution-time">
             {% if tc["time"] is not None %}
-                {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
+                {{ _("%s s") % format_decimal(tc["time"], "%0.3f", locale=locale) }}
             {% else %}
                 {{ _("N/A") }}
             {% end %}
             </td>
             <td class="memory-used">
             {% if tc["memory"] is not None %}
-                {{ format_size(tc["memory"]) }}
+                {{ format_size(tc["memory"], locale=locale) }}
             {% else %}
                 {{ _("N/A") }}
             {% end %}

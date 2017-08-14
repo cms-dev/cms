@@ -252,11 +252,38 @@ def actual_phase_required(*actual_phases):
     return decorator
 
 
+COMMA_LANGS = [ "et", "lv", "lt", "ru" ]
+
+
+def format_decimal(x, fmt="%g", locale=None):
+    """Return the supplied floating point number formatted according to the given locale.
+
+       x (float): the number to format.
+       fmt (str): optional format specifier.
+
+       return (str): the text representation of x in the given locale.
+
+    """
+
+    if not locale:
+        locale = tornado.locale.get()
+
+    # Determine the locale-specific decimal separator
+    for lang in COMMA_LANGS:
+        if locale.code.startswith(lang):
+            sep = ","
+            break
+    else:
+        sep = "."
+
+    return (fmt % x).replace(".", sep)
+
+
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 DIMS = list(1024 ** x for x in xrange(9))
 
 
-def format_size(n):
+def format_size(n, locale=None):
     """Format the given number of bytes.
 
     Return a size, given as a number of bytes, properly formatted
@@ -275,11 +302,11 @@ def format_size(n):
     n = float(n) / DIMS[unit_index]
 
     if n < 10:
-        return "%g %s" % (round(n, 2), UNITS[unit_index])
+        return "%s %s" % (format_decimal(round(n, 2), locale=locale), UNITS[unit_index])
     elif n < 100:
-        return "%g %s" % (round(n, 1), UNITS[unit_index])
+        return "%s %s" % (format_decimal(round(n, 1), locale=locale), UNITS[unit_index])
     else:
-        return "%g %s" % (round(n, 0), UNITS[unit_index])
+        return "%s %s" % (format_decimal(round(n, 0), locale=locale), UNITS[unit_index])
 
 
 def format_date(dt, timezone, locale=None):

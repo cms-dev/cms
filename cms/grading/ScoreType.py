@@ -40,6 +40,9 @@ import logging
 import re
 
 from tornado.template import Template
+import tornado.locale
+
+from cms.server import format_decimal
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +78,7 @@ class ScoreType(object):
 
     @staticmethod
     def format_score(score, max_score, unused_score_details,
-                     score_precision, unused_translator=None):
+                     score_precision, locale=None):
         """Produce the string of the score that is shown in CWS.
 
         In the submission table in the task page of CWS the global
@@ -90,38 +93,38 @@ class ScoreType(object):
             the ScoreType produced for the submission when scoring it.
         score_precision (int): the maximum number of digits of the
             fractional digits to show.
-        unused_translator (function): a function to localize text.
+        locale (tornado.locale): user locale.
 
         return (string): the message to show.
 
         """
-        return "%g / %g" % (round(score, score_precision),
-                            round(max_score, score_precision))
+        return "%s / %s" % (format_decimal(round(score, score_precision), locale=locale),
+                            format_decimal(round(max_score, score_precision), locale=locale))
 
-    def get_html_details(self, score_details, translator=None):
+    def get_html_details(self, score_details, locale=None):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (unicode): the data saved by the score type
             itself in the database; can be public or private.
-        translator (function|None): the function to localize strings,
-            or None to use the identity.
+        locale (tornado.locale): user locale.
 
         return (string): an HTML string representing score_details.
 
         """
-        if translator is None:
-            translator = lambda string: string
+        if not locale:
+            locale = tornado.locale.get()
+        _ = locale.translate
         try:
             score_details = json.loads(score_details)
         except (TypeError, ValueError):
             # TypeError raised if score_details is None
             logger.error("Found a null or non-JSON score details string. "
                          "Try invalidating scores.")
-            return translator("Score details temporarily unavailable.")
+            return _("Score details temporarily unavailable.")
         else:
             return Template(self.TEMPLATE).generate(details=score_details,
-                                                    _=translator)
+                                                    locale=locale, _=_)
 
     def max_scores(self):
         """Returns the maximum score that one could aim to in this
@@ -190,7 +193,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size %}
+{% from cms.server import format_size, format_decimal %}
 {% set idx = 0 %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -210,7 +213,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ '%g' % round(st["score"], 2) }} / {{ st["max_score"] }})
+            ({{ format_decimal(round(st["score"], 2), locale=locale) }} / {{ format_decimal(st["max_score"], locale=locale) }})
         </span>
     {% else %}
         <span class="score">
@@ -247,14 +250,14 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
+                        {{ _("%s s") % format_decimal(tc["time"], "%0.3f", locale=locale) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
                     </td>
                     <td class="memory-used">
             {% if "memory" in tc and tc["memory"] is not None %}
-                        {{ format_size(tc["memory"]) }}
+                        {{ format_size(tc["memory"], locale=locale) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
