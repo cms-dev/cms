@@ -42,7 +42,7 @@ import re
 from tornado.template import Template
 import tornado.locale
 
-from cms.server import format_decimal
+from cms.locale import Formatter
 
 
 logger = logging.getLogger(__name__)
@@ -98,9 +98,10 @@ class ScoreType(object):
         return (string): the message to show.
 
         """
-        return "%s / %s" % \
-            (format_decimal(round(score, score_precision), locale=locale),
-            format_decimal(round(max_score, score_precision), locale=locale))
+        if not locale:
+            locale = tornado.locale.get()
+        return Formatter(locale).format("{0:g} / {1:g}",
+            round(score, score_precision), round(max_score, score_precision))
 
     def get_html_details(self, score_details, locale=None):
         """Return an HTML string representing the score details of a
@@ -194,7 +195,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size, format_decimal %}
+{% from cms.server import format_size %}
+{% from cms.locale import Formatter %}
 {% set idx = 0 %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -214,7 +216,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ format_decimal(round(st["score"], 2), locale=locale) }} / {{ format_decimal(st["max_score"], locale=locale) }})
+            ({{ Formatter(locale).format("{0:g} / {1:g}", round(st["score"], 2), st["max_score"]) }})
         </span>
     {% else %}
         <span class="score">
@@ -251,7 +253,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ _("%s s") % format_decimal(tc["time"], "%0.3f", locale=locale) }}
+                        {{ Formatter(locale).format(_("{seconds:0.3f} s"), seconds=tc["time"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}

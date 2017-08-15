@@ -1,5 +1,6 @@
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size, format_decimal %}
+{% from cms.server import format_size %}
+{% from cms.locale import Formatter %}
 
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
@@ -20,7 +21,7 @@
 {% if tr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ _("%s s") % format_decimal(tr.compilation_time, "%0.3f", locale=locale) }}
+    {{ Formatter(locale).format(_("{seconds:0.3f} s"), seconds=tr.compilation_time) }}
 {% end %}
             </td>
         </tr>

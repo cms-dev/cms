@@ -38,6 +38,7 @@ import gettext
 import io
 import logging
 import os
+import string
 
 from cms import config
 
@@ -181,3 +182,35 @@ def filter_language_codes(lang_codes, prefix_filter):
         lang_codes = ["en"]
 
     return lang_codes
+
+
+class Formatter(string.Formatter):
+    """Locale-aware string formatter class.
+
+    Currently it handles locale-specific decimal separators in
+    floating point numbers.
+
+    """
+    COMMA_LANGS = [ "et", "lv", "lt", "ru" ]
+
+    def __init__(self, locale):
+        """Initializer.
+
+        locale (tornado.locale): user locale.
+
+        """
+        # Determine the locale-specific decimal separator
+        for lang in self.COMMA_LANGS:
+            if locale.code.startswith(lang):
+                self.separator = ","
+                break
+        else:
+            self.separator = "."
+
+    def format_field(self, value, format_spec):
+        """Customized format_field() override."""
+        res = super(Formatter, self).format_field(value, format_spec)
+        if isinstance(value, float):
+            return res.replace(".", self.separator)
+        else:
+            return res

@@ -46,6 +46,7 @@ import io
 from cms.db import Session
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_datetime, utc
+from cms.locale import Formatter
 
 
 logger = logging.getLogger(__name__)
@@ -252,34 +253,6 @@ def actual_phase_required(*actual_phases):
     return decorator
 
 
-COMMA_LANGS = [ "et", "lv", "lt", "ru" ]
-
-
-def format_decimal(x, fmt="%g", locale=None):
-    """Return the supplied floating point number formatted according to
-       the given locale.
-
-       x (float): the number to format.
-       fmt (str): optional format specifier.
-
-       return (str): the text representation of x in the given locale.
-
-    """
-
-    if not locale:
-        locale = tornado.locale.get()
-
-    # Determine the locale-specific decimal separator
-    for lang in COMMA_LANGS:
-        if locale.code.startswith(lang):
-            sep = ","
-            break
-    else:
-        sep = "."
-
-    return (fmt % x).replace(".", sep)
-
-
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 DIMS = list(1024 ** x for x in xrange(9))
 
@@ -295,6 +268,9 @@ def format_size(n, locale=None):
     if n == 0:
         return '0 B'
 
+    if not locale:
+        locale = tornado.locale.get()
+
     # Use the last unit that's smaller than n
     try:
         unit_index = next(i for i, x in enumerate(DIMS) if n < x) - 1
@@ -308,8 +284,7 @@ def format_size(n, locale=None):
         d = 1
     else:
         d = 0
-    return "%s %s" % \
-        (format_decimal(round(n, d), locale=locale), UNITS[unit_index])
+    return Formatter(locale).format("{0:g} {1}", round(n, d), UNITS[unit_index])
 
 
 def format_date(dt, timezone, locale=None):

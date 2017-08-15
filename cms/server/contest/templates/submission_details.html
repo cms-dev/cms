@@ -1,5 +1,6 @@
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size, format_decimal %}
+{% from cms.server import format_size %}
+{% from cms.locale import Formatter %}
 
 {% if details is not None %}
 <div class="score_details">
@@ -21,7 +22,7 @@
 {% if sr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ _("%s s") % format_decimal(sr.compilation_time, "%0.3f", locale=locale) }}
+    {{ Formatter(locale).format(_("{seconds:0.3f} s"), seconds=sr.compilation_time) }}
 {% end %}
             </td>
         </tr>
