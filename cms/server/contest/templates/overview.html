@@ -199,9 +199,9 @@
             <td>
     {% if t_iter.active_dataset.time_limit is not None %}
         {% if t_iter.active_dataset.time_limit == 1.0 %}
-            {{ Formatter(locale).format(_("{seconds} second"), seconds=t_iter.active_dataset.time_limit) }}
+            {{ Formatter(locale).format(_("{seconds:g} second"), seconds=t_iter.active_dataset.time_limit) }}
         {% else %}
-            {{ Formatter(locale).format(_("{seconds} seconds"), seconds=t_iter.active_dataset.time_limit) }}
+            {{ Formatter(locale).format(_("{seconds:g} seconds"), seconds=t_iter.active_dataset.time_limit) }}
         {% end %}
     {% else %}
         {{ _("N/A") }}
