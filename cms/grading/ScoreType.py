@@ -42,7 +42,7 @@ import re
 from tornado.template import Template
 import tornado.locale
 
-from cms.locale import Formatter
+from cms.locale import locale_format
 
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class ScoreType(object):
         """
         if not locale:
             locale = tornado.locale.get()
-        return Formatter(locale).format("{0:g} / {1:g}",
+        return locale_format(locale, "{0:g} / {1:g}",
             round(score, score_precision), round(max_score, score_precision))
 
     def get_html_details(self, score_details, locale=None):
@@ -196,7 +196,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
-{% from cms.locale import Formatter %}
+{% from cms.locale import locale_format %}
 {% set idx = 0 %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -216,7 +216,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ Formatter(locale).format("{0:g} / {1:g}", round(st["score"], 2), st["max_score"]) }})
+            ({{ locale_format(locale, "{0:g} / {1:g}", round(st["score"], 2), st["max_score"]) }})
         </span>
     {% else %}
         <span class="score">
@@ -253,7 +253,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ Formatter(locale).format(_("{seconds:0.3f} s"), seconds=tc["time"]) }}
+                        {{ locale_format(locale, _("{seconds:0.3f} s"), seconds=tc["time"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}

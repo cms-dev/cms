@@ -47,7 +47,7 @@ class Sum(ScoreTypeAlone):
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
-{% from cms.locale import Formatter %}
+{% from cms.locale import locale_format %}
 <table class="testcase-list">
     <thead>
         <tr>
@@ -73,7 +73,7 @@ class Sum(ScoreTypeAlone):
             <td class="details">{{ format_status_text(tc["text"], _) }}</td>
             <td class="execution-time">
             {% if tc["time"] is not None %}
-                {{ Formatter(locale).format(_("{seconds:0.3f} s"), seconds=tc["time"]) }}
+                {{ locale_format(locale, _("{seconds:0.3f} s"), seconds=tc["time"]) }}
             {% else %}
                 {{ _("N/A") }}
             {% end %}

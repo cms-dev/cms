@@ -46,7 +46,7 @@ import io
 from cms.db import Session
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_datetime, utc
-from cms.locale import Formatter
+from cms.locale import locale_format
 
 
 logger = logging.getLogger(__name__)
@@ -284,7 +284,7 @@ def format_size(n, locale=None):
         d = 1
     else:
         d = 0
-    return Formatter(locale).format("{0:g} {1}", round(n, d), UNITS[unit_index])
+    return locale_format(locale, "{0:g} {1}", round(n, d), UNITS[unit_index])
 
 
 def format_date(dt, timezone, locale=None):

@@ -214,3 +214,14 @@ class Formatter(string.Formatter):
             return res.replace(".", self.separator)
         else:
             return res
+
+
+def locale_format(locale, fmt, *args, **kwargs):
+    """Locale-aware format function. See the Formatter class
+    for more information.
+
+    locale (tornado.locale): user locale.
+    fmt (string): format string.
+
+    """
+    return Formatter(locale).format(fmt, *args, **kwargs)
