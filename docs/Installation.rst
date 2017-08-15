@@ -251,6 +251,16 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
     # https://aur.archlinux.org/packages/python2-pypdf2/
 
 
+Configuring the worker machines
+===============================
+
+Worker machines need to be carefully set up in order to ensure that evaluation results are valid and consistent. Just running the evaluations under isolate does not achieve this: for example, if the machine has an active swap partition, memory limit will not be honored.
+
+Apart from validity, there are many possible tweaks to reduce the variability in resource usage of an evaluation.
+
+We suggest following isolate's `guidelines <https://github.com/ioi/isolate/blob/c679ae936d8e8d64e5dab553bdf1b22261324315/isolate.1.txt#L292>`_ for reproducible results.
+
+
 .. _installation_running-cms-non-installed:
 
 Running CMS non-installed
