@@ -171,7 +171,7 @@ msgid "Execution time"
 msgstr "Izpildes laiks"
 
 msgid "Memory used"
-msgstr "Izmantotās atmiņas apjoms"
+msgstr "Izmantotā atmiņa"
 
 msgid "Not correct"
 msgstr "Nepareizs"
@@ -317,9 +317,9 @@ msgstr "Jums netiek piešķirti %(type_pl)s."
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "Katru %(min_interval)g sekundi jūs varat lietot %(type_s)s"
-msgstr[1] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s"
-msgstr[2] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s"
+msgstr[0] "Katru %(min_interval)g sekundi jūs varat lietot %(type_s)s "
+msgstr[1] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s "
+msgstr[2] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -951,7 +951,7 @@ msgid "Compilation time:"
 msgstr "Kompilēšanas laiks:"
 
 msgid "Memory used:"
-msgstr "Izmantotās atmiņas apjoms:"
+msgstr "Izmantotā atmiņa:"
 
 msgid "Standard output"
 msgstr "Standarta izvads"
