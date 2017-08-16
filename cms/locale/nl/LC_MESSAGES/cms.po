@@ -540,8 +540,8 @@ msgid "Executed"
 msgstr "Uitgevoerd"
 
 #, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f seconde"
+msgid "{seconds:0.3f} s"
+msgstr "{seconds:0.3f} seconde"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -859,12 +859,12 @@ msgid "Tokens"
 msgstr "Tokens"
 
 #, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g seconde"
+msgid "{seconds:g} second"
+msgstr "{seconds:g} seconde"
 
 #, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g seconden"
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} seconden"
 
 #, python-format
 msgid "%(mb)d MiB"

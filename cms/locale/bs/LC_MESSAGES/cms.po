@@ -257,8 +257,8 @@ msgid "Executed"
 msgstr "Izvršeno"
 
 #, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f s"
+msgid "{seconds:0.3f} s"
+msgstr "{seconds:0.3f} s"
 
 msgid "%Y-%m-%d"
 msgstr "%Y-%m-%d"
@@ -639,12 +639,12 @@ msgid "Tokens"
 msgstr "Tokeni"
 
 #, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g sekundi"
+msgid "{seconds:g} second"
+msgstr "{seconds:g} sekundi"
 
 #, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g sekundi"
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} sekundi"
 
 #, python-format
 msgid "%(mb)d MiB"
