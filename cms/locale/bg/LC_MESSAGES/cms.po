@@ -344,7 +344,7 @@ msgid "Executed"
 msgstr "Изпълнено"
 
 #, python-format
-msgid "%(seconds)0.3f s"
+msgid "{seconds:0.3f} s"
 msgstr ""
 
 msgid "Too many print jobs!"
@@ -792,12 +792,12 @@ msgid "Tokens"
 msgstr "Жетони"
 
 #, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g секунди"
+msgid "{seconds:g} second"
+msgstr "{seconds:g} секунди"
 
 #, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g секунди"
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} секунди"
 
 #, python-format
 msgid "%(mb)d MiB"

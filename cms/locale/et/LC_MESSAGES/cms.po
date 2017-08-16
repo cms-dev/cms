@@ -283,8 +283,8 @@ msgid "Executed"
 msgstr "Käivitatud"
 
 #, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f s"
+msgid "{seconds:0.3f} s"
+msgstr "{seconds:0.3f} s"
 
 #, fuzzy
 msgid "Too many print jobs!"
@@ -754,12 +754,12 @@ msgid "Tokens"
 msgstr "Piletid"
 
 #, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g s"
+msgid "{seconds:g} second"
+msgstr "{seconds:g} s"
 
 #, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g s"
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} s"
 
 #, python-format
 msgid "%(mb)d MiB"
