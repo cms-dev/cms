@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-09 15:50+0100\n"
+"POT-Creation-Date: 2017-08-16 13:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,6 +129,9 @@ msgid ""
 msgstr ""
 
 msgid "N/A"
+msgstr ""
+
+msgid "Score details temporarily unavailable."
 msgstr ""
 
 #, python-format
@@ -351,38 +354,6 @@ msgstr ""
 msgid "Your print job has been received."
 msgstr ""
 
-msgid "Compiling..."
-msgstr ""
-
-msgid "details"
-msgstr ""
-
-msgid "Evaluating..."
-msgstr ""
-
-msgid "Scoring..."
-msgstr ""
-
-msgid "Evaluated"
-msgstr ""
-
-msgid "Token request discarded"
-msgstr ""
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-
-msgid "Token request received"
-msgstr ""
-
-msgid "Your request has been received and applied to the submission."
-msgstr ""
-
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
@@ -444,6 +415,38 @@ msgstr ""
 msgid "Your submission has been received and is currently being evaluated."
 msgstr ""
 
+msgid "Compiling..."
+msgstr ""
+
+msgid "details"
+msgstr ""
+
+msgid "Evaluating..."
+msgstr ""
+
+msgid "Scoring..."
+msgstr ""
+
+msgid "Evaluated"
+msgstr ""
+
+msgid "Token request discarded"
+msgstr ""
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr ""
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+
+msgid "Token request received"
+msgstr ""
+
+msgid "Your request has been received and applied to the submission."
+msgstr ""
+
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr ""
@@ -500,8 +503,38 @@ msgstr ""
 msgid "Executed"
 msgstr ""
 
-#, python-format
-msgid "%(seconds)0.3f s"
+#, python-brace-format
+msgid "{seconds:0.3f} s"
+msgstr ""
+
+msgid "Communication"
+msgstr ""
+
+msgid "Announcements"
+msgstr ""
+
+msgid "(no subject)"
+msgstr ""
+
+msgid "Questions"
+msgstr ""
+
+msgid "Subject"
+msgstr ""
+
+msgid "Text"
+msgstr ""
+
+msgid "Ask question"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "no answer yet"
+msgstr ""
+
+msgid "Messages"
 msgstr ""
 
 #, python-format
@@ -533,9 +566,6 @@ msgid "Password"
 msgstr ""
 
 msgid "Login"
-msgstr ""
-
-msgid "Reset"
 msgstr ""
 
 msgid "New message"
@@ -572,9 +602,6 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
-msgid "Communication"
-msgstr ""
-
 msgid "Statement"
 msgstr ""
 
@@ -597,30 +624,6 @@ msgid "is released under the"
 msgstr ""
 
 msgid "GNU Affero General Public License"
-msgstr ""
-
-msgid "Announcements"
-msgstr ""
-
-msgid "(no subject)"
-msgstr ""
-
-msgid "Questions"
-msgstr ""
-
-msgid "Subject"
-msgstr ""
-
-msgid "Text"
-msgstr ""
-
-msgid "Ask question"
-msgstr ""
-
-msgid "no answer yet"
-msgstr ""
-
-msgid "Messages"
 msgstr ""
 
 msgid "Programming languages and libraries"
@@ -815,12 +818,12 @@ msgstr ""
 msgid "Tokens"
 msgstr ""
 
-#, python-format
-msgid "%(seconds)g second"
+#, python-brace-format
+msgid "{seconds:g} second"
 msgstr ""
 
-#, python-format
-msgid "%(seconds)g seconds"
+#, python-brace-format
+msgid "{seconds:g} seconds"
 msgstr ""
 
 #, python-format
