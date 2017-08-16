@@ -50,3 +50,14 @@ Sandbox
 - *Symptom.* Contestants' solutions fail when trying to write large outputs.
 
   *Possible cause.* CMS limits the maximum output size from programs being evaluated for security reasons. Currently the limit is 1 GB and can be configured by changing the parameter ``max_file_size`` in :file:`cms.conf`.
+
+Evaluations
+===========
+
+- *Symptom.* Submissions that should  exceed memory limit actually pass or exceed the time limits.
+
+  *Possible cause.* You have an active swap partition on the workers; isolate only limit physical memory, not swap usage. Disable the swap with ``sudo swapoff -a``.
+
+- *Symptom.* Re-running evaluations gives very different time or memory usage.
+
+  *Possible cause.* Make sure the workers are configured in a way to minimize resource usage variability, by following isolate's `guidelines <https://github.com/ioi/isolate/blob/c679ae936d8e8d64e5dab553bdf1b22261324315/isolate.1.txt#L292>`_ for reproducible results.

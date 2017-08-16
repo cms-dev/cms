@@ -44,7 +44,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
-* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``).
+* `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``);
+
+* `Rust <https://www.rust-lang.org/>`_ (for Rust, with executable ``rustc``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
@@ -59,7 +61,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
     sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk \
         fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl \
         postgresql postgresql-client gettext python2.7 \
-        iso-codes shared-mime-info stl-manual cgroup-lite
+        iso-codes shared-mime-info stl-manual cgroup-lite libcap-dev
 
     # Only if you are going to use pip/virtualenv to install python dependencies
     sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev \
@@ -67,7 +69,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
 
     # Optional
     sudo apt-get install nginx-full php7.0-cli php7.0-fpm phppgadmin \
-         texlive-latex-base a2ps gcj-jdk haskell-platform
+         texlive-latex-base a2ps gcj-jdk haskell-platform rustc
 
 Arch Linux
 ----------
@@ -78,7 +80,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
     sudo pacman -S base-devel jre8-openjdk jdk8-openjdk fpc \
          postgresql postgresql-client python2 \
-         iso-codes shared-mime-info
+         iso-codes shared-mime-info libcap
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
@@ -89,7 +91,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
     # Optional
     sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core a2ps \
-         ghc
+         ghc rust
 
 Preparation steps
 =================
@@ -249,6 +251,16 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
     # sudo pacman -S --needed python2-yaml python-sphinx python2-pycups
     # Optionally install the following from AUR.
     # https://aur.archlinux.org/packages/python2-pypdf2/
+
+
+Configuring the worker machines
+===============================
+
+Worker machines need to be carefully set up in order to ensure that evaluation results are valid and consistent. Just running the evaluations under isolate does not achieve this: for example, if the machine has an active swap partition, memory limit will not be honored.
+
+Apart from validity, there are many possible tweaks to reduce the variability in resource usage of an evaluation.
+
+We suggest following isolate's `guidelines <https://github.com/ioi/isolate/blob/c679ae936d8e8d64e5dab553bdf1b22261324315/isolate.1.txt#L292>`_ for reproducible results.
 
 
 .. _installation_running-cms-non-installed:
