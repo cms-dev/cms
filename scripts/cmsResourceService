@@ -47,7 +47,12 @@ def main():
         description="Resource monitor and service starter for CMS.")
     parser.add_argument("-a", "--autorestart", action="store", type=int,
                         nargs="?", const=-1, metavar="CONTEST_ID",
+                        dest="contest_id",
                         help="restart automatically services on its machine")
+    parser.add_argument("-r", dest="autorestart", action="store_true",
+                        default=False,
+                        help="automatically restart services, same as '-a' "
+                             "but in multi-contest mode")
     parser.add_argument("shard", action="store", type=int, nargs="?")
     args = parser.parse_args()
 
@@ -60,17 +65,16 @@ def main():
 
     test_db_connection()
 
-    if args.autorestart is not None:
-        if args.autorestart == -1:
-            success = ResourceService(
-                args.shard, contest_id=ask_for_contest()).run()
+    contest_id = None
+    if args.contest_id is not None:
+        if args.contest_id == -1:
+            contest_id = ask_for_contest()
         else:
-            success = ResourceService(
-                args.shard,
-                contest_id=contest_id_from_args(
-                    args.autorestart, ask_for_contest)).run()
-    else:
-        success = ResourceService(args.shard).run()
+            contest_id = contest_id_from_args(args.autorestart, ask_for_contest)
+    success = ResourceService(args.shard,
+                              contest_id=contest_id,
+                              autorestart=args.autorestart).run()
+
     return 0 if success is True else 1
 
 

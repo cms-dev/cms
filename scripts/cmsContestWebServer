@@ -27,11 +27,10 @@ from __future__ import unicode_literals
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import argparse
 import logging
 import sys
 
-from cms import ConfigError, contest_id_from_args, get_safe_shard, utf8_decoder
+from cms import ConfigError, default_argument_parser
 from cms.db import ask_for_contest, test_db_connection
 from cms.server.contest import ContestWebServer
 
@@ -43,36 +42,10 @@ def main():
     """Parse arguments and launch service.
 
     """
-    parser = argparse.ArgumentParser(
-        description="Contestants' web server for CMS.")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-c", "--contest-id", action="store", type=utf8_decoder,
-                       help="id of the contest to automatically load, "
-                       "or ALL to serve all contests")
-    parser.add_argument("shard", action="store", type=int, nargs="?")
-    args = parser.parse_args()
-
-    try:
-        args.shard = get_safe_shard("ContestWebServer", args.shard)
-    except ValueError:
-        raise ConfigError("Couldn't autodetect shard number and "
-                          "no shard specified for service %s, "
-                          "quitting." % ("ContestWebServer", ))
-
     test_db_connection()
-
-    if args.contest_id == "ALL":
-        success = ContestWebServer(args.shard).run()
-    else:
-        try:
-            if args.contest_id is not None:
-                args.contest_id = int(args.contest_id)
-        except ValueError:
-            logger.critical("Unable to parse contest id `%s'", args.contest_id)
-            return 1
-        success = ContestWebServer(
-            args.shard,
-            contest_id_from_args(args.contest_id, ask_for_contest)).run()
+    success = default_argument_parser("Contestants' web server for CMS.",
+                                      ContestWebServer,
+                                      ask_contest=ask_for_contest).run()
 
     return 0 if success is True else 1
 
