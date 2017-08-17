@@ -218,11 +218,12 @@ def default_argument_parser(description, cls, ask_contest=None):
     # We need to allow using the switch "-c" also for services that do
     # not need the contest_id because RS needs to be able to restart
     # everything without knowing which is which.
-    contest_id_help = "id of the contest to automatically load"
+    contest_id_help = "id of the contest to automatically load, " \
+                      "or ALL to serve all contests"
     if ask_contest is None:
         contest_id_help += " (ignored)"
-    parser.add_argument("-c", "--contest-id", action="store", type=int,
-                        help=contest_id_help)
+    parser.add_argument("-c", "--contest-id", action="store",
+                        type=utf8_decoder, help=contest_id_help)
     args = parser.parse_args()
 
     try:
@@ -230,29 +231,38 @@ def default_argument_parser(description, cls, ask_contest=None):
     except ValueError:
         raise ConfigError("Couldn't autodetect shard number and "
                           "no shard specified for service %s, "
-                          "quitting." % (cls.__name__, ))
+                          "quitting." % (cls.__name__,))
 
     if ask_contest is None:
         return cls(args.shard)
+    contest_id = contest_id_from_args(args.contest_id, ask_contest)
+    if contest_id is None:
+        return cls(args.shard)
     else:
-        return cls(args.shard,
-                   contest_id_from_args(args.contest_id, ask_contest))
+        return cls(args.shard, contest_id)
 
 
 def contest_id_from_args(args_contest_id, ask_contest):
-    """Return a valid contest_id from the arguments
+    """Return a valid contest_id from the arguments or None if multicontest
+    mode should be used
 
     If the passed value is missing, ask the admins with ask_contest.
     If the contest id is invalid, print a message and exit.
 
-    args_contest_id (int|None): the contest_id passed as argument.
-    ask_contest (function|None): a function that returns a contest_id.
+    args_contest_id (int|str|None): the contest_id passed as argument.
+    ask_contest (function): a function that returns a contest_id.
 
     """
     assert ask_contest is not None
 
+    if args_contest_id == "ALL":
+        return None
     if args_contest_id is not None:
-        contest_id = args_contest_id
+        try:
+            contest_id = int(args_contest_id)
+        except ValueError:
+            logger.critical("Unable to parse contest id '%s'", args_contest_id)
+            sys.exit(1)
     else:
         contest_id = ask_contest()
 

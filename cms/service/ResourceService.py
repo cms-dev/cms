@@ -176,7 +176,7 @@ class ResourceService(Service):
     upon request.
 
     """
-    def __init__(self, shard, contest_id=None):
+    def __init__(self, shard, contest_id=None, autorestart=False):
         """If contest_id is not None, we assume the user wants the
         autorestart feature.
 
@@ -184,6 +184,7 @@ class ResourceService(Service):
         Service.__init__(self, shard)
 
         self.contest_id = contest_id
+        self.autorestart = autorestart or (contest_id is not None)
 
         # _local_store is a dictionary indexed by time in int(epoch)
         self._local_store = []
@@ -195,7 +196,7 @@ class ResourceService(Service):
         self._local_services = self._find_local_services()
         # Dict service with bool to mark if we will restart them.
         self._will_restart = dict((service,
-                                   None if self.contest_id is None else True)
+                                   None if not self.autorestart else True)
                                   for service in self._local_services)
         # Found process associate to the ServiceCoord.
         self._procs = dict((service, None)
@@ -207,7 +208,7 @@ class ResourceService(Service):
         self._store_resources(store=False)
 
         self.add_timeout(self._store_resources, None, 5.0)
-        if self.contest_id is not None:
+        if self.autorestart:
             self._launched_processes = set([])
             self.add_timeout(self._restart_services, None, 5.0,
                              immediately=True)
@@ -260,10 +261,12 @@ class ResourceService(Service):
                         ".",
                         "scripts",
                         "cms%s" % service.name)
-                process = subprocess.Popen([command,
-                                            "%d" % service.shard,
-                                            "-c",
-                                            "%d" % self.contest_id],
+                args = [command, "%d" % service.shard]
+                if self.contest_id is not None:
+                    args += ["-c", str(self.contest_id)]
+                else:
+                    args += ["-c", "ALL"]
+                process = subprocess.Popen(args,
                                            stdout=DEVNULL,
                                            stderr=subprocess.STDOUT
                                            )
@@ -453,8 +456,7 @@ class ResourceService(Service):
         return (bool/None): current status of will_restart.
 
         """
-        # If the contest_id is not set, we cannot autorestart.
-        if self.contest_id is None:
+        if not self.autorestart:
             return None
 
         # Decode name,shard
@@ -463,6 +465,11 @@ class ResourceService(Service):
         except ValueError:
             logger.error("Unable to decode service string.")
         name = service[:idx]
+
+        # ProxyService requires contest_id
+        if self.contest_id is None and name == "ProxyService":
+            return None
+
         try:
             shard = int(service[idx + 1:])
         except ValueError:
