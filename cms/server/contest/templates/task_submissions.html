@@ -87,6 +87,12 @@ $(document).ready(function () {
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
 
+{% from cms.grading.tasktypes import get_task_type %}
+{% set task_type = get_task_type(dataset=task.active_dataset) %}
+{% if task_type.ALLOW_PARTIAL_SUBMISSION %}
+  <p><strong>{{ _("You may submit any subset of outputs in a single submission.") }}</strong></p>
+{% end %}
+
 {% if submissions_left is not None %}
     <div class="span5">
         <p>
