@@ -137,13 +137,13 @@
         <td>Failures during evaluation</td>
         <td>{{ sr.evaluation_tries }}</td>
       </tr>
-        {% set t, m = sr.get_used_resources() %}
+        {% set t, m = sr.get_max_evaluation_resources() %}
       <tr>
-        <td>Execution time</td>
+        <td>Max execution time</td>
         <td>{% if t is not None %}{{ t }} s{% else %}N/A{% end %}</td>
       </tr>
       <tr>
-        <td>Memory used</td>
+        <td>Max memory used</td>
         <td>{% if m is not None %}{{ m // (1024 ** 2) }} MiB{% else %}N/A{% end %}</td>
       </tr>
       {% end %}
@@ -230,7 +230,7 @@
             ({{ ev.execution_wall_clock_time }} s)
             {% end %}
             {% if ev.execution_memory is not None %}
-            ({{ (ev.execution_memory // 1024) // 1024 }} MB)
+            ({{ (ev.execution_memory // 1024) // 1024 }} MiB)
             {% end %}
           </td>
           <td>{{ ev.evaluation_sandbox }}</td>

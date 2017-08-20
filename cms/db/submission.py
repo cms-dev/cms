@@ -424,11 +424,12 @@ class SubmissionResult(Base):
             .filter(Evaluation.testcase == testcase)\
             .first()
 
-    def get_used_resources(self):
-        """Return the maximum time and memory used by this SR.
+    def get_max_evaluation_resources(self):
+        """Return the maximum time and memory used by this result
 
-        return (float|None, int|None): max used time and memory,
-            or None if data is incomplete or unavailable.
+        return (float|None, int|None): max used time in seconds and
+            memory in bytes, or None if data is incomplete or
+            unavailable.
 
         """
         t, m = None, None
