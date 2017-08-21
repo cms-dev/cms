@@ -3,6 +3,7 @@
 
 {% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
+{% from cms.locale import locale_format %}
 
 {% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
 
@@ -101,9 +102,9 @@
             <th>{{ _("Time limit") }}</th>
             <td colspan="2">
     {% if task.active_dataset.time_limit == 1.0 %}
-        {{ _("%(seconds)g second") % {"seconds": task.active_dataset.time_limit} }}
+        {{ locale_format(_, _("{seconds:g} second"), seconds=task.active_dataset.time_limit) }}
     {% else %}
-        {{ _("%(seconds)g seconds") % {"seconds": task.active_dataset.time_limit} }}
+        {{ locale_format(_, _("{seconds:g} seconds"), seconds=task.active_dataset.time_limit) }}
     {% end %}
             </td>
         </tr>
@@ -194,7 +195,7 @@
             {% end %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
-                        <span class="size">{{ format_size(file_size) }}</span>
+                        <span class="size">{{ format_size(file_size, _) }}</span>
                     </span>
             {% if type_icon is not None %}
                     <span class="type">{{ _(type_name) }}</span>

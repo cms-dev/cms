@@ -529,8 +529,8 @@ msgid "Executed"
 msgstr "실행 완료"
 
 #, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f 초"
+msgid "{seconds:0.3f} s"
+msgstr "{seconds:0.3f} 초"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -861,12 +861,12 @@ msgid "Tokens"
 msgstr "토큰"
 
 #, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g 초"
+msgid "{seconds:g} second"
+msgstr "{seconds:g} 초"
 
 #, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g 초"
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} 초"
 
 #, python-format
 msgid "%(mb)d MiB"

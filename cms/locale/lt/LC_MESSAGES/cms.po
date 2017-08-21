@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-29 19:38+0000\n"
+"POT-Creation-Date: 2017-08-21 15:35+0300\n"
 "PO-Revision-Date: 2017-03-26 17:00+0300\n"
 "Last-Translator: Vytis Banaitis <vytis.banaitis@gmail.com>\n"
 "Language-Team: Lithuanian\n"
@@ -19,6 +19,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
 "%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. translators: decimal mark in fractions (e.g., in "3.14")
+msgid "."
+msgstr ","
 
 msgid "Compilation succeeded"
 msgstr "Kompiliavimas sėkmingas"
@@ -155,6 +159,9 @@ msgstr "Tavo sprendimo vykdymas nepavyko, nes grąžintas kodas buvo ne nulis."
 
 msgid "N/A"
 msgstr "Nėra"
+
+msgid "Score details temporarily unavailable."
+msgstr ""
 
 #, python-format
 msgid "Subtask %d"
@@ -389,38 +396,6 @@ msgstr "Spausdinimo darbas gautas"
 msgid "Your print job has been received."
 msgstr "Tavo spausdinimo darbas gautas."
 
-msgid "Compiling..."
-msgstr "Kompiliuojama..."
-
-msgid "details"
-msgstr "išsamiai"
-
-msgid "Evaluating..."
-msgstr "Vertinama..."
-
-msgid "Scoring..."
-msgstr "Skaičiuojami taškai..."
-
-msgid "Evaluated"
-msgstr "Įvertinta"
-
-msgid "Token request discarded"
-msgstr "Žetono užklausa atmesta"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Tavo užklausa atmesta, kadangi neturi žetonų."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr "Užklausa buvo atmesta, kadangi šiam sprendimui žetoną jau naudojai."
-
-msgid "Token request received"
-msgstr "Žetono užklausa gauta"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "Tavo užklausa gauta ir įvykdyta pateiktam sprendimui."
-
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
@@ -486,6 +461,38 @@ msgstr "Sprendimas gautas"
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "Tavo sprendimas gautas ir šiuo metu yra vertinamas."
 
+msgid "Compiling..."
+msgstr "Kompiliuojama..."
+
+msgid "details"
+msgstr "išsamiai"
+
+msgid "Evaluating..."
+msgstr "Vertinama..."
+
+msgid "Scoring..."
+msgstr "Skaičiuojami taškai..."
+
+msgid "Evaluated"
+msgstr "Įvertinta"
+
+msgid "Token request discarded"
+msgstr "Žetono užklausa atmesta"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Tavo užklausa atmesta, kadangi neturi žetonų."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr "Užklausa buvo atmesta, kadangi šiam sprendimui žetoną jau naudojai."
+
+msgid "Token request received"
+msgstr "Žetono užklausa gauta"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Tavo užklausa gauta ir įvykdyta pateiktam sprendimui."
+
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "Pasiekei %d testų visoms užduotims limitą."
@@ -546,9 +553,39 @@ msgstr "Vykdoma..."
 msgid "Executed"
 msgstr "Įvykdyta"
 
-#, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f sek."
+#, python-brace-format
+msgid "{seconds:0.3f} s"
+msgstr "{seconds:0.3f} sek."
+
+msgid "Communication"
+msgstr "Bendravimas"
+
+msgid "Announcements"
+msgstr "Pranešimai"
+
+msgid "(no subject)"
+msgstr "(temos nėra)"
+
+msgid "Questions"
+msgstr "Klausimai"
+
+msgid "Subject"
+msgstr "Tema"
+
+msgid "Text"
+msgstr "Tekstas"
+
+msgid "Ask question"
+msgstr "Užduoti klausimą"
+
+msgid "Reset"
+msgstr "Atstatyti"
+
+msgid "no answer yet"
+msgstr "dar neatsakyta"
+
+msgid "Messages"
+msgstr "Žinutės"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -583,9 +620,6 @@ msgstr "Slaptažodis"
 msgid "Login"
 msgstr "Prisijungti"
 
-msgid "Reset"
-msgstr "Atstatyti"
-
 msgid "New message"
 msgstr "Nauja žinutė"
 
@@ -605,6 +639,14 @@ msgstr "Iki varžybų pradžios:"
 msgid "Until contest ends:"
 msgstr "Iki varžybų pabaigos:"
 
+#, fuzzy
+msgid "Until analysis starts:"
+msgstr "Iki varžybų pradžios:"
+
+#, fuzzy
+msgid "Until analysis ends:"
+msgstr "Iki varžybų pabaigos:"
+
 msgid "Time left:"
 msgstr "Likęs laikas:"
 
@@ -613,9 +655,6 @@ msgstr "Serverio laikas:"
 
 msgid "Overview"
 msgstr "Apžvalga"
-
-msgid "Communication"
-msgstr "Bendravimas"
 
 msgid "Statement"
 msgstr "Sąlyga"
@@ -640,30 +679,6 @@ msgstr "yra išleista pagal"
 
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero Bendroji Viešoji Licencija"
-
-msgid "Announcements"
-msgstr "Pranešimai"
-
-msgid "(no subject)"
-msgstr "(temos nėra)"
-
-msgid "Questions"
-msgstr "Klausimai"
-
-msgid "Subject"
-msgstr "Tema"
-
-msgid "Text"
-msgstr "Tekstas"
-
-msgid "Ask question"
-msgstr "Užduoti klausimą"
-
-msgid "no answer yet"
-msgstr "dar neatsakyta"
-
-msgid "Messages"
-msgstr "Žinutės"
 
 msgid "Programming languages and libraries"
 msgstr "Programavimo kalbos ir bibliotekos"
@@ -733,6 +748,32 @@ msgstr "Varžybos jau baigėsi."
 
 #, python-format
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr "Varžybos prasidėjo %(start_time)s, o baigėsi %(stop_time)s."
+
+#, fuzzy
+msgid "The analysis mode hasn't started yet."
+msgstr "Varžybos dar neprasidėjo."
+
+#, fuzzy, python-format
+msgid ""
+"The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "Varžybos prasidės %(start_time)s, o baigsis %(stop_time)s."
+
+#, fuzzy
+msgid "The analysis mode is currently running."
+msgstr "Šiuo metu vyksta varžybos."
+
+#, fuzzy, python-format
+msgid ""
+"The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr "Varžybos prasidėjo %(start_time)s, o baigsis %(stop_time)s."
+
+#, fuzzy
+msgid "The analysis mode has already ended."
+msgstr "Varžybos jau baigėsi."
+
+#, fuzzy, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
 msgstr "Varžybos prasidėjo %(start_time)s, o baigėsi %(stop_time)s."
 
 msgid "You have an infinite number of tokens."
@@ -855,13 +896,13 @@ msgstr "Failai"
 msgid "Tokens"
 msgstr "Žetonai"
 
-#, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g sek."
+#, python-brace-format
+msgid "{seconds:g} second"
+msgstr "{seconds:g} sek."
 
-#, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g sek."
+#, python-brace-format
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} sek."
 
 #, python-format
 msgid "%(mb)d MiB"
@@ -1006,13 +1047,13 @@ msgstr "Nuostatos"
 msgid "Compilation commands"
 msgstr "Kompiliavimo komandos"
 
-#, python-format
+#, fuzzy, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
 "\">contest overview page</a>."
 msgstr ""
-"<a href=\"%(contest_root)s/\">Varžybų apžvalgos puslapyje</a> rasi %(type_pl)s "
-"taisykles."
+"<a href=\"%(contest_root)s/\">Varžybų apžvalgos puslapyje</a> rasi "
+"%(type_pl)s taisykles."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
@@ -1077,6 +1118,9 @@ msgstr "Visi taškai"
 
 msgid "Score"
 msgstr "Taškai"
+
+msgid "Official"
+msgstr ""
 
 msgid "Token"
 msgstr "Žetonas"

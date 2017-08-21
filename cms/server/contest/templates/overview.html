@@ -3,6 +3,7 @@
 
 {% from cms.server import format_token_rules, format_datetime_smart %}
 {% from cms.grading.tasktypes import get_task_type %}
+{% from cms.locale import locale_format %}
 
 <div class="span9">
 
@@ -198,9 +199,9 @@
             <td>
     {% if t_iter.active_dataset.time_limit is not None %}
         {% if t_iter.active_dataset.time_limit == 1.0 %}
-            {{ _("%(seconds)g second") % {"seconds": t_iter.active_dataset.time_limit} }}
+            {{ locale_format(_, _("{seconds:g} second"), seconds=t_iter.active_dataset.time_limit) }}
         {% else %}
-            {{ _("%(seconds)g seconds") % {"seconds": t_iter.active_dataset.time_limit} }}
+            {{ locale_format(_, _("{seconds:g} seconds"), seconds=t_iter.active_dataset.time_limit) }}
         {% end %}
     {% else %}
         {{ _("N/A") }}

@@ -41,6 +41,8 @@ import re
 
 from tornado.template import Template
 
+from cms.locale import locale_format
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ class ScoreType(object):
 
     @staticmethod
     def format_score(score, max_score, unused_score_details,
-                     score_precision, unused_translator=None):
+                     score_precision, _=lambda s: s):
         """Produce the string of the score that is shown in CWS.
 
         In the submission table in the task page of CWS the global
@@ -90,38 +92,34 @@ class ScoreType(object):
             the ScoreType produced for the submission when scoring it.
         score_precision (int): the maximum number of digits of the
             fractional digits to show.
-        unused_translator (function): a function to localize text.
+        _ (function): translation function.
 
         return (string): the message to show.
 
         """
-        return "%g / %g" % (round(score, score_precision),
-                            round(max_score, score_precision))
+        return locale_format(_, "{0:g} / {1:g}",
+            round(score, score_precision), round(max_score, score_precision))
 
-    def get_html_details(self, score_details, translator=None):
+    def get_html_details(self, score_details, _=lambda s: s):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (unicode): the data saved by the score type
             itself in the database; can be public or private.
-        translator (function|None): the function to localize strings,
-            or None to use the identity.
+        _ (function): translation function.
 
         return (string): an HTML string representing score_details.
 
         """
-        if translator is None:
-            translator = lambda string: string
         try:
             score_details = json.loads(score_details)
         except (TypeError, ValueError):
             # TypeError raised if score_details is None
             logger.error("Found a null or non-JSON score details string. "
                          "Try invalidating scores.")
-            return translator("Score details temporarily unavailable.")
+            return _("Score details temporarily unavailable.")
         else:
-            return Template(self.TEMPLATE).generate(details=score_details,
-                                                    _=translator)
+            return Template(self.TEMPLATE).generate(details=score_details, _=_)
 
     def max_scores(self):
         """Returns the maximum score that one could aim to in this
@@ -191,6 +189,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
+{% from cms.locale import locale_format %}
 {% set idx = 0 %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -210,7 +209,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ '%g' % round(st["score"], 2) }} / {{ st["max_score"] }})
+            ({{ locale_format(_, "{0:g} / {1:g}", round(st["score"], 2), st["max_score"]) }})
         </span>
     {% else %}
         <span class="score">
@@ -247,14 +246,14 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
+                        {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tc["time"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
                     </td>
                     <td class="memory-used">
             {% if "memory" in tc and tc["memory"] is not None %}
-                        {{ format_size(tc["memory"]) }}
+                        {{ format_size(tc["memory"], _) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
