@@ -194,6 +194,10 @@ class ResourceService(Service):
         self._prev_cpu_times = self._get_cpu_times()
         # Sorted list of ServiceCoord running in the same machine
         self._local_services = self._find_local_services()
+        if "ProxyService" in (s.name for s in self._local_services) and \
+                self.contest_id is None:
+            logger.warning("Will not run ProxyService "
+                           "since it requires a contest id.")
         # Dict service with bool to mark if we will restart them.
         self._will_restart = dict((service,
                                    None if not self.autorestart else True)
@@ -234,7 +238,9 @@ class ResourceService(Service):
         for service in self._local_services:
             # We let the user start logservice and resourceservice.
             if service.name == "LogService" or \
-                    service.name == "ResourceService":
+                    service.name == "ResourceService" or \
+                    (self.contest_id is None and
+                     service.name == "ProxyService"):
                 continue
 
             # If the user specified not to restart some service, we

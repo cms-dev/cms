@@ -38,6 +38,7 @@ from cms.service.ResourceService import ResourceService
 
 logger = logging.getLogger(__name__)
 
+
 RESTART_DISABLED = "RESTART_DISABLED"
 
 
@@ -50,7 +51,8 @@ def main():
     parser.add_argument("-a", "--autorestart", action="store", nargs="?",
                         type=utf8_decoder, const=None, metavar="CONTEST_ID",
                         dest="contest_id", default=RESTART_DISABLED,
-                        help="restart automatically services on its machine")
+                        help="restart automatically services on its machine; "
+                        "a contest id or 'ALL' can be specified")
     parser.add_argument("shard", action="store", type=int, nargs="?")
     args = parser.parse_args()
 
