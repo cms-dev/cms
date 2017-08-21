@@ -62,9 +62,24 @@ class RankingHandler(BaseHandler):
             .options(joinedload('participations.submissions.results'))\
             .first()
 
+        # Preprocess participations: get data about teams, scores
+        show_teams = False
+        for p in self.contest.participations:
+            show_teams = show_teams or p.team_id
+
+            p.scores = []
+            total_score = 0.0
+            partial = False
+            for task in self.contest.tasks:
+                t_score, t_partial = task_score(p, task)
+                t_score = round(t_score, task.score_precision)
+                p.scores.append((t_score, t_partial))
+                total_score += t_score
+                partial = partial or t_partial
+            total_score = round(total_score, self.contest.score_precision)
+            p.total_score = (total_score, partial)
+
         self.r_params = self.render_params()
-        show_teams = any(map(lambda participation: participation.team_id,
-                             self.contest.participations))
         self.r_params["show_teams"] = show_teams
         if format == "txt":
             self.set_header("Content-Type", "text/plain")
@@ -103,28 +118,22 @@ class RankingHandler(BaseHandler):
             writer.writerow(row)
 
             for p in sorted(contest.participations,
-                            key=lambda p: p.user.username):
+                            key=lambda p: p.total_score, reverse=True):
                 if p.hidden:
                     continue
-
-                score = 0.0
-                partial = False
 
                 row = [p.user.username,
                        "%s %s" % (p.user.first_name, p.user.last_name)]
                 if show_teams:
                     row.append(p.team.name if p.team else "")
-                for task in contest.tasks:
-                    t_score, t_partial = task_score(p, task)
-                    t_score = round(t_score, task.score_precision)
-                    score += t_score
-                    partial = partial or t_partial
-
+                assert len(contest.tasks) == len(p.scores)
+                for t_score, t_partial in p.scores: # Custom field, see above
                     row.append(t_score)
                     if include_partial:
                         row.append("*" if t_partial else "")
 
-                row.append(round(score, contest.score_precision))
+                total_score, partial = p.total_score # Custom field, see above
+                row.append(total_score)
                 if include_partial:
                     row.append("*" if partial else "")
 
