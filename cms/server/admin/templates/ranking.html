@@ -20,6 +20,7 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
     </tr>
   </thead>
   <tbody>
+    {# TODO: Consider client-side sorting #}
     {% for p in sorted(contest.participations, key=lambda p: p.total_score, reverse=True) %}
       {% if not p.hidden %}
     <tr>
@@ -32,10 +33,10 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
         <td></td>
         {% end %}
       {% end %}
-      {% for t_score, t_partial in p.scores %}
+      {% for t_score, t_partial in p.scores %} {# Custom field #}
       <td>{{ t_score }}{% if t_partial %}*{% end %}</td>
       {% end %}
-      {% set total_score, partial = p.total_score %}
+      {% set total_score, partial = p.total_score %} {# Custom field #}
       <td>{{ total_score }}{% if partial %}*{% end %}</td>
     </tr>
       {% end %}

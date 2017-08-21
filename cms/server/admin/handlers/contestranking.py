@@ -127,12 +127,12 @@ class RankingHandler(BaseHandler):
                 if show_teams:
                     row.append(p.team.name if p.team else "")
                 assert len(contest.tasks) == len(p.scores)
-                for t_score, t_partial in p.scores:
+                for t_score, t_partial in p.scores: # Custom field, see above
                     row.append(t_score)
                     if include_partial:
                         row.append("*" if t_partial else "")
 
-                total_score, partial = p.total_score
+                total_score, partial = p.total_score # Custom field, see above
                 row.append(total_score)
                 if include_partial:
                     row.append("*" if partial else "")
