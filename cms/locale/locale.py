@@ -134,13 +134,6 @@ def wrap_translations_for_tornado(trans):
         return translate(message, plural_message, count)
     trans.pgettext = pgettext
 
-    # Add the "code" field
-    if isinstance(trans, gettext.GNUTranslations) and \
-        "language" in trans.info():
-        trans.code = trans.info()["language"]
-    else:
-        trans.code = ""
-
     return trans
 
 
@@ -187,41 +180,33 @@ def filter_language_codes(lang_codes, prefix_filter):
 class Formatter(string.Formatter):
     """Locale-aware string formatter class.
 
-    Currently it handles locale-specific decimal separators in
-    floating point numbers.
+    Currently it handles locale-specific decimal marks in fractions.
 
     """
-    COMMA_LANGS = [ "et", "lv", "lt", "ru" ]
-
-    def __init__(self, locale):
+    def __init__(self, _):
         """Initializer.
 
-        locale (tornado.locale): user locale.
+        _ (function): translation function.
 
         """
-        # Determine the locale-specific decimal separator
-        for lang in self.COMMA_LANGS:
-            if locale.code.startswith(lang):
-                self.separator = ","
-                break
-        else:
-            self.separator = "."
+        # Decimal mark in fractions (e.g., in "3.14")
+        self.decimal_mark = _(".")
 
     def format_field(self, value, format_spec):
         """Customized format_field() override."""
         res = super(Formatter, self).format_field(value, format_spec)
         if isinstance(value, float):
-            return res.replace(".", self.separator)
+            return res.replace(".", self.decimal_mark)
         else:
             return res
 
 
-def locale_format(locale, fmt, *args, **kwargs):
+def locale_format(_, fmt, *args, **kwargs):
     """Locale-aware format function. See the Formatter class
     for more information.
 
-    locale (tornado.locale): user locale.
+    _ (function): translation function.
     fmt (string): format string.
 
     """
-    return Formatter(locale).format(fmt, *args, **kwargs)
+    return Formatter(_).format(fmt, *args, **kwargs)

@@ -22,7 +22,7 @@
 {% if sr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ locale_format(locale, _("{seconds:0.3f} s"), seconds=sr.compilation_time) }}
+    {{ locale_format(_, _("{seconds:0.3f} s"), seconds=sr.compilation_time) }}
 {% end %}
             </td>
         </tr>
@@ -31,7 +31,7 @@
 {% if sr.compilation_memory is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ format_size(sr.compilation_memory, locale=locale) }}
+    {{ format_size(sr.compilation_memory, _) }}
 {% end %}
             </td>
         </tr>

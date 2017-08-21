@@ -480,13 +480,12 @@ class UserTestStatusHandler(ContestHandler):
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Executed"), self._("details"))
             if ur.execution_time is not None:
-                data["time"] = locale_format(self.locale,
+                data["time"] = locale_format(self._,
                     self._("{seconds:0.3f} s"), seconds=ur.execution_time)
             else:
                 data["time"] = None
             if ur.execution_memory is not None:
-                data["memory"] = \
-                    format_size(ur.execution_memory, locale=self.locale)
+                data["memory"] = format_size(ur.execution_memory, self._)
             else:
                 data["memory"] = None
             data["output"] = ur.output is not None

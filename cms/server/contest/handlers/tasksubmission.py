@@ -466,7 +466,7 @@ class SubmissionStatusHandler(ContestHandler):
                     round(sr.public_score, task.score_precision)
                 data["public_score_message"] = score_type.format_score(
                     sr.public_score, score_type.max_public_score,
-                    sr.public_score_details, task.score_precision, self.locale)
+                    sr.public_score_details, task.score_precision, self._)
             if submission.token is not None:
                 data["max_score"] = \
                     round(score_type.max_score, task.score_precision)
@@ -474,7 +474,7 @@ class SubmissionStatusHandler(ContestHandler):
                     round(sr.score, task.score_precision)
                 data["score_message"] = score_type.format_score(
                     sr.score, score_type.max_score,
-                    sr.score_details, task.score_precision, self.locale)
+                    sr.score_details, task.score_precision, self._)
 
         self.write(data)
 
@@ -514,7 +514,7 @@ class SubmissionDetailsHandler(ContestHandler):
                 details = sr.public_score_details
 
             if sr.scored():
-                details = score_type.get_html_details(details, self.locale)
+                details = score_type.get_html_details(details, self._)
             else:
                 details = None
 

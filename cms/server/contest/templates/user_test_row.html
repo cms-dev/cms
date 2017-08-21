@@ -38,7 +38,7 @@
     </td>
 {% else %}
     <td class="time">
-        {{ locale_format(locale, _("{seconds:0.3f} s"), seconds=tr.execution_time) }}
+        {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tr.execution_time) }}
     </td>
 {% end %}
 {% if tr is None or tr.execution_memory is None %}
@@ -47,7 +47,7 @@
     </td>
 {% else %}
     <td class="memory">
-        {{ format_size(tr.execution_memory, locale=locale) }}
+        {{ format_size(tr.execution_memory, _) }}
     </td>
 {% end %}
     <td class="input">
