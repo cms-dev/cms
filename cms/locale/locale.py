@@ -189,7 +189,7 @@ class Formatter(string.Formatter):
         _ (function): translation function.
 
         """
-        # Decimal mark in fractions (e.g., in "3.14")
+        # translators: decimal mark in fractions (e.g., in "3.14")
         self.decimal_mark = _(".")
 
     def format_field(self, value, format_spec):
