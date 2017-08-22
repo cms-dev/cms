@@ -68,6 +68,8 @@ class Communication(TaskType):
     """
     ALLOW_PARTIAL_SUBMISSION = False
 
+    SUBMISSION_PAGE_MESSAGE = ""
+
     name = "Communication"
 
     _NUM_PROCESSES = ParameterTypeInt(

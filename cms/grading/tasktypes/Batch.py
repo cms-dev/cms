@@ -75,6 +75,8 @@ class Batch(TaskType):
     """
     ALLOW_PARTIAL_SUBMISSION = False
 
+    SUBMISSION_PAGE_MESSAGE = ""
+
     _COMPILATION = ParameterTypeChoice(
         "Compilation",
         "compilation",

@@ -2,6 +2,9 @@
 
 {% block additional_js %}
 
+{% from cms.grading.tasktypes import get_task_type %}
+{% set task_type = get_task_type(dataset=task.active_dataset) %}
+
 $(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
@@ -86,6 +89,8 @@ $(document).ready(function () {
 
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
+
+<h4>{% raw task_type.SUBMISSION_PAGE_MESSAGE %}</h4>
 
 {% if submissions_left is not None %}
     <div class="span5">
