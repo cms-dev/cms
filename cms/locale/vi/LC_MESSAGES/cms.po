@@ -521,8 +521,8 @@ msgid "Executed"
 msgstr "Đã chạy xong"
 
 #, python-format
-msgid "%(seconds)0.3f s"
-msgstr "%(seconds)0.3f giây"
+msgid "{seconds:0.3f} s"
+msgstr "{seconds:0.3f} giây"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -838,12 +838,12 @@ msgid "Tokens"
 msgstr "Token"
 
 #, python-format
-msgid "%(seconds)g second"
-msgstr "%(seconds)g giây"
+msgid "{seconds:g} second"
+msgstr "{seconds:g} giây"
 
 #, python-format
-msgid "%(seconds)g seconds"
-msgstr "%(seconds)g giây"
+msgid "{seconds:g} seconds"
+msgstr "{seconds:g} giây"
 
 #, python-format
 msgid "%(mb)d MiB"

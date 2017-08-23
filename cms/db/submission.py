@@ -424,6 +424,21 @@ class SubmissionResult(Base):
             .filter(Evaluation.testcase == testcase)\
             .first()
 
+    def get_max_evaluation_resources(self):
+        """Return the maximum time and memory used by this result
+
+        return (float|None, int|None): max used time in seconds and
+            memory in bytes, or None if data is incomplete or
+            unavailable.
+
+        """
+        t, m = None, None
+        if self.evaluated() and self.evaluations:
+            for ev in self.evaluations:
+                t = max(t, ev.execution_time)
+                m = max(m, ev.execution_memory)
+        return (t, m)
+
     def compiled(self):
         """Return whether the submission result has been compiled.
 
