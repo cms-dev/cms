@@ -103,6 +103,13 @@ class Contest(Base):
         nullable=False,
         default=True)
 
+    # Whether contestants get replied with translated precompiled
+    # answer. (Depends on contestant's localization)
+    is_reply_translatable = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Whether to prevent hidden participations to log in.
     block_hidden_participations = Column(
         Boolean,

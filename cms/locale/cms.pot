@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-21 15:35+0300\n"
+"POT-Creation-Date: 2017-09-01 00:26+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,8 +18,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#. translators: decimal mark in fractions (e.g., in "3.14")
-msgid "."
+msgid "Score details temporarily unavailable."
+msgstr ""
+
+#, python-format
+msgid "Subtask %d"
+msgstr ""
+
+msgid "Outcome"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Execution time"
+msgstr ""
+
+msgid "Memory used"
+msgstr ""
+
+msgid "N/A"
 msgstr ""
 
 msgid "Compilation succeeded"
@@ -130,28 +148,6 @@ msgstr ""
 
 msgid ""
 "Your submission failed because it exited with a return code different from 0."
-msgstr ""
-
-msgid "N/A"
-msgstr ""
-
-msgid "Score details temporarily unavailable."
-msgstr ""
-
-#, python-format
-msgid "Subtask %d"
-msgstr ""
-
-msgid "Outcome"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "Execution time"
-msgstr ""
-
-msgid "Memory used"
 msgstr ""
 
 msgid "Not correct"
@@ -311,6 +307,21 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "You have no limitations on how you use them."
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Answered in task description"
+msgstr ""
+
+msgid "Invalid question"
+msgstr ""
+
+msgid "No comment"
 msgstr ""
 
 msgid "Question too big!"
@@ -834,12 +845,6 @@ msgstr ""
 msgid "%(mb)d MiB"
 msgstr ""
 
-msgid "Yes"
-msgstr ""
-
-msgid "No"
-msgstr ""
-
 msgid "Print"
 msgstr ""
 
@@ -987,6 +992,9 @@ msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr ""
 
 msgid "Submit a solution"
+msgstr ""
+
+msgid "You may submit any subset of outputs in a single submission."
 msgstr ""
 
 #, python-format

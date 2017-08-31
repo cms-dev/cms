@@ -75,6 +75,16 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Whether contestants get replied with translated precompiled answer.
+                                  (Depands on contestant's localization)"></span>
+        <label for="submissions_download_allowed">Is reply translatable</label>
+      </td>
+      <td>
+        <input type="checkbox" id="is_reply_translatable" name="is_reply_translatable" {{ "checked" if contest.is_reply_translatable else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The number of decimal places the scores will be rounded to.
                                   Example: '2' to allow 98.76."></span>
         Score decimal places

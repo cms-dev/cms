@@ -81,7 +81,7 @@
         {% if msg.reply_timestamp is not None %}
     <div class="answer">
             {% if msg.reply_subject != '' %}
-        <h4 class="subject">{{ msg.reply_subject }}</h4>
+        <h4 class="subject">{% if contest.is_reply_translatable %}{{ _(msg.reply_subject) }}{% else %}{{ msg.reply_subject }}{% end %}</h4>
             {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
             {% end %}
