@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-09 15:50+0100\n"
-"PO-Revision-Date: 2017-07-25 07:50+0900\n"
+"POT-Creation-Date: 2017-09-01 00:26+0900\n"
+"PO-Revision-Date: 2017-09-01 00:43+0900\n"
 "Last-Translator: Myungwoo Chun <mc.tamaki@gmail.com>\n"
 "Language-Team: Korean\n"
 "Language: ko\n"
@@ -19,6 +19,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.8.7.1\n"
+
+msgid "Score details temporarily unavailable."
+msgstr "점수 세부 사항에 일시적으로 접근 불가합니다."
+
+#, python-format
+msgid "Subtask %d"
+msgstr "부분문제 %d"
+
+msgid "Outcome"
+msgstr "결과"
+
+msgid "Details"
+msgstr "세부 사항"
+
+msgid "Execution time"
+msgstr "실행 시간"
+
+msgid "Memory used"
+msgstr "메모리 사용량"
+
+msgid "N/A"
+msgstr "N/A"
 
 msgid "Compilation succeeded"
 msgstr "컴파일에 성공하였습니다."
@@ -146,25 +168,6 @@ msgstr "return 값이 0이 아니어서 실행에 실패하였습니다."
 msgid ""
 "Your submission failed because it exited with a return code different from 0."
 msgstr "return 값이 0이 아니어서 제출에 실패했습니다."
-
-msgid "N/A"
-msgstr "N/A"
-
-#, python-format
-msgid "Subtask %d"
-msgstr "부분문제 %d"
-
-msgid "Outcome"
-msgstr "결과"
-
-msgid "Details"
-msgstr "세부 사항"
-
-msgid "Execution time"
-msgstr "실행 시간"
-
-msgid "Memory used"
-msgstr "메모리 사용량"
 
 msgid "Not correct"
 msgstr "틀렸습니다."
@@ -325,6 +328,21 @@ msgstr[1] "총합 최대 %(max_number)d개의 %(type_pl)s를 이용할 수 있�
 msgid "You have no limitations on how you use them."
 msgstr "이들을 사용하는 데에는 제약이 없습니다."
 
+msgid "Yes"
+msgstr "예"
+
+msgid "No"
+msgstr "아니오"
+
+msgid "Answered in task description"
+msgstr "문제에 답이 있음"
+
+msgid "Invalid question"
+msgstr "불가능한 질문"
+
+msgid "No comment"
+msgstr "답할 수 없음"
+
 msgid "Question too big!"
 msgstr "질문이 매우 큽니다!"
 
@@ -369,39 +387,6 @@ msgstr "프린트 요청이 수신되었습니다."
 
 msgid "Your print job has been received."
 msgstr "프린트 요청이 수신되었습니다."
-
-msgid "Compiling..."
-msgstr "컴파일 중..."
-
-msgid "details"
-msgstr "세부 사항"
-
-msgid "Evaluating..."
-msgstr "평가 중..."
-
-msgid "Scoring..."
-msgstr "채점 중..."
-
-msgid "Evaluated"
-msgstr "평가가 완료되었습니다."
-
-msgid "Token request discarded"
-msgstr "토큰 사용에 실패하였습니다."
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "더 이상 남은 토큰이 없어서 토큰 사용에 실패하였습니다."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"이미 해당 제출에 대해 토큰을 사용했기 때문에 토큰 사용에 실패하였습니다."
-
-msgid "Token request received"
-msgstr "토큰 사용에 성공하였습니다."
-
-msgid "Your request has been received and applied to the submission."
-msgstr "토큰이 성공적으로 사용되어 제출 결과를 확인할 수 있습니다."
 
 #, python-format
 msgid ""
@@ -468,6 +453,39 @@ msgstr "제출이 완료되었습니다."
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "제출이 완료되어, 지금 채점 중입니다."
 
+msgid "Compiling..."
+msgstr "컴파일 중..."
+
+msgid "details"
+msgstr "세부 사항"
+
+msgid "Evaluating..."
+msgstr "평가 중..."
+
+msgid "Scoring..."
+msgstr "채점 중..."
+
+msgid "Evaluated"
+msgstr "평가가 완료되었습니다."
+
+msgid "Token request discarded"
+msgstr "토큰 사용에 실패하였습니다."
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "더 이상 남은 토큰이 없어서 토큰 사용에 실패하였습니다."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"이미 해당 제출에 대해 토큰을 사용했기 때문에 토큰 사용에 실패하였습니다."
+
+msgid "Token request received"
+msgstr "토큰 사용에 성공하였습니다."
+
+msgid "Your request has been received and applied to the submission."
+msgstr "토큰이 성공적으로 사용되어 제출 결과를 확인할 수 있습니다."
+
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "모든 문제를 통틀어 총 %d번 이상 테스트할 수 없습니다."
@@ -528,9 +546,39 @@ msgstr "실행 중..."
 msgid "Executed"
 msgstr "실행 완료"
 
-#, python-format
+#, python-brace-format
 msgid "{seconds:0.3f} s"
 msgstr "{seconds:0.3f} 초"
+
+msgid "Communication"
+msgstr "공지사항 및 질문"
+
+msgid "Announcements"
+msgstr "공지사항"
+
+msgid "(no subject)"
+msgstr "(주제 없음)"
+
+msgid "Questions"
+msgstr "질문"
+
+msgid "Subject"
+msgstr "주제"
+
+msgid "Text"
+msgstr "질문 내용"
+
+msgid "Ask question"
+msgstr "질문 보내기"
+
+msgid "Reset"
+msgstr "리셋"
+
+msgid "no answer yet"
+msgstr "아직 답변이 없습니다."
+
+msgid "Messages"
+msgstr "메시지"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -564,9 +612,6 @@ msgstr "비밀번호"
 
 msgid "Login"
 msgstr "로그인"
-
-msgid "Reset"
-msgstr "리셋"
 
 msgid "New message"
 msgstr "새로운 메시지"
@@ -602,9 +647,6 @@ msgstr "서버 시간:"
 msgid "Overview"
 msgstr "시험 개요"
 
-msgid "Communication"
-msgstr "공지사항 및 질문"
-
 msgid "Statement"
 msgstr "문제"
 
@@ -628,30 +670,6 @@ msgstr "is released under the"
 
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero General Public License"
-
-msgid "Announcements"
-msgstr "공지사항"
-
-msgid "(no subject)"
-msgstr "(주제 없음)"
-
-msgid "Questions"
-msgstr "질문"
-
-msgid "Subject"
-msgstr "주제"
-
-msgid "Text"
-msgstr "질문 내용"
-
-msgid "Ask question"
-msgstr "질문 보내기"
-
-msgid "no answer yet"
-msgstr "아직 답변이 없습니다."
-
-msgid "Messages"
-msgstr "메시지"
 
 msgid "Programming languages and libraries"
 msgstr "프로그래밍 언어 및 라이브러리"
@@ -860,23 +878,17 @@ msgstr "제출 파일"
 msgid "Tokens"
 msgstr "토큰"
 
-#, python-format
+#, python-brace-format
 msgid "{seconds:g} second"
 msgstr "{seconds:g} 초"
 
-#, python-format
+#, python-brace-format
 msgid "{seconds:g} seconds"
 msgstr "{seconds:g} 초"
 
 #, python-format
 msgid "%(mb)d MiB"
 msgstr "%(mb)d MiB"
-
-msgid "Yes"
-msgstr "예"
-
-msgid "No"
-msgstr "아니오"
 
 msgid "Print"
 msgstr "프린트"
@@ -1034,6 +1046,9 @@ msgstr "%(name)s (%(short_name)s) <small>제출 파일</small>"
 
 msgid "Submit a solution"
 msgstr "제출하십시오"
+
+msgid "You may submit any subset of outputs in a single submission."
+msgstr "부분 제출이 가능합니다."
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
