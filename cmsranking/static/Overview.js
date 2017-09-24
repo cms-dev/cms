@@ -424,11 +424,17 @@ var Overview = new function () {
 
 
     self.get_score_height = function (score, max_score) {
+        if (max_score <= 0) {
+            return self.height - self.PAD_B;
+        }
         return self.height - self.PAD_B - score / max_score * (self.height - self.PAD_T - self.PAD_B);
     };
 
 
     self.get_rank_height = function (rank, max_rank) {
+        if (max_rank <= 1) {
+            return self.PAD_T;
+        }
         return self.PAD_T + (rank - 1) / (max_rank - 1) * (self.height - self.PAD_T - self.PAD_B);
     };
 
