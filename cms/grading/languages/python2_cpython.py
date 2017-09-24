@@ -52,9 +52,9 @@ class Python2CPython(CompiledLanguage):
                                  source_filenames, executable_filename,
                                  for_evaluation=True):
         """See Language.get_compilation_commands."""
-        py_command = ["/usr/bin/python2", "-m", "py_compile",
+        py_command = ["/usr/bin/python2", "-O", "-m", "py_compile",
                       source_filenames[0]]
-        mv_command = ["/bin/mv", "%s.pyc" % os.path.splitext(os.path.basename(
+        mv_command = ["/bin/mv", "%s.pyo" % os.path.splitext(os.path.basename(
                       source_filenames[0]))[0], executable_filename]
         return [py_command, mv_command]
 
