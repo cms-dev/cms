@@ -31,12 +31,15 @@ import argparse
 import logging
 import sys
 
-from cms import ConfigError, contest_id_from_args, get_safe_shard
+from cms import ConfigError, contest_id_from_args, get_safe_shard, utf8_decoder
 from cms.db import ask_for_contest, test_db_connection
 from cms.service.ResourceService import ResourceService
 
 
 logger = logging.getLogger(__name__)
+
+
+RESTART_DISABLED = "RESTART_DISABLED"
 
 
 def main():
@@ -45,9 +48,11 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Resource monitor and service starter for CMS.")
-    parser.add_argument("-a", "--autorestart", action="store", type=int,
-                        nargs="?", const=-1, metavar="CONTEST_ID",
-                        help="restart automatically services on its machine")
+    parser.add_argument("-a", "--autorestart", action="store", nargs="?",
+                        type=utf8_decoder, const=None, metavar="CONTEST_ID",
+                        dest="contest_id", default=RESTART_DISABLED,
+                        help="restart automatically services on its machine; "
+                        "a contest id or 'ALL' can be specified")
     parser.add_argument("shard", action="store", type=int, nargs="?")
     args = parser.parse_args()
 
@@ -60,17 +65,14 @@ def main():
 
     test_db_connection()
 
-    if args.autorestart is not None:
-        if args.autorestart == -1:
-            success = ResourceService(
-                args.shard, contest_id=ask_for_contest()).run()
-        else:
-            success = ResourceService(
-                args.shard,
-                contest_id=contest_id_from_args(
-                    args.autorestart, ask_for_contest)).run()
-    else:
-        success = ResourceService(args.shard).run()
+    autorestart = args.contest_id != RESTART_DISABLED
+    contest_id = None
+    if autorestart:
+        contest_id = contest_id_from_args(args.contest_id, ask_for_contest)
+    success = ResourceService(args.shard,
+                              contest_id=contest_id,
+                              autorestart=autorestart).run()
+
     return 0 if success is True else 1
 
 
