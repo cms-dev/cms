@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-08-21 15:35+0300\n"
-"PO-Revision-Date: 2017-01-30 17:19+0200\n"
+"PO-Revision-Date: 2017-10-01 17:50+0300\n"
 "Last-Translator: Andrey Vihrov <andrey.vihrov@gmail.com>\n"
 "Language-Team: Latvian\n"
 "Language: lv\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
 "2);\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.4\n"
 
 #. translators: decimal mark in fractions (e.g., in "3.14")
 msgid "."
@@ -162,7 +162,7 @@ msgid "N/A"
 msgstr "Nav pieejams"
 
 msgid "Score details temporarily unavailable."
-msgstr ""
+msgstr "Vērtēšanas detaļas pašlaik nav pieejamas."
 
 #, python-format
 msgid "Subtask %d"
@@ -178,7 +178,7 @@ msgid "Execution time"
 msgstr "Izpildes laiks"
 
 msgid "Memory used"
-msgstr "Izmantotās atmiņas apjoms"
+msgstr "Izmantotā atmiņa"
 
 msgid "Not correct"
 msgstr "Nepareizs"
@@ -324,9 +324,9 @@ msgstr "Jums netiek piešķirti %(type_pl)s."
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "Katru %(min_interval)g sekundi jūs varat lietot %(type_s)s"
-msgstr[1] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s"
-msgstr[2] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s"
+msgstr[0] "Katru %(min_interval)g sekundi jūs varat lietot %(type_s)s "
+msgstr[1] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s "
+msgstr[2] "Katras %(min_interval)g sekundes jūs varat lietot %(type_s)s "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -645,13 +645,11 @@ msgstr "Līdz sacensību sākumam:"
 msgid "Until contest ends:"
 msgstr "Līdz sacensību beigām:"
 
-#, fuzzy
 msgid "Until analysis starts:"
-msgstr "Līdz sacensību sākumam:"
+msgstr "Līdz pēcsacensību režīma sākumam:"
 
-#, fuzzy
 msgid "Until analysis ends:"
-msgstr "Līdz sacensību beigām:"
+msgstr "Līdz pēcsacensību režīma beigām:"
 
 msgid "Time left:"
 msgstr "Atlikušais laiks:"
@@ -758,31 +756,29 @@ msgstr "Sacensības jau ir beigušās."
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr "Sacensības sākās %(start_time)s un beidzās %(stop_time)s."
 
-#, fuzzy
 msgid "The analysis mode hasn't started yet."
-msgstr "Sacensības vēl nav sākušās."
+msgstr "Pēcsacensību režīms vēl nav sācies."
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
-msgstr "Sacensības sāksies %(start_time)s un beigsies %(stop_time)s."
+msgstr "Pēcsacensību režīms sāksies %(start_time)s un beigsies %(stop_time)s."
 
-#, fuzzy
 msgid "The analysis mode is currently running."
-msgstr "Sacensības notiek."
+msgstr "Pēcsacensību režīms ir aktīvs."
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
-msgstr "Sacensības ir sākušās %(start_time)s un beigsies %(stop_time)s."
+msgstr ""
+"Pēcsacensību režīms ir sācies %(start_time)s un beigsies %(stop_time)s."
 
-#, fuzzy
 msgid "The analysis mode has already ended."
-msgstr "Sacensības jau ir beigušās."
+msgstr "Pēcsacensību režīms jau ir beidzies."
 
-#, fuzzy, python-format
+#, python-format
 msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
-msgstr "Sacensības sākās %(start_time)s un beidzās %(stop_time)s."
+msgstr "Pēcsacensību režīms sākās %(start_time)s un beidzās %(stop_time)s."
 
 msgid "You have an infinite number of tokens."
 msgstr "Jums ir neierobežots skaits žetonu."
@@ -992,7 +988,7 @@ msgid "Compilation time:"
 msgstr "Kompilēšanas laiks:"
 
 msgid "Memory used:"
-msgstr "Izmantotās atmiņas apjoms:"
+msgstr "Izmantotā atmiņa:"
 
 msgid "Standard output"
 msgstr "Standarta izvads"
@@ -1063,12 +1059,12 @@ msgstr "Dažas detaļas"
 msgid "Compilation commands"
 msgstr "Kompilēšanas komandas"
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
 "\">contest overview page</a>."
 msgstr ""
-"Jūs varat atrast %(type_pl)s noteikumus <a href=\"%(contest_root)s/"
+"Jūs varat atrast %(type_pl)s noteikumus <a href=\"%(contest_root)s"
 "\">sacensību apskata lapā</a>."
 
 msgid ""
@@ -1137,7 +1133,7 @@ msgid "Score"
 msgstr "Rezultāts"
 
 msgid "Official"
-msgstr ""
+msgstr "Ieskaitīts"
 
 msgid "Token"
 msgstr "Žetons"
