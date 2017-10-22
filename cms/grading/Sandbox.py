@@ -734,6 +734,15 @@ class StupidSandbox(SandboxBase):
         """
         return True
 
+    def cleanup(self):
+        """Cleanup the sandbox.
+
+        To be called at the end of the execution, regardless of
+        whether the sandbox should be deleted or not.
+
+        """
+        pass
+
     def delete(self):
         """Delete the directory where the sandbox operated.
 
@@ -842,14 +851,17 @@ class IsolateSandbox(SandboxBase):
         if os.path.isdir("/etc/alternatives"):
             self.add_mapped_directories(["/etc/alternatives"])
 
-        # Tell isolate to get the sandbox ready.
-        box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
+        # Tell isolate to get the sandbox ready. We do our best to
+        # cleanup after ourselves, but we might have missed something
+        # if the worker was interrupted in the middle of an execution.
+        self.cleanup()
+        init_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
             + ["--box-id=%d" % self.box_id] + ["--init"]
-        ret = subprocess.call(box_cmd)
+        ret = subprocess.call(init_cmd)
         if ret != 0:
             raise SandboxInterfaceException(
                 "Failed to initialize sandbox with command: %s "
-                "(error %d)" % (pretty_print_cmdline(box_cmd), ret))
+                "(error %d)" % (pretty_print_cmdline(init_cmd), ret))
 
     def add_mapped_directories(self, dirs):
         """Add dirs to the external dirs visible to the sandboxed command.
@@ -1314,16 +1326,25 @@ class IsolateSandbox(SandboxBase):
             raise SandboxInterfaceException("Sandbox exit status (%d) unknown"
                                             % exitcode)
 
+    def cleanup(self):
+        """Cleanup the sandbox.
+
+        To be called at the end of the execution, regardless of
+        whether the sandbox should be deleted or not.
+
+        """
+        # Tell isolate to cleanup the sandbox.
+        subprocess.call(
+            [self.box_exec]
+            + (["--cg"] if self.cgroup else [])
+            + ["--box-id=%d" % self.box_id]
+            + ["--cleanup"])
+
     def delete(self):
         """Delete the directory where the sandbox operated.
 
         """
         logger.debug("Deleting sandbox in %s.", self.path)
-
-        # Tell isolate to cleanup the sandbox.
-        box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
-            + ["--box-id=%d" % self.box_id]
-        subprocess.call(box_cmd + ["--cleanup"])
 
         # Delete the working directory.
         rmtree(self.outer_temp_dir)
