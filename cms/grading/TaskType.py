@@ -75,6 +75,7 @@ def delete_sandbox(sandbox, success=True):
     success (boolean): if the job succeeded (no system errors).
 
     """
+    sandbox.cleanup()
     # If the job was not successful, we keep the sandbox around.
     if not success:
         logger.warning("Sandbox %s kept around because job did not succeeded.",
