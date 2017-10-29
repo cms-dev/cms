@@ -1,5 +1,5 @@
 tornado==4.1
-psycopg2==2.6
+psycopg2>=2.6,<2.8
 sqlalchemy>=0.9,<1.1
 netifaces==0.10.4
 pycrypto==2.6.1
