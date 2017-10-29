@@ -1,5 +1,7 @@
 tornado>=4.2,<4.3  # http://www.tornadoweb.org/en/stable/releases.html
-psycopg2>=2.6,<2.7  # http://initd.org/psycopg/articles/tag/release/
+# Last Ubuntu LTS has 2.6, but we allow 2.7 as it has a bugfix which is
+# required to run on Travis (https://github.com/psycopg/psycopg2/issues/489).
+psycopg2>=2.6,<2.8  # http://initd.org/psycopg/articles/tag/release/
 sqlalchemy>=1.0,<1.1  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
 netifaces>=0.10,<0.11  # https://bitbucket.org/al45tair/netifaces/src/
 pycrypto>=2.6,<2.7  # https://github.com/dlitz/pycrypto/blob/master/ChangeLog
