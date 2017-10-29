@@ -744,7 +744,6 @@ class StupidSandbox(SandboxBase):
         pass
 
     def delete(self):
-
         """Delete the directory where the sandbox operated.
 
         """
@@ -855,9 +854,7 @@ class IsolateSandbox(SandboxBase):
         # Tell isolate to get the sandbox ready. We do our best to
         # cleanup after ourselves, but we might have missed something
         # if the worker was interrupted in the middle of an execution.
-        cleanup_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
-            + ["--box-id=%d" % self.box_id] + ["--cleanup"]
-        subprocess.call(cleanup_cmd)
+        self.cleanup()
         init_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
             + ["--box-id=%d" % self.box_id] + ["--init"]
         ret = subprocess.call(init_cmd)
@@ -1337,9 +1334,11 @@ class IsolateSandbox(SandboxBase):
 
         """
         # Tell isolate to cleanup the sandbox.
-        box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
+        subprocess.call(
+            [self.box_exec]
+            + (["--cg"] if self.cgroup else [])
             + ["--box-id=%d" % self.box_id]
-        subprocess.call(box_cmd + ["--cleanup"])
+            + ["--cleanup"])
 
     def delete(self):
         """Delete the directory where the sandbox operated.
