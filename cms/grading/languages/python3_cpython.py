@@ -55,8 +55,8 @@ class Python3CPython(CompiledLanguage):
         basename = os.path.splitext(os.path.basename(source_filenames[0]))[0]
         compilation_program = ";".join([
             "import py_compile as m",
-            "m.compile(\"%s.py\", \"%s\", doraise=True)" % (
-                basename, basename)])
+            "m.compile(%s, %s, doraise=True)" % (
+                repr(basename + ".py"), repr(basename))])
         py_command = ["/usr/bin/python3", "-c", compilation_program]
         return [py_command]
 
