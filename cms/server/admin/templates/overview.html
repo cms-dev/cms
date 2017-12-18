@@ -184,7 +184,7 @@ function update_logs(response)
         strings.push('<td>' + severity + '</td>');
         strings.push('<td>' + coord + '</td>');
         strings.push('<td>' + operation + '</td>');
-        strings.push('<td>' + message + '</td></tr>');
+        strings.push('<td><pre>' + message + '</pre></td></tr>');
     }
 
     table.html(strings.join(""));

@@ -335,7 +335,7 @@ table th {
 table td {
     font-size: 0.875em;
     padding: 0 0.5em;
-    vertical-align: middle;
+    vertical-align: top;
     width: 1px;
     white-space: nowrap;
 }
