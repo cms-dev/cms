@@ -94,7 +94,8 @@ class EvaluationExecutor(Executor):
 
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
-            self.pool.add_worker(worker)
+            gevent.spawn(lambda s, worker: s.pool.add_worker(worker),
+                    self, worker)
 
     def __contains__(self, item):
         """Return whether the item is in execution.
