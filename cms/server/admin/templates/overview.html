@@ -170,8 +170,8 @@ function update_logs(response)
         return;
     }
 
-    var strings = [];
-    response['data'] = response['data'].reverse()
+    var new_table = $('<tbody>');
+    response['data'] = response['data'].reverse();
     for (i in response['data'])
     {
         var message = link_submissions(response['data'][i]['message']);
@@ -180,14 +180,15 @@ function update_logs(response)
         var severity = response['data'][i]['severity'];
         var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
 
-        strings.push('<tr><td>' + timestamp + '</td>');
-        strings.push('<td>' + severity + '</td>');
-        strings.push('<td>' + coord + '</td>');
-        strings.push('<td>' + operation + '</td>');
-        strings.push('<td><pre>' + message + '</pre></td></tr>');
+        var row = $('<tr>');
+        row.append($('<td>').text(timestamp));
+        row.append($('<td>').text(severity));
+        row.append($('<td>').text(coord));
+        row.append($('<td>').text(operation));
+        row.append($('<td>').append($('<pre>').text(message)));
+        new_table.append(row);
     }
-
-    table.html(strings.join(""));
+    table.replaceWith(new_table);
 }
 
 function update_statuses()
