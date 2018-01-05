@@ -17,6 +17,7 @@ install:
   - sudo apt-get install -y fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl
   - sudo apt-get install -y postgresql-client gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite libcap-dev
   - sudo apt-get install -y python-dev libpq-dev libcups2-dev libyaml-dev wget
+  - sudo apt-get install -y mono-mcs
 
   - wget "https://static.rust-lang.org/dist/rust-1.15.1-x86_64-unknown-linux-gnu.tar.gz"
   - tar xf rust-1.15.1-x86_64-unknown-linux-gnu.tar.gz
