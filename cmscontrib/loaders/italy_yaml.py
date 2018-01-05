@@ -9,6 +9,7 @@
 # Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
+# Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -209,6 +210,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         tasks = load(conf, None, ["tasks", "problemi"])
         participations = load(conf, None, ["users", "utenti"])
+        for p in participations:
+            p["password"] = "plaintext:" + p["password"]
 
         # Import was successful
         os.remove(os.path.join(self.path, ".import_error_contest"))
@@ -245,7 +248,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             return None
 
         load(conf, args, "username")
-        load(conf, args, "password")
+        load(conf, args, "password", conv=lambda p: "plaintext:" + p)
 
         load(conf, args, ["first_name", "nome"])
         load(conf, args, ["last_name", "cognome"])
