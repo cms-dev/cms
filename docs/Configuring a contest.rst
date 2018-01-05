@@ -233,3 +233,5 @@ Language details
 * Haskell support is provided by ``ghc``, and submissions are optimized with ``-O2``.
 
 * Rust support is provided by ``rustc``, and submissions are optimized with ``-O``.
+
+* C# uses the system version of the Mono compiler ``mcs`` and the runtime ``mono``. Submissions are optimized with ``-optimize+``.

@@ -46,7 +46,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``);
 
-* `Rust <https://www.rust-lang.org/>`_ (for Rust, with executable ``rustc``).
+* `Rust <https://www.rust-lang.org/>`_ (for Rust, with executable ``rustc``);
+
+* `C# <http://www.mono-project.com/docs/about-mono/languages/csharp/>` (for C#, with executable ``mcs``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
@@ -69,7 +71,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
 
     # Optional
     sudo apt-get install nginx-full php7.0-cli php7.0-fpm phppgadmin \
-         texlive-latex-base a2ps gcj-jdk haskell-platform rustc
+         texlive-latex-base a2ps gcj-jdk haskell-platform rustc mono-mcs
 
 Arch Linux
 ----------
@@ -91,7 +93,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
     # Optional
     sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core a2ps \
-         ghc rust
+         ghc rust mono
 
 Preparation steps
 =================
