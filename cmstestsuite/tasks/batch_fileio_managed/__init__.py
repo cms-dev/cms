@@ -44,6 +44,7 @@ managers = [
     "grader.cpp",
     "grader.pas",
     "grader.java",
+    "grader.cs",
     "checker",
 ]
 
