@@ -42,13 +42,15 @@ LANG_PASCAL = "Pascal / fpc"
 LANG_PHP = "PHP"
 LANG_PYTHON = "Python 2 / CPython"
 LANG_RUST = "Rust"
+LANG_C_SHARP = "C# / Mono"
 ALL_LANGUAGES = (
     LANG_CPP, LANG_C, LANG_HS, LANG_JAVA, LANG_PASCAL, LANG_PHP, LANG_PYTHON,
-    LANG_RUST
+    LANG_RUST, LANG_C_SHARP
 )
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 COMPILED_LANGUAGES = (
-    LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON, LANG_HS, LANG_RUST
+    LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON, LANG_HS, LANG_RUST,
+    LANG_C_SHARP
 )
 
 ALL_TESTS = [
@@ -68,7 +70,7 @@ ALL_TESTS = [
 
     Test('correct-stdio-inner-class',
          task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
-         languages=(LANG_JAVA,),
+         languages=(LANG_JAVA, LANG_C_SHARP),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('correct-fileio',
@@ -196,12 +198,12 @@ ALL_TESTS = [
 
     Test('managed-correct',
          task=batch_fileio_managed, filenames=['managed-correct.%l'],
-         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_C_SHARP),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('managed-incorrect',
          task=batch_fileio_managed, filenames=['managed-incorrect.%l'],
-         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_C_SHARP),
          checks=[CheckOverallScore(0, 100)]),
 
     # Communication tasks. Python and PHP are not yet supported.
