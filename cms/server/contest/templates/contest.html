@@ -16,7 +16,7 @@
 {% from cmscommon.datetime import make_timestamp, utc %}
 {% from cmscommon.isocodes import translate_language_country_code %}
 
-    <script type="text/javascript">
+    <script>
 var LANGUAGES = {
 {% for lang in contest.languages %}
     '{{ lang }}': {
@@ -102,15 +102,15 @@ $(document).ready(function () {
                     {% end %}
                     <fieldset>
                         <div class="control-group">
-                            <label class="control-label" for="input01">{{ _("Username") }}</label>
+                            <label class="control-label" for="username">{{ _("Username") }}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" name="username">
+                                <input type="text" class="input-xlarge" name="username" id="username">
                             </div>
                         </div>
                         <div class="control-group">
-                            <label class="control-label" for="input01">{{ _("Password") }}</label>
+                            <label class="control-label" for="password">{{ _("Password") }}</label>
                             <div class="controls">
-                                <input type="password" class="input-xlarge" name="password">
+                                <input type="password" class="input-xlarge" name="password" id="password">
                             </div>
                         </div>
                         <div class="control-group">
