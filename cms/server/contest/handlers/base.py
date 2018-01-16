@@ -103,7 +103,7 @@ class BaseHandler(CommonRequestHandler):
         that. So far I'm leaving it to minimize changes.
 
         """
-        if hasattr(self, "sql_session"):
+        if hasattr(self, "sql_session") and self.sql_session:
             try:
                 self.sql_session.close()
             except Exception as error:
