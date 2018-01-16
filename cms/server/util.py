@@ -768,6 +768,29 @@ class CommonRequestHandler(RequestHandler):
         self.sql_session.expire_all()
         self.url = create_url_builder(get_url_root(self.request.path))
 
+    def finish(self, *args, **kwargs):
+        """Finish this response, ending the HTTP request.
+
+        We override this method in order to properly close the database.
+
+        TODO - Now that we have greenlet support, this method could be
+        refactored in terms of context manager or something like
+        that. So far I'm leaving it to minimize changes.
+
+        """
+        if self.sql_session is not None:
+            try:
+                self.sql_session.close()
+            except Exception as error:
+                logger.warning("Couldn't close SQL connection: %r", error)
+        try:
+            super(CommonRequestHandler, self).finish(*args, **kwargs)
+        except IOError:
+            # When the client closes the connection before we reply,
+            # Tornado raises an IOError exception, that would pollute
+            # our log with unnecessarily critical messages
+            logger.debug("Connection closed before our reply.")
+
     @property
     def service(self):
         return self.application.service

@@ -310,26 +310,6 @@ class BaseHandler(CommonRequestHandler):
         params["team_list"] = self.sql_session.query(Team).all()
         return params
 
-    def finish(self, *args, **kwds):
-        """Finish this response, ending the HTTP request.
-
-        We override this method in order to properly close the database.
-
-        TODO - Now that we have greenlet support, this method could be
-        refactored in terms of context manager or something like
-        that. So far I'm leaving it to minimize changes.
-
-        """
-        if self.sql_session:  # Request was stopped early, no session to close.
-            self.sql_session.close()
-        try:
-            tornado.web.RequestHandler.finish(self, *args, **kwds)
-        except IOError:
-            # When the client closes the connection before we reply,
-            # Tornado raises an IOError exception, that would pollute
-            # our log with unnecessarily critical messages
-            logger.debug("Connection closed before our reply.")
-
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
                 kwargs["exc_info"][0] != tornado.web.HTTPError:
