@@ -6,21 +6,21 @@
 {% from cmscommon.datetime import make_timestamp %}
 {% from cmscommon.crypto import get_hex_random_key %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
     <link rel="stylesheet" type="text/css" href="{{ url("static", "reset.css") }}">
     <link rel="stylesheet" type="text/css" href="{{ url("static", "aws_style.css") }}">
-    <script type="text/javascript" src="{{ url("static", "web_rpc.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "aws_utils.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "jq", "jquery-1.7.1.min.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "jq", "jquery.jqplot.min.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "sh", "shCore.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "sh", "shBrushCpp.js") }}"></script>
-    <script type="text/javascript" src="{{ url("static", "sh", "shBrushDelphi.js") }}"></script>
+    <script src="{{ url("static", "web_rpc.js") }}"></script>
+    <script src="{{ url("static", "aws_utils.js") }}"></script>
+    <script src="{{ url("static", "jq", "jquery-1.7.1.min.js") }}"></script>
+    <script src="{{ url("static", "jq", "jquery.jqplot.min.js") }}"></script>
+    <script src="{{ url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
+    <script src="{{ url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
+    <script src="{{ url("static", "sh", "shCore.js") }}"></script>
+    <script src="{{ url("static", "sh", "shBrushCpp.js") }}"></script>
+    <script src="{{ url("static", "sh", "shBrushDelphi.js") }}"></script>
     <link rel="stylesheet" type="text/css" href="{{ url("static", "jq", "jquery.jqplot.min.css") }}"/>
     <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shCore.css") }}"/>
     <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shThemeDefault.css") }}"/>
@@ -31,7 +31,7 @@
     <title>Admin: {{ contest.description }}</title>
     {% end %}
 
-    <script type="text/javascript">
+    <script>
 <!--
 function init()
 {
