@@ -161,7 +161,7 @@ class Base(object):
         """
         cls = type(self)
 
-        # Check the number of positional argument
+        # Check the number of positional arguments
         if len(args) > len(self._col_props):
             raise TypeError(
                 "%s.__init__() takes at most %d positional arguments (%d "
@@ -175,72 +175,13 @@ class Base(object):
                     "argument '%s'" % (cls.__name__, prp.key))
             kwargs[prp.key] = arg
 
-        for prp in self._col_props:
-            col = prp.columns[0]
-
-            if prp.key not in kwargs:
-                # We're assuming the default value, if specified, has
-                # the correct type
-                if col.default is None and not col.nullable:
-                    raise TypeError(
-                        "%s.__init__() didn't get required keyword "
-                        "argument '%s'" % (cls.__name__, prp.key))
-                # We're setting the default ourselves, since we may
-                # want to use the object before storing it in the DB.
-                # FIXME This code doesn't work with callable defaults.
-                # We can use the is_callable and is_scalar properties
-                # (and maybe the is_sequence and is_clause_element ones
-                # too) to detect the type. Note that callables require a
-                # ExecutionContext argument (which we don't have).
-                if col.default is not None:
-                    setattr(self, prp.key, col.default.arg)
-            else:
-                val = kwargs.pop(prp.key)
-
-                if val is None:
-                    if not col.nullable:
-                        raise TypeError(
-                            "%s.__init__() got None for keyword argument '%s',"
-                            " which is not nullable" % (cls.__name__, prp.key))
-                    setattr(self, prp.key, val)
-                else:
-                    # TODO col.type.python_type contains the type that
-                    # SQLAlchemy thinks is more appropriate. We could
-                    # use that and drop _TYPE_MAP...
-                    py_type = _TYPE_MAP[type(col.type)]
-                    if not isinstance(val, py_type):
-                        raise TypeError(
-                            "%s.__init__() got a '%s' for keyword argument "
-                            "'%s', which requires a '%s'" %
-                            (cls.__name__, type(val), prp.key, py_type))
-                    if isinstance(col.type, ARRAY):
-                        py_item_type = _TYPE_MAP[type(col.type.item_type)]
-                        for item in val:
-                            if not isinstance(item, py_item_type):
-                                raise TypeError(
-                                    "%s.__init__() got a '%s' inside the list "
-                                    "for keyword argument '%s', which requires "
-                                    "a list of '%s'"
-                                    % (cls.__name__, type(item),
-                                       prp.key, py_item_type))
-                    setattr(self, prp.key, val)
-
-        for prp in self._rel_props:
-            if prp.key not in kwargs:
-                # If the property isn't given we leave the default
-                # value instead of explictly setting it ourself.
-                pass
-            else:
-                val = kwargs.pop(prp.key)
-
-                # TODO Some type validation (take a look at prp.uselist)
-                setattr(self, prp.key, val)
-
-        # Check if there were unknown arguments
-        if kwargs:
-            raise TypeError(
-                "%s.__init__() got an unexpected keyword argument '%s'" %
-                (cls.__name__, kwargs.popitem()[0]))
+        try:
+            self.set_attrs(kwargs, fill_with_defaults=True)
+        except TypeError as err:
+            message, = err.args
+            err.args = (message.replace("set_attrs()",
+                                        "%s.__init__()" % cls.__name__),)
+            raise
 
     @classmethod
     def get_from_id(cls, id_, session):
@@ -297,13 +238,16 @@ class Base(object):
                 attrs[prp.key] = getattr(self, prp.key)
         return attrs
 
-    def set_attrs(self, attrs):
+    def set_attrs(self, attrs, fill_with_defaults=False):
         """Do self.__dict__.update(attrs) with validation.
 
         Limited to SQLAlchemy column and relationship properties.
 
         attrs ({string: object}): the new properties we want to set on
             this object.
+        fill_with_defaults (bool): whether to explicitly reset the
+            attributes that were not provided in attrs to their default
+            value.
 
         """
         # We want to pop items without altering the caller's object.
@@ -312,7 +256,23 @@ class Base(object):
         for prp in self._col_props:
             col = prp.columns[0]
 
-            if prp.key in attrs:
+            if prp.key not in attrs and fill_with_defaults:
+                # We're assuming the default value, if specified, has
+                # the correct type
+                if col.default is None and not col.nullable:
+                    raise TypeError(
+                        "set_attrs() didn't get required keyword "
+                        "argument '%s'" % prp.key)
+                # We're setting the default ourselves, since we may
+                # want to use the object before storing it in the DB.
+                # FIXME This code doesn't work with callable defaults.
+                # We can use the is_callable and is_scalar properties
+                # (and maybe the is_sequence and is_clause_element ones
+                # too) to detect the type. Note that callables require
+                # an ExecutionContext argument (which we don't have).
+                if col.default is not None:
+                    setattr(self, prp.key, col.default.arg)
+            elif prp.key in attrs:
                 val = attrs.pop(prp.key)
 
                 if val is None:
