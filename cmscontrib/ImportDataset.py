@@ -123,7 +123,7 @@ def main():
 
     args = parser.parse_args()
 
-    args.description = raw_input("Enter a description: ")
+    args.description = input("Enter a description: ")
 
     loader_class = choose_loader(
         args.loader,
