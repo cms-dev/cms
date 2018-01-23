@@ -42,13 +42,7 @@ import argparse
 import logging
 import sys
 
-import six
-
-if six.PY3:
-    from urllib.parse import quote, urljoin, urlsplit
-else:
-    from urllib import quote
-    from urlparse import urljoin, urlsplit
+from future.moves.urllib.parse import quote, urljoin, urlsplit
 
 from requests import Session, Request
 from requests.exceptions import RequestException
