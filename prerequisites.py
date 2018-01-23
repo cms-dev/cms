@@ -134,7 +134,7 @@ def ask(message):
     - the "-y" flag was set as a CLI argument
 
     """
-    return "-y" in sys.argv or raw_input(message) in ["Y", "y"]
+    return "-y" in sys.argv or input(message) in ["Y", "y"]
 
 
 def assert_root():
