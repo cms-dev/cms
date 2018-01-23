@@ -27,8 +27,11 @@ This adapts the dump to some changes in the model introduced in commit
 """
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 
 class Updater(object):
