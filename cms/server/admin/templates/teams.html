@@ -15,7 +15,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for t in sorted(team_list, cmp = lambda x, y: cmp(x.code, y.code)) %}
+      {% for t in sorted(team_list, key=lambda x: x.code) %}
       <tr>
         <td><a href="{{ url("team", t.id) }}">{{ t.code }}</a></td>
         <td>{{ t.name }}</td>

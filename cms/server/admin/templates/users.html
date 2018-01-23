@@ -26,7 +26,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for u in sorted(user_list, cmp = lambda x, y: cmp(x.username, y.username)) %}
+      {% for u in sorted(user_list, key=lambda x: x.username) %}
       <tr>
         <td>
           <input type="radio" name="user_id" value="{{ u.id }}"/>
