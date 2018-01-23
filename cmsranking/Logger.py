@@ -227,7 +227,7 @@ class CustomFormatter(logging.Formatter):
 
         try:
             message = record.getMessage()
-        except Exception, exc:
+        except Exception as exc:
             message = 'Bad message (%r): %r' % (exc, record.__dict__)
 
         result += message.strip()

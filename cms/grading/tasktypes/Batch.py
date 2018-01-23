@@ -369,7 +369,7 @@ class Batch(TaskType):
                             try:
                                 outcome, text = \
                                     extract_outcome_and_text(sandbox)
-                            except ValueError, e:
+                            except ValueError as e:
                                 logger.error("Invalid output from "
                                              "comparator: %s", e.message,
                                              extra={"operation": job.info})
