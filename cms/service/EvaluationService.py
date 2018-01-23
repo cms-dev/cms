@@ -1020,5 +1020,4 @@ class EvaluationService(TriggeredService):
                 entries_by_key[key]["item"]["multiplicity"] = 1
         return sorted(
             itervalues(entries_by_key),
-            lambda x, y: cmp((x["priority"], x["timestamp"]),
-                             (y["priority"], y["timestamp"])))
+            key=lambda x: (x["priority"], x["timestamp"]))

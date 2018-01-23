@@ -49,6 +49,8 @@ from six import iteritems
 
 from gevent.event import Event
 
+from functools import total_ordering
+
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
@@ -65,6 +67,7 @@ class QueueItem(object):
         return self.__dict__
 
 
+@total_ordering
 class QueueEntry(object):
 
     """Type of the actual objects in the queue.
@@ -87,14 +90,15 @@ class QueueEntry(object):
         self.timestamp = timestamp
         self.index = index
 
-    def __cmp__(self, other):
-        """Compare self's and other's priorities."""
-        if self.priority != other.priority:
-            return cmp(self.priority, other.priority)
-        elif self.timestamp != other.timestamp:
-            return cmp(self.timestamp, other.timestamp)
-        else:
-            return cmp(self.index, other.index)
+    def __eq__(self, other):
+        """Return whether self and other have the same priority."""
+        return (self.priority, self.timestamp, self.index) \
+               == (other.priority, other.timestamp, other.index)
+
+    def __lt__(self, other):
+        """Return whether self has higher priority than other."""
+        return (self.priority, self.timestamp, self.index) \
+               < (other.priority, other.timestamp, other.index)
 
 
 class PriorityQueue(object):
