@@ -44,7 +44,7 @@ import gevent.queue
 
 import requests
 import requests.exceptions
-from urlparse import urljoin, urlsplit
+from future.moves.urllib.parse import urljoin, urlsplit
 
 from cms import config
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method

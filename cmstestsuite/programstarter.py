@@ -40,7 +40,7 @@ import subprocess
 import sys
 import threading
 import time
-from urlparse import urlsplit
+from future.moves.urllib.parse import urlsplit
 
 from cmstestsuite import CONFIG, FrameworkException, get_cms_config
 

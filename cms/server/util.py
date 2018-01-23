@@ -37,7 +37,7 @@ from future.builtins import *
 import time
 import logging
 from datetime import datetime, timedelta
-from urllib import quote, urlencode
+from future.moves.urllib.parse import quote, urlencode
 
 from functools import wraps
 from tornado.web import RequestHandler
