@@ -294,11 +294,11 @@ def compilation_step(sandbox, commands):
             return False, None, None, None
         stdout = sandbox.get_file_to_string(sandbox.stdout_file)\
             .decode("utf-8", errors="replace").strip()
-        if stdout != "":
+        if len(stdout) > 0:
             stdouts.append(stdout)
         stderr = sandbox.get_file_to_string(sandbox.stderr_file)\
             .decode("utf-8", errors="replace").strip()
-        if stderr != "":
+        if len(stderr) > 0:
             stderrs.append(stderr)
 
         # If some command in the sequence is failed,
@@ -719,7 +719,7 @@ def white_diff_canonicalize(string):
     # whitespace; this way, runs of more than one whitespaces are
     # collapsed into just one copy.
     string = WHITES[0].join([x for x in string.split(WHITES[0])
-                             if x != ''])
+                             if len(x) > 0])
     return string
 
 
@@ -745,14 +745,14 @@ def white_diff(output, res):
         lres = res.readline()
 
         # Both files finished: comparison succeded
-        if lres == '' and lout == '':
+        if len(lres) == 0 and len(lout) == 0:
             return True
 
         # Only one file finished: ok if the other contains only blanks
-        elif lres == '' or lout == '':
+        elif len(lres) == 0 or len(lout) == 0:
             lout = lout.strip(WHITES)
             lres = lres.strip(WHITES)
-            if lout != '' or lres != '':
+            if len(lout) > 0 or len(lres) > 0:
                 return False
 
         # Both file still have lines to go: ok if they agree except

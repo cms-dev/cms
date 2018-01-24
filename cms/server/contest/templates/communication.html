@@ -13,13 +13,13 @@
 <div class="announcement_list">
     {% for msg in reversed(contest.announcements) %}
     <div class="announcement">
-        {% if msg.subject != '' %}
+        {% if len(msg.subject) > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone, locale=locale) }}</span>
-        {% if msg.text != '' %}
+        {% if len(msg.text) > 0 %}
         <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
     </div>
@@ -68,25 +68,25 @@
 <div class="question_list">
     {% for msg in reversed(current_user.questions) %}
     <div class="question">
-        {% if msg.subject != '' %}
+        {% if len(msg.subject) > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.question_timestamp, timezone, locale=locale) }}</span>
-        {% if msg.text != '' %}
+        {% if len(msg.text) > 0 %}
         <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
     </div>
         {% if msg.reply_timestamp is not None %}
     <div class="answer">
-            {% if msg.reply_subject != '' %}
+            {% if len(msg.reply_subject) > 0 %}
         <h4 class="subject">{{ msg.reply_subject }}</h4>
             {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
             {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.reply_timestamp, timezone, locale=locale) }}</span>
-            {% if msg.reply_text != '' %}
+            {% if len(msg.reply_text) > 0 %}
         <div class="body">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
             {% end %}
     </div>
@@ -107,13 +107,13 @@
 <div class="message_list">
     {% for msg in reversed(current_user.messages) %}
     <div class="message">
-        {% if msg.subject != '' %}
+        {% if len(msg.subject) > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone, locale=locale) }}</span>
-        {% if msg.text != '' %}
+        {% if len(msg.text) > 0 %}
         <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
     </div>

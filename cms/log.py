@@ -255,11 +255,11 @@ class CustomFormatter(logging.Formatter):
             severity = add_color_to_string(severity, severity_col,
                                            bold=True, force=True)
             coordinates_col = get_color_hash(coordinates)
-            if coordinates != "":
+            if len(coordinates) > 0:
                 coordinates = add_color_to_string(coordinates, coordinates_col,
                                                   bold=True, force=True)
             operation_col = get_color_hash(operation)
-            if operation != "":
+            if len(operation) > 0:
                 operation = add_color_to_string(operation, operation_col,
                                                 bold=True, force=True)
 

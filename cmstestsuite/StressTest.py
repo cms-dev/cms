@@ -338,7 +338,7 @@ def main():
         return
 
     assert args.time_coeff > 0.0
-    assert not (args.only_submit and args.submissions_path == "")
+    assert not (args.only_submit and len(args.submissions_path) == 0)
 
     users = []
     tasks = []

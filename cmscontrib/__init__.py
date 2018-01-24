@@ -54,7 +54,7 @@ def sha1sum(path):
     with io.open(path, 'rb') as fin:
         hasher = hashlib.new("sha1")
         buf = fin.read(buffer_length)
-        while buf != b'':
+        while len(buf) > 0:
             hasher.update(buf)
             buf = fin.read(buffer_length)
         return bin_to_hex(hasher.digest())

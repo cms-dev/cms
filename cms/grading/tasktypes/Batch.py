@@ -237,10 +237,10 @@ class Batch(TaskType):
         stdin_redirect = None
         stdout_redirect = None
         files_allowing_write = []
-        if input_filename == "":
+        if len(input_filename) == 0:
             input_filename = "input.txt"
             stdin_redirect = input_filename
-        if output_filename == "":
+        if len(output_filename) == 0:
             output_filename = "output.txt"
             stdout_redirect = output_filename
         else:

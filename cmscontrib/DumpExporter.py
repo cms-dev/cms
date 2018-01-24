@@ -172,7 +172,7 @@ class DumpExporter(object):
         self.export_target = export_target
 
         # If target is not provided, we use the contest's name.
-        if export_target == "":
+        if len(export_target) == 0:
             self.export_target = "dump_%s.tar.gz" % date.today().isoformat()
             logger.warning("export_target not given, using \"%s\"",
                            self.export_target)

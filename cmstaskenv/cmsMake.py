@@ -347,7 +347,7 @@ def iter_GEN(name):
             is_trivial = comment.startswith(" ")
             testcase = testcase.strip()
             comment = comment.strip()
-            testcase_detected = testcase != ''
+            testcase_detected = len(testcase) > 0
             copy_testcase_detected = comment.startswith("COPY:")
             subtask_detected = comment.startswith('ST:')
 

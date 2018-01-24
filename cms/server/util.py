@@ -634,7 +634,7 @@ def file_handler_gen(BaseClass):
         """
         def fetch(self, digest, content_type, filename):
             """Send a file from FileCacher by its digest."""
-            if digest == "":
+            if len(digest) == 0:
                 logger.error("No digest given")
                 self.finish()
                 return

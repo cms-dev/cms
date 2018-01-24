@@ -54,9 +54,9 @@ def get_test_suite():
 def main():
     test_suite = get_test_suite()
     try:
-        if test_suite == UNITTESTS or test_suite == "":
+        if test_suite == UNITTESTS or len(test_suite) == 0:
             sh(["./cmstestsuite/RunUnitTests.py"] + sys.argv[1:])
-        if test_suite == FUNCTIONALTESTS or test_suite == "":
+        if test_suite == FUNCTIONALTESTS or len(test_suite) == 0:
             sh(["./cmstestsuite/RunFunctionalTests.py"] + sys.argv[1:])
     except FrameworkException:
         if os.path.exists("./log/cms/last.log"):

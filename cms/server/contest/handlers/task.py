@@ -112,7 +112,7 @@ class TaskStatementViewHandler(FileHandler):
         statement = task.statements[lang_code].digest
         self.sql_session.close()
 
-        if lang_code != '':
+        if len(lang_code) > 0:
             filename = "%s (%s).pdf" % (task.name, lang_code)
         else:
             filename = "%s.pdf" % task.name

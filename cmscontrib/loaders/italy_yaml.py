@@ -528,7 +528,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         testcase, comment = splitted
                         testcase = testcase.strip()
                         comment = comment.strip()
-                        testcase_detected = testcase != ''
+                        testcase_detected = len(testcase) > 0
                         copy_testcase_detected = comment.startswith("COPY:")
                         subtask_detected = comment.startswith('ST:')
 
@@ -665,7 +665,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if public_testcases == "all":
             for t in args["testcases"]:
                 t.public = True
-        elif public_testcases != "":
+        elif len(public_testcases) > 0:
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
         args["testcases"] = dict((tc.codename, tc) for tc in args["testcases"])
