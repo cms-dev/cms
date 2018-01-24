@@ -173,7 +173,7 @@ def configure_cms(options):
 
     if unset:
         print("These configuration items were not set:")
-        print("  " + ", ".join(sorted(list(unset))))
+        print("  " + ", ".join(sorted(unset)))
 
     # Load the config database.
     read_cms_config()

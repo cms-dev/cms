@@ -71,9 +71,9 @@ def filename_to_language(filename):
     if ext_index == -1:
         return None
     ext = filename[ext_index:]
-    names = sorted([language.name
-                    for language in LANGUAGES
-                    if ext in language.source_extensions])
+    names = sorted(language.name
+                   for language in LANGUAGES
+                   if ext in language.source_extensions)
     return None if len(names) == 0 else get_language(names[0])
 
 
