@@ -690,7 +690,7 @@ def extract_outcome_and_text(sandbox):
 # We take as definition of whitespaces the intersection between ASCII
 # and Unicode White_Space characters (see
 # http://www.unicode.org/Public/6.3.0/ucd/PropList.txt)
-WHITES = b' \t\n\x0b\x0c\r'
+WHITES = [b' ', b'\t', b'\n', b'\x0b', b'\x0c' b'\r']
 
 
 def white_diff_canonicalize(string):
@@ -750,8 +750,8 @@ def white_diff(output, res):
 
         # Only one file finished: ok if the other contains only blanks
         elif len(lres) == 0 or len(lout) == 0:
-            lout = lout.strip(WHITES)
-            lres = lres.strip(WHITES)
+            lout = lout.strip(b''.join(WHITES))
+            lres = lres.strip(b''.join(WHITES))
             if len(lout) > 0 or len(lres) > 0:
                 return False
 
