@@ -157,7 +157,7 @@ class TestFileCacher(unittest.TestCase):
         """
         self.size = 100
         self.content = b"".join(chr(random.randint(0, 255))
-                                for unused_i in xrange(self.size))
+                                for unused_i in range(self.size))
 
         data = self.file_cacher.put_file_from_fobj(StringIO(self.content),
                                                    u"Test #000")
@@ -246,7 +246,7 @@ class TestFileCacher(unittest.TestCase):
 
         """
         self.content = b"".join(chr(random.randint(0, 255))
-                                for unused_i in xrange(100))
+                                for unused_i in range(100))
 
         try:
             data = self.file_cacher.put_file_content(self.content,

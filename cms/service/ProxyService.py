@@ -194,13 +194,13 @@ class ProxyExecutor(Executor):
         """
         # The cumulative data that we will try to send to the ranking,
         # built by combining items in the queue.
-        data = list(dict() for i in xrange(self.TYPE_COUNT))
+        data = list(dict() for i in range(self.TYPE_COUNT))
 
         for entry in entries:
             data[entry.item.type_].update(entry.item.data)
 
         try:
-            for i in xrange(self.TYPE_COUNT):
+            for i in range(self.TYPE_COUNT):
                 # Send entities of type i.
                 if len(data[i]) > 0:
                     # We abuse the resource path as the English

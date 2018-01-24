@@ -95,7 +95,7 @@ class EvaluationExecutor(Executor):
         # operation.
         self._drop_current = False
 
-        for i in xrange(get_service_shards("Worker")):
+        for i in range(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
 

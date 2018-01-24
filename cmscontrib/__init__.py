@@ -186,12 +186,12 @@ class BaseImporter(object):
             elif isinstance(old_value, list):
                 old_len = len(old_value)
                 new_len = len(new_value)
-                for i in xrange(min(old_len, new_len)):
+                for i in range(min(old_len, new_len)):
                     self._update_object(old_value[i], new_value[i])
                 if old_len > new_len:
                     del old_value[new_len:]
                 elif new_len > old_len:
-                    for i in xrange(old_len, new_len):
+                    for i in range(old_len, new_len):
                         # FIXME This hack is needed because of some
                         # funny behavior of SQLAlchemy-instrumented
                         # collections when copying values, that

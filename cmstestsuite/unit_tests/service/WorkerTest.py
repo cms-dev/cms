@@ -262,7 +262,7 @@ class TestWorker(unittest.TestCase):
         prefix = prefix if prefix is not None else ""
         jobs = []
         calls = []
-        for i in xrange(number_of_jobs):
+        for i in range(number_of_jobs):
             job_params = [
                 ESOperation(ESOperation.EVALUATION,
                             unique_long_id(), unique_long_id(),

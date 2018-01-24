@@ -456,7 +456,7 @@ def build_gen_list(base_dir, task_type, yaml_conf):
                 command.append("%s" % st)
             call(base_dir, command)
             n += 1
-            for i in xrange(3):
+            for _ in range(3):
                 move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     def make_output(n, assume=None):
@@ -526,16 +526,16 @@ def build_gen_list(base_dir, task_type, yaml_conf):
                     make_input,
                     "input generation"))
 
-    for n in xrange(testcase_num):
+    for n in range(testcase_num):
         actions.append(([os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n)),
                          sol_exe],
                         [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))],
                         functools.partial(make_output, n),
                         "output generation"))
     in_out_files = [os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n))
-                    for n in xrange(testcase_num)] + \
+                    for n in range(testcase_num)] + \
                    [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))
-                    for n in xrange(testcase_num)]
+                    for n in range(testcase_num)]
     return actions, in_out_files
 
 

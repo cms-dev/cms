@@ -166,7 +166,7 @@ class ProcessMatcher(object):
         # We assume that apart from the shard, all other
         # options are in the form "-<something> <something>".
         shard = None
-        for i in xrange(start_index + 2, len(cmdline), 2):
+        for i in range(start_index + 2, len(cmdline), 2):
             if cmdline[i].isdigit():
                 shard = int(cmdline[i])
                 break
