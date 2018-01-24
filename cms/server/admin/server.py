@@ -34,12 +34,12 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iterkeys, itervalues
 
-import base64
 import logging
 import pkg_resources
 
 from sqlalchemy import func, not_
 
+from cmscommon.binary import hex_to_bin, bin_to_b64
 from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
 from cms.db.filecacher import FileCacher
@@ -66,7 +66,7 @@ class AdminWebServer(WebService):
                 "cms.server.admin", "templates"),
             "static_files": [("cms.server", "static"),
                              ("cms.server.admin", "static")],
-            "cookie_secret": base64.b64encode(config.secret_key),
+            "cookie_secret": hex_to_bin(config.secret_key),
             "debug": config.tornado_debug,
             "auth_middleware": AWSAuthMiddleware,
             "rpc_enabled": True,

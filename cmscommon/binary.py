@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,36 +17,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Utilities to generate "unique" test ids."""
-
 from __future__ import absolute_import
-from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import hashlib
-import random
-
-from cmscommon.binary import bin_to_hex
+import binascii
 
 
-def unique_long_id():
-    """Return a unique id of type long."""
-    if not hasattr(unique_long_id, "id"):
-        unique_long_id.id = random.randint(0, 1000000000)
-    unique_long_id.id += 1
-    return unique_long_id.id
+def bin_to_hex(bin):
+    return binascii.b2a_hex(bin).decode('ascii')
 
 
-def unique_unicode_id():
-    """Return a unique id of type unicode."""
-    return str(unique_long_id())
+def hex_to_bin(hex):
+    return binascii.a2b_hex(hex.encode('ascii'))
 
 
-def unique_digest():
-    """Return a unique digest-like string."""
-    hasher = hashlib.sha1()
-    hasher.update(str(unique_long_id()))
-    return bin_to_hex(hasher.digest())
+def bin_to_b64(bin):
+    return binascii.b2a_base64(bin).decode('ascii')
+
+
+def b64_to_bin(b64):
+    return binascii.a2b_base64(b64.encode('ascii'))

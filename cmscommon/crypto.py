@@ -30,14 +30,14 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import base64
 import bcrypt
-import binascii
 import random
 
 from string import ascii_lowercase
 
 from Crypto.Cipher import AES
+
+from cmscommon.binary import bin_to_hex, hex_to_bin, bin_to_b64, b64_to_bin
 
 
 __all__ = [
@@ -62,8 +62,10 @@ try:
     get_random_bits = Random.new().read
     is_random_secure = True
 except ImportError:
-    get_random_bits = lambda x: binascii.unhexlify("%032x" %
-                                                   random.getrandbits(x * 8))
+    def get_random_bits(x):
+        # We need to wrap the generator in a list because of a
+        # shortcoming of future's bytes implementation.
+        return bytes([random.getrandbits(8) for _ in range(x)])
     is_random_secure = False
 
 
@@ -71,7 +73,7 @@ def _get_secret_key_unhex():
     # Only import this if we need it. Otherwise, we would prefer to
     # remain independent of the rest of CMS.
     from cms import config
-    return binascii.unhexlify(config.secret_key)
+    return hex_to_bin(config.secret_key)
 
 
 def get_random_key():
@@ -86,7 +88,7 @@ def get_hex_random_key():
     Return it encoded in hexadecimal.
 
     """
-    return binascii.hexlify(get_random_key())
+    return bin_to_hex(get_random_key())
 
 
 def encrypt_string(pt, key=None):
@@ -116,7 +118,8 @@ def encrypt_string(pt, key=None):
     aes = AES.new(key, AES.MODE_CBC, iv)
     ct = aes.encrypt(pt_pad)
     # Convert the ciphertext in a URL-safe base64 encoding
-    ct_b64 = base64.urlsafe_b64encode(iv + ct).replace(b'=', b'.')
+    ct_b64 = bin_to_b64(iv + ct)\
+        .replace('+', '-').replace('/', '_').replace('=', '.')
     return ct_b64
 
 
@@ -133,7 +136,8 @@ def decrypt_string(ct_b64, key=None):
         # Convert the ciphertext from a URL-safe base64 encoding to a
         # bytestring, which contains both the IV (the first 16 bytes) as well
         # as the encrypted padded plaintext.
-        iv_ct = base64.urlsafe_b64decode(bytes(ct_b64).replace(b'.', b'='))
+        iv_ct = b64_to_bin(
+            ct_b64.replace('-', '+').replace('_', '/').replace('.', '='))
         aes = AES.new(key, AES.MODE_CBC, iv_ct[:16])
         # Get the padded plaintext.
         pt_pad = aes.decrypt(iv_ct[16:])

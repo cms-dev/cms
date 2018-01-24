@@ -38,6 +38,7 @@ import hashlib
 import io
 import os
 
+from cmscommon.binary import bin_to_hex
 from cms.db import Base, Contest, Participation, Submission, Task
 
 
@@ -56,7 +57,7 @@ def sha1sum(path):
         while buf != b'':
             hasher.update(buf)
             buf = fin.read(buffer_length)
-        return hasher.hexdigest()
+        return bin_to_hex(hasher.digest())
 
 
 # Taken from

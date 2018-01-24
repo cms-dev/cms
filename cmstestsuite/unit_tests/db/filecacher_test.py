@@ -39,6 +39,7 @@ import shutil
 import unittest
 from io import StringIO
 
+from cmscommon.binary import bin_to_hex
 from cms.db.filecacher import FileCacher
 
 
@@ -84,7 +85,7 @@ class RandomFile(object):
         return (string): digest.
 
         """
-        return self.hasher.hexdigest()
+        return bin_to_hex(self.hasher.digest())
 
 
 class HashingFile(object):
@@ -112,7 +113,7 @@ class HashingFile(object):
         return (string): digest.
 
         """
-        return self.hasher.hexdigest()
+        return bin_to_hex(self.hasher.digest())
 
     def close(self):
         """Do nothing, because there is no hidden file we are writing

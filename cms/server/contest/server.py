@@ -46,10 +46,10 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
-import base64
 import logging
 import pkg_resources
 
+from cmscommon.binary import hex_to_bin, bin_to_b64
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.db.filecacher import FileCacher
@@ -73,7 +73,7 @@ class ContestWebServer(WebService):
                 "cms.server.contest", "templates"),
             "static_files": [("cms.server", "static"),
                              ("cms.server.contest", "static")],
-            "cookie_secret": base64.b64encode(config.secret_key),
+            "cookie_secret": hex_to_bin(config.secret_key),
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
             "num_proxies_used": config.num_proxies_used,

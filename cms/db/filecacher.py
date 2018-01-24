@@ -42,6 +42,7 @@ import gevent
 
 from sqlalchemy.exc import IntegrityError
 
+from cmscommon.binary import bin_to_hex
 from cms import config, mkdir
 from cms.db import SessionGen, FSObject
 from cms.io.GeventUtils import copyfileobj, move, rmtree
@@ -641,7 +642,7 @@ class FileCacher(object):
                         break
                     buf = buf[written:]
                 buf = src.read(self.CHUNK_SIZE)
-            digest = hasher.hexdigest().decode("ascii")
+            digest = bin_to_hex(hasher.digest())
             dst.flush()
 
             logger.debug("File has digest %s.", digest)
@@ -802,7 +803,7 @@ class FileCacher(object):
                     buf = fobj.read(self.CHUNK_SIZE)
             finally:
                 fobj.close()
-            computed_digest = hasher.hexdigest().decode("ascii")
+            computed_digest = bin_to_hex(hasher.digest())
             if digest != computed_digest:
                 logger.error("File with hash %s actually has hash %s",
                              digest, computed_digest)
