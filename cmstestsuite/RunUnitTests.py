@@ -136,7 +136,7 @@ def main():
         "-n", "--dry-run", action="store_true",
         help="show what tests would be run, but do not run them")
     parser.add_argument(
-        "-v", "--verbose", action="count",
+        "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
     parser.add_argument(
         "-r", "--retry-failed", action="store_true",

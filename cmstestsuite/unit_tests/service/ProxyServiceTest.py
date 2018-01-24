@@ -52,6 +52,7 @@ class TestProxyService(unittest.TestCase):
         """Test that data is sent in the right order at startup."""
         put_mock = Mock()
         cms.service.ProxyService.requests.put = put_mock
+        put_mock.return_value.status_code = 200
 
         task = get_task()
         participation = get_participation()

@@ -441,8 +441,12 @@ class SubmissionResult(Base):
         t, m = None, None
         if self.evaluated() and self.evaluations:
             for ev in self.evaluations:
-                t = max(t, ev.execution_time)
-                m = max(m, ev.execution_memory)
+                if ev.execution_time is not None \
+                        and (t is None or t < ev.execution_time):
+                    t = ev.execution_time
+                if ev.execution_memory is not None \
+                        and (m is None or m < ev.execution_memory):
+                    m = ev.execution_memory
         return (t, m)
 
     def compiled(self):
