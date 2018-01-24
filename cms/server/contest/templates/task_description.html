@@ -40,7 +40,7 @@
             {{ _("Some suggested translations follow.") }}
         </p>
     {% set task_primary = primary_statements %}
-    {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
+    {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
         {% if statement.language in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
             {% if statement.language != statement.language_name %}
@@ -51,7 +51,7 @@
         </a>
         {% end %}
     {% end %}
-    {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
+    {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
@@ -66,7 +66,7 @@
     <div class="all_statements well">
         <div>
             <ul>
-    {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
+    {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
                 <li>
                     <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
         {% if statement.language != statement.language_name %}
@@ -120,7 +120,7 @@
 {% set compilation_commands = {lang: compilation_commands[lang] for lang in contest.languages} %}
 <tr>
     <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
-    {% for i, (l, c) in enumerate(sorted(compilation_commands.iteritems())) %}
+    {% for i, (l, c) in enumerate(sorted(iteritems(compilation_commands))) %}
         {% if i > 0 %}
 </tr>
 <tr>
@@ -145,7 +145,7 @@
         </p>
     {% elif tokens_contest == 2 %}
         <p>
-        {% set tokens = {k[6:]: v for k, v in task.__dict__.iteritems() if k.startswith("token_")} %}
+        {% set tokens = {k[6:]: v for k, v in iteritems(task.__dict__) if k.startswith("token_")} %}
         {{ format_token_rules(tokens, locale=locale) }}
         </p>
     {% elif tokens_tasks == 2 %}
@@ -154,7 +154,7 @@
         </p>
     {% else %}
         <p>
-        {% set tokens = {k[6:]: v for k, v in task.__dict__.iteritems() if k.startswith("token_")} %}
+        {% set tokens = {k[6:]: v for k, v in iteritems(task.__dict__) if k.startswith("token_")} %}
         {{ format_token_rules(tokens, t_type="task", locale=locale) }}
         </p>
 
@@ -176,7 +176,7 @@
     <div id="attachments">
         <ul>
     {% from cmscommon import mimetypes %}
-    {% for filename, attachment in sorted(task.attachments.items()) %}
+    {% for filename, attachment in sorted(iteritems(task.attachments)) %}
         {% set mime_type = mimetypes.get_type_for_file_name(filename) %}
         {% if mime_type is not None %}
             {% set type_name = mimetypes.get_name_for_type(mime_type) %}

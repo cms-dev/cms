@@ -29,6 +29,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import argparse
 import logging
@@ -92,7 +93,7 @@ def filter_top_scoring(results, unique):
                 usertask[key].append(value)
 
     results = []
-    for key, values in usertask.iteritems():
+    for key, values in iteritems(usertask):
         for value in values:
             results.append(value[2])  # the "old" row
 

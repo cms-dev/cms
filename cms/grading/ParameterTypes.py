@@ -157,9 +157,10 @@ class ParameterTypeBoolean(ParameterType):
 class ParameterTypeChoice(ParameterType):
     """Parameter type representing a limited number of choices."""
 
-    TEMPLATE = "<select name=\"{{parameter_name}}\">" \
+    TEMPLATE = "{% from six import iteritems %}" \
+        "<select name=\"{{parameter_name}}\">" \
         "{% for choice_value, choice_description "\
-        " in choices.items() %}" \
+        " in iteritems(choices) %}" \
         "<option value=\"{{choice_value}}\" " \
         "{% if choice_value == parameter_value %}" \
         "selected" \

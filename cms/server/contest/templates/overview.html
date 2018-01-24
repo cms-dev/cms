@@ -83,7 +83,7 @@
     {% elif tokens_tasks == 2 %}
         <p>
         {{ _("You have a set of tokens shared among all tasks.") }}
-        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
+        {% set tokens = {k[6:]: v for k, v in iteritems(contest.__dict__) if k.startswith("token_")} %}
         {{ format_token_rules(tokens, locale=locale) }}
         </p>
 
@@ -94,7 +94,7 @@
     {% else %}
         <p>
         {% raw _("You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task.") %}
-        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
+        {% set tokens = {k[6:]: v for k, v in iteritems(contest.__dict__) if k.startswith("token_")} %}
         {{ format_token_rules(tokens, t_type="contest", locale=locale) }}
         {{ _("You can find the rules for the %(type_pl)s on each task's description page.") % {"type_pl": _("task-tokens")} }}
         </p>

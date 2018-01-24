@@ -28,6 +28,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import argparse
 import ast
@@ -285,7 +286,7 @@ def harvest_contest_data(contest_id):
                 continue
             users[user.username] = {'password': password}
         for task in contest.tasks:
-            tasks.append((task.id, task.name, task.statements.keys()))
+            tasks.append((task.id, task.name, list(iterkeys(task.statements))))
     return users, tasks
 
 
@@ -357,7 +358,7 @@ def main():
         return
 
     if args.actor_num is not None:
-        user_items = users.items()
+        user_items = list(iteritems(users))
         if args.sort_actors:
             user_items.sort()
         else:
@@ -383,7 +384,7 @@ def main():
                                                               username)),
                           base_url=base_url,
                           submissions_path=args.submissions_path)
-              for username, data in users.iteritems()]
+              for username, data in iteritems(users)]
     for actor in actors:
         actor.start()
 

@@ -41,7 +41,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in self.objs.iteritems():
+        for k, v in iteritems(self.objs):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Contest":

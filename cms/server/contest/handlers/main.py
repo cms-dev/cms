@@ -34,6 +34,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues
 
 import json
 import logging
@@ -304,8 +305,8 @@ class PrintingHandler(ContestHandler):
         # Ensure that the user did not submit multiple files with the
         # same name and that the user sent exactly one file.
         if any(len(filename) != 1
-               for filename in self.request.files.values()) \
-                or set(self.request.files.keys()) != set(["file"]):
+               for filename in itervalues(self.request.files)) \
+                or set(iterkeys(self.request.files)) != set(["file"]):
             self.application.service.add_notification(
                 participation.user.username,
                 self.timestamp,

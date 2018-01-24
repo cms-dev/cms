@@ -24,6 +24,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import time
 import platform
@@ -113,7 +114,7 @@ def get_system_timezone():
         tz = timezone(name)
         if not hasattr(tz, '_tzinfos'):
             continue
-        for (utcoffset, daylight, tzname), _ in tz._tzinfos.items():
+        for (utcoffset, daylight, tzname), _ in iteritems(tz._tzinfos):
             if utcoffset == local_offset and tzname == localtz:
                 return name
 

@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues
 
 import base64
 import logging
@@ -189,12 +190,12 @@ class AdminWebServer(WebService):
             queries['total'] = total_query
 
             stats = {}
-            keys = queries.keys()
+            keys = list(iterkeys(queries))
             results = queries[keys[0]].union_all(
                 *(queries[key] for key in keys[1:])).all()
 
         for i, k in enumerate(keys):
             stats[k] = results[i][0]
-        stats['compiling'] += 2 * stats['total'] - sum(stats.itervalues())
+        stats['compiling'] += 2 * stats['total'] - sum(itervalues(stats))
 
         return stats

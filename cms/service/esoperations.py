@@ -33,6 +33,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys
 
 import logging
 
@@ -195,7 +196,7 @@ def submission_get_operations(submission_result, submission, dataset):
         evaluated_testcase_ids = set(
             evaluation.testcase_id
             for evaluation in submission_result.evaluations)
-        for testcase_codename in dataset.testcases.iterkeys():
+        for testcase_codename in iterkeys(dataset.testcases):
             testcase_id = dataset.testcases[testcase_codename].id
             if testcase_id not in evaluated_testcase_ids:
                 yield ESOperation(ESOperation.EVALUATION,

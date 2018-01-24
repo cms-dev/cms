@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import io
 import logging
@@ -124,7 +125,7 @@ class PolygonTaskLoader(TaskLoader):
         if get_statement:
             args["statements"] = {}
             args["primary_statements"] = []
-            for language, lang in LANGUAGE_MAP.iteritems():
+            for language, lang in iteritems(LANGUAGE_MAP):
                 path = os.path.join(self.path, 'statements',
                                     '.pdf', language, 'problem.pdf')
                 if os.path.exists(path):

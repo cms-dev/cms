@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import ipaddress
 from datetime import datetime, timedelta
@@ -109,7 +110,7 @@ class Base(object):
                     continue
 
                 # Check that we understand the type
-                if not isinstance(col.type, tuple(_TYPE_MAP.iterkeys())):
+                if not isinstance(col.type, tuple(iterkeys(_TYPE_MAP))):
                     raise RuntimeError(
                         "Unknown SQLAlchemy column type for ColumnProperty "
                         "%s of %s: %s" % (prp.key, cls.__name__, col.type))

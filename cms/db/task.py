@@ -31,6 +31,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 from datetime import timedelta
 
@@ -446,13 +447,13 @@ class Dataset(Base):
         """
         new_testcases = dict()
         if clone_testcases or clone_results:
-            for old_t in old_dataset.testcases.itervalues():
+            for old_t in itervalues(old_dataset.testcases):
                 new_t = old_t.clone()
                 new_t.dataset = self
                 new_testcases[new_t.codename] = new_t
 
         if clone_managers or clone_results:
-            for old_m in old_dataset.managers.itervalues():
+            for old_m in itervalues(old_dataset.managers):
                 new_m = old_m.clone()
                 new_m.dataset = self
 
@@ -469,7 +470,7 @@ class Dataset(Base):
                 new_sr.dataset = self
 
                 # Create executables.
-                for old_e in old_sr.executables.itervalues():
+                for old_e in itervalues(old_sr.executables):
                     new_e = old_e.clone()
                     new_e.submission_result = new_sr
 

@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues
 
 import functools
 import json
@@ -356,7 +357,7 @@ class RemoteServiceServer(RemoteServiceBase):
 
         """
         # Validate the request.
-        if not {"__id", "__method", "__data"}.issubset(request.iterkeys()):
+        if not {"__id", "__method", "__data"}.issubset(iterkeys(request)):
             logger.warning("Request is missing some fields, ingoring.")
             return
 
@@ -451,7 +452,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """See RemoteServiceBase.finalize."""
         super(RemoteServiceClient, self).finalize(reason)
 
-        for result in self.pending_outgoing_requests_results.itervalues():
+        for result in itervalues(self.pending_outgoing_requests_results):
             result.set_exception(RPCError(reason))
 
         self.pending_outgoing_requests.clear()
@@ -547,7 +548,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         """
         # Validate the response.
-        if not {"__id", "__data", "__error"}.issubset(response.iterkeys()):
+        if not {"__id", "__data", "__error"}.issubset(iterkeys(response)):
             logger.warning("Response is missing some fields, ingoring.")
             return
 

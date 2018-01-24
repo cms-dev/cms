@@ -32,9 +32,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys
 
 import hashlib
 import io
+import itertools
 import os
 
 from cms.db import Base, Contest, Participation, Submission, Task
@@ -126,7 +128,7 @@ class BaseImporter(object):
                 old_datasets = dict((d.description, d) for d in old_value)
                 new_datasets = dict((d.description, d) for d in new_value)
 
-                for key in set(new_datasets.keys()):
+                for key in iterkeys(new_datasets):
                     if key not in old_datasets:
                         # create
                         temp = new_datasets[key]
@@ -163,7 +165,8 @@ class BaseImporter(object):
 
             # General case #1: a dict
             elif isinstance(old_value, dict):
-                for key in set(old_value.keys()) | set(new_value.keys()):
+                for key in set(itertools.chain(iterkeys(old_value),
+                                               iterkeys(new_value))):
                     if key in new_value:
                         if key not in old_value:
                             # create

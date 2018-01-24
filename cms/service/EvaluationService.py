@@ -37,6 +37,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues, iteritems
 
 import logging
 
@@ -487,7 +488,7 @@ class EvaluationService(TriggeredService):
             subs = dict()
             srs = dict()
 
-            for key, operation_results in by_object_and_type.iteritems():
+            for key, operation_results in iteritems(by_object_and_type):
                 type_, object_id, dataset_id = key
 
                 # Get dataset.
@@ -609,7 +610,7 @@ class EvaluationService(TriggeredService):
                    result.job.plus.get("tombstone") is True:
                     executable_digests = [
                         e.digest for e in
-                        object_result.executables.itervalues()]
+                        itervalues(object_result.executables)]
                     if FileCacher.TOMBSTONE_DIGEST in executable_digests:
                         logger.info("Submission %d's compilation on dataset "
                                     "%d has been invalidated since the "
@@ -1018,6 +1019,6 @@ class EvaluationService(TriggeredService):
                 entries_by_key[key] = entry
                 entries_by_key[key]["item"]["multiplicity"] = 1
         return sorted(
-            entries_by_key.values(),
+            itervalues(entries_by_key),
             lambda x, y: cmp((x["priority"], x["timestamp"]),
                              (y["priority"], y["timestamp"])))

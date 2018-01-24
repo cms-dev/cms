@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 from functools import partial
 
@@ -59,7 +60,7 @@ class Updater(object):
             item_id = fun(item)
             if num:
                 self.objs[item_id]['num'] = i
-            for k, v in kwargs.iteritems():
+            for k, v in iteritems(kwargs):
                 self.objs[item_id][k] = v
             ret.append(item_id)
         return ret
@@ -68,7 +69,7 @@ class Updater(object):
         ret = dict()
         for item in list_:
             item_id = fun(item)
-            for k, v in kwargs.iteritems():
+            for k, v in iteritems(kwargs):
                 self.objs[item_id][k] = v
             ret[item[key]] = item_id
         return ret

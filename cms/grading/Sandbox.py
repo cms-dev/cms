@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import io
 import logging
@@ -1061,7 +1062,7 @@ class IsolateSandbox(SandboxBase):
             res += ["--full-env"]
         for var in self.inherit_env:
             res += ["--env=%s" % var]
-        for var, value in self.set_env.items():
+        for var, value in iteritems(self.set_env):
             res += ["--env=%s=%s" % (var, value)]
         if self.fsize is not None:
             res += ["--fsize=%d" % self.fsize]

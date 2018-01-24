@@ -35,6 +35,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -235,14 +236,14 @@ class DumpImporter(object):
                 assert self.datas["_version"] == model_version
 
                 self.objs = dict()
-                for id_, data in self.datas.iteritems():
+                for id_, data in iteritems(self.datas):
                     if not id_.startswith("_"):
                         self.objs[id_] = self.import_object(data)
-                for id_, data in self.datas.iteritems():
+                for id_, data in iteritems(self.datas):
                     if not id_.startswith("_"):
                         self.add_relationships(data, self.objs[id_])
 
-                for k, v in list(self.objs.iteritems()):
+                for k, v in list(iteritems(self.objs)):
 
                     # Skip submissions if requested
                     if self.skip_submissions and isinstance(v, Submission):
@@ -408,7 +409,7 @@ class DumpImporter(object):
                 setattr(obj, prp.key, list(self.objs[i] for i in val))
             elif isinstance(val, dict):
                 setattr(obj, prp.key,
-                        dict((k, self.objs[v]) for k, v in val.iteritems()))
+                        dict((k, self.objs[v]) for k, v in iteritems(val)))
             else:
                 raise RuntimeError(
                     "Unknown RelationshipProperty value: %s" % type(val))
