@@ -36,6 +36,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
+import six
 
 import pkg_resources
 import gettext
@@ -123,13 +124,20 @@ def wrap_translations_for_tornado(trans):
         tornado.locale.GettextLocale
 
     """
+    if six.PY3:
+        gettext = trans.gettext
+        ngettext = trans.ngettext
+    else:
+        gettext = trans.ugettext
+        ngettext = trans.ungettext
+
     # Add translate method
     def translate(message, plural_message=None, count=None):
         if plural_message is not None:
             assert count is not None
-            return trans.ungettext(message, plural_message, count)
+            return ngettext(message, plural_message, count)
         else:
-            return trans.ugettext(message)
+            return gettext(message)
     trans.translate = translate
 
     # Add a "dummy" pgettext method (that ignores the context)
