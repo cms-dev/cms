@@ -304,7 +304,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             return targets
 
-        elif all(isinstance(t, unicode) for t in t_params):
+        elif all(isinstance(t, str) for t in t_params):
 
             indices = sorted(self.public_testcases.keys())
             targets = []

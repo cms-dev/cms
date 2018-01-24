@@ -24,8 +24,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import six
-
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 
@@ -62,9 +60,9 @@ class Subchange(Entity):
         try:
             assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert isinstance(data['submission'], six.text_type), \
+            assert isinstance(data['submission'], str), \
                 "Field 'submission' isn't a string"
-            assert isinstance(data['time'], six.integer_types), \
+            assert isinstance(data['time'], int), \
                 "Field 'time' isn't an integer (unix timestamp)"
             if 'score' in data:
                 assert isinstance(data['score'], float), \
@@ -76,7 +74,7 @@ class Subchange(Entity):
                 assert isinstance(data['extra'], list), \
                     "Field 'extra' isn't a list of strings"
                 for i in data['extra']:
-                    assert isinstance(i, six.text_type), \
+                    assert isinstance(i, str), \
                         "Field 'extra' isn't a list of strings"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)

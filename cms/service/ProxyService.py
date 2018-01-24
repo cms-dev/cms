@@ -72,7 +72,7 @@ def encode_id(entity_id):
         if char not in string.ascii_letters + string.digits:
             encoded_id += "_%x" % ord(char)
         else:
-            encoded_id += unicode(char)
+            encoded_id += str(char)
     return encoded_id
 
 

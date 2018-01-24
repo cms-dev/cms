@@ -402,11 +402,11 @@ class DumpImporter(object):
             val = data[prp.key]
             if val is None:
                 setattr(obj, prp.key, None)
-            elif type(val) == unicode:
+            elif isinstance(val, str):
                 setattr(obj, prp.key, self.objs[val])
-            elif type(val) == list:
+            elif isinstance(val, list):
                 setattr(obj, prp.key, list(self.objs[i] for i in val))
-            elif type(val) == dict:
+            elif isinstance(val, dict):
                 setattr(obj, prp.key,
                         dict((k, self.objs[v]) for k, v in val.iteritems()))
             else:

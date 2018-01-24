@@ -91,7 +91,7 @@ def encode_codename(s, extra=""):
         if char not in string.ascii_letters + string.digits + "_-" + extra:
             encoded_s += "__%x" % ord(char)
         else:
-            encoded_s += unicode(char)
+            encoded_s += str(char)
     return encoded_s
 
 

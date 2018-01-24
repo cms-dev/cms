@@ -149,7 +149,7 @@ class Store(object):
             some properties or if properties are of the wrong type.
 
         """
-        if not isinstance(key, unicode) or key in self._store:
+        if not isinstance(key, str) or key in self._store:
             raise InvalidKey("Key already in store.")
 
         # create entity
@@ -187,7 +187,7 @@ class Store(object):
             some properties or if properties are of the wrong type.
 
         """
-        if not isinstance(key, unicode) or key not in self._store:
+        if not isinstance(key, str) or key not in self._store:
             raise InvalidKey("Key not in store.")
 
         # update entity
@@ -279,7 +279,7 @@ class Store(object):
             with that key is present in the store.
 
         """
-        if not isinstance(key, unicode) or key not in self._store:
+        if not isinstance(key, str) or key not in self._store:
             raise InvalidKey("Key not in store.")
 
         with LOCK:
@@ -322,7 +322,7 @@ class Store(object):
             with that key is present in the store.
 
         """
-        if not isinstance(key, unicode) or key not in self._store:
+        if not isinstance(key, str) or key not in self._store:
             raise InvalidKey("Key not in store.")
 
         # retrieve entity

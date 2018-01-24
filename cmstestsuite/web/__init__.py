@@ -209,7 +209,7 @@ class GenericRequest(object):
         return True
 
     def specific_info(self):
-        res = "URL: %s\n" % (unicode(self.url))
+        res = "URL: %s\n" % self.url
         if self.response is not None:
             res += "\nREQUEST HEADERS\n"
             for (key, value) in self.response.request.headers.iteritems():
@@ -245,7 +245,7 @@ class GenericRequest(object):
         if self.exception_data is not None:
             print("", file=fd)
             print("EXCEPTION CASTED", file=fd)
-            fd.write(unicode(self.exception_data))
+            fd.write(str(self.exception_data))
 
 
 class LoginRequest(GenericRequest):
