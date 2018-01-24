@@ -35,6 +35,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 import logging
 
@@ -65,7 +66,7 @@ class TaskDescriptionHandler(ContestHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        for statement in task.statements.itervalues():
+        for statement in itervalues(task.statements):
             lang_code = statement.language
             if is_language_country_code(lang_code):
                 statement.language_name = \

@@ -36,6 +36,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import ipaddress
 import logging
@@ -297,7 +298,7 @@ class ContestHandler(BaseHandler):
 
     def get_user_locale(self):
         self.langs = self.application.service.langs
-        lang_codes = self.langs.keys()
+        lang_codes = list(iterkeys(self.langs))
 
         if self.contest.allowed_localizations:
             lang_codes = filter_language_codes(
@@ -394,11 +395,11 @@ class ContestHandler(BaseHandler):
         ret["lang_names"] = {}
 
         # Get language codes for allowed localizations
-        lang_codes = self.langs.keys()
+        lang_codes = list(iterkeys(self.langs))
         if len(self.contest.allowed_localizations) > 0:
             lang_codes = filter_language_codes(
                 lang_codes, self.contest.allowed_localizations)
-        for lang_code, trans in self.langs.iteritems():
+        for lang_code, trans in iteritems(self.langs):
             language_name = None
             # Filter lang_codes with allowed localizations
             if lang_code not in lang_codes:

@@ -6,7 +6,7 @@
     <div class="hero-unit contest-list">
         <h3>Choose a contest</h3>
         <ul class="nav nav-list">
-    {% for c_name, c_iter in contest_list.iteritems() %}
+    {% for c_name, c_iter in iteritems(contest_list) %}
             <li>
                 <a {% if c_iter.stop < datetime.datetime.now() %} style="color: #adadad" {% end %} href="{{ url(c_iter.name) }}">{{ c_iter.description }}</a>
             </li>

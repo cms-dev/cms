@@ -35,6 +35,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues, iteritems
 
 import io
 import logging
@@ -242,7 +243,7 @@ class UserTestHandler(ContestHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(filename) != 1 for filename in self.request.files.values()):
+        if any(len(filename) != 1 for filename in itervalues(self.request.files)):
             self._send_error(
                 self._("Invalid test format!"),
                 self._("Please select the correct files."))
@@ -253,7 +254,7 @@ class UserTestHandler(ContestHandler):
         # not for submissions requiring a programming language
         # identification).
         if len(self.request.files) == 1 and \
-                self.request.files.keys()[0] == "submission":
+                next(iterkeys(self.request.files)) == "submission":
             if any(filename.endswith(".%l") for filename in required):
                 self._send_error(
                     self._("Invalid test format!"),
@@ -287,7 +288,7 @@ class UserTestHandler(ContestHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        provided = set(self.request.files.keys())
+        provided = set(iterkeys(self.request.files))
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
             self._send_error(
@@ -300,7 +301,7 @@ class UserTestHandler(ContestHandler):
         # "taskname.%l", and whose value is a couple
         # (user_assigned_filename, content).
         files = {}
-        for uploaded, data in self.request.files.iteritems():
+        for uploaded, data in iteritems(self.request.files):
             files[uploaded] = (data[0]["filename"], data[0]["body"])
 
         # Read the submission language provided in the request; we
@@ -340,7 +341,7 @@ class UserTestHandler(ContestHandler):
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
-                for n, f in files.items() if n != "input"]):
+                for n, f in iteritems(files) if n != "input"]):
             self._send_error(
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %

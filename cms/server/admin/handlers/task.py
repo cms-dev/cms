@@ -33,6 +33,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 import logging
 import traceback
@@ -196,7 +197,7 @@ class TaskHandler(BaseHandler):
                 self.redirect(self.url("task", task_id))
                 return
 
-            for testcase in dataset.testcases.itervalues():
+            for testcase in itervalues(dataset.testcases):
                 testcase.public = bool(self.get_argument(
                     "testcase_%s_public" % testcase.id, False))
 

@@ -1,7 +1,8 @@
+{% from six import iteritems %}
 <button onclick="cmsrpc_request(
                  'EvaluationService', 0,
                  'invalidate_submission', {
-{% for key, value in invalidate_arguments.items() %}
+{% for key, value in iteritems(invalidate_arguments) %}
                  '{{ key }}': {{ value }},
 {% end %}
                   'level': 'compilation'},
@@ -14,7 +15,7 @@
 <button onclick="cmsrpc_request(
                  'EvaluationService', 0,
                  'invalidate_submission', {
-{% for key, value in invalidate_arguments.items() %}
+{% for key, value in iteritems(invalidate_arguments) %}
                  '{{ key }}': {{ value }},
 {% end %}
                   'level': 'evaluation'},
@@ -27,7 +28,7 @@
 <button onclick="cmsrpc_request(
                  'ScoringService', 0,
                  'invalidate_submission', {
-{% for key, value in invalidate_arguments.items() %}
+{% for key, value in iteritems(invalidate_arguments) %}
                  '{{ key }}': {{ value }},
 {% end %}
                  },

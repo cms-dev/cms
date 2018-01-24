@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import logging
 import zipfile
@@ -76,7 +77,7 @@ def import_testcases_from_zipfile(
             skipped_tc = []
             overwritten_tc = []
             added_tc = []
-            for codename, testdata in tests.iteritems():
+            for codename, testdata in iteritems(tests):
                 # If input or output file isn't found, skip it.
                 if not testdata[0] or not testdata[1]:
                     continue

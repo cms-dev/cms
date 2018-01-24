@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import io
 import json
@@ -229,7 +230,7 @@ class Store(object):
             if not isinstance(data_dict, dict):
                 raise InvalidData("Not a dictionary")
             item_dict = dict()
-            for key, value in data_dict.iteritems():
+            for key, value in iteritems(data_dict):
                 try:
                     # FIXME We should allow keys to be arbitrary unicode
                     # strings, so this just needs to be a non-empty check.
@@ -246,7 +247,7 @@ class Store(object):
                     exc.args = exc.message,
                     raise exc
 
-            for key, value in item_dict.iteritems():
+            for key, value in iteritems(item_dict):
                 is_new = key not in self._store
                 old_value = self._store.get(key)
                 # insert entity
@@ -288,7 +289,7 @@ class Store(object):
             del self._store[key]
             # enforce consistency
             for depend in self._depends:
-                for o_key, o_value in list(depend._store.iteritems()):
+                for o_key, o_value in list(iteritems(depend._store)):
                     if not o_value.consistent():
                         depend.delete(o_key)
             # notify callbacks
@@ -308,7 +309,7 @@ class Store(object):
         """
         with LOCK:
             # delete all entities
-            for key in list(self._store.iterkeys()):
+            for key in list(iterkeys(self._store)):
                 self.delete(key)
 
     def retrieve(self, key):
@@ -331,7 +332,7 @@ class Store(object):
     def retrieve_list(self):
         """Retrieve a list of all entities."""
         result = dict()
-        for key, value in self._store.iteritems():
+        for key, value in iteritems(self._store):
             result[key] = value.get()
         return result
 

@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues, iteritems
 
 import argparse
 import functools
@@ -289,8 +290,8 @@ def SubListHandler(request, response, user_id):
         raise NotAcceptable()
 
     result = list()
-    for task_id in Task.store._store.iterkeys():
-        result.extend(Scoring.store.get_submissions(user_id, task_id).values())
+    for task_id in iterkeys(Task.store._store):
+        result.extend(itervalues(Scoring.store.get_submissions(user_id, task_id)))
     result.sort(key=lambda x: (x.task, x.time))
     result = list(a.__dict__ for a in result)
 
@@ -315,8 +316,8 @@ def ScoreHandler(request, response):
         raise NotAcceptable()
 
     result = dict()
-    for u_id, tasks in Scoring.store._scores.iteritems():
-        for t_id, score in tasks.iteritems():
+    for u_id, tasks in iteritems(Scoring.store._scores):
+        for t_id, score in iteritems(tasks):
             if score.get_score() > 0.0:
                 result.setdefault(u_id, dict())[t_id] = score.get_score()
 
@@ -334,7 +335,7 @@ class ImageHandler(object):
         'bmp': 'image/bmp'
     }
 
-    MIME_TO_EXT = dict((v, k) for k, v in EXT_TO_MIME.iteritems())
+    MIME_TO_EXT = dict((v, k) for k, v in iteritems(EXT_TO_MIME))
 
     def __init__(self, location, fallback):
         self.location = location
@@ -363,7 +364,7 @@ class ImageHandler(object):
         response = Response()
 
         available = list()
-        for extension, mimetype in self.EXT_TO_MIME.iteritems():
+        for extension, mimetype in iteritems(self.EXT_TO_MIME):
             if os.path.isfile(location + '.' + extension):
                 available.append(mimetype)
         mimetype = request.accept_mimetypes.best_match(available)

@@ -45,6 +45,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 from gevent.event import Event
 
@@ -148,7 +149,7 @@ class PriorityQueue(object):
             return False
         if self._event.isSet() == self.empty():
             return False
-        for item, idx in self._reverse.iteritems():
+        for item, idx in iteritems(self._reverse):
             if self._queue[idx].item != item:
                 return False
         return True

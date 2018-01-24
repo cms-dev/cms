@@ -35,6 +35,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import pkg_resources
 import gettext
@@ -103,7 +104,7 @@ def get_translations():
                 with io.open(mo_file_path, "rb") as mo_file:
                     result[lang_code] = gettext.GNUTranslations(mo_file)
 
-    for lang_code, trans in result.iteritems():
+    for lang_code, trans in iteritems(result):
         for sys_trans in get_system_translations(lang_code):
             trans.add_fallback(sys_trans)
 

@@ -44,6 +44,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import base64
 import logging
@@ -115,7 +116,7 @@ class ContestWebServer(WebService):
 
         # Retrieve the available translations.
         self.langs = {lang_code: wrap_translations_for_tornado(trans)
-                      for lang_code, trans in get_translations().iteritems()}
+                      for lang_code, trans in iteritems(get_translations())}
 
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(

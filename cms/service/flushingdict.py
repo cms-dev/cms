@@ -24,6 +24,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import gevent
 import logging
@@ -86,7 +87,7 @@ class FlushingDict(object):
         with self.d_lock:
             self.fd = self.d
             self.d = dict()
-        self.callback(self.fd.items())
+        self.callback(list(iteritems(self.fd)))
         self.fd = dict()
 
     def __contains__(self, key):

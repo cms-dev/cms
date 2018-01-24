@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 
 class Updater(object):
@@ -41,7 +42,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in self.objs.iteritems():
+        for k, v in iteritems(self.objs):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Contest":

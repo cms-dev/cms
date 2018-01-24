@@ -97,7 +97,7 @@
             {{ _("None") }}
         </a>
         {% elif len(s.files) == 1 %}
-            {% set filename = s.files.keys()[0] %}
+            {% set filename = next(iterkeys(s.files)) %}
             {% if s.language is not None %}
                 {% set filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
             {% end %}

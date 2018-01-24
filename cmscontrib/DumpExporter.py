@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues, iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -243,7 +244,7 @@ class DumpExporter(object):
                         self.get_id(obj)
 
                 # Specify the "root" of the data graph
-                data["_objects"] = self.ids.values()
+                data["_objects"] = list(itervalues(self.ids))
 
                 while len(self.queue) > 0:
                     obj = self.queue.pop(0)
@@ -339,7 +340,7 @@ class DumpExporter(object):
                 data[prp.key] = list(self.get_id(i) for i in val)
             elif isinstance(val, dict):
                 data[prp.key] = \
-                    dict((k, self.get_id(v)) for k, v in val.iteritems())
+                    dict((k, self.get_id(v)) for k, v in iteritems(val))
             else:
                 raise RuntimeError("Unknown SQLAlchemy relationship type: %s"
                                    % type(val))

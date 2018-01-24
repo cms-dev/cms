@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import logging
 
@@ -163,7 +164,7 @@ class Batch(TaskType):
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename = job.files.keys()[0]
+        format_filename = next(iterkeys(job.files))
         source_filenames = []
         source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[0]] = \
@@ -177,7 +178,7 @@ class Batch(TaskType):
                 job.managers["grader%s" % source_ext].digest
 
         # Also copy all managers that might be useful during compilation.
-        for filename in job.managers.iterkeys():
+        for filename in iterkeys(job.managers):
             if any(filename.endswith(header) for header in HEADER_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
@@ -188,7 +189,7 @@ class Batch(TaskType):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
-        for filename, digest in files_to_get.iteritems():
+        for filename, digest in iteritems(files_to_get):
             sandbox.create_file_from_storage(filename, digest)
 
         # Prepare the compilation command
@@ -222,7 +223,8 @@ class Batch(TaskType):
         sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
 
         # Prepare the execution
-        executable_filename = job.executables.keys()[0]
+        assert len(job.executables) == 1
+        executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
         commands = language.get_evaluation_commands(
             executable_filename,
@@ -248,9 +250,9 @@ class Batch(TaskType):
             }
 
         # Put the required files into the sandbox
-        for filename, digest in executables_to_get.iteritems():
+        for filename, digest in iteritems(executables_to_get):
             sandbox.create_file_from_storage(filename, digest, executable=True)
-        for filename, digest in files_to_get.iteritems():
+        for filename, digest in iteritems(files_to_get):
             sandbox.create_file_from_storage(filename, digest)
 
         # Actually performs the execution

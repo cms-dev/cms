@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import argparse
 import logging
@@ -109,7 +110,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         # Create objects in the DB.
         submission = Submission(make_datetime(timestamp), language.name,
                                 participation=participation, task=task)
-        for filename, digest in file_digests.items():
+        for filename, digest in iteritems(file_digests):
             session.add(File(filename, digest, submission=submission))
         session.add(submission)
         session.commit()

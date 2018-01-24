@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import logging
 import random
@@ -317,7 +318,7 @@ class WorkerPool(object):
 
         """
         pool = []
-        for shard, worker_operation in self._operations.iteritems():
+        for shard, worker_operation in iteritems(self._operations):
             if worker_operation == operation:
                 if not require_connection or self._worker[shard].connected:
                     pool.append(shard)
@@ -355,7 +356,7 @@ class WorkerPool(object):
 
         """
         result = dict()
-        for shard in self._worker.keys():
+        for shard in iterkeys(self._worker):
             s_time = self._start_time[shard]
             s_time = make_timestamp(s_time) if s_time is not None else None
 

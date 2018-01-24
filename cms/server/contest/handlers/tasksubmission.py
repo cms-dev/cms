@@ -36,6 +36,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues, iteritems
 
 import io
 import logging
@@ -173,7 +174,7 @@ class SubmitHandler(ContestHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(filename) != 1 for filename in self.request.files.values()):
+        if any(len(filename) != 1 for filename in itervalues(self.request.files)):
             self._send_error(
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
@@ -184,7 +185,7 @@ class SubmitHandler(ContestHandler):
         # not for submissions requiring a programming language
         # identification).
         if len(self.request.files) == 1 and \
-                self.request.files.keys()[0] == "submission":
+                next(iterkeys(self.request.files)) == "submission":
             if any(filename.endswith(".%l") for filename in required):
                 self._send_error(
                     self._("Invalid submission format!"),
@@ -219,7 +220,7 @@ class SubmitHandler(ContestHandler):
         # submission format and no more. Less is acceptable if task
         # type says so.
         task_type = get_task_type(dataset=task.active_dataset)
-        provided = set(self.request.files.keys())
+        provided = set(iterkeys(self.request.files))
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
             self._send_error(
@@ -232,7 +233,7 @@ class SubmitHandler(ContestHandler):
         # "taskname.%l", and whose value is a couple
         # (user_assigned_filename, content).
         files = {}
-        for uploaded, data in self.request.files.iteritems():
+        for uploaded, data in iteritems(self.request.files):
             files[uploaded] = (data[0]["filename"], data[0]["body"])
 
         # Read the submission language provided in the request; we
@@ -273,7 +274,7 @@ class SubmitHandler(ContestHandler):
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
-                for f in files.values()]):
+                for f in itervalues(files)]):
             self._send_error(
                 self._("Submission too big!"),
                 self._("Each source file must be at most %d bytes long.") %
@@ -337,7 +338,7 @@ class SubmitHandler(ContestHandler):
                                 participation=participation,
                                 official=official)
 
-        for filename, digest in file_digests.items():
+        for filename, digest in iteritems(file_digests):
             self.sql_session.add(File(filename, digest, submission=submission))
         self.sql_session.add(submission)
         self.sql_session.commit()

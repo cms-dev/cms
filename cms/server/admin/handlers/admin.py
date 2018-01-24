@@ -28,6 +28,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys
 
 import logging
 
@@ -149,7 +150,7 @@ class AdminHandler(BaseHandler):
         # allowed because they are editing their own details, they can
         # only change a subset of the fields.
         if not self.current_user.permission_all:
-            for key in new_attrs.keys():
+            for key in iterkeys(new_attrs):
                 if key not in AdminHandler.SELF_MODIFIABLE_FIELDS:
                     del new_attrs[key]
         admin.set_attrs(new_attrs)

@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import logging
 
@@ -68,7 +69,7 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
         name = dataset.score_type
         parameters = dataset.score_type_parameters
         public_testcases = dict((k, tc.public)
-                                for k, tc in dataset.testcases.iteritems())
+                                for k, tc in iteritems(dataset.testcases))
 
     elif any(x is None for x in (name, parameters, public_testcases)):
         raise ValueError("Need exactly one way to get the score type.")

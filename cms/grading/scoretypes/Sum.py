@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues
 
 from cms.grading.ScoreType import ScoreTypeAlone
 
@@ -101,7 +102,7 @@ class Sum(ScoreTypeAlone):
         """See ScoreType.max_score."""
         public_score = 0.0
         score = 0.0
-        for public in self.public_testcases.itervalues():
+        for public in itervalues(self.public_testcases):
             if public:
                 public_score += self.parameters
             score += self.parameters
@@ -114,7 +115,7 @@ class Sum(ScoreTypeAlone):
             return 0.0, [], 0.0, [], []
 
         # XXX Lexicographical order by codename
-        indices = sorted(self.public_testcases.keys())
+        indices = sorted(iterkeys(self.public_testcases))
         evaluations = dict((ev.codename, ev)
                            for ev in submission_result.evaluations)
         testcases = []

@@ -40,6 +40,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues, iteritems
 
 import logging
 
@@ -151,11 +152,11 @@ class Job(object):
             'success': self.success,
             'text': self.text,
             'files': dict((k, v.digest)
-                          for k, v in self.files.iteritems()),
+                          for k, v in iteritems(self.files)),
             'managers': dict((k, v.digest)
-                             for k, v in self.managers.iteritems()),
+                             for k, v in iteritems(self.managers)),
             'executables': dict((k, v.digest)
-                                for k, v in self.executables.iteritems()),
+                                for k, v in iteritems(self.executables)),
             }
         return res
 
@@ -275,11 +276,11 @@ class CompilationJob(Job):
     @classmethod
     def import_from_dict(cls, data):
         data['files'] = dict(
-            (k, File(k, v)) for k, v in data['files'].iteritems())
+            (k, File(k, v)) for k, v in iteritems(data['files']))
         data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in data['managers'].iteritems())
+            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
         data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in data['executables'].iteritems())
+            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
         return cls(**data)
 
     @staticmethod
@@ -337,7 +338,7 @@ class CompilationJob(Job):
         sr.compilation_memory = self.plus.get('execution_memory')
         sr.compilation_shard = self.shard
         sr.compilation_sandbox = ":".join(self.sandboxes)
-        for executable in self.executables.itervalues():
+        for executable in itervalues(self.executables):
             sr.executables.set(executable)
 
     @staticmethod
@@ -412,7 +413,7 @@ class CompilationJob(Job):
         ur.compilation_memory = self.plus.get('execution_memory')
         ur.compilation_shard = self.shard
         ur.compilation_sandbox = ":".join(self.sandboxes)
-        for executable in self.executables.itervalues():
+        for executable in itervalues(self.executables):
             u_executable = UserTestExecutable(
                 executable.filename, executable.digest)
             ur.executables.set(u_executable)
@@ -496,11 +497,11 @@ class EvaluationJob(Job):
     @classmethod
     def import_from_dict(cls, data):
         data['files'] = dict(
-            (k, File(k, v)) for k, v in data['files'].iteritems())
+            (k, File(k, v)) for k, v in iteritems(data['files']))
         data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in data['managers'].iteritems())
+            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
         data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in data['executables'].iteritems())
+            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
         return cls(**data)
 
     @staticmethod

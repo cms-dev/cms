@@ -33,6 +33,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 from datetime import datetime, timedelta
 
@@ -320,21 +321,21 @@ class Contest(Base):
         for task in self.tasks:
 
             # Enumerate statements
-            for file_ in task.statements.itervalues():
+            for file_ in itervalues(task.statements):
                 files.add(file_.digest)
 
             # Enumerate attachments
-            for file_ in task.attachments.itervalues():
+            for file_ in itervalues(task.attachments):
                 files.add(file_.digest)
 
             # Enumerate managers
             for dataset in task.datasets:
-                for file_ in dataset.managers.itervalues():
+                for file_ in itervalues(dataset.managers):
                     files.add(file_.digest)
 
             # Enumerate testcases
             for dataset in task.datasets:
-                for testcase in dataset.testcases.itervalues():
+                for testcase in itervalues(dataset.testcases):
                     files.add(testcase.input)
                     files.add(testcase.output)
 
@@ -342,13 +343,13 @@ class Contest(Base):
             for submission in self.get_submissions():
 
                 # Enumerate files
-                for file_ in submission.files.itervalues():
+                for file_ in itervalues(submission.files):
                     files.add(file_.digest)
 
                 # Enumerate executables
                 if not skip_generated:
                     for sr in submission.results:
-                        for file_ in sr.executables.itervalues():
+                        for file_ in itervalues(sr.executables):
                             files.add(file_.digest)
 
         if not skip_user_tests:
@@ -362,17 +363,17 @@ class Contest(Base):
                             files.add(ur.output)
 
                 # Enumerate files
-                for file_ in user_test.files.itervalues():
+                for file_ in itervalues(user_test.files):
                     files.add(file_.digest)
 
                 # Enumerate managers
-                for file_ in user_test.managers.itervalues():
+                for file_ in itervalues(user_test.managers):
                     files.add(file_.digest)
 
                 # Enumerate executables
                 if not skip_generated:
                     for ur in user_test.results:
-                        for file_ in ur.executables.itervalues():
+                        for file_ in itervalues(ur.executables):
                             files.add(file_.digest)
 
         return files

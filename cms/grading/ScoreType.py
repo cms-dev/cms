@@ -37,6 +37,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys
 
 import logging
 import re
@@ -293,7 +294,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         if all(isinstance(t, int) for t in t_params):
 
             # XXX Lexicographical order by codename
-            indices = sorted(self.public_testcases.keys())
+            indices = sorted(iterkeys(self.public_testcases))
             current = 0
             targets = []
 
@@ -306,7 +307,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         elif all(isinstance(t, str) for t in t_params):
 
-            indices = sorted(self.public_testcases.keys())
+            indices = sorted(iterkeys(self.public_testcases))
             targets = []
 
             for t in t_params:

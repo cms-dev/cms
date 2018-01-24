@@ -27,6 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import logging
 import os
@@ -127,13 +128,13 @@ class Communication(TaskType):
         source_filenames.append(stub_filename)
         files_to_get[stub_filename] = job.managers[stub_filename].digest
         # User's submission.
-        for filename, fileinfo in job.files.iteritems():
+        for filename, fileinfo in iteritems(job.files):
             source_filename = filename.replace(".%l", source_ext)
             source_filenames.append(source_filename)
             files_to_get[source_filename] = fileinfo.digest
 
         # Also copy all managers that might be useful during compilation.
-        for filename in job.managers.iterkeys():
+        for filename in iterkeys(job.managers):
             if any(filename.endswith(header) for header in HEADER_EXTS):
                 files_to_get[filename] = \
                     job.managers[filename].digest
@@ -144,13 +145,13 @@ class Communication(TaskType):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
-        for filename, digest in files_to_get.iteritems():
+        for filename, digest in iteritems(files_to_get):
             sandbox.create_file_from_storage(filename, digest)
 
         # Prepare the compilation command
         executable_filename = \
             "_".join(pattern.replace(".%l", "")
-                     for pattern in job.files.keys())
+                     for pattern in iterkeys(job.files))
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
 
@@ -209,22 +210,23 @@ class Communication(TaskType):
             "input.txt": job.input
             }
         manager_allow_dirs = fifo_dir
-        for filename, digest in manager_executables_to_get.iteritems():
+        for filename, digest in iteritems(manager_executables_to_get):
             sandbox_mgr.create_file_from_storage(
                 filename, digest, executable=True)
-        for filename, digest in manager_files_to_get.iteritems():
+        for filename, digest in iteritems(manager_files_to_get):
             sandbox_mgr.create_file_from_storage(filename, digest)
 
         # Second step: load the executables for the user processes
         # (done before launching the manager so that it does not
         # impact its wall clock time).
-        executable_filename = job.executables.keys()[0]
+        assert len(job.executables) == 1
+        executable_filename = next(iterkeys(job.executables))
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest
             }
         for i in indices:
-            for filename, digest in executables_to_get.iteritems():
+            for filename, digest in iteritems(executables_to_get):
                 sandbox_user[i].create_file_from_storage(
                     filename, digest, executable=True)
 

@@ -31,6 +31,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 import errno
 import functools
@@ -346,7 +347,7 @@ class Service(object):
         """Disconnect all remote services.
 
         """
-        for service in self.remote_services.itervalues():
+        for service in itervalues(self.remote_services):
             if service.connected:
                 service.disconnect()
 

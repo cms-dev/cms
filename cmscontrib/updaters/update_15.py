@@ -32,11 +32,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys
 
 
 def split_dict(src, *keys):
     ret = dict()
-    for k in list(src.iterkeys()):
+    for k in list(iterkeys(src)):
         v = src[k]
         if k in keys:
             ret[k] = v
@@ -56,7 +57,7 @@ class Updater(object):
         return str(self.next_id)
 
     def run(self):
-        for k in list(self.objs.iterkeys()):
+        for k in list(iterkeys(self.objs)):
             if k.startswith("_"):
                 continue
             v = self.objs[k]

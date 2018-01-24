@@ -28,6 +28,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues, iteritems
 
 import codecs
 import datetime
@@ -85,7 +86,7 @@ class Browser(object):
                 file_objs = dict((k, io.open(v, "rb")) for k, v in file_names)
                 response = self.session.post(url, data, files=file_objs)
             finally:
-                for fobj in file_objs.itervalues():
+                for fobj in itervalues(file_objs):
                     fobj.close()
         return response
 
@@ -212,16 +213,15 @@ class GenericRequest(object):
         res = "URL: %s\n" % self.url
         if self.response is not None:
             res += "\nREQUEST HEADERS\n"
-            for (key, value) in self.response.request.headers.iteritems():
+            for key, value in iteritems(self.response.request.headers):
                 res += "%s: %s\n" % (key, value)
             res += "\nREQUEST DATA\n%s\n" % self.response.request.body
         else:
             res += "\nNO REQUEST INFORMATION AVAILABLE\n"
         if self.res_data is not None:
-            headers = self.response.headers.items()
-            res += "\nRESPONSE HEADERS\n%s" % (
-                "".join(["%s: %s\n" % (header[0], header[1])
-                         for header in headers]))
+            res += "\nRESPONSE HEADERS\n"
+            for key, value in iteritems(self.response.headers):
+                res += "%s: %s\n" % (key, value)
             res += "\nRESPONSE DATA\n%s\n" % (self.res_data)
         else:
             res += "\nNO RESPONSE INFORMATION AVAILABLE\n"

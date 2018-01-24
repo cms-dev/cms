@@ -34,6 +34,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 import logging
 import os
@@ -614,7 +615,7 @@ class DownloadTestcasesHandler(FileHandler):
         tempdir = tempfile.mkdtemp(dir=config.temp_dir)
         zip_path = os.path.join(tempdir, "testcases.zip")
         with zipfile.ZipFile(zip_path, "w") as zip_file:
-            for testcase in dataset.testcases.itervalues():
+            for testcase in itervalues(dataset.testcases):
                 # Get input, output file path
                 input_path = self.application.service.file_cacher.\
                     get_file(testcase.input).name

@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import io
 import errno
@@ -179,7 +180,7 @@ class Config(object):
             return False
 
         # Store every config property.
-        for key, value in data.iteritems():
+        for key, value in iteritems(data):
             if key.startswith("_"):
                 continue
             if not hasattr(self, key):

@@ -28,6 +28,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, iteritems
 
 import unittest
 
@@ -102,7 +103,8 @@ class TestScoringOperations(TestCaseWithDatabase):
             self.tasks[0], self.participation, True)
         evaluated_codenames = set()
         for result in results:
-            evaluated_codename = result.dataset.testcases.keys()[0]
+            # Pick one arbitrary testcase.
+            evaluated_codename = next(iterkeys(result.dataset.testcases))
             self.add_evaluation(
                 result, result.dataset.testcases[evaluated_codename])
             evaluated_codenames.add(evaluated_codename)
@@ -130,7 +132,7 @@ class TestScoringOperations(TestCaseWithDatabase):
         submission, results = self.add_submission_with_results(
             self.tasks[0], self.participation, True)
         for result in results:
-            for codename, testcase in result.dataset.testcases.items():
+            for codename, testcase in iteritems(result.dataset.testcases):
                 self.add_evaluation(result, testcase)
                 result.set_evaluation_outcome()
         self.session.flush()

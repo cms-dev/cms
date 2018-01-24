@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 import bisect
 import logging
@@ -93,7 +94,7 @@ class ProcessMatcher(object):
         if self._procs is None:
             self._procs = ProcessMatcher._get_interesting_running_processes()
         shards = self._procs.get(service.name, {})
-        for shard, proc in shards.iteritems():
+        for shard, proc in iteritems(shards):
             if get_safe_shard(service.name, shard) == service.shard:
                 logger.debug("Found %s", service)
                 if cpu_times is not None:
