@@ -228,7 +228,7 @@ def test_testcases(base_dir, solution, language, assume=None):
         stsdata = []
         worst = [0, 0]
         try:
-            for _ in xrange(i[1]):
+            for _ in range(i[1]):
                 stscores.append(points[pos])
                 stsdata.append((tcnames[pos], points[pos],
                                 comments[pos], info[pos]))

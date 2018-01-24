@@ -50,8 +50,6 @@ else:
     from urllib import quote
     from urlparse import urljoin, urlsplit
 
-from six.moves import xrange
-
 from requests import Session, Request
 from requests.exceptions import RequestException
 
@@ -90,7 +88,7 @@ def main():
     # and nargs='+' but it doesn't seem to work with subparsers...
     parser.add_argument(
         '-r', '--ranking', dest='rankings', action='append', type=int,
-        choices=list(xrange(len(config.rankings))), metavar='shard',
+        choices=list(range(len(config.rankings))), metavar='shard',
         help="select which RWS to connect to (omit for 'all')")
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
@@ -141,7 +139,7 @@ def main():
     if args.rankings is not None:
         shards = args.rankings
     else:
-        shards = list(xrange(len(config.rankings)))
+        shards = list(range(len(config.rankings)))
 
     s = Session()
     had_error = False

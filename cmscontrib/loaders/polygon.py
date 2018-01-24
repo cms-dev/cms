@@ -232,7 +232,7 @@ class PolygonTaskLoader(TaskLoader):
 
             args["testcases"] = {}
 
-            for i in xrange(testcases):
+            for i in range(testcases):
                 infile = os.path.join(self.path, testset_name,
                                       "%02d" % (i + 1))
                 outfile = os.path.join(self.path, testset_name,

@@ -191,7 +191,7 @@ class Actor(threading.Thread):
             random.expovariate(self.metrics['time_lambda'])
         sleep_num = int(time_to_wait / SLEEP_PERIOD)
         remaining_sleep = time_to_wait - (sleep_num * SLEEP_PERIOD)
-        for _ in xrange(sleep_num):
+        for _ in range(sleep_num):
             time.sleep(SLEEP_PERIOD)
             if self.die:
                 raise ActorDying()

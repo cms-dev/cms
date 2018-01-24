@@ -257,7 +257,7 @@ def actual_phase_required(*actual_phases):
 
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-DIMS = list(1024 ** x for x in xrange(9))
+DIMS = list(1024 ** x for x in range(9))
 
 
 def format_size(n, _=lambda s: s):

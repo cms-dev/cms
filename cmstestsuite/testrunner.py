@@ -293,7 +293,7 @@ class TestRunner(object):
         self.ps.start("EvaluationService", contest=self.contest_id)
         self.ps.start("ContestWebServer", contest=self.contest_id)
         self.ps.start("ProxyService", contest=self.contest_id)
-        for shard in xrange(self.workers):
+        for shard in range(self.workers):
             self.ps.start("Worker", shard)
         self.ps.wait()
 

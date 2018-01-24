@@ -199,9 +199,9 @@ def extract_complexity_submission(testcases_lengths, submission):
     best_idxs = (-1, -1, -1)
     sbest_residue = -1
 
-    for i in xrange(MAXP + 1):
-        for j in xrange(MAXL + 1):
-            for k in xrange(MAXE + 1):
+    for i in range(MAXP + 1):
+        for j in range(MAXL + 1):
+            for k in range(MAXE + 1):
                 matrix = []
                 for point_x in points_x:
                     matrix.append([ijk_to_func(i, j, k)(point_x)])
@@ -224,9 +224,9 @@ def extract_complexity_submission(testcases_lengths, submission):
 
     with io.open("sub_%s.info" % submission.id,
                  "wt", encoding="utf-8") as info:
-        for i in xrange(MAXP + 1):
-            for j in xrange(MAXL + 1):
-                for k in xrange(MAXE + 1):
+        for i in range(MAXP + 1):
+            for j in range(MAXL + 1):
+                for k in range(MAXE + 1):
                     info.write(
                         "%+20.13lf x^%d log^%d(x) (2^x)^%d  -->  %+20.13lf\n" %
                         (res[ijk_to_idx(i, j, k)], i, j, k,
