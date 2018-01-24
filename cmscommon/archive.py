@@ -29,6 +29,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+import io
 import os
 import shutil
 import tempfile
@@ -114,7 +115,7 @@ class Archive(object):
 
         """
         temp_file, temp_filename = tempfile.mkstemp(dir=config.temp_dir)
-        with os.fdopen(temp_file, "w") as temp_file:
+        with io.open(temp_file, "wb") as temp_file:
             temp_file.write(raw_data)
 
         try:
@@ -211,7 +212,7 @@ class Archive(object):
             # Unfortunately, patoolib does not expose an API to do this.
             raise NotImplementedError("Cannot read before unpacking.")
         else:
-            return file(os.path.join(self.temp_dir, file_path), "r")
+            return io.open(os.path.join(self.temp_dir, file_path), "rb")
 
     def write(self, file_path, file_object):
         """Writes a file in the archive in place.

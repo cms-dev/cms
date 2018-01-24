@@ -32,10 +32,10 @@ from future.builtins import *
 from six import iteritems
 
 import argparse
+import io
 import logging
 import os
 import sys
-import codecs
 
 from cms import utf8_decoder
 from cms.db import Dataset, File, FSObject, Participation, SessionGen, \
@@ -242,7 +242,7 @@ def main():
                         ) + data
 
                     # Print utf8-encoded, possibly altered data
-                    with codecs.open(filename, "w", encoding="utf-8") as f_out:
+                    with io.open(filename, "wt", encoding="utf-8") as f_out:
                         f_out.write(data)
                 else:
                     # Print raw, untouched binary data

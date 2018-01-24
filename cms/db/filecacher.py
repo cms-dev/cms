@@ -464,7 +464,7 @@ class FileCacher(object):
 
         ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
                                                        text=False)
-        ftmp = os.fdopen(ftmp_handle, 'w')
+        ftmp = io.open(ftmp_handle, 'wb')
 
         fobj = self.backend.get_file(digest)
 

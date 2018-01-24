@@ -30,7 +30,6 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import itervalues, iteritems
 
-import codecs
 import datetime
 import io
 import os

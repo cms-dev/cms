@@ -352,7 +352,7 @@ class SandboxBase(object):
         real_path = self.relative_path(path)
         try:
             file_fd = os.open(real_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            file_ = os.fdopen(file_fd, "wb")
+            file_ = io.open(file_fd, "wb")
         except OSError as e:
             logger.error("Failed create file %s in sandbox. Unable to "
                          "evalulate this submission. This may be due to "
