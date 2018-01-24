@@ -42,7 +42,7 @@ import shutil
 import tempfile
 import zipfile
 
-from StringIO import StringIO
+from io import StringIO
 import tornado.web
 
 from cms import config

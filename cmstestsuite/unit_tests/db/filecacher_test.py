@@ -34,7 +34,7 @@ from future.builtins import *
 import io
 import os
 import random
-from StringIO import StringIO
+from io import StringIO
 import hashlib
 import shutil
 import unittest

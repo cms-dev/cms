@@ -26,6 +26,8 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+from functools import reduce
+
 from cms.grading.ScoreType import ScoreTypeGroup
 
 
