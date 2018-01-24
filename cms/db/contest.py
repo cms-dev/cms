@@ -568,11 +568,11 @@ class Contest(Base):
 
         # Take the list of the tokens already played (sorted by time).
         tokens = participation.get_tokens()
-        token_timestamps_contest = sorted([token.timestamp
-                                           for token in tokens])
-        token_timestamps_task = sorted([
+        token_timestamps_contest = sorted(token.timestamp
+                                          for token in tokens)
+        token_timestamps_task = sorted(
             token.timestamp for token in tokens
-            if token.submission.task.name == task.name])
+            if token.submission.task.name == task.name)
 
         # If the contest is USACO-style (i.e., the time for each user
         # start when they log in for the first time), then we start
