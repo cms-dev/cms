@@ -93,7 +93,7 @@ def safe_put_data(ranking, resource, data, operation):
         # XXX With requests-1.2 auth is automatically extracted from
         # the URL: there is no need for this.
         auth = urlsplit(url)
-        res = requests.put(url, json.dumps(data, encoding="utf-8"),
+        res = requests.put(url, json.dumps(data),
                            auth=(auth.username, auth.password),
                            headers={'content-type': 'application/json'},
                            verify=config.https_certfile)

@@ -134,7 +134,7 @@ class RPCMiddleware(object):
             return NotAcceptable()
 
         try:
-            data = json.load(request.stream, encoding='utf-8')
+            data = json.load(request.stream)
         except ValueError:
             return BadRequest()
 

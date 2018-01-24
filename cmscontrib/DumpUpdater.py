@@ -101,7 +101,7 @@ def main():
         return 1
 
     with io.open(path, 'rb') as fin:
-        data = json.load(fin, encoding="utf-8")
+        data = json.load(fin)
 
     # If no "_version" field is found we assume it's a v1.0
     # export (before the new dump format was introduced).
@@ -146,7 +146,7 @@ def main():
     assert data["_version"] == to_version
 
     with io.open(path, 'wb') as fout:
-        json.dump(data, fout, encoding="utf-8", indent=4, sort_keys=True)
+        json.dump(data, fout, indent=4, sort_keys=True)
 
     if archive is not None:
         # Keep the old archive, just rename it

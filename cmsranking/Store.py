@@ -92,7 +92,7 @@ class Store(object):
                 if name[-5:] == '.json' and name[:-5] != '':
                     with io.open(os.path.join(self._path, name), 'rb') as rec:
                         item = self._entity()
-                        item.set(json.load(rec, encoding='utf-8'))
+                        item.set(json.load(rec))
                         item.key = name[:-5]
                         self._store[name[:-5]] = item
         except OSError:
@@ -168,7 +168,7 @@ class Store(object):
             try:
                 path = os.path.join(self._path, key + '.json')
                 with io.open(path, 'wb') as rec:
-                    json.dump(self._store[key].get(), rec, encoding='utf-8')
+                    json.dump(self._store[key].get(), rec)
             except IOError:
                 logger.error("I/O error occured while creating entity",
                              exc_info=True)
@@ -207,7 +207,7 @@ class Store(object):
             try:
                 path = os.path.join(self._path, key + '.json')
                 with io.open(path, 'wb') as rec:
-                    json.dump(self._store[key].get(), rec, encoding='utf-8')
+                    json.dump(self._store[key].get(), rec)
             except IOError:
                 logger.error("I/O error occured while updating entity",
                              exc_info=True)
@@ -263,7 +263,7 @@ class Store(object):
                 try:
                     path = os.path.join(self._path, key + '.json')
                     with io.open(path, 'wb') as rec:
-                        json.dump(value.get(), rec, encoding='utf-8')
+                        json.dump(value.get(), rec)
                 except IOError:
                     logger.error(
                         "I/O error occured while merging entity lists",

@@ -190,7 +190,7 @@ class DumpImporter(object):
                     # input is correct without actually doing any
                     # validations.  Thus, for example, we're not
                     # checking that the decoded object is a dict...
-                    self.datas = json.load(fin, encoding="utf-8")
+                    self.datas = json.load(fin)
 
                 # If the dump has been exported using a data model
                 # different than the current one (that is, a previous

@@ -255,8 +255,7 @@ class DumpExporter(object):
 
                 with io.open(os.path.join(export_dir,
                                           "contest.json"), "wb") as fout:
-                    json.dump(data, fout, encoding="utf-8",
-                              indent=4, sort_keys=True)
+                    json.dump(data, fout, indent=4, sort_keys=True)
 
         # If the admin requested export to file, we do that.
         if archive_info["write_mode"] != "":
