@@ -38,7 +38,7 @@ from cmscommon.datetime import make_datetime
 
 
 def get_string(length=16):
-    return "".join(random.choice(string.letters) for _ in range(length))
+    return "".join(random.choice(string.ascii_letters) for _ in range(length))
 
 
 def get_int(upper=2 ** 31, lower=1):
