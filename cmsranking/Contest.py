@@ -24,8 +24,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import six
-
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 from cmsranking.Task import store as task_store
@@ -61,15 +59,15 @@ class Contest(Entity):
         try:
             assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert isinstance(data['name'], six.text_type), \
+            assert isinstance(data['name'], str), \
                 "Field 'name' isn't a string"
-            assert isinstance(data['begin'], six.integer_types), \
+            assert isinstance(data['begin'], int), \
                 "Field 'begin' isn't an integer"
-            assert isinstance(data['end'], six.integer_types), \
+            assert isinstance(data['end'], int), \
                 "Field 'end' isn't an integer"
             assert data['begin'] <= data['end'], \
                 "Field 'begin' is greater than 'end'"
-            assert isinstance(data['score_precision'], six.integer_types), \
+            assert isinstance(data['score_precision'], int), \
                 "Field 'score_precision' isn't an integer"
             assert data['score_precision'] >= 0, \
                 "Field 'score_precision' is negative"

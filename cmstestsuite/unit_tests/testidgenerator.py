@@ -40,7 +40,7 @@ def unique_long_id():
 
 def unique_unicode_id():
     """Return a unique id of type unicode."""
-    return unicode(unique_long_id())
+    return str(unique_long_id())
 
 
 def unique_digest():

@@ -38,8 +38,6 @@ import sys
 import grp
 from collections import namedtuple
 
-import six
-
 import gevent.socket
 
 
@@ -84,9 +82,9 @@ def utf8_decoder(value):
     raise (TypeError): if value isn't a string.
 
     """
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         return value
-    elif isinstance(value, six.binary_type):
+    elif isinstance(value, bytes):
         try:
             return value.decode("utf-8")
         except UnicodeDecodeError:

@@ -51,9 +51,9 @@ class Updater(object):
         self.next_id = len(data)
 
     def get_id(self):
-        while unicode(self.next_id) in self.objs:
+        while str(self.next_id) in self.objs:
             self.next_id += 1
-        return unicode(self.next_id)
+        return str(self.next_id)
 
     def run(self):
         for k in list(self.objs.iterkeys()):

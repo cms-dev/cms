@@ -24,8 +24,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import six
-
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 from cmsranking.Submission import store as submission_store
@@ -70,26 +68,26 @@ class Task(Entity):
         try:
             assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert isinstance(data['name'], six.text_type), \
+            assert isinstance(data['name'], str), \
                 "Field 'name' isn't a string"
-            assert isinstance(data['short_name'], six.text_type), \
+            assert isinstance(data['short_name'], str), \
                 "Field 'short_name' isn't a string"
-            assert isinstance(data['contest'], six.text_type), \
+            assert isinstance(data['contest'], str), \
                 "Field 'contest' isn't a string"
             assert isinstance(data['max_score'], float), \
                 "Field 'max_score' isn't a float"
-            assert isinstance(data['score_precision'], six.integer_types), \
+            assert isinstance(data['score_precision'], int), \
                 "Field 'score_precision' isn't an integer"
             assert data['score_precision'] >= 0, \
                 "Field 'score_precision' is negative"
             assert isinstance(data['extra_headers'], list), \
                 "Field 'extra_headers' isn't a list of strings"
-            assert isinstance(data['score_mode'], six.text_type), \
+            assert isinstance(data['score_mode'], str), \
                 "Field 'score_mode' isn't a string"
             for i in data['extra_headers']:
-                assert isinstance(i, six.text_type), \
+                assert isinstance(i, str), \
                     "Field 'extra_headers' isn't a list of strings"
-            assert isinstance(data['order'], six.integer_types), \
+            assert isinstance(data['order'], int), \
                 "Field 'order' isn't an integer"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)

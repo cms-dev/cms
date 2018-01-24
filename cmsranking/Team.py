@@ -24,8 +24,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import six
-
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 from cmsranking.User import store as user_store
@@ -55,7 +53,7 @@ class Team(Entity):
         try:
             assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert isinstance(data['name'], six.text_type), \
+            assert isinstance(data['name'], str), \
                 "Field 'name' isn't a string"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)

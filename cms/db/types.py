@@ -51,12 +51,12 @@ except AttributeError:
     def cast_interface(s, cur=None):
         if s is None:
             return None
-        return ipaddress.ip_interface(unicode(s))
+        return ipaddress.ip_interface(str(s))
 
     def cast_ipnetwork(s, cur=None):
         if s is None:
             return None
-        return ipaddress.ip_network(unicode(s))
+        return ipaddress.ip_network(str(s))
 
     inet = new_type((869,), b'INET', cast_interface)
     ainet = new_array_type((1041,), b'INET[]', inet)

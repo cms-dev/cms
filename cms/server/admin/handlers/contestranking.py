@@ -33,10 +33,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+import six
 
 import csv
 import io
-import sys
 
 from sqlalchemy.orm import joinedload
 
@@ -94,7 +94,7 @@ class RankingHandler(BaseHandler):
             self.set_header("Content-Disposition",
                             "attachment; filename=\"ranking.csv\"")
 
-            if sys.version_info >= (3, 0):
+            if six.PY3:
                 output = io.StringIO()  # untested
             else:
                 # In python2 we must use this because its csv module does not
@@ -140,10 +140,10 @@ class RankingHandler(BaseHandler):
                 if include_partial:
                     row.append("*" if partial else "")
 
-                if sys.version_info >= (3, 0):
+                if six.PY3:
                     writer.writerow(row)  # untested
                 else:
-                    writer.writerow([unicode(s).encode("utf-8") for s in row])
+                    writer.writerow([s.encode("utf-8") for s in row])
 
             self.finish(output.getvalue())
         else:
