@@ -327,8 +327,8 @@ def _get_shard_from_addresses(service, addrs):
                 res_ipv4_addrs = set([x[4][0] for x in
                                       gevent.socket.getaddrinfo(
                                           host, port,
-                                          family=gevent.socket.AF_INET,
-                                          socktype=gevent.socket.SOCK_STREAM)])
+                                          gevent.socket.AF_INET,
+                                          gevent.socket.SOCK_STREAM)])
             except (gevent.socket.gaierror, gevent.socket.error):
                 res_ipv4_addrs = set()
 
@@ -336,8 +336,8 @@ def _get_shard_from_addresses(service, addrs):
                 res_ipv6_addrs = set([x[4][0] for x in
                                       gevent.socket.getaddrinfo(
                                           host, port,
-                                          family=gevent.socket.AF_INET6,
-                                          socktype=gevent.socket.SOCK_STREAM)])
+                                          gevent.socket.AF_INET6,
+                                          gevent.socket.SOCK_STREAM)])
             except (gevent.socket.gaierror, gevent.socket.error):
                 res_ipv6_addrs = set()
 
