@@ -55,7 +55,7 @@ import sys
 # There are some calls that we take from shutil, since they're
 # hopefully not taking too long and can avoid yielding
 from shutil import copymode, copystat, _samefile, Error, \
-    SpecialFileError, _basename, WindowsError, _destinsrc
+    SpecialFileError, _basename, _destinsrc
 
 import gevent
 
@@ -182,11 +182,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
     try:
         copystat(src, dst)
     except OSError as why:
-        if WindowsError is not None and isinstance(why, WindowsError):
-            # Copying file access times may fail on Windows
-            pass
-        else:
-            errors.append((src, dst, "%s" % why))
+        errors.append((src, dst, "%s" % why))
     if errors:
         raise Error(errors)
 
