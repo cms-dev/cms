@@ -41,8 +41,8 @@ import re
 import shutil
 import tempfile
 import zipfile
+from io import StringIO
 
-from StringIO import StringIO
 import tornado.web
 
 from cms import config

@@ -31,13 +31,13 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+import hashlib
 import io
 import os
 import random
-from StringIO import StringIO
-import hashlib
 import shutil
 import unittest
+from io import StringIO
 
 from cms.db.filecacher import FileCacher
 

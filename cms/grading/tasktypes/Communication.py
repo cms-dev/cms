@@ -31,6 +31,7 @@ from future.builtins import *
 import logging
 import os
 import tempfile
+from functools import reduce
 
 from cms import config
 from cms.grading.Sandbox import wait_without_std, Sandbox
