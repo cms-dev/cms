@@ -138,11 +138,11 @@ class ScoreType(object):
             result of which we want the score
 
         return (float, object, float, object, [str]): respectively: the
-            score, the opaque data with additional information (e.g.
-            testcases' and subtasks' score) that will be converted to
-            HTML by get_html_details, and the same information from the
-            point of view of a user that did not play a token, the list
-            of strings to send to RWS.
+            score, an opaque JSON-like data structure with additional
+            information (e.g. testcases' and subtasks' score) that will
+            be converted to HTML by get_html_details, the score and a
+            similar data structure from the point of view of a user who
+            did not play a token, the list of strings to send to RWS.
 
         """
         logger.error("Unimplemented method compute_score.")
