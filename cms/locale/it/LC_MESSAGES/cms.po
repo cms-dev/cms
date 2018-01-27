@@ -117,10 +117,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Esecuzione interrotta con segnale %d (può essere dovuto ad una violazione "
+"Esecuzione interrotta con segnale %s (può essere dovuto ad una violazione "
 "dei limiti di memoria)"
 
 msgid ""

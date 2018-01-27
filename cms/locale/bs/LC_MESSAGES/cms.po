@@ -38,8 +38,8 @@ msgid "Execution timed out"
 msgstr "Vrijeme za izvršavanje je isteklo"
 
 #, python-format
-msgid "Execution killed with signal %d (could be triggered by violating memory limits)"
-msgstr "Izvršavanje prekinuto signalom %d (možda je izazvano prekoračenjem dozvoljene memorije)"
+msgid "Execution killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Izvršavanje prekinuto signalom %s (možda je izazvano prekoračenjem dozvoljene memorije)"
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"

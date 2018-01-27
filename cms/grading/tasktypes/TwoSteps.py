@@ -279,7 +279,7 @@ class TwoSteps(TaskType):
 
         success = True
         outcome = None
-        text = None
+        text = []
 
         # Error in the sandbox: report failure!
         if not success_first or not success_second:

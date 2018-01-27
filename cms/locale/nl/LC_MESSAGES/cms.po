@@ -108,10 +108,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Uitvoering afgebroken met signaal %d (mogelijk veroorzaakt door het "
+"Uitvoering afgebroken met signaal %s (mogelijk veroorzaakt door het "
 "overschrijden van geheugenlimieten)"
 
 msgid ""

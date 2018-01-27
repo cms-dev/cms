@@ -100,10 +100,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Programmi täitmine katkes signaali %d tagajärjel (võib olla tingitud "
+"Programmi täitmine katkes signaali %s tagajärjel (võib olla tingitud "
 "mälupiirangute ületamisest) "
 
 msgid ""

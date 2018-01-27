@@ -29,10 +29,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
-import json
 import logging
 import os
-import six
 
 from collections import namedtuple
 
@@ -176,7 +174,7 @@ EVALUATION_MESSAGES = MessageCollection([
                     "visible in the submission details might be much smaller "
                     "than the time limit.")),
     HumanMessage("signal",
-                 N_("Execution killed with signal %d (could be triggered by "
+                 N_("Execution killed with signal %s (could be triggered by "
                     "violating memory limits)"),
                  N_("Your submission was killed with the specified signal. "
                     "Among other things, this might be caused by exceeding "
@@ -220,12 +218,12 @@ def format_status_text(status, translator=None):
     Evaluation.text and UserTestResult.(compilation|evaluation)_text.
     It is a list whose first element is a string with printf-like
     placeholders and whose other elements are the data to use to fill
-    them. A JSON-encoded list is also accepted.
+    them.
     The first element will be translated using the given translator (or
     the identity function, if not given), completed with the data and
     returned.
 
-    status ([unicode]|unicode): a status, as described above.
+    status ([unicode]): a status, as described above.
     translator (function|None): a function expecting a string and
         returning that same string translated in some language, or
         None to apply the identity.
@@ -238,9 +236,7 @@ def format_status_text(status, translator=None):
         translator = lambda x: x
 
     try:
-        if isinstance(status, six.text_type):
-            status = json.loads(status)
-        elif not isinstance(status, list):
+        if not isinstance(status, list):
             raise TypeError("Invalid type: %r" % type(status))
 
         # translator('') gives, for some reason, the first lines of
@@ -332,7 +328,7 @@ def compilation_step(sandbox, commands):
     # correctly compiled.
     success = False
     compilation_success = None
-    text = None
+    text = []
 
     if exit_status == Sandbox.EXIT_OK and exit_code == 0:
         logger.debug("Compilation successfully finished.")
@@ -364,7 +360,7 @@ def compilation_step(sandbox, commands):
         success = True
         compilation_success = False
         plus["signal"] = signal
-        text = [COMPILATION_MESSAGES.get("signal").message, signal]
+        text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment
@@ -596,7 +592,7 @@ def human_evaluation_message(plus):
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [EVALUATION_MESSAGES.get("signal").message, plus['signal']]
+        return [EVALUATION_MESSAGES.get("signal").message, str(plus['signal'])]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return None
     elif exit_status == Sandbox.EXIT_SYSCALL:
@@ -608,9 +604,9 @@ def human_evaluation_message(plus):
         # Don't tell which code: would be too much information!
         return [EVALUATION_MESSAGES.get("returncode").message]
     elif exit_status == Sandbox.EXIT_OK:
-        return None
+        return []
     else:
-        return None
+        return []
 
 
 def is_evaluation_passed(plus):

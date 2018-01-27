@@ -35,6 +35,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def fix_text(t):
+    if t is None:
+        return []
+    t = json.loads(t)
+    t[0] = t[0].replace("%d", "%s")
+    return t
+
+
 class Updater(object):
 
     def __init__(self, data):
@@ -68,6 +76,15 @@ class Updater(object):
                 if v["ranking_score_details"] is not None:
                     v["ranking_score_details"] = \
                         json.loads(v["ranking_score_details"])
+                v["compilation_text"] = fix_text(v["compilation_text"])
+
+            if v["_class"] == "Evaluation":
+                v["execution_text"] = fix_text(v["text"])
+                del v["text"]
+
+            if v["_class"] == "UserTestResult":
+                v["compilation_text"] = fix_text(v["compilation_text"])
+                v["execution_text"] = fix_text(v["execution_text"])
 
             if v["_class"] == "User":
                 v["preferred_languages"] = json.loads(v["preferred_languages"])
