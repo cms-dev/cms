@@ -25,7 +25,7 @@ Artem Iglikov (aka artikz) <artem.iglikov@gmail.com>
 Damien Leroy <damien.leroy@be-oi.be>
 Tubérculo Martínez <nlehmann@dcc.uchile.cl>
 Evgeny Martynov <evgeny@epochfail.com>
-Edoardo Morassutto <gianluigi988@gmail.com>
+Edoardo Morassutto <edoardo.morassutto@gmail.com>
 Kento Nikaido (aka snukent) <snukent@gmail.com>
 William Pettersson <william.pettersson@gmail.com>
 Ludwig Schmidt <ludwigschmidt2@gmail.com>
