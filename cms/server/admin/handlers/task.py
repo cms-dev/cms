@@ -82,7 +82,7 @@ class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
             attrs["task_type"] = "Batch"
             attrs["task_type_parameters"] = ["alone", ["", ""], "diff"]
             attrs["score_type"] = "Sum"
-            attrs["score_type_parameters"] = [100]
+            attrs["score_type_parameters"] = 100
             attrs["task"] = task
             dataset = Dataset(**attrs)
             self.sql_session.add(dataset)

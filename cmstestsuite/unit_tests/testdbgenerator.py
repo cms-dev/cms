@@ -137,9 +137,13 @@ class TestCaseWithDatabase(unittest.TestCase):
             "task": task,
             "description": unique_unicode_id(),
             "task_type": "",
-            "task_type_parameters": [],
+            # "None" won't work here as the column is defined as non
+            # nullable. As soon as we'll depend on SQLAlchemy 1.1 we
+            # will be able to put JSON.NULL here instead.
+            "task_type_parameters": {},
             "score_type": "",
-            "score_type_parameters": [],
+            # Same here.
+            "score_type_parameters": {},
         }
         args.update(kwargs)
         dataset = Dataset(**args)

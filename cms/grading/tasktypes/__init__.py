@@ -49,7 +49,7 @@ def get_task_type(name=None, parameters=None,
     they are obtained from the dataset.
 
     name (unicode|None): the name of the TaskType class.
-    parameters ([object]|None): the parameters.
+    parameters (object|None): the parameters.
     dataset (Dataset|None): the dataset whose TaskType we want (if
         None, use the other parameters to find the task type).
 

@@ -227,7 +227,7 @@ class PolygonTaskLoader(TaskLoader):
             n_input = testcases
             if n_input != 0:
                 input_value = total_value / n_input
-            args["score_type_parameters"] = [input_value]
+            args["score_type_parameters"] = input_value
 
             args["testcases"] = {}
 

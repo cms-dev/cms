@@ -82,7 +82,7 @@ class Job(object):
         operation (dict|None): the operation, in the format that
             ESOperation.to_dict() uses.
         task_type (string|None): the name of the task type.
-        task_type_parameters ([object]|None): the parameters for the
+        task_type_parameters (object|None): the parameters for the
             creation of the correct task type.
         language (string|None): the language of the submission / user
             test.
@@ -108,8 +108,6 @@ class Job(object):
             operation = {}
         if task_type is None:
             task_type = ""
-        if task_type_parameters is None:
-            task_type_parameters = []
         if sandboxes is None:
             sandboxes = []
         if info is None:

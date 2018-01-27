@@ -5,7 +5,6 @@
 # Copyright © 2012-2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
-# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,7 +34,7 @@ task_info = {
     "task_type_{{dataset_id}}": "Communication",
     "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "2",
     "score_type_{{dataset_id}}": "Sum",
-    "score_type_parameters_{{dataset_id}}": "[50]",
+    "score_type_parameters_{{dataset_id}}": "50",
 }
 
 managers = [

@@ -40,8 +40,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.dialects.postgresql import JSONB
 
-from . import CastingArray, Base, Contest, CodenameConstraint, \
-    FilenameConstraint, DigestConstraint
+from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
+    DigestConstraint
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
 
@@ -402,7 +402,7 @@ class Dataset(Base):
 
     # Parameters for the task type class.
     task_type_parameters = Column(
-        CastingArray(JSONB),
+        JSONB,
         nullable=False)
 
     # Name of the ScoreType child class suited for the task.
@@ -412,7 +412,7 @@ class Dataset(Base):
 
     # Parameters for the score type class.
     score_type_parameters = Column(
-        CastingArray(JSONB),
+        JSONB,
         nullable=False)
 
     # Follows the description of the fields automatically added by

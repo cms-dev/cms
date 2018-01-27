@@ -562,7 +562,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     n_input = testcases
                     if n_input != 0:
                         input_value = total_value / n_input
-                    args["score_type_parameters"] = [input_value]
+                    args["score_type_parameters"] = input_value
                 else:
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
@@ -581,7 +581,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             n_input = int(conf['n_input'])
             if n_input != 0:
                 input_value = total_value / n_input
-            args["score_type_parameters"] = [input_value]
+            args["score_type_parameters"] = input_value
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
