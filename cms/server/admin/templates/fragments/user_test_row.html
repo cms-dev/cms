@@ -42,7 +42,7 @@
 
       {% end %}
         <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-        <pre>{% if utr.compilation_text is not None %}{{ format_status_text(utr.compilation_text) }}{% end %}</pre>
+        <pre>{% if len(utr.compilation_text) > 0 %}{{ format_status_text(utr.compilation_text) }}{% end %}</pre>
       </div>
     </div>
 

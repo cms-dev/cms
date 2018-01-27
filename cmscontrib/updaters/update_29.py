@@ -59,6 +59,14 @@ class Updater(object):
                                    "It needs to be manually updated in order "
                                    "to keep working properly.", v["score_type"])
 
+
+
+
+            # TODO find "Execution killed with signal %d (could be triggered by violating memory limits)# and replace %d by %s
+
+
+
+
             if v["_class"] == "SubmissionResult":
                 if v["score_details"] is not None:
                     v["score_details"] = json.loads(v["score_details"])
@@ -68,6 +76,27 @@ class Updater(object):
                 if v["ranking_score_details"] is not None:
                     v["ranking_score_details"] = \
                         json.loads(v["ranking_score_details"])
+                if v["compilation_text"] is not None:
+                    v["compilation_text"] = json.loads(v["compilation_text"])
+                else:
+                    v["compilation_text"] = []
+
+            if v["_class"] == "Evaluation":
+                if v["text"] is not None:
+                    v["execution_text"] = json.loads(v["text"])
+                else:
+                    v["execution_text"] = []
+                del v["text"]
+
+            if v["_class"] == "UserTestResult":
+                if v["compilation_text"] is not None:
+                    v["compilation_text"] = json.loads(v["compilation_text"])
+                else:
+                    v["compilation_text"] = []
+                if v["execution_text"] is not None:
+                    v["execution_text"] = json.loads(v["execution_text"])
+                else:
+                    v["execution_text"] = []
 
             if v["_class"] == "User":
                 v["preferred_languages"] = json.loads(v["preferred_languages"])

@@ -107,10 +107,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Exécution interrompue : signal %d (peut provenir d'un débordement de mémoire)"
+"Exécution interrompue : signal %s (peut provenir d'un débordement de mémoire)"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "

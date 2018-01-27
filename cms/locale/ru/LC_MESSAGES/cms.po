@@ -103,10 +103,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Выполнение завершилось с сигналом %d (это могло быть вызвано превышением "
+"Выполнение завершилось с сигналом %s (это могло быть вызвано превышением "
 "ограничения по памяти)"
 
 msgid ""
