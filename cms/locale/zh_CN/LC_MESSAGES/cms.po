@@ -92,9 +92,9 @@ msgstr "程序总耗时超时。这可能是因为undefined代码或者缓存溢
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr "测试程序因信号%d而被强制终止（可能因为内存溢出）"
+msgstr "测试程序因信号%s而被强制终止（可能因为内存溢出）"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "

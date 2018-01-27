@@ -364,7 +364,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 testcases.append({
                     "idx": idx,
                     "outcome": tc_outcomes[idx],
-                    "text": evaluations[idx].text,
+                    "text": evaluations[idx].execution_text,
                     "time": evaluations[idx].execution_time,
                     "memory": evaluations[idx].execution_memory,
                     })

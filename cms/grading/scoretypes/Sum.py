@@ -126,7 +126,7 @@ class Sum(ScoreTypeAlone):
             testcases.append({
                 "idx": idx,
                 "outcome": tc_outcome,
-                "text": evaluations[idx].text,
+                "text": evaluations[idx].execution_text,
                 "time": evaluations[idx].execution_time,
                 "memory": evaluations[idx].execution_memory,
                 })

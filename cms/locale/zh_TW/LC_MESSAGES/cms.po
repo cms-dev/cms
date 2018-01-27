@@ -39,9 +39,9 @@ msgstr "超過時間限制"
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr "測試程式因記憶體違規存取而強制終止 (信號 %d)"
+msgstr "測試程式因記憶體違規存取而強制終止 (信號 %s)"
 
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"

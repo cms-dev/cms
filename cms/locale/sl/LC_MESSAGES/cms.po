@@ -81,8 +81,8 @@ msgid "Your submission used too much total time. This might be triggered by unde
 msgstr "Tvoja oddaja je porabila preveč skupnega časa. To je lahko posledica nedefinirane kode ali preseženega medpomnilnika. V tem primeru je lahko procesorski čas, ki je viden pri podrobnostih o oddaji, precej manjši od dejanjske časovne omejitve."
 
 #, python-format
-msgid "Execution killed with signal %d (could be triggered by violating memory limits)"
-msgstr "Izvajanje je bilo prekinjeno s signalom %d (lahko je posledica prekoračitve omejitve spomina)"
+msgid "Execution killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Izvajanje je bilo prekinjeno s signalom %s (lahko je posledica prekoračitve omejitve spomina)"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
 msgstr "Tvoja oddaja je bila prekinjena s specifičnim signalom. Med drugim je to lahko posledica prekoračitve spominske omejitve. V tem primeru je porabljen spomin, ki je viden pri podrobnostih o oddaji, tisti spomin, ki je bil uporabljen pred dodelitvijo, ki je sporžila signal."

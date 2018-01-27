@@ -106,9 +106,9 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr "シグナル %d による強制終了 (メモリ制限違反の可能性もあります)"
+msgstr "シグナル %s による強制終了 (メモリ制限違反の可能性もあります)"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "
