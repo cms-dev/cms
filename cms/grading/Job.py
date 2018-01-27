@@ -557,7 +557,7 @@ class EvaluationJob(Job):
         # only if it is True.
 
         sr.evaluations += [Evaluation(
-            execution_text=self.text,
+            text=self.text,
             outcome=self.outcome,
             execution_time=self.plus.get('execution_time'),
             execution_wall_clock_time=self.plus.get(

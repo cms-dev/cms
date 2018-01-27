@@ -62,7 +62,7 @@
               <td style="text-align: center">
                 <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
               </td>
-              <td>{{ format_status_text(ev.execution_text) }}</td>
+              <td>{{ format_status_text(ev.text) }}</td>
             </tr>
             {% end %}
           </tbody>

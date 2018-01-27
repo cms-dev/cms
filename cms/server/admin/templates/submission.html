@@ -224,7 +224,7 @@
           <td style="text-align: center">
             <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
           </td>
-          <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.execution_text) }}</td>
+          <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.text) }}</td>
           <td>{{ ev.evaluation_shard }}</td>
           <td>
             {% if ev.execution_time is not None %}
