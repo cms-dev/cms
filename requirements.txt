@@ -1,25 +1,25 @@
-tornado>=4.2,<4.3  # http://www.tornadoweb.org/en/stable/releases.html
-# Last Ubuntu LTS has 2.6, but we allow 2.7 as it has a bugfix which is
-# required to run on Travis (https://github.com/psycopg/psycopg2/issues/489).
-psycopg2>=2.6,<2.8  # http://initd.org/psycopg/articles/tag/release/
-sqlalchemy>=1.0,<1.1  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
+# We are currently targeting the versions shipped in Ubuntu 18.04.
+
+tornado>=4.5,<4.6  # http://www.tornadoweb.org/en/stable/releases.html
+psycopg2>=2.7,<2.8  # http://initd.org/psycopg/articles/tag/release/
+sqlalchemy>=1.1,<1.2  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
 netifaces>=0.10,<0.11  # https://bitbucket.org/al45tair/netifaces/src/
 pycrypto>=2.6,<2.7  # https://github.com/dlitz/pycrypto/blob/master/ChangeLog
-pytz>=2014.10,<2014.11  # https://pypi.python.org/pypi/pytz
-psutil>=3.4,<3.5  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
-six>=1.10,<1.11  # https://github.com/benjaminp/six/blob/master/CHANGES
-requests>=2.9,<2.10  # https://pypi.python.org/pypi/requests
-gevent>=1.1,<1.2  # http://www.gevent.org/changelog.html
-werkzeug>=0.10,<0.11  # https://github.com/pallets/werkzeug/blob/master/CHANGES
-patool>=1.10,<1.11  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
-bcrypt>=2.0,<2.1  # https://github.com/pyca/bcrypt/
-chardet>=2.3,<2.4  # https://pypi.python.org/pypi/chardet
+pytz  # https://pypi.python.org/pypi/pytz
+psutil>=5.4,<5.5  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
+six>=1.11,<1.12  # https://github.com/benjaminp/six/blob/master/CHANGES
+requests>=2.18,<2.19  # https://pypi.python.org/pypi/requests
+gevent>=1.2,<1.3  # http://www.gevent.org/changelog.html
+werkzeug>=0.14,<0.15  # https://github.com/pallets/werkzeug/blob/master/CHANGES
+patool>=1.12,<1.13  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
+bcrypt>=3.1,<3.2  # https://github.com/pyca/bcrypt/
+chardet>=3.0,<3.1  # https://pypi.python.org/pypi/chardet
 ipaddress>=1.0,<1.1  # https://pypi.python.org/pypi/ipaddress
 future>=0.15,<0.16  # https://pypi.python.org/pypi/future
 
 # Only for some importers:
-pyyaml>=3.11,<3.12  # http://pyyaml.org/wiki/PyYAML
+pyyaml>=3.12,<3.13  # http://pyyaml.org/wiki/PyYAML
 
 # Only for printing:
 pycups>=1.9,<1.10  # https://pypi.python.org/pypi/pycups
-PyPDF2>=1.25,<1.26  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
+PyPDF2>=1.26,<1.27  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
