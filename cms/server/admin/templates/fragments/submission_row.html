@@ -62,7 +62,7 @@
               <td style="text-align: center">
                 <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
               </td>
-              <td>{{ ev.text }}</td>
+              <td>{{ format_status_text(ev.text) }}</td>
             </tr>
             {% end %}
           </tbody>
@@ -89,7 +89,7 @@
 
       {% end %}
         <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-        <pre>{% if sr.compilation_text is not None %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+        <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
       </div>
     </div>
 

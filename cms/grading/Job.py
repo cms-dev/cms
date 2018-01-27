@@ -38,7 +38,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import json
 import logging
 
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
@@ -326,7 +325,7 @@ class CompilationJob(Job):
         # only if it is True.
 
         sr.set_compilation_outcome(self.compilation_success)
-        sr.compilation_text = json.dumps(self.text, encoding='utf-8')
+        sr.compilation_text = self.text
         sr.compilation_stdout = self.plus.get('stdout')
         sr.compilation_stderr = self.plus.get('stderr')
         sr.compilation_time = self.plus.get('execution_time')
@@ -401,7 +400,7 @@ class CompilationJob(Job):
         # only if it is True.
 
         ur.set_compilation_outcome(self.compilation_success)
-        ur.compilation_text = json.dumps(self.text, encoding='utf-8')
+        ur.compilation_text = self.text
         ur.compilation_stdout = self.plus.get('stdout')
         ur.compilation_stderr = self.plus.get('stderr')
         ur.compilation_time = self.plus.get('execution_time')
@@ -558,7 +557,7 @@ class EvaluationJob(Job):
         # only if it is True.
 
         sr.evaluations += [Evaluation(
-            text=json.dumps(self.text, encoding='utf-8'),
+            text=self.text,
             outcome=self.outcome,
             execution_time=self.plus.get('execution_time'),
             execution_wall_clock_time=self.plus.get(
@@ -641,7 +640,7 @@ class EvaluationJob(Job):
         # No need to check self.success because this method gets called
         # only if it is True.
 
-        ur.evaluation_text = json.dumps(self.text, encoding='utf-8')
+        ur.evaluation_text = self.text
         ur.set_evaluation_outcome()
         ur.execution_time = self.plus.get('execution_time')
         ur.execution_wall_clock_time = \

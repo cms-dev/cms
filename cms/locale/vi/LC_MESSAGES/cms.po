@@ -105,10 +105,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Execution killed with signal %d (could be triggered by violating memory "
+"Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Chương trình bị ngắt bởi tín hiệu %d (có thể do vượt quá giới hạn bộ nhớ)"
+"Chương trình bị ngắt bởi tín hiệu %s (có thể do vượt quá giới hạn bộ nhớ)"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "

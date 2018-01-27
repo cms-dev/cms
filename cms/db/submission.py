@@ -300,10 +300,13 @@ class SubmissionResult(Base):
         String,
         nullable=True)
 
-    # String containing output from the sandbox.
+    # The output from the sandbox (to allow localization the first item
+    # of the list is a format string, possibly containing some "%s",
+    # that will be filled in using the remaining items of the list).
     compilation_text = Column(
-        String,
-        nullable=True)
+        ARRAY(String),
+        nullable=False,
+        default=[])
 
     # Number of failures during compilation.
     compilation_tries = Column(
@@ -542,7 +545,7 @@ class SubmissionResult(Base):
         """
         self.invalidate_evaluation()
         self.compilation_outcome = None
-        self.compilation_text = None
+        self.compilation_text = []
         self.compilation_tries = 0
         self.compilation_time = None
         self.compilation_wall_clock_time = None
@@ -711,11 +714,14 @@ class Evaluation(Base):
         Unicode,
         nullable=True)
 
-    # String containing output from the grader (usually "Correct",
-    # "Time limit", ...).
+    # The output from the grader, usually "Correct", "Time limit", ...
+    # (to allow localization the first item of the list is a format
+    # string, possibly containing some "%s", that will be filled in
+    # using the remaining items of the list).
     text = Column(
-        String,
-        nullable=True)
+        ARRAY(String),
+        nullable=False,
+        default=[])
 
     # Evaluation's time and wall-clock time, in seconds.
     execution_time = Column(

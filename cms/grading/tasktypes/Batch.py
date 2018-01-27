@@ -264,7 +264,7 @@ class Batch(TaskType):
         job.plus = plus
 
         outcome = None
-        text = None
+        text = []
 
         # Error in the sandbox: nothing to do!
         if not success:

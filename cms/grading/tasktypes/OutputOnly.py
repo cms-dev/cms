@@ -104,7 +104,7 @@ class OutputOnly(TaskType):
         job.plus = {}
 
         outcome = None
-        text = None
+        text = []
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
