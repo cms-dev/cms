@@ -41,6 +41,14 @@ from sqlalchemy.types import \
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import six
+# In both Python 2 and 3, everything is an object. But in py2 we alias
+# the object name with future.types.newobject.newobject, for which that
+# isn't the case. Here we recover access to the original object type.
+if six.PY3:
+    raw_object = object
+else:
+    import __builtin__
+    raw_object = __builtin__.object
 
 from . import engine, CastingArray
 
@@ -57,7 +65,7 @@ _TYPE_MAP = {
     ARRAY: list,
     CastingArray: list,
     CIDR: (ipaddress.IPv4Network, ipaddress.IPv6Network),
-    JSONB: object,
+    JSONB: raw_object,
 }
 
 
