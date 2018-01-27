@@ -32,6 +32,7 @@ from __future__ import print_function
 import json
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,13 +60,6 @@ class Updater(object):
                     json.loads(v["task_type_parameters"])
                 v["score_type_parameters"] = \
                     json.loads(v["score_type_parameters"])
-                if v["score_type"] == "Sum":
-                    v["score_type_parameters"] = [v["score_type_parameters"]]
-                elif not isinstance(v["score_type_parameters"], list):
-                    logger.warning("A Dataset uses a custom score type, `%s', "
-                                   "whose parameters are not in list format. "
-                                   "It needs to be manually updated in order "
-                                   "to keep working properly.", v["score_type"])
 
             if v["_class"] == "SubmissionResult":
                 if v["score_details"] is not None:
@@ -79,12 +73,11 @@ class Updater(object):
                 v["compilation_text"] = fix_text(v["compilation_text"])
 
             if v["_class"] == "Evaluation":
-                v["execution_text"] = fix_text(v["text"])
-                del v["text"]
+                v["text"] = fix_text(v["text"])
 
             if v["_class"] == "UserTestResult":
                 v["compilation_text"] = fix_text(v["compilation_text"])
-                v["execution_text"] = fix_text(v["execution_text"])
+                v["evaluation_text"] = fix_text(v["evaluation_text"])
 
             if v["_class"] == "User":
                 v["preferred_languages"] = json.loads(v["preferred_languages"])
