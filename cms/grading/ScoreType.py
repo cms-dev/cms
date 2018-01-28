@@ -337,7 +337,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
-            return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
+            return 0.0, [], 0.0, [], ["%lg" % 0.0 for _ in self.parameters]
 
         targets = self.retrieve_target_testcases()
         evaluations = dict((ev.codename, ev)

@@ -108,7 +108,7 @@ class Sum(ScoreTypeAlone):
         """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
-            return 0.0, "[]", 0.0, "[]", []
+            return 0.0, [], 0.0, [], []
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
