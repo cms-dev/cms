@@ -48,11 +48,6 @@ class HaskellGhc(CompiledLanguage):
         return [".hs"]
 
     @property
-    def header_extensions(self):
-        """See Language.source_extensions."""
-        return []
-
-    @property
     def object_extensions(self):
         """See Language.source_extensions."""
         return [".o"]

@@ -45,16 +45,6 @@ class Rust(CompiledLanguage):
         """See Language.source_extensions."""
         return [".rs"]
 
-    @property
-    def header_extensions(self):
-        """See Language.header_extensions."""
-        return []
-
-    @property
-    def object_extensions(self):
-        """See Language.object_extensions."""
-        return []
-
     def get_compilation_commands(self,
                                  source_filenames, executable_filename,
                                  for_evaluation=True):
