@@ -47,6 +47,7 @@ logger = logging.getLogger(__name__)
 class TestRunner(object):
     def __init__(self, test_list, contest_id=None, workers=1):
         self.start_time = datetime.datetime.now()
+        self.last_end_time = self.start_time
 
         self.ps = ProgramStarter()
 
@@ -101,12 +102,10 @@ class TestRunner(object):
 
     def log_elapsed_time(self):
         end_time = datetime.datetime.now()
-        secs = int((end_time - self.start_time).total_seconds())
-        mins = secs / 60
-        secs = secs % 60
-        hrs = mins / 60
-        mins = mins % 60
-        logger.info("Time elapsed: %02d:%02d:%02d", hrs, mins, secs)
+        logger.info("Time elapsed: %s, since last: %s",
+                    end_time - self.start_time,
+                    end_time - self.last_end_time)
+        self.last_end_time = end_time
 
     # Service management.
 
