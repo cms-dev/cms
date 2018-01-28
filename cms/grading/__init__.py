@@ -594,7 +594,7 @@ def human_evaluation_message(plus):
     elif exit_status == Sandbox.EXIT_SIGNAL:
         return [EVALUATION_MESSAGES.get("signal").message, str(plus['signal'])]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-        return None
+        return []
     elif exit_status == Sandbox.EXIT_SYSCALL:
         return [EVALUATION_MESSAGES.get("syscall").message, plus['syscall']]
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
