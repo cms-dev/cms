@@ -76,20 +76,16 @@ def filename_to_language(filename):
 
 def _load_languages():
     """Load the available languages and fills all other data structures."""
-    global LANGUAGES, _BY_NAME, HEADER_EXTS, OBJECT_EXTS, SOURCE_EXTS
-    if LANGUAGES != []:
+    if len(LANGUAGES) > 0:
         return
 
-    LANGUAGES = [
-        language()
-        for language in plugin_list("cms.grading.languages", "languages")
-    ]
-    _BY_NAME = dict(
-        (language.name, language) for language in LANGUAGES)
+    LANGUAGES.extend(language() for language in plugin_list(
+        "cms.grading.languages", "languages"))
+    _BY_NAME.update((language.name, language) for language in LANGUAGES)
     for lang in LANGUAGES:
-        HEADER_EXTS |= set(lang.header_extensions)
-        OBJECT_EXTS |= set(lang.object_extensions)
-        SOURCE_EXTS |= set(lang.source_extensions)
+        HEADER_EXTS.update(lang.header_extensions)
+        OBJECT_EXTS.update(lang.object_extensions)
+        SOURCE_EXTS.update(lang.source_extensions)
 
 
 # Initialize!
