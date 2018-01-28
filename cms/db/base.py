@@ -38,20 +38,20 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import six
 
-from . import engine
+from . import engine, CastingArray
 
 
-# Ordered from most specific to least specific.
 _TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
     Float: float,
-    Enum: six.text_type,  # Subclass of String.
-    Unicode: six.text_type,  # Subclass of String.
+    Enum: six.text_type,
+    Unicode: six.text_type,
     String: six.string_types,  # TODO Use six.binary_type.
     DateTime: datetime,
     Interval: timedelta,
     ARRAY: list,
+    CastingArray: list,
     CIDR: (ipaddress.IPv4Network, ipaddress.IPv6Network),
     JSONB: object,
 }
@@ -207,17 +207,14 @@ class Base(object):
                     # TODO col.type.python_type contains the type that
                     # SQLAlchemy thinks is more appropriate. We could
                     # use that and drop _TYPE_MAP...
-                    py_type = tuple(v for k, v in _TYPE_MAP.iteritems()
-                                    if isinstance(col.type, k))[0]
+                    py_type = _TYPE_MAP[type(col.type)]
                     if not isinstance(val, py_type):
                         raise TypeError(
                             "%s.__init__() got a '%s' for keyword argument "
                             "'%s', which requires a '%s'" %
                             (cls.__name__, type(val), prp.key, py_type))
                     if isinstance(col.type, ARRAY):
-                        py_item_type = tuple(
-                            v for k, v in _TYPE_MAP.iteritems()
-                            if isinstance(col.type.item_type, k))[0]
+                        py_item_type = _TYPE_MAP[type(col.type.item_type)]
                         for item in val:
                             if not isinstance(item, py_item_type):
                                 raise TypeError(
@@ -328,17 +325,14 @@ class Base(object):
                     # TODO col.type.python_type contains the type that
                     # SQLAlchemy thinks is more appropriate. We could
                     # use that and drop _TYPE_MAP...
-                    py_type = tuple(v for k, v in _TYPE_MAP.iteritems()
-                                    if isinstance(col.type, k))[0]
+                    py_type = _TYPE_MAP[type(col.type)]
                     if not isinstance(val, py_type):
                         raise TypeError(
                             "set_attrs() got a '%s' for keyword argument "
                             "'%s', which requires a '%s'" %
                             (type(val), prp.key, py_type))
                     if isinstance(col.type, ARRAY):
-                        py_item_type = tuple(
-                            v for k, v in _TYPE_MAP.iteritems()
-                            if isinstance(col.type.item_type, k))[0]
+                        py_item_type = _TYPE_MAP[type(col.type.item_type)]
                         for item in val:
                             if not isinstance(item, py_item_type):
                                 raise TypeError(
