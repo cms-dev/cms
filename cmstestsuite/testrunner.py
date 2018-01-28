@@ -278,20 +278,29 @@ class TestRunner(object):
                 for lang in test.languages:
                     yield (test, lang)
 
-    def submit_tests(self):
+    def submit_tests(self, concurrent_submit_and_eval=True):
         """Create the tasks, and submit for all languages in all tests.
 
+        concurrent_submit_and_eval (boolean): if False, stop ES while
+            we are submitting, so that we have a clearer view of the time
+            each step takes.
+
         """
+        def start_eval_services():
+            self.ps.start("EvaluationService", contest=self.contest_id)
+            self.ps.start("ProxyService", contest=self.contest_id)
+            for shard in xrange(self.workers):
+                self.ps.start("Worker", shard)
+
         # Pre-install all tasks in the contest. After this, we restart
         # ProxyService to ensure it reinitializes, picking up the new
         # tasks and sending them to RWS.
         for test in self.test_list:
             self.create_or_get_task(test.task_module)
-        self.ps.start("EvaluationService", contest=self.contest_id)
+
         self.ps.start("ContestWebServer", contest=self.contest_id)
-        self.ps.start("ProxyService", contest=self.contest_id)
-        for shard in xrange(self.workers):
-            self.ps.start("Worker", shard)
+        if concurrent_submit_and_eval:
+            start_eval_services()
         self.ps.wait()
 
         for i, (test, lang) in enumerate(self._all_submissions()):
@@ -314,6 +323,10 @@ class TestRunner(object):
             except TestFailure as f:
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))
+
+        if not concurrent_submit_and_eval:
+            start_eval_services()
+            self.ps.wait()
 
     def wait_for_evaluation(self):
         """Wait for all submissions to evaluate.

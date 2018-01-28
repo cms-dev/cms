@@ -96,7 +96,7 @@ def main():
                  for _ in range(args.submissions)]
 
     runner = TestRunner(test_list, workers=args.workers)
-    runner.submit_tests()
+    runner.submit_tests(concurrent_submit_and_eval=False)
     runner.log_elapsed_time()
 
     failures = runner.wait_for_evaluation()
