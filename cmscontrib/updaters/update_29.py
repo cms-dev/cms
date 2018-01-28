@@ -39,7 +39,10 @@ logger = logging.getLogger(__name__)
 def fix_text(t):
     if t is None:
         return []
-    t = json.loads(t)
+    try:
+        t = json.loads(t)
+    except ValueError:
+        t = [t]
     t[0] = t[0].replace("%d", "%s")
     return t
 
