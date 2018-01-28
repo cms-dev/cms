@@ -36,6 +36,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from abc import ABCMeta, abstractmethod
 
 from cms import config
 from cms.grading import JobException
@@ -104,6 +105,9 @@ class TaskType(object):
       operations; must be overloaded.
 
     """
+
+    __metaclass__ = ABCMeta
+
     # If ALLOW_PARTIAL_SUBMISSION is True, then we allow the user to
     # submit only some of the required files; moreover, we try to fill
     # the non-provided files with the one in the previous submission.
@@ -163,6 +167,7 @@ class TaskType(object):
 
     testable = True
 
+    @abstractmethod
     def get_compilation_commands(self, submission_format):
         """Return the compilation commands for all supported languages
 
@@ -180,8 +185,9 @@ class TaskType(object):
             is required (e.g. output only).
 
         """
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
+    @abstractmethod
     def get_user_managers(self):
         """Return the managers that must be provided by the user when
         requesting a user test.
@@ -190,8 +196,9 @@ class TaskType(object):
                               '%l' as a "language wildcard").
 
         """
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
+    @abstractmethod
     def get_auto_managers(self):
         """Return the managers that must be provided by the
         EvaluationService (picking them from the Task) when compiling
@@ -201,8 +208,9 @@ class TaskType(object):
                              '%l' as a "language wildcard").
 
         """
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
+    @abstractmethod
     def compile(self, job, file_cacher):
         """Try to compile the given CompilationJob.
 
@@ -220,8 +228,9 @@ class TaskType(object):
                                   that are produced.
 
         """
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
+    @abstractmethod
     def evaluate(self, job, file_cacher):
         """Try to evaluate the given EvaluationJob.
 
@@ -239,7 +248,7 @@ class TaskType(object):
                                   that are produced.
 
         """
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
     def execute_job(self, job, file_cacher):
         """Call compile() or execute() depending on the job passed

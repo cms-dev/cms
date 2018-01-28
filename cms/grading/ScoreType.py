@@ -37,6 +37,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from abc import ABCMeta, abstractmethod
 
 from tornado.template import Template
 
@@ -56,6 +57,9 @@ class ScoreType(object):
     defined here.
 
     """
+
+    __metaclass__ = ABCMeta
+
     TEMPLATE = ""
 
     def __init__(self, parameters, public_testcases):
@@ -117,6 +121,7 @@ class ScoreType(object):
         else:
             return Template(self.TEMPLATE).generate(details=score_details, _=_)
 
+    @abstractmethod
     def max_scores(self):
         """Returns the maximum score that one could aim to in this
         problem. Also return the maximum score from the point of view
@@ -128,9 +133,9 @@ class ScoreType(object):
             score with only public testcases; ranking headers.
 
         """
-        logger.error("Unimplemented method max_scores.")
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
+    @abstractmethod
     def compute_score(self, unused_submission_result):
         """Computes a score of a single submission.
 
@@ -145,8 +150,7 @@ class ScoreType(object):
             did not play a token, the list of strings to send to RWS.
 
         """
-        logger.error("Unimplemented method compute_score.")
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
 
 class ScoreTypeAlone(ScoreType):
@@ -395,6 +399,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         return score, subtasks, public_score, public_subtasks, ranking_details
 
+    @abstractmethod
     def get_public_outcome(self, unused_outcome, unused_parameter):
         """Return a public outcome from an outcome.
 
@@ -410,9 +415,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
         return (float): the public output.
 
         """
-        logger.error("Unimplemented method get_public_outcome.")
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
+    @abstractmethod
     def reduce(self, unused_outcomes, unused_parameter):
         """Return the score of a subtask given the outcomes.
 
@@ -423,5 +428,4 @@ class ScoreTypeGroup(ScoreTypeAlone):
         return (float): the public output.
 
         """
-        logger.error("Unimplemented method reduce.")
-        raise NotImplementedError("Please subclass this class.")
+        pass
