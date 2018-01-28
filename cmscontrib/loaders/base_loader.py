@@ -22,6 +22,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from abc import ABCMeta, abstractmethod
+
 
 class BaseLoader(object):
     """Base class for deriving loaders.
@@ -32,6 +34,8 @@ class BaseLoader(object):
       * The class method detect() can be called at any time.
 
     """
+
+    __metaclass__ = ABCMeta
 
     # Short name of this loader, meant to be a unique identifier.
     short_name = None
@@ -52,6 +56,7 @@ class BaseLoader(object):
         self.file_cacher = file_cacher
 
     @staticmethod
+    @abstractmethod
     def detect(path):
         """Detect whether this loader is able to interpret a path.
 
@@ -64,10 +69,11 @@ class BaseLoader(object):
                        given path.
 
         """
-        raise NotImplementedError("Please extend Loader")
+        pass
 
+    @abstractmethod
     def get_task_loader(self, taskname):
-        raise NotImplementedError("Please extend Loader")
+        pass
 
 
 class TaskLoader(BaseLoader):
@@ -86,6 +92,7 @@ class TaskLoader(BaseLoader):
     def __init__(self, path, file_cacher):
         super(TaskLoader, self).__init__(path, file_cacher)
 
+    @abstractmethod
     def get_task(self, get_statement):
         """Produce a Task object.
 
@@ -94,8 +101,9 @@ class TaskLoader(BaseLoader):
         return (Task): the Task object.
 
         """
-        raise NotImplementedError("Please extend TaskLoader")
+        pass
 
+    @abstractmethod
     def task_has_changed(self):
         """Detect if the task has been changed since its last import.
 
@@ -113,7 +121,7 @@ class TaskLoader(BaseLoader):
         return (bool): True if the task was changed, False otherwise.
 
         """
-        raise NotImplementedError("Please extend TaskLoader")
+        pass
 
 
 class UserLoader(BaseLoader):
@@ -132,14 +140,16 @@ class UserLoader(BaseLoader):
     def __init__(self, path, file_cacher):
         super(UserLoader, self).__init__(path, file_cacher)
 
+    @abstractmethod
     def get_user(self):
         """Produce a User object.
 
         return (User): the User object.
 
         """
-        raise NotImplementedError("Please extend UserLoader")
+        pass
 
+    @abstractmethod
     def user_has_changed(self):
         """Detect if the user has been changed since its last import.
 
@@ -157,7 +167,7 @@ class UserLoader(BaseLoader):
         return (bool): True if the user was changed, False otherwise.
 
         """
-        raise NotImplementedError("Please extend UserLoader")
+        pass
 
 
 class TeamLoader(BaseLoader):
@@ -176,14 +186,16 @@ class TeamLoader(BaseLoader):
     def __init__(self, path, file_cacher):
         super(TeamLoader, self).__init__(path, file_cacher)
 
+    @abstractmethod
     def get_team(self):
         """Produce a Team object.
 
         return (Team): the Team object.
 
         """
-        raise NotImplementedError("Please extend TeamLoader")
+        pass
 
+    @abstractmethod
     def team_has_changed(self):
         """Detect if the team has been changed since its last import.
 
@@ -201,7 +213,7 @@ class TeamLoader(BaseLoader):
         return (bool): True if the team was changed, False otherwise.
 
         """
-        raise NotImplementedError("Please extend TeamLoader")
+        pass
 
 
 class ContestLoader(BaseLoader):
@@ -220,6 +232,7 @@ class ContestLoader(BaseLoader):
     def __init__(self, path, file_cacher):
         super(ContestLoader, self).__init__(path, file_cacher)
 
+    @abstractmethod
     def get_contest(self):
         """Produce a Contest object.
 
@@ -235,8 +248,9 @@ class ContestLoader(BaseLoader):
                         above.
 
         """
-        raise NotImplementedError("Please extend ContestLoader")
+        pass
 
+    @abstractmethod
     def contest_has_changed(self):
         """Detect if the contest has been changed since its last import.
 
@@ -254,4 +268,4 @@ class ContestLoader(BaseLoader):
         return (bool): True if the contset was changed, False otherwise.
 
         """
-        raise NotImplementedError("Please extend ContestLoader")
+        pass
