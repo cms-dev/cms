@@ -392,15 +392,10 @@ class SandboxBase(object):
 
         """
         file_ = self.get_file(path)
-        try:
-            if maxlen is None:
-                content = file_.read()
-            else:
-                content = file_.read(maxlen)
-        except UnicodeDecodeError:
-            logger.error("Unable to interpret file as UTF-8.",
-                         exc_info=True)
-            return None
+        if maxlen is None:
+            content = file_.read()
+        else:
+            content = file_.read(maxlen)
         file_.close()
         return content
 
