@@ -113,7 +113,7 @@ class OutputOnly(TaskType):
             job.success = True
             job.outcome = "0.0"
             job.text = [N_("File not submitted")]
-            return True
+            return
 
         # First and only one step: diffing (manual or with manager).
         output_digest = job.files["output_%s.txt" %

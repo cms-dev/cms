@@ -129,7 +129,7 @@ class Batch(TaskType):
 
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
-        return None
+        return []
 
     def _uses_grader(self):
         return self.parameters[0] == "grader"
@@ -152,7 +152,7 @@ class Batch(TaskType):
             job.text = [N_("Invalid files in submission")]
             logger.error("Submission contains %d files, expecting 1",
                          len(job.files), extra={"operation": job.info})
-            return True
+            return
 
         # Create the sandbox
         sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)

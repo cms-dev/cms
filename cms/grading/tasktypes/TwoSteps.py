@@ -138,7 +138,7 @@ class TwoSteps(TaskType):
             job.text = [N_("Invalid files in submission")]
             logger.error("Submission contains %d files, expecting 2",
                          len(job.files), extra={"operation": job.info})
-            return True
+            return
 
         # First and only one compilation.
         sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
