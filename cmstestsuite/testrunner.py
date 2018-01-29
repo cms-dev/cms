@@ -291,13 +291,16 @@ class TestRunner(object):
         for test in self.test_list:
             self.create_or_get_task(test.task_module)
 
+        # We only need CWS to submit, and we can start the other services while
+        # submissions are ongoing.
         self.ps.start("ContestWebServer", contest=self.contest_id)
+        self.ps.wait()
+
         self.ps.start("ProxyService", contest=self.contest_id)
         for shard in xrange(self.workers):
             self.ps.start("Worker", shard)
         if concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
-        self.ps.wait()
 
         for i, (test, lang) in enumerate(self._all_submissions()):
             logging.info("Submitting submission %s/%s: %s (%s)",
@@ -320,9 +323,11 @@ class TestRunner(object):
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))
 
+        # Even if we started ES earlier, we did not block until it was ready,
+        # so we do it now.
         if not concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
-            self.ps.wait()
+        self.ps.wait()
 
     def wait_for_evaluation(self):
         """Wait for all submissions to evaluate.
