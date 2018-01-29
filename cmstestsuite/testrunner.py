@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -293,17 +293,11 @@ class TestRunner(object):
     def submit_tests(self, concurrent_submit_and_eval=True):
         """Create the tasks, and submit for all languages in all tests.
 
-        concurrent_submit_and_eval (boolean): if False, stop ES while
-            we are submitting, so that we have a clearer view of the time
-            each step takes.
+        concurrent_submit_and_eval (boolean): if False, start ES only
+            after CWS received all the submissions, with the goal of
+            having a clearer view of the time each step takes.
 
         """
-        def start_eval_services():
-            self.ps.start("EvaluationService", contest=self.contest_id)
-            self.ps.start("ProxyService", contest=self.contest_id)
-            for shard in xrange(self.workers):
-                self.ps.start("Worker", shard)
-
         # Pre-install all tasks in the contest. After this, we restart
         # ProxyService to ensure it reinitializes, picking up the new
         # tasks and sending them to RWS.
@@ -311,8 +305,11 @@ class TestRunner(object):
             self.create_or_get_task(test.task_module)
 
         self.ps.start("ContestWebServer", contest=self.contest_id)
+        self.ps.start("ProxyService", contest=self.contest_id)
+        for shard in xrange(self.workers):
+            self.ps.start("Worker", shard)
         if concurrent_submit_and_eval:
-            start_eval_services()
+            self.ps.start("EvaluationService", contest=self.contest_id)
         self.ps.wait()
 
         for i, (test, lang) in enumerate(self._all_submissions()):
@@ -337,7 +334,7 @@ class TestRunner(object):
                 self.failures.append((test, lang, f.message))
 
         if not concurrent_submit_and_eval:
-            start_eval_services()
+            self.ps.start("EvaluationService", contest=self.contest_id)
             self.ps.wait()
 
     def wait_for_evaluation(self):
