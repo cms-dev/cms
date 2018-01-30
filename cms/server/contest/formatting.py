@@ -38,8 +38,13 @@ from cmscommon.datetime import make_datetime, utc
 from cms.locale import locale_format
 
 
-# Dummy function to mark strings for translation
-def N_(*unused_args, **unused_kwargs):
+# Dummy functions to mark strings for translation: N_ is a dummy for
+# gettext/_ and Nn_ is a dummy for ngettext/n_ (for plural forms).
+def N_(msgid):
+    pass
+
+
+def Nn_(msgid1, msgid2, c):
     pass
 
 
@@ -48,10 +53,10 @@ N_("loading...")
 N_("unknown")
 
 # Other messages used in this file.
-N_("%d second", "%d seconds", 0)
-N_("%d minute", "%d minutes", 0)
-N_("%d hour", "%d hours", 0)
-N_("%d day", "%d days", 0)
+Nn_("%d second", "%d seconds", 0)
+Nn_("%d minute", "%d minutes", 0)
+Nn_("%d hour", "%d hours", 0)
+Nn_("%d day", "%d days", 0)
 
 
 def format_datetime(dt, timezone, locale=None):
@@ -144,9 +149,10 @@ def format_amount_of_time(seconds, precision=2, locale=None):
         locale = tornado.locale.get()
 
     _ = locale.translate
+    n_ = locale.translate
 
     if seconds == 0:
-        return _("%d second", "%d seconds", 0) % 0
+        return n_("%d second", "%d seconds", 0) % 0
 
     units = [(("%d day", "%d days"), 60 * 60 * 24),
              (("%d hour", "%d hours"), 60 * 60),
@@ -227,6 +233,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
         locale = tornado.locale.get()
 
     _ = locale.translate
+    n_ = locale.translate
 
     if t_type == "contest":
         tokens["type_s"] = _("contest-token")
@@ -258,51 +265,51 @@ def format_token_rules(tokens, t_type=None, locale=None):
         if tokens['gen_initial'] == 0:
             result += _("You start with no %(type_pl)s.") % tokens
         else:
-            result += _("You start with one %(type_s)s.",
-                        "You start with %(gen_initial)d %(type_pl)s.",
-                        tokens['gen_initial'] == 1) % tokens
+            result += n_("You start with one %(type_s)s.",
+                         "You start with %(gen_initial)d %(type_pl)s.",
+                         tokens['gen_initial'] == 1) % tokens
 
         result += " "
 
         if tokens['gen_number'] > 0:
-            result += _("Every minute ",
-                        "Every %(gen_interval)g minutes ",
-                        tokens['gen_interval']) % tokens
+            result += n_("Every minute ",
+                         "Every %(gen_interval)g minutes ",
+                         tokens['gen_interval']) % tokens
             if tokens['gen_max'] is not None:
-                result += _("you get another %(type_s)s, ",
-                            "you get %(gen_number)d other %(type_pl)s, ",
-                            tokens['gen_number']) % tokens
-                result += _("up to a maximum of one %(type_s)s.",
-                            "up to a maximum of %(gen_max)d %(type_pl)s.",
-                            tokens['gen_max']) % tokens
+                result += n_("you get another %(type_s)s, ",
+                             "you get %(gen_number)d other %(type_pl)s, ",
+                             tokens['gen_number']) % tokens
+                result += n_("up to a maximum of one %(type_s)s.",
+                             "up to a maximum of %(gen_max)d %(type_pl)s.",
+                             tokens['gen_max']) % tokens
             else:
-                result += _("you get another %(type_s)s.",
-                            "you get %(gen_number)d other %(type_pl)s.",
-                            tokens['gen_number']) % tokens
+                result += n_("you get another %(type_s)s.",
+                             "you get %(gen_number)d other %(type_pl)s.",
+                             tokens['gen_number']) % tokens
         else:
             result += _("You don't get other %(type_pl)s.") % tokens
 
         result += " "
 
         if tokens['min_interval'] > 0 and tokens['max_number'] is not None:
-            result += _("You can use a %(type_s)s every second ",
-                        "You can use a %(type_s)s every %(min_interval)g "
-                        "seconds ",
-                        tokens['min_interval']) % tokens
-            result += _("and no more than one %(type_s)s in total.",
-                        "and no more than %(max_number)d %(type_pl)s in "
-                        "total.",
-                        tokens['max_number']) % tokens
+            result += n_("You can use a %(type_s)s every second ",
+                         "You can use a %(type_s)s every %(min_interval)g "
+                         "seconds ",
+                         tokens['min_interval']) % tokens
+            result += n_("and no more than one %(type_s)s in total.",
+                         "and no more than %(max_number)d %(type_pl)s in "
+                         "total.",
+                         tokens['max_number']) % tokens
         elif tokens['min_interval'] > 0:
-            result += _("You can use a %(type_s)s every second.",
-                        "You can use a %(type_s)s every %(min_interval)g "
-                        "seconds.",
-                        tokens['min_interval']) % tokens
+            result += n_("You can use a %(type_s)s every second.",
+                         "You can use a %(type_s)s every %(min_interval)g "
+                         "seconds.",
+                         tokens['min_interval']) % tokens
         elif tokens['max_number'] is not None:
-            result += _("You can use no more than one %(type_s)s in total.",
-                        "You can use no more than %(max_number)d %(type_pl)s "
-                        "in total.",
-                        tokens['max_number']) % tokens
+            result += n_("You can use no more than one %(type_s)s in total.",
+                         "You can use no more than %(max_number)d %(type_pl)s "
+                         "in total.",
+                         tokens['max_number']) % tokens
         else:
             result += \
                 _("You have no limitations on how you use them.") % tokens

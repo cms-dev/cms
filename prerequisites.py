@@ -41,7 +41,6 @@ import argparse
 import grp
 import os
 import pwd
-import re
 import shutil
 import subprocess
 import sys
@@ -199,25 +198,6 @@ def get_real_user():
     return name
 
 
-def build_l10n():
-    """This function compiles localization files.
-
-    """
-    assert_not_root()
-
-    print("===== Compiling localization files")
-    for locale in glob(os.path.join("cms", "locale", "*")):
-        if os.path.isdir(locale) \
-                and not os.path.basename(locale).startswith("_"):
-            country_code = os.path.basename(locale)
-            print("  %s" % country_code)
-            path = os.path.join(
-                "cms", "locale", country_code, "LC_MESSAGES")
-            locale = os.path.join(locale, "LC_MESSAGES", "cms.po")
-            subprocess.call(
-                ["msgfmt", locale, "-o", os.path.join(path, "cms.mo")])
-
-
 def build_isolate():
     """This function compiles the isolate sandbox.
 
@@ -265,11 +245,9 @@ def install_isolate():
 
 def build():
     """This function builds all the prerequisites by calling:
-    - build_l10n
     - build_isolate
 
     """
-    build_l10n()
     build_isolate()
 
 
@@ -304,7 +282,6 @@ def install():
     """This function prepares all that's needed to run CMS:
     - creation of cmsuser user
     - compilation and installation of isolate
-    - compilation and installation of localization files
     - installation of configuration files
     and so on.
 
@@ -405,7 +382,6 @@ def uninstall():
     function:
     - deletion of the cmsuser user
     - deletion of isolate
-    - deletion of localization files
     - deletion of configuration files
     and so on.
 
@@ -419,14 +395,6 @@ def uninstall():
     if ask("Type Y if you really want to remove configuration files: "):
         for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
             try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
-
-    print("===== Deleting localization files")
-    for locale in glob(os.path.join("po", "*.po")):
-        country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
-        print("  %s" % country_code)
-        dest_path = os.path.join(USR_ROOT, "share", "locale",
-                                 country_code, "LC_MESSAGES")
-        try_delete(os.path.join(dest_path, "cms.mo"))
 
     print("===== Deleting empty directories")
     dirs = [os.path.join(VAR_ROOT, "log"),
@@ -487,9 +455,6 @@ if __name__ == '__main__':
 
     subparsers = parser.add_subparsers(metavar="command",
                                        help="Subcommand to run")
-    subparsers.add_parser("build_l10n",
-                          help="Build localization files") \
-        .set_defaults(func=build_l10n)
     subparsers.add_parser("build_isolate",
                           help="Build \"isolate\" sandbox") \
         .set_defaults(func=build_isolate)
