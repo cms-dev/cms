@@ -30,6 +30,7 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 # setuptools doesn't seem to like this:
 # from __future__ import unicode_literals
