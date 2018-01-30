@@ -16,8 +16,6 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (in particular the C compiler ``gcc``);
 
-* `gettext <http://www.gnu.org/software/gettext/>`_ >= 0.18;
-
 * `Python <http://www.python.org/>`_ 2.7 or 3.6;
 
 * `libcg <http://libcg.sourceforge.net/>`_;
@@ -62,7 +60,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
     # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk \
         fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl \
-        postgresql postgresql-client gettext python3.6 \
+        postgresql postgresql-client python3.6 \
         iso-codes shared-mime-info stl-manual cgroup-lite libcap-dev
 
     # Only if you are going to use pip/virtualenv to install python dependencies
@@ -212,7 +210,7 @@ To install CMS and its Python dependencies on Ubuntu, you can issue:
          python3-sqlalchemy python3-psutil python3-netifaces python3-crypto \
          python3-tz python3-six python3-bs4 python3-coverage python3-mock \
          python3-requests python3-werkzeug python3-gevent python3-bcrypt \
-         python3-chardet patool python3-ipaddress
+         python3-chardet patool python3-ipaddress python3-babel
 
     # Optional.
     # sudo apt-get install python3-yaml python3-sphinx python3-cups python3-pypdf2
@@ -234,7 +232,7 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
          python-sqlalchemy python-psutil python-netifaces python-crypto \
          python-pytz python-six python-beautifulsoup4 python-coverage \
          python-mock python-requests python-werkzeug python-gevent \
-         python-bcrypt python-chardet python-ipaddress
+         python-bcrypt python-chardet python-ipaddress python-babel
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/patool/

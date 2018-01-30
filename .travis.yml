@@ -24,7 +24,6 @@ addons:
       - fp-units-math
       - fp-units-rtl
       - postgresql-client
-      - gettext
       - python2.7
       - iso-codes
       - shared-mime-info
