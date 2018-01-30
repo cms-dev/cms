@@ -43,9 +43,8 @@ from cms.db.filecacher import FileCacher
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
 from cms.io.GeventUtils import rmtree
 from cms.db import SessionGen, PrintJob
-from cms.server import format_datetime
 from cmscommon.commands import pretty_print_cmdline
-from cmscommon.datetime import get_timezone
+from cmscommon.datetime import get_timezone, utc
 
 
 logger = logging.getLogger(__name__)
@@ -97,7 +96,8 @@ class PrintingExecutor(Executor):
             user = printjob.participation.user
             contest = printjob.participation.contest
             timezone = get_timezone(user, contest)
-            timestr = format_datetime(printjob.timestamp, timezone)
+            timestr = str(printjob.timestamp.replace(tzinfo=utc)
+                          .astimezone(timezone).replace(tzinfo=None))
             filename = printjob.filename
 
             # Check if it's ready to be printed.

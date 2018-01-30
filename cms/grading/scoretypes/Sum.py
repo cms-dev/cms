@@ -48,7 +48,7 @@ class Sum(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server import format_size %}
+{% from cms.server.contest.formatting import format_size %}
 {% from cms.locale import locale_format %}
 <table class="testcase-list">
     <thead>

@@ -40,7 +40,6 @@ from cms.db import Attachment, Executable, File, Manager, PrintJob, \
     SessionGen, Statement, Testcase, UserTest, UserTestExecutable, \
     UserTestFile, UserTestManager, UserTestResult
 from cms.db.filecacher import FileCacher
-from cms.server.util import format_size
 
 
 logger = logging.getLogger()
@@ -77,7 +76,8 @@ def clean_files(session, dry_run):
     total_size = 0
     for orphan in files:
         total_size += filecacher.get_size(orphan)
-    logger.info("Orphan files take %s disk space", format_size(total_size))
+    logger.info("Orphan files take %s bytes of disk space",
+                "{:,}".format(total_size))
     if not dry_run:
         for count, orphan in enumerate(files):
             filecacher.delete(orphan)

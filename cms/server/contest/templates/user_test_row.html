@@ -1,4 +1,4 @@
-{% from cms.server import format_size %}
+{% from cms.server.contest.formatting import format_size %}
 {% from cms.locale import locale_format %}
 {% if show_date %}
     {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(t.timestamp, timezone, locale=locale) %}

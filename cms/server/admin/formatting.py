@@ -1,8 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,16 +30,20 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-from .util import \
-    CommonRequestHandler, actual_phase_required, compute_actual_phase, \
-    file_handler_gen, filter_ascii, \
-    create_url_builder, multi_contest
 
+def format_dataset_attrs(dataset):
+    """Return a printable string for the attributes of a dataset.
 
-__all__ = [
-    # util
-    "CommonRequestHandler", "actual_phase_required", "compute_actual_phase",
-    "file_handler_gen", "filter_ascii",
-    "create_url_builder",
-    "multi_contest",
-]
+    E.g.: live, autojudge enabled, etc.
+
+    dataset (Dataset): the dataset in question.
+
+    return (unicode): printable string of relevant attributes.
+
+    """
+    if dataset is dataset.task.active_dataset:
+        return " (Live)"
+    elif dataset.autojudge:
+        return " (Background judging)"
+    else:
+        return ""
