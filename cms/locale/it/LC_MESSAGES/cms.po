@@ -19,10 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#. translators: decimal mark in fractions (e.g., in "3.14")
-msgid "."
-msgstr ","
-
 msgid "Compilation succeeded"
 msgstr "Compilazione eseguita con successo"
 
@@ -206,52 +202,11 @@ msgstr "Compilazione non necessaria"
 msgid "File not submitted"
 msgstr "File non sottoposto"
 
-msgid "%Y-%m-%d"
-msgstr "%d/%m/%Y"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%H:%M:%S %d/%m/%Y"
-
 msgid "loading..."
 msgstr "caricamento in corso..."
 
 msgid "unknown"
 msgstr "sconosciuto"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d secondo"
-msgstr[1] "%d secondi"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minuto"
-msgstr[1] "%d minuti"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d ora"
-msgstr[1] "%d ore"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d giorno"
-msgstr[1] "%d giorni"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s e %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "più di %s"
 
 msgid "contest-token"
 msgstr "contest-token"
@@ -545,10 +500,6 @@ msgstr "Esecuzione in corso..."
 
 msgid "Executed"
 msgstr "Eseguito"
-
-#, python-brace-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} s"
 
 msgid "Communication"
 msgstr "Comunicazioni"
@@ -903,18 +854,6 @@ msgstr "File"
 
 msgid "Tokens"
 msgstr "Token"
-
-#, python-brace-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} secondo"
-
-#, python-brace-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} secondi"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Sì"

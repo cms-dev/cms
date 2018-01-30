@@ -1,8 +1,7 @@
 {% from six import iterkeys, itervalues, iteritems %}
 
 {% from cms.grading import format_status_text %}
-{% from cms.server.contest.formatting import format_size %}
-{% from cms.locale import locale_format %}
+{% from cms.server.contest.formatting import format_duration, format_size %}
 
 {% if details is not None %}
 <div class="score_details">
@@ -24,7 +23,7 @@
 {% if sr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ locale_format(_, _("{seconds:0.3f} s"), seconds=sr.compilation_time) }}
+    {{ format_duration(sr.compilation_time, translation=translation) }}
 {% end %}
             </td>
         </tr>

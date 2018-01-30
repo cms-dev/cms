@@ -30,10 +30,11 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+from datetime import timedelta
 from future.moves.urllib.parse import quote
 
 from cmscommon.datetime import make_datetime, utc
-from cms.locale import locale_format, DEFAULT_TRANSLATION
+from cms.locale import DEFAULT_TRANSLATION
 
 
 # Dummy functions to mark strings for translation: N_ is a dummy for
@@ -42,19 +43,9 @@ def N_(msgid):
     pass
 
 
-def Nn_(msgid1, msgid2, c):
-    pass
-
-
 # Some strings in templates that for some reason don't get included in cms.pot.
 N_("loading...")
 N_("unknown")
-
-# Other messages used in this file.
-Nn_("%d second", "%d seconds", 0)
-Nn_("%d minute", "%d minutes", 0)
-Nn_("%d hour", "%d hours", 0)
-Nn_("%d day", "%d days", 0)
 
 
 def format_datetime(dt, timezone, translation=DEFAULT_TRANSLATION):
@@ -68,12 +59,7 @@ def format_datetime(dt, timezone, translation=DEFAULT_TRANSLATION):
         locale.
 
     """
-    _ = translation.gettext
-
-    # convert dt from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(timezone)
-
-    return dt.strftime(_("%Y-%m-%d %H:%M:%S"))
+    return translation.format_datetime(dt, tzinfo=timezone)
 
 
 def format_time(dt, timezone, translation=DEFAULT_TRANSLATION):
@@ -86,12 +72,7 @@ def format_time(dt, timezone, translation=DEFAULT_TRANSLATION):
     return (str): the time of dt, formatted using the given locale.
 
     """
-    _ = translation.gettext
-
-    # convert dt from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(timezone)
-
-    return dt.strftime(_("%H:%M:%S"))
+    return translation.format_time(dt, tzinfo=timezone)
 
 
 def format_datetime_smart(dt, timezone, translation=DEFAULT_TRANSLATION):
@@ -107,74 +88,77 @@ def format_datetime_smart(dt, timezone, translation=DEFAULT_TRANSLATION):
         locale.
 
     """
-    _ = translation.gettext
-
-    # convert dt and 'now' from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(timezone)
     now = make_datetime().replace(tzinfo=utc).astimezone(timezone)
-
-    if dt.date() == now.date():
-        return dt.strftime(_("%H:%M:%S"))
+    if dt.replace(tzinfo=utc).astimezone(timezone).date() == now.date():
+        return format_time(dt, timezone, translation)
     else:
-        return dt.strftime(_("%Y-%m-%d %H:%M:%S"))
+        return format_datetime(dt, timezone, translation)
 
 
-def format_amount_of_time(seconds, precision=2,
-                          translation=DEFAULT_TRANSLATION):
+SECONDS_PER_HOUR = 3600
+SECONDS_PER_MINUTE = 60
+
+
+def format_timedelta(td, translation=DEFAULT_TRANSLATION):
     """Return the number of seconds formatted 'X days, Y hours, ...'
 
     The time units that will be used are days, hours, minutes, seconds.
-    Only the first "precision" units will be output. If they're not
-    enough, a "more than ..." will be prefixed (non-positive precision
-    means infinite).
 
-    seconds (int): the length of the amount of time in seconds.
-    precision (int): see above
+    td (timedelta): the amount of time.
     translation (Translation): the translation to use.
 
-    return (string): seconds formatted as above.
+    return (string): the formatted timedelta.
 
     """
-    _ = translation.gettext
-    n_ = translation.ngettext
+    res = []
 
-    seconds = abs(int(seconds))
+    if td.days > 0:
+        res.append(translation.format_unit(td.days, "duration-day"))
 
-    if seconds == 0:
-        return n_("%d second", "%d seconds", 0) % 0
+    secs = td.seconds
+    if secs >= SECONDS_PER_HOUR:
+        res.append(translation.format_unit(secs // SECONDS_PER_HOUR,
+                                           "duration-hour"))
+        secs %= SECONDS_PER_HOUR
+    if secs >= SECONDS_PER_MINUTE:
+        res.append(translation.format_unit(secs // SECONDS_PER_MINUTE,
+                                           "duration-minute"))
+        secs %= SECONDS_PER_MINUTE
+    if secs > 0:
+        res.append(translation.format_unit(secs, "duration-second"))
 
-    units = [(("%d day", "%d days"), 60 * 60 * 24),
-             (("%d hour", "%d hours"), 60 * 60),
-             (("%d minute", "%d minutes"), 60),
-             (("%d second", "%d seconds"), 1)]
+    if len(res) == 0:
+        res.append(translation.format_unit(0, "duration-second"))
 
-    ret = list()
-    counter = 0
-
-    for name, length in units:
-        tmp = seconds // length
-        seconds %= length
-        if tmp == 0:
-            continue
-        else:
-            ret.append(_(name[0], name[1], tmp) % tmp)
-        counter += 1
-        if counter == precision:
-            break
-
-    if len(ret) == 1:
-        ret = ret[0]
-    else:
-        ret = _("%s and %s") % (", ".join(ret[:-1]), ret[-1])
-
-    if seconds > 0:
-        ret = _("more than %s") % ret
-
-    return ret
+    return translation.format_list(res)
 
 
-UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-DIMS = list(1024 ** x for x in range(9))
+def format_decimal(n, translation=DEFAULT_TRANSLATION):
+    """Format a (possibly decimal) number
+
+    n (float): the number to format.
+    translation (Translation): the translation to use.
+
+    returns (str): the formatted number.
+
+    """
+    return translation.format_decimal(n)
+
+
+def format_duration(d, length="short", translation=DEFAULT_TRANSLATION):
+    """Format a duration in seconds.
+
+    d (float): the number of seconds to format.
+    translation (Translation): the translation to use.
+
+    returns (str): the formatted duration.
+
+    """
+    return translation.format_unit(d, "duration-second", length=length)
+
+
+PREFIX_FACTOR = 1000
+SIZE_UNITS = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
 
 
 def format_size(n, translation=DEFAULT_TRANSLATION):
@@ -187,25 +171,13 @@ def format_size(n, translation=DEFAULT_TRANSLATION):
         unit, always with three significant digits.
 
     """
-    _ = translation.gettext
-
-    if n == 0:
-        return '0 B'
-
-    # Use the last unit that's smaller than n
-    try:
-        unit_index = next(i for i, x in enumerate(DIMS) if n < x) - 1
-    except StopIteration:
-        unit_index = -1
-    n = n / DIMS[unit_index]
-
-    if n < 10:
-        d = 2
-    elif n < 100:
-        d = 1
-    else:
-        d = 0
-    return locale_format(_, "{0:g} {1}", round(n, d), UNITS[unit_index])
+    for unit in SIZE_UNITS[:-1]:
+        if n < PREFIX_FACTOR:
+            return translation.format_unit(n, "digital-%s" % unit,
+                                           length="short", format="@@@")
+        n /= PREFIX_FACTOR
+    return translation.format_unit(n, "digital-%s" % SIZE_UNITS[-1],
+                                   length="short", format="@@@")
 
 
 def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):

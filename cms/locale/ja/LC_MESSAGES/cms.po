@@ -191,48 +191,11 @@ msgstr "コンパイル不要"
 msgid "File not submitted"
 msgstr "ファイル未提出"
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "読み込み中…"
 
 msgid "unknown"
 msgstr "不明"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d 秒"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d 分"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d 時間"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d 日"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s と %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "%s と少し"
 
 msgid "contest-token"
 msgstr "コンテストトークン"
@@ -521,10 +484,6 @@ msgstr "実行中…"
 
 msgid "Executed"
 msgstr "実行完了"
-
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} 秒"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -836,18 +795,6 @@ msgstr "ファイル"
 
 msgid "Tokens"
 msgstr "トークン"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} 秒"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} 秒"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "はい"

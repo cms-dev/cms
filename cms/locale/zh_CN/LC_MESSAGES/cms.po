@@ -167,49 +167,8 @@ msgstr "略过编译程序"
 msgid "File not submitted"
 msgstr "文件未送出"
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "载入中..."
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d 秒"
-msgstr[1] "%d 秒"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d 分钟"
-msgstr[1] "%d 分钟"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d 小时"
-msgstr[1] "%d 小时"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d 天"
-msgstr[1] "%d 天"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s 与 %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "超过 %s"
 
 msgid "contest-token"
 msgstr "竞赛-Token"
@@ -505,10 +464,6 @@ msgid "Executed"
 msgstr "已评测"
 
 #, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} 秒"
-
-#, python-format
 msgid "Automatic (%s)"
 msgstr "自动检测 (%s)"
 
@@ -799,18 +754,6 @@ msgstr "传送文件"
 
 msgid "Tokens"
 msgstr "Token"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} 秒"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} 秒"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "是"

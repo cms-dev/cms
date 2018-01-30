@@ -41,10 +41,13 @@ import pkg_resources
 import gettext
 import logging
 import os
-import string
 
 import babel.core
+import babel.dates
+import babel.lists
+import babel.numbers
 import babel.support
+import babel.units
 
 from cms import config
 
@@ -125,6 +128,30 @@ class Translation(object):
         else:
             return self.translation.ungettext(msgid1, msgid2, n)
 
+    def format_datetime(self, *args, **kwargs):
+        kwargs["locale"] = self.locale
+        return babel.dates.format_datetime(*args, **kwargs)
+
+    def format_time(self, *args, **kwargs):
+        kwargs["locale"] = self.locale
+        return babel.dates.format_time(*args, **kwargs)
+
+    def format_timedelta(self, *args, **kwargs):
+        kwargs["locale"] = self.locale
+        return babel.dates.format_timedelta(*args, **kwargs)
+
+    def format_list(self, *args, **kwargs):
+        kwargs["locale"] = self.locale
+        return babel.lists.format_list(*args, **kwargs)
+
+    def format_decimal(self, *args, **kwargs):
+        kwargs["locale"] = self.locale
+        return babel.numbers.format_decimal(*args, **kwargs)
+
+    def format_unit(self, *args, **kwargs):
+        kwargs["locale"] = self.locale
+        return babel.units.format_unit(*args, **kwargs)
+
 
 DEFAULT_TRANSLATION = Translation("en")
 
@@ -189,38 +216,3 @@ def filter_language_codes(lang_codes, prefix_filter):
         lang_codes = ["en"]
 
     return lang_codes
-
-
-class Formatter(string.Formatter):
-    """Locale-aware string formatter class.
-
-    Currently it handles locale-specific decimal marks in decimal numbers.
-
-    """
-    def __init__(self, _):
-        """Initializer.
-
-        _ (function): translation function.
-
-        """
-        # translators: decimal mark in decimal numbers (e.g., in "3.14")
-        self.decimal_mark = _(".")
-
-    def format_field(self, value, format_spec):
-        """Customized format_field() override."""
-        res = super(Formatter, self).format_field(value, format_spec)
-        if isinstance(value, float):
-            return res.replace(".", self.decimal_mark)
-        else:
-            return res
-
-
-def locale_format(_, fmt, *args, **kwargs):
-    """Locale-aware format function. See the Formatter class
-    for more information.
-
-    _ (function): translation function.
-    fmt (string): format string.
-
-    """
-    return Formatter(_).format(fmt, *args, **kwargs)

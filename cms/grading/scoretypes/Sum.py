@@ -48,8 +48,7 @@ class Sum(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server.contest.formatting import format_size %}
-{% from cms.locale import locale_format %}
+{% from cms.server.contest.formatting import format_duration, format_size %}
 <table class="testcase-list">
     <thead>
         <tr>
@@ -72,10 +71,12 @@ class Sum(ScoreTypeAlone):
             {% end %}
             <td class="idx">{{ idx }}</td>
             <td class="outcome">{{ _(tc["outcome"]) }}</td>
-            <td class="details">{{ format_status_text(tc["text"], translation=translation) }}</td>
+            <td class="details">
+                {{ format_status_text(tc["text"], translation=translation) }}
+            </td>
             <td class="execution-time">
             {% if tc["time"] is not None %}
-                {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tc["time"]) }}
+                {{ format_duration(tc["time"], translation=translation) }}
             {% else %}
                 {{ _("N/A") }}
             {% end %}

@@ -1,5 +1,5 @@
-{% from cms.server.contest.formatting import format_size %}
-{% from cms.locale import locale_format %}
+{% from cms.server.contest.formatting import format_duration, format_size %}
+
 {% if show_date %}
     {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(t.timestamp, timezone, translation=translation) %}
 {% else %}
@@ -38,7 +38,7 @@
     </td>
 {% else %}
     <td class="time">
-        {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tr.execution_time) }}
+        {{ format_duration(tr.execution_time, translation=translation) }}
     </td>
 {% end %}
 {% if tr is None or tr.execution_memory is None %}

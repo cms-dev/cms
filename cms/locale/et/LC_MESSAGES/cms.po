@@ -18,10 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.6.9\n"
 
-#. translators: decimal mark in fractions (e.g., in "3.14")
-msgid "."
-msgstr ","
-
 msgid "Compilation succeeded"
 msgstr "Kompileerimine õnnestus"
 
@@ -181,52 +177,11 @@ msgstr "Kompileerimine pole vajalik"
 msgid "File not submitted"
 msgstr "Faili pole esitatud"
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "laadimine..."
 
 msgid "unknown"
 msgstr ""
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d sekund"
-msgstr[1] "%d sekundit"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minut"
-msgstr[1] "%d minutit"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d tund"
-msgstr[1] "%d tundi"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d päev"
-msgstr[1] "%d päeva"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s ja %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "rohkem kui %s"
 
 msgid "contest-token"
 msgstr "võistluse pilet"
@@ -535,10 +490,6 @@ msgstr "Testimine..."
 
 msgid "Executed"
 msgstr "Käivitatud"
-
-#, python-brace-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} s"
 
 msgid "Communication"
 msgstr "Teated"
@@ -901,18 +852,6 @@ msgstr "Failid"
 
 msgid "Tokens"
 msgstr "Piletid"
-
-#, python-brace-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} s"
-
-#, python-brace-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} s"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Jah"

@@ -193,49 +193,8 @@ msgstr "No se requiere compilación"
 msgid "File not submitted"
 msgstr "Archivo no enviado"
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "cargando..."
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d segundo"
-msgstr[1] "%d segundos"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minuto"
-msgstr[1] "%d minutos"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d hora"
-msgstr[1] "%d horas"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d día"
-msgstr[1] "%d días"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s y %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "más de %s"
 
 msgid "contest-token"
 msgstr "contest-token"
@@ -534,10 +493,6 @@ msgstr "Ejecutando..."
 
 msgid "Executed"
 msgstr "Ejecutado"
-
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} s"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -859,18 +814,6 @@ msgstr "Archivos"
 
 msgid "Tokens"
 msgstr "Tokens"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} segundo"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} segundos"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Sí"
