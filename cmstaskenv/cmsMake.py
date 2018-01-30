@@ -456,7 +456,7 @@ def build_gen_list(base_dir, task_type, yaml_conf):
                 command.append("%s" % st)
             call(base_dir, command)
             n += 1
-            for i in range(3):
+            for _ in range(3):
                 move_cursor(directions.UP, erase=True, stream=sys.stderr)
 
     def make_output(n, assume=None):
