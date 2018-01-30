@@ -276,7 +276,7 @@ def format_size(n, _=lambda s: s):
         unit_index = next(i for i, x in enumerate(DIMS) if n < x) - 1
     except StopIteration:
         unit_index = -1
-    n = float(n) / DIMS[unit_index]
+    n = n / DIMS[unit_index]
 
     if n < 10:
         d = 2
@@ -685,7 +685,7 @@ def file_handler_gen(BaseClass):
             """
             data = self.temp_file.read(FileCacher.CHUNK_SIZE)
             length = len(data)
-            self.size += length / 1024.0 / 1024.0
+            self.size += length / (1024 * 1024)
             self.write(data)
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()

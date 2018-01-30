@@ -55,7 +55,7 @@ from cms.io import Service, rpc_method
 logger = logging.getLogger(__name__)
 
 
-B_TO_MB = 1024.0 * 1024.0
+B_TO_MB = 1024 * 1024
 
 # As psutil-2.0 introduced many backward-incompatible changes to its
 # API we define this global flag to make it easier later on to decide

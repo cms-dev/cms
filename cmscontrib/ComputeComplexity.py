@@ -188,10 +188,10 @@ def extract_complexity_submission(testcases_lengths, submission):
 
     # Rescaling.
     x_scale = max(points_x)
-    points_x = [x * 1.0 / x_scale for x in points_x]
+    points_x = [x / x_scale for x in points_x]
     y_scale = max(points_y)
     if y_scale > 0:
-        points_y = [y * 1.0 / y_scale for y in points_y]
+        points_y = [y / y_scale for y in points_y]
 
     res = []
     residues = []
