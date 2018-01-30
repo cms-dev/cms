@@ -1,7 +1,7 @@
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(s.timestamp, timezone, locale=locale) %}
+    {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(s.timestamp, timezone, translation=translation) %}
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>" % format_time(s.timestamp, timezone, locale=locale) %}
+    {% set col1 = "<td class=\"time\">%s</td>" % format_time(s.timestamp, timezone, translation=translation) %}
 {% end %}
 {% if sr is None or not sr.compiled() %}
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.COMPILING }}">
@@ -62,14 +62,14 @@
 
     {% if score_type.max_public_score > 0 %}
     <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) }}">
-        {{ score_type.format_score(sr.public_score, score_type.max_public_score, sr.public_score_details, task.score_precision, _) }}
+        {{ score_type.format_score(sr.public_score, score_type.max_public_score, sr.public_score_details, task.score_precision, translation=translation) }}
     </td>
     {% end %}
 
     {% if score_type.max_public_score != score_type.max_score %}
         {% if s.token is not None or actual_phase == 3 %}
     <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
-        {{ score_type.format_score(sr.score, score_type.max_score, sr.score_details, task.score_precision, _) }}
+        {{ score_type.format_score(sr.score, score_type.max_score, sr.score_details, task.score_precision, translation=translation) }}
     </td>
         {% else %}
     <td class="total_score undefined">

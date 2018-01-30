@@ -6,7 +6,7 @@
 
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-<pre>{{ format_status_text(tr.evaluation_text, _) }}</pre>
+<pre>{{ format_status_text(tr.evaluation_text, translation=translation) }}</pre>
 {% end %}
 
 {% if tr is not None and tr.compiled() %}
@@ -15,7 +15,7 @@
     <tbody>
         <tr>
             <th>{{ _("Compilation outcome:") }}</th>
-            <td>{{ format_status_text(tr.compilation_text, _) }}</td>
+            <td>{{ format_status_text(tr.compilation_text, translation=translation) }}</td>
         </tr>
         <tr>
             <th>{{ _("Compilation time:") }}</th>
@@ -32,7 +32,7 @@
 {% if tr.compilation_memory is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ format_size(tr.compilation_memory, _) }}
+    {{ format_size(tr.compilation_memory, translation=translation) }}
 {% end %}
             </td>
         </tr>

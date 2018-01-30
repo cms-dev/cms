@@ -146,7 +146,7 @@
     {% elif tokens_contest == 2 %}
         <p>
         {% set tokens = {k[6:]: v for k, v in iteritems(task.__dict__) if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, locale=locale) }}
+        {{ format_token_rules(tokens, translation=translation) }}
         </p>
     {% elif tokens_tasks == 2 %}
         <p>
@@ -155,7 +155,7 @@
     {% else %}
         <p>
         {% set tokens = {k[6:]: v for k, v in iteritems(task.__dict__) if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, t_type="task", locale=locale) }}
+        {{ format_token_rules(tokens, t_type="task", translation=translation) }}
         </p>
 
         <p>
@@ -195,7 +195,7 @@
             {% end %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
-                        <span class="size">{{ format_size(file_size, _) }}</span>
+                        <span class="size">{{ format_size(file_size, translation=translation) }}</span>
                     </span>
             {% if type_icon is not None %}
                     <span class="type">{{ _(type_name) }}</span>

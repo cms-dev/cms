@@ -32,10 +32,8 @@ from future.builtins import *
 
 from future.moves.urllib.parse import quote
 
-import tornado.locale
-
 from cmscommon.datetime import make_datetime, utc
-from cms.locale import locale_format
+from cms.locale import locale_format, DEFAULT_TRANSLATION
 
 
 # Dummy functions to mark strings for translation: N_ is a dummy for
@@ -59,20 +57,20 @@ Nn_("%d hour", "%d hours", 0)
 Nn_("%d day", "%d days", 0)
 
 
-def format_datetime(dt, timezone, locale=None):
+def format_datetime(dt, timezone, translation=None):
     """Return the date and time of dt formatted as per locale.
 
     dt (datetime): a datetime object.
     timezone (tzinfo): the timezone the output should be in.
+    translation (Translation|None): the translation to use.
 
     return (str): the date and time of dt, formatted using the given
         locale.
 
     """
-    if locale is None:
-        locale = tornado.locale.get()
-
-    _ = locale.translate
+    if translation is None:
+        translation = DEFAULT_TRANSLATION
+    _ = translation.gettext
 
     # convert dt from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
@@ -80,19 +78,19 @@ def format_datetime(dt, timezone, locale=None):
     return dt.strftime(_("%Y-%m-%d %H:%M:%S"))
 
 
-def format_time(dt, timezone, locale=None):
+def format_time(dt, timezone, translation=None):
     """Return the time of dt formatted according to the given locale.
 
     dt (datetime): a datetime object.
     timezone (tzinfo): the timezone the output should be in.
+    translation (Translation|None): the translation to use.
 
     return (str): the time of dt, formatted using the given locale.
 
     """
-    if locale is None:
-        locale = tornado.locale.get()
-
-    _ = locale.translate
+    if translation is None:
+        translation = DEFAULT_TRANSLATION
+    _ = translation.gettext
 
     # convert dt from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
@@ -100,22 +98,22 @@ def format_time(dt, timezone, locale=None):
     return dt.strftime(_("%H:%M:%S"))
 
 
-def format_datetime_smart(dt, timezone, locale=None):
+def format_datetime_smart(dt, timezone, translation=None):
     """Return dt formatted as '[date] time'.
 
     Date is present in the output if it is not today.
 
     dt (datetime): a datetime object.
     timezone (tzinfo): the timezone the output should be in.
+    translation (Translation|None): the translation to use.
 
     return (str): the [date and] time of dt, formatted using the given
         locale.
 
     """
-    if locale is None:
-        locale = tornado.locale.get()
-
-    _ = locale.translate
+    if translation is None:
+        translation = DEFAULT_TRANSLATION
+    _ = translation.gettext
 
     # convert dt and 'now' from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
@@ -127,7 +125,7 @@ def format_datetime_smart(dt, timezone, locale=None):
         return dt.strftime(_("%Y-%m-%d %H:%M:%S"))
 
 
-def format_amount_of_time(seconds, precision=2, locale=None):
+def format_amount_of_time(seconds, precision=2, translation=None):
     """Return the number of seconds formatted 'X days, Y hours, ...'
 
     The time units that will be used are days, hours, minutes, seconds.
@@ -137,19 +135,17 @@ def format_amount_of_time(seconds, precision=2, locale=None):
 
     seconds (int): the length of the amount of time in seconds.
     precision (int): see above
-    locale (Locale|None): the locale to be used, or None for the
-        default.
+    translation (Translation|None): the translation to use.
 
     return (string): seconds formatted as above.
 
     """
+    if translation is None:
+        translation = DEFAULT_TRANSLATION
+    _ = translation.gettext
+    n_ = translation.ngettext
+
     seconds = abs(int(seconds))
-
-    if locale is None:
-        locale = tornado.locale.get()
-
-    _ = locale.translate
-    n_ = locale.translate
 
     if seconds == 0:
         return n_("%d second", "%d seconds", 0) % 0
@@ -188,14 +184,20 @@ UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 DIMS = list(1024 ** x for x in range(9))
 
 
-def format_size(n, _=lambda s: s):
+def format_size(n, translation=None):
     """Format the given number of bytes.
 
-    Return a size, given as a number of bytes, properly formatted
-    using the most appropriate size unit. Always use three
-    significant digits.
+    n (int): a size, as number of bytes.
+    translation (Translation|None): the translation to use.
+
+    return (str): the size formatted using the most appropriate size
+        unit, always with three significant digits.
 
     """
+    if translation is None:
+        translation = DEFAULT_TRANSLATION
+    _ = translation.gettext
+
     if n == 0:
         return '0 B'
 
@@ -215,7 +217,7 @@ def format_size(n, _=lambda s: s):
     return locale_format(_, "{0:g} {1}", round(n, d), UNITS[unit_index])
 
 
-def format_token_rules(tokens, t_type=None, locale=None):
+def format_token_rules(tokens, t_type=None, translation=None):
     """Return a human-readable string describing the given token rules
 
     tokens (dict): all the token rules (as seen in Task or Contest),
@@ -223,17 +225,15 @@ def format_token_rules(tokens, t_type=None, locale=None):
     t_type (string|None): the type of tokens the string should refer to
         (can be "contest" to mean contest-tokens, "task" to mean
         task-tokens, any other value to mean normal tokens).
-    locale (Locale|NullTranslation|None): the locale to be used (None
-        for the default).
+    translation (Translation|None): the translation to use.
 
     return (unicode): localized string describing the rules.
 
     """
-    if locale is None:
-        locale = tornado.locale.get()
-
-    _ = locale.translate
-    n_ = locale.translate
+    if translation is None:
+        translation = DEFAULT_TRANSLATION
+    _ = translation.gettext
+    n_ = translation.ngettext
 
     if t_type == "contest":
         tokens["type_s"] = _("contest-token")

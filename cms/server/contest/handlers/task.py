@@ -70,13 +70,14 @@ class TaskDescriptionHandler(ContestHandler):
             lang_code = statement.language
             if is_language_country_code(lang_code):
                 statement.language_name = \
-                    translate_language_country_code(lang_code, self.locale)
+                    translate_language_country_code(lang_code,
+                                                    self.translation)
             elif is_language_code(lang_code):
                 statement.language_name = \
-                    translate_language_code(lang_code, self.locale)
+                    translate_language_code(lang_code, self.translation)
             elif is_country_code(lang_code):
                 statement.language_name = \
-                    translate_country_code(lang_code, self.locale)
+                    translate_country_code(lang_code, self.translation)
             else:
                 statement.language_name = lang_code
 
