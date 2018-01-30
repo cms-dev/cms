@@ -97,7 +97,7 @@ class TestService(Service):
                 logger.info("Test suite completed in %.2f seconds. "
                             "Result: %d/%d (%.2f%%).",
                             self.total_time, self.allright, total,
-                            self.allright * 100.0 / total)
+                            self.allright * 100 / total)
                 self.exit()
                 return False
 

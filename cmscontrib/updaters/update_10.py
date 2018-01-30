@@ -47,9 +47,9 @@ class Updater(object):
             if v["_class"] == "Contest":
                 if v["start"] is None:
                     # make_timestamp(datetime(2000, 01, 01))
-                    v["start"] = 946684800.0
+                    v["start"] = 946684800
                 if v["stop"] is None:
                     # make_timestamp(datetime(2100, 01, 01))
-                    v["stop"] = 4102444800.0
+                    v["stop"] = 4102444800
 
         return self.objs

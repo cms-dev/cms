@@ -100,7 +100,7 @@ class CheckAbstractEvaluationFailure(Check):
         for evaluation in result_info['evaluations']:
             score = float(evaluation['outcome'])
             text = evaluation['text']
-            if score != 0.0:
+            if score != 0:
                 raise TestFailure("Should have %s. Scored %g." %
                                   (self.short_adjective, score))
             if self.failure_string not in text:

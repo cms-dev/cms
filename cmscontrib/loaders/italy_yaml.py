@@ -560,8 +560,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 # fallback to Sum)
                 if points is None:
                     args["score_type"] = "Sum"
-                    total_value = float(conf.get("total_value", 100.0))
-                    input_value = 0.0
+                    total_value = conf.get("total_value", 100)
+                    input_value = 0
                     n_input = testcases
                     if n_input != 0:
                         input_value = total_value / n_input
@@ -579,8 +579,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # If gen/GEN doesn't exist, just fallback to Sum
         except IOError:
             args["score_type"] = "Sum"
-            total_value = float(conf.get("total_value", 100.0))
-            input_value = 0.0
+            total_value = conf.get("total_value", 100)
+            input_value = 0
             n_input = int(conf['n_input'])
             if n_input != 0:
                 input_value = total_value / n_input

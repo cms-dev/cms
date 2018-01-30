@@ -55,7 +55,7 @@ from cms.io import Service, rpc_method
 logger = logging.getLogger(__name__)
 
 
-B_TO_MB = 1024.0 * 1024.0
+B_TO_MB = 1024 * 1024
 
 # As psutil-2.0 introduced many backward-incompatible changes to its
 # API we define this global flag to make it easier later on to decide
@@ -210,14 +210,14 @@ class ResourceService(Service):
                            for service in self._local_services)
         # Previous cpu time for each service.
         self._services_prev_cpu_times = \
-            dict((service, (0.0, 0.0)) for service in self._local_services)
+            dict((service, (0, 0)) for service in self._local_services)
         # Start finding processes and their cputimes.
         self._store_resources(store=False)
 
-        self.add_timeout(self._store_resources, None, 5.0)
+        self.add_timeout(self._store_resources, None, 5)
         if self.autorestart:
             self._launched_processes = set([])
-            self.add_timeout(self._restart_services, None, 5.0,
+            self.add_timeout(self._restart_services, None, 5,
                              immediately=True)
 
     def _restart_services(self):
@@ -417,7 +417,7 @@ class ResourceService(Service):
         return True
 
     @rpc_method
-    def get_resources(self, last_time=0.0):
+    def get_resources(self, last_time=0):
         """Returns the resurce usage information from last_time to
         now.
 

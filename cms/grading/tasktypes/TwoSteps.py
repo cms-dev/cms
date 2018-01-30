@@ -291,7 +291,7 @@ class TwoSteps(TaskType):
         # Contestant's error: the marks won't be good
         elif not is_evaluation_passed(first_plus) or \
                 not is_evaluation_passed(second_plus):
-            outcome = 0.0
+            outcome = 0
             if not is_evaluation_passed(first_plus):
                 text = human_evaluation_message(first_plus)
             else:
@@ -304,7 +304,7 @@ class TwoSteps(TaskType):
 
             # Check that the output file was created
             if not second_sandbox.file_exists('output.txt'):
-                outcome = 0.0
+                outcome = 0
                 text = [N_("Evaluation didn't produce file %s"), "output.txt"]
                 if job.get_output:
                     job.user_output = None

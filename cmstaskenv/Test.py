@@ -66,11 +66,11 @@ def mem_human(mem):
     if mem is None:
         return 'None'
     if mem > 2 ** 30:
-        return "%4.3gG" % (float(mem) / (2 ** 30))
+        return "%4.3gG" % (mem / (2 ** 30))
     if mem > 2 ** 20:
-        return "%4.3gM" % (float(mem) / (2 ** 20))
+        return "%4.3gM" % (mem / (2 ** 20))
     if mem > 2 ** 10:
-        return "%4dK" % (mem / (2 ** 10))
+        return "%4.3gK" % (mem / (2 ** 10))
     return "%4d" % mem
 
 
@@ -154,7 +154,7 @@ def test_testcases(base_dir, solution, language, assume=None):
         # timeout
         if stop:
             info.append("Time limit exceeded")
-            points.append(0.0)
+            points.append(0)
             comments.append("Timeout.")
             move_cursor(directions.UP, erase=True)
             continue
@@ -165,7 +165,7 @@ def test_testcases(base_dir, solution, language, assume=None):
         status = job.plus.get("exit_status")
         info.append((job.plus.get("execution_time"),
                      job.plus.get("execution_memory")))
-        points.append(float(job.outcome))
+        points.append(job.outcome)
 
         # Avoid printing unneeded newline
         job.text = [t.rstrip() if isinstance(t, str) else t for t in job.text]

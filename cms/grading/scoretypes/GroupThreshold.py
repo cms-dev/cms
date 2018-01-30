@@ -49,7 +49,7 @@ class GroupThreshold(ScoreTypeGroup):
     def get_public_outcome(self, outcome, parameter):
         """See ScoreTypeGroup."""
         threshold = parameter[2]
-        if 0.0 < outcome <= threshold:
+        if 0 < outcome <= threshold:
             return N_("Correct")
         else:
             return N_("Not correct")
@@ -58,6 +58,6 @@ class GroupThreshold(ScoreTypeGroup):
         """See ScoreTypeGroup."""
         threshold = parameter[2]
         if all(0 < outcome <= threshold for outcome in outcomes):
-            return 1.0
+            return 1
         else:
-            return 0.0
+            return 0

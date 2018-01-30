@@ -289,7 +289,7 @@ class Communication(TaskType):
         # the outcome is 0.0 and the text describes that problem.
         elif not is_evaluation_passed(plus_user):
             success = True
-            outcome, text = 0.0, human_evaluation_message(plus_user)
+            outcome, text = 0, human_evaluation_message(plus_user)
         # Otherwise, we use the manager to obtain the outcome.
         else:
             success = True

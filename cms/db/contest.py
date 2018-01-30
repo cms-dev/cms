@@ -464,11 +464,11 @@ class Contest(Base):
             """
             # How many generation times we passed from start to
             # the previous considered time?
-            before_prev = int((prev_time - start).total_seconds()
-                              / token_gen_interval.total_seconds())
+            before_prev = ((prev_time - start).total_seconds()
+                           // token_gen_interval.total_seconds())
             # And from start to the current considered time?
-            before_next = int((next_time - start).total_seconds()
-                              / token_gen_interval.total_seconds())
+            before_next = ((next_time - start).total_seconds()
+                           // token_gen_interval.total_seconds())
             # So...
             return token_gen_number * (before_next - before_prev)
 

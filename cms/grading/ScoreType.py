@@ -194,7 +194,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     {% if "score" in st and "max_score" in st %}
         {% if st["score"] >= st["max_score"] %}
 <div class="subtask correct">
-        {% elif st["score"] <= 0.0 %}
+        {% elif st["score"] <= 0 %}
 <div class="subtask notcorrect">
         {% else %}
 <div class="subtask partiallycorrect">
@@ -321,8 +321,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
     def max_scores(self):
         """See ScoreType.max_score."""
-        score = 0.0
-        public_score = 0.0
+        score = 0
+        public_score = 0
         headers = list()
 
         targets = self.retrieve_target_testcases()
@@ -340,7 +340,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
-            return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
+            return 0, "[]", 0, "[]", ["%lg" % 0 for _ in self.parameters]
 
         targets = self.retrieve_target_testcases()
         evaluations = dict((ev.codename, ev)
