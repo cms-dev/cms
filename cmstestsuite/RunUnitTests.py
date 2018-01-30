@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -126,17 +126,9 @@ def load_failed_tests():
     return failed_tests
 
 
-def time_difference(start_time, end_time):
-    secs = int((end_time - start_time).total_seconds())
-    mins = secs / 60
-    secs = secs % 60
-    hrs = mins / 60
-    mins = mins % 60
-    return "Time elapsed: %02d:%02d:%02d" % (hrs, mins, secs)
-
-
 def main():
-    parser = argparse.ArgumentParser(description="Runs the CMS unittest suite.")
+    parser = argparse.ArgumentParser(
+        description="Runs the CMS unittest suite.")
     parser.add_argument(
         "-n", "--dry-run", action="store_true",
         help="show what tests would be run, but do not run them")
@@ -211,12 +203,13 @@ def main():
     print(test_results)
 
     end_time = datetime.datetime.now()
-    print(time_difference(start_time, end_time))
+    print("Time elapsed: %s" % (end_time - start_time))
 
     if passed:
         return 0
     else:
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
