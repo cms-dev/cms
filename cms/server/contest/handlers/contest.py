@@ -47,14 +47,12 @@ from datetime import timedelta
 import tornado.web
 
 from sqlalchemy.orm import contains_eager
-from werkzeug.datastructures import LanguageAccept
-from werkzeug.http import parse_accept_header
 
 from cms import config
 from cms.db import Contest, Participation, User
 from cms.server import compute_actual_phase, file_handler_gen, \
     create_url_builder
-from cms.locale import filter_language_codes, choose_language_code
+from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 
 from .base import BaseHandler
@@ -102,7 +100,6 @@ class ContestHandler(BaseHandler):
         self.contest_url = None
 
     def prepare(self):
-        super(ContestHandler, self).prepare()
         self.choose_contest()
 
         if self.contest.allowed_localizations:
@@ -113,7 +110,7 @@ class ContestHandler(BaseHandler):
                 (k, v) for k, v in iteritems(self.available_translations)
                 if k in lang_codes)
 
-        self.setup_locale()
+        super(ContestHandler, self).prepare()
 
         if self.is_multi_contest():
             self.contest_url = \
@@ -309,32 +306,6 @@ class ContestHandler(BaseHandler):
 
         return participation
 
-    def setup_locale(self):
-        lang_codes = list(iterkeys(self.available_translations))
-
-        browser_langs = parse_accept_header(
-            self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).values()
-        automatic_lang = choose_language_code(browser_langs, lang_codes)
-        if automatic_lang is None:
-            automatic_lang = lang_codes[0]
-        self.automatic_translation = \
-            self.available_translations[automatic_lang]
-
-        cookie_lang = self.get_cookie("language", None)
-        if cookie_lang is not None:
-            self.cookie_translation = self.available_translations[cookie_lang]
-            chosen_lang = \
-                choose_language_code([cookie_lang, automatic_lang], lang_codes)
-        else:
-            chosen_lang = automatic_lang
-        self.translation = self.available_translations[chosen_lang]
-
-        self._ = self.translation.gettext
-        self.n_ = self.translation.ngettext
-
-        self.set_header("Content-Language", chosen_lang)
-
     @staticmethod
     def _get_token_status(obj):
         """Return the status of the tokens for the given object.
@@ -401,14 +372,6 @@ class ContestHandler(BaseHandler):
             self.r_params["tokens_tasks"] = 2  # all infinite
         else:
             self.r_params["tokens_tasks"] = 1  # all finite or mixed
-
-        self.r_params["available_translations"] = self.available_translations
-
-        self.r_params["cookie_translation"] = self.cookie_translation
-        self.r_params["automatic_translation"] = self.automatic_translation
-
-        self.r_params["translation"] = self.translation
-        self.r_params["_"] = self._
 
     def get_login_url(self):
         """The login url depends on the contest name, so we can't just

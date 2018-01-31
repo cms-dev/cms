@@ -36,14 +36,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys
 
 import logging
 import os
 import traceback
+
 import tornado.web
+from werkzeug.datastructures import LanguageAccept
+from werkzeug.http import parse_accept_header
 
 from cms.db import Contest
-from cms.locale import DEFAULT_TRANSLATION
+from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
 
 
@@ -84,6 +88,33 @@ class BaseHandler(CommonRequestHandler):
 
         """
         super(BaseHandler, self).prepare()
+        self.setup_locale()
+
+    def setup_locale(self):
+        lang_codes = list(iterkeys(self.available_translations))
+
+        browser_langs = parse_accept_header(
+            self.request.headers.get("Accept-Language", ""),
+            LanguageAccept).values()
+        automatic_lang = choose_language_code(browser_langs, lang_codes)
+        if automatic_lang is None:
+            automatic_lang = lang_codes[0]
+        self.automatic_translation = \
+            self.available_translations[automatic_lang]
+
+        cookie_lang = self.get_cookie("language", None)
+        if cookie_lang is not None:
+            self.cookie_translation = self.available_translations[cookie_lang]
+            chosen_lang = \
+                choose_language_code([cookie_lang, automatic_lang], lang_codes)
+        else:
+            chosen_lang = automatic_lang
+        self.translation = self.available_translations[chosen_lang]
+
+        self._ = self.translation.gettext
+        self.n_ = self.translation.ngettext
+
+        self.set_header("Content-Language", chosen_lang)
 
     def render_params(self):
         """Fill the default render params used by almost all handlers.
@@ -91,6 +122,16 @@ class BaseHandler(CommonRequestHandler):
         """
         self.r_params["now"] = self.timestamp
         self.r_params["url"] = self.url
+
+        self.r_params["contest_list"] = self.contest_list
+
+        self.r_params["available_translations"] = self.available_translations
+
+        self.r_params["cookie_translation"] = self.cookie_translation
+        self.r_params["automatic_translation"] = self.automatic_translation
+
+        self.r_params["translation"] = self.translation
+        self.r_params["_"] = self._
 
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
