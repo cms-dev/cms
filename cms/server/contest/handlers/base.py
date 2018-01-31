@@ -43,6 +43,7 @@ import traceback
 import tornado.web
 
 from cms.db import Contest
+from cms.locale import DEFAULT_TRANSLATION
 from cms.server import CommonRequestHandler
 
 
@@ -58,11 +59,25 @@ class BaseHandler(CommonRequestHandler):
 
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
-        self.all_translations = None
+        # The list of interface translations the user can choose from.
+        self.available_translations = self.service.translations
+        # The locale that best matches the user's system settings (as
+        # reflected by the browser in the HTTP request's
+        # Accept-Language header).
+        self.browser_lang = DEFAULT_TRANSLATION.identifier
+        # The locale that the user specifically manually picked.
         self.cookie_lang = None
-        self.browser_lang = None
-        self.translation = None
-        self._ = None
+        # The translation that we are going to use.
+        self.translation = DEFAULT_TRANSLATION
+        self._ = self.translation.gettext
+
+        # We need this to be computed for each request because we want to be
+        # able to import new contests without having to restart CWS. But only
+        # in multi-contest mode.
+        self.contest_list = {}
+        if self.is_multi_contest():
+            for contest in self.sql_session.query(Contest).all():
+                self.contest_list[contest.name] = contest
 
     def get(self):
         self.r_params = self.render_params()
@@ -74,14 +89,6 @@ class BaseHandler(CommonRequestHandler):
 
         """
         super(BaseHandler, self).prepare()
-
-        # We need this to be computed for each request because we want to be
-        # able to import new contests without having to restart CWS. But only
-        # in multi-contest mode.
-        self.contest_list = {}
-        if self.is_multi_contest():
-            for contest in self.sql_session.query(Contest).all():
-                self.contest_list[contest.name] = contest
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
@@ -109,7 +116,7 @@ class BaseHandler(CommonRequestHandler):
         # the data we need to display a basic template with the error
         # information. If r_params is not defined (i.e. something went
         # *really* bad) we simply return a basic textual error notice.
-        if getattr(self, 'r_params', None) is not None:
+        if self.r_params is not None:
             self.render("error.html", status_code=status_code, **self.r_params)
         else:
             self.write("A critical error has occurred :-(")

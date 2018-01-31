@@ -54,7 +54,7 @@ from cms import config
 from cms.db import Contest, Participation, User
 from cms.server import compute_actual_phase, file_handler_gen, \
     create_url_builder
-from cms.locale import filter_language_codes
+from cms.locale import filter_language_codes, DEFAULT_TRANSLATION
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 
 from .base import BaseHandler
@@ -97,9 +97,21 @@ class ContestHandler(BaseHandler):
     child of this class.
 
     """
+    def __init__(self, *args, **kwargs):
+        super(ContestHandler, self).__init__(*args, **kwargs)
+        self.contest_url = None
+
     def prepare(self):
         super(ContestHandler, self).prepare()
         self.choose_contest()
+
+        if self.contest.allowed_localizations:
+            lang_codes = filter_language_codes(
+                list(iterkeys(self.available_translations)),
+                self.contest.allowed_localizations)
+            self.available_translations = dict(
+                (k, v) for k, v in iteritems(self.available_translations)
+                if k in lang_codes)
 
         self.setup_locale()
 
@@ -298,17 +310,11 @@ class ContestHandler(BaseHandler):
         return participation
 
     def setup_locale(self):
-        self.all_translations = self.service.translations
-        lang_codes = list(iterkeys(self.all_translations))
-
-        if self.contest.allowed_localizations:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
+        lang_codes = list(iterkeys(self.available_translations))
 
         # Select the one the user likes most.
-        basic_lang = 'en'
-
-        if self.contest.allowed_localizations:
+        basic_lang = DEFAULT_TRANSLATION.identifier
+        if basic_lang not in lang_codes:
             basic_lang = lang_codes[0].replace("_", "-")
 
         http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]
@@ -324,7 +330,8 @@ class ContestHandler(BaseHandler):
             lang_code = self.browser_lang
 
         self.set_header("Content-Language", lang_code)
-        self.translation = self.all_translations[lang_code.replace("-", "_")]
+        self.translation = \
+            self.available_translations[lang_code.replace("-", "_")]
         self._ = self.translation.gettext
 
     @staticmethod
@@ -350,7 +357,7 @@ class ContestHandler(BaseHandler):
 
         ret["contest"] = self.contest
 
-        if hasattr(self, "contest_url"):
+        if self.contest_url is not None:
             ret["contest_url"] = self.contest_url
 
         ret["phase"] = self.contest.phase(self.timestamp)
@@ -395,14 +402,7 @@ class ContestHandler(BaseHandler):
         ret["lang_names"] = {}
 
         # Get language codes for allowed localizations
-        lang_codes = list(iterkeys(self.all_translations))
-        if len(self.contest.allowed_localizations) > 0:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
-        for lang_code, trans in iteritems(self.all_translations):
-            # Filter lang_codes with allowed localizations
-            if lang_code not in lang_codes:
-                continue
+        for lang_code, trans in iteritems(self.available_translations):
             ret["lang_names"][lang_code.replace("_", "-")] = trans.name
 
         ret["cookie_lang"] = self.cookie_lang
