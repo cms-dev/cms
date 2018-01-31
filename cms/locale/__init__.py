@@ -24,10 +24,11 @@ from future.builtins.disabled import *
 from future.builtins import *
 
 from .locale import \
-    Translation, DEFAULT_TRANSLATION, get_translations, filter_language_codes
+    Translation, DEFAULT_TRANSLATION, get_translations, \
+    filter_language_codes, choose_language_code
 
 
 __all__ = [
     "Translation", "DEFAULT_TRANSLATION", "get_translations",
-    "filter_language_codes"
+    "filter_language_codes", "choose_language_code"
 ]

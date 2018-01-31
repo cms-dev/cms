@@ -60,10 +60,11 @@ class BaseHandler(CommonRequestHandler):
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
         self.available_translations = self.service.translations
-        self.browser_lang = "en"
-        self.cookie_lang = None
+        self.automatic_translation = DEFAULT_TRANSLATION
+        self.cookie_translation = None
         self.translation = DEFAULT_TRANSLATION
         self._ = self.translation.gettext
+        self.n_ = self.translation.ngettext
 
         # We need this to be computed for each request because we want to be
         # able to import new contests without having to restart CWS. But only
