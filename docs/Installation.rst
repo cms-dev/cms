@@ -20,8 +20,6 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
-* `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
-
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
 
 * `TeX Live <https://www.tug.org/texlive/>`_ (only for printing);
@@ -61,7 +59,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
     sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk \
         fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl \
         postgresql postgresql-client python3.6 \
-        iso-codes shared-mime-info stl-manual cgroup-lite libcap-dev
+        shared-mime-info stl-manual cgroup-lite libcap-dev
 
     # Only if you are going to use pip/virtualenv to install python dependencies
     sudo apt-get install python3.6-dev libpq-dev libcups2-dev libyaml-dev \
@@ -80,7 +78,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
     sudo pacman -S base-devel jre8-openjdk jdk8-openjdk fpc \
          postgresql postgresql-client python \
-         iso-codes shared-mime-info libcap
+         shared-mime-info libcap
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/

@@ -42,9 +42,6 @@ import logging
 import tornado.web
 
 from cms.server import actual_phase_required, multi_contest
-from cmscommon.isocodes import is_language_code, translate_language_code, \
-    is_country_code, translate_country_code, \
-    is_language_country_code, translate_language_country_code
 from cmscommon.mimetypes import get_type_for_file_name
 
 from .contest import ContestHandler, FileHandler
@@ -67,19 +64,8 @@ class TaskDescriptionHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         for statement in itervalues(task.statements):
-            lang_code = statement.language
-            if is_language_country_code(lang_code):
-                statement.language_name = \
-                    translate_language_country_code(lang_code,
-                                                    self.translation)
-            elif is_language_code(lang_code):
-                statement.language_name = \
-                    translate_language_code(lang_code, self.translation)
-            elif is_country_code(lang_code):
-                statement.language_name = \
-                    translate_country_code(lang_code, self.translation)
-            else:
-                statement.language_name = lang_code
+            statement.language_name = \
+                self.translation.format_locale(statement.language)
 
         self.r_params["primary_statements"] = task.primary_statements
 
