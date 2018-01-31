@@ -43,6 +43,7 @@ import traceback
 import tornado.web
 
 from cms.db import Contest
+from cms.locale import DEFAULT_TRANSLATION
 from cms.server import CommonRequestHandler
 
 
@@ -58,22 +59,11 @@ class BaseHandler(CommonRequestHandler):
 
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
-        self.all_translations = None
+        self.available_translations = self.service.translations
+        self.browser_lang = "en"
         self.cookie_lang = None
-        self.browser_lang = None
-        self.translation = None
-        self._ = None
-
-    def get(self):
-        self.r_params = self.render_params()
-
-        self.render("contest_list.html", **self.r_params)
-
-    def prepare(self):
-        """This method is executed at the beginning of each request.
-
-        """
-        super(BaseHandler, self).prepare()
+        self.translation = DEFAULT_TRANSLATION
+        self._ = self.translation.gettext
 
         # We need this to be computed for each request because we want to be
         # able to import new contests without having to restart CWS. But only
@@ -83,19 +73,23 @@ class BaseHandler(CommonRequestHandler):
             for contest in self.sql_session.query(Contest).all():
                 self.contest_list[contest.name] = contest
 
-    def render_params(self):
-        """Return the default render params used by almost all handlers.
+    def get(self):
+        self.render_params()
 
-        return (dict): default render params
+        self.render("contest_list.html", **self.r_params)
+
+    def prepare(self):
+        """This method is executed at the beginning of each request.
 
         """
-        ret = {}
-        ret["now"] = self.timestamp
-        ret["url"] = self.url
+        super(BaseHandler, self).prepare()
 
-        ret["contest_list"] = self.contest_list
+    def render_params(self):
+        """Fill the default render params used by almost all handlers.
 
-        return ret
+        """
+        self.r_params["now"] = self.timestamp
+        self.r_params["url"] = self.url
 
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
@@ -109,7 +103,7 @@ class BaseHandler(CommonRequestHandler):
         # the data we need to display a basic template with the error
         # information. If r_params is not defined (i.e. something went
         # *really* bad) we simply return a basic textual error notice.
-        if getattr(self, 'r_params', None) is not None:
+        if len(self.r_params) > 0:
             self.render("error.html", status_code=status_code, **self.r_params)
         else:
             self.write("A critical error has occurred :-(")

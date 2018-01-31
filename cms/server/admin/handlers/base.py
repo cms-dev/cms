@@ -329,7 +329,7 @@ class BaseHandler(CommonRequestHandler):
         # Most of the handlers raise a 404 HTTP error before r_params
         # is defined. If r_params is not defined we try to define it
         # here, and if it fails we simply return a basic textual error notice.
-        if self.r_params is None:
+        if len(self.r_params) == 0:
             try:
                 self.r_params = self.render_params()
             except:
@@ -577,7 +577,7 @@ class BaseHandler(CommonRequestHandler):
         offset = page * page_size
         count = query.count()
 
-        if self.r_params is None:
+        if len(self.r_params) == 0:
             self.r_params = self.render_params()
 
         # A page showing paginated submissions can use these
@@ -610,7 +610,7 @@ class BaseHandler(CommonRequestHandler):
         offset = page * page_size
         count = query.count()
 
-        if self.r_params is None:
+        if len(self.r_params) == 0:
             self.r_params = self.render_params()
 
         self.r_params["user_test_count"] = count
@@ -623,7 +623,7 @@ class BaseHandler(CommonRequestHandler):
     def render_params_for_remove_confirmation(self, query):
         count = query.count()
 
-        if self.r_params is None:
+        if len(self.r_params) == 0:
             self.r_params = self.render_params()
         self.r_params["submission_count"] = count
 

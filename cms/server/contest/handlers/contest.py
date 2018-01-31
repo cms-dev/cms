@@ -97,9 +97,21 @@ class ContestHandler(BaseHandler):
     child of this class.
 
     """
+    def __init__(self, *args, **kwargs):
+        super(ContestHandler, self).__init__(*args, **kwargs)
+        self.contest_url = None
+
     def prepare(self):
         super(ContestHandler, self).prepare()
         self.choose_contest()
+
+        if self.contest.allowed_localizations:
+            lang_codes = filter_language_codes(
+                list(iterkeys(self.available_translations)),
+                self.contest.allowed_localizations)
+            self.available_translations = dict(
+                (k, v) for k, v in iteritems(self.available_translations)
+                if k in lang_codes)
 
         self.setup_locale()
 
@@ -111,7 +123,7 @@ class ContestHandler(BaseHandler):
 
         # Run render_params() now, not at the beginning of the request,
         # because we need contest_name
-        self.r_params = self.render_params()
+        self.render_params()
 
     def choose_contest(self):
         """Fill self.contest using contest passed as argument or path.
@@ -134,7 +146,7 @@ class ContestHandler(BaseHandler):
                 # render_params in this class assumes the contest is loaded,
                 # so we cannot call it without a fully defined contest. Luckily
                 # the one from the base class is enough to display a 404 page.
-                self.r_params = super(ContestHandler, self).render_params()
+                super(ContestHandler, self).render_params()
                 raise tornado.web.HTTPError(404)
         else:
             # Select the contest specified on the command line
@@ -298,17 +310,11 @@ class ContestHandler(BaseHandler):
         return participation
 
     def setup_locale(self):
-        self.all_translations = self.service.translations
-        lang_codes = list(iterkeys(self.all_translations))
-
-        if self.contest.allowed_localizations:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
+        lang_codes = list(iterkeys(self.available_translations))
 
         # Select the one the user likes most.
         basic_lang = 'en'
-
-        if self.contest.allowed_localizations:
+        if basic_lang not in lang_codes:
             basic_lang = lang_codes[0].replace("_", "-")
 
         http_langs = [lang_code.replace("_", "-") for lang_code in lang_codes]
@@ -324,7 +330,7 @@ class ContestHandler(BaseHandler):
             lang_code = self.browser_lang
 
         self.set_header("Content-Language", lang_code)
-        self.translation = self.all_translations[lang_code.replace("-", "_")]
+        self.translation = self.available_translations[lang_code.replace("-", "_")]
         self._ = self.translation.gettext
 
     @staticmethod
@@ -346,18 +352,17 @@ class ContestHandler(BaseHandler):
             raise RuntimeError("Unknown token_mode value.")
 
     def render_params(self):
-        ret = super(ContestHandler, self).render_params()
+        super(ContestHandler, self).render_params()
 
-        ret["contest"] = self.contest
+        self.r_params["contest"] = self.contest
 
-        if hasattr(self, "contest_url"):
-            ret["contest_url"] = self.contest_url
+        self.r_params["contest_url"] = self.contest_url
 
-        ret["phase"] = self.contest.phase(self.timestamp)
+        self.r_params["phase"] = self.contest.phase(self.timestamp)
 
-        ret["printing_enabled"] = (config.printer is not None)
-        ret["questions_enabled"] = self.contest.allow_questions
-        ret["testing_enabled"] = self.contest.allow_user_tests
+        self.r_params["printing_enabled"] = (config.printer is not None)
+        self.r_params["questions_enabled"] = self.contest.allow_questions
+        self.r_params["testing_enabled"] = self.contest.allow_user_tests
 
         if self.current_user is not None:
             participation = self.current_user
@@ -371,47 +376,41 @@ class ContestHandler(BaseHandler):
                 self.contest.per_user_time, participation.starting_time,
                 participation.delay_time, participation.extra_time)
 
-            ret["actual_phase"], ret["current_phase_begin"], \
-                ret["current_phase_end"], ret["valid_phase_begin"], \
-                ret["valid_phase_end"] = res
+            self.r_params["actual_phase"], \
+                self.r_params["current_phase_begin"], \
+                self.r_params["current_phase_end"], \
+                self.r_params["valid_phase_begin"], \
+                self.r_params["valid_phase_end"] = res
 
-            if ret["actual_phase"] == 0:
-                ret["phase"] = 0
+            if self.r_params["actual_phase"] == 0:
+                self.r_params["phase"] = 0
 
             # set the timezone used to format timestamps
-            ret["timezone"] = get_timezone(participation.user, self.contest)
+            self.r_params["timezone"] = get_timezone(participation.user,
+                                                     self.contest)
 
         # some information about token configuration
-        ret["tokens_contest"] = self._get_token_status(self.contest)
+        self.r_params["tokens_contest"] = self._get_token_status(self.contest)
 
         t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
         if t_tokens == 0:
-            ret["tokens_tasks"] = 0  # all disabled
+            self.r_params["tokens_tasks"] = 0  # all disabled
         elif t_tokens == 2 * len(self.contest.tasks):
-            ret["tokens_tasks"] = 2  # all infinite
+            self.r_params["tokens_tasks"] = 2  # all infinite
         else:
-            ret["tokens_tasks"] = 1  # all finite or mixed
+            self.r_params["tokens_tasks"] = 1  # all finite or mixed
 
-        ret["lang_names"] = {}
+        self.r_params["lang_names"] = {}
 
         # Get language codes for allowed localizations
-        lang_codes = list(iterkeys(self.all_translations))
-        if len(self.contest.allowed_localizations) > 0:
-            lang_codes = filter_language_codes(
-                lang_codes, self.contest.allowed_localizations)
-        for lang_code, trans in iteritems(self.all_translations):
-            # Filter lang_codes with allowed localizations
-            if lang_code not in lang_codes:
-                continue
-            ret["lang_names"][lang_code.replace("_", "-")] = trans.name
+        for lang_code, trans in iteritems(self.available_translations):
+            self.r_params["lang_names"][lang_code.replace("_", "-")] = trans.name
 
-        ret["cookie_lang"] = self.cookie_lang
-        ret["browser_lang"] = self.browser_lang
+        self.r_params["cookie_lang"] = self.cookie_lang
+        self.r_params["browser_lang"] = self.browser_lang
 
-        ret["translation"] = self.translation
-        ret["_"] = self._
-
-        return ret
+        self.r_params["translation"] = self.translation
+        self.r_params["_"] = self._
 
     def get_login_url(self):
         """The login url depends on the contest name, so we can't just
