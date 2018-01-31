@@ -317,7 +317,7 @@ def ScoreHandler(request, response):
     result = dict()
     for u_id, tasks in Scoring.store._scores.iteritems():
         for t_id, score in tasks.iteritems():
-            if score.get_score() > 0:
+            if score.get_score() > 0.0:
                 result.setdefault(u_id, dict())[t_id] = score.get_score()
 
     response.status_code = 200

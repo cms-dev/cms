@@ -121,8 +121,8 @@ def main():
                              " be added in the first lines of each file")
     parser.add_argument("--min-score", action="store", type=float,
                         help="ignore submissions which scored strictly"
-                             " less than this (default: 0)",
-                        default=0)
+                             " less than this (default: 0.0)",
+                        default=0.0)
     parser.add_argument("--filename", action="store", type=utf8_decoder,
                         help="the filename format to use"
                              " (default: {id}.{name}{ext})",

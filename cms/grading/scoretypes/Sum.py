@@ -99,8 +99,8 @@ class Sum(ScoreTypeAlone):
 
     def max_scores(self):
         """See ScoreType.max_score."""
-        public_score = 0
-        score = 0
+        public_score = 0.0
+        score = 0.0
         for public in self.public_testcases.itervalues():
             if public:
                 public_score += self.parameters
@@ -111,7 +111,7 @@ class Sum(ScoreTypeAlone):
         """See ScoreType.compute_score."""
         # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
-            return 0, "[]", 0, "[]", []
+            return 0.0, "[]", 0.0, "[]", []
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
@@ -119,8 +119,8 @@ class Sum(ScoreTypeAlone):
                            for ev in submission_result.evaluations)
         testcases = []
         public_testcases = []
-        score = 0
-        public_score = 0
+        score = 0.0
+        public_score = 0.0
 
         for idx in indices:
             this_score = float(evaluations[idx].outcome) * self.parameters
@@ -149,7 +149,7 @@ class Sum(ScoreTypeAlone):
         return (float): the public output.
 
         """
-        if outcome <= 0:
+        if outcome <= 0.0:
             return N_("Not correct")
         elif outcome >= self.parameters:
             return N_("Correct")

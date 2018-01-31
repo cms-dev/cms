@@ -183,7 +183,7 @@ class PolygonTaskLoader(TaskLoader):
             tl = float(testset.find('time-limit').text)
             ml = float(testset.find('memory-limit').text)
             args["time_limit"] = tl * 0.001
-            args["memory_limit"] = ml // 1024 // 1024
+            args["memory_limit"] = ml // (1024 * 1024)
 
             args["managers"] = {}
             infile_param = judging.attrib['input-file']
@@ -220,8 +220,8 @@ class PolygonTaskLoader(TaskLoader):
                 ["alone", [infile_param, outfile_param], evaluation_param]
 
             args["score_type"] = "Sum"
-            total_value = 100
-            input_value = 0
+            total_value = 100.0
+            input_value = 0.0
 
             testcases = int(testset.find('test-count').text)
 

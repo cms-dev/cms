@@ -171,18 +171,18 @@ class Worker(Service):
     def _finalize(self, start_time):
         end_time = time.time()
         busy_time = end_time - start_time
-        free_time = 0
+        free_time = 0.0
         if self._last_end_time is not None:
             free_time = start_time - self._last_end_time
         self._last_end_time = end_time
         self._total_busy_time += busy_time
         self._total_free_time += free_time
-        ratio = self._total_busy_time * 100 / \
+        ratio = self._total_busy_time * 100.0 / \
             (self._total_busy_time + self._total_free_time)
-        avg_free_time = 0
+        avg_free_time = 0.0
         if self._number_execution > 0:
             avg_free_time = self._total_free_time / self._number_execution
-        avg_busy_time = 0
+        avg_busy_time = 0.0
         if self._number_execution > 0:
             avg_busy_time = self._total_busy_time / self._number_execution
         self._number_execution += 1

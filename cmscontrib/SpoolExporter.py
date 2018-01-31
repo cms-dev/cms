@@ -161,7 +161,7 @@ class SpoolExporter(object):
                     os.path.join(self.spool_dir,
                                  "%s.%s.%s.res" % (username, task, ext)),
                     "w", encoding="utf-8")
-                total = 0
+                total = 0.0
                 for evaluation in result.evaluations:
                     outcome = float(evaluation.outcome)
                     total += outcome
@@ -186,11 +186,11 @@ class SpoolExporter(object):
         logger.info("Exporting ranking.")
 
         # Create the structure to store the scores.
-        scores = dict((participation.user.username, 0)
+        scores = dict((participation.user.username, 0.0)
                       for participation in self.contest.participations
                       if not participation.hidden)
         task_scores = dict(
-            (task.id, dict((participation.user.username, 0)
+            (task.id, dict((participation.user.username, 0.0)
                            for participation in self.contest.participations
                            if not participation.hidden))
             for task in self.contest.tasks)

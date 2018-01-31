@@ -149,7 +149,7 @@ def extract_meaningful_points(testcases_lengths, submission):
     last_length = -1
     for idx, length in enumerate(testcases_lengths):
         evaluation = submission.evaluations[idx]
-        if float(evaluation.outcome) == 1 and \
+        if float(evaluation.outcome) == 1.0 and \
                 evaluation.execution_time is not None:
             if length == last_length:
                 points_y[-1] = max(points_y[-1], evaluation.execution_time)
@@ -209,7 +209,7 @@ def extract_complexity_submission(testcases_lengths, submission):
                 matrix = numpy.vstack(matrix)
                 res.append(numpy.linalg.lstsq(matrix, points_y)[0][0])
 
-                residues.append(0)
+                residues.append(0.0)
                 for idx, point_y in enumerate(points_y):
                     residues[-1] += (matrix[idx][0] * res[-1] - point_y) ** 2
                 if best_residue == -1 or best_residue > residues[-1]:
@@ -232,8 +232,8 @@ def extract_complexity_submission(testcases_lengths, submission):
                         (res[ijk_to_idx(i, j, k)], i, j, k,
                          residues[ijk_to_idx(i, j, k)]))
         info.write("Complexity: %s\n" % complexity_to_string(best_idxs))
-        if sbest_residue != 0:
-            confidence = (100 * (1 - best_residue / sbest_residue))
+        if sbest_residue != 0.0:
+            confidence = (100.0 * (1.0 - best_residue / sbest_residue))
             info.write("Confidence: %5.2lf (%20.13lf, %20.13lf)\n" % (
                 confidence, best_residue, sbest_residue))
             result[2] = confidence

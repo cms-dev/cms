@@ -275,7 +275,7 @@ class Batch(TaskType):
 
         # Contestant's error: the marks won't be good
         elif not is_evaluation_passed(plus):
-            outcome = 0
+            outcome = 0.0
             text = human_evaluation_message(plus)
             if job.get_output:
                 job.user_output = None
@@ -285,7 +285,7 @@ class Batch(TaskType):
 
             # Check that the output file was created
             if not sandbox.file_exists(output_filename):
-                outcome = 0
+                outcome = 0.0
                 text = [N_("Evaluation didn't produce file %s"),
                         output_filename]
                 if job.get_output:
@@ -302,7 +302,7 @@ class Batch(TaskType):
                 # If just asked to execute, fill text and set dummy
                 # outcome.
                 if job.only_execution:
-                    outcome = 0
+                    outcome = 0.0
                     text = [N_("Execution completed successfully")]
 
                 # Otherwise evaluate the output file.

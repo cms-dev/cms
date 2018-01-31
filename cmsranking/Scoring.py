@@ -59,7 +59,7 @@ class NumberSet(object):
         self._impl.remove(val)
 
     def query(self):
-        return max(self._impl + [0])
+        return max(self._impl + [0.0])
 
     def clear(self):
         del self._impl[:]
@@ -121,18 +121,18 @@ class Score(object):
             self._last = self._submissions[s_id]
 
         if self._score_mode == "max":
-            score = max([0] +
+            score = max([0.0] +
                         [submission.score
                          for submission in self._submissions.values()])
         else:
             score = max(self._released.query(),
-                        self._last.score if self._last is not None else 0)
+                        self._last.score if self._last is not None else 0.0)
 
         if score != self.get_score():
             self._history.append((change.time, score))
 
     def get_score(self):
-        return self._history[-1][1] if len(self._history) > 0 else 0
+        return self._history[-1][1] if len(self._history) > 0 else 0.0
 
     def reset_history(self):
         # Delete everything except the submissions and the subchanges.
@@ -142,7 +142,7 @@ class Score(object):
 
         # Reset the submissions at their default value.
         for sub in self._submissions.itervalues():
-            sub.score = 0
+            sub.score = 0.0
             sub.token = False
             sub.extra = list()
 
@@ -196,7 +196,7 @@ class Score(object):
     def create_submission(self, key, submission):
         # A new submission never triggers an update in the history,
         # since it doesn't have a score.
-        submission.score = 0
+        submission.score = 0.0
         submission.token = False
         submission.extra = list()
         self._submissions[key] = submission

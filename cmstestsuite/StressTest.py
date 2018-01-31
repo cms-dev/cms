@@ -59,8 +59,8 @@ class RequestLog(object):
         self.failure = 0
         self.error = 0
         self.undecided = 0
-        self.total_time = 0
-        self.max_time = 0
+        self.total_time = 0.0
+        self.max_time = 0.0
 
         self.log_dir = log_dir
         if self.log_dir is not None:
@@ -289,8 +289,8 @@ def harvest_contest_data(contest_id):
     return users, tasks
 
 
-DEFAULT_METRICS = {'time_coeff': 10,
-                   'time_lambda': 2}
+DEFAULT_METRICS = {'time_coeff': 10.0,
+                   'time_lambda': 2.0}
 
 
 def main():
@@ -318,7 +318,7 @@ def main():
         "-r", "--read-from", action="store", type=utf8_decoder,
         help="file to read contest info from")
     parser.add_argument(
-        "-t", "--time-coeff", action="store", type=float, default=10,
+        "-t", "--time-coeff", action="store", type=float, default=10.0,
         help="average wait between actions")
     parser.add_argument(
         "-o", "--only-submit", action="store_true",
@@ -336,7 +336,7 @@ def main():
             file_.write("%s" % contest_data)
         return
 
-    assert args.time_coeff > 0
+    assert args.time_coeff > 0.0
     assert not (args.only_submit and args.submissions_path == "")
 
     users = []

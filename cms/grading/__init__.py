@@ -393,7 +393,7 @@ def compilation_step(sandbox, commands):
 
 
 def evaluation_step(sandbox, commands,
-                    time_limit=0, memory_limit=0,
+                    time_limit=0.0, memory_limit=0,
                     allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute some evaluation commands in the sandbox. Note that in
@@ -785,13 +785,13 @@ def white_diff_step(sandbox, output_filename,
         out_file = sandbox.get_file(output_filename)
         res_file = sandbox.get_file(correct_output_filename)
         if white_diff(out_file, res_file):
-            outcome = 1
+            outcome = 1.0
             text = [EVALUATION_MESSAGES.get("success").message]
         else:
-            outcome = 0
+            outcome = 0.0
             text = [EVALUATION_MESSAGES.get("wrong").message]
     else:
-        outcome = 0
+        outcome = 0.0
         text = [EVALUATION_MESSAGES.get("nooutput").message, output_filename]
     return outcome, text
 

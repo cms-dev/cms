@@ -108,7 +108,7 @@ def wait_without_std(procs):
     # much memory). Unix specific.
     to_consume = get_to_consume()
     while len(to_consume) > 0:
-        to_read = select.select(to_consume, [], [], 1)[0]
+        to_read = select.select(to_consume, [], [], 1.0)[0]
         for file_ in to_read:
             file_.read(8192)
         to_consume = get_to_consume()
@@ -250,7 +250,7 @@ class SandboxBase(object):
             time_str = "(time unknown)"
         memory_used = self.get_memory_used()
         if memory_used is not None:
-            mem_str = "%.2f MB" % (memory_used / 1024 / 1024)
+            mem_str = "%.2f MB" % (memory_used / (1024 * 1024))
         else:
             mem_str = "(memory usage unknown)"
         return "[%s - %s]" % (time_str, mem_str)

@@ -160,7 +160,7 @@ class ProxyExecutor(Executor):
 
     # How long we wait after having failed to push data to a ranking
     # before trying again.
-    FAILURE_WAIT = 60
+    FAILURE_WAIT = 60.0
 
     def __init__(self, ranking):
         """Create a proxy for the ranking at the given URL.
@@ -274,7 +274,7 @@ class ProxyService(TriggeredService):
         # example.
         self.initialize()
 
-        self.start_sweeper(347)
+        self.start_sweeper(347.0)
 
     def _missing_operations(self):
         """Return a generator of data to be sent to the rankings..
