@@ -412,8 +412,8 @@ class CommonRequestHandler(RequestHandler):
 
     def __init__(self, *args, **kwargs):
         super(CommonRequestHandler, self).__init__(*args, **kwargs)
-        self.timestamp = None
-        self.sql_session = None
+        self.timestamp = make_datetime()
+        self.sql_session = Session()
         self.r_params = None
         self.contest = None
         self.url = None
@@ -423,11 +423,8 @@ class CommonRequestHandler(RequestHandler):
 
         """
         super(CommonRequestHandler, self).prepare()
-        self.timestamp = make_datetime()
-        self.set_header("Cache-Control", "no-cache, must-revalidate")
-        self.sql_session = Session()
-        self.sql_session.expire_all()
         self.url = create_url_builder(get_url_root(self.request.path))
+        self.set_header("Cache-Control", "no-cache, must-revalidate")
 
     def finish(self, *args, **kwargs):
         """Finish this response, ending the HTTP request.
