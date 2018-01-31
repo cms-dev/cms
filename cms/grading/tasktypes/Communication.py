@@ -180,7 +180,7 @@ class Communication(TaskType):
             num_processes = 1
         else:
             num_processes = self.parameters[0]
-        indices = list(range(num_processes))
+        indices = range(num_processes)
         # Create sandboxes and FIFOs
         sandbox_mgr = create_sandbox(file_cacher, job.multithreaded_sandbox)
         sandbox_user = [create_sandbox(file_cacher, job.multithreaded_sandbox)
