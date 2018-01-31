@@ -42,7 +42,6 @@ from future.builtins import *
 import six
 
 import pkg_resources
-import gettext
 import logging
 import os
 
@@ -60,29 +59,6 @@ from cmscommon.datetime import utc
 logger = logging.getLogger(__name__)
 
 
-def get_system_translations(lang):
-    """Return the translation catalogs for our dependencies.
-
-    Some strings we use come from external software (e.g. language and
-    country names, mimetype descriptions, etc.) and their translations
-    are thus provided by these packages' catalogs. This function has to
-    return the gettext.*Translations classes that translate a string
-    according to these message catalogs.
-
-    lang (string): the language we want translations for
-
-    return ([gettext.NullTranslations]): the translation catalogs
-
-    """
-    shared_mime_info_locale = gettext.translation(
-        "shared-mime-info",
-        os.path.join(config.shared_mime_info_prefix, "share", "locale"),
-        [lang],
-        fallback=True)
-
-    return [shared_mime_info_locale]
-
-
 class Translation(object):
     """A shim that bundles all sources of translations for a language
 
@@ -98,8 +74,8 @@ class Translation(object):
             self.translation = babel.support.Translations(mofile, domain="cms")
         else:
             self.translation = babel.support.NullTranslations()
-        for sys_translation in get_system_translations(lang_code):
-            self.translation.add_fallback(sys_translation)
+        self.mimetype_translation = babel.support.Translations.load(
+            domain="shared-mime-info", locales=[self.locale])
 
     @property
     def identifier(self):
@@ -299,6 +275,12 @@ class Translation(object):
             return babel.core.Locale.parse(code).get_display_name(self.locale)
         except (ValueError, babel.core.UnknownLocaleError):
             return code
+
+    def translate_mimetype(self, mimetype):
+        if six.PY3:
+            return self.mimetype_translation.gettext(mimetype)
+        else:
+            return self.mimetype_translation.ugettext(mimetype)
 
 
 DEFAULT_TRANSLATION = Translation("en")
