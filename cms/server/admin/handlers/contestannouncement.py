@@ -58,7 +58,7 @@ class AddAnnouncementHandler(BaseHandler):
             self.sql_session.add(ann)
             self.try_commit()
         else:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Subject is mandatory.", "")
         self.redirect(self.url("contest", contest_id, "announcements"))
 

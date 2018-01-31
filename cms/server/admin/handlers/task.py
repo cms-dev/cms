@@ -71,7 +71,7 @@ class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
             self.sql_session.add(task)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
@@ -94,14 +94,14 @@ class AddTaskHandler(SimpleHandler("add_task.html", permission_all=True)):
             task.active_dataset = dataset
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
 
         if self.try_commit():
             # Create the task on RWS.
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
             self.redirect(self.url("task", task.id))
         else:
             self.redirect(fallback_page)
@@ -172,7 +172,7 @@ class TaskHandler(BaseHandler):
             task.set_attrs(attrs)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(self.url("task", task_id))
             return
@@ -192,7 +192,7 @@ class TaskHandler(BaseHandler):
                 dataset.set_attrs(attrs)
 
             except Exception as error:
-                self.application.service.add_notification(
+                self.service.add_notification(
                     make_datetime(), "Invalid field(s)", repr(error))
                 self.redirect(self.url("task", task_id))
                 return
@@ -203,7 +203,7 @@ class TaskHandler(BaseHandler):
 
         if self.try_commit():
             # Update the task and score on RWS.
-            self.application.service.proxy_service.dataset_updated(
+            self.service.proxy_service.dataset_updated(
                 task_id=task.id)
         self.redirect(self.url("task", task_id))
 
@@ -228,7 +228,7 @@ class AddStatementHandler(BaseHandler):
 
         language = self.get_argument("language", "")
         if len(language) == 0:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "No language code specified",
                 "The language code can be any string.")
@@ -236,7 +236,7 @@ class AddStatementHandler(BaseHandler):
             return
         statement = self.request.files["statement"][0]
         if not statement["filename"].endswith(".pdf"):
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Invalid task statement",
                 "The task statement must be a .pdf file.")
@@ -246,11 +246,11 @@ class AddStatementHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.file_cacher.put_file_content(
+            digest = self.service.file_cacher.put_file_content(
                 statement["body"],
                 "Statement for task %s (lang: %s)" % (task_name, language))
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Task statement storage failed",
                 repr(error))
@@ -318,11 +318,11 @@ class AddAttachmentHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.file_cacher.put_file_content(
+            digest = self.service.file_cacher.put_file_content(
                 attachment["body"],
                 "Task attachment for %s" % task_name)
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Attachment storage failed",
                 repr(error))
@@ -405,7 +405,7 @@ class AddDatasetHandler(BaseHandler):
             # Ensure description is unique.
             if any(attrs["description"] == d.description
                    for d in task.datasets):
-                self.application.service.add_notification(
+                self.service.add_notification(
                     make_datetime(),
                     "Dataset name %r is already taken." % attrs["description"],
                     "Please choose a unique name for this dataset.")
@@ -425,7 +425,7 @@ class AddDatasetHandler(BaseHandler):
 
         except Exception as error:
             logger.warning("Invalid field: %s" % (traceback.format_exc()))
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
@@ -436,7 +436,7 @@ class AddDatasetHandler(BaseHandler):
             task.active_dataset = dataset
 
         if self.try_commit():
-            # self.application.service.scoring_service.reinitialize()
+            # self.service.scoring_service.reinitialize()
             self.redirect(self.url("task", task_id))
         else:
             self.redirect(fallback_page)
@@ -460,7 +460,7 @@ class TaskListHandler(SimpleHandler("tasks.html")):
             # Open asking for remove page
             self.redirect(asking_page)
         else:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid operation %s" % operation, "")
             self.redirect(self.url("tasks"))
 
@@ -497,7 +497,7 @@ class RemoveTaskHandler(BaseHandler):
             for task in following_tasks:
                 task.num -= 1
         if self.try_commit():
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
 
         # Maybe they'll want to do this again (for another task)
         self.write("../../tasks")

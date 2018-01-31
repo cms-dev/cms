@@ -111,7 +111,7 @@ class SubmissionCommentHandler(BaseHandler):
             submission.set_attrs(attrs)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
 
         else:

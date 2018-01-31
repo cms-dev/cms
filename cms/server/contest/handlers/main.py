@@ -236,7 +236,7 @@ class NotificationsHandler(ContestHandler):
         self.set_secure_cookie(cookie_name, "%d" % next_unread_count)
 
         # Simple notifications
-        notifications = self.application.service.notifications
+        notifications = self.service.notifications
         username = participation.user.username
         if username in notifications:
             for notification in notifications[username]:
@@ -292,7 +292,7 @@ class PrintingHandler(ContestHandler):
             .all()
         old_count = len(printjobs)
         if config.max_jobs_per_user <= old_count:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 participation.user.username,
                 self.timestamp,
                 self._("Too many print jobs!"),
@@ -307,7 +307,7 @@ class PrintingHandler(ContestHandler):
         if any(len(filename) != 1
                for filename in itervalues(self.request.files)) \
                 or set(iterkeys(self.request.files)) != set(["file"]):
-            self.application.service.add_notification(
+            self.service.add_notification(
                 participation.user.username,
                 self.timestamp,
                 self._("Invalid format!"),
@@ -321,7 +321,7 @@ class PrintingHandler(ContestHandler):
 
         # Check if submitted file is small enough.
         if len(data) > config.max_print_length:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 participation.user.username,
                 self.timestamp,
                 self._("File too big!"),
@@ -333,7 +333,7 @@ class PrintingHandler(ContestHandler):
 
         # We now have to send the file to the destination...
         try:
-            digest = self.application.service.file_cacher.put_file_content(
+            digest = self.service.file_cacher.put_file_content(
                 data,
                 "Print job sent by %s at %d." % (
                     participation.user.username,
@@ -342,7 +342,7 @@ class PrintingHandler(ContestHandler):
         # In case of error, the server aborts
         except Exception as error:
             logger.error("Storage failed! %s", error)
-            self.application.service.add_notification(
+            self.service.add_notification(
                 participation.user.username,
                 self.timestamp,
                 self._("Print job storage failed!"),
@@ -362,9 +362,9 @@ class PrintingHandler(ContestHandler):
 
         self.sql_session.add(printjob)
         self.sql_session.commit()
-        self.application.service.printing_service.new_printjob(
+        self.service.printing_service.new_printjob(
             printjob_id=printjob.id)
-        self.application.service.add_notification(
+        self.service.add_notification(
             participation.user.username,
             self.timestamp,
             self._("Print job received"),

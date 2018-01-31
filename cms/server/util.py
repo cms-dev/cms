@@ -640,7 +640,7 @@ def file_handler_gen(BaseClass):
                 return
             try:
                 self.temp_file = \
-                    self.application.service.file_cacher.get_file(digest)
+                    self.service.file_cacher.get_file(digest)
             except Exception:
                 logger.error("Exception while retrieving file `%s'.", digest,
                              exc_info=True)

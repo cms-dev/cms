@@ -137,7 +137,7 @@ class CloneDatasetHandler(BaseHandler):
             # Ensure description is unique.
             if any(attrs["description"] == d.description
                    for d in task.datasets):
-                self.application.service.add_notification(
+                self.service.add_notification(
                     make_datetime(),
                     "Dataset name %r is already taken." % attrs["description"],
                     "Please choose a unique name for this dataset.")
@@ -157,7 +157,7 @@ class CloneDatasetHandler(BaseHandler):
 
         except Exception as error:
             logger.warning("Invalid field.", exc_info=True)
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
@@ -206,7 +206,7 @@ class RenameDatasetHandler(BaseHandler):
         # Ensure description is unique.
         if any(description == d.description
                for d in task.datasets if d is not dataset):
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Dataset name \"%s\" is already taken." % description,
                 "Please choose a unique name for this dataset.")
@@ -243,7 +243,7 @@ class DeleteDatasetHandler(BaseHandler):
         self.sql_session.delete(dataset)
 
         if self.try_commit():
-            # self.application.service.scoring_service.reinitialize()
+            # self.service.scoring_service.reinitialize()
             pass
         self.redirect(self.url("task", task.id))
 
@@ -285,14 +285,14 @@ class ActivateDatasetHandler(BaseHandler):
         task.active_dataset = dataset
 
         if self.try_commit():
-            self.application.service.proxy_service.dataset_updated(
+            self.service.proxy_service.dataset_updated(
                 task_id=task.id)
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
-            self.application.service\
+            self.service\
                 .evaluation_service.search_operations_not_done()
-            self.application.service\
+            self.service\
                 .scoring_service.search_operations_not_done()
 
         # Now send notifications to contestants.
@@ -313,7 +313,7 @@ class ActivateDatasetHandler(BaseHandler):
             count += 1
 
         if self.try_commit():
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Messages sent to %d users." % count, "")
 
@@ -331,13 +331,13 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
         dataset.autojudge = not dataset.autojudge
 
         if self.try_commit():
-            # self.application.service.scoring_service.reinitialize()
+            # self.service.scoring_service.reinitialize()
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
-            self.application.service\
+            self.service\
                 .evaluation_service.search_operations_not_done()
-            self.application.service\
+            self.service\
                 .scoring_service.search_operations_not_done()
 
         self.write("./%d" % dataset.task_id)
@@ -369,11 +369,11 @@ class AddManagerHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.file_cacher.put_file_content(
+            digest = self.service.file_cacher.put_file_content(
                 manager["body"],
                 "Task manager for %s" % task_name)
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Manager storage failed",
                 repr(error))
@@ -441,7 +441,7 @@ class AddTestcaseHandler(BaseHandler):
             input_ = self.request.files["input"][0]
             output = self.request.files["output"][0]
         except KeyError:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Invalid data",
                 "Please fill both input and output.")
@@ -454,15 +454,15 @@ class AddTestcaseHandler(BaseHandler):
 
         try:
             input_digest = \
-                self.application.service.file_cacher.put_file_content(
+                self.service.file_cacher.put_file_content(
                     input_["body"],
                     "Testcase input for task %s" % task_name)
             output_digest = \
-                self.application.service.file_cacher.put_file_content(
+                self.service.file_cacher.put_file_content(
                     output["body"],
                     "Testcase output for task %s" % task_name)
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Testcase storage failed",
                 repr(error))
@@ -479,7 +479,7 @@ class AddTestcaseHandler(BaseHandler):
 
         if self.try_commit():
             # max_score and/or extra_headers might have changed.
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
             self.redirect(self.url("task", task.id))
         else:
             self.redirect(fallback_page)
@@ -511,7 +511,7 @@ class AddTestcasesHandler(BaseHandler):
         try:
             archive = self.request.files["archive"][0]
         except KeyError:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Invalid data",
                 "Please choose tests archive.")
@@ -534,17 +534,17 @@ class AddTestcasesHandler(BaseHandler):
             successful_subject, successful_text = \
                 import_testcases_from_zipfile(
                     self.sql_session,
-                    self.application.service.file_cacher, dataset,
+                    self.service.file_cacher, dataset,
                     fp, input_re, output_re, overwrite, public)
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), str(error), repr(error))
             self.redirect(fallback_page)
             return
 
-        self.application.service.add_notification(
+        self.service.add_notification(
             make_datetime(), successful_subject, successful_text)
-        self.application.service.proxy_service.reinitialize()
+        self.service.proxy_service.reinitialize()
         self.redirect(self.url("task", task.id))
 
 
@@ -567,7 +567,7 @@ class DeleteTestcaseHandler(BaseHandler):
 
         if self.try_commit():
             # max_score and/or extra_headers might have changed.
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
         self.write("./%d" % task_id)
 
 
@@ -600,7 +600,7 @@ class DownloadTestcasesHandler(FileHandler):
 
         # Template validations
         if input_template.count('*') != 1 or output_template.count('*') != 1:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Invalid template format",
                 "You must have exactly one '*' in input/output template.")
@@ -617,9 +617,9 @@ class DownloadTestcasesHandler(FileHandler):
         with zipfile.ZipFile(zip_path, "w") as zip_file:
             for testcase in itervalues(dataset.testcases):
                 # Get input, output file path
-                input_path = self.application.service.file_cacher.\
+                input_path = self.service.file_cacher.\
                     get_file(testcase.input).name
-                output_path = self.application.service.file_cacher.\
+                output_path = self.service.file_cacher.\
                     get_file(testcase.output).name
                 zip_file.write(
                     input_path, input_template % testcase.codename)

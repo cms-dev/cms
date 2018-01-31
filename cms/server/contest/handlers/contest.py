@@ -138,7 +138,7 @@ class ContestHandler(BaseHandler):
         else:
             # Select the contest specified on the command line
             self.contest = Contest.get_from_id(
-                self.application.service.contest_id, self.sql_session)
+                self.service.contest_id, self.sql_session)
 
     def get_current_user(self):
         """Return the currently logged in participation.
@@ -297,7 +297,7 @@ class ContestHandler(BaseHandler):
         return participation
 
     def get_user_locale(self):
-        self.langs = self.application.service.langs
+        self.langs = self.service.langs
         lang_codes = list(iterkeys(self.langs))
 
         if self.contest.allowed_localizations:

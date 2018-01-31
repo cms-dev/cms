@@ -64,14 +64,14 @@ class AddContestHandler(
             self.sql_session.add(contest)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
 
         if self.try_commit():
             # Create the contest on RWS.
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
             self.redirect(self.url("contest", contest.id))
         else:
             self.redirect(fallback_page)
@@ -137,14 +137,14 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             contest.set_attrs(attrs)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s).", repr(error))
             self.redirect(self.url("contest", contest_id))
             return
 
         if self.try_commit():
             # Update the contest on RWS.
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
         self.redirect(self.url("contest", contest_id))
 
 
@@ -194,7 +194,7 @@ class ContestListHandler(SimpleHandler("contests.html")):
             # Open asking for remove page
             self.redirect(asking_page)
         else:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid operation %s" % operation, "")
             self.redirect(self.url("contests"))
 
@@ -222,7 +222,7 @@ class RemoveContestHandler(BaseHandler):
 
         self.sql_session.delete(contest)
         if self.try_commit():
-            self.application.service.proxy_service.reinitialize()
+            self.service.proxy_service.reinitialize()
 
         # Maybe they'll want to do this again (for another contest)
         self.write("../../contests")

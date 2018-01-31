@@ -81,7 +81,7 @@ class QuestionHandler(ContestHandler):
             logger.warning("Long question (%d, %d) dropped for user %s.",
                            subject_length, text_length,
                            self.current_user.user.username)
-            self.application.service.add_notification(
+            self.service.add_notification(
                 self.current_user.user.username,
                 self.timestamp,
                 self._("Question too big!"),
@@ -101,7 +101,7 @@ class QuestionHandler(ContestHandler):
             "Question submitted by user %s.", participation.user.username)
 
         # Add "All ok" notification.
-        self.application.service.add_notification(
+        self.service.add_notification(
             participation.user.username,
             self.timestamp,
             self._("Question received"),

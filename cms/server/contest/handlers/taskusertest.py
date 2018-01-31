@@ -133,7 +133,7 @@ class UserTestHandler(ContestHandler):
     def _send_error(self, subject, text):
         """Shorthand for sending a notification and redirecting."""
         logger.warning("Sent error: `%s' - `%s'", subject, text)
-        self.application.service.add_notification(
+        self.service.add_notification(
             self.current_user.user.username,
             self.timestamp,
             subject,
@@ -382,7 +382,7 @@ class UserTestHandler(ContestHandler):
         # We now have to send all the files to the destination...
         try:
             for filename in files:
-                digest = self.application.service.file_cacher.put_file_content(
+                digest = self.service.file_cacher.put_file_content(
                     files[filename][1],
                     "Test file %s sent by %s at %d." % (
                         filename, participation.user.username,
@@ -420,9 +420,9 @@ class UserTestHandler(ContestHandler):
 
         self.sql_session.add(user_test)
         self.sql_session.commit()
-        self.application.service.evaluation_service.new_user_test(
+        self.service.evaluation_service.new_user_test(
             user_test_id=user_test.id)
-        self.application.service.add_notification(
+        self.service.add_notification(
             participation.user.username,
             self.timestamp,
             self._("Test received"),

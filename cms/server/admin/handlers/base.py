@@ -223,12 +223,12 @@ class BaseHandler(CommonRequestHandler):
         try:
             self.sql_session.commit()
         except IntegrityError as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Operation failed.", "%s" % error)
             return False
         else:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(),
                 "Operation successful.", "")
             return True

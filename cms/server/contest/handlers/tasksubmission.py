@@ -75,7 +75,7 @@ class SubmitHandler(ContestHandler):
     def _send_error(self, subject, text):
         """Shorthand for sending a notification and redirecting."""
         logger.warning("Sent error: `%s' - `%s'", subject, text)
-        self.application.service.add_notification(
+        self.service.add_notification(
             self.current_user.user.username,
             self.timestamp,
             subject,
@@ -309,7 +309,7 @@ class SubmitHandler(ContestHandler):
         # We now have to send all the files to the destination...
         try:
             for filename in files:
-                digest = self.application.service.file_cacher.put_file_content(
+                digest = self.service.file_cacher.put_file_content(
                     files[filename][1],
                     "Submission file %s sent by %s at %d." % (
                         filename, participation.user.username,
@@ -342,9 +342,9 @@ class SubmitHandler(ContestHandler):
             self.sql_session.add(File(filename, digest, submission=submission))
         self.sql_session.add(submission)
         self.sql_session.commit()
-        self.application.service.evaluation_service.new_submission(
+        self.service.evaluation_service.new_submission(
             submission_id=submission.id)
-        self.application.service.add_notification(
+        self.service.add_notification(
             participation.user.username,
             self.timestamp,
             self._("Submission received"),
@@ -616,7 +616,7 @@ class UseTokenHandler(ContestHandler):
             logger.warning("User %s tried to play a token when they "
                            "shouldn't.", participation.user.username)
             # Add "no luck" notification
-            self.application.service.add_notification(
+            self.service.add_notification(
                 participation.user.username,
                 self.timestamp,
                 self._("Token request discarded"),
@@ -631,7 +631,7 @@ class UseTokenHandler(ContestHandler):
             self.sql_session.add(token)
             self.sql_session.commit()
         else:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 participation.user.username,
                 self.timestamp,
                 self._("Token request discarded"),
@@ -643,14 +643,14 @@ class UseTokenHandler(ContestHandler):
 
         # Inform ProxyService and eventually the ranking that the
         # token has been played.
-        self.application.service.proxy_service.submission_tokened(
+        self.service.proxy_service.submission_tokened(
             submission_id=submission.id)
 
         logger.info("Token played by user %s on task %s.",
                     participation.user.username, task.name)
 
         # Add "All ok" notification.
-        self.application.service.add_notification(
+        self.service.add_notification(
             participation.user.username,
             self.timestamp,
             self._("Token request received"),

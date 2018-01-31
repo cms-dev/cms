@@ -87,7 +87,7 @@ class AddAdminHandler(SimpleHandler("add_admin.html", permission_all=True)):
             self.sql_session.add(admin)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
@@ -140,7 +140,7 @@ class AdminHandler(BaseHandler):
             new_attrs = _admin_attrs(self)
 
         except Exception as error:
-            self.application.service.add_notification(
+            self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(self.url("admin", admin_id))
             return
