@@ -10,9 +10,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * build environment for the programming languages allowed in the competition;
 
-* `PostgreSQL <http://www.postgresql.org/>`_ >= 9.0;
+* `PostgreSQL <http://www.postgresql.org/>`_ >= 9.4;
 
-  .. We need 9.0 because of pg_largeobject_metadata (in drop_db).
+  .. We need 9.4 because of the JSONB data type.
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (in particular the C compiler ``gcc``);
 
