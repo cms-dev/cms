@@ -522,8 +522,8 @@ msgid "Messages"
 msgstr "Sõnumid"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Automaatne (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Automaatne (%(lang)s)"
 
 msgid "Logout"
 msgstr "Logi välja"
@@ -642,8 +642,8 @@ msgid "Submission details for evaluation"
 msgstr "Esitatud lahenduse andmed"
 
 #, fuzzy, python-format
-msgid "Error %d"
-msgstr "Viga %d"
+msgid "Error %(status_code)s"
+msgstr "Viga %(status_code)s"
 
 #, fuzzy
 msgid "An error occured while the server was handling your request."
@@ -865,19 +865,19 @@ msgstr "Trüki"
 
 #, fuzzy, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
-"Te võite trükkida veel %(remaining_jobs)d teksti või PDF faili, igaüks kuni "
-"%(max_pages)d lehekülge pikk."
+"Te võite trükkida veel %(remaining_jobs)s teksti või PDF faili, igaüks kuni "
+"%(max_pages)s lehekülge pikk."
 
 #, fuzzy, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
-"Te võite trükkida veel %(remaining_jobs)d tekstifaili, igaüks kuni "
-"%(max_pages)d lehekülge pikk."
+"Te võite trükkida veel %(remaining_jobs)s tekstifaili, igaüks kuni "
+"%(max_pages)s lehekülge pikk."
 
 #, fuzzy
 msgid "File (text or PDF)"
@@ -985,20 +985,20 @@ msgid "Some suggested translations follow."
 msgstr "Mõned soovitatud tõlked järgnevad."
 
 #, fuzzy, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Ülesande tekst, <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Ülesande tekst, <b>%(lang)s</b>"
 
 #, fuzzy, python-format
-msgid "Statement in %s"
-msgstr "Ülesande tekst, %s"
+msgid "Statement in %(lang)s"
+msgstr "Ülesande tekst, %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Üksikasjad"

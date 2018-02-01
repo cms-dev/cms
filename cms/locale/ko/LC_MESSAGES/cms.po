@@ -488,8 +488,8 @@ msgid "Executed"
 msgstr "실행 완료"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "자동 (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "자동 (%(lang)s)"
 
 msgid "Logout"
 msgstr "로그아웃"
@@ -632,8 +632,8 @@ msgid "Submission details for evaluation"
 msgstr "평가 세부 사항"
 
 #, python-format
-msgid "Error %d"
-msgstr "오류 %d"
+msgid "Error %(status_code)s"
+msgstr "오류 %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "서버가 요구를 처리하는 중에 오류가 발생하였습니다."
@@ -826,19 +826,19 @@ msgstr "프린트"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
-"텍스트나 PDF 파일을 %(remaining_jobs)d번 더 프린트할 수 있으며, 매번 최대 "
-"%(max_pages)d 페이지를 프린트할 수 있습니다."
+"텍스트나 PDF 파일을 %(remaining_jobs)s번 더 프린트할 수 있으며, 매번 최대 "
+"%(max_pages)s 페이지를 프린트할 수 있습니다."
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
-"텍스트 파일 %(remaining_jobs)d번 더 프린트할 수 있으며, 매번 최대 "
-"%(max_pages)d 페이지를 프린트할 수 있습니다."
+"텍스트 파일 %(remaining_jobs)s번 더 프린트할 수 있으며, 매번 최대 "
+"%(max_pages)s 페이지를 프린트할 수 있습니다."
 
 msgid "File (text or PDF)"
 msgstr "파일 (텍스트 혹은 PDF)"
@@ -932,20 +932,20 @@ msgid "Some suggested translations follow."
 msgstr "추천 번역본입니다."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "<b>%s</b>의 문제 설명"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>의 문제 설명"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "%s의 문제 설명"
+msgid "Statement in %(lang)s"
+msgstr "%(lang)s의 문제 설명"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "세부 사항"

@@ -499,8 +499,8 @@ msgid "Executed"
 msgstr "Uitgevoerd"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Automatisch (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Automatisch (%(lang)s)"
 
 msgid "Logout"
 msgstr "Uitloggen"
@@ -639,8 +639,8 @@ msgid "Submission details for evaluation"
 msgstr "Details van de inzending over evaluatie"
 
 #, python-format
-msgid "Error %d"
-msgstr "Fout %d"
+msgid "Error %(status_code)s"
+msgstr "Fout %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "Een fout trad op terwijl de server je aanvraag behandelde."
@@ -824,19 +824,19 @@ msgstr "Afdrukken"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
-"Je kunt nog maximaal %(remaining_jobs)d tekst- of PDF-bestanden afdrukken "
-"van elk maximaal %(max_pages)d pagina's."
+"Je kunt nog maximaal %(remaining_jobs)s tekst- of PDF-bestanden afdrukken "
+"van elk maximaal %(max_pages)s pagina's."
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
-"Je kunt nog %(remaining_jobs)d tekstbestanden afdrukken van elk maximaal "
-"%(max_pages)d pagina's."
+"Je kunt nog %(remaining_jobs)s tekstbestanden afdrukken van elk maximaal "
+"%(max_pages)s pagina's."
 
 msgid "File (text or PDF)"
 msgstr "Bestand (tekst of PDF)"
@@ -934,20 +934,20 @@ msgid "Some suggested translations follow."
 msgstr "Wij raden de volgende vertalingen aan."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Beschrijving in <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Beschrijving in <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "Beschrijving in %s"
+msgid "Statement in %(lang)s"
+msgstr "Beschrijving in %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Enkele details"

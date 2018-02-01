@@ -480,8 +480,8 @@ msgid "Executed"
 msgstr "Đã chạy xong"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Tự động (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Tự động (%(lang)s)"
 
 msgid "Logout"
 msgstr "Đăng xuất"
@@ -619,8 +619,8 @@ msgid "Submission details for evaluation"
 msgstr "Chi tiết chấm bài nộp"
 
 #, python-format
-msgid "Error %d"
-msgstr "Lỗi %d"
+msgid "Error %(status_code)s"
+msgstr "Lỗi %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "Có lỗi xảy ra khi xử lí yêu cầu của bạn."
@@ -803,19 +803,19 @@ msgstr "In"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
-"Bạn có thể in thêm tối đa %(remaining_jobs)d file văn bản hoặc PDF, mỗi file "
-"dài không quá %(max_pages)d trang."
+"Bạn có thể in thêm tối đa %(remaining_jobs)s file văn bản hoặc PDF, mỗi file "
+"dài không quá %(max_pages)s trang."
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
-"Bạn có thể in thêm tối đa %(remaining_jobs)d file văn bản, mỗi file dài "
-"không quá %(max_pages)d trang."
+"Bạn có thể in thêm tối đa %(remaining_jobs)s file văn bản, mỗi file dài "
+"không quá %(max_pages)s trang."
 
 msgid "File (text or PDF)"
 msgstr "File (văn bản hoặc PDF)"
@@ -909,20 +909,20 @@ msgid "Some suggested translations follow."
 msgstr "Một số bản dịch gợi ý."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Đề bài theo ngôn ngữ <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Đề bài theo ngôn ngữ <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "Đề bài theo ngôn ngữ %s"
+msgid "Statement in %(lang)s"
+msgstr "Đề bài theo ngôn ngữ %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Chi tiết"

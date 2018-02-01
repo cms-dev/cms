@@ -360,8 +360,8 @@ msgid "You have no limitations on how you use them."
 msgstr "Nemate ograničenja na njihovu upotrebu."
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Automatski (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Automatski (%(lang)s)"
 
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
@@ -471,8 +471,8 @@ msgid "Standard Template Library"
 msgstr "Standard Template Library"
 
 #, python-format
-msgid "Error %d"
-msgstr "Greška %d"
+msgid "Error %(status_code)s"
+msgstr "Greška %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "Došlo je do greške prilikom obrade vašeg zahtjeva od strane servera."
@@ -651,20 +651,20 @@ msgid "Some suggested translations follow."
 msgstr "Ispod su neki predloženi prevodi."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Specifikacija u <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Specifikacija u <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "Specifikacija u %s"
+msgid "Statement in %(lang)s"
+msgstr "Specifikacija u %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Neki detalji"

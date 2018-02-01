@@ -449,8 +449,8 @@ msgid "Executed"
 msgstr "Izvedeno"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Avtomatsko (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Avtomatsko (%(lang)s)"
 
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
@@ -578,8 +578,8 @@ msgid "Submission details for evaluation"
 msgstr "Podrobnosti oddaje o ovrednotenju"
 
 #, python-format
-msgid "Error %d"
-msgstr "Napaka %d"
+msgid "Error %(status_code)s"
+msgstr "Napaka %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "Napaka se je zgodila med tem ko je strežnik obravnaval tvojo zahtevo."
@@ -714,12 +714,12 @@ msgid "Print"
 msgstr "Tiskaj"
 
 #, python-format
-msgid "You can print %(remaining_jobs)d more text or PDF files of up to %(max_pages)d pages each."
-msgstr "Natisneš lahko še %(remaining_jobs)d besedilnih ali PDF datotek z največ %(max_pages)d stranmi."
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "Natisneš lahko še %(remaining_jobs)s besedilnih ali PDF datotek z največ %(max_pages)s stranmi."
 
 #, python-format
-msgid "You can print %(remaining_jobs)d more text files of up to %(max_pages)d pages each."
-msgstr "Natisneš lahko še %(remaining_jobs)d besedilnih datotek z največ %(max_pages)d stranmi."
+msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
+msgstr "Natisneš lahko še %(remaining_jobs)s besedilnih datotek z največ %(max_pages)s stranmi."
 
 msgid "File (text or PDF)"
 msgstr "Datoteka (besedilna ali PDF)"
@@ -810,20 +810,20 @@ msgid "Some suggested translations follow."
 msgstr "Nekaj predlaganih prevodov še sledi."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Besedilo v <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Besedilo v <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "Besedilo v %s"
+msgid "Statement in %(lang)s"
+msgstr "Besedilo v %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Nekaj podrobnosti"

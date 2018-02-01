@@ -360,8 +360,8 @@ msgid "You have no limitations on how you use them."
 msgstr "使用規則中沒有其他額外的限制."
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "自動偵測 (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "自動偵測 (%(lang)s)"
 
 #, python-format
 msgid ""
@@ -474,8 +474,8 @@ msgid "Standard Template Library"
 msgstr "STL 標準樣板函數庫"
 
 #, python-format
-msgid "Error %d"
-msgstr "錯誤 %d"
+msgid "Error %(status_code)s"
+msgstr "錯誤 %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "競賽系統伺服器發生錯誤."
@@ -680,20 +680,20 @@ msgid "Some suggested translations follow."
 msgstr "推薦翻譯版本如下."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "題目敘述 in <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "題目敘述 in <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "題目敘述 in %s"
+msgid "Statement in %(lang)s"
+msgstr "題目敘述 in %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr ""
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr ""
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "詳細資訊"
