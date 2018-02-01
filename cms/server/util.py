@@ -493,7 +493,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
         tokens["type_pl"] = _("tokens")
 
     tokens["min_interval"] = tokens["min_interval"].total_seconds()
-    tokens["gen_interval"] = tokens["gen_interval"].total_seconds() // 60
+    tokens["gen_interval"] = tokens["gen_interval"].total_seconds() / 60
 
     result = ""
 
