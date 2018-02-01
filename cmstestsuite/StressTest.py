@@ -23,8 +23,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import argparse
 import ast
@@ -186,9 +189,9 @@ class Actor(threading.Thread):
         SLEEP_PERIOD = 0.1
         time_to_wait = self.metrics['time_coeff'] * \
             random.expovariate(self.metrics['time_lambda'])
-        sleep_num = int(time_to_wait / SLEEP_PERIOD)
+        sleep_num = time_to_wait // SLEEP_PERIOD
         remaining_sleep = time_to_wait - (sleep_num * SLEEP_PERIOD)
-        for _ in xrange(sleep_num):
+        for _ in range(sleep_num):
             time.sleep(SLEEP_PERIOD)
             if self.die:
                 raise ActorDying()

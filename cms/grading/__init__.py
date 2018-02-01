@@ -25,8 +25,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import io
 import logging
@@ -289,12 +292,12 @@ def compilation_step(sandbox, commands):
             logger.error("Compilation aborted because of "
                          "sandbox error in `%s'.", sandbox.path)
             return False, None, None, None
-        stdout = unicode(sandbox.get_file_to_string(sandbox.stdout_file),
-                         "utf-8", errors="replace").strip()
+        stdout = sandbox.get_file_to_string(sandbox.stdout_file)\
+            .decode("utf-8", errors="replace").strip()
         if stdout != "":
             stdouts.append(stdout)
-        stderr = unicode(sandbox.get_file_to_string(sandbox.stderr_file),
-                         "utf-8", errors="replace").strip()
+        stderr = sandbox.get_file_to_string(sandbox.stderr_file)\
+            .decode("utf-8", errors="replace").strip()
         if stderr != "":
             stderrs.append(stderr)
 

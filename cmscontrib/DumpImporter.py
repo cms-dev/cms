@@ -30,8 +30,11 @@ again should be idempotent.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -399,11 +402,11 @@ class DumpImporter(object):
             val = data[prp.key]
             if val is None:
                 setattr(obj, prp.key, None)
-            elif type(val) == unicode:
+            elif isinstance(val, str):
                 setattr(obj, prp.key, self.objs[val])
-            elif type(val) == list:
+            elif isinstance(val, list):
                 setattr(obj, prp.key, list(self.objs[i] for i in val))
-            elif type(val) == dict:
+            elif isinstance(val, dict):
                 setattr(obj, prp.key,
                         dict((k, self.objs[v]) for k, v in val.iteritems()))
             else:

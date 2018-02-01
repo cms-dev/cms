@@ -32,8 +32,11 @@ task.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import logging
 import re
@@ -301,7 +304,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             return targets
 
-        elif all(isinstance(t, unicode) for t in t_params):
+        elif all(isinstance(t, str) for t in t_params):
 
             indices = sorted(self.public_testcases.keys())
             targets = []

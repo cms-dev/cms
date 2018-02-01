@@ -34,8 +34,11 @@ the dimensions of the testcases.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import argparse
 import imp
@@ -185,10 +188,10 @@ def extract_complexity_submission(testcases_lengths, submission):
 
     # Rescaling.
     x_scale = max(points_x)
-    points_x = [x * 1.0 / x_scale for x in points_x]
+    points_x = [x / x_scale for x in points_x]
     y_scale = max(points_y)
     if y_scale > 0:
-        points_y = [y * 1.0 / y_scale for y in points_y]
+        points_y = [y / y_scale for y in points_y]
 
     res = []
     residues = []
@@ -196,9 +199,9 @@ def extract_complexity_submission(testcases_lengths, submission):
     best_idxs = (-1, -1, -1)
     sbest_residue = -1
 
-    for i in xrange(MAXP + 1):
-        for j in xrange(MAXL + 1):
-            for k in xrange(MAXE + 1):
+    for i in range(MAXP + 1):
+        for j in range(MAXL + 1):
+            for k in range(MAXE + 1):
                 matrix = []
                 for point_x in points_x:
                     matrix.append([ijk_to_func(i, j, k)(point_x)])
@@ -221,9 +224,9 @@ def extract_complexity_submission(testcases_lengths, submission):
 
     with io.open("sub_%s.info" % submission.id,
                  "wt", encoding="utf-8") as info:
-        for i in xrange(MAXP + 1):
-            for j in xrange(MAXL + 1):
-                for k in xrange(MAXE + 1):
+        for i in range(MAXP + 1):
+            for j in range(MAXL + 1):
+                for k in range(MAXE + 1):
                     info.write(
                         "%+20.13lf x^%d log^%d(x) (2^x)^%d  -->  %+20.13lf\n" %
                         (res[ijk_to_idx(i, j, k)], i, j, k,

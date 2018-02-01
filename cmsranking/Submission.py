@@ -18,10 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
-import six
+from future.builtins.disabled import *
+from future.builtins import *
 
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
@@ -56,11 +57,11 @@ class Submission(Entity):
         try:
             assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert isinstance(data['user'], six.text_type), \
+            assert isinstance(data['user'], str), \
                 "Field 'user' isn't a string"
-            assert isinstance(data['task'], six.text_type), \
+            assert isinstance(data['task'], str), \
                 "Field 'task' isn't a string"
-            assert isinstance(data['time'], six.integer_types), \
+            assert isinstance(data['time'], int), \
                 "Field 'time' isn't an integer (unix timestamp)"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)

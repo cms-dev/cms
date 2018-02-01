@@ -18,10 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
-import six
+from future.builtins.disabled import *
+from future.builtins import *
 
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
@@ -52,7 +53,7 @@ class Team(Entity):
         try:
             assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert isinstance(data['name'], six.text_type), \
+            assert isinstance(data['name'], str), \
                 "Field 'name' isn't a string"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)

@@ -29,8 +29,11 @@ configuration, and so on).
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import sys
 import os
@@ -131,7 +134,7 @@ def ask(message):
     - the "-y" flag was set as a CLI argument
 
     """
-    return "-y" in sys.argv or raw_input(message) in ["Y", "y"]
+    return "-y" in sys.argv or input(message) in ["Y", "y"]
 
 
 def assert_root():

@@ -23,15 +23,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import logging
 import os
 import random
 import re
 import tempfile
-import urlparse
+from future.moves.urllib.parse import parse_qs, urlsplit
 
 from cms.grading.languagemanager import filename_to_language
 from cmscommon.crypto import decrypt_number
@@ -154,7 +157,7 @@ class SubmitRequest(GenericRequest):
         if self.redirected_to is None:
             return None
 
-        query = urlparse.parse_qs(urlparse.urlsplit(self.redirected_to).query)
+        query = parse_qs(urlsplit(self.redirected_to).query)
         if "submission_id" not in query or len(query["submission_id"]) != 1:
             logger.warning("Redirected to an unexpected page: `%s'",
                            self.redirected_to)
@@ -219,7 +222,7 @@ class SubmitUserTestRequest(GenericRequest):
         if self.redirected_to is None:
             return None
 
-        query = urlparse.parse_qs(urlparse.urlsplit(self.redirected_to).query)
+        query = parse_qs(urlsplit(self.redirected_to).query)
         if "user_test_id" not in query or len(query["user_test_id"]) != 1:
             logger.warning("Redirected to an unexpected page: `%s'",
                            self.redirected_to)

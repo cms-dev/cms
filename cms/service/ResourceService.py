@@ -27,8 +27,11 @@ that saves the resources usage in that machine.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import bisect
 import logging
@@ -52,7 +55,7 @@ from cms.io import Service, rpc_method
 logger = logging.getLogger(__name__)
 
 
-B_TO_MB = 1024.0 * 1024.0
+B_TO_MB = 1024 * 1024
 
 # As psutil-2.0 introduced many backward-incompatible changes to its
 # API we define this global flag to make it easier later on to decide
@@ -163,7 +166,7 @@ class ProcessMatcher(object):
         # We assume that apart from the shard, all other
         # options are in the form "-<something> <something>".
         shard = None
-        for i in xrange(start_index + 2, len(cmdline), 2):
+        for i in range(start_index + 2, len(cmdline), 2):
             if cmdline[i].isdigit():
                 shard = int(cmdline[i])
                 break

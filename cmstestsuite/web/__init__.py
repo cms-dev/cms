@@ -23,8 +23,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import codecs
 import datetime
@@ -206,7 +209,7 @@ class GenericRequest(object):
         return True
 
     def specific_info(self):
-        res = "URL: %s\n" % (unicode(self.url))
+        res = "URL: %s\n" % self.url
         if self.response is not None:
             res += "\nREQUEST HEADERS\n"
             for (key, value) in self.response.request.headers.iteritems():
@@ -242,7 +245,7 @@ class GenericRequest(object):
         if self.exception_data is not None:
             print("", file=fd)
             print("EXCEPTION CASTED", file=fd)
-            fd.write(unicode(self.exception_data))
+            fd.write(str(self.exception_data))
 
 
 class LoginRequest(GenericRequest):

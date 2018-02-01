@@ -29,8 +29,11 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import json
 import logging
@@ -41,7 +44,7 @@ import gevent.queue
 
 import requests
 import requests.exceptions
-from urlparse import urljoin, urlsplit
+from future.moves.urllib.parse import urljoin, urlsplit
 
 from cms import config
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
@@ -69,7 +72,7 @@ def encode_id(entity_id):
         if char not in string.ascii_letters + string.digits:
             encoded_id += "_%x" % ord(char)
         else:
-            encoded_id += unicode(char)
+            encoded_id += str(char)
     return encoded_id
 
 
@@ -191,13 +194,13 @@ class ProxyExecutor(Executor):
         """
         # The cumulative data that we will try to send to the ranking,
         # built by combining items in the queue.
-        data = list(dict() for i in xrange(self.TYPE_COUNT))
+        data = list(dict() for i in range(self.TYPE_COUNT))
 
         for entry in entries:
             data[entry.item.type_].update(entry.item.data)
 
         try:
-            for i in xrange(self.TYPE_COUNT):
+            for i in range(self.TYPE_COUNT):
                 # Send entities of type i.
                 if len(data[i]) > 0:
                     # We abuse the resource path as the English

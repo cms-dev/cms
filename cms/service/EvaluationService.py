@@ -32,8 +32,11 @@ the current ranking.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import logging
 
@@ -92,7 +95,7 @@ class EvaluationExecutor(Executor):
         # operation.
         self._drop_current = False
 
-        for i in xrange(get_service_shards("Worker")):
+        for i in range(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
 

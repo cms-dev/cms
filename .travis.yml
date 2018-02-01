@@ -25,11 +25,11 @@ install:
   - sudo ./install.sh --prefix=/usr
   - popd
 
-  - cp ./config/cms.conf.sample ./config/cms.conf
-  - sudo ./prerequisites.py install -y
-
   - sudo pip install -r requirements.txt
   - sudo pip install -r dev-requirements.txt
+
+  - cp ./config/cms.conf.sample ./config/cms.conf
+  - sudo ./prerequisites.py install -y
   - sudo python setup.py install
 
   - psql --username=postgres --command="CREATE USER cmsuser WITH PASSWORD 'your_password_here';"

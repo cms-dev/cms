@@ -21,8 +21,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import io
 import logging
@@ -180,7 +183,7 @@ class PolygonTaskLoader(TaskLoader):
             tl = float(testset.find('time-limit').text)
             ml = float(testset.find('memory-limit').text)
             args["time_limit"] = tl * 0.001
-            args["memory_limit"] = int(ml / (1024 * 1024))
+            args["memory_limit"] = ml // (1024 * 1024)
 
             args["managers"] = {}
             infile_param = judging.attrib['input-file']
@@ -229,7 +232,7 @@ class PolygonTaskLoader(TaskLoader):
 
             args["testcases"] = {}
 
-            for i in xrange(testcases):
+            for i in range(testcases):
                 infile = os.path.join(self.path, testset_name,
                                       "%02d" % (i + 1))
                 outfile = os.path.join(self.path, testset_name,

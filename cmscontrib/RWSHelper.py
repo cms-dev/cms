@@ -27,8 +27,11 @@ entity that has been deleted in the DB without any downtime.
 """
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -39,15 +42,7 @@ import argparse
 import logging
 import sys
 
-import six
-
-if six.PY3:
-    from urllib.parse import quote, urljoin, urlsplit
-else:
-    from urllib import quote
-    from urlparse import urljoin, urlsplit
-
-from six.moves import xrange
+from future.moves.urllib.parse import quote, urljoin, urlsplit
 
 from requests import Session, Request
 from requests.exceptions import RequestException
@@ -87,7 +82,7 @@ def main():
     # and nargs='+' but it doesn't seem to work with subparsers...
     parser.add_argument(
         '-r', '--ranking', dest='rankings', action='append', type=int,
-        choices=list(xrange(len(config.rankings))), metavar='shard',
+        choices=list(range(len(config.rankings))), metavar='shard',
         help="select which RWS to connect to (omit for 'all')")
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
@@ -138,7 +133,7 @@ def main():
     if args.rankings is not None:
         shards = args.rankings
     else:
-        shards = list(xrange(len(config.rankings)))
+        shards = list(range(len(config.rankings)))
 
     s = Session()
     had_error = False

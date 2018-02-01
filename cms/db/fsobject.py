@@ -25,12 +25,13 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import io
-
-import six
 
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Integer, String, Unicode
@@ -164,7 +165,7 @@ class LargeObject(io.RawIOBase):
             res, = cursor.fetchone()
 
             assert len(cursor.fetchall()) == 0
-            if isinstance(res, six.integer_types):
+            if isinstance(res, int):
                 assert res >= 0
         except (AssertionError, ValueError, psycopg2.DatabaseError):
             raise IOError(message)

@@ -22,8 +22,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import atexit
 import errno
@@ -37,7 +40,7 @@ import subprocess
 import sys
 import threading
 import time
-from urlparse import urlsplit
+from future.moves.urllib.parse import urlsplit
 
 from cmstestsuite import CONFIG, FrameworkException, get_cms_config
 

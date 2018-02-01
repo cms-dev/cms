@@ -24,8 +24,11 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import argparse
 import logging
@@ -184,7 +187,7 @@ def main():
             results = filter_top_scoring(results, args.unique)
 
         print("%s file(s) will be created." % len(results))
-        if raw_input("Continue? [Y/n] ").lower() not in ["y", ""]:
+        if input("Continue? [Y/n] ").lower() not in ["y", ""]:
             return 0
 
         done = 0

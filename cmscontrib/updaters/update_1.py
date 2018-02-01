@@ -27,8 +27,11 @@ db4adada08d66b4797d0569d95e8f0c028a4e5e0.
 """
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 from functools import partial
 
@@ -46,7 +49,7 @@ class Updater(object):
         return self.objs
 
     def get_id(self):
-        ret = unicode(self.next_id)
+        ret = str(self.next_id)
         self.next_id += 1
         return ret
 

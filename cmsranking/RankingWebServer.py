@@ -18,8 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import argparse
 import functools
@@ -450,7 +453,7 @@ def main():
     if args.drop:
         print("Are you sure you want to delete directory %s? [y/N]" %
               config.lib_dir, end='')
-        ans = raw_input().lower()
+        ans = input().lower()
         if ans in ['y', 'yes']:
             print("Removing directory %s." % config.lib_dir)
             shutil.rmtree(config.lib_dir)

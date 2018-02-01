@@ -22,8 +22,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import argparse
 import chardet
@@ -34,8 +37,6 @@ import os
 import sys
 import grp
 from collections import namedtuple
-
-import six
 
 import gevent.socket
 
@@ -81,9 +82,9 @@ def utf8_decoder(value):
     raise (TypeError): if value isn't a string.
 
     """
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         return value
-    elif isinstance(value, six.binary_type):
+    elif isinstance(value, bytes):
         try:
             return value.decode("utf-8")
         except UnicodeDecodeError:

@@ -21,8 +21,11 @@
 """Utility class to run functional-like tests."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import datetime
 import io
@@ -297,7 +300,7 @@ class TestRunner(object):
         self.ps.wait()
 
         self.ps.start("ProxyService", contest=self.contest_id)
-        for shard in xrange(self.workers):
+        for shard in range(self.workers):
             self.ps.start("Worker", shard)
         if concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)

@@ -20,8 +20,11 @@
 """Utilities to generate "unique" test ids."""
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import hashlib
 import random
@@ -37,7 +40,7 @@ def unique_long_id():
 
 def unique_unicode_id():
     """Return a unique id of type unicode."""
-    return unicode(unique_long_id())
+    return str(unique_long_id())
 
 
 def unique_digest():

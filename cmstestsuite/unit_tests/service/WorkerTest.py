@@ -23,8 +23,11 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import gevent
 import unittest
@@ -259,7 +262,7 @@ class TestWorker(unittest.TestCase):
         prefix = prefix if prefix is not None else ""
         jobs = []
         calls = []
-        for i in xrange(number_of_jobs):
+        for i in range(number_of_jobs):
             job_params = [
                 ESOperation(ESOperation.EVALUATION,
                             unique_long_id(), unique_long_id(),

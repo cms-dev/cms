@@ -21,6 +21,13 @@
 
 """Utilities to generate test objects."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
+
 from mock import Mock
 
 import random
@@ -31,7 +38,7 @@ from cmscommon.datetime import make_datetime
 
 
 def get_string(length=16):
-    return "".join(random.choice(string.letters) for _ in xrange(length))
+    return "".join(random.choice(string.letters) for _ in range(length))
 
 
 def get_int(upper=2 ** 31, lower=1):
@@ -61,7 +68,7 @@ def get_dataset():
     dataset = Mock()
     dataset.id = get_int()
     dataset.testcases = dict(
-        (get_string(), get_testcase()) for _ in xrange(10))
+        (get_string(), get_testcase()) for _ in range(10))
     dataset.score_type = "Sum"
     dataset.score_type_parameters = 100
     return dataset

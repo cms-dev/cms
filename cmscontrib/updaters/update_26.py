@@ -26,8 +26,11 @@ This updater encodes codenames using a more restricted alphabet.
 """
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import ipaddress
 import logging
@@ -88,7 +91,7 @@ def encode_codename(s, extra=""):
         if char not in string.ascii_letters + string.digits + "_-" + extra:
             encoded_s += "__%x" % ord(char)
         else:
-            encoded_s += unicode(char)
+            encoded_s += str(char)
     return encoded_s
 
 

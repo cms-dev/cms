@@ -28,13 +28,16 @@
 """
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import time
 import logging
 from datetime import datetime, timedelta
-from urllib import quote, urlencode
+from future.moves.urllib.parse import quote, urlencode
 
 from functools import wraps
 from tornado.web import RequestHandler
@@ -254,7 +257,7 @@ def actual_phase_required(*actual_phases):
 
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-DIMS = list(1024 ** x for x in xrange(9))
+DIMS = list(1024 ** x for x in range(9))
 
 
 def format_size(n, _=lambda s: s):
@@ -273,7 +276,7 @@ def format_size(n, _=lambda s: s):
         unit_index = next(i for i, x in enumerate(DIMS) if n < x) - 1
     except StopIteration:
         unit_index = -1
-    n = float(n) / DIMS[unit_index]
+    n = n / DIMS[unit_index]
 
     if n < 10:
         d = 2
@@ -682,7 +685,7 @@ def file_handler_gen(BaseClass):
             """
             data = self.temp_file.read(FileCacher.CHUNK_SIZE)
             length = len(data)
-            self.size += length / 1024.0 / 1024.0
+            self.size += length / (1024 * 1024)
             self.write(data)
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()

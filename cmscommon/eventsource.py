@@ -18,15 +18,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import re
 import time
 from collections import deque
 from weakref import WeakSet
-
-import six
 
 from gevent import Timeout
 from gevent.queue import Queue, Empty
@@ -61,19 +62,19 @@ def format_event(id_, event, data):
     raise (ValueError): if event contains illegal characters.
 
     """
-    if not isinstance(id_, six.text_type):
+    if not isinstance(id_, str):
         raise TypeError("Id isn't unicode.")
     result = [b"id:%s" % id_.encode('utf-8')]
 
     if event is not None and event != "message":
-        if not isinstance(event, six.text_type):
+        if not isinstance(event, str):
             raise TypeError("Event isn't unicode.")
         if not set("\r\n:").isdisjoint(event):
             raise ValueError("Event cannot contain '\\r', '\\n' or ':'.")
         result += [b"event:%s" % event.encode('utf-8')]
 
     if data is not None:
-        if not isinstance(data, six.text_type):
+        if not isinstance(data, str):
             raise TypeError("Data isn't unicode.")
         for line in re.split("\r\n|(?<!\r)\n|\r(?!\n)", data):
             result += [b"data:%s" % line.encode('utf-8')]

@@ -25,8 +25,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 import io
 import logging
@@ -591,7 +594,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["task_type_parameters"] = [evaluation_param]
             task.submission_format = [
                 SubmissionFormatElement("output_%03d.txt" % i)
-                for i in xrange(n_input)]
+                for i in range(n_input)]
 
         # If there is check/manager (or equivalent), then the task
         # type is Communication
@@ -645,7 +648,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                      evaluation_param]
 
         args["testcases"] = []
-        for i in xrange(n_input):
+        for i in range(n_input):
             input_digest = self.file_cacher.put_file_from_path(
                 os.path.join(self.path, "input", "input%d.txt" % i),
                 "Input %d for task %s" % (i, task.name))

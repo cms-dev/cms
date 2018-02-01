@@ -30,8 +30,11 @@ bd80d0c930e25972eeda861719f96990de6e7822
 """
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *
+from future.builtins import *
 
 
 def split_dict(src, *keys):
@@ -52,9 +55,9 @@ class Updater(object):
         self.next_id = len(data)
 
     def get_id(self):
-        while unicode(self.next_id) in self.objs:
+        while str(self.next_id) in self.objs:
             self.next_id += 1
-        return unicode(self.next_id)
+        return str(self.next_id)
 
     def run(self):
         for k in list(self.objs.iterkeys()):
