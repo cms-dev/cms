@@ -493,7 +493,7 @@ msgid "Messages"
 msgstr ""
 
 #, python-format
-msgid "Automatic (%s)"
+msgid "Automatic (%(lang)s)"
 msgstr ""
 
 msgid "Logout"
@@ -605,7 +605,7 @@ msgid "Submission details for evaluation"
 msgstr ""
 
 #, python-format
-msgid "Error %d"
+msgid "Error %(status_code)s"
 msgstr ""
 
 msgid "An error occured while the server was handling your request."
@@ -784,13 +784,13 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
 
@@ -886,19 +886,19 @@ msgid "Some suggested translations follow."
 msgstr ""
 
 #, python-format
-msgid "Statement in <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
 msgstr ""
 
 #, python-format
-msgid "Statement in %s"
+msgid "Statement in %(lang)s"
 msgstr ""
 
 #, python-format
-msgid "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
 msgstr ""
 
 #, python-format
-msgid "%s"
+msgid "%(lang)s"
 msgstr ""
 
 msgid "Some details"

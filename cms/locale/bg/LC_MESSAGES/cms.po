@@ -464,8 +464,8 @@ msgid "You have no limitations on how you use them."
 msgstr ""
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Автоматично (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Автоматично (%(lang)s)"
 
 #, python-format
 msgid ""
@@ -597,8 +597,8 @@ msgid "Submission details for evaluation"
 msgstr "Детайли на решенията"
 
 #, python-format
-msgid "Error %d"
-msgstr "Грешка %d"
+msgid "Error %(status_code)s"
+msgstr "Грешка %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "Възникна грешка докато сървърът се опитваше да обработи вашата заявка"
@@ -757,13 +757,13 @@ msgstr "Принтирай"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
 
@@ -862,20 +862,20 @@ msgid "Some suggested translations follow."
 msgstr ""
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Условие на <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Условие на <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "Условие на %s"
+msgid "Statement in %(lang)s"
+msgstr "Условие на %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr ""
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr ""
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Някои детайли"

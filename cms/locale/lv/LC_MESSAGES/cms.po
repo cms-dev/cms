@@ -541,8 +541,8 @@ msgid "Messages"
 msgstr "Ziņojumi"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "Automātiski (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "Automātiski (%(lang)s)"
 
 msgid "Logout"
 msgstr "Atslēgties"
@@ -657,8 +657,8 @@ msgid "Submission details for evaluation"
 msgstr "Iesūtījuma izpildes detaļas"
 
 #, python-format
-msgid "Error %d"
-msgstr "Kļūda %d"
+msgid "Error %(status_code)s"
+msgstr "Kļūda %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "Serverim apstrādājot jūsu pieprasījumu, ir radusies kļūme."
@@ -863,19 +863,19 @@ msgstr "Drukāt"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
 msgstr ""
-"Jūs drīkstat izdrukāt vēl %(remaining_jobs)d teksta vai PDF datnes (katru ne "
-"garāku par %(max_pages)d lappusēm)."
+"Jūs drīkstat izdrukāt vēl %(remaining_jobs)s teksta vai PDF datnes (katru ne "
+"garāku par %(max_pages)s lappusēm)."
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
 msgstr ""
-"Jūs drīkstat izdrukāt vēl %(remaining_jobs)d teksta datnes (katru ne garāku "
-"par %(max_pages)d lappusēm)."
+"Jūs drīkstat izdrukāt vēl %(remaining_jobs)s teksta datnes (katru ne garāku "
+"par %(max_pages)s lappusēm)."
 
 msgid "File (text or PDF)"
 msgstr "Datne (teksta vai PDF)"
@@ -973,20 +973,20 @@ msgid "Some suggested translations follow."
 msgstr "Zemāk seko daži ieteiktie tulkojumi."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "Formulējums valodā: <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Formulējums valodā: <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "Formulējums valodā: %s"
+msgid "Statement in %(lang)s"
+msgstr "Formulējums valodā: %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "Dažas detaļas"

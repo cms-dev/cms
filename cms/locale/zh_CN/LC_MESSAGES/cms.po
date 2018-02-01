@@ -464,8 +464,8 @@ msgid "Executed"
 msgstr "已评测"
 
 #, python-format
-msgid "Automatic (%s)"
-msgstr "自动检测 (%s)"
+msgid "Automatic (%(lang)s)"
+msgstr "自动检测 (%(lang)s)"
 
 msgid "Logout"
 msgstr "登出"
@@ -604,8 +604,8 @@ msgid "Submission details for evaluation"
 msgstr "程序评估细节"
 
 #, python-format
-msgid "Error %d"
-msgstr "错误 %d"
+msgid "Error %(status_code)s"
+msgstr "错误 %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr "竞赛系统服务器发生错误."
@@ -766,15 +766,15 @@ msgstr "打印"
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text or PDF files of up to "
-"%(max_pages)d pages each."
-msgstr "您可以再打印%(remaining_jobs)d个文本文件或者PDF，每个文件最多%(max_pages)d页."
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
+msgstr "您可以再打印%(remaining_jobs)s个文本文件或者PDF，每个文件最多%(max_pages)s页."
 
 #, python-format
 msgid ""
-"You can print %(remaining_jobs)d more text files of up to %(max_pages)d "
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
-msgstr "您可以打印%(remaining_jobs)d个文本文件，每个文件最多%(max_pages)d页."
+msgstr "您可以打印%(remaining_jobs)s个文本文件，每个文件最多%(max_pages)s页."
 
 msgid "File (text or PDF)"
 msgstr "文件（文字或PDF）"
@@ -871,20 +871,20 @@ msgid "Some suggested translations follow."
 msgstr "推荐翻译版本如下."
 
 #, python-format
-msgid "Statement in <b>%s</b>"
-msgstr "题目描述 in <b>%s</b>"
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "题目描述 in <b>%(lang)s</b>"
 
 #, python-format
-msgid "Statement in %s"
-msgstr "题目描述 in %s"
+msgid "Statement in %(lang)s"
+msgstr "题目描述 in %(lang)s"
 
 #, python-format
-msgid "<b>%s</b>"
-msgstr "<b>%s</b>"
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
 
 #, python-format
-msgid "%s"
-msgstr "%s"
+msgid "%(lang)s"
+msgstr "%(lang)s"
 
 msgid "Some details"
 msgstr "详细信息"
