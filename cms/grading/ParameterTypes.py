@@ -35,6 +35,8 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+from abc import ABCMeta, abstractmethod
+
 from tornado.template import Template
 
 
@@ -42,6 +44,8 @@ class ParameterType(object):
     """Base class for parameter types.
 
     """
+
+    __metaclass__ = ABCMeta
 
     def __init__(self, name, short_name, description):
         """Initialization.
@@ -57,6 +61,7 @@ class ParameterType(object):
         self.short_name = short_name
         self.description = description
 
+    @abstractmethod
     def parse_string(self, value):
         """Parse the specified string and returns the parsed value.
 
@@ -65,7 +70,7 @@ class ParameterType(object):
         fails, this method must raise a ValueError exception with
         an appropriate message.
         """
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
     def parse_handler(self, handler, prefix):
         """Parse relevant parameters in the handler.
@@ -79,8 +84,9 @@ class ParameterType(object):
         return self.parse_string(handler.get_argument(
             prefix + self.short_name))
 
+    @abstractmethod
     def render(self, prefix, previous_value=None):
-        raise NotImplementedError("Please subclass this class.")
+        pass
 
 
 class ParameterTypeString(ParameterType):
