@@ -219,7 +219,8 @@ class Communication(TaskType):
         # Second step: load the executables for the user processes
         # (done before launching the manager so that it does not
         # impact its wall clock time).
-        executable_filename, = tuple(iterkeys(job.executables))
+        assert len(job.executables) == 1
+        executable_filename = next(iterkeys(job.executables))
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest

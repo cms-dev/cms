@@ -193,7 +193,7 @@ class TestESOperations(TestCaseWithDatabase):
         evaluated_codenames = set()
         for result in results:
             # Pick one arbitrary testcase.
-            evaluated_codename = set(iterkeys(result.dataset.testcases)).pop()
+            evaluated_codename = next(iterkeys(result.dataset.testcases))
             self.add_evaluation(
                 result, result.dataset.testcases[evaluated_codename])
             evaluated_codenames.add(evaluated_codename)

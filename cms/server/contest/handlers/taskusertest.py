@@ -254,7 +254,7 @@ class UserTestHandler(ContestHandler):
         # not for submissions requiring a programming language
         # identification).
         if len(self.request.files) == 1 and \
-                tuple(iterkeys(self.request.files)) == ("submission",):
+                next(iterkeys(self.request.files)) == "submission":
             if any(filename.endswith(".%l") for filename in required):
                 self._send_error(
                     self._("Invalid test format!"),

@@ -36,7 +36,6 @@ from six import iterkeys
 
 import hashlib
 import io
-import itertools
 import os
 
 from cms.db import Base, Contest, Participation, Submission, Task
@@ -165,8 +164,7 @@ class BaseImporter(object):
 
             # General case #1: a dict
             elif isinstance(old_value, dict):
-                for key in set(itertools.chain(iterkeys(old_value),
-                                               iterkeys(new_value))):
+                for key in set(iterkeys(old_value)) | set(iterkeys(new_value)):
                     if key in new_value:
                         if key not in old_value:
                             # create

@@ -164,7 +164,7 @@ class Batch(TaskType):
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename, = tuple(iterkeys(job.files))
+        format_filename = next(iterkeys(job.files))
         source_filenames = []
         source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[0]] = \
@@ -223,7 +223,8 @@ class Batch(TaskType):
         sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
 
         # Prepare the execution
-        executable_filename, = tuple(iterkeys(job.executables))
+        assert len(job.executables) == 1
+        executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
         commands = language.get_evaluation_commands(
             executable_filename,

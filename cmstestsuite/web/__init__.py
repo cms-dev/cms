@@ -213,7 +213,7 @@ class GenericRequest(object):
         res = "URL: %s\n" % self.url
         if self.response is not None:
             res += "\nREQUEST HEADERS\n"
-            for key, value in iteritems(self.response.request.headers()):
+            for key, value in iteritems(self.response.request.headers):
                 res += "%s: %s\n" % (key, value)
             res += "\nREQUEST DATA\n%s\n" % self.response.request.body
         else:
