@@ -133,7 +133,10 @@ class ContestHandler(BaseHandler):
             except KeyError:
                 self.contest = Contest(
                     name=contest_name, description=contest_name)
-                self.r_params = self.render_params()
+                # render_params in this class assumes the contest is loaded,
+                # so we cannot call it without a fully defined contest. Luckily
+                # the one from the base class is enough to display a 404 page.
+                self.r_params = super(ContestHandler, self).render_params()
                 raise tornado.web.HTTPError(404)
         else:
             # Select the contest specified on the command line
