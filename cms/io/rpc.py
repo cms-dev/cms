@@ -266,8 +266,8 @@ class RemoteServiceBase(object):
                 self._writer.write(data + b'\r\n')
                 self._writer.flush()
         except socket.error as error:
-            logger.warning("Failed writing to socket: %s.", error)
             self.finalize("Write failed.")
+            logger.warning("Failed writing to socket: %s.", error)
             raise error
 
 
