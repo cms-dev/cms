@@ -304,6 +304,15 @@ class TestRunner(object):
             self.ps.start("Worker", shard)
         if concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
+            # We need to wait on ES as otherwise CWS would receive
+            # submissions before it has established a connection with
+            # ES, and this would cause ES not to receive notifications
+            # about new submissions, which would only get picked up at
+            # the following sweep, delaying judging. Moreover a race
+            # condition causes the first sweep of ES not to pick up
+            # some of the submissions that are being committed by CWS
+            # to the DB but that aren't being notified via RPC.
+            self.ps.wait()
 
         for i, (test, lang) in enumerate(self._all_submissions()):
             logging.info("Submitting submission %s/%s: %s (%s)",
@@ -326,11 +335,9 @@ class TestRunner(object):
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))
 
-        # Even if we started ES earlier, we did not block until it was ready,
-        # so we do it now.
         if not concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
-        self.ps.wait()
+            self.ps.wait()
 
     def wait_for_evaluation(self):
         """Wait for all submissions to evaluate.
