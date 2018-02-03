@@ -294,16 +294,21 @@ class TestRunner(object):
         for test in self.test_list:
             self.create_or_get_task(test.task_module)
 
-        # We only need CWS to submit, and we can start the other services while
-        # submissions are ongoing.
+        # We start now only the services we need in order to submit and
+        # we start the other ones while the submissions are being sent
+        # out. A submission can arrive after ES's first sweep, but
+        # before CWS connects to ES; if so, it will be ignored until
+        # ES's second sweep, making the test flaky due to timeouts. By
+        # waiting for ES to start before submitting, we ensure CWS can
+        # send the notification for all submissions.
         self.ps.start("ContestWebServer", contest=self.contest_id)
+        if concurrent_submit_and_eval:
+            self.ps.start("EvaluationService", contest=self.contest_id)
         self.ps.wait()
 
         self.ps.start("ProxyService", contest=self.contest_id)
         for shard in range(self.workers):
             self.ps.start("Worker", shard)
-        if concurrent_submit_and_eval:
-            self.ps.start("EvaluationService", contest=self.contest_id)
 
         for i, (test, lang) in enumerate(self._all_submissions()):
             logging.info("Submitting submission %s/%s: %s (%s)",
@@ -326,8 +331,6 @@ class TestRunner(object):
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))
 
-        # Even if we started ES earlier, we did not block until it was ready,
-        # so we do it now.
         if not concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
         self.ps.wait()
