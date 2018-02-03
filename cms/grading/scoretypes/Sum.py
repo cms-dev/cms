@@ -89,7 +89,7 @@ class Sum(ScoreTypeAlone):
             </td>
         {% else %}
         <tr class="undefined">
-            <td colspan="4">
+            <td colspan="5">
                 {{ _("N/A") }}
             </td>
         </tr>
