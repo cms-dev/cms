@@ -1106,7 +1106,7 @@ class IsolateSandbox(SandboxBase):
         try:
             with self.get_file(info_file) as log_file:
                 for line in log_file:
-                    key, value = line.strip().split(":", 1)
+                    key, value = line.decode('utf-8').strip().split(":", 1)
                     if key in self.log:
                         self.log[key].append(value)
                     else:

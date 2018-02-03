@@ -94,7 +94,7 @@ class TestRunner(object):
         try:
             git_root = subprocess.check_output(
                 "git rev-parse --show-toplevel", shell=True,
-                stderr=io.open(os.devnull, "wb")).strip()
+                stderr=io.open(os.devnull, "wb")).decode('utf-8').strip()
         except subprocess.CalledProcessError:
             git_root = None
         CONFIG["TEST_DIR"] = git_root

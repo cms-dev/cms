@@ -74,8 +74,8 @@ class RemoteService(object):
             "__id": "foo",
             "__method": function_name,
             "__data": data,
-        })
-        msg = s + "\r\n"
+        }).encode('utf-8')
+        msg = s + b"\r\n"
 
         # Send message.
         sock = socket.socket()
@@ -83,14 +83,14 @@ class RemoteService(object):
         sock.send(msg)
 
         # Wait for response.
-        s = ''
-        while len(s) < 2 or s[-2:] != "\r\n":
+        s = b''
+        while len(s) < 2 or s[-2:] != b"\r\n":
             s += sock.recv(1)
         s = s[:-2]
         sock.close()
 
         # Decode reply.
-        reply = json.loads(s)
+        reply = json.loads(s.decode('utf-8'))
 
         return reply
 

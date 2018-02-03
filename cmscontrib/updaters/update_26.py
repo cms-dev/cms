@@ -88,11 +88,11 @@ IP_ADDRESSES = [
 # injective if the input values aren't allowed to contain a double "_".
 def encode_codename(s, extra=""):
     encoded_s = ""
-    for char in s.encode('utf-8'):
+    for char in s:
         if char not in string.ascii_letters + string.digits + "_-" + extra:
             encoded_s += "__%x" % ord(char)
         else:
-            encoded_s += str(char)
+            encoded_s += char
     return encoded_s
 
 

@@ -377,7 +377,7 @@ class TestRPC(unittest.TestCase):
 
     def test_send_invalid_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
-        sock.sendall("foo\r\n")
+        sock.sendall(b"foo\r\n")
         self.sleep()
         self.assertTrue(self.servers[0].connected)
         # Verify the server resumes normal operation.
@@ -385,7 +385,7 @@ class TestRPC(unittest.TestCase):
 
     def test_send_incomplete_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
-        sock.sendall('{"__id": "foo"}\r\n')
+        sock.sendall(b'{"__id": "foo"}\r\n')
         self.sleep()
         self.assertTrue(self.servers[0].connected)
         # Verify the server resumes normal operation.

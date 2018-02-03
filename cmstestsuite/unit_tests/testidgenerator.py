@@ -48,5 +48,5 @@ def unique_unicode_id():
 def unique_digest():
     """Return a unique digest-like string."""
     hasher = hashlib.sha1()
-    hasher.update(str(unique_long_id()))
+    hasher.update(str(unique_long_id()).encode('ascii'))
     return bin_to_hex(hasher.digest())

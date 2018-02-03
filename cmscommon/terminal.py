@@ -93,12 +93,12 @@ def add_color_to_string(string, color, stream=sys.stdout, bold=False,
     """
     if force or has_color_support(stream):
         return "%s%s%s%s" % (
-            curses.tparm(
-                curses.tigetstr("setaf"), color
-            ) if color != colors.BLACK else "",
-            curses.tparm(curses.tigetstr("bold")) if bold else "",
+            curses.tparm(curses.tigetstr("setaf"), color).decode('ascii')
+                if color != colors.BLACK else "",
+            curses.tparm(curses.tigetstr("bold")).decode('ascii')
+                if bold else "",
             string,
-            curses.tparm(curses.tigetstr("sgr0"))
+            curses.tparm(curses.tigetstr("sgr0")).decode('ascii')
         )
     else:
         return string

@@ -340,7 +340,7 @@ class RemoteServiceServer(RemoteServiceBase):
         """
         # Decode the incoming data.
         try:
-            message = json.loads(data)
+            message = json.loads(data.decode('utf-8'))
         except ValueError:
             logger.warning("Cannot parse incoming message, discarding.")
             return
@@ -391,7 +391,7 @@ class RemoteServiceServer(RemoteServiceBase):
 
         # Encode it.
         try:
-            data = json.dumps(response)
+            data = json.dumps(response).encode('utf-8')
         except (TypeError, ValueError):
             logger.warning("JSON encoding failed.", exc_info=True)
             return
@@ -531,7 +531,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """
         # Decode the incoming data.
         try:
-            message = json.loads(data)
+            message = json.loads(data.decode('utf-8'))
         except ValueError:
             logger.warning("Cannot parse incoming message, discarding.")
             return
@@ -594,7 +594,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         # Encode it.
         try:
-            data = json.dumps(request)
+            data = json.dumps(request).encode('utf-8')
         except (TypeError, ValueError):
             logger.error("JSON encoding failed.", exc_info=True)
             result.set_exception(RPCError("JSON encoding failed."))

@@ -251,9 +251,9 @@ def hash_password(password, method="bcrypt"):
     """
     if method == "bcrypt":
         password = password.encode('utf-8')
-        payload = bcrypt.hashpw(password, bcrypt.gensalt())
+        payload = bcrypt.hashpw(password, bcrypt.gensalt()).decode('ascii')
     elif method == "plaintext":
-        payload = password.encode('utf-8')
+        payload = password
     else:
         raise ValueError("Authentication method not known.")
 

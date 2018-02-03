@@ -36,8 +36,18 @@ from cmscommon.binary import hex_to_bin
 from cmscommon.datetime import make_timestamp
 
 
+class UTF8JSON:
+    @staticmethod
+    def dumps(d):
+        return json.dumps(d).encode('utf-8')
+
+    @staticmethod
+    def loads(e):
+        return json.loads(e.decode('utf-8'))
+
+
 class JSONSecureCookie(SecureCookie):
-    serialization_method = json
+    serialization_method = UTF8JSON
 
 
 class AWSAuthMiddleware(object):

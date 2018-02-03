@@ -68,11 +68,11 @@ def encode_id(entity_id):
 
     """
     encoded_id = ""
-    for char in entity_id.encode('utf-8'):
+    for char in entity_id:
         if char not in string.ascii_letters + string.digits:
             encoded_id += "_%x" % ord(char)
         else:
-            encoded_id += str(char)
+            encoded_id += char
     return encoded_id
 
 
@@ -148,12 +148,12 @@ class ProxyExecutor(Executor):
     # The resource paths for the different entity types, relative to
     # the self.ranking URL.
     RESOURCE_PATHS = [
-        b"contests",
-        b"tasks",
-        b"teams",
-        b"users",
-        b"submissions",
-        b"subchanges"]
+        "contests",
+        "tasks",
+        "teams",
+        "users",
+        "submissions",
+        "subchanges"]
 
     # How many different entity types we know about.
     TYPE_COUNT = len(RESOURCE_PATHS)
@@ -211,7 +211,7 @@ class ProxyExecutor(Executor):
 
                     logger.debug(operation.capitalize())
                     safe_put_data(
-                        self._ranking, b"%s/" % name, data[i], operation)
+                        self._ranking, "%s/" % name, data[i], operation)
                     data[i].clear()
 
         except CannotSendError:
@@ -266,7 +266,7 @@ class ProxyService(TriggeredService):
         # Create one executor for each ranking.
         self.rankings = list()
         for ranking in config.rankings:
-            self.add_executor(ProxyExecutor(ranking.encode('utf-8')))
+            self.add_executor(ProxyExecutor(ranking))
 
         # Enqueue the dispatch of some initial data to rankings. Needs
         # to be done before the sweeper is started, as otherwise RWS
