@@ -559,6 +559,10 @@ def evaluation_step_after_run(sandbox):
 def merge_evaluation_results(plus0, plus1):
     """Merges two evaluation results provided by different sandboxes.
 
+    The logic is to sum execution time and memory, but take the maximum of the
+    wall clock time; for status, to take the first non-ok status, if it exists,
+    otherwise use ok.
+
     """
     plus = plus0.copy()
     plus["execution_time"] += plus1["execution_time"]
