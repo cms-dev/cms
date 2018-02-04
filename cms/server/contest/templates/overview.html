@@ -80,8 +80,7 @@
     {% elif tokens_tasks == 2 %}
         <p>
         {{ _("You have a set of tokens shared among all tasks.") }}
-        {% set tokens = {k[6:]: v for k, v in iteritems(contest.__dict__) if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, translation=translation) }}
+        {{ format_token_rules(contest|extract_token_params, translation=translation) }}
         </p>
 
         <p>
@@ -91,8 +90,7 @@
     {% else %}
         <p>
         {% raw _("You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task.") %}
-        {% set tokens = {k[6:]: v for k, v in iteritems(contest.__dict__) if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, t_type="contest", translation=translation) }}
+        {{ format_token_rules(contest|extract_token_params, t_type="contest", translation=translation) }}
         {{ _("You can find the rules for the %(type_pl)s on each task's description page.") % {"type_pl": _("task-tokens")} }}
         </p>
 
@@ -188,7 +186,7 @@
         </tr>
     </thead>
     <tbody>
-{% set extensions = "[%s]" %  ("|".join(set(get_language(lang).source_extension for lang in contest.languages))) %}
+{% set extensions = "[%s]" %  ("|".join(set(contest.languages|map("to_language")|map(attribute="source_extension")))) %}
 {% for t_iter in contest.tasks %}
         <tr>
             <th>{{ t_iter.name }}</th>
@@ -208,7 +206,7 @@
     {% endif %}
             </td>
             <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
-            <td>{{ " ".join(a.filename.replace(".%l", extensions) for a in t_iter.submission_format) }}</td>
+            <td>{{ " ".join(t_iter.submission_format|map(attribute="filename")|map("replace", ".%l", extensions)) }}</td>
     {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td>
         {% if t_iter.token_mode in ("finite", "infinite") %}
