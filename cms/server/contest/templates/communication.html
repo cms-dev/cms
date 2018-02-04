@@ -17,15 +17,15 @@
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
-        {% end %}
+        {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.timestamp, now, timezone) }}</span>
         {% if len(msg.text) > 0 %}
         <div class="body">{{ msg.text }}</div>
-        {% end %}
+        {% endif %}
     </div>
-    {% end %}
+    {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
 
 
@@ -43,7 +43,7 @@
                     <datalist id="task_names_list">
                         {% for task in contest.tasks %}
                         <option value="{{ task.name }}">
-                        {% end %}
+                        {% endfor %}
                     </datalist>
                 </div>
             </div>
@@ -72,11 +72,11 @@
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
-        {% end %}
+        {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.question_timestamp, now, timezone) }}</span>
         {% if len(msg.text) > 0 %}
         <div class="body">{{ msg.text }}</div>
-        {% end %}
+        {% endif %}
     </div>
         {% if msg.reply_timestamp is not None %}
     <div class="answer">
@@ -84,22 +84,22 @@
         <h4 class="subject">{{ msg.reply_subject }}</h4>
             {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
-            {% end %}
+            {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.reply_timestamp, now, timezone) }}</span>
             {% if len(msg.reply_text) > 0 %}
         <div class="body">{{ msg.reply_text }}</div>
-            {% end %}
+            {% endif %}
     </div>
         {% else %}
     <div class="no_answer">
         {{ _("no answer yet") }}
     </div>
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
-{% end %}
+{% endif %}
 
 
 {% if len (current_user.messages) > 0 %}
@@ -111,16 +111,16 @@
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
-        {% end %}
+        {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.timestamp, now, timezone) }}</span>
         {% if len(msg.text) > 0 %}
         <div class="body">{{ msg.text }}</div>
-        {% end %}
+        {% endif %}
     </div>
-    {% end %}
+    {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
 
 </div>
-{% end %}
+{% endblock core %}

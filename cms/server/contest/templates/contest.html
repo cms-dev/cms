@@ -2,7 +2,7 @@
 
 {% block title %}
     {{ contest.description }}
-{% end %}
+{% endblock title %}
 
 {% block js %}
 
@@ -21,9 +21,9 @@ var LANGUAGES = {
     '{{ lang }}': {
 {% for extension in get_language(lang).source_extensions %}
         '{{ extension }}': true,
-{% end %}
+{% endfor %}
     },
-{% end %}
+{% endfor %}
 };
 
 {% if current_user is None %}
@@ -43,16 +43,16 @@ $(document).ready(function () {
     setInterval(function() {
         utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
     }, 1000);
-    utils.update_unread_count(0{% if request.path == '/communication' %}, 0{% end %});
+    utils.update_unread_count(0{% if request.path == '/communication' %}, 0{% endif %});
     utils.update_notifications(true);
     setInterval(function() { utils.update_notifications(); }, 30000);
     $('#main').css('top', $('#navigation_bar').outerHeight());
 });
-    {% end%}
+    {% endif %}
 
-{% block additional_js %}{% end %}
+{% block additional_js %}{% endblock additional_js %}
     </script>
-{% end %}
+{% endblock js %}
 
 {% block body %}
         <div id="navigation_bar" class="navbar navbar-fixed-top">
@@ -62,13 +62,13 @@ $(document).ready(function () {
 {% if len(available_translations) > 1 %}
                     <p class="navbar-text pull-right">
                         <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
-                            <option value=""{% if cookie_translation is None %} selected{% end %}>{{ _("Automatic (%s)") % automatic_translation.name }}</option>
+                            <option value=""{% if cookie_translation is None %} selected{% endif %}>{{ _("Automatic (%s)") % automatic_translation.name }}</option>
                         {% for lang_code, t in sorted(iteritems(available_translations), key=lambda x: x[1].name) %}
-                            <option value="{{ lang_code }}"{% if t == cookie_translation %} selected{% end %}>{{ t.name }}</option>
-                        {% end %}
+                            <option value="{{ lang_code }}"{% if t == cookie_translation %} selected{% endif %}>{{ t.name }}</option>
+                        {% endfor %}
                         </select>
                     </p>
-{% end %}
+{% endif %}
 {% if current_user is not None %}
                     <form action="{{ contest_url("logout") }}" method="POST" class="navbar-form pull-right">
                         {% module xsrf_form_html() %}
@@ -77,7 +77,7 @@ $(document).ready(function () {
                     <p class="navbar-text pull-right">
                         {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": escape(current_user.user.first_name), "last_name": escape(current_user.user.last_name), "username": escape(current_user.user.username)} %}
                     </p>
-{% end %}
+{% endif %}
                 </div>
             </div>
         </div>
@@ -89,7 +89,7 @@ $(document).ready(function () {
                 <h4 class="alert-heading">{{ _("Failed to log in.") }}</h4>
             </div>
         </div>
-    {% end %}
+    {% endif %}
         <div class="login_container">
             <div class="login_box hero-unit">
                 <h1>{{ _("Welcome") }}</h1>
@@ -99,7 +99,7 @@ $(document).ready(function () {
                     {% set next_page = handler.get_argument("next", None) %}
                     {% if next_page is not None %}
                     <input type="hidden" name="next" value="{{ next_page }}">
-                    {% end %}
+                    {% endif %}
                     <fieldset>
                         <div class="control-group">
                             <label class="control-label" for="username">{{ _("Username") }}</label>
@@ -168,10 +168,10 @@ $(document).ready(function () {
                     <div class="well" style="padding: 8px 0;">
                         <ul class="nav nav-list">
 
-                            <li{% if request.path == '/' %} class="active"{% end %}>
+                            <li{% if request.path == '/' %} class="active"{% endif %}>
                                 <a href="{{ contest_url() }}">{{ _("Overview") }}</a>
                             </li>
-                            <li{% if request.path == '/communication' %} class="active"{% end %}>
+                            <li{% if request.path == '/communication' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("communication") }}">{{ _("Communication") }}
                                     <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
                                 </a>
@@ -181,30 +181,30 @@ $(document).ready(function () {
                             <li class="nav-header">
                                 {{ t_iter.name }}
                             </li>
-                            <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                            <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% endif %}>
                                 <a href="{{ contest_url("tasks", t_iter.name, "description") }}">{{ _("Statement") }}</a>
                             </li>
-                            <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                            <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% endif %}>
                                 <a href="{{ contest_url("tasks", t_iter.name, "submissions") }}">{{ _("Submissions") }}</a>
                             </li>
-        {% end %}
-    {% end %}
+        {% endfor %}
+    {% endif %}
                             <li class="divider"></li>
-                            <li{% if request.path == '/documentation' %} class="active"{% end %}>
+                            <li{% if request.path == '/documentation' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("documentation") }}">{{ _("Documentation") }}</a>
                             </li>
     {% if actual_phase == 0 or current_user.unrestricted %}{% comment FIXME maybe >= 0? %}
         {% if testing_enabled %}
-                            <li{% if request.path == '/testing' %} class="active"{% end %}>
+                            <li{% if request.path == '/testing' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("testing") }}">{{ _("Testing") }}</a>
                             </li>
-        {% end %}
+        {% endif %}
         {% if printing_enabled %}
-                            <li{% if request.path == '/printing' %} class="active"{% end %}>
+                            <li{% if request.path == '/printing' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("printing") }}">{{ _("Printing") }}</a>
                             </li>
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endif %}
                         </ul>
                     </div>
                     <span class="license_notice">
@@ -214,9 +214,9 @@ $(document).ready(function () {
                     .
                     </span>
                 </div>
-    {% block core %}{% end %}
+    {% block core %}{% endblock core %}
             </div>
         </div>
 
-{% end %}
-{% end %}
+{% endif %}
+{% endblock body %}
