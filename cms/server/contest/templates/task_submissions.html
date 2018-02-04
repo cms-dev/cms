@@ -105,7 +105,7 @@ $(document).ready(function () {
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
-{% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
+{% for idx, filename in enumerate(task.submission_format|map(attribute="filename")) %}
                 <div class="control-group">
                     <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", ": ") }}</label>
                     <div class="controls">
@@ -115,7 +115,7 @@ $(document).ready(function () {
                     </div>
                 </div>
 {% endfor %}
-{% if any(x.filename.endswith(".%l") for x in task.submission_format) %}
+{% if task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
                 <div class="control-group">
                     <div class="controls">
                         <select id="language" name="language">
@@ -135,7 +135,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if len(task.submission_format) > 1 and not any(x.filename.endswith(".%l") for x in task.submission_format) %}
+{% if len(task.submission_format) > 1 and not task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {% module xsrf_form_html() %}
@@ -207,7 +207,7 @@ $(document).ready(function () {
     {% set score_type = None %}
 {% endtry %}
 
-{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
+{% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
 
 <table id="submission_list" class="table table-bordered table-striped">
