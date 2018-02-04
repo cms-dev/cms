@@ -3,7 +3,7 @@
     {% set col1 = "<td class=\"datetime\">%s</td>" % translation.format_datetime(t.timestamp, timezone) %}
 {% else %}
     {% set col1 = "<td class=\"time\">%s</td>" % translation.format_time(t.timestamp, timezone) %}
-{% end %}
+{% endif %}
 {% if tr is None or not tr.compiled() %}
 <tr data-user-test="{{ t_idx }}" data-status="1">
     {% raw col1 %}
@@ -30,7 +30,7 @@
         {{ _("Executed") }}
         <a class="details">{{ _("details") }}</a>
     </td>
-{% end %}
+{% endif %}
 {% if tr is None or tr.execution_time is None %}
     <td class="time undefined">
         {{ _("N/A") }}
@@ -39,7 +39,7 @@
     <td class="time">
         {{ translation.format_duration(tr.execution_time) }}
     </td>
-{% end %}
+{% endif %}
 {% if tr is None or tr.execution_memory is None %}
     <td class="memory undefined">
         {{ _("N/A") }}
@@ -48,7 +48,7 @@
     <td class="memory">
         {{ translation.format_size(tr.execution_memory) }}
     </td>
-{% end %}
+{% endif %}
     <td class="input">
         <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "input") }}">
             {{ _("Download") }}
@@ -68,8 +68,8 @@
         <a class="btn btn-primary" href="{{ contest_url("tasks", task.name, "tests", t_idx, "output") }}">
             {{ _("Download") }}
         </a>
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endif %}
     </td>
     <td class="files">
         {% comment We replace '.%l' with the actual language only when it occurs as an extension at the end of the string and only when %}
@@ -98,15 +98,15 @@
                     {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
                 {% else %}
                     {% set real_filename = filename %}
-                {% end %}
+                {% endif %}
                 <li>
                     <a href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", filename) }}">
                         {{ real_filename }}
                     </a>
                 </li>
-            {% end %}
+            {% endfor %}
             </ul>
         </div>
-        {% end %}
+        {% endif %}
     </td>
 </tr>

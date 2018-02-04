@@ -6,7 +6,7 @@
 <div class="score_details">
 {% raw details %}
 </div>
-{% end %}
+{% endif %}
 
 {% if sr is not None and sr.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
@@ -23,7 +23,7 @@
     {{ _("N/A") }}
 {% else %}
     {{ translation.format_duration(sr.compilation_time) }}
-{% end %}
+{% endif %}
             </td>
         </tr>
             <th>{{ _("Memory used:") }}</th>
@@ -32,7 +32,7 @@
     {{ _("N/A") }}
 {% else %}
     {{ translation.format_size(sr.compilation_memory) }}
-{% end %}
+{% endif %}
             </td>
         </tr>
     </tbody>
@@ -40,9 +40,9 @@
 {% if sr.compilation_stdout is not None %}
 <h4>{{ _("Standard output") }}</h4>
 <pre>{{ sr.compilation_stdout }}</pre>
-{% end %}
+{% endif %}
 {% if sr.compilation_stderr is not None %}
 <h4>{{ _("Standard error") }}</h4>
 <pre>{{ sr.compilation_stderr }}</pre>
-{% end %}
-{% end %}
+{% endif %}
+{% endif %}

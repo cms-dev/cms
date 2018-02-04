@@ -72,7 +72,7 @@ $(document).ready(function () {
     });
 });
 
-{% end %}
+{% endblock additional_js %}
 
 {% block core %}
 
@@ -91,7 +91,7 @@ $(document).ready(function () {
 {% set task_type = get_task_type(dataset=task.active_dataset) %}
 {% if task_type.ALLOW_PARTIAL_SUBMISSION %}
   <p><strong>{{ _("You may submit any subset of outputs in a single submission.") }}</strong></p>
-{% end %}
+{% endif %}
 
 {% if submissions_left is not None %}
     <div class="span5">
@@ -99,7 +99,7 @@ $(document).ready(function () {
         {{ _("You can submit %(submissions_left)s more solution(s).") % {"submissions_left": submissions_left} }}
         </p>
     </div>
-{% end %}
+{% endif %}
 
 <div id="submit_solution" class="row">
     <div class="span5">
@@ -115,18 +115,18 @@ $(document).ready(function () {
                                onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]'))"/>
                     </div>
                 </div>
-{% end %}
+{% endfor %}
 {% if any(x.filename.endswith(".%l") for x in task.submission_format) %}
                 <div class="control-group">
                     <div class="controls">
                         <select id="language" name="language">
 {% for lang in contest.languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
-{% end %}
+{% endfor %}
                         </select>
                     </div>
                 </div>
-{% end %}
+{% endif %}
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
@@ -156,7 +156,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% end %}
+{% endif %}
 </div>
 
 
@@ -174,17 +174,17 @@ $(document).ready(function () {
             {{ _("Right now, you have one token available on this task.") }}
         {% else %}
             {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
-        {% end %}
+        {% endif %}
         {% if need_to_wait %}
             {% set t = translation.format_datetime_smart(tokens_info[2], now, timezone) %}
             {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
-        {% end %}
+        {% endif %}
         {% if tokens_info[1] is not None %}
             {% set t = translation.format_datetime_smart(tokens_info[1], now, timezone) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
-        {% end %}
+        {% endif %}
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
         {% if actual_phase == 0 and tokens_info[1] is not None %}
@@ -193,13 +193,13 @@ $(document).ready(function () {
             {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
                 {% set t = translation.format_datetime_smart(tokens_info[2], now, timezone) %}
                 {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
-            {% end %}
+            {% endif %}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endif %}
 </div>
-{% end %}
+{% endif %}
 
 
 {% from cms.grading.scoretypes import get_score_type %}
@@ -207,7 +207,7 @@ $(document).ready(function () {
     {% set score_type = get_score_type(dataset=task.active_dataset) %}
 {% except %}
     {% set score_type = None %}
-{% end %}
+{% endtry %}
 
 {% from cmscommon.datetime import utc %}
 {% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
@@ -219,23 +219,23 @@ $(document).ready(function () {
         <col class="datetime"/>
 {% else %}
         <col class="time"/>
-{% end %}
+{% endif %}
         <col class="status"/>
 {% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
         <col class="public_score"/>
         <col class="total_score"/>
 {% else %}
         <col class="total_score"/>
-{% end %}
+{% endif %}
 {% if actual_phase >= +3 %}
         <col class="considered_in_score"/>
-{% end %}
+{% endif %}
 {% if submissions_download_allowed %}
         <col class="files"/>
-{% end %}
+{% endif %}
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
         <col class="token"/>
-{% end %}
+{% endif %}
     </colgroup>
     <thead>
         <tr>
@@ -243,23 +243,23 @@ $(document).ready(function () {
             <th class="datetime">{{ _("Date and time") }}</th>
 {% else %}
             <th class="time">{{ _("Time") }}</th>
-{% end %}
+{% endif %}
             <th class="status">{{ _("Status") }}</th>
 {% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
             <th class="public_score">{{ _("Public score") }}</th>
             <th class="total_score">{{ _("Total score") }}</th>
 {% else %}
             <th class="total_score">{{ _("Score") }}</th>
-{% end %}
+{% endif %}
 {% if actual_phase >= +3 %}
             <th class="considered_in_score">{{ _("Official") }}</th>
-{% end %}
+{% endif %}
 {% if submissions_download_allowed %}
             <th class="files">{{ _("Files") }}</th>
-{% end %}
+{% endif %}
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
             <th class="token">{{ _("Token") }}</th>
-{% end %}
+{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -269,15 +269,15 @@ $(document).ready(function () {
             <td colspan="6" class="no_submissions">{{ _("no submissions yet") }}</td>
         {% else %}
             <td colspan="5" class="no_submissions">{{ _("no submissions yet") }}</td>
-        {% end %}
+        {% endif %}
         </tr>
     {% else %}
         {% for s_idx, s in enumerate(sorted(submissions, key=lambda s: s.timestamp, reverse=True)) %}
             {% set s_idx = len(submissions) - s_idx %}
             {% set sr = s.get_result(s.task.active_dataset) %}
             {% include submission_row.html %}
-        {% end %}
-    {% end %}
+        {% endfor %}
+    {% endif %}
     </tbody>
 </table>
 
@@ -294,6 +294,6 @@ $(document).ready(function () {
 </div>
 
 </div>
-{% end %}
+{% endif %}
 
-{% end %}
+{% endblock core %}
