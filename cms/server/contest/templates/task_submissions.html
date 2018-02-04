@@ -6,7 +6,7 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
     var modal_body = modal.children(".modal-body");
-    modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{{ _("loading...") }}</div>');
+    modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
     modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function() {
         $(".score_details .subtask .subtask-head").each(function () {
             $(this).prepend("<i class=\"icon-chevron-right\"></i>");
@@ -81,21 +81,21 @@ $(document).ready(function () {
 <div class="span9 task_submissions">
 
 <div class="page-header">
-    <h1>{% raw _("%(name)s (%(short_name)s) <small>submissions</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</h1>
+    <h1>{% trans name=task.title, short_name=task.name %}{{ name }} ({{ short_name }}) <small>submissions</small>{% endtrans %}</h1>
 </div>
 
 
-<h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
+<h2 style="margin-bottom: 10px">{% trans %}Submit a solution{% endtrans %}</h2>
 
 {% set task_type = get_task_type(dataset=task.active_dataset) %}
 {% if task_type.ALLOW_PARTIAL_SUBMISSION %}
-  <p><strong>{{ _("You may submit any subset of outputs in a single submission.") }}</strong></p>
+  <p><strong>{% trans %}You may submit any subset of outputs in a single submission.{% endtrans %}</strong></p>
 {% endif %}
 
 {% if submissions_left is not none %}
     <div class="span5">
         <p>
-        {{ _("You can submit %(submissions_left)s more solution(s).") % {"submissions_left": submissions_left} }}
+        {% trans submissions_left=submissions_left %}You can submit {{ submissions_left }} more solution(s).{% endtrans %}
         </p>
     </div>
 {% endif %}
@@ -128,8 +128,8 @@ $(document).ready(function () {
 {% endif %}
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                        <button type="submit" class="btn btn-success">{% trans %}Submit{% endtrans %}</button>
+                        <button type="reset" class="btn">{% trans %}Reset{% endtrans %}</button>
                     </div>
                 </div>
             </fieldset>
@@ -141,15 +141,15 @@ $(document).ready(function () {
             {{ xsrf_form_html|safe }}
             <fieldset>
                 <div class="control-group">
-                    <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
+                    <label class="control-label" for="input_zip">{% trans %}submission.zip{% endtrans %}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
                     </div>
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                        <button type="submit" class="btn btn-success">{% trans %}Submit{% endtrans %}</button>
+                        <button type="reset" class="btn">{% trans %}Reset{% endtrans %}</button>
                     </div>
                 </div>
             </fieldset>
@@ -159,7 +159,7 @@ $(document).ready(function () {
 </div>
 
 
-<h2 style="margin: 40px 0 10px">{{ _("Previous submissions") }}</h2>
+<h2 style="margin: 40px 0 10px">{% trans %}Previous submissions{% endtrans %}</h2>
 
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
 <div style="padding-bottom:10px">
@@ -168,33 +168,37 @@ $(document).ready(function () {
     {% set need_to_wait = tokens_info[2] is not none %}
     {% if can_play_token %}
         {% if tokens_info[0] == -1 %}
-            {{ _("Right now, you have infinite tokens available on this task.") }}
+            {% trans %}Right now, you have infinite tokens available on this task.{% endtrans %}
         {% elif tokens_info[0] == 1 %}
-            {{ _("Right now, you have one token available on this task.") }}
+            {% trans %}Right now, you have one token available on this task.{% endtrans %}
         {% else %}
-            {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
+            {% trans tokens=tokens_info[0] %}Right now, you have {{ tokens }} tokens available on this task.{% endtrans %}
         {% endif %}
         {% if need_to_wait %}
-            {% set t = tokens_info[2]|format_datetime_smart %}
-            {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
+            {% trans expiration_time=tokens_info[2]|format_datetime_smart %}
+                But you have to wait until {{ expiration_time }} to use them.
+            {% endtrans %}
         {% endif %}
         {% if tokens_info[1] is not none %}
-            {% set t = tokens_info[1]|format_datetime_smart %}
-            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
+            {% trans gen_time=tokens_info[1]|format_datetime_smart %}
+                You will receive a new token at {{ gen_time }}.
+            {% endtrans %}
         {% else %}
-            {{ _("In the current situation, no more tokens will be generated.") }}
+            {% trans %}In the current situation, no more tokens will be generated.{% endtrans %}
         {% endif %}
     {% else %}
-        {{ _("Right now, you do not have tokens available for this task.") }}
+        {% trans %}Right now, you do not have tokens available for this task.{% endtrans %}
         {% if actual_phase == 0 and tokens_info[1] is not none %}
-            {% set t = tokens_info[1]|format_datetime_smart %}
-            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
+            {% trans gen_time=tokens_info[1]|format_datetime_smart %}
+                You will receive a new token at {{ gen_time }}.
+            {% endtrans %}
             {% if tokens_info[2] is not none and tokens_info[2] > tokens_info[1] %}
-                {% set t = tokens_info[2]|format_datetime_smart %}
-                {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
+                {% trans expiration_time=tokens_info[2]|format_datetime_smart %}
+                    But you will have to wait until {{ expiration_time }} to use it.
+                {% endtrans %}
             {% endif %}
         {% else %}
-            {{ _("In the current situation, no more tokens will be generated.") }}
+            {% trans %}In the current situation, no more tokens will be generated.{% endtrans %}
         {% endif %}
     {% endif %}
 </div>
@@ -237,25 +241,25 @@ $(document).ready(function () {
     <thead>
         <tr>
 {% if show_date %}
-            <th class="datetime">{{ _("Date and time") }}</th>
+            <th class="datetime">{% trans %}Date and time{% endtrans %}</th>
 {% else %}
-            <th class="time">{{ _("Time") }}</th>
+            <th class="time">{% trans %}Time{% endtrans %}</th>
 {% endif %}
-            <th class="status">{{ _("Status") }}</th>
+            <th class="status">{% trans %}Status{% endtrans %}</th>
 {% if score_type is not none and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
-            <th class="public_score">{{ _("Public score") }}</th>
-            <th class="total_score">{{ _("Total score") }}</th>
+            <th class="public_score">{% trans %}Public score{% endtrans %}</th>
+            <th class="total_score">{% trans %}Total score{% endtrans %}</th>
 {% else %}
-            <th class="total_score">{{ _("Score") }}</th>
+            <th class="total_score">{% trans %}Score{% endtrans %}</th>
 {% endif %}
 {% if actual_phase >= +3 %}
-            <th class="considered_in_score">{{ _("Official") }}</th>
+            <th class="considered_in_score">{% trans %}Official{% endtrans %}</th>
 {% endif %}
 {% if submissions_download_allowed %}
-            <th class="files">{{ _("Files") }}</th>
+            <th class="files">{% trans %}Files{% endtrans %}</th>
 {% endif %}
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
-            <th class="token">{{ _("Token") }}</th>
+            <th class="token">{% trans %}Token{% endtrans %}</th>
 {% endif %}
         </tr>
     </thead>
@@ -263,9 +267,9 @@ $(document).ready(function () {
     {% if submissions|length == 0 %}
         <tr>
         {% if tokens_contest != 0 and tokens_tasks != 0 %}
-            <td colspan="6" class="no_submissions">{{ _("no submissions yet") }}</td>
+            <td colspan="6" class="no_submissions">{% trans %}no submissions yet{% endtrans %}</td>
         {% else %}
-            <td colspan="5" class="no_submissions">{{ _("no submissions yet") }}</td>
+            <td colspan="5" class="no_submissions">{% trans %}no submissions yet{% endtrans %}</td>
         {% endif %}
         </tr>
     {% else %}
@@ -282,12 +286,12 @@ $(document).ready(function () {
 <div class="modal fade hide wide" id="submission_detail">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
-        <h3>{{ _("Submission details") }}</h3>
+        <h3>{% trans %}Submission details{% endtrans %}</h3>
     </div>
     <div class="modal-body">
     </div>
     <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
+        <a href="#" class="btn" data-dismiss="modal">{% trans %}Close{% endtrans %}</a>
     </div>
 </div>
 
