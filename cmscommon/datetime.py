@@ -207,7 +207,7 @@ if sys.version_info >= (3, 3):
         return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 
 # Taken from http://bugs.python.org/file19461/monotonic.py
-elif platform.system() not in ('Windows', 'Darwin'):
+else:
     from ctypes import Structure, c_long, CDLL, c_int, POINTER, byref
     from ctypes.util import find_library
 
@@ -239,12 +239,3 @@ elif platform.system() not in ('Windows', 'Darwin'):
         t = timespec()
         _clock_gettime(CLOCK_MONOTONIC, byref(t))
         return t.tv_sec + t.tv_nsec / 1e9
-else:
-    try:
-        from win32api import GetTickCount
-
-        def monotonic_time():
-            return GetTickCount / 1000.0
-
-    except ImportError:
-        from time import time as monotonic_time
