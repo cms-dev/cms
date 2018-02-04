@@ -54,7 +54,7 @@ $(document).ready(function () {
         schedule_update_user_test_row($this.parent().parent().attr("data-task"), $this.attr("data-user-test"));
     });
 });
-{% end %}
+{% endblock additional_js %}
 
 {% block core %}
 
@@ -73,16 +73,16 @@ $(document).ready(function () {
 {% for i, task in enumerate(contest.tasks) %}
     {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
-    <li{% if task == default_task %} class="active"{% end %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
-    {% end %}
-{% end %}
+    <li{% if task == default_task %} class="active"{% endif %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
+    {% endif %}
+{% endfor %}
 </ul>
 
 <div class="tab-content">
 {% for i, task in enumerate(contest.tasks) %}
     {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
-<div class="tab-pane{% if task == default_task %} active{% end %}" id="test_{{ task.name }}">
+<div class="tab-pane{% if task == default_task %} active{% endif %}" id="test_{{ task.name }}">
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
 
@@ -92,7 +92,7 @@ $(document).ready(function () {
         {{ _("You can submit %(user_tests_left)s more test(s).") % {"user_tests_left": user_tests_left[task.id]} }}
         </p>
     </div>
-{% end %}
+{% endif %}
 
 <div class="submit_test row">
     <div class="span5">
@@ -108,7 +108,7 @@ $(document).ready(function () {
                                onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]').not('#input_file'))"/>
                     </div>
                 </div>
-{% end %}
+{% endfor %}
                 <div class="control-group">
                     <label class="control-label" for="input_file">{{ _("input") }}</label>
                     <div class="controls">
@@ -120,7 +120,7 @@ $(document).ready(function () {
                         <select id="language" name="language">
 {% for lang in contest.languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
-{% end %}
+{% endfor %}
                         </select>
                     </div>
                 </div>
@@ -149,7 +149,7 @@ $(document).ready(function () {
                         <select id="zip_language" name="language">
 {% for lang in contest.languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
-{% end %}
+{% endfor %}
                         </select>
                     </div>
                 </div>
@@ -162,7 +162,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% end %}
+{% endif %}
 </div>
 
 
@@ -178,7 +178,7 @@ $(document).ready(function () {
         <col class="datetime"/>
 {% else %}
         <col class="time"/>
-{% end %}
+{% endif %}
         <col class="status"/>
         <col class="time"/>
         <col class="memory"/>
@@ -192,7 +192,7 @@ $(document).ready(function () {
             <th class="datetime">{{ _("Date and time") }}</th>
 {% else %}
             <th class="time">{{ _("Time") }}</th>
-{% end %}
+{% endif %}
             <th class="status">{{ _("Status") }}</th>
             <th class="time">{{ _("Execution time") }}</th>
             <th class="memory">{{ _("Memory used") }}</th>
@@ -211,8 +211,8 @@ $(document).ready(function () {
             {% set t_idx = len(user_tests[task.id]) - t_idx %}
             {% set tr = t.get_result(t.task.active_dataset) %}
             {% include user_test_row.html %}
-        {% end %}
-    {% end %}
+        {% endfor %}
+    {% endif %}
     </tbody>
 </table>
 
@@ -220,8 +220,8 @@ $(document).ready(function () {
 
 
 </div>
-    {% end %}
-{% end %}
+    {% endif %}
+{% endfor %}
 </div>
 
 <div class="modal fade hide" id="user_test_detail">
@@ -237,6 +237,6 @@ $(document).ready(function () {
 </div>
 
 </div>
-{% end %}
+{% endif %}
 
-{% end %}
+{% endblock core %}
