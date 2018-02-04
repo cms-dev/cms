@@ -74,7 +74,7 @@
             <td colspan="3" class="no_printjobs">{{ _("no print jobs yet") }}</td>
         </tr>
 {% else %}
-    {% for p_idx, p in enumerate(printjobs|sort(attribute="timestamp")|reverse) %}
+    {% for p in printjobs|sort(attribute="timestamp")|reverse %}
         <tr>
         {% if show_date %}
             <td class="datetime">{{ translation.format_datetime(p.timestamp, timezone) }}</td>
