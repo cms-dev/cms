@@ -295,12 +295,12 @@ class TestRunner(object):
             self.create_or_get_task(test.task_module)
 
         # We start now only the services we need in order to submit and
-        # we start the other ones after the submissions have been sent
+        # we start the other ones while the submissions are being sent
         # out. A submission can arrive after ES's first sweep, but
         # before CWS connects to ES; if so, it will be ignored until
         # ES's second sweep, making the test flaky due to timeouts. By
-        # waiting for ES to # start before submitting, we ensure CWS
-        # can send the notification for all submissions.
+        # waiting for ES to start before submitting, we ensure CWS can
+        # send the notification for all submissions.
         self.ps.start("ContestWebServer", contest=self.contest_id)
         if concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
