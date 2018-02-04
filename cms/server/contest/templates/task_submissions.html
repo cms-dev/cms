@@ -103,7 +103,7 @@ $(document).ready(function () {
 <div id="submit_solution" class="row">
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
-            {% module xsrf_form_html() %}
+            {{ xsrf_form_html|safe }}
             <fieldset>
 {% for filename in task.submission_format|map(attribute="filename") %}
                 <div class="control-group">
@@ -138,7 +138,7 @@ $(document).ready(function () {
 {% if task.submission_format|length > 1 and not task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
-            {% module xsrf_form_html() %}
+            {{ xsrf_form_html|safe }}
             <fieldset>
                 <div class="control-group">
                     <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
