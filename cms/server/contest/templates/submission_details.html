@@ -2,7 +2,7 @@
 
 {% if details is not none %}
 <div class="score_details">
-{% raw details %}
+{{ details|safe }}
 </div>
 {% endif %}
 
