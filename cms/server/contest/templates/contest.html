@@ -63,7 +63,7 @@ $(document).ready(function () {
 {% endif %}
 {% if current_user is not none %}
                     <form action="{{ contest_url("logout") }}" method="POST" class="navbar-form pull-right">
-                        {% module xsrf_form_html() %}
+                        {{ xsrf_form_html|safe }}
                         <button type="submit" class="btn btn-warning">{{ _('Logout') }}</button>
                     </form>
                     <p class="navbar-text pull-right">
@@ -87,7 +87,7 @@ $(document).ready(function () {
                 <h1>{{ _("Welcome") }}</h1>
                 <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ contest_url("login") }}" method="POST">
-                    {% module xsrf_form_html() %}
+                    {{ xsrf_form_html|safe }}
                     {% set next_page = handler.get_argument("next", none) %}
                     {% if next_page is not none %}
                     <input type="hidden" name="next" value="{{ next_page }}">

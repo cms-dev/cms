@@ -147,6 +147,8 @@ class BaseHandler(CommonRequestHandler):
         ret["translation"] = self.translation
         ret["_"] = self._
 
+        ret["xsrf_form_html"] = self.xsrf_form_html()
+
         return ret
 
     def write_error(self, status_code, **kwargs):
