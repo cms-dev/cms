@@ -1,7 +1,7 @@
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>" % translation.format_datetime(s.timestamp, timezone) %}
+    {% set col1 = "<td class=\"datetime\">%s</td>"|format(translation.format_datetime(s.timestamp, timezone)) %}
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>" % translation.format_time(s.timestamp, timezone) %}
+    {% set col1 = "<td class=\"time\">%s</td>"|format(translation.format_time(s.timestamp, timezone)) %}
 {% endif %}
 {% if sr is none or not sr.compiled() %}
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.COMPILING }}">
