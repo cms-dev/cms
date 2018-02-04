@@ -137,7 +137,7 @@
             {# TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. #}
             {% if can_play_token and not need_to_wait %}
         <form action="{{ contest_url("tasks", task.name, "submissions", s_idx, "token") }}" method="POST">
-            {% module xsrf_form_html() %}
+            {{ xsrf_form_html|safe }}
             <button type="submit" class="btn btn-warning">{{ _("Play!") }}</button>
         </form>
             {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not none) %}
