@@ -35,7 +35,7 @@ $(document).ready(function () {
     setInterval(function() {
         utils.update_time({{ "true" if contest.per_user_time is not none else "false" }});
     }, 1000);
-    utils.update_unread_count(0{% if request.path == '/communication' %}, 0{% endif %});
+    utils.update_unread_count(0{% if page == "communication" %}, 0{% endif %});
     utils.update_notifications(true);
     setInterval(function() { utils.update_notifications(); }, 30000);
     $('#main').css('top', $('#navigation_bar').outerHeight());
@@ -164,10 +164,10 @@ $(document).ready(function () {
                     <div class="well" style="padding: 8px 0;">
                         <ul class="nav nav-list">
 
-                            <li{% if request.path == '/' %} class="active"{% endif %}>
+                            <li{% if page == "overview" %} class="active"{% endif %}>
                                 <a href="{{ contest_url() }}">{% trans %}Overview{% endtrans %}</a>
                             </li>
-                            <li{% if request.path == '/communication' %} class="active"{% endif %}>
+                            <li{% if page == "communication" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("communication") }}">{% trans %}Communication{% endtrans %}
                                     <span id="unread_count" class="label label-warning no_unread"></span>
                                 </a>
@@ -177,26 +177,26 @@ $(document).ready(function () {
                             <li class="nav-header">
                                 {{ t_iter.name }}
                             </li>
-                            <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% endif %}>
+                            <li{% if page == "task_description" and task == t_iter %} class="active"{% endif %}>
                                 <a href="{{ contest_url("tasks", t_iter.name, "description") }}">{% trans %}Statement{% endtrans %}</a>
                             </li>
-                            <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% endif %}>
+                            <li{% if page == "task_submissions" and task == t_iter %} class="active"{% endif %}>
                                 <a href="{{ contest_url("tasks", t_iter.name, "submissions") }}">{% trans %}Submissions{% endtrans %}</a>
                             </li>
         {% endfor %}
     {% endif %}
                             <li class="divider"></li>
-                            <li{% if request.path == '/documentation' %} class="active"{% endif %}>
+                            <li{% if page == "documentation" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("documentation") }}">{% trans %}Documentation{% endtrans %}</a>
                             </li>
     {% if actual_phase == 0 or participation.unrestricted %}{# FIXME maybe >= 0? #}
         {% if testing_enabled %}
-                            <li{% if request.path == '/testing' %} class="active"{% endif %}>
+                            <li{% if page == "testing" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("testing") }}">{% trans %}Testing{% endtrans %}</a>
                             </li>
         {% endif %}
         {% if printing_enabled %}
-                            <li{% if request.path == '/printing' %} class="active"{% endif %}>
+                            <li{% if page == "printing" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("printing") }}">{% trans %}Printing{% endtrans %}</a>
                             </li>
         {% endif %}
