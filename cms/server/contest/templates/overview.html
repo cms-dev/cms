@@ -10,7 +10,7 @@
 
 <h2>{{ _("General information") }}</h2>
 <div class="row">
-{% if contest.per_user_time is not None %}
+{% if contest.per_user_time is not none %}
     <div class="span5">
 {% else %}
     <div class="span9">
@@ -101,20 +101,20 @@
     {% endif %}
 {% endif %}
 
-{% if contest.max_submission_number is not None %}
+{% if contest.max_submission_number is not none %}
     <p>
     {{ _("You can submit at most %(submissions)s solutions during this contest.") % {"submissions": contest.max_submission_number} }}
     </p>
 {% endif %}
 
-{% if contest.max_user_test_number is not None %}
+{% if contest.max_user_test_number is not none %}
     <p>
     {{ _("You can submit at most %(user_tests)s user tests during this contest.") % {"user_tests": contest.max_user_test_number} }}
     </p>
 {% endif %}
 
     </div>
-{% if contest.per_user_time is not None %}
+{% if contest.per_user_time is not none %}
     <div class="span4">
         <div class="well per_user_time">
             <p>
@@ -136,7 +136,7 @@
         {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": translation.format_datetime_smart(current_user.starting_time, now, timezone)} }}
         {{ _("There's nothing you can do now.") }}
     {% elif actual_phase == +2 %}
-        {% if current_user.starting_time is None %}
+        {% if current_user.starting_time is none %}
             {{ _("You never started your time frame. Now it's too late.") }}
         {% else %}
             {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": translation.format_datetime_smart(current_user.starting_time, now, timezone)} }}
@@ -192,14 +192,14 @@
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>
-    {% if t_iter.active_dataset.time_limit is not None %}
+    {% if t_iter.active_dataset.time_limit is not none %}
         {{ translation.format_duration(t_iter.active_dataset.time_limit, length="long") }}
     {% else %}
         {{ _("N/A") }}
     {% endif %}
             </td>
             <td>
-    {% if t_iter.active_dataset.memory_limit is not None %}
+    {% if t_iter.active_dataset.memory_limit is not none %}
         {{ translation.format_size(t_iter.active_dataset.memory_limit * 1024 * 1024) }}
     {% else %}
         {{ _("N/A") }}

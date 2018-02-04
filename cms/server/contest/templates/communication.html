@@ -77,7 +77,7 @@
         <div class="body">{{ msg.text }}</div>
         {% endif %}
     </div>
-        {% if msg.reply_timestamp is not None %}
+        {% if msg.reply_timestamp is not none %}
     <div class="answer">
             {% if msg.reply_subject|length > 0 %}
         <h4 class="subject">{{ msg.reply_subject }}</h4>

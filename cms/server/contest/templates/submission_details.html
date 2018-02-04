@@ -1,12 +1,12 @@
 
 
-{% if details is not None %}
+{% if details is not none %}
 <div class="score_details">
 {% raw details %}
 </div>
 {% endif %}
 
-{% if sr is not None and sr.compiled() %}
+{% if sr is not none and sr.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
 <table class="table table-bordered" style="table-layout: fixed;">
     <tbody>
@@ -17,7 +17,7 @@
         <tr>
             <th>{{ _("Compilation time:") }}</th>
             <td>
-{% if sr.compilation_time is None %}
+{% if sr.compilation_time is none %}
     {{ _("N/A") }}
 {% else %}
     {{ translation.format_duration(sr.compilation_time) }}
@@ -26,7 +26,7 @@
         </tr>
             <th>{{ _("Memory used:") }}</th>
             <td>
-{% if sr.compilation_memory is None %}
+{% if sr.compilation_memory is none %}
     {{ _("N/A") }}
 {% else %}
     {{ translation.format_size(sr.compilation_memory) }}
@@ -35,11 +35,11 @@
         </tr>
     </tbody>
 </table>
-{% if sr.compilation_stdout is not None %}
+{% if sr.compilation_stdout is not none %}
 <h4>{{ _("Standard output") }}</h4>
 <pre>{{ sr.compilation_stdout }}</pre>
 {% endif %}
-{% if sr.compilation_stderr is not None %}
+{% if sr.compilation_stderr is not none %}
 <h4>{{ _("Standard error") }}</h4>
 <pre>{{ sr.compilation_stderr }}</pre>
 {% endif %}

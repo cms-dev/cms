@@ -18,7 +18,7 @@ var LANGUAGES = {
 {% endfor %}
 };
 
-{% if current_user is None %}
+{% if current_user is none %}
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
                              0, 0, 0, 0, 0);
 {% else %}
@@ -26,14 +26,14 @@ var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.n
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
                              {{ make_timestamp(now) }},
                              {# What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. #}
-                             {{ make_timestamp(now.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
+                             {{ make_timestamp(now.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=none)) }},
                              {{ make_timestamp(current_phase_begin) }},
                              {{ make_timestamp(current_phase_end) }},
                              {{ actual_phase }});
 $(document).ready(function () {
-    utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+    utils.update_time({{ "true" if contest.per_user_time is not none else "false" }});
     setInterval(function() {
-        utils.update_time({{ "true" if contest.per_user_time is not None else "false" }});
+        utils.update_time({{ "true" if contest.per_user_time is not none else "false" }});
     }, 1000);
     utils.update_unread_count(0{% if request.path == '/communication' %}, 0{% endif %});
     utils.update_notifications(true);
@@ -54,14 +54,14 @@ $(document).ready(function () {
 {% if available_translations|length > 1 %}
                     <p class="navbar-text pull-right">
                         <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
-                            <option value=""{% if cookie_translation is None %} selected{% endif %}>{{ _("Automatic (%s)") % automatic_translation.name }}</option>
+                            <option value=""{% if cookie_translation is none %} selected{% endif %}>{{ _("Automatic (%s)") % automatic_translation.name }}</option>
                         {% for lang_code, t in available_translations|dictsort(by="key") %}
                             <option value="{{ lang_code }}"{% if t == cookie_translation %} selected{% endif %}>{{ t.name }}</option>
                         {% endfor %}
                         </select>
                     </p>
 {% endif %}
-{% if current_user is not None %}
+{% if current_user is not none %}
                     <form action="{{ contest_url("logout") }}" method="POST" class="navbar-form pull-right">
                         {% module xsrf_form_html() %}
                         <button type="submit" class="btn btn-warning">{{ _('Logout') }}</button>
@@ -73,7 +73,7 @@ $(document).ready(function () {
                 </div>
             </div>
         </div>
-{% if current_user is None %}
+{% if current_user is none %}
     {% if handler.get_argument("login_error", "") != "" %}
         <div id="notifications" class="notifications">
             <div class="alert alert-block alert-error notification">
@@ -88,8 +88,8 @@ $(document).ready(function () {
                 <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ contest_url("login") }}" method="POST">
                     {% module xsrf_form_html() %}
-                    {% set next_page = handler.get_argument("next", None) %}
-                    {% if next_page is not None %}
+                    {% set next_page = handler.get_argument("next", none) %}
+                    {% if next_page is not none %}
                     <input type="hidden" name="next" value="{{ next_page }}">
                     {% endif %}
                     <fieldset>
