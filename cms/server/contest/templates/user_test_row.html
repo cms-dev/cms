@@ -1,8 +1,8 @@
 
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>"|format(translation.format_datetime(t.timestamp, timezone)) %}
+    {% set col1 = "<td class=\"datetime\">%s</td>"|format(t.timestamp|format_datetime) %}
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>"|format(translation.format_time(t.timestamp, timezone)) %}
+    {% set col1 = "<td class=\"time\">%s</td>"|format(t.timestamp|format_time) %}
 {% endif %}
 {% if tr is none or not tr.compiled() %}
 <tr data-user-test="{{ t_idx }}" data-status="1">
@@ -37,7 +37,7 @@
     </td>
 {% else %}
     <td class="time">
-        {{ translation.format_duration(tr.execution_time) }}
+        {{ tr.execution_time|format_duration }}
     </td>
 {% endif %}
 {% if tr is none or tr.execution_memory is none %}
@@ -46,7 +46,7 @@
     </td>
 {% else %}
     <td class="memory">
-        {{ translation.format_size(tr.execution_memory) }}
+        {{ tr.execution_memory|format_size }}
     </td>
 {% endif %}
     <td class="input">

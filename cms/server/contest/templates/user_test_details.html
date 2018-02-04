@@ -2,7 +2,7 @@
 
 {% if tr is not none and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
-<pre>{{ format_status_text(tr.evaluation_text, translation=translation) }}</pre>
+<pre>{{ tr.evaluation_text|format_status_text }}</pre>
 {% endif %}
 
 {% if tr is not none and tr.compiled() %}
@@ -11,7 +11,7 @@
     <tbody>
         <tr>
             <th>{{ _("Compilation outcome:") }}</th>
-            <td>{{ format_status_text(tr.compilation_text, translation=translation) }}</td>
+            <td>{{ tr.compilation_text|format_status_text }}</td>
         </tr>
         <tr>
             <th>{{ _("Compilation time:") }}</th>
@@ -19,7 +19,7 @@
 {% if tr.compilation_time is none %}
     {{ _("N/A") }}
 {% else %}
-    {{ translation.format_duration(tr.compilation_time) }}
+    {{ tr.compilation_time|format_duration }}
 {% endif %}
             </td>
         </tr>
@@ -28,7 +28,7 @@
 {% if tr.compilation_memory is none %}
     {{ _("N/A") }}
 {% else %}
-    {{ translation.format_size(tr.compilation_memory) }}
+    {{ tr.compilation_memory|format_size }}
 {% endif %}
             </td>
         </tr>
