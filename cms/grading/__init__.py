@@ -690,7 +690,7 @@ def extract_outcome_and_text(sandbox):
 # We take as definition of whitespaces the intersection between ASCII
 # and Unicode White_Space characters (see
 # http://www.unicode.org/Public/6.3.0/ucd/PropList.txt)
-WHITES = [b' ', b'\t', b'\n', b'\x0b', b'\x0c' b'\r']
+WHITES = [b' ', b'\t', b'\n', b'\x0b', b'\x0c', b'\r']
 
 
 def white_diff_canonicalize(string):
