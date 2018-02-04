@@ -10,7 +10,7 @@
 {% if len (contest.announcements) > 0 %}
 <h2>{{ _("Announcements") }}</h2>
 <div class="announcement_list">
-    {% for msg in reversed(contest.announcements) %}
+    {% for msg in contest.announcements|reverse %}
     <div class="announcement">
         {% if len(msg.subject) > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
@@ -65,7 +65,7 @@
 
 {% if len (current_user.questions) > 0 %}
 <div class="question_list">
-    {% for msg in reversed(current_user.questions) %}
+    {% for msg in current_user.questions|reverse %}
     <div class="question">
         {% if len(msg.subject) > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
@@ -104,7 +104,7 @@
 {% if len (current_user.messages) > 0 %}
 <h2>{{ _("Messages") }}</h2>
 <div class="message_list">
-    {% for msg in reversed(current_user.messages) %}
+    {% for msg in current_user.messages|reverse %}
     <div class="message">
         {% if len(msg.subject) > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
