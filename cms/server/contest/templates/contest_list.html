@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}
-    Choose a contest
+    {% trans %}Choose a contest{% endtrans %}
 {% endblock title %}
 {% block body %}
     <div class="hero-unit contest-list">
-        <h3>Choose a contest</h3>
+        <h3>{% trans %}Choose a contest{% endtrans %}</h3>
         <ul class="nav nav-list">
     {% for c_name, c_iter in contest_list|dictsort(by="key") %}
             <li>
