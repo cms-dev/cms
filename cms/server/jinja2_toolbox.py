@@ -30,10 +30,37 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iterkeys, itervalues, iteritems
 
 from jinja2 import Environment, StrictUndefined
+
+import cmscommon.mimetypes
+from cms.grading.scoretypes import get_score_type
+from cms.grading.tasktypes import get_task_type
+from cms.server.contest.formatting import get_score_class
+
+
+def instrument_generic_toolbox(env):
+    env.globals["iterkeys"] = iterkeys
+    env.globals["itervalues"] = itervalues
+    env.globals["iteritems"] = iteritems
+
+    env.globals["get_task_type"] = get_task_type
+    env.globals["get_score_type"] = get_score_type
+
+    env.globals["get_score_class"] = get_score_class()
+
+    env.globals["get_mimetype_for_file_name"] = \
+        cmscommon.mimetypes.get_type_for_file_name
+    env.globals["get_name_for_mimetype"] = \
+        cmscommon.mimetypes.get_name_for_type
+    env.globals["get_icon_for_mimetype"] = \
+        cmscommon.mimetypes.get_icon_for_type
 
 
 GLOBAL_ENVIRONMENT = Environment(
     trim_blocks=True, lstrip_blocks=True, undefined=StrictUndefined,
     autoescape=True, cache_size=-1, auto_reload=False)
+
+
+instrument_generic_toolbox(GLOBAL_ENVIRONMENT)
