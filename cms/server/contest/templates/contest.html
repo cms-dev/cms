@@ -11,7 +11,7 @@
 var LANGUAGES = {
 {% for lang in contest.languages %}
     '{{ lang }}': {
-{% for extension in get_language(lang).source_extensions %}
+{% for extension in (lang|to_language).source_extensions %}
         '{{ extension }}': true,
 {% endfor %}
     },
