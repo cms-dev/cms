@@ -1,11 +1,11 @@
 
 
-{% if tr is not None and tr.evaluated() %}
+{% if tr is not none and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
 <pre>{{ format_status_text(tr.evaluation_text, translation=translation) }}</pre>
 {% endif %}
 
-{% if tr is not None and tr.compiled() %}
+{% if tr is not none and tr.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
 <table class="table table-bordered" style="table-layout: fixed;">
     <tbody>
@@ -16,7 +16,7 @@
         <tr>
             <th>{{ _("Compilation time:") }}</th>
             <td>
-{% if tr.compilation_time is None %}
+{% if tr.compilation_time is none %}
     {{ _("N/A") }}
 {% else %}
     {{ translation.format_duration(tr.compilation_time) }}
@@ -25,7 +25,7 @@
         </tr>
             <th>{{ _("Memory used:") }}</th>
             <td>
-{% if tr.compilation_memory is None %}
+{% if tr.compilation_memory is none %}
     {{ _("N/A") }}
 {% else %}
     {{ translation.format_size(tr.compilation_memory) }}
@@ -34,11 +34,11 @@
         </tr>
     </tbody>
 </table>
-{% if tr.compilation_stdout is not None %}
+{% if tr.compilation_stdout is not none %}
 <h4>{{ _("Standard output") }}</h4>
 <pre>{{ tr.compilation_stdout }}</pre>
 {% endif %}
-{% if tr.compilation_stderr is not None %}
+{% if tr.compilation_stderr is not none %}
 <h4>{{ _("Standard error") }}</h4>
 <pre>{{ tr.compilation_stderr }}</pre>
 {% endif %}

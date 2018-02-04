@@ -92,7 +92,7 @@ $(document).ready(function () {
   <p><strong>{{ _("You may submit any subset of outputs in a single submission.") }}</strong></p>
 {% endif %}
 
-{% if submissions_left is not None %}
+{% if submissions_left is not none %}
     <div class="span5">
         <p>
         {{ _("You can submit %(submissions_left)s more solution(s).") % {"submissions_left": submissions_left} }}
@@ -165,7 +165,7 @@ $(document).ready(function () {
 <div style="padding-bottom:10px">
     {% set tokens_info = contest.tokens_available(current_user, task, now) %}
     {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
-    {% set need_to_wait = tokens_info[2] is not None %}
+    {% set need_to_wait = tokens_info[2] is not none %}
     {% if can_play_token %}
         {% if tokens_info[0] == -1 %}
             {{ _("Right now, you have infinite tokens available on this task.") }}
@@ -178,7 +178,7 @@ $(document).ready(function () {
             {% set t = translation.format_datetime_smart(tokens_info[2], now, timezone) %}
             {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
         {% endif %}
-        {% if tokens_info[1] is not None %}
+        {% if tokens_info[1] is not none %}
             {% set t = translation.format_datetime_smart(tokens_info[1], now, timezone) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
         {% else %}
@@ -186,10 +186,10 @@ $(document).ready(function () {
         {% endif %}
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
-        {% if actual_phase == 0 and tokens_info[1] is not None %}
+        {% if actual_phase == 0 and tokens_info[1] is not none %}
             {% set t = translation.format_datetime_smart(tokens_info[1], now, timezone) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
-            {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
+            {% if tokens_info[2] is not none and tokens_info[2] > tokens_info[1] %}
                 {% set t = translation.format_datetime_smart(tokens_info[2], now, timezone) %}
                 {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
             {% endif %}
@@ -204,7 +204,7 @@ $(document).ready(function () {
 {% try %}
     {% set score_type = get_score_type(dataset=task.active_dataset) %}
 {% except %}
-    {% set score_type = None %}
+    {% set score_type = none %}
 {% endtry %}
 
 {% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
@@ -218,7 +218,7 @@ $(document).ready(function () {
         <col class="time"/>
 {% endif %}
         <col class="status"/>
-{% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+{% if score_type is not none and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
         <col class="public_score"/>
         <col class="total_score"/>
 {% else %}
@@ -242,7 +242,7 @@ $(document).ready(function () {
             <th class="time">{{ _("Time") }}</th>
 {% endif %}
             <th class="status">{{ _("Status") }}</th>
-{% if score_type is not None and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+{% if score_type is not none and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
             <th class="public_score">{{ _("Public score") }}</th>
             <th class="total_score">{{ _("Total score") }}</th>
 {% else %}
