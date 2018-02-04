@@ -208,7 +208,7 @@ $(document).ready(function () {
         {% for t_idx, t in enumerate(sorted(user_tests[task.id], key=lambda t: t.timestamp, reverse=True)) %}
             {% set t_idx = len(user_tests[task.id]) - t_idx %}
             {% set tr = t.get_result(t.task.active_dataset) %}
-            {% include user_test_row.html %}
+            {% include "user_test_row.html" %}
         {% endfor %}
     {% endif %}
     </tbody>
