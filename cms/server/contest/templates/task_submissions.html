@@ -105,12 +105,12 @@ $(document).ready(function () {
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
-{% for idx, filename in enumerate(task.submission_format|map(attribute="filename")) %}
+{% for filename in task.submission_format|map(attribute="filename") %}
                 <div class="control-group">
-                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", ": ") }}</label>
+                    <label class="control-label" for="input{{ loop.index0 }}">{{ filename.replace(".%l", ": ") }}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge"
-                               id="input{{ idx }}" name="{{ filename }}"
+                               id="input{{ loop.index0 }}" name="{{ filename }}"
                                onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]'))"/>
                     </div>
                 </div>
@@ -269,8 +269,9 @@ $(document).ready(function () {
         {% endif %}
         </tr>
     {% else %}
-        {% for s_idx, s in enumerate(submissions|sort(attribute="timestamp")|reverse) %}
-            {% set s_idx = len(submissions) - s_idx %}
+        {% for s in submissions|sort(attribute="timestamp")|reverse %}
+            {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
+            {% set s_idx = len(submissions) - loop.index0 %}
             {% set sr = s.get_result(s.task.active_dataset) %}
             {% include "submission_row.html" %}
         {% endfor %}

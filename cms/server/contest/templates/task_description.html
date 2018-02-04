@@ -111,8 +111,8 @@
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
     <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
-    {% for i, (l, c) in enumerate(compilation_commands|dictsort(by="key")) %}
-        {% if i > 0 %}
+    {% for l, c in compilation_commands|dictsort(by="key") %}
+        {% if not loop.first %}
 </tr>
 <tr>
         {% endif %}
