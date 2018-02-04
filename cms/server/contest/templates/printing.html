@@ -44,7 +44,7 @@
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous print jobs") }}</h2>
 
-{% set show_date = any(p.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for p in printjobs) %}
+{% set show_date = not printjobs|map(attribute="timestamp")|all("today") %}
 
 
 <table id="printjob_list" class="table table-bordered table-striped">

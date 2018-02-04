@@ -106,9 +106,9 @@
             <td colspan="2">{{ translation.format_size(task.active_dataset.memory_limit * 1024 * 1024) }}</td>
         </tr>
 {% endif %}
-{% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
+{% set compilation_commands = task_type.get_compilation_commands(task.submission_format|map(attribute="filename")|list) %}
 {% if compilation_commands is not None %}
-{% set compilation_commands = {lang: compilation_commands[lang] for lang in contest.languages} %}
+{% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
     <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
     {% for i, (l, c) in enumerate(sorted(iteritems(compilation_commands))) %}
@@ -136,8 +136,7 @@
         </p>
     {% elif tokens_contest == 2 %}
         <p>
-        {% set tokens = {k[6:]: v for k, v in iteritems(task.__dict__) if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, translation=translation) }}
+        {{ format_token_rules(task|extract_token_params, translation=translation) }}
         </p>
     {% elif tokens_tasks == 2 %}
         <p>
@@ -145,8 +144,7 @@
         </p>
     {% else %}
         <p>
-        {% set tokens = {k[6:]: v for k, v in iteritems(task.__dict__) if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, t_type="task", translation=translation) }}
+        {{ format_token_rules(task|extract_token_params, t_type="task", translation=translation) }}
         </p>
 
         <p>

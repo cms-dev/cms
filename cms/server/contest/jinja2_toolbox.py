@@ -30,10 +30,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import iteritems
 
 from jinja2 import PackageLoader
 
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
+
+
+def extract_token_params(o):
+    return {k[6:]: v
+            for k, v in iteritems(o.__dict__) if k.startswith("token_")}
+
+
+def instrument_cms_toolbox(env):
+    env.filters["extract_token_params"] = extract_token_params
 
 
 CWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
@@ -45,3 +55,6 @@ CWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
 # This compresses all leading/trailing whitespace and line breaks of
 # internationalized messages when translating and extracting them.
 CWS_ENVIRONMENT.policies['ext.i18n.trimmed'] = True
+
+
+instrument_cms_toolbox(CWS_ENVIRONMENT)
