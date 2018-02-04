@@ -82,7 +82,7 @@
         </a>
         {% elif files|length == 1 %}
             {% set filename = next(iterkeys(t.files)) %}
-            {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
+            {% set real_filename = filename|replace(".%l", get_language(t.language).source_extension) %}
         <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
             {{ _("Download") }}
         </a>
@@ -95,7 +95,7 @@
             <ul class="dropdown-menu">
             {% for filename in files %}
                 {% if t.language is not none %}
-                    {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
+                    {% set real_filename = filename|replace(".%l", get_language(t.language).source_extension) %}
                 {% else %}
                     {% set real_filename = filename %}
                 {% endif %}
