@@ -1,8 +1,6 @@
 {% extends contest.html %}
 {% block core %}
 
-{% from cms.server.contest.formatting import format_token_rules %}
-{% from cms.grading.tasktypes import get_task_type %}
 
 {% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
 
@@ -168,12 +166,11 @@
     <h2>{{ _("Attachments") }}</h2>
     <div id="attachments">
         <ul>
-    {% from cmscommon import mimetypes %}
     {% for filename, attachment in sorted(iteritems(task.attachments)) %}
-        {% set mime_type = mimetypes.get_type_for_file_name(filename) %}
+        {% set mime_type = get_mimetype_for_file_name(filename) %}
         {% if mime_type is not None %}
-            {% set type_name = mimetypes.get_name_for_type(mime_type) %}
-            {% set type_icon = mimetypes.get_icon_for_type(mime_type) %}
+            {% set type_name = get_name_for_mimetype(mime_type) %}
+            {% set type_icon = get_icon_for_mimetype(mime_type) %}
         {% else %}
             {% set type_name = None %}
             {% set type_icon = None %}

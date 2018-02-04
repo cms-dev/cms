@@ -48,7 +48,8 @@ import tornado.web
 from sqlalchemy import func
 
 from cms import config
-from cms.db import Task, UserTest, UserTestFile, UserTestManager
+from cms.db import Task, UserTest, UserTestFile, UserTestManager, \
+    UserTestResult
 from cms.grading.languagemanager import get_language
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required, multi_contest
@@ -119,6 +120,7 @@ class UserTestInterfaceHandler(ContestHandler):
 
         self.render("test_interface.html", default_task=default_task,
                     user_tests=user_tests, user_tests_left=user_tests_left,
+                    UserTestResult=UserTestResult,
                     **self.r_params)
 
 

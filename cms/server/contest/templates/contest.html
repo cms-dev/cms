@@ -6,14 +6,6 @@
 
 {% block js %}
 
-{% import re %}
-{% import time %}
-{% import json %}
-{% from cms.server.contest.formatting import get_score_class, encode_for_url %}
-{% from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES %}
-{% from cms.grading.languagemanager import get_language %}
-{% from cms.db import SubmissionResult %}
-{% from cmscommon.datetime import make_timestamp, utc %}
 
     <script>
 var LANGUAGES = {

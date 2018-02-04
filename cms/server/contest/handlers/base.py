@@ -49,6 +49,7 @@ from werkzeug.http import parse_accept_header
 from cms.db import Contest
 from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
+from cmscommon.datetime import utc as utc_tzinfo
 
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,7 @@ class BaseHandler(CommonRequestHandler):
         """
         ret = {}
         ret["now"] = self.timestamp
+        ret["utc"] = utc_tzinfo
         ret["url"] = self.url
 
         ret["available_translations"] = self.available_translations

@@ -45,6 +45,7 @@ import tornado.web
 
 from cms import config
 from cms.db import Participation, PrintJob, User
+from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import actual_phase_required, filter_ascii, multi_contest
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.crypto import validate_password
@@ -375,4 +376,7 @@ class DocumentationHandler(ContestHandler):
     @tornado.web.authenticated
     @multi_contest
     def get(self):
-        self.render("documentation.html", **self.r_params)
+        self.render("documentation.html",
+                    COMPILATION_MESSAGES=COMPILATION_MESSAGES,
+                    EVALUATION_MESSAGES=EVALUATION_MESSAGES,
+                    **self.r_params)

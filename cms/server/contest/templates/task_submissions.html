@@ -87,7 +87,6 @@ $(document).ready(function () {
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
 
-{% from cms.grading.tasktypes import get_task_type %}
 {% set task_type = get_task_type(dataset=task.active_dataset) %}
 {% if task_type.ALLOW_PARTIAL_SUBMISSION %}
   <p><strong>{{ _("You may submit any subset of outputs in a single submission.") }}</strong></p>
@@ -202,14 +201,12 @@ $(document).ready(function () {
 {% endif %}
 
 
-{% from cms.grading.scoretypes import get_score_type %}
 {% try %}
     {% set score_type = get_score_type(dataset=task.active_dataset) %}
 {% except %}
     {% set score_type = None %}
 {% endtry %}
 
-{% from cmscommon.datetime import utc %}
 {% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
 
 
