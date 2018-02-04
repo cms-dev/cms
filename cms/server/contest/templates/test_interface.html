@@ -69,7 +69,7 @@ $(document).ready(function () {
 
 
 <ul class="nav nav-tabs">
-{% for i, task in enumerate(contest.tasks) %}
+{% for task in contest.tasks %}
     {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
     <li{% if task == default_task %} class="active"{% endif %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
@@ -78,7 +78,7 @@ $(document).ready(function () {
 </ul>
 
 <div class="tab-content">
-{% for i, task in enumerate(contest.tasks) %}
+{% for task in contest.tasks %}
     {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
 <div class="tab-pane{% if task == default_task %} active{% endif %}" id="test_{{ task.name }}">
@@ -98,12 +98,12 @@ $(document).ready(function () {
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "test") }}" method="POST">
             {% module xsrf_form_html() %}
             <fieldset>
-{% for idx, filename in enumerate(task.submission_format|map(attribute="filename")|list + task_type.get_user_managers(task.submission_format)) %}
+{% for filename in task.submission_format|map(attribute="filename")|list + task_type.get_user_managers(task.submission_format) %}
                 <div class="control-group">
-                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
+                    <label class="control-label" for="input{{ loop.index0 }}">{{ filename.replace(".%l", "") }}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge"
-                               id="input{{ idx }}" name="{{ filename }}"
+                               id="input{{ loop.index0 }}" name="{{ filename }}"
                                onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]').not('#input_file'))"/>
                     </div>
                 </div>
@@ -205,8 +205,9 @@ $(document).ready(function () {
             <td colspan="7" class="no_user_tests">{{ _("no tests yet") }}</td>
         </tr>
     {% else %}
-        {% for t_idx, t in enumerate(user_tests[task.id]|sort(attribute="timestamp")|reverse) %}
-            {% set t_idx = len(user_tests[task.id]) - t_idx %}
+        {% for t in user_tests[task.id]|sort(attribute="timestamp")|reverse %}
+            {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
+            {% set t_idx = len(user_tests[task.id]) - loop.index0 %}
             {% set tr = t.get_result(t.task.active_dataset) %}
             {% include "user_test_row.html" %}
         {% endfor %}
