@@ -272,7 +272,7 @@ $(document).ready(function () {
         {% for s in submissions|sort(attribute="timestamp")|reverse %}
             {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
             {% set s_idx = submissions|length - loop.index0 %}
-            {% set sr = s.get_result(s.task.active_dataset) %}
+            {% set sr = s.get_result(s.task.active_dataset) or undefined %}
             {% include "submission_row.html" %}
         {% endfor %}
     {% endif %}

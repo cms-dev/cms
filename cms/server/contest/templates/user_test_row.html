@@ -1,37 +1,24 @@
-
+{% set status = tr.get_status() if ts is defined else UserTestResult.COMPILING %}
+<tr data-user-test="{{ t_idx }}" data-status="{{ status }}">
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>"|format(t.timestamp|format_datetime) %}
+    <td class="datetime">{{ t.timestamp|format_datetime }}</td>
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>"|format(t.timestamp|format_time) %}
+    <td class="time">{{ t.timestamp|format_time }}</td>
 {% endif %}
-{% if tr is none or not tr.compiled() %}
-<tr data-user-test="{{ t_idx }}" data-status="1">
-    {% raw col1 %}
     <td class="status">
+{% if status == UserTestResult.COMPILING %}
         {% trans %}Compiling...{% endtrans %}
-    </td>
-{% elif tr.compilation_outcome == "fail" %}
-<tr data-user-test="{{ t_idx }}" data-status="2">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == UserTestResult.COMPILATION_FAILED %}
         {% trans %}Compilation failed{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
-    </td>
-{% elif not tr.evaluated() %}
-<tr data-user-test="{{ t_idx }}" data-status="3">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == UserTestResult.EVALUATING %}
         {% trans %}Executing...{% endtrans %}
-    </td>
-{% else %}
-<tr data-user-test="{{ t_idx }}" data-status="4">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == UserTestResult.EVALUATED %}
         {% trans %}Executed{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
-    </td>
 {% endif %}
-{% if tr is none or tr.execution_time is none %}
+    </td>
+{% if tr is undefined or tr.execution_time is none %}
     <td class="time undefined">
         {% trans %}N/A{% endtrans %}
     </td>
@@ -40,7 +27,7 @@
         {{ tr.execution_time|format_duration }}
     </td>
 {% endif %}
-{% if tr is none or tr.execution_memory is none %}
+{% if tr is undefined or tr.execution_memory is none %}
     <td class="memory undefined">
         {% trans %}N/A{% endtrans %}
     </td>
@@ -55,7 +42,7 @@
         </a>
     </td>
     <td class="output">
-    {% if tr is none or not tr.compiled() or (tr.compilation_outcome == 'ok' and not tr.evaluated()) %}
+    {% if status == UserTestResult.COMPILING or status == UserTestResult.EVALUATING %}
         <a class="btn btn-primary disabled">
             {% trans %}Wait...{% endtrans %}
         </a>

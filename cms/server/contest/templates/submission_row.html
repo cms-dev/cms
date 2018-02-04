@@ -1,81 +1,45 @@
+{% set status = sr.get_status() if sr is defined else SubmissionResult.COMPILING  %}
+<tr data-submission="{{ s_idx }}" data-status="{{ status }}">
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>"|format(s.timestamp|format_datetime) %}
+    <td class="datetime">{{ s.timestamp|format_datetime }}</td>
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>"|format(s.timestamp|format_time) %}
+    <td class="time">{{ s.timestamp|format_time }}</td>
 {% endif %}
-{% if sr is none or not sr.compiled() %}
-<tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.COMPILING }}">
-    {% raw col1 %}
     <td class="status">
+{% if status == SubmissionResult.COMPILING %}
         {% trans %}Compiling...{% endtrans %}
-    </td>
-    {% if score_type is defined and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-{% elif sr.compilation_outcome == "fail" %}
-<tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.COMPILATION_FAILED }}">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == SubmissionResult.COMPILATION_FAILED %}
         {% trans %}Compilation failed{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
-    </td>
-    {% if score_type is defined and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-{% elif not sr.evaluated() %}
-<tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.EVALUATING }}">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == SubmissionResult.EVALUATING %}
         {% trans %}Evaluating...{% endtrans %}
-    </td>
-    {% if score_type is defined and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-{% elif not sr.scored() %}
-<tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.SCORING }}">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == SubmissionResult.SCORING %}
         {% trans %}Scoring...{% endtrans %}
-    </td>
-    {% if score_type is defined and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
-    {% endif %}
-{% else %}
-<tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.SCORED }}">
-    {% raw col1 %}
-    <td class="status">
+{% elif status == SubmissionResult.SCORED %}
         {% trans %}Evaluated{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
+{% endif %}
     </td>
-
-    {% if score_type.max_public_score > 0 %}
+{% if score_type is defined and score_type.max_public_score > 0 %}
+    {% if status == SubmissionResult.SCORED %}
     <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) }}">
         {{ score_type.format_score(sr.public_score, score_type.max_public_score, sr.public_score_details, task.score_precision, translation=translation) }}
     </td>
+    {% else %}
+    <td class="public_score undefined">
+        {% trans %}N/A{% endtrans %}
+    </td>
     {% endif %}
-
-    {% if score_type.max_public_score != score_type.max_score %}
-        {% if s.token is not none or actual_phase == 3 %}
+{% endif %}
+{% if score_type is defined and score_type.max_public_score < score_type.max_score %}
+    {% if status == SubmissionResult.SCORED and (s.token is not none or actual_phase == 3) %}
     <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
         {{ score_type.format_score(sr.score, score_type.max_score, sr.score_details, task.score_precision, translation=translation) }}
     </td>
-        {% else %}
+    {% else %}
     <td class="total_score undefined">
         {% trans %}N/A{% endtrans %}
     </td>
-        {% endif %}
     {% endif %}
 {% endif %}
 {% if actual_phase >= +3 %}
