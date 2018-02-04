@@ -85,7 +85,7 @@ $(document).ready(function () {
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
 
-{% if user_tests_left[task.id] is not None %}
+{% if user_tests_left[task.id] is not none %}
     <div class="span5">
         <p>
         {{ _("You can submit %(user_tests_left)s more test(s).") % {"user_tests_left": user_tests_left[task.id]} }}
