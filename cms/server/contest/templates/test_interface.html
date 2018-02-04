@@ -132,7 +132,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if not any(task.submission_format|map(attribute="filename")|select("endswith", ".%l")) %}
+{% if task.submission_format|map(attribute="filename")|select("endswith", ".%l")|list|length == 0 %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "test") }}" method="POST">
             {% module xsrf_form_html() %}
@@ -167,7 +167,7 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 
-{% set show_date = any(user_tests[task.id]|map(attribute="timestamp")|map("astimezone", timezone)|map(attribute="date")|map("call")|select("ne", (now|astimezone(timezone)).date())) %}
+{% set show_date = user_tests[task.id]|map(attribute="timestamp")|map("astimezone", timezone)|map(attribute="date")|map("call")|select("ne", (now|astimezone(timezone)).date())|list|length > 0 %}
 
 
 <table class="user_test_list table table-bordered table-striped" data-task="{{ task.name }}">
