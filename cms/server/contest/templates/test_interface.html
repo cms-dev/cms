@@ -205,7 +205,7 @@ $(document).ready(function () {
             <td colspan="7" class="no_user_tests">{{ _("no tests yet") }}</td>
         </tr>
     {% else %}
-        {% for t_idx, t in enumerate(sorted(user_tests[task.id], key=lambda t: t.timestamp, reverse=True)) %}
+        {% for t_idx, t in enumerate(user_tests[task.id]|sort(attribute="timestamp")|reverse) %}
             {% set t_idx = len(user_tests[task.id]) - t_idx %}
             {% set tr = t.get_result(t.task.active_dataset) %}
             {% include "user_test_row.html" %}
