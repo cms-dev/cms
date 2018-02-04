@@ -1,8 +1,8 @@
 
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>" % translation.format_datetime(t.timestamp, timezone) %}
+    {% set col1 = "<td class=\"datetime\">%s</td>"|format(translation.format_datetime(t.timestamp, timezone)) %}
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>" % translation.format_time(t.timestamp, timezone) %}
+    {% set col1 = "<td class=\"time\">%s</td>"|format(translation.format_time(t.timestamp, timezone)) %}
 {% endif %}
 {% if tr is none or not tr.compiled() %}
 <tr data-user-test="{{ t_idx }}" data-status="1">

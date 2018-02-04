@@ -186,7 +186,7 @@
         </tr>
     </thead>
     <tbody>
-{% set extensions = "[%s]" %  (contest.languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
+{% set extensions = "[%s]"|format(contest.languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
 {% for t_iter in contest.tasks %}
         <tr>
             <th>{{ t_iter.name }}</th>
