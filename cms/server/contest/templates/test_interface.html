@@ -200,14 +200,14 @@ $(document).ready(function () {
         </tr>
     </thead>
     <tbody>
-    {% if len(user_tests[task.id]) == 0 %}
+    {% if user_tests[task.id]|length == 0 %}
         <tr>
             <td colspan="7" class="no_user_tests">{{ _("no tests yet") }}</td>
         </tr>
     {% else %}
         {% for t in user_tests[task.id]|sort(attribute="timestamp")|reverse %}
             {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
-            {% set t_idx = len(user_tests[task.id]) - loop.index0 %}
+            {% set t_idx = user_tests[task.id]|length - loop.index0 %}
             {% set tr = t.get_result(t.task.active_dataset) %}
             {% include "user_test_row.html" %}
         {% endfor %}
