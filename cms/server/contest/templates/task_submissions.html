@@ -269,7 +269,7 @@ $(document).ready(function () {
         {% endif %}
         </tr>
     {% else %}
-        {% for s_idx, s in enumerate(sorted(submissions, key=lambda s: s.timestamp, reverse=True)) %}
+        {% for s_idx, s in enumerate(submissions|sort(attribute="timestamp")|reverse) %}
             {% set s_idx = len(submissions) - s_idx %}
             {% set sr = s.get_result(s.task.active_dataset) %}
             {% include "submission_row.html" %}
