@@ -7,57 +7,57 @@
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.COMPILING }}">
     {% raw col1 %}
     <td class="status">
-        {{ _("Compiling...") }}
+        {% trans %}Compiling...{% endtrans %}
     </td>
     {% if score_type is not none and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
     {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% elif sr.compilation_outcome == "fail" %}
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.COMPILATION_FAILED }}">
     {% raw col1 %}
     <td class="status">
-        {{ _("Compilation failed") }}
-        <a class="details">{{ _("details") }}</a>
+        {% trans %}Compilation failed{% endtrans %}
+        <a class="details">{% trans %}details{% endtrans %}</a>
     </td>
     {% if score_type is not none and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
     {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% elif not sr.evaluated() %}
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.EVALUATING }}">
     {% raw col1 %}
     <td class="status">
-        {{ _("Evaluating...") }}
+        {% trans %}Evaluating...{% endtrans %}
     </td>
     {% if score_type is not none and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
     {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% elif not sr.scored() %}
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.SCORING }}">
     {% raw col1 %}
     <td class="status">
-        {{ _("Scoring...") }}
+        {% trans %}Scoring...{% endtrans %}
     </td>
     {% if score_type is not none and score_type.max_public_score != 0 %}
-    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
     {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
-    <td class="total_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% else %}
 <tr data-submission="{{ s_idx }}" data-status="{{ SubmissionResult.SCORED }}">
     {% raw col1 %}
     <td class="status">
-        {{ _("Evaluated") }}
-        <a class="details">{{ _("details") }}</a>
+        {% trans %}Evaluated{% endtrans %}
+        <a class="details">{% trans %}details{% endtrans %}</a>
     </td>
 
     {% if score_type.max_public_score > 0 %}
@@ -73,7 +73,7 @@
     </td>
         {% else %}
     <td class="total_score undefined">
-        {{ _("N/A") }}
+        {% trans %}N/A{% endtrans %}
     </td>
         {% endif %}
     {% endif %}
@@ -94,7 +94,7 @@
         {# the common case. Yet, it still allows the marginal case of both 'foo.%l' and 'foo.c' in the submission format. #}
         {% if s.files|length == 0 %}
         <a class="btn disabled">
-            {{ _("None") }}
+            {% trans %}None{% endtrans %}
         </a>
         {% elif s.files|length == 1 %}
             {% set filename = next(iterkeys(s.files)) %}
@@ -102,12 +102,12 @@
                 {% set filename = filename|replace(".%l", (s.language|to_language).source_extension) %}
             {% endif %}
         <a class="btn" href="{{ contest_url("tasks", task.name, "submissions", s_idx, "files", filename) }}">
-            {{ _("Download") }}
+            {% trans %}Download{% endtrans %}
         </a>
         {% else %}
         <div class="btn-group">
             <a class="btn dropdown-toggle" data-toggle="dropdown">
-                {{ _("Download") }}
+                {% trans %}Download{% endtrans %}
                 <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
@@ -132,18 +132,18 @@
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
     <td class="token">
         {% if s.token is not none %}
-        <a class="btn disabled">{{ _("Played") }}</a>
+        <a class="btn disabled">{% trans %}Played{% endtrans %}</a>
         {% else %}
             {# TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. #}
             {% if can_play_token and not need_to_wait %}
         <form action="{{ contest_url("tasks", task.name, "submissions", s_idx, "token") }}" method="POST">
             {{ xsrf_form_html|safe }}
-            <button type="submit" class="btn btn-warning">{{ _("Play!") }}</button>
+            <button type="submit" class="btn btn-warning">{% trans %}Play!{% endtrans %}</button>
         </form>
             {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not none) %}
-        <a class="btn btn-warning disabled">{{ _("Wait...") }}</a>
+        <a class="btn btn-warning disabled">{% trans %}Wait...{% endtrans %}</a>
             {% else %}
-        <a class="btn disabled">{{ _("No tokens") }}</a>
+        <a class="btn disabled">{% trans %}No tokens{% endtrans %}</a>
             {% endif %}
         {% endif %}
     </td>

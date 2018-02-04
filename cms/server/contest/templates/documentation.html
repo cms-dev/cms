@@ -3,31 +3,31 @@
 <div class="span9">
 
 <div class="page-header">
-    <h1>{{ _("Documentation") }}</h1>
+    <h1>{% trans %}Documentation{% endtrans %}</h1>
 </div>
 
-<h2>{{ _("Programming languages and libraries") }}</h2>
+<h2>{% trans %}Programming languages and libraries{% endtrans %}</h2>
 
 {% if contest.languages|map("to_language")|map(attribute="source_extensions")|any("contains", ".cpp") %}
 <h3>C++</h3>
 
-<p><a href="{{ contest_url("stl", "index.html") }}">{{ _("Standard Template Library") }}</a></p>
+<p><a href="{{ contest_url("stl", "index.html") }}">{% trans %}Standard Template Library{% endtrans %}</a></p>
 {% endif %}
 
 {% if contest.languages|map("to_language")|map(attribute="source_extensions")|any("contains", ".java") %}
 <h3>Java</h3>
 
-<p>{{ _("The main Java class of the solution should have exactly the same name as the task.") }}</p>
+<p>{% trans %}The main Java class of the solution should have exactly the same name as the task.{% endtrans %}</p>
 {% endif %}
 
 
-<h2>{{ _("Submission details for compilation") }}</h2>
+<h2>{% trans %}Submission details for compilation{% endtrans %}</h2>
 
 <table class="table table-bordered">
   <thead>
     <tr>
-      <th style="width: 30%;">{{ _("Message") }}</th>
-      <th>{{ _("Explanation") }}</th>
+      <th style="width: 30%;">{% trans %}Message{% endtrans %}</th>
+      <th>{% trans %}Explanation{% endtrans %}</th>
     </tr>
   </thead>
   <tbody>
@@ -40,13 +40,13 @@
   </tbody>
 </table>
 
-<h2>{{ _("Submission details for evaluation") }}</h2>
+<h2>{% trans %}Submission details for evaluation{% endtrans %}</h2>
 
 <table class="table table-bordered">
   <thead>
     <tr>
-      <th style="width: 30%;">{{ _("Message") }}</th>
-      <th>{{ _("Explanation") }}</th>
+      <th style="width: 30%;">{% trans %}Message{% endtrans %}</th>
+      <th>{% trans %}Explanation{% endtrans %}</th>
     </tr>
   </thead>
   <tbody>

@@ -145,7 +145,8 @@ class BaseHandler(CommonRequestHandler):
         ret["automatic_translation"] = self.automatic_translation
 
         ret["translation"] = self.translation
-        ret["_"] = self._
+        ret["gettext"] = self._
+        ret["ngettext"] = self.n_
 
         ret["xsrf_form_html"] = self.xsrf_form_html()
 

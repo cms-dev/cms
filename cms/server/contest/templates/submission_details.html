@@ -7,27 +7,27 @@
 {% endif %}
 
 {% if sr is not none and sr.compiled() %}
-<h3>{{ _("Compilation output") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
+<h3>{% trans %}Compilation output{% endtrans %}</h3>{# TODO: trim long outputs and add facility to see raw #}
 <table class="table table-bordered" style="table-layout: fixed;">
     <tbody>
         <tr>
-            <th>{{ _("Compilation outcome:") }}</th>
+            <th>{% trans %}Compilation outcome:{% endtrans %}</th>
             <td>{{ sr.compilation_text|format_status_text }}</td>
         </tr>
         <tr>
-            <th>{{ _("Compilation time:") }}</th>
+            <th>{% trans %}Compilation time:{% endtrans %}</th>
             <td>
 {% if sr.compilation_time is none %}
-    {{ _("N/A") }}
+    {% trans %}N/A{% endtrans %}
 {% else %}
     {{ sr.compilation_time|format_duration }}
 {% endif %}
             </td>
         </tr>
-            <th>{{ _("Memory used:") }}</th>
+            <th>{% trans %}Memory used:{% endtrans %}</th>
             <td>
 {% if sr.compilation_memory is none %}
-    {{ _("N/A") }}
+    {% trans %}N/A{% endtrans %}
 {% else %}
     {{ sr.compilation_memory|format_size }}
 {% endif %}
@@ -36,11 +36,11 @@
     </tbody>
 </table>
 {% if sr.compilation_stdout is not none %}
-<h4>{{ _("Standard output") }}</h4>
+<h4>{% trans %}Standard output{% endtrans %}</h4>
 <pre>{{ sr.compilation_stdout }}</pre>
 {% endif %}
 {% if sr.compilation_stderr is not none %}
-<h4>{{ _("Standard error") }}</h4>
+<h4>{% trans %}Standard error{% endtrans %}</h4>
 <pre>{{ sr.compilation_stderr }}</pre>
 {% endif %}
 {% endif %}

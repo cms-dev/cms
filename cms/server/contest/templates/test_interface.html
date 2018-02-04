@@ -7,7 +7,7 @@ $(document).on("click", ".user_test_list tbody tr td.status .details", function 
     var user_test_id = $this.parent().parent().attr("data-user-test");
     var modal = $("#user_test_detail");
     var modal_body = modal.children(".modal-body");
-    modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{{ _("loading...") }}</div>');
+    modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
     modal_body.load(utils.contest_url("tasks", task_id, "tests", user_test_id, "details"));
     modal.modal("show");
 });
@@ -19,11 +19,11 @@ update_user_test_row = function (task_id, user_test_id, data) {
     if (data["status"] == 4) {
         if (data["output"]) {
             var btn = row.children("td.output").children("a.btn");
-            btn.text('{{ _("Download") }}');
+            btn.text('{% trans %}Download{% endtrans %}');
             btn.removeClass("disabled");
             btn.attr("href", utils.contest_url("tasks", task_id, "tests", user_test_id, "output"));
         } else {
-            row.children("td.output").children("a.btn").text("{{ _("N/A") }}");
+            row.children("td.output").children("a.btn").text("{% trans %}N/A{% endtrans %}");
         }
         if (data["time"] != null) {
             row.children("td.time").removeClass("undefined");
@@ -34,7 +34,7 @@ update_user_test_row = function (task_id, user_test_id, data) {
             row.children("td.memory").text(data["memory"]);
         }
     } else if (data["status"] == 2) {
-        row.children("td.output").children("a.btn").text("{{ _("N/A") }}");
+        row.children("td.output").children("a.btn").text("{% trans %}N/A{% endtrans %}");
     } else {
         schedule_update_user_test_row(task_id, user_test_id);
     }
@@ -64,7 +64,7 @@ $(document).ready(function () {
 <div class="span9 test_interface">
 
 <div class="page-header">
-    <h1>{{ _("Testing") }}</h1>
+    <h1>{% trans %}Testing{% endtrans %}</h1>
 </div>
 
 
@@ -83,12 +83,12 @@ $(document).ready(function () {
     {% if task_type.testable %}
 <div class="tab-pane{% if task == default_task %} active{% endif %}" id="test_{{ task.name }}">
 
-<h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
+<h2 style="margin-bottom: 10px">{% trans %}Submit a test{% endtrans %}</h2>
 
 {% if user_tests_left[task.id] is not none %}
     <div class="span5">
         <p>
-        {{ _("You can submit %(user_tests_left)s more test(s).") % {"user_tests_left": user_tests_left[task.id]} }}
+        {% trans user_tests_left=user_tests_left[task.id] %}You can submit {{ user_tests_left }} more test(s).{% endtrans %}
         </p>
     </div>
 {% endif %}
@@ -109,7 +109,7 @@ $(document).ready(function () {
                 </div>
 {% endfor %}
                 <div class="control-group">
-                    <label class="control-label" for="input_file">{{ _("input") }}</label>
+                    <label class="control-label" for="input_file">{% trans %}input{% endtrans %}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_file" name="input"/>
                     </div>
@@ -125,8 +125,8 @@ $(document).ready(function () {
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                        <button type="submit" class="btn btn-success">{% trans %}Submit{% endtrans %}</button>
+                        <button type="reset" class="btn">{% trans %}Reset{% endtrans %}</button>
                     </div>
                 </div>
             </fieldset>
@@ -138,7 +138,7 @@ $(document).ready(function () {
             {{ xsrf_form_html|safe }}
             <fieldset>
                 <div class="control-group">
-                    <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
+                    <label class="control-label" for="input_zip">{% trans %}submission.zip{% endtrans %}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
                     </div>
@@ -154,8 +154,8 @@ $(document).ready(function () {
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
-                        <button type="reset" class="btn">{{ _("Reset") }}</button>
+                        <button type="submit" class="btn btn-success">{% trans %}Submit{% endtrans %}</button>
+                        <button type="reset" class="btn">{% trans %}Reset{% endtrans %}</button>
                     </div>
                 </div>
             </fieldset>
@@ -165,7 +165,7 @@ $(document).ready(function () {
 </div>
 
 
-<h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
+<h2 style="margin: 40px 0 10px">{% trans %}Previous tests{% endtrans %}</h2>
 
 {% set show_date = not user_tests[task.id]|map(attribute="timestamp")|all("today") %}
 
@@ -187,22 +187,22 @@ $(document).ready(function () {
     <thead>
         <tr>
 {% if show_date %}
-            <th class="datetime">{{ _("Date and time") }}</th>
+            <th class="datetime">{% trans %}Date and time{% endtrans %}</th>
 {% else %}
-            <th class="time">{{ _("Time") }}</th>
+            <th class="time">{% trans %}Time{% endtrans %}</th>
 {% endif %}
-            <th class="status">{{ _("Status") }}</th>
-            <th class="time">{{ _("Execution time") }}</th>
-            <th class="memory">{{ _("Memory used") }}</th>
-            <th class="input">{{ _("Input") }}</th>
-            <th class="output">{{ _("Output") }}</th>
-            <th class="files">{{ _("Files") }}</th>
+            <th class="status">{% trans %}Status{% endtrans %}</th>
+            <th class="time">{% trans %}Execution time{% endtrans %}</th>
+            <th class="memory">{% trans %}Memory used{% endtrans %}</th>
+            <th class="input">{% trans %}Input{% endtrans %}</th>
+            <th class="output">{% trans %}Output{% endtrans %}</th>
+            <th class="files">{% trans %}Files{% endtrans %}</th>
         </tr>
     </thead>
     <tbody>
     {% if user_tests[task.id]|length == 0 %}
         <tr>
-            <td colspan="7" class="no_user_tests">{{ _("no tests yet") }}</td>
+            <td colspan="7" class="no_user_tests">{% trans %}no tests yet{% endtrans %}</td>
         </tr>
     {% else %}
         {% for t in user_tests[task.id]|sort(attribute="timestamp")|reverse %}
@@ -226,12 +226,12 @@ $(document).ready(function () {
 <div class="modal fade hide" id="user_test_detail">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
-        <h3>{{ _("Test details") }}</h3>
+        <h3>{% trans %}Test details{% endtrans %}</h3>
     </div>
     <div class="modal-body">
     </div>
     <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
+        <a href="#" class="btn" data-dismiss="modal">{% trans %}Close{% endtrans %}</a>
     </div>
 </div>
 

@@ -8,32 +8,32 @@
 <tr data-user-test="{{ t_idx }}" data-status="1">
     {% raw col1 %}
     <td class="status">
-        {{ _("Compiling...") }}
+        {% trans %}Compiling...{% endtrans %}
     </td>
 {% elif tr.compilation_outcome == "fail" %}
 <tr data-user-test="{{ t_idx }}" data-status="2">
     {% raw col1 %}
     <td class="status">
-        {{ _("Compilation failed") }}
-        <a class="details">{{ _("details") }}</a>
+        {% trans %}Compilation failed{% endtrans %}
+        <a class="details">{% trans %}details{% endtrans %}</a>
     </td>
 {% elif not tr.evaluated() %}
 <tr data-user-test="{{ t_idx }}" data-status="3">
     {% raw col1 %}
     <td class="status">
-        {{ _("Executing...") }}
+        {% trans %}Executing...{% endtrans %}
     </td>
 {% else %}
 <tr data-user-test="{{ t_idx }}" data-status="4">
     {% raw col1 %}
     <td class="status">
-        {{ _("Executed") }}
-        <a class="details">{{ _("details") }}</a>
+        {% trans %}Executed{% endtrans %}
+        <a class="details">{% trans %}details{% endtrans %}</a>
     </td>
 {% endif %}
 {% if tr is none or tr.execution_time is none %}
     <td class="time undefined">
-        {{ _("N/A") }}
+        {% trans %}N/A{% endtrans %}
     </td>
 {% else %}
     <td class="time">
@@ -42,7 +42,7 @@
 {% endif %}
 {% if tr is none or tr.execution_memory is none %}
     <td class="memory undefined">
-        {{ _("N/A") }}
+        {% trans %}N/A{% endtrans %}
     </td>
 {% else %}
     <td class="memory">
@@ -51,22 +51,22 @@
 {% endif %}
     <td class="input">
         <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "input") }}">
-            {{ _("Download") }}
+            {% trans %}Download{% endtrans %}
         </a>
     </td>
     <td class="output">
     {% if tr is none or not tr.compiled() or (tr.compilation_outcome == 'ok' and not tr.evaluated()) %}
         <a class="btn btn-primary disabled">
-            {{ _("Wait...") }}
+            {% trans %}Wait...{% endtrans %}
         </a>
     {% else %}
         {% if tr.output is none %}
         <a class="btn btn-primary disabled">
-            {{ _("N/A") }}
+            {% trans %}N/A{% endtrans %}
         </a>
         {% else %}
         <a class="btn btn-primary" href="{{ contest_url("tasks", task.name, "tests", t_idx, "output") }}">
-            {{ _("Download") }}
+            {% trans %}Download{% endtrans %}
         </a>
         {% endif %}
     {% endif %}
@@ -78,18 +78,18 @@
         {% set files = iterkeys(t.files)|list + iterkeys(t.managers)|list %}
         {% if files|length == 0 %}
         <a class="btn disabled">
-            {{ _("None") }}
+            {% trans %}None{% endtrans %}
         </a>
         {% elif files|length == 1 %}
             {% set filename = next(iterkeys(t.files)) %}
             {% set real_filename = filename|replace(".%l", (t.language|to_language).source_extension) %}
         <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
-            {{ _("Download") }}
+            {% trans %}Download{% endtrans %}
         </a>
         {% else %}
         <div class="btn-group">
             <a class="btn dropdown-toggle" data-toggle="dropdown">
-                {{ _("Download") }}
+                {% trans %}Download{% endtrans %}
                 <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">

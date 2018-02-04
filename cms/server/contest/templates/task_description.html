@@ -8,23 +8,23 @@
 
 
 <div class="page-header">
-    <h1>{% raw _("%(name)s (%(short_name)s) <small>description</small>") % {"name": escape(task.title), "short_name": escape(task.name)} %}</h1>
+    <h1>{% trans name=task.title, short_name=task.name %}{{ name }} ({{ short_name }}) <small>description</small>{% endtrans %}</h1>
 </div>
 
 
-<h2>{{ _("Statement") }}</h2>
+<h2>{% trans %}Statement{% endtrans %}</h2>
 
 {% if task.statements|length == 0 %}
 <div class="row statement no_statements">
     <div class="span9">
-        {{ _("no statement available") }}
+        {% trans %}no statement available{% endtrans %}
     </div>
 </div>
 {% elif task.statements|length == 1 %}
 <div class="row statement one_statement">
     <div class="span9">
     {% for lang_code in task.statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", lang_code) }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
+        <a href="{{ contest_url("tasks", task.name, "statements", lang_code) }}" class="btn btn-large btn-success">{% trans %}Download task statement{% endtrans %}</a>
     {% endfor %}
     </div>
 </div>
@@ -32,18 +32,18 @@
 <div class="statement many_statements">
     <div class="main_statements">
         <p>
-            {{ _("The statement for this task is available in multiple versions, in different languages.") }}
-            {{ _("You can see (and download) all of them using the list on the right.") }}
-            {{ _("Some suggested translations follow.") }}
+            {% trans %}The statement for this task is available in multiple versions, in different languages.{% endtrans %}
+            {% trans %}You can see (and download) all of them using the list on the right.{% endtrans %}
+            {% trans %}Some suggested translations follow.{% endtrans %}
         </p>
     {% set task_primary = primary_statements %}
     {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
         {% if statement.language in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
             {% if statement.language != statement.language_name %}
-                {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
+                {% trans lang=statement.language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
             {% else %}
-                {% raw _("Statement in %s") % escape(statement.language_name) %}
+                {% trans lang=statement.language_name %}Statement in {{ lang }}{% endtrans %}
             {% endif %}
         </a>
         {% endif %}
@@ -52,9 +52,9 @@
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
-                {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
+                {% trans lang=statement.language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
             {% else %}
-                {% raw _("Statement in %s") % escape(statement.language_name) %}
+                {% trans lang=statement.language_name %}Statement in {{ lang }}{% endtrans %}
             {% endif %}
         </a>
         {% endif %}
@@ -67,9 +67,9 @@
                 <li>
                     <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
         {% if statement.language != statement.language_name %}
-            {% raw _("<b>%s</b>") % escape(statement.language_name) %}
+            {% trans lang=statement.language_name %}<b>{{ lang }}</b>{% endtrans %}
         {% else %}
-            {% raw _("%s") % escape(statement.language_name) %}
+            {% trans lang=statement.language_name %}{{ lang }}{% endtrans %}
         {% endif %}
                     </a>
                 </li>
@@ -81,7 +81,7 @@
 {% endif %}
 
 
-<h2>{{ _("Some details") }}</h2>
+<h2>{% trans %}Some details{% endtrans %}</h2>
 
 <table class="table table-bordered table-nohover" style="table-layout: fixed">
     <colgroup>
@@ -91,18 +91,18 @@
     </colgroup>
     <tbody>
         <tr>
-            <th>{{ _("Type") }}</th>
+            <th>{% trans %}Type{% endtrans %}</th>
             <td colspan="2">{% set task_type = get_task_type(dataset=task.active_dataset) %}{{ task_type.name }}</td>
         </tr>
 {% if task.active_dataset.time_limit is not none %}
         <tr>
-            <th>{{ _("Time limit") }}</th>
+            <th>{% trans %}Time limit{% endtrans %}</th>
             <td colspan="2">{{ task.active_dataset.time_limit|format_duration(length="long") }}</td>
         </tr>
 {% endif %}
 {% if task.active_dataset.memory_limit is not none %}
         <tr>
-            <th>{{ _("Memory limit") }}</th>
+            <th>{% trans %}Memory limit{% endtrans %}</th>
             <td colspan="2">{{ (task.active_dataset.memory_limit * 1024 * 1024)|format_size }}</td>
         </tr>
 {% endif %}
@@ -110,7 +110,7 @@
 {% if compilation_commands is not none %}
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
-    <th rowspan="{{ compilation_commands|length }}">{{ _("Compilation commands") }}</th>
+    <th rowspan="{{ compilation_commands|length }}">{% trans %}Compilation commands{% endtrans %}</th>
     {% for l, c in compilation_commands|dictsort(by="key") %}
         {% if not loop.first %}
 </tr>
@@ -128,11 +128,11 @@
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
 <tr>
-    <th>{{ _("Tokens") }}</th>
+    <th>{% trans %}Tokens{% endtrans %}</th>
     <td colspan="2" class="token_rules">
     {% if tokens_contest == 2 and tokens_tasks == 2 %}
         <p>
-        {{ _("You have an infinite number of tokens.") }}
+        {% trans %}You have an infinite number of tokens.{% endtrans %}
         </p>
     {% elif tokens_contest == 2 %}
         <p>
@@ -140,7 +140,7 @@
         </p>
     {% elif tokens_tasks == 2 %}
         <p>
-        {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") % {"type_pl": _("tokens"), "contest_root": contest_url()} %}
+        {% trans type_pl=_("tokens"), contest_root=contest_url() %}You can find the rules for the {{ type_pl }} on the <a href="{{ contest_root }}">contest overview page</a>.{% endtrans %}
         </p>
     {% else %}
         <p>
@@ -148,8 +148,8 @@
         </p>
 
         <p>
-        {{ _("Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token.") }}
-        {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") % {"type_pl": _("contest-tokens"), "contest_root": contest_url()} %}
+        {% trans %}Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token.{% endtrans %}
+        {% trans type_pl=_("contest-tokens"), contest_root=contest_url() %}You can find the rules for the {{ type_pl }} on the <a href="{{ contest_root }}">contest overview page</a>.{% endtrans %}
         </p>
     {% endif %}
     </td>
@@ -161,7 +161,7 @@
 
 
 {% if task.attachments|length > 0 %}
-    <h2>{{ _("Attachments") }}</h2>
+    <h2>{% trans %}Attachments{% endtrans %}</h2>
     <div id="attachments">
         <ul>
     {% for filename, attachment in task.attachments|dictsort(by="key") %}
@@ -179,7 +179,7 @@
             {% if type_icon is not none %}
                     <img src="{{ url("static", "img", "mimetypes", "%s.png"|format(type_icon)) }}" alt="{{ mime_type }}" />
             {% else %}
-                    <img src="{{ url("static", "img", "mimetypes", "unknown.png") }}" alt="{{ _("unknown") }}" />
+                    <img src="{{ url("static", "img", "mimetypes", "unknown.png") }}" alt="{% trans %}unknown{% endtrans %}" />
             {% endif %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
