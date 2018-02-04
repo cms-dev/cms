@@ -34,6 +34,8 @@ from six import iterkeys, itervalues, iteritems
 
 from jinja2 import environmentfilter, Environment, StrictUndefined
 
+from cmscommon.datetime import make_timestamp
+
 
 @environmentfilter
 def dictselect(env, d, *args, **kwargs):
@@ -77,6 +79,7 @@ def instrument_generic_toolbox(env):
 
     env.filters["call"] = lambda c, *args, **kwargs: c(*args, **kwargs)
     env.filters["dictselect"] = dictselect
+    env.filters["make_timestamp"] = make_timestamp
 
     env.tests["contains"] = lambda s, p: p in s
     env.tests["endswith"] = lambda s, p: s.endswith(p)
