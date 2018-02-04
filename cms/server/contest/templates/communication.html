@@ -17,7 +17,7 @@
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% endif %}
-        <span class="timestamp">{{ translation.format_datetime_smart(msg.timestamp, now, timezone) }}</span>
+        <span class="timestamp">{{ msg.timestamp|format_datetime_smart }}</span>
         {% if msg.text|length > 0 %}
         <div class="body">{{ msg.text }}</div>
         {% endif %}
@@ -72,7 +72,7 @@
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% endif %}
-        <span class="timestamp">{{ translation.format_datetime_smart(msg.question_timestamp, now, timezone) }}</span>
+        <span class="timestamp">{{ msg.question_timestamp|format_datetime_smart }}</span>
         {% if msg.text|length > 0 %}
         <div class="body">{{ msg.text }}</div>
         {% endif %}
@@ -84,7 +84,7 @@
             {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
             {% endif %}
-        <span class="timestamp">{{ translation.format_datetime_smart(msg.reply_timestamp, now, timezone) }}</span>
+        <span class="timestamp">{{ msg.reply_timestamp|format_datetime_smart }}</span>
             {% if msg.reply_text|length > 0 %}
         <div class="body">{{ msg.reply_text }}</div>
             {% endif %}
@@ -111,7 +111,7 @@
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% endif %}
-        <span class="timestamp">{{ translation.format_datetime_smart(msg.timestamp, now, timezone) }}</span>
+        <span class="timestamp">{{ msg.timestamp|format_datetime_smart }}</span>
         {% if msg.text|length > 0 %}
         <div class="body">{{ msg.text }}</div>
         {% endif %}

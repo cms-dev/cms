@@ -12,7 +12,7 @@
     <tbody>
         <tr>
             <th>{{ _("Compilation outcome:") }}</th>
-            <td>{{ format_status_text(sr.compilation_text, translation=translation) }}</td>
+            <td>{{ sr.compilation_text|format_status_text }}</td>
         </tr>
         <tr>
             <th>{{ _("Compilation time:") }}</th>
@@ -20,7 +20,7 @@
 {% if sr.compilation_time is none %}
     {{ _("N/A") }}
 {% else %}
-    {{ translation.format_duration(sr.compilation_time) }}
+    {{ sr.compilation_time|format_duration }}
 {% endif %}
             </td>
         </tr>
@@ -29,7 +29,7 @@
 {% if sr.compilation_memory is none %}
     {{ _("N/A") }}
 {% else %}
-    {{ translation.format_size(sr.compilation_memory) }}
+    {{ sr.compilation_memory|format_size }}
 {% endif %}
             </td>
         </tr>

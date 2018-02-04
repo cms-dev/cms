@@ -97,13 +97,13 @@
 {% if task.active_dataset.time_limit is not none %}
         <tr>
             <th>{{ _("Time limit") }}</th>
-            <td colspan="2">{{ translation.format_duration(task.active_dataset.time_limit, length="long") }}</td>
+            <td colspan="2">{{ task.active_dataset.time_limit|format_duration(length="long") }}</td>
         </tr>
 {% endif %}
 {% if task.active_dataset.memory_limit is not none %}
         <tr>
             <th>{{ _("Memory limit") }}</th>
-            <td colspan="2">{{ translation.format_size(task.active_dataset.memory_limit * 1024 * 1024) }}</td>
+            <td colspan="2">{{ (task.active_dataset.memory_limit * 1024 * 1024)|format_size }}</td>
         </tr>
 {% endif %}
 {% set compilation_commands = task_type.get_compilation_commands(task.submission_format|map(attribute="filename")|list) %}
@@ -136,7 +136,7 @@
         </p>
     {% elif tokens_contest == 2 %}
         <p>
-        {{ format_token_rules(task|extract_token_params, translation=translation) }}
+        {{ task|extract_token_params|format_token_rules }}
         </p>
     {% elif tokens_tasks == 2 %}
         <p>
@@ -144,7 +144,7 @@
         </p>
     {% else %}
         <p>
-        {{ format_token_rules(task|extract_token_params, t_type="task", translation=translation) }}
+        {{ task|extract_token_params|format_token_rules(t_type="task") }}
         </p>
 
         <p>
@@ -183,7 +183,7 @@
             {% endif %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
-                        <span class="size">{{ translation.format_size(file_size) }}</span>
+                        <span class="size">{{ file_size|format_size }}</span>
                     </span>
             {% if type_name is not none %}
                     <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
