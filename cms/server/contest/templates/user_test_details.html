@@ -1,6 +1,4 @@
-{% from six import iterkeys, itervalues, iteritems %}
 
-{% from cms.grading import format_status_text %}
 
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{# TODO: trim long outputs and add facility to see raw #}

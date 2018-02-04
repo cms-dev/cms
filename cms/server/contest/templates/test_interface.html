@@ -58,7 +58,6 @@ $(document).ready(function () {
 
 {% block core %}
 
-{% from cms.grading.tasktypes import get_task_type %}
 
 {% if actual_phase == 0 or current_user.unrestricted %}
 
@@ -168,7 +167,6 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 
-{% from cmscommon.datetime import utc %}
 {% set show_date = any(t.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for t in user_tests[task.id]) %}
 
 
