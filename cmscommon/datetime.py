@@ -26,9 +26,9 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
+import os
 import sys
 import time
-import platform
 from datetime import tzinfo, timedelta, datetime
 from pytz import timezone, all_timezones
 
@@ -206,15 +206,16 @@ if sys.version_info >= (3, 3):
         """
         return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 
-# Taken from http://bugs.python.org/file19461/monotonic.py
+# Taken from http://bugs.python.org/file19461/monotonic.py and
+# http://stackoverflow.com/questions/1205722/how-do-i-get-monotonic-time-durations-in-python
+# and modified.
 else:
-    from ctypes import Structure, c_long, CDLL, c_int, POINTER, byref
+    from ctypes import Structure, c_long, CDLL, c_int, get_errno, POINTER, \
+        pointer
     from ctypes.util import find_library
 
-    if platform.system() == 'FreeBSD':
-        CLOCK_MONOTONIC = 4
-    else:
-        CLOCK_MONOTONIC = 1
+    # Raw means it's immune even to NTP time adjustements.
+    CLOCK_MONOTONIC_RAW = 4
 
     class timespec(Structure):
         _fields_ = [
@@ -227,15 +228,18 @@ else:
         # On Debian Lenny (Python 2.5.2), find_library() is unable
         # to locate /lib/librt.so.1
         librt_filename = 'librt.so.1'
-    librt = CDLL(librt_filename)
+    librt = CDLL(librt_filename, use_errno=True)
     _clock_gettime = librt.clock_gettime
     _clock_gettime.argtypes = (c_int, POINTER(timespec))
 
     def monotonic_time():
-        """
-        Clock that cannot be set and represents monotonic time since some
-        unspecified starting point. The unit is a second.
+        """Get the number of seconds passed since a fixed past moment.
+
+        return (float): the value of a monotonic clock, in seconds.
+
         """
         t = timespec()
-        _clock_gettime(CLOCK_MONOTONIC, byref(t))
+        if _clock_gettime(CLOCK_MONOTONIC_RAW, pointer(t)) != 0:
+            errno_ = get_errno()
+            raise OSError(errno_, os.strerror(errno_))
         return t.tv_sec + t.tv_nsec / 1e9
