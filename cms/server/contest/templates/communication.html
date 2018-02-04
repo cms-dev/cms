@@ -7,18 +7,18 @@
     <h1>{{ _("Communication") }}</h1>
 </div>
 
-{% if len (contest.announcements) > 0 %}
+{% if contest.announcements|length > 0 %}
 <h2>{{ _("Announcements") }}</h2>
 <div class="announcement_list">
     {% for msg in contest.announcements|reverse %}
     <div class="announcement">
-        {% if len(msg.subject) > 0 %}
+        {% if msg.subject|length > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.timestamp, now, timezone) }}</span>
-        {% if len(msg.text) > 0 %}
+        {% if msg.text|length > 0 %}
         <div class="body">{{ msg.text }}</div>
         {% endif %}
     </div>
@@ -63,29 +63,29 @@
 </div>
 
 
-{% if len (current_user.questions) > 0 %}
+{% if current_user.questions|length > 0 %}
 <div class="question_list">
     {% for msg in current_user.questions|reverse %}
     <div class="question">
-        {% if len(msg.subject) > 0 %}
+        {% if msg.subject|length > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.question_timestamp, now, timezone) }}</span>
-        {% if len(msg.text) > 0 %}
+        {% if msg.text|length > 0 %}
         <div class="body">{{ msg.text }}</div>
         {% endif %}
     </div>
         {% if msg.reply_timestamp is not None %}
     <div class="answer">
-            {% if len(msg.reply_subject) > 0 %}
+            {% if msg.reply_subject|length > 0 %}
         <h4 class="subject">{{ msg.reply_subject }}</h4>
             {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
             {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.reply_timestamp, now, timezone) }}</span>
-            {% if len(msg.reply_text) > 0 %}
+            {% if msg.reply_text|length > 0 %}
         <div class="body">{{ msg.reply_text }}</div>
             {% endif %}
     </div>
@@ -101,18 +101,18 @@
 {% endif %}
 
 
-{% if len (current_user.messages) > 0 %}
+{% if current_user.messages|length > 0 %}
 <h2>{{ _("Messages") }}</h2>
 <div class="message_list">
     {% for msg in current_user.messages|reverse %}
     <div class="message">
-        {% if len(msg.subject) > 0 %}
+        {% if msg.subject|length > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% endif %}
         <span class="timestamp">{{ translation.format_datetime_smart(msg.timestamp, now, timezone) }}</span>
-        {% if len(msg.text) > 0 %}
+        {% if msg.text|length > 0 %}
         <div class="body">{{ msg.text }}</div>
         {% endif %}
     </div>

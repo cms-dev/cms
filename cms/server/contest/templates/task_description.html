@@ -14,13 +14,13 @@
 
 <h2>{{ _("Statement") }}</h2>
 
-{% if len(task.statements) == 0 %}
+{% if task.statements|length == 0 %}
 <div class="row statement no_statements">
     <div class="span9">
         {{ _("no statement available") }}
     </div>
 </div>
-{% elif len(task.statements) == 1 %}
+{% elif task.statements|length == 1 %}
 <div class="row statement one_statement">
     <div class="span9">
     {% for lang_code in task.statements %}
@@ -110,7 +110,7 @@
 {% if compilation_commands is not None %}
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
-    <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
+    <th rowspan="{{ compilation_commands|length }}">{{ _("Compilation commands") }}</th>
     {% for l, c in compilation_commands|dictsort(by="key") %}
         {% if not loop.first %}
 </tr>
@@ -160,7 +160,7 @@
 
 
 
-{% if task.attachments != {} %}
+{% if task.attachments|length > 0 %}
     <h2>{{ _("Attachments") }}</h2>
     <div id="attachments">
         <ul>
