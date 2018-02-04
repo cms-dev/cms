@@ -32,7 +32,25 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iterkeys, itervalues, iteritems
 
-from jinja2 import Environment, StrictUndefined
+from jinja2 import environmentfilter, Environment, StrictUndefined
+
+
+@environmentfilter
+def dictselect(env, d, *args, **kwargs):
+    if len(args) == 0:
+        test = bool
+    else:
+        test = env.tests[args[0]]
+        args = args[1:]
+    by = kwargs.pop("by", "key")
+    if len(kwargs) > 0:
+        raise ValueError("Invalid keyword argument: %s"
+                         % next(iterkeys(kwargs)))
+    if by == "key":
+        return dict((k, v) for k, v in iteritems(d) if test(k, *args))
+    if by == "value":
+        return dict((k, v) for k, v in iteritems(d) if test(v, *args))
+    raise ValueError("Invalid value of \"by\" keyword argument: %s" % by)
 
 import cmscommon.mimetypes
 from cms.grading.scoretypes import get_score_type
@@ -56,6 +74,12 @@ def instrument_generic_toolbox(env):
         cmscommon.mimetypes.get_name_for_type
     env.globals["get_icon_for_mimetype"] = \
         cmscommon.mimetypes.get_icon_for_type
+
+    env.filters["call"] = lambda c, *args, **kwargs: c(*args, **kwargs)
+    env.filters["dictselect"] = dictselect
+
+    env.tests["contains"] = lambda s, p: p in s
+    env.tests["endswith"] = lambda s, p: s.endswith(p)
 
 
 GLOBAL_ENVIRONMENT = Environment(
