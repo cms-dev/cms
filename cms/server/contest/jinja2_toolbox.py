@@ -32,9 +32,82 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
-from jinja2 import PackageLoader
+from jinja2 import contextfilter, PackageLoader
 
+import cms.grading
+import cms.server.contest.formatting
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
+
+
+@contextfilter
+def format_datetime(ctx, dt):
+    translation = ctx["translation"]
+    timezone = ctx["timezone"]
+    return translation.format_datetime(dt, timezone)
+
+
+@contextfilter
+def format_time(ctx, dt):
+    translation = ctx["translation"]
+    timezone = ctx["timezone"]
+    return translation.format_time(dt, timezone)
+
+
+@contextfilter
+def format_datetime_smart(ctx, dt):
+    translation = ctx["translation"]
+    now = ctx["now"]
+    timezone = ctx["timezone"]
+    return translation.format_datetime_smart(dt, now, timezone)
+
+
+@contextfilter
+def format_timedelta(ctx, td):
+    translation = ctx["translation"]
+    return translation.format_timedelta(td)
+
+
+@contextfilter
+def format_duration(ctx, d, length="short"):
+    translation = ctx["translation"]
+    return translation.format_duration(d, length)
+
+
+@contextfilter
+def format_size(ctx, s):
+    translation = ctx["translation"]
+    return translation.format_size(s)
+
+
+@contextfilter
+def format_decimal(ctx, n):
+    translation = ctx["translation"]
+    return translation.format_decimal(n)
+
+
+@contextfilter
+def format_token_rules(ctx, tokens, t_type=None):
+    translation = ctx["translation"]
+    return cms.server.contest.formatting.format_token_rules(
+        tokens, t_type, translation=translation)
+
+
+@contextfilter
+def format_status_text(ctx, status_text):
+    translation = ctx["translation"]
+    return cms.grading.format_status_text(status_text, translation=translation)
+
+
+def instrument_formatting_toolbox(env):
+    env.filters["format_datetime"] = format_datetime
+    env.filters["format_time"] = format_time
+    env.filters["format_datetime_smart"] = format_datetime_smart
+    env.filters["format_timedelta"] = format_timedelta
+    env.filters["format_duration"] = format_duration
+    env.filters["format_size"] = format_size
+    env.filters["format_decimal"] = format_decimal
+    env.filters["format_token_rules"] = format_token_rules
+    env.filters["format_status_text"] = format_status_text
 
 
 def extract_token_params(o):
@@ -57,4 +130,5 @@ CWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
 CWS_ENVIRONMENT.policies['ext.i18n.trimmed'] = True
 
 
+instrument_formatting_toolbox(CWS_ENVIRONMENT)
 instrument_cms_toolbox(CWS_ENVIRONMENT)

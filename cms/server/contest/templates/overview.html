@@ -20,17 +20,17 @@
         {{ _("The contest hasn't started yet.") }}
         </p>
         <p>
-        {{ _("The contest will start at %(start_time)s and will end at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.start + current_user.delay_time, now, timezone), "stop_time": translation.format_datetime_smart(contest.stop + current_user.delay_time + current_user.extra_time, now, timezone)} }}
+        {{ _("The contest will start at %(start_time)s and will end at %(stop_time)s.") % {"start_time": (contest.start + current_user.delay_time)|format_datetime_smart, "stop_time": (contest.stop + current_user.delay_time + current_user.extra_time)|format_datetime_smart} }}
 {% elif phase == 0 %}
         {{ _("The contest is currently running.") }}
         </p>
         <p>
-        {{ _("The contest started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.start + current_user.delay_time, now, timezone), "stop_time": translation.format_datetime_smart(contest.stop + current_user.delay_time + current_user.extra_time, now, timezone)} }}
+        {{ _("The contest started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": (contest.start + current_user.delay_time)|format_datetime_smart, "stop_time": (contest.stop + current_user.delay_time + current_user.extra_time)|format_datetime_smart} }}
 {% elif phase >= +1 %}
         {{ _("The contest has already ended.") }}
         </p>
         <p>
-        {{ _("The contest started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.start + current_user.delay_time, now, timezone), "stop_time": translation.format_datetime_smart(contest.stop + current_user.delay_time + current_user.extra_time, now, timezone)} }}
+        {{ _("The contest started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": (contest.start + current_user.delay_time)|format_datetime_smart, "stop_time": (contest.stop + current_user.delay_time + current_user.extra_time)|format_datetime_smart} }}
 {% endif %}
         </p>
 {% if contest.analysis_enabled %}
@@ -39,17 +39,17 @@
         {{ _("The analysis mode hasn't started yet.") }}
         </p>
         <p>
-        {{ _("The analysis mode will start at %(start_time)s and will end at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.analysis_start, now, timezone), "stop_time": translation.format_datetime_smart(contest.analysis_stop, now, timezone)} }}
+        {{ _("The analysis mode will start at %(start_time)s and will end at %(stop_time)s.") % {"start_time": contest.analysis_start|format_datetime_smart, "stop_time": contest.analysis_stop|format_datetime_smart} }}
   {% elif phase == +2 %}
         {{ _("The analysis mode is currently running.") }}
         </p>
         <p>
-        {{ _("The analysis mode started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.analysis_start, now, timezone), "stop_time": translation.format_datetime_smart(contest.analysis_stop, now, timezone)} }}
+        {{ _("The analysis mode started at %(start_time)s and will end at %(stop_time)s.") % {"start_time": contest.analysis_start|format_datetime_smart, "stop_time": contest.analysis_stop|format_datetime_smart} }}
   {% elif phase == +3 %}
         {{ _("The analysis mode has already ended.") }}
         </p>
         <p>
-        {{ _("The analysis mode started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.analysis_start, now, timezone), "stop_time": translation.format_datetime_smart(contest.analysis_stop, now, timezone)} }}
+        {{ _("The analysis mode started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": contest.analysis_start|format_datetime_smart, "stop_time": contest.analysis_stop|format_datetime_smart} }}
   {% endif %}
         </p>
 
@@ -80,7 +80,7 @@
     {% elif tokens_tasks == 2 %}
         <p>
         {{ _("You have a set of tokens shared among all tasks.") }}
-        {{ format_token_rules(contest|extract_token_params, translation=translation) }}
+        {{ contest|extract_token_params|format_token_rules }}
         </p>
 
         <p>
@@ -90,7 +90,7 @@
     {% else %}
         <p>
         {% raw _("You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task.") %}
-        {{ format_token_rules(contest|extract_token_params, t_type="contest", translation=translation) }}
+        {{ contest|extract_token_params|format_token_rules(t_type="contest") }}
         {{ _("You can find the rules for the %(type_pl)s on each task's description page.") % {"type_pl": _("task-tokens")} }}
         </p>
 
@@ -119,7 +119,7 @@
         <div class="well per_user_time">
             <p>
         {# TODO would be very nice to write something like "just for 3 consecutive hours"... #}
-        {{ _("Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s.") % {"per_user_time": translation.format_timedelta(contest.per_user_time)} }}
+        {{ _("Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s.") % {"per_user_time": contest.per_user_time|format_timedelta} }}
             </p>
 
             <p>
@@ -130,16 +130,16 @@
         {{ _("By clicking on the button below you can start your time frame.") }}
         {{ _("Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.") }}
     {% elif actual_phase == 0 %}
-        {{ _("You started your time frame at %(start_time)s.") % {"start_time": translation.format_datetime_smart(current_user.starting_time, now, timezone)} }}
+        {{ _("You started your time frame at %(start_time)s.") % {"start_time": current_user.starting_time|format_datetime_smart} }}
         {{ _("You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.") }}
     {% elif actual_phase == +1 %}
-        {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": translation.format_datetime_smart(current_user.starting_time, now, timezone)} }}
+        {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": current_user.starting_time|format_datetime_smart} }}
         {{ _("There's nothing you can do now.") }}
     {% elif actual_phase == +2 %}
         {% if current_user.starting_time is none %}
             {{ _("You never started your time frame. Now it's too late.") }}
         {% else %}
-            {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": translation.format_datetime_smart(current_user.starting_time, now, timezone)} }}
+            {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": current_user.starting_time|format_datetime_smart} }}
         {% endif %}
         {{ _("There's nothing you can do now.") }}
     {% endif %}
@@ -193,14 +193,14 @@
             <td>{{ t_iter.title }}</td>
             <td>
     {% if t_iter.active_dataset.time_limit is not none %}
-        {{ translation.format_duration(t_iter.active_dataset.time_limit, length="long") }}
+        {{ t_iter.active_dataset.time_limit|format_duration(length="long") }}
     {% else %}
         {{ _("N/A") }}
     {% endif %}
             </td>
             <td>
     {% if t_iter.active_dataset.memory_limit is not none %}
-        {{ translation.format_size(t_iter.active_dataset.memory_limit * 1024 * 1024) }}
+        {{ (t_iter.active_dataset.memory_limit * 1024 * 1024)|format_size }}
     {% else %}
         {{ _("N/A") }}
     {% endif %}

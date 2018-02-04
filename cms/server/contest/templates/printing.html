@@ -77,12 +77,12 @@
     {% for p in printjobs|sort(attribute="timestamp")|reverse %}
         <tr>
         {% if show_date %}
-            <td class="datetime">{{ translation.format_datetime(p.timestamp, timezone) }}</td>
+            <td class="datetime">{{ p.timestamp|format_datetime }}</td>
         {% else %}
-            <td class="time">{{ translation.format_time(p.timestamp, timezone) }}</td>
+            <td class="time">{{ p.timestamp|format_time }}</td>
         {% endif %}
             <td class="filename">{{ p.filename }}</td>
-            <td class="status">{{ format_status_text(p.status, translation=translation) if p.done else _("Preparing...") }}</td>
+            <td class="status">{{ p.status|format_status_text if p.done else _("Preparing...") }}</td>
         </tr>
     {% endfor %}
 {% endif %}
