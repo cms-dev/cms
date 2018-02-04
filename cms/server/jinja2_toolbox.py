@@ -34,7 +34,7 @@ from six import iterkeys, itervalues, iteritems
 
 from jinja2 import Environment, StrictUndefined, contextfilter, contextfunction
 
-from cmscommon.datetime import utc
+from cmscommon.datetime import make_timestamp, utc
 from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
     get_icon_for_type
 from cms.grading.languagemanager import get_language
@@ -158,6 +158,7 @@ def instrument_generic_toolbox(env):
     env.filters["all"] = all_
     env.filters["any"] = any_
     env.filters["dictselect"] = dictselect
+    env.filters["make_timestamp"] = make_timestamp
 
     env.filters["to_language"] = get_language
 
