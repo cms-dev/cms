@@ -28,6 +28,8 @@ install:
 
   - sudo pip install -r requirements.txt
   - sudo pip install -r dev-requirements.txt
+# We need to build psycopg2 from source on Travis because of https://github.com/psycopg/psycopg2/issues/543
+  - sudo pip install 'psycopg2>=2.7,<2.8' --no-binary psycopg2 --ignore-installed
 
   - cp ./config/cms.conf.sample ./config/cms.conf
   - sudo ./prerequisites.py install -y
