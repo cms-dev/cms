@@ -202,18 +202,16 @@ $(document).ready(function () {
         </tr>
     </thead>
     <tbody>
-    {% if user_tests[task.id]|length == 0 %}
+    {% for t in user_tests[task.id]|sort(attribute="timestamp")|reverse %}
+        {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
+        {% set t_idx = user_tests[task.id]|length - loop.index0 %}
+        {% set tr = t.get_result(t.task.active_dataset) or undefined %}
+        {% include "user_test_row.html" %}
+    {% else %}
         <tr>
             <td colspan="7" class="no_user_tests">{% trans %}no tests yet{% endtrans %}</td>
         </tr>
-    {% else %}
-        {% for t in user_tests[task.id]|sort(attribute="timestamp")|reverse %}
-            {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
-            {% set t_idx = user_tests[task.id]|length - loop.index0 %}
-            {% set tr = t.get_result(t.task.active_dataset) or undefined %}
-            {% include "user_test_row.html" %}
-        {% endfor %}
-    {% endif %}
+    {% endfor %}
     </tbody>
 </table>
 

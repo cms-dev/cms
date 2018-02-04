@@ -71,12 +71,7 @@
         </tr>
     </thead>
     <tbody>
-{% if printjobs|length == 0 %}
-        <tr>
-            <td colspan="3" class="no_printjobs">{% trans %}no print jobs yet{% endtrans %}</td>
-        </tr>
-{% else %}
-    {% for p in printjobs|sort(attribute="timestamp")|reverse %}
+{% for p in printjobs|sort(attribute="timestamp")|reverse %}
         <tr>
         {% if show_date %}
             <td class="datetime">{{ p.timestamp|format_datetime }}</td>
@@ -86,8 +81,11 @@
             <td class="filename">{{ p.filename }}</td>
             <td class="status">{% if p.done %}{{ p.status|format_status_text }}{% else %}{% trans %}Preparing...{% endtrans %}{% endif %}</td>
         </tr>
-    {% endfor %}
-{% endif %}
+{% else %}
+        <tr>
+            <td colspan="3" class="no_printjobs">{% trans %}no print jobs yet{% endtrans %}</td>
+        </tr>
+{% endfor %}
     </tbody>
 </table>
 
