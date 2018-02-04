@@ -12,13 +12,13 @@
 <h3>C++</h3>
 
 <p><a href="{{ contest_url("stl", "index.html") }}">{{ _("Standard Template Library") }}</a></p>
-{% end %}
+{% endif %}
 
 {% if any(".java" in get_language(lang).source_extensions for lang in contest.languages) %}
 <h3>Java</h3>
 
 <p>{{ _("The main Java class of the solution should have exactly the same name as the task.") }}</p>
-{% end %}
+{% endif %}
 
 
 <h2>{{ _("Submission details for compilation") }}</h2>
@@ -36,7 +36,7 @@
       <td><em>{{ _(message.message) }}</em></td>
       <td>{{ _(message.help) }}</td>
     </tr>
-    {% end %}
+    {% endfor %}
   </tbody>
 </table>
 
@@ -55,9 +55,9 @@
       <td><em>{{ _(message.message) }}</em></td>
       <td>{{ _(message.help) }}</td>
     </tr>
-    {% end %}
+    {% endfor %}
   </tbody>
 </table>
 
 </div>
-{% end %}
+{% endblock core %}

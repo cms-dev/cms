@@ -27,7 +27,7 @@
     <div class="span9">
     {% for lang_code in task.statements %}
         <a href="{{ contest_url("tasks", task.name, "statements", lang_code) }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
-    {% end %}
+    {% endfor %}
     </div>
 </div>
 {% else %}
@@ -46,10 +46,10 @@
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
                 {% raw _("Statement in %s") % escape(statement.language_name) %}
-            {% end %}
+            {% endif %}
         </a>
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endfor %}
     {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
@@ -57,10 +57,10 @@
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
                 {% raw _("Statement in %s") % escape(statement.language_name) %}
-            {% end %}
+            {% endif %}
         </a>
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endfor %}
     </div>
     <div class="all_statements well">
         <div>
@@ -72,15 +72,15 @@
             {% raw _("<b>%s</b>") % escape(statement.language_name) %}
         {% else %}
             {% raw _("%s") % escape(statement.language_name) %}
-        {% end %}
+        {% endif %}
                     </a>
                 </li>
-    {% end %}
+    {% endfor %}
             </ul>
         </div>
     </div>
 </div>
-{% end %}
+{% endif %}
 
 
 <h2>{{ _("Some details") }}</h2>
@@ -101,13 +101,13 @@
             <th>{{ _("Time limit") }}</th>
             <td colspan="2">{{ translation.format_duration(task.active_dataset.time_limit, length="long") }}</td>
         </tr>
-{% end %}
+{% endif %}
 {% if task.active_dataset.memory_limit is not None %}
         <tr>
             <th>{{ _("Memory limit") }}</th>
             <td colspan="2">{{ translation.format_size(task.active_dataset.memory_limit * 1024 * 1024) }}</td>
         </tr>
-{% end %}
+{% endif %}
 {% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
 {% if compilation_commands is not None %}
 {% set compilation_commands = {lang: compilation_commands[lang] for lang in contest.languages} %}
@@ -117,16 +117,16 @@
         {% if i > 0 %}
 </tr>
 <tr>
-        {% end %}
+        {% endif %}
     <td>{{ get_language(l).name }}</td>
     <td class="compilation_command_cell">
 {% for cmd in c %}
         <code class="compilation_command">{{ " ".join(cmd) }}</code>
-{% end %}
+{% endfor %}
     </td>
-    {% end %}
+    {% endfor %}
 </tr>
-{% end %}
+{% endif %}
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
 <tr>
@@ -155,10 +155,10 @@
         {{ _("Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token.") }}
         {% raw _("You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>.") % {"type_pl": _("contest-tokens"), "contest_root": contest_url()} %}
         </p>
-    {% end %}
+    {% endif %}
     </td>
 </tr>
-{% end %}
+{% endif %}
     </tbody>
 </table>
 
@@ -177,7 +177,7 @@
         {% else %}
             {% set type_name = None %}
             {% set type_icon = None %}
-        {% end %}
+        {% endif %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
                 <a href="{{ contest_url("tasks", task.name, "attachments", filename) }}" class="btn">
@@ -185,22 +185,22 @@
                     <img src="{{ url("static", "img", "mimetypes", "%s.png" % type_icon) }}" alt="{{ mime_type }}" />
             {% else %}
                     <img src="{{ url("static", "img", "mimetypes", "unknown.png") }}" alt="{{ _("unknown") }}" />
-            {% end %}
+            {% endif %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
                         <span class="size">{{ translation.format_size(file_size) }}</span>
                     </span>
             {% if type_name is not None %}
                     <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
-            {% end %}
+            {% endif %}
                 </a>
             </li>
-    {% end %}
+    {% endfor %}
         </ul>
     </div>
-{% end %}
+{% endif %}
 
 </div>
-{% end %}
+{% endif %}
 
-{% end %}
+{% endblock core %}

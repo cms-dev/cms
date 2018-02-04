@@ -17,14 +17,14 @@
     {{ _("You can print %(remaining_jobs)d more text or PDF files of up to %(max_pages)d pages each.") % {"remaining_jobs": remaining_jobs, "max_pages": max_pages} }}
     {% else %}
     {{ _("You can print %(remaining_jobs)d more text files of up to %(max_pages)d pages each.") % {"remaining_jobs": remaining_jobs, "max_pages": max_pages} }}
-    {% end %}
+    {% endif %}
 
 <div id="print" class="row">
     <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("printing") }}" method="POST">
         {% module xsrf_form_html() %}
         <fieldset>
             <div class="control-group">
-                <label class="control-label" for="input">{% if pdf_printing_allowed %}{{ _("File (text or PDF)") }}{% else %}{{ _("File (text)") }}{% end %}</label>
+                <label class="control-label" for="input">{% if pdf_printing_allowed %}{{ _("File (text or PDF)") }}{% else %}{{ _("File (text)") }}{% endif %}</label>
                 <div class="controls">
                     <input type="file" class="input-xlarge" id="input" name="file"/>
                 </div>
@@ -40,7 +40,7 @@
 </div>
 {% else %}
     {{ _("You cannot print anything any more as you have used up your printing quota.") }}
-{% end %}
+{% endif %}
 
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous print jobs") }}</h2>
@@ -55,7 +55,7 @@
         <col class="datetime"/>
 {% else %}
         <col class="time"/>
-{% end %}
+{% endif %}
         <col class="filename"/>
         <col class="status"/>
     </colgroup>
@@ -65,7 +65,7 @@
             <th class="datetime">{{ _("Date and time") }}</th>
 {% else %}
             <th class="time">{{ _("Time") }}</th>
-{% end %}
+{% endif %}
             <th class="filename">{{ _("File name") }}</th>
             <th class="status">{{ _("Status") }}</th>
         </tr>
@@ -82,13 +82,13 @@
             <td class="datetime">{{ translation.format_datetime(p.timestamp, timezone) }}</td>
         {% else %}
             <td class="time">{{ translation.format_time(p.timestamp, timezone) }}</td>
-        {% end %}
+        {% endif %}
             <td class="filename">{{ p.filename }}</td>
             <td class="status">{{ format_status_text(p.status, translation=translation) if p.done else _("Preparing...") }}</td>
         </tr>
-    {% end %}
-{% end %}
+    {% endfor %}
+{% endif %}
     </tbody>
 </table>
 
-{% end %}
+{% endblock core %}

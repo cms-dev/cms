@@ -16,7 +16,7 @@
     <div class="span5">
 {% else %}
     <div class="span9">
-{% end %}
+{% endif %}
         <p>
 {% if phase == -1 %}
         {{ _("The contest hasn't started yet.") }}
@@ -33,7 +33,7 @@
         </p>
         <p>
         {{ _("The contest started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.start + current_user.delay_time, now, timezone), "stop_time": translation.format_datetime_smart(contest.stop + current_user.delay_time + current_user.extra_time, now, timezone)} }}
-{% end %}
+{% endif %}
         </p>
 {% if contest.analysis_enabled %}
         <p>
@@ -52,10 +52,10 @@
         </p>
         <p>
         {{ _("The analysis mode started at %(start_time)s and ended at %(stop_time)s.") % {"start_time": translation.format_datetime_smart(contest.analysis_start, now, timezone), "stop_time": translation.format_datetime_smart(contest.analysis_stop, now, timezone)} }}
-  {% end %}
+  {% endif %}
         </p>
 
-{% end %}
+{% endif %}
 
 
 
@@ -102,20 +102,20 @@
         {{ _("You can see the detailed result of a submission by using two tokens on it, one of each type.") }}
         {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
         </p>
-    {% end %}
-{% end %}
+    {% endif %}
+{% endif %}
 
 {% if contest.max_submission_number is not None %}
     <p>
     {{ _("You can submit at most %(submissions)s solutions during this contest.") % {"submissions": contest.max_submission_number} }}
     </p>
-{% end %}
+{% endif %}
 
 {% if contest.max_user_test_number is not None %}
     <p>
     {{ _("You can submit at most %(user_tests)s user tests during this contest.") % {"user_tests": contest.max_user_test_number} }}
     </p>
-{% end %}
+{% endif %}
 
     </div>
 {% if contest.per_user_time is not None %}
@@ -144,9 +144,9 @@
             {{ _("You never started your time frame. Now it's too late.") }}
         {% else %}
             {{ _("You started your time frame at %(start_time)s and you already finished it.") % {"start_time": translation.format_datetime_smart(current_user.starting_time, now, timezone)} }}
-        {% end %}
+        {% endif %}
         {{ _("There's nothing you can do now.") }}
-    {% end %}
+    {% endif %}
             </p>
 
     {% if actual_phase == -1 %}
@@ -155,11 +155,11 @@
             <input type="hidden" name="next" value="{{ contest_url() }}">
             <button type="submit" class="btn btn-danger btn-large" style="width:100%;-moz-box-sizing:border-box;box-sizing:border-box;" type="submit">{{ _("Start!") }}</button>
         </form>
-    {% end %}
+    {% endif %}
 
         </div>
     </div>
-{% end %}
+{% endif %}
 </div>
 
 
@@ -186,7 +186,7 @@
             <th>{{ _("Files") }}</th>
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <th>{{ _("Tokens") }}</th>
-{% end %}
+{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -200,14 +200,14 @@
         {{ translation.format_duration(t_iter.active_dataset.time_limit, length="long") }}
     {% else %}
         {{ _("N/A") }}
-    {% end %}
+    {% endif %}
             </td>
             <td>
     {% if t_iter.active_dataset.memory_limit is not None %}
         {{ translation.format_size(t_iter.active_dataset.memory_limit * 1024 * 1024) }}
     {% else %}
         {{ _("N/A") }}
-    {% end %}
+    {% endif %}
             </td>
             <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
             <td>{{ " ".join(a.filename.replace(".%l", extensions) for a in t_iter.submission_format) }}</td>
@@ -217,15 +217,14 @@
             {{ _("Yes") }}
         {% else %}
             {{ _("No") }}
-        {% end %}
+        {% endif %}
             </td>
-    {% end %}
+    {% endif %}
         </tr>
-{% end %}
+{% endfor %}
     </tbody>
 </table>
-
-{% end %}
+{% endif %}
 
 </div>
-{% end %}
+{% endblock core %}
