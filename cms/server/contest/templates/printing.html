@@ -2,7 +2,6 @@
 
 {% block core %}
 
-{% from cms.grading import format_status_text %}
 
 <div class="span9 printing">
 
@@ -45,7 +44,6 @@
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous print jobs") }}</h2>
 
-{% from cmscommon.datetime import utc %}
 {% set show_date = any(p.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for p in printjobs) %}
 
 
