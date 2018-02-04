@@ -69,7 +69,7 @@
         </tr>
     </thead>
     <tbody>
-{% if len(printjobs) == 0 %}
+{% if printjobs|length == 0 %}
         <tr>
             <td colspan="3" class="no_printjobs">{{ _("no print jobs yet") }}</td>
         </tr>

@@ -135,7 +135,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if len(task.submission_format) > 1 and not task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
+{% if task.submission_format|length > 1 and not task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {% module xsrf_form_html() %}
@@ -260,7 +260,7 @@ $(document).ready(function () {
         </tr>
     </thead>
     <tbody>
-    {% if len(submissions) == 0 %}
+    {% if submissions|length == 0 %}
         <tr>
         {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td colspan="6" class="no_submissions">{{ _("no submissions yet") }}</td>
@@ -271,7 +271,7 @@ $(document).ready(function () {
     {% else %}
         {% for s in submissions|sort(attribute="timestamp")|reverse %}
             {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
-            {% set s_idx = len(submissions) - loop.index0 %}
+            {% set s_idx = submissions|length - loop.index0 %}
             {% set sr = s.get_result(s.task.active_dataset) %}
             {% include "submission_row.html" %}
         {% endfor %}
