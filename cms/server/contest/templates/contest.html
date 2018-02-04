@@ -55,7 +55,7 @@ $(document).ready(function () {
                     <p class="navbar-text pull-right">
                         <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
                             <option value=""{% if cookie_translation is None %} selected{% endif %}>{{ _("Automatic (%s)") % automatic_translation.name }}</option>
-                        {% for lang_code, t in sorted(iteritems(available_translations), key=lambda x: x[1].name) %}
+                        {% for lang_code, t in available_translations|dictsort(by="key") %}
                             <option value="{{ lang_code }}"{% if t == cookie_translation %} selected{% endif %}>{{ t.name }}</option>
                         {% endfor %}
                         </select>

@@ -37,7 +37,7 @@
             {{ _("Some suggested translations follow.") }}
         </p>
     {% set task_primary = primary_statements %}
-    {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
+    {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
         {% if statement.language in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
             {% if statement.language != statement.language_name %}
@@ -48,7 +48,7 @@
         </a>
         {% endif %}
     {% endfor %}
-    {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
+    {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
@@ -63,7 +63,7 @@
     <div class="all_statements well">
         <div>
             <ul>
-    {% for statement in sorted(itervalues(task.statements), key=lambda x: x.language_name) %}
+    {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
                 <li>
                     <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
         {% if statement.language != statement.language_name %}
@@ -111,7 +111,7 @@
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
     <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
-    {% for i, (l, c) in enumerate(sorted(iteritems(compilation_commands))) %}
+    {% for i, (l, c) in enumerate(compilation_commands|dictsort(by="key")) %}
         {% if i > 0 %}
 </tr>
 <tr>
@@ -164,7 +164,7 @@
     <h2>{{ _("Attachments") }}</h2>
     <div id="attachments">
         <ul>
-    {% for filename, attachment in sorted(iteritems(task.attachments)) %}
+    {% for filename, attachment in task.attachments|dictsort(by="key") %}
         {% set mime_type = get_mimetype_for_file_name(filename) %}
         {% if mime_type is not None %}
             {% set type_name = get_name_for_mimetype(mime_type) %}
