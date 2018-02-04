@@ -1,5 +1,7 @@
 {% extends "contest.html" %}
 
+{% set page = "test_interface" %}
+
 {% block additional_js %}
 $(document).on("click", ".user_test_list tbody tr td.status .details", function (event) {
     var $this = $(this);

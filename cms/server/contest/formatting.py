@@ -30,8 +30,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-from future.moves.urllib.parse import quote
-
 from cms.locale import DEFAULT_TRANSLATION
 
 
@@ -148,17 +146,3 @@ def get_score_class(score, max_score):
         return "score_100"
     else:
         return "score_0_100"
-
-
-def encode_for_url(url_fragment):
-    """Return the string encoded safely for becoming a url fragment.
-
-    In particular, this means encoding it to UTF-8 and then
-    percent-encoding it.
-
-    url_fragment(unicode): the string to be encoded.
-
-    return (str): the encoded string.
-
-    """
-    return quote(url_fragment.encode('utf-8'), safe='')
