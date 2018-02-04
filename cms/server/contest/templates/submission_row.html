@@ -99,7 +99,7 @@
         {% elif s.files|length == 1 %}
             {% set filename = next(iterkeys(s.files)) %}
             {% if s.language is not none %}
-                {% set filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
+                {% set filename = filename|replace(".%l", get_language(s.language).source_extension) %}
             {% endif %}
         <a class="btn" href="{{ contest_url("tasks", task.name, "submissions", s_idx, "files", filename) }}">
             {{ _("Download") }}
@@ -113,7 +113,7 @@
             <ul class="dropdown-menu">
             {% for filename in s.files %}
                 {% if s.language is not none %}
-                    {% set temp_filename = re.sub("\.%l$", get_language(s.language).source_extension, filename) %}
+                    {% set temp_filename = filename|replace(".%l", get_language(s.language).source_extension) %}
                     {% if temp_filename not in s.files %}
                         {% set filename = temp_filename %}
                     {% endif %}
