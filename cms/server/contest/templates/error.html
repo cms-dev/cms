@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% block title %}
-  {{ _("Error %d") % status_code }}
+  {% trans status_code=status_code %}Error {{ status_code }}{% endtrans %}
 {% endblock title %}
 {% block body %}
 
 <div class="span9">
 
 <div class="page-header">
-    <h1>{{ _("Error %d") % status_code }}</h1>
+    <h1>{% trans status_code=status_code %}Error {{ status_code }}{% endtrans %}</h1>
 </div>
 
 <p>
-{{ _("An error occured while the server was handling your request.") }}
+{% trans %}An error occured while the server was handling your request.{% endtrans %}
 </p>
 
 <p>
-{{ _("Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification.") }}
+{% trans %}Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification.{% endtrans %}
 </p>
 
 <p>
-{{ _("If you encountered this error during normal usage, please notify the contest administrators.") }}
+{% trans %}If you encountered this error during normal usage, please notify the contest administrators.{% endtrans %}
 </p>
 
 </div>
