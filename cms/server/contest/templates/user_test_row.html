@@ -4,7 +4,7 @@
 {% else %}
     {% set col1 = "<td class=\"time\">%s</td>" % translation.format_time(t.timestamp, timezone) %}
 {% endif %}
-{% if tr is None or not tr.compiled() %}
+{% if tr is none or not tr.compiled() %}
 <tr data-user-test="{{ t_idx }}" data-status="1">
     {% raw col1 %}
     <td class="status">
@@ -31,7 +31,7 @@
         <a class="details">{{ _("details") }}</a>
     </td>
 {% endif %}
-{% if tr is None or tr.execution_time is None %}
+{% if tr is none or tr.execution_time is none %}
     <td class="time undefined">
         {{ _("N/A") }}
     </td>
@@ -40,7 +40,7 @@
         {{ translation.format_duration(tr.execution_time) }}
     </td>
 {% endif %}
-{% if tr is None or tr.execution_memory is None %}
+{% if tr is none or tr.execution_memory is none %}
     <td class="memory undefined">
         {{ _("N/A") }}
     </td>
@@ -55,12 +55,12 @@
         </a>
     </td>
     <td class="output">
-    {% if tr is None or not tr.compiled() or (tr.compilation_outcome == 'ok' and not tr.evaluated()) %}
+    {% if tr is none or not tr.compiled() or (tr.compilation_outcome == 'ok' and not tr.evaluated()) %}
         <a class="btn btn-primary disabled">
             {{ _("Wait...") }}
         </a>
     {% else %}
-        {% if tr.output is None %}
+        {% if tr.output is none %}
         <a class="btn btn-primary disabled">
             {{ _("N/A") }}
         </a>
@@ -94,7 +94,7 @@
             </a>
             <ul class="dropdown-menu">
             {% for filename in files %}
-                {% if t.language is not None %}
+                {% if t.language is not none %}
                     {% set real_filename = filename.replace(".%l", get_language(t.language).source_extension) %}
                 {% else %}
                     {% set real_filename = filename %}

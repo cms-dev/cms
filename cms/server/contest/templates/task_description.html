@@ -94,20 +94,20 @@
             <th>{{ _("Type") }}</th>
             <td colspan="2">{% set task_type = get_task_type(dataset=task.active_dataset) %}{{ task_type.name }}</td>
         </tr>
-{% if task.active_dataset.time_limit is not None %}
+{% if task.active_dataset.time_limit is not none %}
         <tr>
             <th>{{ _("Time limit") }}</th>
             <td colspan="2">{{ translation.format_duration(task.active_dataset.time_limit, length="long") }}</td>
         </tr>
 {% endif %}
-{% if task.active_dataset.memory_limit is not None %}
+{% if task.active_dataset.memory_limit is not none %}
         <tr>
             <th>{{ _("Memory limit") }}</th>
             <td colspan="2">{{ translation.format_size(task.active_dataset.memory_limit * 1024 * 1024) }}</td>
         </tr>
 {% endif %}
 {% set compilation_commands = task_type.get_compilation_commands(task.submission_format|map(attribute="filename")|list) %}
-{% if compilation_commands is not None %}
+{% if compilation_commands is not none %}
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
     <th rowspan="{{ compilation_commands|length }}">{{ _("Compilation commands") }}</th>
@@ -166,17 +166,17 @@
         <ul>
     {% for filename, attachment in task.attachments|dictsort(by="key") %}
         {% set mime_type = get_mimetype_for_file_name(filename) %}
-        {% if mime_type is not None %}
+        {% if mime_type is not none %}
             {% set type_name = get_name_for_mimetype(mime_type) %}
             {% set type_icon = get_icon_for_mimetype(mime_type) %}
         {% else %}
-            {% set type_name = None %}
-            {% set type_icon = None %}
+            {% set type_name = none %}
+            {% set type_icon = none %}
         {% endif %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
                 <a href="{{ contest_url("tasks", task.name, "attachments", filename) }}" class="btn">
-            {% if type_icon is not None %}
+            {% if type_icon is not none %}
                     <img src="{{ url("static", "img", "mimetypes", "%s.png" % type_icon) }}" alt="{{ mime_type }}" />
             {% else %}
                     <img src="{{ url("static", "img", "mimetypes", "unknown.png") }}" alt="{{ _("unknown") }}" />
@@ -185,7 +185,7 @@
                         <span class="name">{{ filename }}</span>
                         <span class="size">{{ translation.format_size(file_size) }}</span>
                     </span>
-            {% if type_name is not None %}
+            {% if type_name is not none %}
                     <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
             {% endif %}
                 </a>
