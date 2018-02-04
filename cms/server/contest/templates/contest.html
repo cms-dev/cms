@@ -24,11 +24,11 @@ var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.n
 {% else %}
 // FIXME use Date objects
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
-                             {{ make_timestamp(now) }},
+                             {{ now|make_timestamp }},
                              {# What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. #}
-                             {{ make_timestamp(now.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=none)) }},
-                             {{ make_timestamp(current_phase_begin) }},
-                             {{ make_timestamp(current_phase_end) }},
+                             {{ now.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=none)|make_timestamp }},
+                             {{ current_phase_begin|make_timestamp }},
+                             {{ current_phase_end|make_timestamp }},
                              {{ actual_phase }});
 $(document).ready(function () {
     utils.update_time({{ "true" if contest.per_user_time is not none else "false" }});
