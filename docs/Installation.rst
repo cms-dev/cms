@@ -48,7 +48,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Rust <https://www.rust-lang.org/>`_ (for Rust, with executable ``rustc``);
 
-* `C# <http://www.mono-project.com/docs/about-mono/languages/csharp/>` (for C#, with executable ``mcs``).
+* `C# <http://www.mono-project.com/docs/about-mono/languages/csharp/>`_ (for C#, with executable ``mcs``).
 
 All dependencies can be installed automatically on most Linux distributions.
 
