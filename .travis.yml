@@ -4,6 +4,7 @@ sudo: required
 language: python
 python:
   - 2.7
+  - 3.6
 
 # Use the PostgreSQL version that is provided in Ubuntu 16.04.
 # We need at least version 9.4 as that is the one that introduced the
