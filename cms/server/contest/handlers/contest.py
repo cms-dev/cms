@@ -304,24 +304,6 @@ class ContestHandler(BaseHandler):
 
         return participation
 
-    @staticmethod
-    def _get_token_status(obj):
-        """Return the status of the tokens for the given object.
-
-        obj (Contest or Task): an object that has the token_* attributes.
-        return (int): one of 0 (disabled), 1 (enabled/finite) and 2
-                      (enabled/infinite).
-
-        """
-        if obj.token_mode == "disabled":
-            return 0
-        elif obj.token_mode == "finite":
-            return 1
-        elif obj.token_mode == "infinite":
-            return 2
-        else:
-            raise RuntimeError("Unknown token_mode value.")
-
     def render_params(self):
         ret = super(ContestHandler, self).render_params()
 
@@ -361,15 +343,13 @@ class ContestHandler(BaseHandler):
             ret["timezone"] = get_timezone(participation.user, self.contest)
 
         # some information about token configuration
-        ret["tokens_contest"] = self._get_token_status(self.contest)
+        ret["tokens_contest"] = self.contest.token_mode
 
-        t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
-        if t_tokens == 0:
-            ret["tokens_tasks"] = 0  # all disabled
-        elif t_tokens == 2 * len(self.contest.tasks):
-            ret["tokens_tasks"] = 2  # all infinite
+        t_tokens = set(t.token_mode for t in self.contest.tasks)
+        if len(t_tokens) == 1:
+            ret["tokens_tasks"] = next(iter(t_tokens))
         else:
-            ret["tokens_tasks"] = 1  # all finite or mixed
+            ret["tokens_tasks"] = "mixed"
 
         return ret
 

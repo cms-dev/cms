@@ -161,7 +161,7 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{% trans %}Previous submissions{% endtrans %}</h2>
 
-{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
+{% if tokens_contest != "disabled" and tokens_tasks != "disabled" and actual_phase == 0 %}
 <div style="padding-bottom:10px">
     {% set tokens_info = contest.tokens_available(participation, task, now) %}
     {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
@@ -237,7 +237,7 @@ $(document).ready(function () {
         <col class="files"/>
     {% set num_cols = num_cols + 1 %}
 {% endif %}
-{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
+{% if tokens_contest != "disabled" and tokens_tasks != "disabled" and actual_phase == 0 %}
         <col class="token"/>
     {% set num_cols = num_cols + 1 %}
 {% endif %}
@@ -264,7 +264,7 @@ $(document).ready(function () {
 {% if submissions_download_allowed %}
             <th class="files">{% trans %}Files{% endtrans %}</th>
 {% endif %}
-{% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
+{% if tokens_contest != "disabled" and tokens_tasks != "disabled" and actual_phase == 0 %}
             <th class="token">{% trans %}Token{% endtrans %}</th>
 {% endif %}
         </tr>
