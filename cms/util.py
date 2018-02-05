@@ -36,7 +36,6 @@ import netifaces
 import os
 import sys
 import grp
-from collections import namedtuple
 
 import gevent.socket
 
