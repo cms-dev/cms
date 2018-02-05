@@ -346,6 +346,8 @@ class ContestHandler(BaseHandler):
 
         if self.current_user is not None:
             participation = self.current_user
+            ret["participation"] = participation
+            ret["user"] = participation.user
 
             res = compute_actual_phase(
                 self.timestamp, self.contest.start, self.contest.stop,

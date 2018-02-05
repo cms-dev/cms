@@ -18,7 +18,7 @@ var LANGUAGES = {
 {% endfor %}
 };
 
-{% if current_user is none %}
+{% if participation is undefined %}
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
                              0, 0, 0, 0, 0);
 {% else %}
@@ -61,15 +61,15 @@ $(document).ready(function () {
                         </select>
                     </p>
 {% endif %}
-{% if current_user is not none %}
+{% if participation is defined %}
                     <form action="{{ contest_url("logout") }}" method="POST" class="navbar-form pull-right">
                         {{ xsrf_form_html|safe }}
                         <button type="submit" class="btn btn-warning">{% trans %}Logout{% endtrans %}</button>
                     </form>
                     <p class="navbar-text pull-right">
-                        {% trans first_name=current_user.user.first_name,
-                                 last_name=current_user.user.last_name,
-                                 username=current_user.user.username %}
+                        {% trans first_name=user.first_name,
+                                 last_name=user.last_name,
+                                 username=user.username %}
                             Logged in as <strong>{{ first_name }} {{ last_name }}</strong> <em>({{ username }})</em>
                         {% endtrans %}
                     </p>
@@ -77,7 +77,7 @@ $(document).ready(function () {
                 </div>
             </div>
         </div>
-{% if current_user is none %}
+{% if participation is undefined %}
     {% if handler.get_argument("login_error", "") != "" %}
         <div id="notifications" class="notifications">
             <div class="alert alert-block alert-error notification">
@@ -172,7 +172,7 @@ $(document).ready(function () {
                                     <span id="unread_count" class="label label-warning no_unread"></span>
                                 </a>
                             </li>
-    {% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
+    {% if actual_phase == 0 or actual_phase == 3 or participation.unrestricted %}
         {% for t_iter in contest.tasks %}
                             <li class="nav-header">
                                 {{ t_iter.name }}
@@ -189,7 +189,7 @@ $(document).ready(function () {
                             <li{% if request.path == '/documentation' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("documentation") }}">{% trans %}Documentation{% endtrans %}</a>
                             </li>
-    {% if actual_phase == 0 or current_user.unrestricted %}{# FIXME maybe >= 0? #}
+    {% if actual_phase == 0 or participation.unrestricted %}{# FIXME maybe >= 0? #}
         {% if testing_enabled %}
                             <li{% if request.path == '/testing' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("testing") }}">{% trans %}Testing{% endtrans %}</a>

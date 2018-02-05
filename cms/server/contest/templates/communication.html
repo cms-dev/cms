@@ -63,9 +63,9 @@
 </div>
 
 
-{% if current_user.questions|length > 0 %}
+{% if participation.questions|length > 0 %}
 <div class="question_list">
-    {% for msg in current_user.questions|reverse %}
+    {% for msg in participation.questions|reverse %}
     <div class="question">
         {% if msg.subject|length > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
@@ -101,10 +101,10 @@
 {% endif %}
 
 
-{% if current_user.messages|length > 0 %}
+{% if participation.messages|length > 0 %}
 <h2>{% trans %}Messages{% endtrans %}</h2>
 <div class="message_list">
-    {% for msg in current_user.messages|reverse %}
+    {% for msg in participation.messages|reverse %}
     <div class="message">
         {% if msg.subject|length > 0 %}
         <h4 class="subject">{{ msg.subject }}</h4>
