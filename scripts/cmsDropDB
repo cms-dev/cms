@@ -62,8 +62,8 @@ def main():
     args = parser.parse_args()
 
     if not args.yes:
-        print("Are you sure you want to DROP the database? [y/N] ", end='')
-        ans = sys.stdin.readline().strip().lower()
+        ans = input("Are you sure you want to DROP the database? [y/N] ")\
+            .strip().lower()
         if ans in ["y", "yes"]:
             args.yes = True
 

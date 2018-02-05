@@ -188,7 +188,7 @@ def main():
             results = filter_top_scoring(results, args.unique)
 
         print("%s file(s) will be created." % len(results))
-        if input("Continue? [Y/n] ").lower() not in ["y", ""]:
+        if input("Continue? [Y/n] ").strip().lower() not in ["y", ""]:
             return 0
 
         done = 0

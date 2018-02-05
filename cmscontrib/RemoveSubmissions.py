@@ -37,9 +37,8 @@ from cms.db import Participation, SessionGen, Submission, Task, User, \
 
 
 def ask_and_remove(session, submissions):
-    print("This will delete %d submissions. Are you sure? [y/N] "
-          % len(submissions), end='')
-    ans = sys.stdin.readline().strip().lower()
+    ans = input("This will delete %d submissions. Are you sure? [y/N] "
+                % len(submissions)).strip().lower()
     if ans in ["y", "yes"]:
         for submission in submissions:
             session.delete(submission)

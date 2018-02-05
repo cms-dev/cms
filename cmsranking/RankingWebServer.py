@@ -452,9 +452,8 @@ def main():
     config.load(args.config)
 
     if args.drop:
-        print("Are you sure you want to delete directory %s? [y/N]" %
-              config.lib_dir, end='')
-        ans = input().lower()
+        ans = input("Are you sure you want to delete directory %s? [y/N]" %
+                    config.lib_dir).strip().lower()
         if ans in ['y', 'yes']:
             print("Removing directory %s." % config.lib_dir)
             shutil.rmtree(config.lib_dir)

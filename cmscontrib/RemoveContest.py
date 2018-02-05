@@ -35,10 +35,9 @@ from cms.db import Contest, SessionGen, ask_for_contest
 
 
 def ask(contest):
-    print("This will delete contest `%s' (with id %s) and all related data, "
-          "including submissions. Are you sure? [y/N] "
-          % (contest.name, contest.id), end='')
-    ans = sys.stdin.readline().strip().lower()
+    ans = input("This will delete contest `%s' (with id %s) and all related "
+                "data, including submissions. Are you sure? [y/N] "
+                % (contest.name, contest.id)).strip().lower()
     return ans in ["y", "yes"]
 
 

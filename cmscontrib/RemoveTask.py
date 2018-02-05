@@ -36,10 +36,9 @@ from cms.db import SessionGen, Task
 
 
 def ask(task_name):
-    print("This will delete task `%s' and all related data, "
-          "including submissions. Are you sure? [y/N] "
-          % task_name, end='')
-    ans = sys.stdin.readline().strip().lower()
+    ans = input("This will delete task `%s' and all related data, including "
+                "submissions. Are you sure? [y/N] "
+                % task_name).strip().lower()
     return ans in ["y", "yes"]
 
 
