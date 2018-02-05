@@ -187,15 +187,23 @@ class LocalTimezone(tzinfo):
 local = LocalTimezone()
 
 
-# A monotonic clock, i.e., the time elapsed since an arbitrary and
-# unknown starting moment, that doesn't change when setting the real
-# clock time. It is guaranteed to be increasing (it's not clear to me
-# whether two very close calls can return the same number).
 if sys.version_info >= (3, 3):
     def monotonic_time():
         """
-        Clock that cannot be set and represents monotonic time since some
-        unspecified starting point. The unit is a second.
+        Get the number of seconds passed since a fixed past moment.
+
+        A monotonic clock measures the time elapsed since an arbitrary
+        but immutable instant in the past. The value itself has no
+        direct intrinsic meaning but the difference between two such
+        values does, as it is guaranteed to accurately represent the
+        amount of time passed between when those two measurements were
+        taken, no matter the adjustments to the clock that occurred in
+        between. Even NTP adjustments are ignored, meaning that the
+        flow of time here is dictated only by the system clock and thus
+        subject to any drift it may have.
+
+        return (float): the value of the clock, in seconds.
+
         """
         return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 
