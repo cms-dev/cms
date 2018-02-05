@@ -41,12 +41,11 @@ __all__ = [
     "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST",
     # log
     # Nothing intended for external use, no need to advertise anything.
-    # util
-    "ConfigError", "mkdir", "utf8_decoder", "Address", "ServiceCoord",
-    "get_safe_shard", "get_service_address", "get_service_shards",
-    "contest_id_from_args", "default_argument_parser",
     # conf
-    "config",
+    "Address", "ServiceCoord", "ConfigError", "async_config", "config",
+    # util
+    "mkdir", "utf8_decoder", "get_safe_shard", "get_service_address",
+    "get_service_shards", "contest_id_from_args", "default_argument_parser",
     # plugin
     "plugin_list", "plugin_lookup",
 ]
@@ -65,8 +64,7 @@ SCORE_MODE_MAX = "max"
 # Maximum score among all tokened submissions and the last submission.
 SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
 
-from .util import ConfigError, mkdir, utf8_decoder, Address, ServiceCoord, \
-    get_safe_shard, get_service_address, get_service_shards, \
-    contest_id_from_args, default_argument_parser
-from .conf import config
+from .conf import Address, ServiceCoord, ConfigError, async_config, config
+from .util import mkdir, utf8_decoder, get_safe_shard, get_service_address, \
+    get_service_shards, contest_id_from_args, default_argument_parser
 from .plugin import plugin_list, plugin_lookup

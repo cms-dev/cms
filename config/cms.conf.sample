@@ -11,6 +11,8 @@
     "_help": "Whether to have a backdoor (see doc for the risks).",
     "backdoor": false,
 
+    "_help": "The user/group that CMS will be run as.",
+    "cmsuser": "cmsuser",
 
 
     "_section": "AsyncLibrary",

@@ -36,12 +36,52 @@ import json
 import logging
 import os
 import sys
+from collections import namedtuple
 
 from .log import set_detailed_logs
-from .util import ServiceCoord, Address, async_config
 
 
 logger = logging.getLogger(__name__)
+
+
+class Address(namedtuple("Address", "ip port")):
+    def __repr__(self):
+        return "%s:%d" % (self.ip, self.port)
+
+
+class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
+    """A compact representation for the name and the shard number of a
+    service (thus identifying it).
+
+    """
+    def __repr__(self):
+        return "%s,%d" % (self.name, self.shard)
+
+
+class ConfigError(Exception):
+    """Exception for critical configuration errors."""
+    pass
+
+
+class AsyncConfig(object):
+    """This class will contain the configuration for the
+    services. This needs to be populated at the initilization stage.
+
+    The *_services variables are dictionaries indexed by ServiceCoord
+    with values of type Address.
+
+    Core services are the ones that are supposed to run whenever the
+    system is up.
+
+    Other services are not supposed to run when the system is up, or
+    anyway not constantly.
+
+    """
+    core_services = {}
+    other_services = {}
+
+
+async_config = AsyncConfig()
 
 
 class Config(object):
@@ -60,6 +100,7 @@ class Config(object):
         self.async = async_config
 
         # System-wide
+        self.cmsuser = "cmsuser"
         self.temp_dir = "/tmp"
         self.backdoor = False
         self.file_log_debug = False
