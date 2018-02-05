@@ -42,9 +42,9 @@ __all__ = [
     # log
     # Nothing intended for external use, no need to advertise anything.
     # conf
-     "Address", "ServiceCoord", "ConfigError", "async_config", "config",
+    "Address", "ServiceCoord", "ConfigError", "async_config", "config",
     # util
-    "mkdir", "utf8_decoder", "get_safe_shard", "get_service_address", \
+    "mkdir", "utf8_decoder", "get_safe_shard", "get_service_address",
     "get_service_shards", "contest_id_from_args", "default_argument_parser",
     # plugin
     "plugin_list", "plugin_lookup",
