@@ -235,8 +235,10 @@ else:
 
     def monotonic_time():
         """
-        Clock that cannot be set and represents monotonic time since some
-        unspecified starting point. The unit is a second.
+        Get the number of seconds passed since a fixed past moment.
+
+        return (float): the value of a monotonic clock, in seconds.
+
         """
         t = timespec()
         if _clock_gettime(CLOCK_MONOTONIC_RAW, pointer(t)) != 0:
