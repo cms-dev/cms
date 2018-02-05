@@ -146,13 +146,15 @@ class TestRPC(unittest.TestCase):
 
     def disconnect_servers(self):
         """Disconnect all registered servers from their clients."""
-        for server in self.servers:
+        servers = self.servers.copy()
+        for server in servers:
             if server.connected:
                 server.disconnect()
 
     def disconnect_clients(self):
         """Disconnect all registered clients from their servers."""
-        for client in self.clients:
+        clients = self.clients.copy()
+        for client in clients:
             if client.connected:
                 client.disconnect()
 
@@ -237,7 +239,7 @@ class TestRPC(unittest.TestCase):
         self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_servers()
-        self.sleep()
+        gevent.sleep(0.01)
         self.assertTrue(client.connected, "Autoreconnect didn't kick in "
                                           "after server disconnected")
 
@@ -250,7 +252,7 @@ class TestRPC(unittest.TestCase):
         self.sleep()
         self.assertFalse(client.connected)
         self.spawn_listener(port=self.port)
-        gevent.sleep(0.005)
+        self.sleep()
         self.assertTrue(client.connected, "Autoreconnect didn't kick in "
                                           "after server came back online")
 
