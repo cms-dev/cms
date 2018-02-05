@@ -99,7 +99,7 @@ Normally, the standard output of the second invocation of the manager is compare
 White-diff comparator
 =====================
 
-White-diff is the only built-in comparator, and is used in most task types. It can be used when each testcase has a single correct output files, up to whitespaces.
+White-diff is the only built-in comparator, and is used in most task types. It can be used when each testcase has a unique correct output file, up to whitespaces.
 
 More precisely, white-diff will return that a pair of files are equal if all of these conditions are satisfied:
 

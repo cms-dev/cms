@@ -28,7 +28,10 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import StringIO
+try:
+    from BytesIO import BytesIO
+except ImportError:
+    from io import BytesIO
 import unittest
 
 from cms.grading import Sandbox, WHITES, \
@@ -42,6 +45,7 @@ class TestFormatStatusText(unittest.TestCase):
         return s.replace("A", "E")
 
     def test_success_no_placeholders(self):
+        self.assertEqual(format_status_text([]), "N/A")
         self.assertEqual(format_status_text([""]), "")
         self.assertEqual(format_status_text(["ASD"]), "ASD")
         self.assertEqual(format_status_text(["你好"]), "你好")
@@ -52,6 +56,8 @@ class TestFormatStatusText(unittest.TestCase):
                          "ASDQWE\n123")
 
     def test_success_with_translator(self):
+        self.assertEqual(format_status_text([""], self._tr), "")
+        self.assertEqual(format_status_text(["ASD"], self._tr), "ESD")
         # Translation is applied before formatting.
         self.assertEqual(format_status_text(["A%s", "ASD"], self._tr), "EASD")
         self.assertEqual(
@@ -59,8 +65,12 @@ class TestFormatStatusText(unittest.TestCase):
             "EEE AAA\nAE")
 
     def test_insuccess(self):
+        # Not enough elements for the placeholders.
         self.assertEqual(format_status_text(["%s"]), "N/A")
         self.assertEqual(format_status_text(["%s"], self._tr), "N/E")
+        # No elements at all.
+        self.assertEqual(format_status_text([]), "N/A")
+        self.assertEqual(format_status_text([], self._tr), "N/E")
 
 
 class TestMergeEvaluationResults(unittest.TestCase):
@@ -80,74 +90,94 @@ class TestMergeEvaluationResults(unittest.TestCase):
             r["filename"] = filename
         return r
 
+    def assertRes(self, r0, r1):
+        """Assert that r0 and r1 are the same result."""
+        self.assertAlmostEqual(r0["execution_time"], r1["execution_time"])
+        self.assertAlmostEqual(r0["execution_wall_clock_time"],
+                               r1["execution_wall_clock_time"])
+        self.assertAlmostEqual(r0["execution_memory"], r1["execution_memory"])
+        self.assertEqual(r0["exit_status"], r1["exit_status"])
+        for key in ["syscall", "signal", "filename"]:
+            self.assertEqual(key in r0, key in r1)
+            self.assertEqual(r0.get(key), r1.get(key))
+
     def test_success_status_ok(self):
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
                 self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK)),
             self._res(1.1, 2.0, 300.3, Sandbox.EXIT_OK))
 
     def test_success_first_status_ok(self):
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
                 self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT)),
             self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
                 self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd")),
             self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd"))
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
             self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11"))
 
     def test_success_first_status_not_ok(self):
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
             self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd"),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
             self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd"))
-        self.assertEqual(
+        self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
+            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"))
+        self.assertRes(
+            merge_evaluation_results(
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"),
+                self._res(0, 0, 0, Sandbox.EXIT_OK)),
             self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"))
 
     def test_success_results_are_not_modified(self):
         r0 = self._res(1.0, 2.0, 300, Sandbox.EXIT_OK)
         r1 = self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal="11")
         m = merge_evaluation_results(r0, r1)
-        self.assertEqual(
+        self.assertRes(
             m, self._res(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal="11"))
-        self.assertEqual(
+        self.assertRes(
             r0, self._res(1.0, 2.0, 300, Sandbox.EXIT_OK))
-        self.assertEqual(
+        self.assertRes(
             r1, self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal="11"))
 
 
 class TestWhiteDiff(unittest.TestCase):
 
+    WHITES_STR = "".join(c.decode('utf-8') for c in WHITES)
+
     @staticmethod
     def _diff(s1, s2):
-        return white_diff(StringIO.StringIO(s1), StringIO.StringIO(s2))
+        return white_diff(
+            BytesIO(s1.encode("utf-8")), BytesIO(s2.encode("utf-8")))
 
     def test_no_diff_one_token(self):
         self.assertTrue(self._diff("", ""))
         self.assertTrue(self._diff("1", "1"))
         self.assertTrue(self._diff("a", "a"))
+        self.assertTrue(self._diff("你好", "你好"))
 
     def test_no_diff_one_token_and_whites(self):
         self.assertTrue(self._diff("1   ", "1"))
         self.assertTrue(self._diff("   1", "1"))
-        self.assertTrue(self._diff("1" + "".join(WHITES), "1"))
+        self.assertTrue(self._diff("1" + TestWhiteDiff.WHITES_STR, "1"))
 
     def test_no_diff_one_token_and_trailing_blank_lines(self):
         self.assertTrue(self._diff("1\n", "1"))
@@ -159,7 +189,7 @@ class TestWhiteDiff(unittest.TestCase):
         self.assertTrue(self._diff("1 asd\n\n\n", "   1\tasd  \n"))
         self.assertTrue(self._diff("1 2\n\n\n", "1 2\n"))
         self.assertTrue(self._diff("1\t\r2", "1 2"))
-        self.assertTrue(self._diff("1 2", "1 2" + "".join(WHITES)))
+        self.assertTrue(self._diff("1 2", "1 2" + TestWhiteDiff.WHITES_STR))
 
     def test_diff_wrong_tokens(self):
         self.assertFalse(self._diff("1 2", "12"))
