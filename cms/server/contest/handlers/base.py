@@ -87,6 +87,11 @@ class BaseHandler(CommonRequestHandler):
         self.render("contest_list.html", contest_list=contest_list,
                     **self.r_params)
 
+    def render(self, template_name, **params):
+        t = self.service.jinja2_environment.get_template(template_name)
+        for chunk in t.generate(**params):
+            self.write(chunk)
+
     def prepare(self):
         """This method is executed at the beginning of each request.
 

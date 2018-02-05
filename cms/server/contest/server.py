@@ -46,8 +46,8 @@ from future.builtins.disabled import *
 from future.builtins import *
 
 import logging
-import pkg_resources
 
+from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
 from cmscommon.binary import hex_to_bin, bin_to_b64
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
@@ -68,8 +68,6 @@ class ContestWebServer(WebService):
     """
     def __init__(self, shard, contest_id=None):
         parameters = {
-            "template_path": pkg_resources.resource_filename(
-                "cms.server.contest", "templates"),
             "static_files": [("cms.server", "static"),
                              ("cms.server.contest", "static")],
             "cookie_secret": hex_to_bin(config.secret_key),
@@ -105,6 +103,8 @@ class ContestWebServer(WebService):
             parameters,
             shard=shard,
             listen_address=listen_address)
+
+        self.jinja2_environment = CWS_ENVIRONMENT
 
         # This is a dictionary (indexed by username) of pending
         # notification. Things like "Yay, your submission went
