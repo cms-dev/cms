@@ -127,19 +127,19 @@
 </tr>
 {% endif %}
 
-{% if tokens_contest != 0 and tokens_tasks != 0 %}
+{% if tokens_contest != "disabled" and tokens_tasks != "disabled" %}
 <tr>
     <th>{% trans %}Tokens{% endtrans %}</th>
     <td colspan="2" class="token_rules">
-    {% if tokens_contest == 2 and tokens_tasks == 2 %}
+    {% if tokens_contest == "infinite" and tokens_tasks == "infinite" %}
         <p>
         {% trans %}You have an infinite number of tokens.{% endtrans %}
         </p>
-    {% elif tokens_contest == 2 %}
+    {% elif tokens_contest == "infinite" %}
         <p>
         {{ task|extract_token_params|format_token_rules }}
         </p>
-    {% elif tokens_tasks == 2 %}
+    {% elif tokens_tasks == "infinite" %}
         <p>
         {% trans type_pl=_("tokens"), contest_root=contest_url() %}You can find the rules for the {{ type_pl }} on the <a href="{{ contest_root }}">contest overview page</a>.{% endtrans %}
         </p>
