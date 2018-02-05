@@ -52,9 +52,18 @@ from glob import glob
 USR_ROOT = os.path.join("/", "usr", "local")
 VAR_ROOT = os.path.join("/", "var", "local")
 
+# Do not prompt the user for interactive yes-or-no confirmations:
+# always assume yes! This is useful for programmatic use.
 ALWAYS_YES = False
+# Allow to do operations that should normally be performed as an
+# unprivileged user (e.g., building) as root.
 AS_ROOT = False
+# Do not even try to install configuration files (i.e., copying the
+# samples) when installing.
 NO_CONF = False
+# The user and group that CMS will be run as: will be created and will
+# receive the correct permissions to access isolate, the configuration
+# file and the system directories.
 CMSUSER = "cmsuser"
 
 
@@ -305,11 +314,24 @@ def install():
     # Get real user to run non-sudo commands
     real_user = get_real_user()
 
-    print("===== Creating user and group %s" % CMSUSER)
-    subprocess.call(["useradd", CMSUSER, "-c", "CMS default user",
-                     "-M", "-r", "-s", "/bin/false", "-U"])
-    cmsuser = pwd.getpwnam(CMSUSER)
-    root = pwd.getpwnam("root")
+    try:
+        cmsuser_gr = grp.getgrnam(CMSUSER)
+    except KeyError:
+        print("===== Creating group %s" % CMSUSER)
+        subprocess.check_call(["groupadd", CMSUSER, "--system"])
+        cmsuser_gr = grp.getgrnam(CMSUSER)
+
+    try:
+        cmsuser_pw = pwd.getpwnam(CMSUSER)
+    except KeyError:
+        print("===== Creating user %s" % CMSUSER)
+        subprocess.check_call(["useradd", CMSUSER, "--system",
+                               "--comment", "CMS default user",
+                               "--shell", "/bin/false", "--no-create-home",
+                               "--no-user-group", "--gid", CMSUSER])
+        cmsuser_pw = pwd.getpwnam(CMSUSER)
+
+    root_pw = pwd.getpwnam("root")
 
     if real_user == "root":
         # Run build() command as root
@@ -340,14 +362,14 @@ def install():
         # Skip if destination is a symlink
         if os.path.islink(os.path.join(_dir, "cms")):
             continue
-        makedir(_dir, root, 0o755)
+        makedir(_dir, root_pw, 0o755)
         _dir = os.path.join(_dir, "cms")
-        makedir(_dir, cmsuser, 0o770)
+        makedir(_dir, cmsuser_pw, 0o770)
 
     print("===== Copying Polygon testlib")
     path = os.path.join("cmscontrib", "loaders", "polygon", "testlib.h")
     dest_path = os.path.join(USR_ROOT, "include", "cms", "testlib.h")
-    copyfile(path, dest_path, root, 0o644)
+    copyfile(path, dest_path, root_pw, 0o644)
 
     os.umask(old_umask)
 
@@ -422,11 +444,25 @@ def uninstall():
 
     print("===== Deleting user and group %s" % CMSUSER)
     try:
-        for user in grp.getgrnam(CMSUSER).gr_mem:
-            subprocess.call(["gpasswd", "-d", user, CMSUSER])
-        subprocess.call(["userdel", CMSUSER])
+        # Just to check whether it exists.
+        pwd.getpwnam(CMSUSER)
     except KeyError:
-        print("[Warning] Group %s not found" % CMSUSER)
+        pass
+    else:
+        if ask("Do you want to delete user %s? [y/N] " % CMSUSER):
+            subprocess.check_call(["userdel", CMSUSER])
+    try:
+        # Just to check whether it exists.
+        grp.getgrnam(CMSUSER)
+    except KeyError:
+        pass
+    else:
+        if ask("Do you want to delete group %s? [y/N] " % CMSUSER):
+            subprocess.check_call(["groupdel", CMSUSER])
+        elif ask("Do you want to remove all users from group %s? [y/N] "
+                 % CMSUSER):
+            for user in grp.getgrnam(CMSUSER).gr_mem:
+                subprocess.check_call(["gpasswd", "-d", user, CMSUSER])
 
     print("===== Done")
 
@@ -472,12 +508,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.yes:
-        ALWAYS_YES = True
-    if args.no_conf:
-        NO_CONF = True
-    if args.as_root:
-        AS_ROOT = True
+    ALWAYS_YES = args.yes
+    NO_CONF = args.no_conf
+    AS_ROOT = args.as_root
     CMSUSER = args.cmsuser
 
     if not hasattr(args, "func"):
