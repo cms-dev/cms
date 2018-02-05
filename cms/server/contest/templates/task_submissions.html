@@ -78,8 +78,6 @@ $(document).ready(function () {
 
 {% block core %}
 
-{% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
-
 <div class="span9 task_submissions">
 
 <div class="page-header">
@@ -300,6 +298,4 @@ $(document).ready(function () {
 </div>
 
 </div>
-{% endif %}
-
 {% endblock core %}
