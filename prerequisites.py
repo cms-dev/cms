@@ -32,23 +32,39 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from future.builtins.disabled import *
-from future.builtins import *
+# Do not use imports from the future module here as this script is
+# called as root and thus may get a different environment than the one
+# the user will be using and in which the requirements were installed
+# (e.g. the site installation rather than a venv).
 
-import sys
-import os
-import shutil
-import re
-import pwd
-import grp
 import argparse
-
+import grp
+import os
+import pwd
+import re
+import shutil
+import subprocess
+import sys
 from glob import glob
 
 
 # Root directories for the /usr and /var trees.
 USR_ROOT = os.path.join("/", "usr", "local")
 VAR_ROOT = os.path.join("/", "var", "local")
+
+# Do not prompt the user for interactive yes-or-no confirmations:
+# always assume yes! This is useful for programmatic use.
+ALWAYS_YES = False
+# Allow to do operations that should normally be performed as an
+# unprivileged user (e.g., building) as root.
+AS_ROOT = False
+# Do not even try to install configuration files (i.e., copying the
+# samples) when installing.
+NO_CONF = False
+# The user and group that CMS will be run as: will be created and will
+# receive the correct permissions to access isolate, the configuration
+# file and the system directories.
+CMSUSER = "cmsuser"
 
 
 def copyfile(src, dest, owner, perm, group=None):
@@ -134,7 +150,7 @@ def ask(message):
     - the "-y" flag was set as a CLI argument
 
     """
-    return "-y" in sys.argv or input(message) in ["Y", "y"]
+    return ALWAYS_YES or input(message) in ["Y", "y"]
 
 
 def assert_root():
@@ -152,7 +168,7 @@ def assert_not_root():
     if needed. If the --as-root flag is set, this function does nothing.
 
     """
-    if "--as-root" in sys.argv:
+    if AS_ROOT:
         return
 
     if os.geteuid() == 0:
@@ -167,7 +183,7 @@ def get_real_user():
     --as-root flag is set, this function returns "root".
 
     """
-    if "--as-root" in sys.argv:
+    if AS_ROOT:
         return "root"
 
     name = os.getenv("SUDO_USER")
@@ -183,271 +199,322 @@ def get_real_user():
     return name
 
 
-class CLI(object):
+def build_l10n():
+    """This function compiles localization files.
 
-    def __init__(self):
-        parser = argparse.ArgumentParser(
-            description='Script used to manage prerequisites for CMS',
-            usage="""%s <command> [<args>] [-y] [--as-root]
+    """
+    assert_not_root()
 
-Available commands:
-   build_l10n        Build localization files
-   build_isolate     Build "isolate" sandbox
-   build             Build everything
-   install_isolate   Install "isolate" sandbox (requires root)
-   install           Install everything (requires root)
-   uninstall         Uninstall everything (requires root)
-
-Options:
-   -y                Don't ask questions interactively (assume "y")
-   --no-conf         Don't install configuration files
-   --as-root         (DON'T USE) Allow running non-root commands as root
-""" % (sys.argv[0]))
-
-        parser.add_argument('command', help='Subcommand to run')
-        # parse_args defaults to [1:] for args, but you need to
-        # exclude the rest of the args too, or validation will fail
-        args = parser.parse_args(sys.argv[1:2])
-        if not hasattr(self, args.command):
-            print('Unrecognized command')
-            parser.print_help()
-            exit(1)
-        # use dispatch pattern to invoke method with same name
-        getattr(self, args.command)()
-
-    def build_l10n(self):
-        """This function compiles localization files.
-
-        """
-        assert_not_root()
-
-        print("===== Compiling localization files")
-        for locale in glob(os.path.join("cms", "locale", "*")):
-            if os.path.isdir(locale) \
-                    and not os.path.basename(locale).startswith("_"):
-                country_code = os.path.basename(locale)
-                print("  %s" % country_code)
-                path = os.path.join(
-                    "cms", "locale", country_code, "LC_MESSAGES")
-                locale = os.path.join(locale, "LC_MESSAGES", "cms.po")
-                os.system(
-                    "msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
-
-    def build_isolate(self):
-        """This function compiles the isolate sandbox.
-
-        """
-        assert_not_root()
-
-        print("===== Compiling isolate")
-        os.chdir("isolate")
-        # We make only the executable isolate, otherwise the tool a2x
-        # is needed and we have to add more compilation dependencies.
-        os.system("make isolate")
-        os.chdir("..")
-
-    def install_isolate(self):
-        """This function installs the isolate sandbox.
-
-        """
-        assert_root()
-        root = pwd.getpwnam("root")
-        try:
-            cmsuser_grp = grp.getgrnam("cmsuser")
-        except:
-            print("[Error] The cmsuser doesn't exist yet")
-            print("[Error] You need to run the install command at least once")
-            exit(1)
-
-        # Check if build_isolate() has been called
-        if not os.path.exists(os.path.join("isolate", "isolate")):
-            print("[Error] You must run the build_isolate command first")
-            exit(1)
-
-        print("===== Copying isolate to /usr/local/bin/")
-        makedir(os.path.join(USR_ROOT, "bin"), root, 0o755)
-        copyfile(os.path.join(".", "isolate", "isolate"),
-                 os.path.join(USR_ROOT, "bin", "isolate"),
-                 root, 0o4750, group=cmsuser_grp)
-
-        print("===== Copying isolate config to /usr/local/etc/")
-        makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
-        copyfile(os.path.join(".", "isolate", "default.cf"),
-                 os.path.join(USR_ROOT, "etc", "isolate"),
-                 root, 0o640, group=cmsuser_grp)
-
-    def build(self):
-        """This function builds all the prerequisites by calling:
-        - build_l10n
-        - build_isolate
-
-        """
-        self.build_l10n()
-        self.build_isolate()
-
-    def install_conf(self):
-        """Install configuration files"""
-        assert_root()
-
-        print("===== Copying configuration to /usr/local/etc/")
-        root = pwd.getpwnam("root")
-        cmsuser = pwd.getpwnam("cmsuser")
-        makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
-        for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
-            conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
-            # Skip if destination is a symlink
-            if os.path.islink(conf_file):
-                continue
-            # If the config exists, check if the user wants to overwrite it
-            if os.path.exists(conf_file):
-                if not ask("The %s file is already installed, "
-                           "type Y to overwrite it: " % (conf_file_name)):
-                    continue
-            if os.path.exists(os.path.join(".", "config", conf_file_name)):
-                copyfile(os.path.join(".", "config", conf_file_name),
-                         conf_file, cmsuser, 0o660)
-            else:
-                conf_file_name = "%s.sample" % conf_file_name
-                copyfile(os.path.join(".", "config", conf_file_name),
-                         conf_file, cmsuser, 0o660)
-
-    def install(self):
-        """This function prepares all that's needed to run CMS:
-        - creation of cmsuser user
-        - compilation and installation of isolate
-        - compilation and installation of localization files
-        - installation of configuration files
-        and so on.
-
-        """
-        assert_root()
-
-        # Get real user to run non-sudo commands
-        real_user = get_real_user()
-
-        print("===== Creating user and group cmsuser")
-        os.system(
-            "useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
-        cmsuser = pwd.getpwnam("cmsuser")
-        root = pwd.getpwnam("root")
-
-        if real_user == "root":
-            # Run build() command as root
-            self.build()
-        else:
-            # Run build() command as not root
-            if os.system("sudo -u %s %s build" % (real_user, sys.argv[0])):
-                exit(1)
-
-        self.install_isolate()
-
-        # We set permissions for each manually installed files, so we want
-        # max liberty to change them.
-        old_umask = os.umask(0o000)
-
-        if "--no-conf" not in sys.argv:
-            self.install_conf()
-
-        print("===== Creating directories")
-        dirs = [os.path.join(VAR_ROOT, "log"),
-                os.path.join(VAR_ROOT, "cache"),
-                os.path.join(VAR_ROOT, "lib"),
-                os.path.join(VAR_ROOT, "run"),
-                os.path.join(USR_ROOT, "include"),
-                os.path.join(USR_ROOT, "share")]
-        for _dir in dirs:
-            # Skip if destination is a symlink
-            if os.path.islink(os.path.join(_dir, "cms")):
-                continue
-            makedir(_dir, root, 0o755)
-            _dir = os.path.join(_dir, "cms")
-            makedir(_dir, cmsuser, 0o770)
-
-        print("===== Copying Polygon testlib")
-        path = os.path.join("cmscontrib", "loaders", "polygon", "testlib.h")
-        dest_path = os.path.join(USR_ROOT, "include", "cms", "testlib.h")
-        copyfile(path, dest_path, root, 0o644)
-
-        os.umask(old_umask)
-
-        if real_user != "root":
-            print("===== Adding yourself to the cmsuser group")
-            if ask("Type Y if you want me to automatically add "
-                   "\"%s\" to the cmsuser group: " % (real_user)):
-                os.system("usermod -a -G cmsuser %s" % (real_user))
-                print("""
-    ###########################################################################
-    ###                                                                     ###
-    ###    Remember that you must now logout in order to make the change    ###
-    ###    effective ("the change" is: being in the cmsuser group).         ###
-    ###                                                                     ###
-    ###########################################################################
-                """)
-            else:
-                print("""
-    ###########################################################################
-    ###                                                                     ###
-    ###    Remember that you must be in the cmsuser group to use CMS:       ###
-    ###                                                                     ###
-    ###       $ sudo usermod -a -G cmsuser <your user>                      ###
-    ###                                                                     ###
-    ###    You must also logout to make the change effective.               ###
-    ###                                                                     ###
-    ###########################################################################
-                """)
-
-    def uninstall(self):
-        """This function deletes all that was installed by the install()
-        function:
-        - deletion of the cmsuser user
-        - deletion of isolate
-        - deletion of localization files
-        - deletion of configuration files
-        and so on.
-
-        """
-        assert_root()
-
-        print("===== Deleting isolate from /usr/local/bin/")
-        try_delete(os.path.join(USR_ROOT, "bin", "isolate"))
-
-        print("===== Deleting configuration to /usr/local/etc/")
-        if ask("Type Y if you really want to remove configuration files: "):
-            for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
-                try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
-
-        print("===== Deleting localization files")
-        for locale in glob(os.path.join("po", "*.po")):
-            country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
+    print("===== Compiling localization files")
+    for locale in glob(os.path.join("cms", "locale", "*")):
+        if os.path.isdir(locale) \
+                and not os.path.basename(locale).startswith("_"):
+            country_code = os.path.basename(locale)
             print("  %s" % country_code)
-            dest_path = os.path.join(USR_ROOT, "share", "locale",
-                                     country_code, "LC_MESSAGES")
-            try_delete(os.path.join(dest_path, "cms.mo"))
+            path = os.path.join(
+                "cms", "locale", country_code, "LC_MESSAGES")
+            locale = os.path.join(locale, "LC_MESSAGES", "cms.po")
+            subprocess.call(
+                ["msgfmt", locale, "-o", os.path.join(path, "cms.mo")])
 
-        print("===== Deleting empty directories")
-        dirs = [os.path.join(VAR_ROOT, "log"),
-                os.path.join(VAR_ROOT, "cache"),
-                os.path.join(VAR_ROOT, "lib"),
-                os.path.join(VAR_ROOT, "run"),
-                os.path.join(USR_ROOT, "include"),
-                os.path.join(USR_ROOT, "share")]
-        for _dir in dirs:
-            if os.listdir(_dir) == []:
-                try_delete(_dir)
 
-        print("===== Deleting Polygon testlib")
-        try_delete(os.path.join(USR_ROOT, "include", "cms", "testlib.h"))
+def build_isolate():
+    """This function compiles the isolate sandbox.
 
-        print("===== Deleting user and group cmsuser")
-        try:
-            for user in grp.getgrnam("cmsuser").gr_mem:
-                os.system("gpasswd -d %s cmsuser" % (user))
-            os.system("userdel cmsuser")
-        except KeyError:
-            print("[Warning] Group cmsuser not found")
+    """
+    assert_not_root()
 
-        print("===== Done")
+    print("===== Compiling isolate")
+    os.chdir("isolate")
+    # We make only the executable isolate, otherwise the tool a2x
+    # is needed and we have to add more compilation dependencies.
+    subprocess.call(["make", "isolate"])
+    os.chdir("..")
+
+
+def install_isolate():
+    """This function installs the isolate sandbox.
+
+    """
+    assert_root()
+    root = pwd.getpwnam("root")
+    try:
+        cmsuser_grp = grp.getgrnam(CMSUSER)
+    except:
+        print("[Error] The user %s doesn't exist yet" % CMSUSER)
+        print("[Error] You need to run the install command at least once")
+        exit(1)
+
+    # Check if build_isolate() has been called
+    if not os.path.exists(os.path.join("isolate", "isolate")):
+        print("[Error] You must run the build_isolate command first")
+        exit(1)
+
+    print("===== Copying isolate to /usr/local/bin/")
+    makedir(os.path.join(USR_ROOT, "bin"), root, 0o755)
+    copyfile(os.path.join(".", "isolate", "isolate"),
+             os.path.join(USR_ROOT, "bin", "isolate"),
+             root, 0o4750, group=cmsuser_grp)
+
+    print("===== Copying isolate config to /usr/local/etc/")
+    makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
+    copyfile(os.path.join(".", "isolate", "default.cf"),
+             os.path.join(USR_ROOT, "etc", "isolate"),
+             root, 0o640, group=cmsuser_grp)
+
+
+def build():
+    """This function builds all the prerequisites by calling:
+    - build_l10n
+    - build_isolate
+
+    """
+    build_l10n()
+    build_isolate()
+
+
+def install_conf():
+    """Install configuration files"""
+    assert_root()
+
+    print("===== Copying configuration to /usr/local/etc/")
+    root = pwd.getpwnam("root")
+    cmsuser = pwd.getpwnam(CMSUSER)
+    makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
+    for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+        conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
+        # Skip if destination is a symlink
+        if os.path.islink(conf_file):
+            continue
+        # If the config exists, check if the user wants to overwrite it
+        if os.path.exists(conf_file):
+            if not ask("The %s file is already installed, "
+                       "type Y to overwrite it: " % (conf_file_name)):
+                continue
+        if os.path.exists(os.path.join(".", "config", conf_file_name)):
+            copyfile(os.path.join(".", "config", conf_file_name),
+                     conf_file, cmsuser, 0o660)
+        else:
+            conf_file_name = "%s.sample" % conf_file_name
+            copyfile(os.path.join(".", "config", conf_file_name),
+                     conf_file, cmsuser, 0o660)
+
+
+def install():
+    """This function prepares all that's needed to run CMS:
+    - creation of cmsuser user
+    - compilation and installation of isolate
+    - compilation and installation of localization files
+    - installation of configuration files
+    and so on.
+
+    """
+    assert_root()
+
+    # Get real user to run non-sudo commands
+    real_user = get_real_user()
+
+    try:
+        cmsuser_gr = grp.getgrnam(CMSUSER)
+    except KeyError:
+        print("===== Creating group %s" % CMSUSER)
+        subprocess.check_call(["groupadd", CMSUSER, "--system"])
+        cmsuser_gr = grp.getgrnam(CMSUSER)
+
+    try:
+        cmsuser_pw = pwd.getpwnam(CMSUSER)
+    except KeyError:
+        print("===== Creating user %s" % CMSUSER)
+        subprocess.check_call(["useradd", CMSUSER, "--system",
+                               "--comment", "CMS default user",
+                               "--shell", "/bin/false", "--no-create-home",
+                               "--no-user-group", "--gid", CMSUSER])
+        cmsuser_pw = pwd.getpwnam(CMSUSER)
+
+    root_pw = pwd.getpwnam("root")
+
+    if real_user == "root":
+        # Run build() command as root
+        build()
+    else:
+        # Run build() command as not root
+        if subprocess.call(["sudo", "-E", "-u", real_user,
+                            sys.executable, sys.argv[0], "build"]):
+            exit(1)
+
+    install_isolate()
+
+    # We set permissions for each manually installed files, so we want
+    # max liberty to change them.
+    old_umask = os.umask(0o000)
+
+    if not NO_CONF:
+        install_conf()
+
+    print("===== Creating directories")
+    dirs = [os.path.join(VAR_ROOT, "log"),
+            os.path.join(VAR_ROOT, "cache"),
+            os.path.join(VAR_ROOT, "lib"),
+            os.path.join(VAR_ROOT, "run"),
+            os.path.join(USR_ROOT, "include"),
+            os.path.join(USR_ROOT, "share")]
+    for _dir in dirs:
+        # Skip if destination is a symlink
+        if os.path.islink(os.path.join(_dir, "cms")):
+            continue
+        makedir(_dir, root_pw, 0o755)
+        _dir = os.path.join(_dir, "cms")
+        makedir(_dir, cmsuser_pw, 0o770)
+
+    print("===== Copying Polygon testlib")
+    path = os.path.join("cmscontrib", "loaders", "polygon", "testlib.h")
+    dest_path = os.path.join(USR_ROOT, "include", "cms", "testlib.h")
+    copyfile(path, dest_path, root_pw, 0o644)
+
+    os.umask(old_umask)
+
+    if real_user != "root":
+        print("===== Adding yourself to the %s group" % CMSUSER)
+        if ask("Type Y if you want me to automatically add "
+               "\"%s\" to the %s group: " % (real_user, CMSUSER)):
+            subprocess.call(["usermod", "-a", "-G", CMSUSER, real_user])
+            print("""
+###########################################################################
+###                                                                     ###
+###    Remember that you must now logout in order to make the change    ###
+###    effective ("the change" is: being in the %s group).         ###
+###                                                                     ###
+###########################################################################
+            """ % CMSUSER)
+        else:
+            print("""
+###########################################################################
+###                                                                     ###
+###    Remember that you must be in the %s group to use CMS:       ###
+###                                                                     ###
+###       $ sudo usermod -a -G %s <your user>                      ###
+###                                                                     ###
+###    You must also logout to make the change effective.               ###
+###                                                                     ###
+###########################################################################
+            """ % (CMSUSER, CMSUSER))
+
+
+def uninstall():
+    """This function deletes all that was installed by the install()
+    function:
+    - deletion of the cmsuser user
+    - deletion of isolate
+    - deletion of localization files
+    - deletion of configuration files
+    and so on.
+
+    """
+    assert_root()
+
+    print("===== Deleting isolate from /usr/local/bin/")
+    try_delete(os.path.join(USR_ROOT, "bin", "isolate"))
+
+    print("===== Deleting configuration to /usr/local/etc/")
+    if ask("Type Y if you really want to remove configuration files: "):
+        for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+            try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
+
+    print("===== Deleting localization files")
+    for locale in glob(os.path.join("po", "*.po")):
+        country_code = re.search(r"/([^/]*)\.po", locale).groups()[0]
+        print("  %s" % country_code)
+        dest_path = os.path.join(USR_ROOT, "share", "locale",
+                                 country_code, "LC_MESSAGES")
+        try_delete(os.path.join(dest_path, "cms.mo"))
+
+    print("===== Deleting empty directories")
+    dirs = [os.path.join(VAR_ROOT, "log"),
+            os.path.join(VAR_ROOT, "cache"),
+            os.path.join(VAR_ROOT, "lib"),
+            os.path.join(VAR_ROOT, "run"),
+            os.path.join(USR_ROOT, "include"),
+            os.path.join(USR_ROOT, "share")]
+    for _dir in dirs:
+        if os.listdir(_dir) == []:
+            try_delete(_dir)
+
+    print("===== Deleting Polygon testlib")
+    try_delete(os.path.join(USR_ROOT, "include", "cms", "testlib.h"))
+
+    print("===== Deleting user and group %s" % CMSUSER)
+    try:
+        # Just to check whether it exists.
+        pwd.getpwnam(CMSUSER)
+    except KeyError:
+        pass
+    else:
+        if ask("Do you want to delete user %s? [y/N] " % CMSUSER):
+            subprocess.check_call(["userdel", CMSUSER])
+    try:
+        # Just to check whether it exists.
+        grp.getgrnam(CMSUSER)
+    except KeyError:
+        pass
+    else:
+        if ask("Do you want to delete group %s? [y/N] " % CMSUSER):
+            subprocess.check_call(["groupdel", CMSUSER])
+        elif ask("Do you want to remove all users from group %s? [y/N] "
+                 % CMSUSER):
+            for user in grp.getgrnam(CMSUSER).gr_mem:
+                subprocess.check_call(["gpasswd", "-d", user, CMSUSER])
+
+    print("===== Done")
 
 
 if __name__ == '__main__':
-    CLI()
+    parser = argparse.ArgumentParser(
+        description='Script used to manage prerequisites for CMS')
+
+    parser.add_argument(
+        "-y", "--yes", action="store_true",
+        help="Don't ask questions interactively")
+    parser.add_argument(
+        "--no-conf", action="store_true",
+        help="Don't install configuration files")
+    parser.add_argument(
+        "--as-root", action="store_true",
+        help="(DON'T USE) Allow running non-root commands as root")
+    parser.add_argument(
+        "--cmsuser", action="store", type=str, default=CMSUSER,
+        help="(DON'T USE) The user CMS will be run as"
+    )
+
+    subparsers = parser.add_subparsers(metavar="command",
+                                       help="Subcommand to run")
+    subparsers.add_parser("build_l10n",
+                          help="Build localization files") \
+        .set_defaults(func=build_l10n)
+    subparsers.add_parser("build_isolate",
+                          help="Build \"isolate\" sandbox") \
+        .set_defaults(func=build_isolate)
+    subparsers.add_parser("build",
+                          help="Build everything") \
+        .set_defaults(func=build)
+    subparsers.add_parser("install_isolate",
+                          help="Install \"isolate\" sandbox (requires root)") \
+        .set_defaults(func=install_isolate)
+    subparsers.add_parser("install",
+                          help="Install everything (requires root)") \
+        .set_defaults(func=install)
+    subparsers.add_parser("uninstall",
+                          help="Uninstall everything (requires root)") \
+        .set_defaults(func=uninstall)
+
+    args = parser.parse_args()
+
+    ALWAYS_YES = args.yes
+    NO_CONF = args.no_conf
+    AS_ROOT = args.as_root
+    CMSUSER = args.cmsuser
+
+    if not hasattr(args, "func"):
+        parser.error("Please specify a command to run. "
+                     "Use \"--help\" for more information.")
+
+    args.func()
