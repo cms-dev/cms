@@ -83,5 +83,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except ConfigError as error:
-        logger.critical(error.message)
+        logger.critical(error)
         sys.exit(1)

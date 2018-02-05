@@ -140,7 +140,7 @@ class TaskType(object):
                 new_parameters.append(new_value)
             except ValueError as error:
                 raise ValueError("Invalid parameter %s: %s."
-                                 % (parameter.name, error.message))
+                                 % (parameter.name, error))
         return new_parameters
 
     def __init__(self, parameters):

@@ -126,8 +126,7 @@ class SubmitHandler(ContestHandler):
                                "at most %d submissions on this task.") %
                         task.max_submission_number)
         except ValueError as error:
-            self._send_error(
-                self._("Too many submissions!"), error.message)
+            self._send_error(self._("Too many submissions!"), str(error))
             return
 
         # Enforce minimum time between submissions
@@ -165,8 +164,7 @@ class SubmitHandler(ContestHandler):
                                "after %d seconds from last submission.") %
                         task.min_submission_interval.total_seconds())
         except ValueError as error:
-            self._send_error(
-                self._("Submissions too frequent!"), error.message)
+            self._send_error(self._("Submissions too frequent!"), str(error))
             return
 
         # Required files from the user.

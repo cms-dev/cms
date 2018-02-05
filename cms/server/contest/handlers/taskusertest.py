@@ -195,7 +195,7 @@ class UserTestHandler(ContestHandler):
                                "at most %d tests on this task.") %
                         task.max_user_test_number)
         except ValueError as error:
-            self._send_error(self._("Too many tests!"), error.message)
+            self._send_error(self._("Too many tests!"), str(error))
             return
 
         # Enforce minimum time between user_tests
@@ -233,7 +233,7 @@ class UserTestHandler(ContestHandler):
                                "after %d seconds from last test.") %
                         task.min_user_test_interval.total_seconds())
         except ValueError as error:
-            self._send_error(self._("Tests too frequent!"), error.message)
+            self._send_error(self._("Tests too frequent!"), str(error))
             return
 
         # Required files from the user.
