@@ -13,11 +13,7 @@
 
 <h2>{% trans %}General information{% endtrans %}</h2>
 <div class="row">
-{% if contest.per_user_time is not none %}
-    <div class="span5">
-{% else %}
-    <div class="span9">
-{% endif %}
+    <div class="{% if contest.per_user_time is not none %}span5{% else %}span9{% endif %}">
         <p>
 {% if phase == -1 %}
         {% trans %}The contest hasn't started yet.{% endtrans %}
