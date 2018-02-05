@@ -12,29 +12,46 @@ python:
 addons:
   postgresql: "9.5"
 
-install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y build-essential php5-cli haskell-platform
-  - sudo apt-get install -y fp-compiler fp-units-base fp-units-fcl fp-units-misc fp-units-math fp-units-rtl
-  - sudo apt-get install -y postgresql-client gettext python2.7 iso-codes shared-mime-info stl-manual cgroup-lite libcap-dev
-  - sudo apt-get install -y python-dev libpq-dev libcups2-dev libyaml-dev wget
-  - sudo apt-get install -y mono-mcs
+  apt:
+    packages:
+      - build-essential
+      - php5-cli
+      - haskell-platform
+      - fp-compiler
+      - fp-units-base
+      - fp-units-fcl
+      - fp-units-misc
+      - fp-units-math
+      - fp-units-rtl
+      - postgresql-client
+      - gettext
+      - python2.7
+      - iso-codes
+      - shared-mime-info
+      - stl-manual
+      - cgroup-lite
+      - libcap-dev
+      - python-dev
+      - libpq-dev
+      - libcups2-dev
+      - libyaml-dev
+      - wget
+      - mono-mcs
 
+install:
   - wget "https://static.rust-lang.org/dist/rust-1.15.1-x86_64-unknown-linux-gnu.tar.gz"
   - tar xf rust-1.15.1-x86_64-unknown-linux-gnu.tar.gz
   - pushd rust-1.15.1-x86_64-unknown-linux-gnu
   - sudo ./install.sh --prefix=/usr
   - popd
 
-  - sudo pip install -r requirements.txt
-  - sudo pip install -r dev-requirements.txt
-# We need to build psycopg2 from source on Travis because of https://github.com/psycopg/psycopg2/issues/543
-  - sudo pip install 'psycopg2>=2.7,<2.8' --no-binary psycopg2 --ignore-installed
+  - pip install -r requirements.txt
+  - pip install -r dev-requirements.txt
 
-  - cp ./config/cms.conf.sample ./config/cms.conf
-  - sudo ./prerequisites.py install -y
-  - sudo python setup.py install
+  - sudo python prerequisites.py -y --cmsuser=$USER install
+  - python setup.py install
 
+before_script:
   - psql --username=postgres --command="CREATE USER cmsuser WITH PASSWORD 'your_password_here';"
 
   - createdb --username=postgres --owner=cmsuser cmsdb
@@ -45,15 +62,13 @@ install:
   - psql --username=postgres --dbname=cmsdbfortesting --command='ALTER SCHEMA public OWNER TO cmsuser'
   - psql --username=postgres --dbname=cmsdbfortesting --command='GRANT SELECT ON pg_largeobject TO cmsuser'
 
-# Debugging info
-  - sudo chown root:$USER /usr/local/bin/isolate /usr/local/etc/cms.conf
-  - ls -al /usr/local/bin/isolate /usr/local/etc/cms.conf
-  - groups
+  - cp ./config/cms.conf.sample ./config/cms.conf
+  - 'sed -e "s/\"cmsuser\": \"cmsuser\"/\"cmsuser\": \"$USER\"/" -i ./config/cms.conf'
 
-  - sudo cmsInitDB
+  - cmsInitDB
 
 script:
-  - sudo cmsRunTests -v
+  - cmsRunTests -v
 
 notifications:
   email: no
