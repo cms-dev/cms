@@ -35,17 +35,6 @@ from future.moves.urllib.parse import quote
 from cms.locale import DEFAULT_TRANSLATION
 
 
-# Dummy functions to mark strings for translation: N_ is a dummy for
-# gettext/_ and Nn_ is a dummy for ngettext/n_ (for plural forms).
-def N_(msgid):
-    pass
-
-
-# Some strings in templates that for some reason don't get included in cms.pot.
-N_("loading...")
-N_("unknown")
-
-
 def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):
     """Return a human-readable string describing the given token rules
 
