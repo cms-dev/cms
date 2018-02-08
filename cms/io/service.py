@@ -40,7 +40,6 @@ import os
 import pwd
 import signal
 import socket
-import _socket
 import time
 
 import gevent
@@ -270,7 +269,8 @@ class Service(object):
         else:
             logger.warning("A backdoor socket has been found and deleted.")
         mkdir(os.path.dirname(backdoor_path))
-        backdoor_sock = _socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        backdoor_sock = gevent.socket.socket(socket.AF_UNIX,
+                                             socket.SOCK_STREAM)
         backdoor_sock.setblocking(0)
         backdoor_sock.bind(backdoor_path)
         user = pwd.getpwnam(config.cmsuser)
