@@ -84,6 +84,7 @@ div.message_list div.message h4.subject.empty {
 }
 
 /* Add some distance between the announcement header and its content */
+/* Also make sure the line breaks in the body text are preserved */
 
 div.announcement_list div.announcement div.body,
 div.question_list div.question div.body,
@@ -91,6 +92,7 @@ div.question_list div.answer div.body,
 div.message_list div.message div.body {
     padding-top: 5px;
     clear: both;
+    white-space: pre-line;
 }
 
 /* Give some style to the "no answer" placeholder */
