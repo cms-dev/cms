@@ -900,7 +900,7 @@ msgstr "Ukazi za prevajanje"
 msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/\">contest overview page</a>."
 msgstr "Pravila za %(type_pl)s so dostopna na <a href=\"%(contest_root)s/\">pregledni strani</a>."
 
-msgid "Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
 msgstr "Če želiš videti podrobnejši izzid oddaje, moraš uporabiti oba žetona."
 
 msgid "Attachments"

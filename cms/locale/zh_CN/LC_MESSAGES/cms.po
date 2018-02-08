@@ -957,7 +957,7 @@ msgstr ""
 "在<a href=\"%(contest_root)s/\">竞赛概况</a>中, 可以看到 %(type_pl)s 的使用规则."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr "请注意: 欲查看详细的评测结果, 须使用竞赛-Token 与题目-Token 各一枚."
 

@@ -1001,7 +1001,7 @@ msgstr ""
 "ページ</a>を参照してください。"
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "提出に対する詳細な結果を見るためには、コンテストトークンと課題トークンの両方"

@@ -1052,7 +1052,7 @@ msgstr ""
 "\">странице информации о контесте</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Помните, что для того, чтобы увидеть детальный результат отправки, вам "

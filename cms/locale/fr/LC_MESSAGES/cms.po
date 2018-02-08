@@ -1035,7 +1035,7 @@ msgstr ""
 "\">la page générale du concours</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Rappelez-vous que pour voir les résultats détaillés d'une soumission, vous "

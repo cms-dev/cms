@@ -1065,7 +1065,7 @@ msgstr ""
 "\">pagina di panormica della gara</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Ricorda che per vedere i risultati dettagliati di una sottoposizione devi "

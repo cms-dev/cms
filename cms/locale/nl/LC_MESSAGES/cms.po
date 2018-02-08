@@ -1021,7 +1021,7 @@ msgstr ""
 "\">overzichtspagina van de wedstrijd</a> vinden."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Onthoud dat je om een gedetailleerd resultaat te bekijken van een inzending, "

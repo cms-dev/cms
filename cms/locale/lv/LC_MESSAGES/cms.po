@@ -1068,7 +1068,7 @@ msgstr ""
 "\">sacensību apskata lapā</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Lai aplūkotu iesūtījuma detalizētus rezultātus, nepieciešams izmantot gan "

@@ -1056,7 +1056,7 @@ msgstr ""
 "%(type_pl)s taisykles."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Nepamiršk, jog norėdamas pamatyti detalius pateikto sprendimo rezultatus "

@@ -996,7 +996,7 @@ msgstr ""
 "tổng quan kì thi</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Chú ý rằng để xem chi tiết chấm của một bài nộp bạn cần sử dụng một contest-"

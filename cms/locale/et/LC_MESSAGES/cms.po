@@ -1077,7 +1077,7 @@ msgstr ""
 
 #, fuzzy
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Pane tähele, et esitatud lahenduse tulemuste detailvaate nägemiseks pead "

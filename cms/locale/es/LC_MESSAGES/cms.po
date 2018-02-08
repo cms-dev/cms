@@ -1023,7 +1023,7 @@ msgstr ""
 "\">aquí</a>."
 
 msgid ""
-"Remeber that to see the detailed result of a submission you need to use both "
+"Remember that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr ""
 "Recuerde que para ver el resultado detallado de un envío, debe utilizar "
