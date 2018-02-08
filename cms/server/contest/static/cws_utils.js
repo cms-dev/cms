@@ -25,11 +25,15 @@
 
 var CMS = CMS || {};
 
-CMS.CWSUtils = function(url_root, contest_root, timestamp, timezoned_timestamp,
+CMS.CWSUtils = function(url_root, contest_root, contest_name, timestamp, timezoned_timestamp,
                         current_phase_begin, current_phase_end, phase) {
     this.url = CMS.CWSUtils.create_url_builder(url_root);
     this.contest_url = CMS.CWSUtils.create_url_builder(contest_root);
-    this.last_notification = timestamp;
+    this.contest_name = contest_name;
+    this.last_notification = localStorage.getItem(this.contest_name + "_last_notification");
+    if (this.last_notification !== null) {
+        this.last_notification = parseFloat(this.last_notification);
+    }
     this.server_timestamp = timestamp;
     this.server_timezoned_timestamp = timezoned_timestamp;
     this.client_timestamp = $.now() / 1000;
@@ -37,7 +41,8 @@ CMS.CWSUtils = function(url_root, contest_root, timestamp, timezoned_timestamp,
     this.current_phase_end = current_phase_end;
     this.phase = phase;
     this.remaining_div = null;
-    this.unread_count = 0;
+    this.unread_count = localStorage.getItem(this.contest_name + "_unread_count");
+    this.unread_count = this.unread_count !== null ? parseInt(this.unread_count) : 0;
 
     // Ask permission for desktop notifications
     if ("Notification" in window) {
@@ -60,36 +65,32 @@ CMS.CWSUtils.create_url_builder = function(url_root) {
 };
 
 
-CMS.CWSUtils.prototype.update_notifications = function() {
+CMS.CWSUtils.prototype.update_notifications = function(hush) {
     var self = this;
     $.get(
         this.contest_url("notifications"),
-        {"last_notification": this.last_notification},
+        this.last_notification !== null ? {"last_notification": this.last_notification} : {},
         function(data) {
-            var counter = 0;
             for (var i = 0; i < data.length; i += 1) {
                 self.display_notification(
                     data[i].type,
                     data[i].timestamp,
                     data[i].subject,
                     data[i].text,
-                    data[i].level);
+                    data[i].level,
+                    hush);
                 if (data[i].type != "notification") {
-                    counter += 1;
+                    self.update_unread_count(1);
+                    self.update_last_notification(data[i].timestamp);
                 }
             }
-            self.update_unread_counts(counter);
         }, "json");
 };
 
 
 CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
                                                        subject, text,
-                                                       level) {
-    if (this.last_notification < timestamp) {
-        this.last_notification = timestamp;
-    }
-
+                                                       level, hush) {
     // TODO somehow display timestamp, subject and text
 
     var alert = $('<div class="alert alert-block notification">' +
@@ -118,7 +119,7 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
     $("#notifications").prepend(alert);
 
     // Trigger a desktop notification as well (but only if it's needed)
-    if (type !== "notification") {
+    if (type !== "notification" && !hush) {
         this.desktop_notification(type, timestamp, subject, text);
     }
 };
@@ -146,12 +147,24 @@ CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
 };
 
 
-CMS.CWSUtils.prototype.update_unread_counts = function(counter) {
-    if (counter > 0) {
-        this.unread_count += counter;
-        $("#unread_count").text(
-            $("#translation_unread").text().replace("%d", this.unread_count));
-        $("#unread_count").removeClass("no_unread");
+CMS.CWSUtils.prototype.update_unread_count = function(delta, value) {
+    if (delta > 0) {
+        this.unread_count += delta;
+    }
+    if (value !== undefined) {
+        this.unread_count = value;
+    }
+    localStorage.setItem(this.contest_name + "_unread_count", this.unread_count.toString());
+    $("#unread_count").text(
+        $("#translation_unread").text().replace("%d", this.unread_count));
+    $("#unread_count").toggleClass("no_unread", this.unread_count === 0);
+};
+
+
+CMS.CWSUtils.prototype.update_last_notification = function(timestamp) {
+    if (this.last_notification === null || timestamp > this.last_notification) {
+        this.last_notification = timestamp;
+        localStorage.setItem(this.contest_name + "_last_notification", this.last_notification.toString());
     }
 };
 

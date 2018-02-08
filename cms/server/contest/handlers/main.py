@@ -36,6 +36,7 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iterkeys, itervalues
 
+import datetime
 import json
 import logging
 import pickle
@@ -187,8 +188,9 @@ class NotificationsHandler(ContestHandler):
         participation = self.current_user
 
         res = []
-        last_notification = make_datetime(
-            float(self.get_argument("last_notification", "0")))
+        last_notification = self.get_argument("last_notification", None)
+        last_notification = make_datetime(float(last_notification)) \
+            if last_notification is not None else datetime.datetime.min
 
         # Announcements
         for announcement in self.contest.announcements:
@@ -226,14 +228,6 @@ class NotificationsHandler(ContestHandler):
                             make_timestamp(question.reply_timestamp),
                             "subject": subject,
                             "text": text})
-
-        # Update the unread_count cookie before taking notifications
-        # into account because we don't want to count them.
-        cookie_name = self.contest.name + "_unread_count"
-        prev_unread_count = self.get_secure_cookie(cookie_name)
-        next_unread_count = len(res) + (
-            int(prev_unread_count) if prev_unread_count is not None else 0)
-        self.set_secure_cookie(cookie_name, "%d" % next_unread_count)
 
         # Simple notifications
         notifications = self.service.notifications
