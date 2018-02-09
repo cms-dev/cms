@@ -84,7 +84,7 @@ class BaseImporter(object):
         new_object, unless spec[attribute] is False.
 
         """
-        assert old_object.__class__ == new_object.__class__
+        assert type(old_object) == type(new_object)
         spec = spec if spec is not None else {}
 
         for prp in old_object._col_props:
@@ -117,7 +117,7 @@ class BaseImporter(object):
             object, which is ignored.
 
         """
-        assert old_object.__class__ == new_object.__class__
+        assert type(old_object) == type(new_object)
         spec = spec if spec is not None else {}
 
         # Update all scalar columns by default, unless spec says otherwise.
@@ -125,7 +125,8 @@ class BaseImporter(object):
 
         for prp in old_object._rel_props:
             # Don't update the parent relationship.
-            if prp.backref and parent and prp.backref[0] is parent:
+            if prp.backref is not None and parent is not None \
+                    and prp.backref[0] == parent:
                 continue
 
             # To avoid bugs when new relationships are introduced, we force the
@@ -177,21 +178,22 @@ class BaseImporter(object):
 
         old_len = len(old_list)
         new_len = len(new_list)
+
         # Update common elements.
-        for i in range(min(old_len, new_len)):
-            update_value_fn(old_list[i], new_list[i])
-        if old_len > new_len:
-            # Delete additional elements of old_list.
-            del old_list[new_len:]
-        elif new_len > old_len:
-            # Move additional elements from new_list to old_list.
-            for _ in range(old_len, new_len):
-                # For some funny behavior of SQLAlchemy-instrumented
-                # collections when copying values, that resulted in new objects
-                # being added to the session.
-                temp = new_list[old_len]
-                del new_list[old_len]
-                old_list.append(temp)
+        for old_value, new_value in zip(old_list, new_list):
+            update_value_fn(old_value, new_value)
+
+        # Delete additional elements of old_list.
+        del old_list[new_len:]
+
+        # Move additional elements from new_list to old_list.
+        for _ in range(old_len, new_len):
+            # For some funny behavior of SQLAlchemy-instrumented
+            # collections when copying values, that resulted in new objects
+            # being added to the session.
+            temp = new_list[old_len]
+            del new_list[old_len]
+            old_list.append(temp)
 
     def _update_dict(self, old_dict, new_dict, update_value_fn=None):
         """Update a SQLAlchemy relationship with type dict
