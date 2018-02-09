@@ -115,8 +115,9 @@ class TaskImporter(BaseImporter):
             if old_task is not None:
                 if self.update:
                     if task_has_changed:
-                        self.update_task(old_task, task,
-                                         get_statements=not self.no_statement)
+                        BaseImporter.update_task(
+                            old_task, task,
+                            get_statements=not self.no_statement)
                     task = old_task
                 else:
                     logger.critical("Task \"%s\" already exists in database.",

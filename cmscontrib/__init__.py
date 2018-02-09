@@ -76,8 +76,10 @@ def touch(path):
 
 
 class BaseImporter(object):
+    # TODO: move these methods to be some module's functions.
 
-    def _update_columns(self, old_object, new_object, spec=None):
+    @staticmethod
+    def _update_columns(old_object, new_object, spec=None):
         """Update the scalar columns of the object
 
         Update all non-relationship columns of old_object with the values in
@@ -93,7 +95,8 @@ class BaseImporter(object):
             if hasattr(new_object, prp.key):
                 setattr(old_object, prp.key, getattr(new_object, prp.key))
 
-    def _update_object(self, old_object, new_object, spec=None, parent=None):
+    @staticmethod
+    def _update_object(old_object, new_object, spec=None, parent=None):
         """Update old_object with the values in new_object
 
         Update all columns with this strategy:
@@ -121,7 +124,7 @@ class BaseImporter(object):
         spec = spec if spec is not None else {}
 
         # Update all scalar columns by default, unless spec says otherwise.
-        self._update_columns(old_object, new_object, spec)
+        BaseImporter._update_columns(old_object, new_object, spec)
 
         for prp in old_object._rel_props:
             # Don't update the parent relationship.
@@ -149,11 +152,11 @@ class BaseImporter(object):
                 # otherwise _update_object will complain it doesn't have the
                 # spec for them.
                 update_fn = functools.partial(
-                    self._update_object, parent=prp.key)
+                    BaseImporter._update_object, parent=prp.key)
                 if isinstance(old_value, dict):
-                    self._update_dict(old_value, new_value, update_fn)
+                    BaseImporter._update_dict(old_value, new_value, update_fn)
                 elif isinstance(old_value, list):
-                    self._update_list(old_value, new_value, update_fn)
+                    BaseImporter._update_list(old_value, new_value, update_fn)
                 else:
                     raise AssertionError(
                         "Programming error: unknown type of relationship for "
@@ -163,7 +166,8 @@ class BaseImporter(object):
                 # we duly apply.
                 spec[prp.class_attribute](old_value, new_value, parent=prp.key)
 
-    def _update_list(self, old_list, new_list, update_value_fn=None):
+    @staticmethod
+    def _update_list(old_list, new_list, update_value_fn=None):
         """Update a SQLAlchemy relationship with type list
 
         Make old_list look like new_list, by:
@@ -174,7 +178,7 @@ class BaseImporter(object):
 
         """
         if update_value_fn is None:
-            update_value_fn = self._update_object
+            update_value_fn = BaseImporter._update_object
 
         old_len = len(old_list)
         new_len = len(new_list)
@@ -195,7 +199,8 @@ class BaseImporter(object):
             del new_list[old_len]
             old_list.append(temp)
 
-    def _update_dict(self, old_dict, new_dict, update_value_fn=None):
+    @staticmethod
+    def _update_dict(old_dict, new_dict, update_value_fn=None):
         """Update a SQLAlchemy relationship with type dict
 
         Make old_dict look like new_dict, by:
@@ -206,7 +211,7 @@ class BaseImporter(object):
 
         """
         if update_value_fn is None:
-            update_value_fn = self._update_object
+            update_value_fn = BaseImporter._update_object
         for key in set(iterkeys(old_dict)) | set(iterkeys(new_dict)):
             if key in new_dict:
                 if key not in old_dict:
@@ -224,7 +229,8 @@ class BaseImporter(object):
                 # Delete the old value if no new value for that key.
                 del old_dict[key]
 
-    def _update_list_with_key(self, old_list, new_list, key,
+    @staticmethod
+    def _update_list_with_key(old_list, new_list, key,
                               preserve_old=False, update_value_fn=None):
         """Update a SQLAlchemy list-relationship, using key for identity
 
@@ -236,7 +242,7 @@ class BaseImporter(object):
 
         """
         if update_value_fn is None:
-            update_value_fn = self._update_object
+            update_value_fn = BaseImporter._update_object
 
         old_dict = dict((key(v), v) for v in old_list)
         new_dict = dict((key(v), v) for v in new_list)
@@ -255,9 +261,10 @@ class BaseImporter(object):
                 # Remove the old value not anymore present.
                 old_list.remove(old_dict[k])
 
-    def update_dataset(self, old_dataset, new_dataset, parent=None):
+    @staticmethod
+    def update_dataset(old_dataset, new_dataset, parent=None):
         """Update old_dataset with information from new_dataset"""
-        self._update_object(old_dataset, new_dataset, {
+        BaseImporter._update_object(old_dataset, new_dataset, {
             # Since we know it, hardcode to ignore the parent relationship.
             Dataset.task: False,
             # Relationships to update (all others).
@@ -265,16 +272,16 @@ class BaseImporter(object):
             Dataset.testcases: True,
         }, parent=parent)
 
-    def update_task(self, old_task, new_task,
-                    parent=None, get_statements=True):
+    @staticmethod
+    def update_task(old_task, new_task, parent=None, get_statements=True):
         """Update old_task with information from new_task"""
         def update_datasets_fn(o, n, parent=None):
-            self._update_list_with_key(
+            BaseImporter._update_list_with_key(
                 o, n, key=lambda d: d.description, preserve_old=True,
                 update_value_fn=functools.partial(
-                    self.update_dataset, parent=parent))
+                    BaseImporter.update_dataset, parent=parent))
 
-        self._update_object(old_task, new_task, {
+        BaseImporter._update_object(old_task, new_task, {
             # Since we know it, hardcode to ignore the parent relationship.
             Task.contest: False,
             # Relationships not to update because not provided by the loader.
@@ -291,9 +298,10 @@ class BaseImporter(object):
             Task.primary_statements: get_statements,
         }, parent=parent)
 
-    def update_contest(self, old_contest, new_contest, parent=None):
+    @staticmethod
+    def update_contest(old_contest, new_contest, parent=None):
         """Update old_contest with information from new_contest"""
-        self._update_object(old_contest, new_contest, {
+        BaseImporter._update_object(old_contest, new_contest, {
             # Announcements are not provided by the loader, we should keep
             # those we have.
             Contest.announcements: False,
