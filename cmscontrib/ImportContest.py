@@ -106,7 +106,7 @@ class ContestImporter(BaseImporter):
             if old_contest is not None:
                 if self.update_contest:
                     if contest_has_changed:
-                        self._update_object(old_contest, contest)
+                        BaseImporter._update_contest(old_contest, contest)
                     contest = old_contest
                 elif self.update_tasks:
                     contest = old_contest
@@ -140,12 +140,9 @@ class ContestImporter(BaseImporter):
                         new_task = task_loader.get_task(
                             get_statement=not self.no_statements)
                         if new_task:
-                            ignore = set(("num",))
-                            if self.no_statements:
-                                ignore.update(("primary_statements",
-                                               "statements"))
-                            self._update_object(task, new_task,
-                                                ignore=ignore)
+                            BaseImporter._update_task(
+                                task, new_task,
+                                get_statements=not self.no_statements)
                         else:
                             logger.critical("Could not reimport task \"%s\".",
                                             taskname)
