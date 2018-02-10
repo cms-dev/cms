@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
@@ -55,7 +55,7 @@ from cms.db.filecacher import FileCacher
 
 from cmscontrib.loaders import choose_loader, build_epilog
 
-from . import BaseImporter
+from . import BaseImporter, ImportDataError
 
 logger = logging.getLogger(__name__)
 
@@ -85,11 +85,21 @@ class ContestImporter(BaseImporter):
 
         # We need to check whether the contest has changed *before* calling
         # get_contest() as that method might reset the "has_changed" bit.
+        contest_has_changed = False
         if self.update_contest:
             contest_has_changed = self.loader.contest_has_changed()
 
-        # Get the contest
+        # Get the contest. The loader should give a bare contest, putting tasks
+        # and participations only in the other return values. We make sure.
         contest, tasks, participations = self.loader.get_contest()
+        if contest.tasks != []:
+            contest.tasks = []
+            logger.warning("Contest loader should not fill tasks.")
+        if contest.participations != []:
+            contest.participations = []
+            logger.warning("Contest loader should not fill participations.")
+        tasks = tasks if tasks is not None else []
+        participations = participations if participations is not None else []
 
         # Apply the modification flags
         if self.zero_time:
@@ -100,133 +110,194 @@ class ContestImporter(BaseImporter):
             contest.stop = datetime.datetime(2100, 1, 1)
 
         with SessionGen() as session:
-            # Check whether the contest already exists
-            old_contest = session.query(Contest) \
-                                 .filter(Contest.name == contest.name).first()
-            if old_contest is not None:
-                if self.update_contest:
-                    if contest_has_changed:
-                        BaseImporter._update_contest(old_contest, contest)
-                    contest = old_contest
-                elif self.update_tasks:
-                    contest = old_contest
-                else:
-                    logger.critical(
-                        "Contest \"%s\" already exists in database.",
-                        contest.name)
-                    return False
+            try:
+                contest = self._contest_to_db(
+                    session, contest, contest_has_changed)
+                for tasknum, taskname in enumerate(tasks):
+                    self._task_to_db(session, contest, tasknum, taskname)
+                for p in participations:
+                    self._participation_to_db(session, contest, p)
 
-            # Check needed tasks
-            for tasknum, taskname in enumerate(tasks):
-                task = session.query(Task) \
-                              .filter(Task.name == taskname).first()
-                if task is None:
-                    if self.import_tasks:
-                        task = self.loader.get_task_loader(taskname).get_task(
-                            get_statement=not self.no_statements)
-                        if task:
-                            session.add(task)
-                        else:
-                            logger.critical("Could not import task \"%s\".",
-                                            taskname)
-                            return False
-                    else:
-                        logger.critical("Task \"%s\" not found in database.",
-                                        taskname)
-                        return False
-                elif self.update_tasks:
-                    task_loader = self.loader.get_task_loader(taskname)
-                    if task_loader.task_has_changed():
-                        new_task = task_loader.get_task(
-                            get_statement=not self.no_statements)
-                        if new_task:
-                            BaseImporter._update_task(
-                                task, new_task,
-                                get_statements=not self.no_statements)
-                        else:
-                            logger.critical("Could not reimport task \"%s\".",
-                                            taskname)
-                            return False
+            except ImportDataError as e:
+                logger.error(str(e))
+                logger.info("Error while importing, no changes were made.")
+                return False
 
-                if task.contest is not None \
-                   and task.contest.name != contest.name:
-                    logger.critical("Task \"%s\" is already tied to a "
-                                    "contest.", taskname)
-                    return False
-                else:
-                    # We should tie this task to the contest
-                    task.num = tasknum
-                    task.contest = contest
-
-            # Check needed participations
-            if participations is None:
-                participations = []
-
-            for p in participations:
-                user = session.query(User) \
-                              .filter(User.username == p["username"]).first()
-
-                team = session.query(Team) \
-                              .filter(Team.code == p.get("team")).first()
-
-                if user is None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("User \"%s\" not found in database.",
-                                    p["username"])
-                    return False
-
-                if team is None and p.get("team") is not None:
-                    # FIXME: it would be nice to automatically try to
-                    # import.
-                    logger.critical("Team \"%s\" not found in database.",
-                                    p.get("team"))
-                    return False
-
-                # Check that the participation is not already defined.
-                participation = session.query(Participation) \
-                    .filter(Participation.user_id == user.id) \
-                    .filter(Participation.contest_id == contest.id) \
-                    .first()
-
-                # FIXME: detect if some details of the participation have been
-                # updated and thus the existing participation needs to be
-                # changed.
-                if participation is None:
-                    # Prepare new participation
-                    args = {
-                        "user": user,
-                        "team": team,
-                        "contest": contest,
-                    }
-
-                    if "hidden" in p:
-                        args["hidden"] = p["hidden"]
-                    if "ip" in p and p["ip"] is not None:
-                        args["ip"] = [ipaddress.ip_network(p["ip"])]
-                    if "password" in p:
-                        args["password"] = p["password"]
-
-                    session.add(Participation(**args))
-                else:
-                    logger.warning("Participation of user %s in this contest "
-                                   "already exists, not going to update it.",
-                                   p["username"])
-
-            # Here we could check if there are actually some tasks or
-            # users to add: if there are not, then don't create the
-            # contest. However, I would like to be able to create it
-            # anyway (and later tie to it some tasks and users).
-
-            if old_contest is None:
-                logger.info("Creating contest on the database.")
-                session.add(contest)
-
-            # Final commit
             session.commit()
-            logger.info("Import finished (new contest id: %s).", contest.id)
+            contest_id = contest.id
 
+        logger.info("Import finished (new contest id: %s).", contest_id)
         return True
+
+    def _contest_to_db(self, session, new_contest, contest_has_changed):
+        """Add the new contest to the DB
+
+        session (Session): session to use.
+        new_contest (Contest): contest that has to end up in the DB.
+        contest_has_changed (bool): whether the loader thinks new_contest has
+            changed since the last time it was imported.
+
+        return (Contest): the contest in the DB.
+        raise (ImportDataError): if the contest already exists on the DB and
+            the user did not ask to update any data.
+
+        """
+        contest = session.query(Contest)\
+            .filter(Contest.name == new_contest.name).first()
+
+        if contest is None:
+            # Contest not present, we import it.
+            logger.info("Creating contest on the database.")
+            contest = new_contest
+            session.add(contest)
+
+        else:
+            if not (self.update_contest or self.update_tasks):
+                # Contest already present, but user did not ask to update any
+                # data. We cannot import anything and this is most probably
+                # not what the user wanted, so we let them know.
+                raise ImportDataError(
+                    "Contest \"%s\" already exists in database. "
+                    "Use --update-contest to update it." % contest.name)
+
+            if self.update_contest:
+                # Contest already present, user asked us to update it; we do so
+                # if it has changed.
+                if contest_has_changed:
+                    logger.info("Contest data has changed, updating it.")
+                    BaseImporter._update_contest(contest, new_contest)
+                else:
+                    logger.info("Contest data has not changed.")
+
+        return contest
+
+    def _task_to_db(self, session, contest, tasknum, taskname):
+        """Add the task to the DB and attach it to the contest
+
+        session (Session): session to use.
+        contest (Contest): the contest in the DB.
+        tasknum (int): num the task should have in the contest.
+        taskname (string): name of the task.
+
+        return (Task): the task in the DB.
+        raise (ImportDataError): in case of one of these errors:
+            - if the task is not in the DB and user did not ask to import it;
+            - if the loader cannot load the task;
+            - if the task is already in the DB, attached to another contest.
+
+        """
+        task_loader = self.loader.get_task_loader(taskname)
+        task = session.query(Task).filter(Task.name == taskname).first()
+
+        if task is None:
+            # Task is not in the DB; if the user asked us to import it, we do
+            # so, otherwise we return an error.
+
+            if not self.import_tasks:
+                raise ImportDataError(
+                    "Task \"%s\" not found in database. "
+                    "Use --import-task to import it." % taskname)
+
+            task = task_loader.get_task(get_statement=not self.no_statements)
+            if task is None:
+                raise ImportDataError(
+                    "Could not import task \"%s\"." % taskname)
+
+            session.add(task)
+
+        elif not task_loader.task_has_changed():
+            # Task is in the DB and has not changed, nothing to do.
+            logger.info("Task \"%s\" data has not changed.", taskname)
+
+        elif self.update_tasks:
+            # Task is in the DB, but has changed, and the user asked us to
+            # update it. We do so.
+            new_task = task_loader.get_task(
+                get_statement=not self.no_statements)
+            if new_task is None:
+                raise ImportDataError(
+                    "Could not reimport task \"%s\"." % taskname)
+            logger.info("Task \"%s\" data has changed, updating it.", taskname)
+            BaseImporter._update_task(task, new_task,
+                                      get_statements=not self.no_statements)
+
+        else:
+            # Task is in the DB, has changed, and the user didn't ask to update
+            # it; we just show a warning.
+            logger.warning("Not updating task \"%s\", even if it has changed. "
+                           "Use --update-tasks to update it.", taskname)
+
+        # Finally we tie the task to the contest, if it is not already used
+        # elsewhere.
+        if task.contest is not None and task.contest.name != contest.name:
+            raise ImportDataError(
+                "Task \"%s\" is already tied to contest \"%s\"."
+                % (taskname, task.contest.name))
+
+        task.num = tasknum
+        task.contest = contest
+        return task
+
+    @staticmethod
+    def _participation_to_db(session, contest, new_p):
+        """Add the new participation to the DB and attach it to the contest
+
+        session (Session): session to use.
+        contest (Contest): the contest in the DB.
+        new_p (dict): dictionary with the participation data, including at
+            least "username"; may contain "team", "hidden", "ip", "password".
+
+        return (Participation): the participation in the DB.
+        raise (ImportDataError): in case of one of these errors:
+            - the user for this participation does not already exist in the DB;
+            - the team for this participation does not already exist in the DB.
+
+        """
+        user = session.query(User)\
+            .filter(User.username == new_p["username"]).first()
+        if user is None:
+            # FIXME: it would be nice to automatically try to import.
+            raise ImportDataError("User \"%s\" not found in database. "
+                                  "Use cmsImportUser to import it." %
+                                  new_p["username"])
+
+        team = session.query(Team)\
+            .filter(Team.code == new_p.get("team")).first()
+        if team is None and new_p.get("team") is not None:
+            # FIXME: it would be nice to automatically try to import.
+            raise ImportDataError("Team \"%s\" not found in database. "
+                                  "Use cmsImportTeam to import it."
+                                  % new_p.get("team"))
+
+        # Check that the participation is not already defined.
+        p = session.query(Participation)\
+            .filter(Participation.user_id == user.id)\
+            .filter(Participation.contest_id == contest.id)\
+            .first()
+        # FIXME: detect if some details of the participation have been updated
+        # and thus the existing participation needs to be changed.
+        if p is not None:
+            logger.warning("Participation of user %s in this contest already "
+                           "exists, not updating it.", new_p["username"])
+            return p
+
+        # Prepare new participation
+        args = {
+            "user": user,
+            "contest": contest,
+        }
+        if "team" in new_p:
+            args["team"] = team
+        if "hidden" in new_p:
+            args["hidden"] = new_p["hidden"]
+        if "ip" in new_p and new_p["ip"] is not None:
+            args["ip"] = [ipaddress.ip_network(new_p["ip"])]
+        if "password" in new_p:
+            args["password"] = new_p["password"]
+
+        new_p = Participation(**args)
+        session.add(new_p)
+        return new_p
 
 
 def main():
