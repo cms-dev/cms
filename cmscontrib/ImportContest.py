@@ -102,7 +102,12 @@ class ContestImporter(BaseImporter):
             if old_contest is not None:
                 if self.update_contest:
                     if contest_has_changed:
-                        self._update_object(old_contest, contest)
+                        # Participations are handled later, so we ignore them
+                        # at this point (note that contest does not even have
+                        # participations). Tasks can be ignored or not, since
+                        # they can live even detached from a contest.
+                        self._update_object(old_contest, contest,
+                                            ignore={"participations"})
                     contest = old_contest
                 elif self.update_tasks:
                     contest = old_contest
