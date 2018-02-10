@@ -51,14 +51,14 @@ from cms import utf8_decoder
 from cms.db import Participation, SessionGen, User
 from cms.db.filecacher import FileCacher
 
-from cmscontrib import BaseImporter, ImportDataError
+from cmscontrib.importing import ImportDataError, contest_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
 logger = logging.getLogger(__name__)
 
 
-class UserImporter(BaseImporter):
+class UserImporter(object):
 
     """This script creates a user
 
@@ -81,7 +81,7 @@ class UserImporter(BaseImporter):
         logger.info("Creating user %s on the database.", user.username)
         with SessionGen() as session:
             try:
-                contest = self.contest_from_db(self.contest_id, session)
+                contest = contest_from_db(self.contest_id, session)
                 user = self._user_to_db(session, user)
             except ImportDataError as e:
                 logger.error(str(e))
