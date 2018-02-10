@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -75,8 +75,52 @@ def touch(path):
         os.utime(path, None)
 
 
+class ImportError(Exception):
+    pass
+
+
 class BaseImporter(object):
     # TODO: move these methods to be some module's functions.
+
+    @staticmethod
+    def contest_from_db(contest_id, session):
+        """Return the contest object with the given id
+
+        session (Session): SQLAlchemy session to use.
+        contest_id (int|None): the id of the contest, or None to return None.
+
+        return (Contest|None): None if contest_id is None, or the contest.
+        raise (ImportError): if there is no contest with the given id.
+
+        """
+        if contest_id is None:
+            return None
+
+        contest = Contest.get_from_id(contest_id, session)
+        if contest is None:
+            raise ImportError(
+                "The specified contest (id %s) does not exist." % contest_id)
+        return contest
+
+    @staticmethod
+    def task_from_db(task_name, session):
+        """Return the task object with the given name
+
+        session (Session): SQLAlchemy session to use.
+        task_name (string|None): the name of the task, or None to return None.
+
+        return (Task|None): None if task_name is None, or the task.
+        raise (ImportError): if there is no task with the given name.
+
+        """
+        if task_name is None:
+            return None
+
+        task = session.query(Task).filter(Task.name == task_name).first()
+        if task is None:
+            raise ImportError(
+                "The specified task (name %s) does not exist." % task_name)
+        return task
 
     @staticmethod
     def _update_columns(old_object, new_object, spec=None):
