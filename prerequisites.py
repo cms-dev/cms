@@ -245,7 +245,6 @@ def install_isolate():
 
 def build():
     """This function builds all the prerequisites by calling:
-    - build_l10n
     - build_isolate
 
     """
@@ -456,9 +455,6 @@ if __name__ == '__main__':
 
     subparsers = parser.add_subparsers(metavar="command",
                                        help="Subcommand to run")
-    subparsers.add_parser("build_l10n",
-                          help="Build localization files") \
-        .set_defaults(func=build_l10n)
     subparsers.add_parser("build_isolate",
                           help="Build \"isolate\" sandbox") \
         .set_defaults(func=build_isolate)
