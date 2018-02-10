@@ -38,7 +38,8 @@ from cmscommon.datetime import make_datetime, utc
 from cms.locale import locale_format
 
 
-# Dummy function to mark strings for translation
+# Dummy functions to mark strings for translation: N_ is a dummy for
+# gettext/_ and Nn_ is a dummy for ngettext/n_ (for plural forms).
 def N_(msgid):
     pass
 

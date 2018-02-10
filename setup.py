@@ -104,7 +104,7 @@ def find_version():
 class build_py_and_l10n(build_py):
     def run(self):
         self.run_command("compile_catalog")
-        super(build_py, self).run()
+        super(build_py_and_l10n, self).run()
 
 
 setup(

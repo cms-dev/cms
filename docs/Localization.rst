@@ -12,7 +12,7 @@ When you change a string in a template or in a web server, you have to generate 
 
     ./setup.py extract_messages
 
-When you have a new translation, or an update of an old translation, you need to update the ``cms.mo`` files (the compiled versions of the ``cms.po`` files). You can run ``python setup.py compile_catalog`` to update all translations (or add the ``-l <code>`` argument to update only the one for a given locale). The usual ``python setup.py install`` will do this automatically. Note that, to have the new strings, you need to restart the web server.
+When you have a new translation, or an update of an old translation, you need to update the ``cms.mo`` files (the compiled versions of the ``cms.po`` files). You can run ``python setup.py compile_catalog`` to update the ``cms.mo`` files for all translations (or add the ``-l <code>`` argument to update only the one for a given locale). The usual ``python setup.py install`` will do this automatically. Note that, to have the new strings, you need to restart the web server.
 
 
 For translators
