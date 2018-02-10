@@ -51,14 +51,14 @@ from cms import utf8_decoder
 from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 
-from cmscontrib import BaseImporter, ImportDataError
+from cmscontrib.importing import ImportDataError, contest_from_db, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
 logger = logging.getLogger(__name__)
 
 
-class TaskImporter(BaseImporter):
+class TaskImporter(object):
 
     """This script creates a task
 
@@ -112,7 +112,7 @@ class TaskImporter(BaseImporter):
         logger.info("Creating task on the database.")
         with SessionGen() as session:
             try:
-                contest = self.contest_from_db(self.contest_id, session)
+                contest = contest_from_db(self.contest_id, session)
                 task = self._task_to_db(
                     session, contest, task, task_has_changed)
 
@@ -157,8 +157,7 @@ class TaskImporter(BaseImporter):
         if task_has_changed:
             logger.info(
                 "Task \"%s\" data has changed, updating it.", task.name)
-            BaseImporter._update_task(task, new_task,
-                                      get_statements=not self.no_statement)
+            update_task(task, new_task, get_statements=not self.no_statement)
         else:
             logger.info("Task \"%s\" data has not changed.", task.name)
 

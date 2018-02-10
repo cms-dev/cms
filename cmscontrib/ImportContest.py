@@ -53,14 +53,14 @@ from cms import utf8_decoder
 from cms.db import SessionGen, User, Team, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 
+from cmscontrib.importing import ImportDataError, update_contest, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 
-from . import BaseImporter, ImportDataError
 
 logger = logging.getLogger(__name__)
 
 
-class ContestImporter(BaseImporter):
+class ContestImporter(object):
 
     """This script creates a contest and all its associations to users
     and tasks.
@@ -165,7 +165,7 @@ class ContestImporter(BaseImporter):
                 # if it has changed.
                 if contest_has_changed:
                     logger.info("Contest data has changed, updating it.")
-                    BaseImporter._update_contest(contest, new_contest)
+                    update_contest(contest, new_contest)
                 else:
                     logger.info("Contest data has not changed.")
 
@@ -218,8 +218,7 @@ class ContestImporter(BaseImporter):
                 raise ImportDataError(
                     "Could not reimport task \"%s\"." % taskname)
             logger.info("Task \"%s\" data has changed, updating it.", taskname)
-            BaseImporter._update_task(task, new_task,
-                                      get_statements=not self.no_statements)
+            update_task(task, new_task, get_statements=not self.no_statements)
 
         else:
             # Task is in the DB, has changed, and the user didn't ask to update
