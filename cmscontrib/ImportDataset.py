@@ -45,14 +45,14 @@ from cms import utf8_decoder
 from cms.db import Dataset, SessionGen
 from cms.db.filecacher import FileCacher
 
-from cmscontrib import BaseImporter, ImportDataError
+from cmscontrib.importing import ImportDataError, task_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
 logger = logging.getLogger(__name__)
 
 
-class DatasetImporter(BaseImporter):
+class DatasetImporter(object):
     def __init__(self, path, description, loader_class):
         self.file_cacher = FileCacher()
         self.description = description
@@ -80,7 +80,7 @@ class DatasetImporter(BaseImporter):
 
         with SessionGen() as session:
             try:
-                task = self.task_from_db(task_name, session)
+                task = task_from_db(task_name, session)
                 self._dataset_to_db(session, dataset, task)
             except ImportDataError as e:
                 logger.error(str(e))
