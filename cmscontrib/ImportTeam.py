@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -44,10 +44,10 @@ import os
 import sys
 
 from cms import utf8_decoder
-from cms.db import SessionGen
+from cms.db import SessionGen, Team
 from cms.db.filecacher import FileCacher
-from sqlalchemy.exc import IntegrityError
 
+from cmscontrib.importing import ImportDataError
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
@@ -69,15 +69,17 @@ class TeamImporter(object):
             return False
 
         # Store
-        try:
-            logger.info("Creating team on the database.")
-            with SessionGen() as session:
-                session.add(team)
-                session.commit()
-                team_id = team.id
-        except IntegrityError:
-            logger.critical("The team already exists.")
-            return False
+        logger.info("Creating team on the database.")
+        with SessionGen() as session:
+            try:
+                team = self._team_to_db(session, team)
+            except ImportDataError as e:
+                logger.error(str(e))
+                logger.info("Error while importing, no changes were made.")
+                return False
+
+            session.commit()
+            team_id = team.id
 
         logger.info("Import finished (new team id: %s).", team_id)
         return True
@@ -103,6 +105,14 @@ class TeamImporter(object):
                     importer.do_import()
 
         return True
+
+    @staticmethod
+    def _team_to_db(session, team):
+        old_team = session.query(Team).filter(Team.code == team.code).first()
+        if old_team is not None:
+            raise ImportDataError("Team \"%s\" already exists." % team.code)
+        session.add(team)
+        return team
 
 
 def main():
