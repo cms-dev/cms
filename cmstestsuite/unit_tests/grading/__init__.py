@@ -39,6 +39,8 @@ class TestFormatStatusText(unittest.TestCase):
 
     @staticmethod
     def _tr(s):
+        if len(s) == 0:
+            return "the headers of the po file"
         return s.replace("A", "E")
 
     def test_success_no_placeholders(self):
