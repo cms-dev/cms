@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
@@ -48,10 +48,10 @@ import os
 import sys
 
 from cms import utf8_decoder
-from cms.db import Contest, SessionGen, Task
+from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 
-from cmscontrib import BaseImporter
+from cmscontrib import BaseImporter, ImportDataError
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
@@ -69,11 +69,13 @@ class TaskImporter(BaseImporter):
         """Create the importer object for a task.
 
         path (string): the path to the file or directory to import.
-        prefix (string): an optional prefix added to the task name.
-        override_name (string): an optional new name for the task.
+        prefix (string|None): an optional prefix added to the task name.
+        override_name (string|None): an optional new name for the task.
         update (bool): if the task already exists, try to update it.
         no_statement (bool): do not try to import the task statement.
-        contest_id (int): if set, the new task will be tied to this contest.
+        contest_id (int|None): if set, the new task will be tied to this
+            contest; if not set, the task will not be tied to any contest, or
+            if this was an update, will remain tied to the previous contest.
 
         """
         self.file_cacher = FileCacher()
@@ -89,6 +91,7 @@ class TaskImporter(BaseImporter):
 
         # We need to check whether the task has changed *before* calling
         # get_task() as that method might reset the "has_changed" bit..
+        task_has_changed = False
         if self.update:
             task_has_changed = self.loader.task_has_changed()
 
@@ -108,47 +111,58 @@ class TaskImporter(BaseImporter):
         # Store
         logger.info("Creating task on the database.")
         with SessionGen() as session:
-            # Check whether the task already exists
-            old_task = session.query(Task) \
-                              .filter(Task.name == task.name) \
-                              .first()
-            if old_task is not None:
-                if self.update:
-                    if task_has_changed:
-                        BaseImporter._update_task(
-                            old_task, task,
-                            get_statements=not self.no_statement)
-                    task = old_task
-                else:
-                    logger.critical("Task \"%s\" already exists in database.",
-                                    task.name)
-                    return False
-            else:
-                if self.contest_id is not None:
-                    contest = session.query(Contest) \
-                                     .filter(Contest.id == self.contest_id) \
-                                     .first()
+            try:
+                contest = self.contest_from_db(self.contest_id, session)
+                task = self._task_to_db(
+                    session, contest, task, task_has_changed)
 
-                    if contest is None:
-                        logger.critical(
-                            "The specified contest (id %s) does not exist. "
-                            "Aborting, no task imported.",
-                            self.contest_id)
-                        return False
-                    else:
-                        logger.info(
-                            "Attaching task to contest with id %s.",
-                            self.contest_id)
-                        task.num = len(contest.tasks)
-                        task.contest = contest
-
-                session.add(task)
+            except ImportDataError as e:
+                logger.error(str(e))
+                logger.info("Error while importing, no changes were made.")
+                return False
 
             session.commit()
             task_id = task.id
 
-        logger.info("Import finished (task id: %s).", task_id)
+        logger.info("Import finished (new task id: %s).", task_id)
         return True
+
+    def _task_to_db(self, session, contest, new_task, task_has_changed):
+        """Add the task to the DB
+
+        Return the task, or raise in case of one of these errors:
+        - if the task is not in the DB and user did not ask to update it;
+        - if the task is already in the DB and attached to another contest.
+
+        """
+        task = session.query(Task).filter(Task.name == new_task.name).first()
+        if task is None:
+            if contest is not None:
+                logger.info("Attaching task to contest (id %s.)",
+                            self.contest_id)
+                new_task.num = len(contest.tasks)
+                new_task.contest = contest
+            session.add(new_task)
+            return new_task
+
+        if not self.update:
+            raise ImportDataError(
+                "Task \"%s\" already exists in database. "
+                "Use --update to update it." % new_task.name)
+
+        if contest is not None and task.contest_id != contest.id:
+            raise ImportDataError(
+                "Task \"%s\" already tied to another contest." % task.name)
+
+        if task_has_changed:
+            logger.info(
+                "Task \"%s\" data has changed, updating it.", task.name)
+            BaseImporter._update_task(task, new_task,
+                                      get_statements=not self.no_statement)
+        else:
+            logger.info("Task \"%s\" data has not changed.", task.name)
+
+        return task
 
 
 def main():

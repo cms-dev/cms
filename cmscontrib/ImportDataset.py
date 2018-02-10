@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -42,16 +42,17 @@ import os
 import sys
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Task
+from cms.db import Dataset, SessionGen
 from cms.db.filecacher import FileCacher
 
+from cmscontrib import BaseImporter, ImportDataError
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
 logger = logging.getLogger(__name__)
 
 
-class DatasetImporter(object):
+class DatasetImporter(BaseImporter):
     def __init__(self, path, description, loader_class):
         self.file_cacher = FileCacher()
         self.description = description
@@ -67,6 +68,7 @@ class DatasetImporter(object):
 
         # Keep the dataset (and the task name) and delete the task
         dataset = task.active_dataset
+        dataset.task = None
         task_name = task.name
         del task
 
@@ -77,27 +79,31 @@ class DatasetImporter(object):
                     "database.", dataset.description, task_name)
 
         with SessionGen() as session:
-            # Check whether the task already exists
-            old_task = session.query(Task) \
-                              .filter(Task.name == task_name) \
-                              .first()
-            if old_task is None:
-                logger.error("The specified task does not exist. "
-                             "Aborting, no dataset imported.")
+            try:
+                task = self.task_from_db(task_name, session)
+                self._dataset_to_db(session, dataset, task)
+            except ImportDataError as e:
+                logger.error(str(e))
+                logger.info("Error while importing, no changes were made.")
                 return False
-
-            # Set the dataset's task to the old task
-            dataset.task = None  # apparently, we *need* this
-            dataset.task = old_task
-
-            # Store it
-            session.add(dataset)
 
             session.commit()
             dataset_id = dataset.id
 
         logger.info("Import finished (dataset id: %s).", dataset_id)
         return True
+
+    @staticmethod
+    def _dataset_to_db(session, dataset, task):
+        old_dataset = session.query(Dataset)\
+            .filter(Dataset.task_id == task.id)\
+            .filter(Dataset.description == dataset.description).first()
+        if old_dataset is not None:
+            raise ImportDataError("Dataset \"%s\" already exists."
+                                  % dataset.description)
+        dataset.task = task
+        session.add(dataset)
+        return dataset
 
 
 def main():

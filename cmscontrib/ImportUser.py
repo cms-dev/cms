@@ -4,7 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
@@ -48,16 +48,17 @@ import os
 import sys
 
 from cms import utf8_decoder
-from cms.db import Contest, Participation, SessionGen, User
+from cms.db import Participation, SessionGen, User
 from cms.db.filecacher import FileCacher
 
+from cmscontrib import BaseImporter, ImportDataError
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
 logger = logging.getLogger(__name__)
 
 
-class UserImporter(object):
+class UserImporter(BaseImporter):
 
     """This script creates a user
 
@@ -79,33 +80,18 @@ class UserImporter(object):
         # Store
         logger.info("Creating user %s on the database.", user.username)
         with SessionGen() as session:
-            if self.contest_id is not None:
-                contest = session.query(Contest)\
-                                 .filter(Contest.id == self.contest_id)\
-                                 .first()
-
-                if contest is None:
-                    logger.critical(
-                        "The specified contest (id %s) does not exist. "
-                        "Aborting.",
-                        self.contest_id)
-                    return False
-
-            # Check whether the user already exists
-            old_user = session.query(User) \
-                              .filter(User.username == user.username) \
-                              .first()
-            if old_user is not None:
-                logger.critical("The user already exists.")
+            try:
+                contest = self.contest_from_db(self.contest_id, session)
+                user = self._user_to_db(session, user)
+            except ImportDataError as e:
+                logger.error(str(e))
+                logger.info("Error while importing, no changes were made.")
                 return False
 
-            session.add(user)
-
-            if self.contest_id is not None:
+            if contest is not None:
                 logger.info("Creating participation of user %s in contest %s.",
                             user.username, contest.name)
-                participation = Participation(user=user, contest=contest)
-                session.add(participation)
+                session.add(Participation(user=user, contest=contest))
 
             session.commit()
             user_id = user.id
@@ -129,6 +115,22 @@ class UserImporter(object):
             importer.do_import()
 
         return True
+
+    @staticmethod
+    def _user_to_db(session, user):
+        """Add the user to the DB
+
+        Return the user again, or raise in case a user with the same username
+        was already present in the DB.
+
+        """
+        old_user = session.query(User)\
+            .filter(User.username == user.username).first()
+        if old_user is not None:
+            raise ImportDataError(
+                "User \"%s\" already exists." % user.username)
+        session.add(user)
+        return user
 
 
 def main():
