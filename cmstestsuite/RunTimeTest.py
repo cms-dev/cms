@@ -33,7 +33,8 @@ import sys
 
 import cmstestsuite.tasks.batch_50 as batch_50
 
-from cmstestsuite import CONFIG, cws_submit, get_evaluation_result
+from cmstestsuite import CONFIG
+from cmstestsuite.functionaltestframework import FunctionalTestFramework
 from cmstestsuite.Test import Test
 from cmstestsuite.Tests import LANG_C
 
@@ -45,6 +46,8 @@ logger = logging.getLogger(__name__)
 
 class TimeTest(object):
     def __init__(self, name, task, filename, languages, repetitions):
+        self.framework = FunctionalTestFramework()
+
         self.name = name
         self.task_module = task
         self.filename = filename
@@ -65,15 +68,15 @@ class TimeTest(object):
 
         # Submit our code.
         self.submission_ids = [
-            cws_submit(contest_id, task_id, user_id,
-                       self.submission_format_element,
-                       full_path, language)
+            self.framework.cws_submit(
+                contest_id, task_id, user_id,
+                self.submission_format_element, full_path, language)
             for _ in range(self.repetitions)]
 
     def wait(self, contest_id, unused_language):
         # Wait for evaluation to complete.
         for submission_id in self.submission_ids:
-            get_evaluation_result(contest_id, submission_id)
+            self.framework.get_evaluation_result(contest_id, submission_id)
 
 
 def main():
@@ -86,7 +89,7 @@ def main():
         "-w", "--workers", action="store", type=int, default=4,
         help="set the number of workers to use (default 4)")
     parser.add_argument(
-        "-v", "--verbose", action="count",
+        "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
     args = parser.parse_args()
 
@@ -111,6 +114,7 @@ def main():
     else:
         logger.error("Some test failed!")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

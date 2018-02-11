@@ -34,10 +34,8 @@ import os
 import random
 import subprocess
 
-from cmstestsuite import get_cms_config, CONFIG
-from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
-    add_user, add_task, add_testcase, add_manager, \
-    get_tasks, get_users, initialize_aws
+from cmstestsuite import CONFIG
+from cmstestsuite.functionaltestframework import FunctionalTestFramework
 from cmstestsuite.Test import TestFailure
 from cmstestsuite.Tests import ALL_LANGUAGES
 from cmstestsuite.programstarter import ProgramStarter
@@ -52,6 +50,9 @@ class TestRunner(object):
         self.start_time = datetime.datetime.now()
         self.last_end_time = self.start_time
 
+        self.framework = FunctionalTestFramework()
+        self.load_cms_conf()
+
         self.ps = ProgramStarter()
 
         # Map from task name to (task id, task_module).
@@ -63,16 +64,13 @@ class TestRunner(object):
         self.num_users = 0
         self.workers = workers
 
-        # Load config from cms.conf.
-        TestRunner.load_cms_conf()
-
         if CONFIG["TEST_DIR"] is not None:
             # Set up our expected environment.
             os.chdir("%(TEST_DIR)s" % CONFIG)
             os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
         self.start_generic_services()
-        initialize_aws(self.rand)
+        self.framework.initialize_aws(self.rand)
 
         if contest_id is None:
             self.contest_id = self.create_contest()
@@ -89,8 +87,7 @@ class TestRunner(object):
         logging.info("Have %s submissions and %s user_tests in %s tests...",
                      self.n_submissions, self.n_user_tests, self.n_tests)
 
-    @staticmethod
-    def load_cms_conf():
+    def load_cms_conf(self):
         try:
             git_root = subprocess.check_output(
                 "git rev-parse --show-toplevel", shell=True,
@@ -101,7 +98,7 @@ class TestRunner(object):
         CONFIG["CONFIG_PATH"] = "%s/config/cms.conf" % CONFIG["TEST_DIR"]
         if CONFIG["TEST_DIR"] is None:
             CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.conf"
-        return get_cms_config()
+        return self.framework.get_cms_config()
 
     def log_elapsed_time(self):
         end_time = datetime.datetime.now()
@@ -135,7 +132,7 @@ class TestRunner(object):
         """
         start_time = datetime.datetime.utcnow()
         stop_time = start_time + datetime.timedelta(1, 0, 0)
-        self.contest_id = add_contest(
+        self.contest_id = self.framework.add_contest(
             name="testcontest" + str(self.rand),
             description="A test contest #%s." % self.rand,
             languages=list(ALL_LANGUAGES),
@@ -171,7 +168,7 @@ class TestRunner(object):
         username = "testrabbit_%d_%d" % (self.rand, self.num_users)
 
         # Find a user that may already exist (from a previous contest).
-        users = get_users(self.contest_id)
+        users = self.framework.get_users(self.contest_id)
         user_create_args = {
             "username": username,
             "password": "kamikaze",
@@ -182,11 +179,11 @@ class TestRunner(object):
         }
         if username in users:
             self.user_id = users[username]['id']
-            add_existing_user(self.user_id, **user_create_args)
+            self.framework.add_existing_user(self.user_id, **user_create_args)
             logging.info("Using existing user with id %s.", self.user_id)
         else:
-            self.user_id = add_user(contest_id=str(self.contest_id),
-                                    **user_create_args)
+            self.user_id = self.framework.add_user(
+                contest_id=str(self.contest_id), **user_create_args)
             logging.info("Created user with id %s.", self.user_id)
         return self.user_id
 
@@ -227,18 +224,19 @@ class TestRunner(object):
 
         # Find if the task already exists (the name make sure that if it
         # exists, it is already in out contest).
-        tasks = get_tasks()
+        tasks = self.framework.get_tasks()
         if name in tasks:
             # Then just use the existing one.
             task = tasks[name]
             task_id = task['id']
             self.task_id_map[name] = (task_id, task_module)
-            add_existing_task(task_id, contest_id=str(self.contest_id),
-                              **task_create_args)
+            self.framework.add_existing_task(
+                task_id, contest_id=str(self.contest_id), **task_create_args)
             return task_id
 
         # Otherwise, we need to add the task ourselves.
-        task_id = add_task(contest_id=str(self.contest_id), **task_create_args)
+        task_id = self.framework.add_task(
+            contest_id=str(self.contest_id), **task_create_args)
 
         # add any managers
         code_path = os.path.join(
@@ -247,7 +245,7 @@ class TestRunner(object):
         if hasattr(task_module, 'managers'):
             for manager in task_module.managers:
                 mpath = os.path.join(code_path, manager)
-                add_manager(task_id, mpath)
+                self.framework.add_manager(task_id, mpath)
 
         # add the task's test data.
         data_path = os.path.join(
@@ -257,7 +255,7 @@ class TestRunner(object):
                 in enumerate(task_module.test_cases):
             ipath = os.path.join(data_path, input_file)
             opath = os.path.join(data_path, output_file)
-            add_testcase(task_id, num, ipath, opath, public)
+            self.framework.add_testcase(task_id, num, ipath, opath, public)
 
         self.task_id_map[name] = (task_id, task_module)
 
