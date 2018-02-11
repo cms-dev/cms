@@ -298,7 +298,7 @@ class ContestHandler(BaseHandler):
         return participation
 
     def setup_locale(self):
-        self.all_tanslations = self.service.translations
+        self.all_translations = self.service.translations
         lang_codes = list(iterkeys(self.all_translations))
 
         if self.contest.allowed_localizations:
