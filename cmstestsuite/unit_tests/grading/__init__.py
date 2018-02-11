@@ -36,7 +36,8 @@ from cms.grading import Sandbox, WHITES, \
 
 
 class DummyTranslation(object):
-    def gettext(self, s):
+    @staticmethod
+    def gettext(s):
         if len(s) == 0:
             return "the headers of the po file"
         return s.replace("A", "E")
