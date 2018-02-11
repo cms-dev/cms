@@ -57,7 +57,7 @@ class TimeTest(object):
         self.submission_format_element = submission_format[0]
         self.submission_ids = []
 
-    def submit(self, contest_id, task_id, user_id, language):
+    def submit(self, task_id, user_id, language):
         # Source files are stored under cmstestsuite/code/.
         path = os.path.join(os.path.dirname(__file__), 'code')
 
@@ -69,7 +69,7 @@ class TimeTest(object):
         # Submit our code.
         self.submission_ids = [
             self.framework.cws_submit(
-                contest_id, task_id, user_id,
+                task_id, user_id,
                 self.submission_format_element, full_path, language)
             for _ in range(self.repetitions)]
 

@@ -57,14 +57,13 @@ def run_unittests(test_list):
 
     # For all tests...
     for i, (path, filename) in enumerate(test_list):
-        logger.info("Running test %d/%d: %s.%s" % (
-            i + 1, num_tests_to_execute,
-            path, filename))
+        logger.info("Running test %d/%d: %s.%s",
+                    i + 1, num_tests_to_execute, path, filename)
         try:
             sh([sys.executable, "-m", "coverage", "run", "-p", "--source=cms",
                 os.path.join(path, filename)])
         except TestException:
-            logger.info("  (FAILED: %s)" % filename)
+            logger.info("  (FAILED: %s)", filename)
 
             # Add this case to our list of failures, if we haven't already.
             failures.append((path, filename))
@@ -179,7 +178,7 @@ def main():
         return 0
 
     if args.retry_failed:
-        logger.info("Re-running %d failed tests from last run." %
+        logger.info("Re-running %d failed tests from last run.",
                     len(test_list))
 
     # Load config from cms.conf.

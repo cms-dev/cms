@@ -169,13 +169,13 @@ class Test(object):
 
         full_paths = [os.path.join(path, filename) for filename in filenames]
 
-        return filenames, full_paths
+        return full_paths
 
-    def submit(self, contest_id, task_id, user_id, language):
-        filenames, full_paths = self._sources_names(language)
+    def submit(self, task_id, user_id, language):
+        full_paths = self._sources_names(language)
         self.submission_id[language] = self.framework.cws_submit(
-            contest_id, task_id, user_id, self.submission_format,
-            full_paths, language)
+            task_id, user_id,
+            self.submission_format, full_paths, language)
 
     def wait(self, contest_id, language):
         # This means we were not able to submit, hence the error
@@ -195,11 +195,11 @@ class Test(object):
                 # Our caller can deal with these.
                 raise
 
-    def submit_user_test(self, contest_id, task_id, user_id, language):
-        filenames, full_paths = self._sources_names(language)
+    def submit_user_test(self, task_id, user_id, language):
+        full_paths = self._sources_names(language)
         self.user_test_id[language] = self.framework.cws_submit_user_test(
-            contest_id, task_id, user_id, self.submission_format,
-            full_paths, language)
+            task_id, user_id,
+            self.submission_format, full_paths, language)
 
     def wait_user_test(self, contest_id, language):
         # This means we were not able to submit, hence the error
@@ -208,5 +208,5 @@ class Test(object):
             return
 
         # Wait for evaluation to complete. We do not do any other check.
-            self.framework.get_user_test_result(
-                contest_id, self.user_test_id[language])
+        self.framework.get_user_test_result(
+            contest_id, self.user_test_id[language])

@@ -222,7 +222,7 @@ class Program(object):
                 pass
 
         if CONFIG["VERBOSITY"] >= 1:
-            logger.info("$" + " ".join(cmdline))
+            logger.info("$ %s", " ".join(cmdline))
 
         if CONFIG["TEST_DIR"] is not None and CONFIG.get("COVERAGE"):
             cmdline = Program._COVERAGE_CMDLINE + cmdline
