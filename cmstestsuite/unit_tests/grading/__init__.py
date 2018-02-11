@@ -35,13 +35,18 @@ from cms.grading import Sandbox, WHITES, \
     format_status_text, merge_evaluation_results, white_diff
 
 
-class TestFormatStatusText(unittest.TestCase):
-
+class DummyTranslation(object):
     @staticmethod
-    def _tr(s):
+    def gettext(s):
         if len(s) == 0:
             return "the headers of the po file"
         return s.replace("A", "E")
+
+
+class TestFormatStatusText(unittest.TestCase):
+
+    def setUp(self):
+        self._tr = DummyTranslation()
 
     def test_success_no_placeholders(self):
         self.assertEqual(format_status_text([]), "N/A")

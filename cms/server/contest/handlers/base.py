@@ -58,9 +58,10 @@ class BaseHandler(CommonRequestHandler):
 
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
+        self.all_translations = None
         self.cookie_lang = None
         self.browser_lang = None
-        self.langs = None
+        self.translation = None
         self._ = None
 
     def get(self):

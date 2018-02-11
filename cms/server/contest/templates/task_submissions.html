@@ -176,11 +176,11 @@ $(document).ready(function () {
             {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
         {% end %}
         {% if need_to_wait %}
-            {% set t = format_datetime_smart(tokens_info[2], timezone, locale=locale) %}
+            {% set t = format_datetime_smart(tokens_info[2], timezone, translation=translation) %}
             {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
         {% end %}
         {% if tokens_info[1] is not None %}
-            {% set t = format_datetime_smart(tokens_info[1], timezone, locale=locale) %}
+            {% set t = format_datetime_smart(tokens_info[1], timezone, translation=translation) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
@@ -188,10 +188,10 @@ $(document).ready(function () {
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
         {% if actual_phase == 0 and tokens_info[1] is not None %}
-            {% set t = format_datetime_smart(tokens_info[1], timezone, locale=locale) %}
+            {% set t = format_datetime_smart(tokens_info[1], timezone, translation=translation) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
             {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
-                {% set t = format_datetime_smart(tokens_info[2], timezone, locale=locale) %}
+                {% set t = format_datetime_smart(tokens_info[2], timezone, translation=translation) %}
                 {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
             {% end %}
         {% else %}

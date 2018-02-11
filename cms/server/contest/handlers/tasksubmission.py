@@ -468,7 +468,8 @@ class SubmissionStatusHandler(ContestHandler):
                     round(sr.public_score, task.score_precision)
                 data["public_score_message"] = score_type.format_score(
                     sr.public_score, score_type.max_public_score,
-                    sr.public_score_details, task.score_precision, self._)
+                    sr.public_score_details, task.score_precision,
+                    translation=self.translation)
             if submission.token is not None:
                 data["max_score"] = \
                     round(score_type.max_score, task.score_precision)
@@ -476,7 +477,8 @@ class SubmissionStatusHandler(ContestHandler):
                     round(sr.score, task.score_precision)
                 data["score_message"] = score_type.format_score(
                     sr.score, score_type.max_score,
-                    sr.score_details, task.score_precision, self._)
+                    sr.score_details, task.score_precision,
+                    translation=self.translation)
 
         self.write(data)
 
@@ -516,13 +518,13 @@ class SubmissionDetailsHandler(ContestHandler):
                 details = sr.public_score_details
 
             if sr.scored():
-                details = score_type.get_html_details(details, self._)
+                details = score_type.get_html_details(
+                    details, translation=self.translation)
             else:
                 details = None
 
-        self.render("submission_details.html",
-                    sr=sr,
-                    details=details)
+        self.render("submission_details.html", sr=sr, details=details,
+                    **self.r_params)
 
 
 class SubmissionFileHandler(FileHandler):

@@ -72,7 +72,7 @@ class Sum(ScoreTypeAlone):
             {% end %}
             <td class="idx">{{ idx }}</td>
             <td class="outcome">{{ _(tc["outcome"]) }}</td>
-            <td class="details">{{ format_status_text(tc["text"], _) }}</td>
+            <td class="details">{{ format_status_text(tc["text"], translation=translation) }}</td>
             <td class="execution-time">
             {% if tc["time"] is not None %}
                 {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tc["time"]) }}
@@ -82,7 +82,7 @@ class Sum(ScoreTypeAlone):
             </td>
             <td class="memory-used">
             {% if tc["memory"] is not None %}
-                {{ format_size(tc["memory"], _) }}
+                {{ format_size(tc["memory"], translation=translation) }}
             {% else %}
                 {{ _("N/A") }}
             {% end %}

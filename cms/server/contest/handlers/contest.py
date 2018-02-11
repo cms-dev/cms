@@ -56,8 +56,6 @@ from cms.server import compute_actual_phase, file_handler_gen, \
     create_url_builder
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
-from cmscommon.isocodes import translate_language_code, \
-    translate_language_country_code
 
 from .base import BaseHandler
 
@@ -103,7 +101,7 @@ class ContestHandler(BaseHandler):
         super(ContestHandler, self).prepare()
         self.choose_contest()
 
-        self._ = self.locale.translate
+        self.setup_locale()
 
         if self.is_multi_contest():
             self.contest_url = \
@@ -299,9 +297,9 @@ class ContestHandler(BaseHandler):
 
         return participation
 
-    def get_user_locale(self):
-        self.langs = self.service.langs
-        lang_codes = list(iterkeys(self.langs))
+    def setup_locale(self):
+        self.all_translations = self.service.translations
+        lang_codes = list(iterkeys(self.all_translations))
 
         if self.contest.allowed_localizations:
             lang_codes = filter_language_codes(
@@ -326,7 +324,8 @@ class ContestHandler(BaseHandler):
             lang_code = self.browser_lang
 
         self.set_header("Content-Language", lang_code)
-        return self.langs[lang_code.replace("-", "_")]
+        self.translation = self.all_translations[lang_code.replace("-", "_")]
+        self._ = self.translation.gettext
 
     @staticmethod
     def _get_token_status(obj):
@@ -393,30 +392,24 @@ class ContestHandler(BaseHandler):
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
 
-        # TODO Now all language names are shown in the active language.
-        # It would be better to show them in the corresponding one.
         ret["lang_names"] = {}
 
         # Get language codes for allowed localizations
-        lang_codes = list(iterkeys(self.langs))
+        lang_codes = list(iterkeys(self.all_translations))
         if len(self.contest.allowed_localizations) > 0:
             lang_codes = filter_language_codes(
                 lang_codes, self.contest.allowed_localizations)
-        for lang_code, trans in iteritems(self.langs):
-            language_name = None
+        for lang_code, trans in iteritems(self.all_translations):
             # Filter lang_codes with allowed localizations
             if lang_code not in lang_codes:
                 continue
-            try:
-                language_name = translate_language_country_code(
-                    lang_code, trans)
-            except ValueError:
-                language_name = translate_language_code(
-                    lang_code, trans)
-            ret["lang_names"][lang_code.replace("_", "-")] = language_name
+            ret["lang_names"][lang_code.replace("_", "-")] = trans.name
 
         ret["cookie_lang"] = self.cookie_lang
         ret["browser_lang"] = self.browser_lang
+
+        ret["translation"] = self.translation
+        ret["_"] = self._
 
         return ret
 

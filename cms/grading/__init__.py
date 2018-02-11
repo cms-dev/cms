@@ -42,6 +42,7 @@ from sqlalchemy.orm import joinedload
 from cms import SCORE_MODE_MAX, config
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
+from cms.locale import DEFAULT_TRANSLATION
 
 from .language import Language, CompiledLanguage
 
@@ -214,7 +215,7 @@ class JobException(Exception):
         return "JobException(\"%s\")" % (repr(self.msg))
 
 
-def format_status_text(status, translator=None):
+def format_status_text(status, translation=DEFAULT_TRANSLATION):
     """Format the given status text in the given locale.
 
     A status text is the content of SubmissionResult.compilation_text,
@@ -227,29 +228,22 @@ def format_status_text(status, translator=None):
     returned.
 
     status ([unicode]): a status, as described above.
-    translator (function|None): a function expecting a string and
-        returning that same string translated in some language, or
-        None to apply the identity.
+    translation (Translation): the translation to use.
 
     """
-    # Mark strings for localization.
-    N_("N/A")
-
-    if translator is None:
-        translator = lambda x: x
+    _ = translation.gettext
 
     try:
         if not isinstance(status, list):
             raise TypeError("Invalid type: %r" % type(status))
 
-        # translator('') gives, for some reason, the first lines of
-        # the po file.
-        text = translator(status[0]) if status[0] != '' else ''
+        # The empty msgid corresponds to the headers of the pofile.
+        text = _(status[0]) if status[0] != '' else ''
         return text % tuple(status[1:])
     except:
         logger.error("Unexpected error when formatting status "
                      "text: %r", status, exc_info=True)
-        return translator("N/A")
+        return _("N/A")
 
 
 def compilation_step(sandbox, commands):

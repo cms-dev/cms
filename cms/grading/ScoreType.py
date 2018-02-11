@@ -45,7 +45,7 @@ from abc import ABCMeta, abstractmethod
 
 from tornado.template import Template
 
-from cms.locale import locale_format
+from cms.locale import locale_format, DEFAULT_TRANSLATION
 
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ class ScoreType(object):
 
     @staticmethod
     def format_score(score, max_score, unused_score_details,
-                     score_precision, _=lambda s: s):
+                     score_precision, translation=DEFAULT_TRANSLATION):
         """Produce the string of the score that is shown in CWS.
 
         In the submission table in the task page of CWS the global
@@ -99,31 +99,35 @@ class ScoreType(object):
             the ScoreType produced for the submission when scoring it.
         score_precision (int): the maximum number of digits of the
             fractional digits to show.
-        _ (function): translation function.
+        translation (Translation): the translation to use.
 
         return (string): the message to show.
 
         """
+        _ = translation.gettext
         return locale_format(_, "{0:g} / {1:g}",
             round(score, score_precision), round(max_score, score_precision))
 
-    def get_html_details(self, score_details, _=lambda s: s):
+    def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (object): the data saved by the score type
             itself in the database; can be public or private.
-        _ (function): translation function.
+        translation (Translation): the translation to use.
 
         return (string): an HTML string representing score_details.
 
         """
+        _ = translation.gettext
         if score_details is None:
             logger.error("Found a null score details string. "
                          "Try invalidating scores.")
             return _("Score details temporarily unavailable.")
         else:
-            return Template(self.TEMPLATE).generate(details=score_details, _=_)
+            return Template(self.TEMPLATE).generate(details=score_details,
+                                                    translation=translation,
+                                                    _=_)
 
     @abstractmethod
     def max_scores(self):
@@ -246,7 +250,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="idx">{{ idx }}</td>
                     <td class="outcome">{{ _(tc["outcome"]) }}</td>
                     <td class="details">
-                      {{ format_status_text(tc["text"], _) }}
+                      {{ format_status_text(tc["text"], translation=translation) }}
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
@@ -257,7 +261,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="memory-used">
             {% if "memory" in tc and tc["memory"] is not None %}
-                        {{ format_size(tc["memory"], _) }}
+                        {{ format_size(tc["memory"], translation=translation) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}

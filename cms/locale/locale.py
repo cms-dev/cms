@@ -5,7 +5,7 @@
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -35,15 +35,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import iteritems
 import six
 
 import pkg_resources
 import gettext
-import io
 import logging
 import os
 import string
+
+import babel.core
+import babel.support
 
 from cms import config
 
@@ -84,69 +85,70 @@ def get_system_translations(lang):
     return [iso_639_locale, iso_3166_locale, shared_mime_info_locale]
 
 
+class Translation(object):
+    """A shim that bundles all sources of translations for a language
+
+    This class is a thin wrapper that collects all message catalogs and
+    other pieces of information about a locale and centralizes access
+    to them providing a more object-oriented interface.
+
+    """
+
+    def __init__(self, lang_code, mofile=None):
+        self.locale = babel.core.Locale.parse(lang_code)
+        if mofile is not None:
+            self.translation = babel.support.Translations(mofile, domain="cms")
+        else:
+            self.translation = babel.support.NullTranslations()
+        for sys_translation in get_system_translations(lang_code):
+            self.translation.add_fallback(sys_translation)
+
+    @property
+    def identifier(self):
+        return babel.core.get_locale_identifier(
+            (self.locale.language, self.locale.territory,
+             self.locale.script, self.locale.variant))
+
+    @property
+    def name(self):
+        return self.locale.display_name
+
+    def gettext(self, msgid):
+        if six.PY3:
+            return self.translation.gettext(msgid)
+        else:
+            return self.translation.ugettext(msgid)
+
+    def ngettext(self, msgid1, msgid2, n):
+        if six.PY3:
+            return self.translation.ngettext(msgid1, msgid2, n)
+        else:
+            return self.translation.ungettext(msgid1, msgid2, n)
+
+
+DEFAULT_TRANSLATION = Translation("en")
+
+
 def get_translations():
     """Return the translations for all the languages we support.
 
     Search for the message catalogs that were installed and load them.
 
-    return ({string: gettext.NullTranslations}): for each language its
-        message catalog
+    return ({string: Translation}): for each language its message
+        catalog
 
     """
-    locale_dir = None
-    result = {"en": gettext.NullTranslations()}
+    result = {"en": DEFAULT_TRANSLATION}
 
-    locale_dir = pkg_resources.resource_filename("cms.locale", "")
-    for lang_code in os.listdir(locale_dir):
-        if os.path.isdir(os.path.join(locale_dir, lang_code)):
-            mo_file_path = os.path.join(locale_dir, lang_code,
-                                        "LC_MESSAGES", "cms.mo")
-            if os.path.exists(mo_file_path):
-                with io.open(mo_file_path, "rb") as mo_file:
-                    result[lang_code] = gettext.GNUTranslations(mo_file)
-
-    for lang_code, trans in iteritems(result):
-        for sys_trans in get_system_translations(lang_code):
-            trans.add_fallback(sys_trans)
+    for lang_code in sorted(pkg_resources.resource_listdir("cms.locale", "")):
+        mofile_path = os.path.join(lang_code, "LC_MESSAGES", "cms.mo")
+        if pkg_resources.resource_exists("cms.locale", mofile_path):
+            with pkg_resources.resource_stream("cms.locale", mofile_path) as f:
+                t = Translation(lang_code, f)
+                logger.info("Found translation %s", t.identifier)
+                result[t.identifier] = t
 
     return result
-
-
-def wrap_translations_for_tornado(trans):
-    """Make a message catalog compatible with Tornado.
-
-    Add the necessary methods to give a gettext.*Translations object
-    the interface of a tornado.locale.GettextLocale object.
-
-    trans (gettext.NullTranslations): a message catalog
-
-    return (object): a message catalog disguised as a
-        tornado.locale.GettextLocale
-
-    """
-    if six.PY3:
-        gettext = trans.gettext
-        ngettext = trans.ngettext
-    else:
-        gettext = trans.ugettext
-        ngettext = trans.ungettext
-
-    # Add translate method
-    def translate(message, plural_message=None, count=None):
-        if plural_message is not None:
-            assert count is not None
-            return ngettext(message, plural_message, count)
-        else:
-            return gettext(message)
-    trans.translate = translate
-
-    # Add a "dummy" pgettext method (that ignores the context)
-    # (Since v4.2)
-    def pgettext(_, message, plural_message=None, count=None):
-        return translate(message, plural_message, count)
-    trans.pgettext = pgettext
-
-    return trans
 
 
 def filter_language_codes(lang_codes, prefix_filter):

@@ -490,7 +490,8 @@ class UserTestStatusHandler(ContestHandler):
             else:
                 data["time"] = None
             if ur.execution_memory is not None:
-                data["memory"] = format_size(ur.execution_memory, self._)
+                data["memory"] = format_size(ur.execution_memory,
+                                             translation=self.translation)
             else:
                 data["memory"] = None
             data["output"] = ur.output is not None
@@ -527,7 +528,8 @@ class UserTestDetailsHandler(ContestHandler):
 
         tr = user_test.get_result(task.active_dataset)
 
-        self.render("user_test_details.html", task=task, tr=tr)
+        self.render("user_test_details.html", task=task, tr=tr,
+                    **self.r_params)
 
 
 class UserTestIOHandler(FileHandler):

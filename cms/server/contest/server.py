@@ -44,7 +44,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import iteritems
 
 import logging
 import pkg_resources
@@ -53,7 +52,7 @@ from cmscommon.binary import hex_to_bin, bin_to_b64
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.db.filecacher import FileCacher
-from cms.locale import get_translations, wrap_translations_for_tornado
+from cms.locale import get_translations
 
 from .handlers import HANDLERS
 from .handlers.base import BaseHandler
@@ -115,8 +114,7 @@ class ContestWebServer(WebService):
         self.notifications = {}
 
         # Retrieve the available translations.
-        self.langs = {lang_code: wrap_translations_for_tornado(trans)
-                      for lang_code, trans in iteritems(get_translations())}
+        self.translations = get_translations()
 
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(

@@ -82,22 +82,22 @@ def is_language_code(code):
     return code in _language_codes
 
 
-def translate_language_code(code, locale):
+def translate_language_code(code, translation):
     if code not in _language_codes:
         raise ValueError("Language code not recognized.")
 
-    return locale.translate(_language_codes[code]).split(';')[0]
+    return translation.gettext(_language_codes[code]).split(';')[0]
 
 
 def is_country_code(code):
     return code in _country_codes
 
 
-def translate_country_code(code, locale):
+def translate_country_code(code, translation):
     if code not in _country_codes:
         raise ValueError("Country code not recognized.")
 
-    return locale.translate(_country_codes[code]).split(';')[0]
+    return translation.gettext(_country_codes[code]).split(';')[0]
 
 
 def is_language_country_code(code):
@@ -109,12 +109,12 @@ def is_language_country_code(code):
     return True
 
 
-def translate_language_country_code(code, locale):
+def translate_language_country_code(code, translation):
     tokens = code.split('_')
     if len(tokens) != 2 or \
             tokens[0] not in _language_codes or \
             tokens[1] not in _country_codes:
         raise ValueError("Language and country code not recognized.")
 
-    return "%s (%s)" % (translate_language_code(tokens[0], locale),
-                        translate_country_code(tokens[1], locale))
+    return "%s (%s)" % (translate_language_code(tokens[0], translation),
+                        translate_country_code(tokens[1], translation))
