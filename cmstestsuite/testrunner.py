@@ -313,7 +313,7 @@ class TestRunner(object):
                          i + 1, self.n_submissions, test.name, lang)
             task_id = self.create_or_get_task(test.task_module)
             try:
-                test.submit(self.contest_id, task_id, self.user_id, lang)
+                test.submit(task_id, self.user_id, lang)
             except TestFailure as f:
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))
@@ -323,8 +323,7 @@ class TestRunner(object):
                          i + 1, self.n_user_tests, test.name, lang)
             task_id = self.create_or_get_task(test.task_module)
             try:
-                test.submit_user_test(
-                    self.contest_id, task_id, self.user_id, lang)
+                test.submit_user_test(task_id, self.user_id, lang)
             except TestFailure as f:
                 logging.error("(FAILED (while submitting): %s)", f.message)
                 self.failures.append((test, lang, f.message))

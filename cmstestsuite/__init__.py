@@ -60,7 +60,7 @@ def sh(cmdline, ignore_failure=False):
     """
     if CONFIG["VERBOSITY"] >= 1:
         # TODO Use shlex.quote in Python 3.3.
-        logger.info('$ ' + ' '.join(cmdline))
+        logger.info('$ %s', ' '.join(cmdline))
     kwargs = dict()
     if CONFIG["VERBOSITY"] >= 3:
         # TODO Use subprocess.DEVNULL in Python 3.3.

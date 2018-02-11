@@ -301,8 +301,8 @@ class FunctionalTestFramework(object):
         """Inform the framework of an existing user"""
         self.created_users[user_id] = kwargs
 
-    def cws_submit(self, contest_id, task_id, user_id, submission_format,
-                   filenames, language):
+    def cws_submit(self, task_id, user_id,
+                   submission_format, filenames, language):
         task = (task_id, self.created_tasks[task_id]['name'])
 
         browser = self.get_cws_browser(user_id)
@@ -317,7 +317,7 @@ class FunctionalTestFramework(object):
 
         return submission_id
 
-    def cws_submit_user_test(self, contest_id, task_id, user_id,
+    def cws_submit_user_test(self, task_id, user_id,
                              submission_format, filenames, language):
         task = (task_id, self.created_tasks[task_id]['name'])
 
@@ -325,7 +325,7 @@ class FunctionalTestFramework(object):
         sr = SubmitUserTestRequest(
             browser, task, base_url=self.CWS_BASE_URL,
             submission_format=submission_format,
-            filenames=filenames)
+            filenames=filenames, language=language)
         sr.execute()
         user_test_id = sr.get_user_test_id()
 
