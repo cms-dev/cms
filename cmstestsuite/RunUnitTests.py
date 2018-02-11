@@ -34,8 +34,7 @@ import subprocess
 import datetime
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG, FrameworkException, sh
-from cmstestsuite import combine_coverage
+from cmstestsuite import CONFIG, TestException, combine_coverage, sh
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +63,7 @@ def run_unittests(test_list):
         try:
             sh([sys.executable, "-m", "coverage", "run", "-p", "--source=cms",
                 os.path.join(path, filename)])
-        except FrameworkException:
+        except TestException:
             logger.info("  (FAILED: %s)" % filename)
 
             # Add this case to our list of failures, if we haven't already.

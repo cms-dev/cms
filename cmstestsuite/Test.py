@@ -31,9 +31,7 @@ import re
 
 from cms.grading.languagemanager import get_language
 
-from cmstestsuite import \
-    cws_submit, cws_submit_user_test, \
-    get_evaluation_result, get_user_test_result
+from cmstestsuite.functionaltestframework import FunctionalTestFramework
 
 
 class TestFailure(Exception):
@@ -145,6 +143,8 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
 class Test(object):
     def __init__(self, name, task, filenames, languages, checks,
                  user_tests=False):
+        self.framework = FunctionalTestFramework()
+
         self.name = name
         self.task_module = task
         self.filenames = filenames
@@ -173,7 +173,7 @@ class Test(object):
 
     def submit(self, contest_id, task_id, user_id, language):
         filenames, full_paths = self._sources_names(language)
-        self.submission_id[language] = cws_submit(
+        self.submission_id[language] = self.framework.cws_submit(
             contest_id, task_id, user_id, self.submission_format,
             full_paths, language)
 
@@ -184,7 +184,7 @@ class Test(object):
             return
 
         # Wait for evaluation to complete.
-        result_info = get_evaluation_result(
+        result_info = self.framework.get_evaluation_result(
             contest_id, self.submission_id[language])
 
         # Run checks.
@@ -197,7 +197,7 @@ class Test(object):
 
     def submit_user_test(self, contest_id, task_id, user_id, language):
         filenames, full_paths = self._sources_names(language)
-        self.user_test_id[language] = cws_submit_user_test(
+        self.user_test_id[language] = self.framework.cws_submit_user_test(
             contest_id, task_id, user_id, self.submission_format,
             full_paths, language)
 
@@ -208,4 +208,5 @@ class Test(object):
             return
 
         # Wait for evaluation to complete. We do not do any other check.
-        get_user_test_result(contest_id, self.user_test_id[language])
+            self.framework.get_user_test_result(
+                contest_id, self.user_test_id[language])
