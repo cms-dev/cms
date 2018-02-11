@@ -86,6 +86,14 @@ def get_system_translations(lang):
 
 
 class Translation(object):
+    """A shim that bundles all sources of translations for a language
+
+    This class is a thin wrapper that collects all message catalogs and
+    other pieces of information about a locale and centralizes access
+    to them providing a more object-oriented interface.
+
+    """
+
     def __init__(self, lang_code, mofile=None):
         self.locale = babel.core.Locale.parse(lang_code)
         if mofile is not None:

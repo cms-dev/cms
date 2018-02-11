@@ -215,7 +215,7 @@ class JobException(Exception):
         return "JobException(\"%s\")" % (repr(self.msg))
 
 
-def format_status_text(status, translation=None):
+def format_status_text(status, translation=DEFAULT_TRANSLATION):
     """Format the given status text in the given locale.
 
     A status text is the content of SubmissionResult.compilation_text,
@@ -228,11 +228,9 @@ def format_status_text(status, translation=None):
     returned.
 
     status ([unicode]): a status, as described above.
-    translation (Translation|None): the translation to use.
+    translation (Translation): the translation to use.
 
     """
-    if translation is None:
-        translation = DEFAULT_TRANSLATION
     _ = translation.gettext
 
     try:

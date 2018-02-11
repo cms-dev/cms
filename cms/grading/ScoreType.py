@@ -84,7 +84,7 @@ class ScoreType(object):
 
     @staticmethod
     def format_score(score, max_score, unused_score_details,
-                     score_precision, translation=None):
+                     score_precision, translation=DEFAULT_TRANSLATION):
         """Produce the string of the score that is shown in CWS.
 
         In the submission table in the task page of CWS the global
@@ -99,30 +99,26 @@ class ScoreType(object):
             the ScoreType produced for the submission when scoring it.
         score_precision (int): the maximum number of digits of the
             fractional digits to show.
-        translation (Translation|None): the translation to use.
+        translation (Translation): the translation to use.
 
         return (string): the message to show.
 
         """
-        if translation is None:
-            translation = DEFAULT_TRANSLATION
         _ = translation.gettext
         return locale_format(_, "{0:g} / {1:g}",
             round(score, score_precision), round(max_score, score_precision))
 
-    def get_html_details(self, score_details, translation=None):
+    def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (object): the data saved by the score type
             itself in the database; can be public or private.
-        translation (Translation|None): the translation to use.
+        translation (Translation): the translation to use.
 
         return (string): an HTML string representing score_details.
 
         """
-        if translation is None:
-            translation = DEFAULT_TRANSLATION
         _ = translation.gettext
         if score_details is None:
             logger.error("Found a null score details string. "
