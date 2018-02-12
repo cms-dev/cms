@@ -30,7 +30,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-from datetime import timedelta
 from future.moves.urllib.parse import quote
 
 from cmscommon.datetime import make_datetime, utc
@@ -133,18 +132,6 @@ def format_timedelta(td, translation=DEFAULT_TRANSLATION):
     return translation.format_list(res)
 
 
-def format_decimal(n, translation=DEFAULT_TRANSLATION):
-    """Format a (possibly decimal) number
-
-    n (float): the number to format.
-    translation (Translation): the translation to use.
-
-    returns (str): the formatted number.
-
-    """
-    return translation.format_decimal(n)
-
-
 def format_duration(d, length="short", translation=DEFAULT_TRANSLATION):
     """Format a duration in seconds.
 
@@ -178,6 +165,18 @@ def format_size(n, translation=DEFAULT_TRANSLATION):
         n /= PREFIX_FACTOR
     return translation.format_unit(n, "digital-%s" % SIZE_UNITS[-1],
                                    length="short", format="@@@")
+
+
+def format_decimal(n, translation=DEFAULT_TRANSLATION):
+    """Format a (possibly decimal) number
+
+    n (float): the number to format.
+    translation (Translation): the translation to use.
+
+    returns (str): the formatted number.
+
+    """
+    return translation.format_decimal(n)
 
 
 def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):
