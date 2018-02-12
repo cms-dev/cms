@@ -46,7 +46,7 @@
 <h2 style="margin: 40px 0 10px">{{ _("Previous print jobs") }}</h2>
 
 {% from cmscommon.datetime import utc %}
-{% set show_date = any(p.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for p in printjobs) %}
+{% set show_date = any(p.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for p in printjobs) %}
 
 
 <table id="printjob_list" class="table table-bordered table-striped">

@@ -33,9 +33,9 @@ var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.n
 {% else %}
 // FIXME use Date objects
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
-                             {{ make_timestamp(timestamp) }},
+                             {{ make_timestamp(now) }},
                              {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
-                             {{ make_timestamp(timestamp.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
+                             {{ make_timestamp(now.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
                              {{ make_timestamp(current_phase_begin) }},
                              {{ make_timestamp(current_phase_end) }},
                              {{ actual_phase }});

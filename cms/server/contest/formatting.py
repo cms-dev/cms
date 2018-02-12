@@ -74,7 +74,7 @@ def format_time(dt, timezone, translation=DEFAULT_TRANSLATION):
     return translation.format_time(dt, tzinfo=timezone)
 
 
-def format_datetime_smart(dt, timezone, translation=DEFAULT_TRANSLATION):
+def format_datetime_smart(dt, now, timezone, translation=DEFAULT_TRANSLATION):
     """Return dt formatted as '[date] time'.
 
     Date is present in the output if it is not today.
@@ -87,8 +87,9 @@ def format_datetime_smart(dt, timezone, translation=DEFAULT_TRANSLATION):
         locale.
 
     """
-    now = make_datetime().replace(tzinfo=utc).astimezone(timezone)
-    if dt.replace(tzinfo=utc).astimezone(timezone).date() == now.date():
+    dt_date = dt.replace(tzinfo=utc).astimezone(timezone).date()
+    now_date = now.replace(tzinfo=utc).astimezone(timezone).date()
+    if dt_date == now_date:
         return format_time(dt, timezone, translation)
     else:
         return format_datetime(dt, timezone, translation)
@@ -110,6 +111,8 @@ def format_timedelta(td, translation=DEFAULT_TRANSLATION):
 
     """
     res = []
+
+    td = abs(td)
 
     if td.days > 0:
         res.append(translation.format_unit(td.days, "duration-day"))
@@ -141,7 +144,11 @@ def format_duration(d, length="short", translation=DEFAULT_TRANSLATION):
     returns (str): the formatted duration.
 
     """
-    return translation.format_unit(d, "duration-second", length=length)
+    if d < 0.001:
+        return translation.format_unit(d, "duration-second",
+                                       length=length, format="#")
+    return translation.format_unit(d, "duration-second",
+                                   length=length, format="@###")
 
 
 PREFIX_FACTOR = 1000
@@ -158,13 +165,16 @@ def format_size(n, translation=DEFAULT_TRANSLATION):
         unit, always with three significant digits.
 
     """
+    if n == 0:
+        return translation.format_unit(n, "digital-%s" % SIZE_UNITS[0],
+                                       length="short", format="#")
     for unit in SIZE_UNITS[:-1]:
         if n < PREFIX_FACTOR:
             return translation.format_unit(n, "digital-%s" % unit,
-                                           length="short", format="@@@")
+                                           length="short", format="@##")
         n /= PREFIX_FACTOR
     return translation.format_unit(n, "digital-%s" % SIZE_UNITS[-1],
-                                   length="short", format="@@@")
+                                   length="short", format="@##")
 
 
 def format_decimal(n, translation=DEFAULT_TRANSLATION):
