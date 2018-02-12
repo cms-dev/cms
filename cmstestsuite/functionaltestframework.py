@@ -159,11 +159,11 @@ class FunctionalTestFramework(object):
             ''', r.text, re.X)
         tasks = {}
         for g in groups:
-            id, name, title = g
-            id = int(id)
+            id_, name, title = g
+            id_ = int(id_)
             tasks[name] = {
                 'title': title,
-                'id': id,
+                'id': id_,
             }
         return tasks
 
@@ -183,12 +183,12 @@ class FunctionalTestFramework(object):
         ''', r.text, re.X)
         users = {}
         for g in groups:
-            firstname, lastname, id, username = g
-            id = int(id)
+            firstname, lastname, id_, username = g
+            id_ = int(id_)
             users[username] = {
                 'firstname': firstname,
                 'lastname': lastname,
-                'id': id,
+                'id': id_,
             }
         return users
 
