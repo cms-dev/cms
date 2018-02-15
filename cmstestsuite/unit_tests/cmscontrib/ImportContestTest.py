@@ -124,8 +124,7 @@ class TestImportContest(TestCaseWithDatabase):
                   import_tasks=False, update_tasks=False):
         """Create an importer and call do_import in a convenient way"""
         return ContestImporter(
-            "path", False, False, None, import_tasks, update_contest,
-            update_tasks, False,
+            "path", False, import_tasks, update_contest, update_tasks, False,
             fake_loader_factory(contest, contest_has_changed,
                                 tasks, participations)).do_import()
 

@@ -67,11 +67,9 @@ class ContestImporter(object):
 
     """
 
-    def __init__(self, path, test, zero_time, user_number, import_tasks,
+    def __init__(self, path, zero_time, import_tasks,
                  update_contest, update_tasks, no_statements, loader_class):
-        self.test = test
         self.zero_time = zero_time
-        self.user_number = user_number
         self.import_tasks = import_tasks
         self.update_contest = update_contest
         self.update_tasks = update_tasks
@@ -105,9 +103,6 @@ class ContestImporter(object):
         if self.zero_time:
             contest.start = datetime.datetime(1970, 1, 1)
             contest.stop = datetime.datetime(1970, 1, 1)
-        elif self.test:
-            contest.start = datetime.datetime(1970, 1, 1)
-            contest.stop = datetime.datetime(2100, 1, 1)
 
         with SessionGen() as session:
             try:
@@ -328,17 +323,6 @@ If updating a contest already in the DB:
         action="store_true",
         help="set to zero contest start and stop time"
     )
-    group.add_argument(
-        "-t", "--test",
-        action="store_true",
-        help="setup a contest for testing "
-             "(times: 1970, 2100; ips: unset, passwords: a)"
-    )
-    parser.add_argument(
-        "-n", "--user-number",
-        action="store", type=int,
-        help="put N random users instead of importing them"
-    )
     parser.add_argument(
         "-L", "--loader",
         action="store", type=utf8_decoder,
@@ -380,9 +364,7 @@ If updating a contest already in the DB:
     )
 
     importer = ContestImporter(path=args.import_directory,
-                               test=args.test,
                                zero_time=args.zero_time,
-                               user_number=args.user_number,
                                import_tasks=args.import_tasks,
                                update_contest=args.update_contest,
                                update_tasks=args.update_tasks,
