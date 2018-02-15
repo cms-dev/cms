@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -42,8 +42,6 @@ import unittest
 
 from datetime import timedelta
 
-from sqlalchemy import create_engine
-
 import cms
 
 # Monkeypatch the db string.
@@ -65,7 +63,8 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cms.db.engine = create_engine(cms.config.database)
+        assert "fortesting" in str(cms.db.engine), \
+            "Monkey patching of DB connection string failed"
         drop_db()
         init_db()
         cls.connection = cms.db.engine.connect()
