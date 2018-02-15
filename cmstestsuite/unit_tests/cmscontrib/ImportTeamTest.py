@@ -72,7 +72,8 @@ class TestImportTeam(TestCaseWithDatabase):
         self.session.close()
         super(TestImportTeam, self).tearDown()
 
-    def do_import(self, team):
+    @staticmethod
+    def do_import(team):
         """Create an importer and call do_import in a convenient way"""
         return TeamImporter("path", fake_loader_factory(team)).do_import()
 

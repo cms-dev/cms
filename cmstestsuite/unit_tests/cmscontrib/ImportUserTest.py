@@ -77,7 +77,8 @@ class TestImportUser(TestCaseWithDatabase):
         self.session.close()
         super(TestImportUser, self).tearDown()
 
-    def do_import(self, user, contest_id):
+    @staticmethod
+    def do_import(user, contest_id):
         """Create an importer and call do_import in a convenient way"""
         return UserImporter(
             "path", contest_id, fake_loader_factory(user)).do_import()

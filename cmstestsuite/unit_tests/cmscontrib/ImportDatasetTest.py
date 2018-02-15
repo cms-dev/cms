@@ -80,7 +80,8 @@ class TestImportDataset(TestCaseWithDatabase):
         self.session.close()
         super(TestImportDataset, self).tearDown()
 
-    def do_import(self, task, dataset, description):
+    @staticmethod
+    def do_import(task, dataset, description):
         """Create an importer and call do_import in a convenient way"""
         return DatasetImporter(
             "path", description,

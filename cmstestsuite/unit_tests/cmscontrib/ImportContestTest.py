@@ -121,7 +121,8 @@ class TestImportContest(TestCaseWithDatabase):
         self.session.close()
         super(TestImportContest, self).tearDown()
 
-    def do_import(self, contest, tasks, participations,
+    @staticmethod
+    def do_import(contest, tasks, participations,
                   contest_has_changed=False, update_contest=False,
                   import_tasks=False, update_tasks=False):
         """Create an importer and call do_import in a convenient way"""
