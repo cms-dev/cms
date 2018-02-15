@@ -53,7 +53,7 @@ from cms import utf8_decoder
 from cms.db import SessionGen, User, Team, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 
-from cmscontrib.importing import ImportError, update_contest, update_task
+from cmscontrib.importing import ImportDataError, update_contest, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ class ContestImporter(object):
                 for p in participations:
                     self._participation_to_db(session, contest, p)
 
-            except ImportError as e:
+            except ImportDataError as e:
                 logger.error(str(e))
                 logger.info("Error while importing, no changes were made.")
                 return False
@@ -144,7 +144,7 @@ class ContestImporter(object):
                 # Contest already present, but user did not ask to update any
                 # data. We cannot import anything and this is most probably
                 # not what the user wanted, so we let them know.
-                raise ImportError(
+                raise ImportDataError(
                     "Contest \"%s\" already exists in database. "
                     "Use --update-contest to update it." % contest.name)
 
@@ -176,12 +176,14 @@ class ContestImporter(object):
             # so, otherwise we return an error.
 
             if not self.import_tasks:
-                raise ImportError("Task \"%s\" not found in database. "
-                                  "Use --import-task to import it." % taskname)
+                raise ImportDataError("Task \"%s\" not found in database. "
+                                      "Use --import-task to import it."
+                                      % taskname)
 
             task = task_loader.get_task(get_statement=not self.no_statements)
             if task is None:
-                raise ImportError("Could not import task \"%s\"." % taskname)
+                raise ImportDataError(
+                    "Could not import task \"%s\"." % taskname)
 
             session.add(task)
 
@@ -195,7 +197,8 @@ class ContestImporter(object):
             new_task = task_loader.get_task(
                 get_statement=not self.no_statements)
             if not new_task:
-                raise ImportError("Could not reimport task \"%s\"." % taskname)
+                raise ImportDataError(
+                    "Could not reimport task \"%s\"." % taskname)
             logger.info("Task \"%s\" data has changed, updating it.", taskname)
             update_task(task, new_task, get_statements=not self.no_statements)
 
@@ -208,7 +211,7 @@ class ContestImporter(object):
         # Finally we tie the task to the contest, if it is not already used
         # elsewhere.
         if task.contest is not None and task.contest.name != contest.name:
-            raise ImportError(
+            raise ImportDataError(
                 "Task \"%s\" is already tied to another contest." % taskname)
 
         task.num = tasknum
@@ -227,17 +230,17 @@ class ContestImporter(object):
             .filter(User.username == new_p["username"]).first()
         if user is None:
             # FIXME: it would be nice to automatically try to import.
-            raise ImportError("User \"%s\" not found in database. "
-                              "Use cmsImportUser to import it." %
-                              new_p["username"])
+            raise ImportDataError("User \"%s\" not found in database. "
+                                  "Use cmsImportUser to import it." %
+                                  new_p["username"])
 
         team = session.query(Team)\
             .filter(Team.code == new_p.get("team")).first()
         if team is None and new_p.get("team") is not None:
             # FIXME: it would be nice to automatically try to import.
-            raise ImportError("Team \"%s\" not found in database. "
-                              "Use cmsImportTeam to import it."
-                              % new_p.get("team"))
+            raise ImportDataError("Team \"%s\" not found in database. "
+                                  "Use cmsImportTeam to import it."
+                                  % new_p.get("team"))
 
         # Check that the participation is not already defined.
         p = session.query(Participation)\

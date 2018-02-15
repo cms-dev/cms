@@ -51,7 +51,7 @@ from cms import utf8_decoder
 from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 
-from cmscontrib.importing import ImportError, contest_from_db, update_task
+from cmscontrib.importing import ImportDataError, contest_from_db, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
@@ -116,7 +116,7 @@ class TaskImporter(object):
                 task = self._task_to_db(
                     session, contest, task, task_has_changed)
 
-            except ImportError as e:
+            except ImportDataError as e:
                 logger.error(str(e))
                 logger.info("Error while importing, no changes were made.")
                 return False
@@ -146,12 +146,12 @@ class TaskImporter(object):
             return new_task
 
         if not self.update:
-            raise ImportError(
+            raise ImportDataError(
                 "Task \"%s\" already exists in database. "
                 "Use --update to update it." % new_task.name)
 
         if contest is not None and task.contest_id != contest.id:
-            raise ImportError(
+            raise ImportDataError(
                 "Task \"%s\" already tied to another contest." % task.name)
 
         if task_has_changed:

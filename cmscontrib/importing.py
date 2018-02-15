@@ -40,7 +40,7 @@ __all__ = [
 ]
 
 
-class ImportError(Exception):
+class ImportDataError(Exception):
     pass
 
 
@@ -51,7 +51,7 @@ def contest_from_db(contest_id, session):
     contest_id (int|None): the id of the contest, or None to return None.
 
     return (Contest|None): None if contest_id is None, or the contest.
-    raise (ImportError): if there is no contest with the given id.
+    raise (ImportDataError): if there is no contest with the given id.
 
     """
     if contest_id is None:
@@ -59,7 +59,7 @@ def contest_from_db(contest_id, session):
 
     contest = Contest.get_from_id(contest_id, session)
     if contest is None:
-        raise ImportError(
+        raise ImportDataError(
             "The specified contest (id %s) does not exist." % contest_id)
     return contest
 
@@ -71,7 +71,7 @@ def task_from_db(task_name, session):
     task_name (string|None): the name of the task, or None to return None.
 
     return (Task|None): None if task_name is None, or the task.
-    raise (ImportError): if there is no task with the given name.
+    raise (ImportDataError): if there is no task with the given name.
 
     """
     if task_name is None:
@@ -79,7 +79,7 @@ def task_from_db(task_name, session):
 
     task = session.query(Task).filter(Task.name == task_name).first()
     if task is None:
-        raise ImportError(
+        raise ImportDataError(
             "The specified task (name %s) does not exist." % task_name)
     return task
 

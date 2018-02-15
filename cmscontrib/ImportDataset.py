@@ -45,7 +45,7 @@ from cms import utf8_decoder
 from cms.db import Dataset, SessionGen
 from cms.db.filecacher import FileCacher
 
-from cmscontrib.importing import ImportError, task_from_db
+from cmscontrib.importing import ImportDataError, task_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
@@ -82,7 +82,7 @@ class DatasetImporter(object):
             try:
                 task = task_from_db(task_name, session)
                 self._dataset_to_db(session, dataset, task)
-            except ImportError as e:
+            except ImportDataError as e:
                 logger.error(str(e))
                 logger.info("Error while importing, no changes were made.")
                 return False
@@ -98,8 +98,8 @@ class DatasetImporter(object):
             .filter(Dataset.task_id == task.id)\
             .filter(Dataset.description == dataset.description).first()
         if old_dataset is not None:
-            raise ImportError("Dataset \"%s\" already exists."
-                              % dataset.description)
+            raise ImportDataError("Dataset \"%s\" already exists."
+                                  % dataset.description)
         dataset.task = task
         session.add(dataset)
         return dataset
