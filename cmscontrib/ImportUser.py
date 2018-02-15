@@ -116,7 +116,8 @@ class UserImporter(object):
 
         return True
 
-    def _user_to_db(self, session, user):
+    @staticmethod
+    def _user_to_db(session, user):
         """Add the user to the DB
 
         Return the user again, or raise in case a user with the same username

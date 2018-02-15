@@ -105,7 +105,8 @@ class TeamImporter(object):
 
         return True
 
-    def _team_to_db(self, session, team):
+    @staticmethod
+    def _team_to_db(session, team):
         old_team = session.query(Team).filter(Team.code == team.code).first()
         if old_team is not None:
             raise ImportError("Team \"%s\" already exists." % team.code)

@@ -93,7 +93,8 @@ class DatasetImporter(object):
         logger.info("Import finished (dataset id: %s).", dataset_id)
         return True
 
-    def _dataset_to_db(self, session, dataset, task):
+    @staticmethod
+    def _dataset_to_db(session, dataset, task):
         old_dataset = session.query(Dataset)\
             .filter(Dataset.task_id == task.id)\
             .filter(Dataset.description == dataset.description).first()

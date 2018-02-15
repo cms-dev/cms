@@ -218,7 +218,8 @@ class ContestImporter(object):
         task.contest = contest
         return task
 
-    def _participation_to_db(self, session, contest, new_p):
+    @staticmethod
+    def _participation_to_db(session, contest, new_p):
         """Add the new participation to the DB and attach it to the contest
 
         Return the participation, or raise in case of one of these errors:
