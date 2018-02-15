@@ -81,7 +81,8 @@ class TestCaseWithDatabase(unittest.TestCase):
     def tearDown(self):
         self.session.rollback()
 
-    def get_contest(self, **kwargs):
+    @staticmethod
+    def get_contest(**kwargs):
         """Create a contest"""
         args = {
             "name": unique_unicode_id(),
@@ -93,11 +94,12 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_contest(self, **kwargs):
         """Create a contest and add it to the session"""
-        contest = self.get_contest(**kwargs)
+        contest = TestCaseWithDatabase.get_contest(**kwargs)
         self.session.add(contest)
         return contest
 
-    def get_user(self, **kwargs):
+    @staticmethod
+    def get_user(**kwargs):
         """Create a user"""
         args = {
             "username": unique_unicode_id(),
@@ -111,14 +113,16 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_user(self, **kwargs):
         """Create a user and add it to the session"""
-        user = self.get_user(**kwargs)
+        user = TestCaseWithDatabase.get_user(**kwargs)
         self.session.add(user)
         return user
 
-    def get_participation(self, user=None, contest=None, **kwargs):
+    @staticmethod
+    def get_participation(user=None, contest=None, **kwargs):
         """Create a participation"""
-        user = user if user is not None else self.get_user()
-        contest = contest if contest is not None else self.get_contest()
+        user = user if user is not None else TestCaseWithDatabase.get_user()
+        contest = contest \
+            if contest is not None else TestCaseWithDatabase.get_contest()
         args = {
             "user": user,
             "contest": contest,
@@ -129,11 +133,12 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_participation(self, **kwargs):
         """Create a participation and add it to the session"""
-        participation = self.get_participation(**kwargs)
+        participation = TestCaseWithDatabase.get_participation(**kwargs)
         self.session.add(participation)
         return participation
 
-    def get_task(self, **kwargs):
+    @staticmethod
+    def get_task(**kwargs):
         """Create a task"""
         args = {
             "name": unique_unicode_id(),
@@ -145,13 +150,14 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_task(self, **kwargs):
         """Create a task and add it to the session"""
-        task = self.get_task(**kwargs)
+        task = TestCaseWithDatabase.get_task(**kwargs)
         self.session.add(task)
         return task
 
-    def get_dataset(self, task=None, **kwargs):
+    @staticmethod
+    def get_dataset(task=None, **kwargs):
         """Create a dataset"""
-        task = task if task is not None else self.get_task()
+        task = task if task is not None else TestCaseWithDatabase.get_task()
         args = {
             "task": task,
             "description": unique_unicode_id(),
@@ -170,7 +176,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_dataset(self, **kwargs):
         """Create a dataset and add it to the session"""
-        dataset = self.get_dataset(**kwargs)
+        dataset = TestCaseWithDatabase.get_dataset(**kwargs)
         self.session.add(dataset)
         return dataset
 
@@ -311,7 +317,8 @@ class TestCaseWithDatabase(unittest.TestCase):
                 result.set_compilation_outcome(compilation_outcome)
         return user_test, results
 
-    def get_team(self, **kwargs):
+    @staticmethod
+    def get_team(**kwargs):
         """Create a team"""
         args = {
             "code": unique_unicode_id(),
@@ -323,6 +330,6 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_team(self, **kwargs):
         """Create a team and add it to the session"""
-        team = self.get_team(**kwargs)
+        team = TestCaseWithDatabase.get_team(**kwargs)
         self.session.add(team)
         return team
