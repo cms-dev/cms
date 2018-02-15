@@ -53,7 +53,7 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
 from cms.db import Contest, Dataset, Evaluation, Participation, Session, \
-    Submission, SubmissionResult, Task, Testcase, User, UserTest, \
+    Submission, SubmissionResult, Task, Team, Testcase, User, UserTest, \
     UserTestResult, \
     drop_db, init_db
 
@@ -81,19 +81,24 @@ class TestCaseWithDatabase(unittest.TestCase):
     def tearDown(self):
         self.session.rollback()
 
-    def add_contest(self, **kwargs):
-        """Add a contest."""
+    def get_contest(self, **kwargs):
+        """Create a contest"""
         args = {
             "name": unique_unicode_id(),
             "description": unique_unicode_id(),
         }
         args.update(kwargs)
         contest = Contest(**args)
+        return contest
+
+    def add_contest(self, **kwargs):
+        """Create a contest and add it to the session"""
+        contest = self.get_contest(**kwargs)
         self.session.add(contest)
         return contest
 
-    def add_user(self, **kwargs):
-        """Add a user."""
+    def get_user(self, **kwargs):
+        """Create a user"""
         args = {
             "username": unique_unicode_id(),
             "password": "",
@@ -102,38 +107,51 @@ class TestCaseWithDatabase(unittest.TestCase):
         }
         args.update(kwargs)
         user = User(**args)
+        return user
+
+    def add_user(self, **kwargs):
+        """Create a user and add it to the session"""
+        user = self.get_user(**kwargs)
         self.session.add(user)
         return user
 
-    def add_participation(self, user=None, contest=None, **kwargs):
-        """Add a participation."""
-        user = user if user is not None else self.add_user()
-        contest = contest if contest is not None else self.add_contest()
+    def get_participation(self, user=None, contest=None, **kwargs):
+        """Create a participation"""
+        user = user if user is not None else self.get_user()
+        contest = contest if contest is not None else self.get_contest()
         args = {
             "user": user,
             "contest": contest,
         }
         args.update(kwargs)
         participation = Participation(**args)
+        return participation
+
+    def add_participation(self, **kwargs):
+        """Create a participation and add it to the session"""
+        participation = self.get_participation(**kwargs)
         self.session.add(participation)
         return participation
 
-    def add_task(self, contest=None, **kwargs):
-        """Add a task."""
-        contest = contest if contest is not None else self.add_contest()
+    def get_task(self, **kwargs):
+        """Create a task"""
         args = {
-            "contest": contest,
             "name": unique_unicode_id(),
             "title": unique_unicode_id(),
         }
         args.update(kwargs)
         task = Task(**args)
+        return task
+
+    def add_task(self, **kwargs):
+        """Create a task and add it to the session"""
+        task = self.get_task(**kwargs)
         self.session.add(task)
         return task
 
-    def add_dataset(self, task=None, **kwargs):
-        """Add a dataset."""
-        task = task if task is not None else self.add_task()
+    def get_dataset(self, task=None, **kwargs):
+        """Create a dataset"""
+        task = task if task is not None else self.get_task()
         args = {
             "task": task,
             "description": unique_unicode_id(),
@@ -148,6 +166,11 @@ class TestCaseWithDatabase(unittest.TestCase):
         }
         args.update(kwargs)
         dataset = Dataset(**args)
+        return dataset
+
+    def add_dataset(self, **kwargs):
+        """Create a dataset and add it to the session"""
+        dataset = self.get_dataset(**kwargs)
         self.session.add(dataset)
         return dataset
 
@@ -167,7 +190,8 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_submission(self, task=None, participation=None, **kwargs):
         """Add a submission."""
-        task = task if task is not None else self.add_task()
+        if task is None:
+            task = self.add_task(contest=self.add_contest())
         participation = participation \
             if participation is not None \
             else self.add_participation(contest=task.contest)
@@ -222,7 +246,8 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_user_test(self, task=None, participation=None, **kwargs):
         """Add a user test."""
-        task = task if task is not None else self.add_task()
+        if task is None:
+            task = self.add_task(contest=self.add_contest())
         participation = participation \
             if participation is not None \
             else self.add_participation(contest=task.contest)
@@ -285,3 +310,19 @@ class TestCaseWithDatabase(unittest.TestCase):
             for result in results:
                 result.set_compilation_outcome(compilation_outcome)
         return user_test, results
+
+    def get_team(self, **kwargs):
+        """Create a team"""
+        args = {
+            "code": unique_unicode_id(),
+            "name": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        team = Team(**args)
+        return team
+
+    def add_team(self, **kwargs):
+        """Create a team and add it to the session"""
+        team = self.get_team(**kwargs)
+        self.session.add(team)
+        return team
