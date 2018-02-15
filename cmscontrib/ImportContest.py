@@ -113,8 +113,12 @@ class ContestImporter(object):
             try:
                 contest = self._contest_to_db(
                     session, contest, contest_has_changed)
+                # Detach all tasks before reattaching them
+                for t in contest.tasks:
+                    t.contest = None
                 for tasknum, taskname in enumerate(tasks):
                     self._task_to_db(session, contest, tasknum, taskname)
+                # Import participations.
                 for p in participations:
                     self._participation_to_db(session, contest, p)
 
@@ -303,7 +307,16 @@ def main():
     """Parse arguments and launch process."""
 
     parser = argparse.ArgumentParser(
-        description="Import a contest from disk",
+        description="""\
+Import a contest from disk
+
+If updating a contest already in the DB:
+- tasks attached to the contest in the DB but not to the contest to be imported
+  will be detached;
+- participations attached to the contest in the DB but not to the contest to be
+  imported will be retained, this to avoid deleting submissions.
+
+""",
         epilog=build_epilog(),
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
