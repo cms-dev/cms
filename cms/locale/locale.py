@@ -238,8 +238,8 @@ class Translation(object):
 
         f = copy.copy(self.locale.decimal_formats[None])
         f.frac_prec = (3, 3)
-        return babel.units.format_unit(d, "duration-second",
-                                       length=length, format=f, locale=self.locale)
+        return babel.units.format_unit(
+            d, "duration-second", length=length, format=f, locale=self.locale)
 
     PREFIX_FACTOR = 1000
     SIZE_UNITS = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
@@ -264,19 +264,22 @@ class Translation(object):
         n = abs(n)
 
         if n < self.PREFIX_FACTOR:
-            return babel.units.format_unit(round(n),
-                                           "digital-%s" % self.SIZE_UNITS[0],
-                                           length="short", locale=self.locale)
+            return babel.units.format_unit(
+                round(n), "digital-%s" % self.SIZE_UNITS[0], length="short",
+                locale=self.locale)
         for unit in self.SIZE_UNITS[1:]:
             n /= self.PREFIX_FACTOR
             if n < self.PREFIX_FACTOR:
                 f = copy.copy(self.locale.decimal_formats[None])
-                d = max(int(math.ceil(math.log10(self.PREFIX_FACTOR / n))) - 1, 0)
+                # We need int because ceil returns a float in py2.
+                d = int(math.ceil(math.log10(self.PREFIX_FACTOR / n))) - 1
                 f.frac_prec = (d, d)
-                return babel.units.format_unit(n, "digital-%s" % unit,
-                                               length="short", format=f, locale=self.locale)
-        return babel.units.format_unit(round(n), "digital-%s" % self.SIZE_UNITS[-1],
-                                       length="short", locale=self.locale)
+                return babel.units.format_unit(
+                    n, "digital-%s" % unit, length="short", format=f,
+                    locale=self.locale)
+        return babel.units.format_unit(
+            round(n), "digital-%s" % self.SIZE_UNITS[-1], length="short",
+            locale=self.locale)
 
     def format_decimal(self, n):
         """Format a (possibly decimal) number

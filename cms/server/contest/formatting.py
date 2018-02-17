@@ -30,11 +30,8 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import copy
-import math
 from future.moves.urllib.parse import quote
 
-from cmscommon.datetime import utc
 from cms.locale import DEFAULT_TRANSLATION
 
 
