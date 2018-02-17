@@ -45,7 +45,7 @@ from abc import ABCMeta, abstractmethod
 
 from tornado.template import Template
 
-from cms.locale import locale_format, DEFAULT_TRANSLATION
+from cms.locale import DEFAULT_TRANSLATION
 
 
 logger = logging.getLogger(__name__)
@@ -104,9 +104,9 @@ class ScoreType(object):
         return (string): the message to show.
 
         """
-        _ = translation.gettext
-        return locale_format(_, "{0:g} / {1:g}",
-            round(score, score_precision), round(max_score, score_precision))
+        return "%s / %s" % (
+            translation.format_decimal(round(score, score_precision)),
+            translation.format_decimal(round(max_score, score_precision)))
 
     def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
@@ -196,8 +196,6 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server.contest.formatting import format_size %}
-{% from cms.locale import locale_format %}
 {% set idx = 0 %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -217,7 +215,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ locale_format(_, "{0:g} / {1:g}", round(st["score"], 2), st["max_score"]) }})
+            ({{ translation.format_decimal(round(st["score"], 2)) }}
+             / {{ translation.format_decimal(st["max_score"]) }})
         </span>
     {% else %}
         <span class="score">
@@ -254,14 +253,14 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tc["time"]) }}
+                        {{ translation.format_duration(tc["time"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
                     </td>
                     <td class="memory-used">
             {% if "memory" in tc and tc["memory"] is not None %}
-                        {{ format_size(tc["memory"], translation=translation) }}
+                        {{ translation.format_size(tc["memory"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}

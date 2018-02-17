@@ -90,7 +90,7 @@ class BaseHandler(CommonRequestHandler):
 
         """
         ret = {}
-        ret["timestamp"] = self.timestamp
+        ret["now"] = self.timestamp
         ret["url"] = self.url
 
         ret["contest_list"] = self.contest_list

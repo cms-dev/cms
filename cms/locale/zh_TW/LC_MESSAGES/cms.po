@@ -265,53 +265,8 @@ msgstr "執行中..."
 msgid "Executed"
 msgstr "已評測"
 
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} 秒"
-
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "載入中..."
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d 秒"
-msgstr[1] "%d 秒"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d 分鐘"
-msgstr[1] "%d 分鐘"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d 小時"
-msgstr[1] "%d 小時"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d 天"
-msgstr[1] "%d 天"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s 與 %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "超過 %s"
 
 msgid "contest-token"
 msgstr "競賽-Token"
@@ -659,18 +614,6 @@ msgid "Files"
 msgstr "傳送檔案"
 
 msgid "Tokens"
-msgstr ""
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} 秒"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} 秒"
-
-#, python-format
-msgid "%(mb)d MiB"
 msgstr ""
 
 msgid "Yes"

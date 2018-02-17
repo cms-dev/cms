@@ -1,9 +1,8 @@
 {% extends contest.html %}
 {% block core %}
 
-{% from cms.server.contest.formatting import format_token_rules, format_size %}
+{% from cms.server.contest.formatting import format_token_rules %}
 {% from cms.grading.tasktypes import get_task_type %}
-{% from cms.locale import locale_format %}
 
 {% if actual_phase == 0 or actual_phase == 3 or current_user.unrestricted %}
 
@@ -100,19 +99,13 @@
 {% if task.active_dataset.time_limit is not None %}
         <tr>
             <th>{{ _("Time limit") }}</th>
-            <td colspan="2">
-    {% if task.active_dataset.time_limit == 1.0 %}
-        {{ locale_format(_, _("{seconds:g} second"), seconds=task.active_dataset.time_limit) }}
-    {% else %}
-        {{ locale_format(_, _("{seconds:g} seconds"), seconds=task.active_dataset.time_limit) }}
-    {% end %}
-            </td>
+            <td colspan="2">{{ translation.format_duration(task.active_dataset.time_limit, length="long") }}</td>
         </tr>
 {% end %}
 {% if task.active_dataset.memory_limit is not None %}
         <tr>
             <th>{{ _("Memory limit") }}</th>
-            <td colspan="2">{{ _("%(mb)d MiB") % {"mb": task.active_dataset.memory_limit} }}</td>
+            <td colspan="2">{{ translation.format_size(task.active_dataset.memory_limit * 1024 * 1024) }}</td>
         </tr>
 {% end %}
 {% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
@@ -195,7 +188,7 @@
             {% end %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
-                        <span class="size">{{ format_size(file_size, translation=translation) }}</span>
+                        <span class="size">{{ translation.format_size(file_size) }}</span>
                     </span>
             {% if type_icon is not None %}
                     <span class="type">{{ _(type_name) }}</span>

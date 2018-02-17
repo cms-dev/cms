@@ -164,7 +164,7 @@ $(document).ready(function () {
 
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
 <div style="padding-bottom:10px">
-    {% set tokens_info = contest.tokens_available(current_user, task, timestamp) %}
+    {% set tokens_info = contest.tokens_available(current_user, task, now) %}
     {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
     {% set need_to_wait = tokens_info[2] is not None %}
     {% if can_play_token %}
@@ -176,11 +176,11 @@ $(document).ready(function () {
             {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
         {% end %}
         {% if need_to_wait %}
-            {% set t = format_datetime_smart(tokens_info[2], timezone, translation=translation) %}
+            {% set t = translation.format_datetime_smart(tokens_info[2], now, timezone) %}
             {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
         {% end %}
         {% if tokens_info[1] is not None %}
-            {% set t = format_datetime_smart(tokens_info[1], timezone, translation=translation) %}
+            {% set t = translation.format_datetime_smart(tokens_info[1], now, timezone) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
@@ -188,10 +188,10 @@ $(document).ready(function () {
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
         {% if actual_phase == 0 and tokens_info[1] is not None %}
-            {% set t = format_datetime_smart(tokens_info[1], timezone, translation=translation) %}
+            {% set t = translation.format_datetime_smart(tokens_info[1], now, timezone) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
             {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
-                {% set t = format_datetime_smart(tokens_info[2], timezone, translation=translation) %}
+                {% set t = translation.format_datetime_smart(tokens_info[2], now, timezone) %}
                 {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
             {% end %}
         {% else %}
@@ -210,7 +210,7 @@ $(document).ready(function () {
 {% end %}
 
 {% from cmscommon.datetime import utc %}
-{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
+{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != now.replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
 
 
 <table id="submission_list" class="table table-bordered table-striped">

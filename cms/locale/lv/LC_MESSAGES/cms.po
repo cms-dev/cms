@@ -20,10 +20,6 @@ msgstr ""
 "2);\n"
 "X-Generator: Poedit 2.0.4\n"
 
-#. translators: decimal mark in fractions (e.g., in "3.14")
-msgid "."
-msgstr ","
-
 msgid "Compilation succeeded"
 msgstr "Kompilācija ir veiksmīga"
 
@@ -201,56 +197,11 @@ msgstr "Kompilēšana nav nepieciešama"
 msgid "File not submitted"
 msgstr "Datne nav iesūtīta"
 
-msgid "%Y-%m-%d"
-msgstr "%d.%m.%Y"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%d.%m.%Y %H:%M:%S"
-
 msgid "loading..."
 msgstr "ielādē…"
 
 msgid "unknown"
 msgstr "nezināms"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d sekunde"
-msgstr[1] "%d sekundes"
-msgstr[2] "%d sekunžu"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minūte"
-msgstr[1] "%d minūtes"
-msgstr[2] "%d minūšu"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d stunda"
-msgstr[1] "%d stundas"
-msgstr[2] "%d stundu"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d diena"
-msgstr[1] "%d dienas"
-msgstr[2] "%d dienu"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s un %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "vairāk kā %s"
 
 msgid "contest-token"
 msgstr "sacensību žetons"
@@ -558,10 +509,6 @@ msgstr "Izpilda…"
 
 msgid "Executed"
 msgstr "Izpildīts"
-
-#, python-brace-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} s"
 
 msgid "Communication"
 msgstr "Komunikācija"
@@ -904,18 +851,6 @@ msgstr "Datnes"
 
 msgid "Tokens"
 msgstr "Žetoni"
-
-#, python-brace-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} sekunde"
-
-#, python-brace-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} sekundes"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Jā"

@@ -195,52 +195,11 @@ msgstr "Geen compilatie nodig"
 msgid "File not submitted"
 msgstr "Bestand niet ingediend"
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "laden..."
 
 msgid "unknown"
 msgstr "onbekend"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d seconde"
-msgstr[1] "%d seconden"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minuut"
-msgstr[1] "%d minuten"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d uur"
-msgstr[1] "%d uren"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d dag"
-msgstr[1] "%d dagen"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s en %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "meer dan %s"
 
 msgid "contest-token"
 msgstr "wedstrijd-token"
@@ -538,10 +497,6 @@ msgstr "Bezig met uitvoeren..."
 
 msgid "Executed"
 msgstr "Uitgevoerd"
-
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} seconde"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -857,18 +812,6 @@ msgstr "Bestanden"
 
 msgid "Tokens"
 msgstr "Tokens"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} seconde"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} seconden"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Ja"

@@ -187,52 +187,11 @@ msgstr "컴파일이 필요하지 않습니다."
 msgid "File not submitted"
 msgstr "파일을 제출하지 않았습니다."
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "로딩 중..."
 
 msgid "unknown"
 msgstr "알 수 없음"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d 초"
-msgstr[1] "%d 초"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d 분"
-msgstr[1] "%d 분"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d 시간"
-msgstr[1] "%d 시간"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d 일"
-msgstr[1] "%d 일"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s와 %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "%s 보다 많음"
 
 msgid "contest-token"
 msgstr "콘테스트-토큰"
@@ -527,10 +486,6 @@ msgstr "실행 중..."
 
 msgid "Executed"
 msgstr "실행 완료"
-
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} 초"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -859,18 +814,6 @@ msgstr "제출 파일"
 
 msgid "Tokens"
 msgstr "토큰"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} 초"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} 초"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "예"

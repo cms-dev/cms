@@ -1,9 +1,8 @@
-{% from cms.server.contest.formatting import format_size %}
-{% from cms.locale import locale_format %}
+
 {% if show_date %}
-    {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(t.timestamp, timezone, translation=translation) %}
+    {% set col1 = "<td class=\"datetime\">%s</td>" % translation.format_datetime(t.timestamp, timezone) %}
 {% else %}
-    {% set col1 = "<td class=\"time\">%s</td>" % format_time(t.timestamp, timezone, translation=translation) %}
+    {% set col1 = "<td class=\"time\">%s</td>" % translation.format_time(t.timestamp, timezone) %}
 {% end %}
 {% if tr is None or not tr.compiled() %}
 <tr data-user-test="{{ t_idx }}" data-status="1">
@@ -38,7 +37,7 @@
     </td>
 {% else %}
     <td class="time">
-        {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tr.execution_time) }}
+        {{ translation.format_duration(tr.execution_time) }}
     </td>
 {% end %}
 {% if tr is None or tr.execution_memory is None %}
@@ -47,7 +46,7 @@
     </td>
 {% else %}
     <td class="memory">
-        {{ format_size(tr.execution_memory, translation=translation) }}
+        {{ translation.format_size(tr.execution_memory) }}
     </td>
 {% end %}
     <td class="input">

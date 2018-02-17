@@ -20,10 +20,6 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n"
 "%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#. translators: decimal mark in fractions (e.g., in "3.14")
-msgid "."
-msgstr ","
-
 msgid "Compilation succeeded"
 msgstr "Kompiliavimas sėkmingas"
 
@@ -200,56 +196,11 @@ msgstr "Kompiliavimas nereikalingas"
 msgid "File not submitted"
 msgstr "Failas nepateiktas"
 
-msgid "%Y-%m-%d"
-msgstr "%Y-%m-%d"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%Y-%m-%d %H:%M:%S"
-
 msgid "loading..."
 msgstr "kraunama..."
 
 msgid "unknown"
 msgstr "nežinomas"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d sekundė"
-msgstr[1] "%d sekundės"
-msgstr[2] "%d sekundžių"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d minutė"
-msgstr[1] "%d minutės"
-msgstr[2] "%d minučių"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d valanda"
-msgstr[1] "%d valandos"
-msgstr[2] "%d valandų"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d diena"
-msgstr[1] "%d dienos"
-msgstr[2] "%d dienų"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s ir %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "daugiau nei %s"
 
 msgid "contest-token"
 msgstr "varžybų žetoną"
@@ -552,10 +503,6 @@ msgstr "Vykdoma..."
 
 msgid "Executed"
 msgstr "Įvykdyta"
-
-#, python-brace-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} sek."
 
 msgid "Communication"
 msgstr "Bendravimas"
@@ -895,18 +842,6 @@ msgstr "Failai"
 
 msgid "Tokens"
 msgstr "Žetonai"
-
-#, python-brace-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} sek."
-
-#, python-brace-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} sek."
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Taip"

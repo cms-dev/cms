@@ -343,10 +343,6 @@ msgstr "Изпълняване"
 msgid "Executed"
 msgstr "Изпълнено"
 
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr ""
-
 msgid "Too many print jobs!"
 msgstr "Твърде много задачи за принтиране!"
 
@@ -373,49 +369,8 @@ msgstr ""
 msgid "Your print job has been received."
 msgstr ""
 
-msgid "%Y-%m-%d"
-msgstr ""
-
-msgid "%H:%M:%S"
-msgstr ""
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr ""
-
 msgid "loading..."
 msgstr "зареждане..."
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d секунда"
-msgstr[1] "%d секунди"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d минута"
-msgstr[1] "%d минути"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d час"
-msgstr[1] "%d часа"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d ден"
-msgstr[1] "%d дни"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%d и %d"
-
-#, python-format
-msgid "more than %s"
-msgstr "повече от %s"
 
 msgid "contest-token"
 msgstr ""
@@ -790,18 +745,6 @@ msgstr "Файлове"
 
 msgid "Tokens"
 msgstr "Жетони"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} секунди"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} секунди"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr ""
 
 msgid "Yes"
 msgstr "Да"

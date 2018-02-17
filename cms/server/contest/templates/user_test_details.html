@@ -1,8 +1,6 @@
 {% from six import iterkeys, itervalues, iteritems %}
 
 {% from cms.grading import format_status_text %}
-{% from cms.server.contest.formatting import format_size %}
-{% from cms.locale import locale_format %}
 
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
@@ -23,7 +21,7 @@
 {% if tr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ locale_format(_, _("{seconds:0.3f} s"), seconds=tr.compilation_time) }}
+    {{ translation.format_duration(tr.compilation_time) }}
 {% end %}
             </td>
         </tr>
@@ -32,7 +30,7 @@
 {% if tr.compilation_memory is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ format_size(tr.compilation_memory, translation=translation) }}
+    {{ translation.format_size(tr.compilation_memory) }}
 {% end %}
             </td>
         </tr>

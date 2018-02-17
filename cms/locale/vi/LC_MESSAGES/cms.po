@@ -184,52 +184,11 @@ msgstr "Không cần biên dịch"
 msgid "File not submitted"
 msgstr "File chưa được nộp"
 
-msgid "%Y-%m-%d"
-msgstr "%d-%m-%Y"
-
-msgid "%H:%M:%S"
-msgstr "%H:%M:%S"
-
-msgid "%Y-%m-%d %H:%M:%S"
-msgstr "%H:%M:%S %d-%m-%Y"
-
 msgid "loading..."
 msgstr "đang tải..."
 
 msgid "unknown"
 msgstr "không xác định"
-
-#, python-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d giây"
-msgstr[1] "%d giây"
-
-#, python-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d phút"
-msgstr[1] "%d phút"
-
-#, python-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d giờ"
-msgstr[1] "%d giờ"
-
-#, python-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d ngày"
-msgstr[1] "%d ngày"
-
-#, python-format
-msgid "%s and %s"
-msgstr "%s và %s"
-
-#, python-format
-msgid "more than %s"
-msgstr "nhiều hơn %s"
 
 msgid "contest-token"
 msgstr "contest-token"
@@ -519,10 +478,6 @@ msgstr "Đang chạy..."
 
 msgid "Executed"
 msgstr "Đã chạy xong"
-
-#, python-format
-msgid "{seconds:0.3f} s"
-msgstr "{seconds:0.3f} giây"
 
 #, python-format
 msgid "Automatic (%s)"
@@ -836,18 +791,6 @@ msgstr "File"
 
 msgid "Tokens"
 msgstr "Token"
-
-#, python-format
-msgid "{seconds:g} second"
-msgstr "{seconds:g} giây"
-
-#, python-format
-msgid "{seconds:g} seconds"
-msgstr "{seconds:g} giây"
-
-#, python-format
-msgid "%(mb)d MiB"
-msgstr "%(mb)d MiB"
 
 msgid "Yes"
 msgstr "Có"
