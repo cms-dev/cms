@@ -36,18 +36,14 @@ import unittest
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
 
 from cms.db import Participation, SessionGen, User
-from cms.db.filecacher import FileCacher
 
+from cmscontrib.loaders.base_loader import UserLoader
 from cmscontrib.ImportUser import UserImporter
 
 
 def fake_loader_factory(user):
     """Return a Loader class always returning the same information"""
-    class FakeLoader(object):
-        def __init__(self, path, file_cacher):
-            assert isinstance(path, str)
-            assert isinstance(file_cacher, FileCacher)
-
+    class FakeLoader(UserLoader):
         def get_user(self):
             return user
 
@@ -71,10 +67,7 @@ class TestImportUser(TestCaseWithDatabase):
         self.last_name = self.user.last_name
 
     def tearDown(self):
-        # Cleanup the user objects we committed, to avoid test interactions.
-        self.session.query(User).delete()
-        self.session.commit()
-        self.session.close()
+        self.delete_data()
         super(TestImportUser, self).tearDown()
 
     @staticmethod
@@ -116,7 +109,7 @@ class TestImportUser(TestCaseWithDatabase):
         self.assertUserInDb(username, last_name, [self.contest_id])
 
     def test_clean_import_no_contest(self):
-        # Completely new user, import and attach it to the contest.
+        # Completely new user, import but don't create any participation.
         username = "new_username"
         last_name = "last_name"
         new_user = self.get_user(username=username, last_name=last_name)

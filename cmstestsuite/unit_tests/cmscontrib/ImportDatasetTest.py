@@ -34,23 +34,18 @@ import unittest
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
 
-from cms.db import Dataset, SessionGen, Task
-from cms.db.filecacher import FileCacher
+from cms.db import Dataset, SessionGen
 
+from cmscontrib.loaders.base_loader import TaskLoader
 from cmscontrib.ImportDataset import DatasetImporter
 
 
 def fake_loader_factory(task, dataset):
     """Return a Loader class always returning the same information"""
-
     # DatasetImporter imports the active dataset of the task.
     task.active_dataset = dataset
 
-    class FakeLoader(object):
-        def __init__(self, path, file_cacher):
-            assert isinstance(path, str)
-            assert isinstance(file_cacher, FileCacher)
-
+    class FakeLoader(TaskLoader):
         def get_task(self, get_statement):
             return task
 
@@ -74,10 +69,7 @@ class TestImportDataset(TestCaseWithDatabase):
         self.dataset_desc = self.dataset.description
 
     def tearDown(self):
-        # Cleanup the task objects we committed, to avoid test interactions.
-        self.session.query(Task).delete()
-        self.session.commit()
-        self.session.close()
+        self.delete_data()
         super(TestImportDataset, self).tearDown()
 
     @staticmethod

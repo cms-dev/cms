@@ -35,18 +35,14 @@ import unittest
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
 
 from cms.db import SessionGen, Team
-from cms.db.filecacher import FileCacher
 
+from cmscontrib.loaders.base_loader import TeamLoader
 from cmscontrib.ImportTeam import TeamImporter
 
 
 def fake_loader_factory(team):
     """Return a Loader class always returning the same information"""
-    class FakeLoader(object):
-        def __init__(self, path, file_cacher):
-            assert isinstance(path, str)
-            assert isinstance(file_cacher, FileCacher)
-
+    class FakeLoader(TeamLoader):
         def get_team(self):
             return team
 
@@ -66,10 +62,7 @@ class TestImportTeam(TestCaseWithDatabase):
         self.name = self.team.name
 
     def tearDown(self):
-        # Cleanup the team objects we committed, to avoid test interactions.
-        self.session.query(Team).delete()
-        self.session.commit()
-        self.session.close()
+        self.delete_data()
         super(TestImportTeam, self).tearDown()
 
     @staticmethod
@@ -92,7 +85,7 @@ class TestImportTeam(TestCaseWithDatabase):
             self.assertEqual(t.name, name)
 
     def test_clean_import(self):
-        # Completely new team, import and attach it to the contest.
+        # Completely new team, import it.
         code = "new_code"
         name = "new_name"
         new_team = self.get_team(code=code, name=name)

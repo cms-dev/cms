@@ -35,8 +35,9 @@ import unittest
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
 
-from cms.db import Contest, SessionGen, Submission, Participation, Task
-from cms.db.filecacher import FileCacher
+from cms.db import Contest, SessionGen, Submission
+
+from cmscontrib.loaders.base_loader import ContestLoader, TaskLoader
 from cmscontrib.ImportContest import ContestImporter
 
 
@@ -61,11 +62,7 @@ def fake_loader_factory(contest, contest_has_changed=False,
     }) for t, has_changed in tasks)
     participations = [{"username": u} for u in usernames]
 
-    class FakeLoader(object):
-        def __init__(self, path, file_cacher):
-            assert isinstance(path, str)
-            assert isinstance(file_cacher, FileCacher)
-
+    class FakeLoader(ContestLoader):
         def get_contest(self):
             return contest, task_name_list, participations
 
@@ -74,14 +71,14 @@ def fake_loader_factory(contest, contest_has_changed=False,
 
         def get_task_loader(self, taskname):
 
-            class FakeTaskLoader(object):
+            class FakeTaskLoader(TaskLoader):
                 def get_task(self, get_statement):
                     return tasks_by_name.get(taskname, None)["task"]
 
                 def task_has_changed(self):
                     return tasks_by_name.get(taskname, None)["has_changed"]
 
-            return FakeTaskLoader()
+            return FakeTaskLoader(self.path, self.file_cacher)
 
     return FakeLoader
 
@@ -113,12 +110,7 @@ class TestImportContest(TestCaseWithDatabase):
         self.last_name = self.participation.user.last_name
 
     def tearDown(self):
-        # Cleanup the objects we committed, to avoid test interactions.
-        self.session.query(Participation).delete()
-        self.session.query(Task).delete()
-        self.session.query(Contest).delete()
-        self.session.commit()
-        self.session.close()
+        self.delete_data()
         super(TestImportContest, self).tearDown()
 
     @staticmethod
@@ -290,8 +282,8 @@ class TestImportContest(TestCaseWithDatabase):
         self.assertSubmissionCount(1)
 
     def test_import_participation_in_db(self):
-        # Completely new contest, no tasks, a new participation but the user
-        # is not in the DB, so it should fail.
+        # Completely new contest, no tasks, a new participation for an existing
+        # user, whose existing submission should be retained.
         name = "new_name"
         description = "new_desc"
         contest = self.get_contest(name=name, description=description)

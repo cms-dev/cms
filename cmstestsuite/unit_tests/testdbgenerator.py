@@ -42,6 +42,8 @@ import unittest
 
 from datetime import timedelta
 
+from six import itervalues
+
 import cms
 
 # Monkeypatch the db string.
@@ -55,7 +57,7 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
 from cms.db import Contest, Dataset, Evaluation, Participation, Session, \
     Submission, SubmissionResult, Task, Team, Testcase, User, UserTest, \
     UserTestResult, \
-    drop_db, init_db
+    drop_db, init_db, Base
 
 
 class TestCaseWithDatabase(unittest.TestCase):
@@ -81,6 +83,17 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def tearDown(self):
         self.session.rollback()
+
+    def delete_data(self):
+        """Delete all the data in the DB, by removing all root objects.
+
+        This is useful to call during tear down, for tests that rely on
+        starting from a clean DB.
+
+        """
+        for table in itervalues(Base.metadata.tables):
+            self.session.execute(table.delete())
+        self.session.commit()
 
     @staticmethod
     def get_contest(**kwargs):

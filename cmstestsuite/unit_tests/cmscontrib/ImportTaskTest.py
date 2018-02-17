@@ -36,17 +36,14 @@ import unittest
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
 
 from cms.db import SessionGen, Submission, Task
-from cms.db.filecacher import FileCacher
+
+from cmscontrib.loaders.base_loader import TaskLoader
 from cmscontrib.ImportTask import TaskImporter
 
 
 def fake_loader_factory(task, task_has_changed=False):
     """Return a Loader class always returning the same information"""
-    class FakeLoader(object):
-        def __init__(self, path, file_cacher):
-            assert isinstance(path, str)
-            assert isinstance(file_cacher, FileCacher)
-
+    class FakeLoader(TaskLoader):
         def get_task(self, get_statement):
             return task
 
@@ -79,10 +76,7 @@ class TestImportTask(TestCaseWithDatabase):
         self.submission_id = self.submission.id
 
     def tearDown(self):
-        # Cleanup the task objects we committed, to avoid test interactions.
-        self.session.query(Task).delete()
-        self.session.commit()
-        self.session.close()
+        self.delete_data()
         super(TestImportTask, self).tearDown()
 
     @staticmethod
@@ -140,7 +134,7 @@ class TestImportTask(TestCaseWithDatabase):
                             dataset_ids=[])
 
     def test_clean_import_no_contest(self):
-        # Completely new task, import and attach it to the contest.
+        # Completely new task, do not attach it to any contest.
         prefix = "prefix"
         override_name = "overridden"
         new_title = "new_title"
@@ -258,7 +252,6 @@ class TestImportTask(TestCaseWithDatabase):
         # Task exists, not tied to a contest, we update it.
         self.task.contest = None
         self.session.commit()
-        print(self.task.contest_id)
         new_title = "new_title"
         new_task = self.get_task(name=self.task_name, title=new_title)
         ret = self.do_import(new_task, None, update=True,
