@@ -47,6 +47,9 @@ def fake_loader_factory(user):
         def get_user(self):
             return user
 
+        def user_has_changed(self):
+            return True
+
     return FakeLoader
 
 

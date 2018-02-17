@@ -46,6 +46,9 @@ def fake_loader_factory(team):
         def get_team(self):
             return team
 
+        def team_has_changed(self):
+            return True
+
     return FakeLoader
 
 

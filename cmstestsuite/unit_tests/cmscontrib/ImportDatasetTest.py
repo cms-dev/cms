@@ -49,6 +49,9 @@ def fake_loader_factory(task, dataset):
         def get_task(self, get_statement):
             return task
 
+        def task_has_changed(self):
+            return True
+
     return FakeLoader
 
 
