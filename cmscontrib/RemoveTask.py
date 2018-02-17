@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -55,7 +55,6 @@ def remove_task(task_name):
         num = task.num
         contest_id = task.contest_id
         session.delete(task)
-        session.commit()
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
             following_tasks = session.query(Task)\
