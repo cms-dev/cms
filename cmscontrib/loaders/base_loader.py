@@ -73,10 +73,6 @@ class BaseLoader(with_metaclass(ABCMeta, object)):
         """
         pass
 
-    @abstractmethod
-    def get_task_loader(self, taskname):
-        pass
-
 
 class TaskLoader(BaseLoader):
     """Base class for deriving task loaders.
@@ -268,6 +264,17 @@ class ContestLoader(BaseLoader):
         return True.
 
         return (bool): True if the contset was changed, False otherwise.
+
+        """
+        pass
+
+    @abstractmethod
+    def get_task_loader(self, taskname):
+        """Return a loader class for the task with the given name.
+
+        taskname (string): name of the task.
+
+        return (TaskLoader): loader for the task with name taskname.
 
         """
         pass
