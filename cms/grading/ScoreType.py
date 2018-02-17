@@ -105,10 +105,8 @@ class ScoreType(object):
 
         """
         return "%s / %s" % (
-            format_decimal(round(score, score_precision),
-                           translation=translation),
-            format_decimal(round(max_score, score_precision),
-                           translation=translation))
+            translation.format_decimal(round(score, score_precision)),
+            translation.format_decimal(round(max_score, score_precision)))
 
     def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
