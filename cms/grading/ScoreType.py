@@ -219,10 +219,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ format_decimal(round(st["score"], 2),
-                               translation=translation) }}
-             / {{ format_decimal(st["max_score"],
-                                 translation=translation) }})
+            ({{ format_decimal(round(st["score"], 2), translation=translation) }}
+             / {{ format_decimal(st["max_score"], translation=translation) }})
         </span>
     {% else %}
         <span class="score">
@@ -255,21 +253,18 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="idx">{{ idx }}</td>
                     <td class="outcome">{{ _(tc["outcome"]) }}</td>
                     <td class="details">
-                      {{ format_status_text(tc["text"],
-                                            translation=translation) }}
+                      {{ format_status_text(tc["text"], translation=translation) }}
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ format_duration(tc["time"],
-                                           translation=translation) }}
+                        {{ format_duration(tc["time"], translation=translation) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
                     </td>
                     <td class="memory-used">
             {% if "memory" in tc and tc["memory"] is not None %}
-                        {{ format_size(tc["memory"],
-                                       translation=translation) }}
+                        {{ format_size(tc["memory"], translation=translation) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}

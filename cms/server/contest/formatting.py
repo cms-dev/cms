@@ -30,9 +30,11 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+import copy
+import math
 from future.moves.urllib.parse import quote
 
-from cmscommon.datetime import make_datetime, utc
+from cmscommon.datetime import utc
 from cms.locale import DEFAULT_TRANSLATION
 
 
@@ -79,7 +81,9 @@ def format_datetime_smart(dt, now, timezone, translation=DEFAULT_TRANSLATION):
 
     Date is present in the output if it is not today.
 
-    dt (datetime): a datetime object.
+    dt (datetime): a datetime object to format.
+    now (datetime): a datetime object representing the moment in time
+        at which the previous parameter (dt) is being formatted.
     timezone (tzinfo): the timezone the output should be in.
     translation (Translation): the translation to use.
 
@@ -100,19 +104,23 @@ SECONDS_PER_MINUTE = 60
 
 
 def format_timedelta(td, translation=DEFAULT_TRANSLATION):
-    """Return the number of seconds formatted 'X days, Y hours, ...'
+    """Return the timedelta formatted to high precision.
 
-    The time units that will be used are days, hours, minutes, seconds.
+    The result will be formatted as 'A days, B hours, C minutes and D
+    seconds', with components that would have a zero value removed. The
+    number of seconds has fractional digits, without trailing zeros.
+    Unlike Babel's built-in format_timedelta, no approximation or
+    rounding is performed.
 
-    td (timedelta): the amount of time.
+    td (timedelta): a timedelta.
     translation (Translation): the translation to use.
 
     return (string): the formatted timedelta.
 
     """
-    res = []
-
     td = abs(td)
+
+    res = []
 
     if td.days > 0:
         res.append(translation.format_unit(td.days, "duration-day"))
@@ -138,17 +146,22 @@ def format_timedelta(td, translation=DEFAULT_TRANSLATION):
 def format_duration(d, length="short", translation=DEFAULT_TRANSLATION):
     """Format a duration in seconds.
 
-    d (float): the number of seconds to format.
+    Format the duration, usually of an operation performed in the
+    sandbox (compilation, evaluation, ...), given as a number of
+    seconds, always using a millisecond precision.
+
+    d (float): a duration, as a number of seconds.
     translation (Translation): the translation to use.
 
     returns (str): the formatted duration.
 
     """
-    if d < 0.001:
-        return translation.format_unit(d, "duration-second",
-                                       length=length, format="#")
+    d = abs(d)
+
+    f = copy.copy(translation.locale.decimal_formats[None])
+    f.frac_prec = (3, 3)
     return translation.format_unit(d, "duration-second",
-                                   length=length, format="@###")
+                                   length=length, format=f)
 
 
 PREFIX_FACTOR = 1000
@@ -158,23 +171,36 @@ SIZE_UNITS = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
 def format_size(n, translation=DEFAULT_TRANSLATION):
     """Format the given number of bytes.
 
+    Format the size of a file, a memory allocation, etc. which is given
+    as a number of bytes. Use the most appropriate unit, from bytes up
+    to terabytes. Always use three significant digits, except when this
+    would mean:
+    - rounding the integral part (happens only for > 1000 terabytes),
+      in which case use more than three;
+    - showing sub-byte values (happens only for < 100 bytes), in which
+      case use less than three.
+
     n (int): a size, as number of bytes.
     translation (Translation): the translation to use.
 
-    return (str): the size formatted using the most appropriate size
-        unit, always with three significant digits.
+    return (str): the formatted size.
 
     """
-    if n == 0:
-        return translation.format_unit(n, "digital-%s" % SIZE_UNITS[0],
-                                       length="short", format="#")
-    for unit in SIZE_UNITS[:-1]:
-        if n < PREFIX_FACTOR:
-            return translation.format_unit(n, "digital-%s" % unit,
-                                           length="short", format="@##")
+    n = abs(n)
+
+    if n < PREFIX_FACTOR:
+        return translation.format_unit(round(n), "digital-%s" % SIZE_UNITS[0],
+                                       length="short")
+    for unit in SIZE_UNITS[1:]:
         n /= PREFIX_FACTOR
-    return translation.format_unit(n, "digital-%s" % SIZE_UNITS[-1],
-                                   length="short", format="@##")
+        if n < PREFIX_FACTOR:
+            f = copy.copy(translation.locale.decimal_formats[None])
+            d = max(int(math.ceil(math.log10(PREFIX_FACTOR / n))) - 1, 0)
+            f.frac_prec = (d, d)
+            return translation.format_unit(n, "digital-%s" % unit,
+                                           length="short", format=f)
+    return translation.format_unit(round(n), "digital-%s" % SIZE_UNITS[-1],
+                                   length="short")
 
 
 def format_decimal(n, translation=DEFAULT_TRANSLATION):
