@@ -46,7 +46,6 @@ from abc import ABCMeta, abstractmethod
 from tornado.template import Template
 
 from cms.locale import DEFAULT_TRANSLATION
-from cms.server.contest.formatting import format_decimal
 
 
 logger = logging.getLogger(__name__)
@@ -199,7 +198,6 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% from cms.grading import format_status_text %}
-{% from cms.server.contest.formatting import format_decimal, format_duration, format_size %}
 {% set idx = 0 %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -219,8 +217,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if "score" in st and "max_score" in st %}
         <span class="score">
-            ({{ format_decimal(round(st["score"], 2), translation=translation) }}
-             / {{ format_decimal(st["max_score"], translation=translation) }})
+            ({{ translation.format_decimal(round(st["score"], 2)) }}
+             / {{ translation.format_decimal(st["max_score"]) }})
         </span>
     {% else %}
         <span class="score">
@@ -257,14 +255,14 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td class="execution-time">
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ format_duration(tc["time"], translation=translation) }}
+                        {{ translation.format_duration(tc["time"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
                     </td>
                     <td class="memory-used">
             {% if "memory" in tc and tc["memory"] is not None %}
-                        {{ format_size(tc["memory"], translation=translation) }}
+                        {{ translation.format_size(tc["memory"]) }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}

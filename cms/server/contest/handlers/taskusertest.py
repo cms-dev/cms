@@ -52,7 +52,6 @@ from cms.db import Task, UserTest, UserTestFile, UserTestManager
 from cms.grading.languagemanager import get_language
 from cms.grading.tasktypes import get_task_type
 from cms.server import actual_phase_required, multi_contest
-from cms.server.contest.formatting import format_size, format_duration
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp

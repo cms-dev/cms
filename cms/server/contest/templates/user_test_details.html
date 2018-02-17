@@ -1,7 +1,6 @@
 {% from six import iterkeys, itervalues, iteritems %}
 
 {% from cms.grading import format_status_text %}
-{% from cms.server.contest.formatting import format_duration, format_size %}
 
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
@@ -22,7 +21,7 @@
 {% if tr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ format_duration(tr.compilation_time, translation=translation) }}
+    {{ translation.format_duration(tr.compilation_time) }}
 {% end %}
             </td>
         </tr>
@@ -31,7 +30,7 @@
 {% if tr.compilation_memory is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ format_size(tr.compilation_memory, translation=translation) }}
+    {{ translation.format_size(tr.compilation_memory) }}
 {% end %}
             </td>
         </tr>

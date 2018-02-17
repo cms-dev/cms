@@ -79,9 +79,9 @@
     {% for p_idx, p in enumerate(sorted(printjobs, key=lambda p: p.timestamp, reverse=True)) %}
         <tr>
         {% if show_date %}
-            <td class="datetime">{{ format_datetime(p.timestamp, timezone, translation=translation) }}</td>
+            <td class="datetime">{{ translation.format_datetime(p.timestamp, timezone) }}</td>
         {% else %}
-            <td class="time">{{ format_time(p.timestamp, timezone, translation=translation) }}</td>
+            <td class="time">{{ translation.format_time(p.timestamp, timezone) }}</td>
         {% end %}
             <td class="filename">{{ p.filename }}</td>
             <td class="status">{{ format_status_text(p.status, translation=translation) if p.done else _("Preparing...") }}</td>
