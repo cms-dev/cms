@@ -89,8 +89,12 @@ class ContestImporter(object):
         # Get the contest. The loader should give a bare contest, putting tasks
         # and participations only in the other return values. We make sure.
         contest, tasks, participations = self.loader.get_contest()
-        contest.tasks = []
-        contest.participations = []
+        if contest.tasks != []:
+            contest.tasks = []
+            logger.warning("Contest loader should not fill tasks.")
+        if contest.participations != []:
+            contest.participations = []
+            logger.warning("Contest loader should not fill participations.")
         tasks = tasks if tasks is not None else []
         participations = participations if participations is not None else []
 
@@ -126,8 +130,14 @@ class ContestImporter(object):
     def _contest_to_db(self, session, new_contest, contest_has_changed):
         """Add the new contest to the DB
 
-        Return the contest object on the DB, or raise in case the contest
-        already exists on the DB and the user did not ask to update any data.
+        session (Session): session to use.
+        new_contest (Contest): contest that has to end up in the DB.
+        contest_has_changed (bool): whether the loader thinks new_contest has
+            changed since the last time it was imported.
+
+        return (Contest): the contest in the DB.
+        raise (ImportDataError): if the contest already exists on the DB and
+            the user did not ask to update any data.
 
         """
         contest = session.query(Contest)\
@@ -162,10 +172,16 @@ class ContestImporter(object):
     def _task_to_db(self, session, contest, tasknum, taskname):
         """Add the task to the DB and attach it to the contest
 
-        Return the task, or raise in case of one of these errors:
-        - if the task is not in the DB and user did not ask to import it;
-        - if the task cannot be loaded;
-        - if the task is already in the DB and attached to another contest.
+        session (Session): session to use.
+        contest (Contest): the contest in the DB.
+        tasknum (int): num the task should have in the contest.
+        taskname (string): name of the task.
+
+        return (Task): the task in the DB.
+        raise (ImportDataError): in case of one of these errors:
+            - if the task is not in the DB and user did not ask to import it;
+            - if the loader cannot load the task;
+            - if the task is already in the DB, attached to another contest.
 
         """
         task_loader = self.loader.get_task_loader(taskname)
@@ -196,7 +212,7 @@ class ContestImporter(object):
             # update it. We do so.
             new_task = task_loader.get_task(
                 get_statement=not self.no_statements)
-            if not new_task:
+            if new_task is None:
                 raise ImportDataError(
                     "Could not reimport task \"%s\"." % taskname)
             logger.info("Task \"%s\" data has changed, updating it.", taskname)
@@ -212,7 +228,8 @@ class ContestImporter(object):
         # elsewhere.
         if task.contest is not None and task.contest.name != contest.name:
             raise ImportDataError(
-                "Task \"%s\" is already tied to another contest." % taskname)
+                "Task \"%s\" is already tied to contest \"%s\"."
+                % (taskname, task.contest.name))
 
         task.num = tasknum
         task.contest = contest
@@ -222,9 +239,15 @@ class ContestImporter(object):
     def _participation_to_db(session, contest, new_p):
         """Add the new participation to the DB and attach it to the contest
 
-        Return the participation, or raise in case of one of these errors:
-        - the user for this participation does not already exist in the DB;
-        - the team for this participation does not already exist in the DB.
+        session (Session): session to use.
+        contest (Contest): the contest in the DB.
+        new_p (dict): dictionary with the participation data, including at
+            least "username"; may contain "team", "hidden", "ip", "password".
+
+        return (Participation): the participation in the DB.
+        raise (ImportDataError): in case of one of these errors:
+            - the user for this participation does not already exist in the DB;
+            - the team for this participation does not already exist in the DB.
 
         """
         user = session.query(User)\
@@ -255,24 +278,23 @@ class ContestImporter(object):
                            "exists, not updating it.", new_p["username"])
             return p
 
-        else:
-            # Prepare new participation
-            args = {
-                "user": user,
-                "contest": contest,
-            }
-            if "team" in new_p:
-                args["team"] = team
-            if "hidden" in new_p:
-                args["hidden"] = new_p["hidden"]
-            if "ip" in new_p and new_p["ip"] is not None:
-                args["ip"] = [ipaddress.ip_network(new_p["ip"])]
-            if "password" in new_p:
-                args["password"] = new_p["password"]
+        # Prepare new participation
+        args = {
+            "user": user,
+            "contest": contest,
+        }
+        if "team" in new_p:
+            args["team"] = team
+        if "hidden" in new_p:
+            args["hidden"] = new_p["hidden"]
+        if "ip" in new_p and new_p["ip"] is not None:
+            args["ip"] = [ipaddress.ip_network(new_p["ip"])]
+        if "password" in new_p:
+            args["password"] = new_p["password"]
 
-            new_p = Participation(**args)
-            session.add(new_p)
-            return new_p
+        new_p = Participation(**args)
+        session.add(new_p)
+        return new_p
 
 
 def main():
