@@ -37,12 +37,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import itervalues
 
 import unittest
 
 from datetime import timedelta
 
-from six import itervalues
 
 import cms
 
@@ -85,7 +85,7 @@ class TestCaseWithDatabase(unittest.TestCase):
         self.session.rollback()
 
     def delete_data(self):
-        """Delete all the data in the DB, by removing all root objects.
+        """Delete all the data in the DB.
 
         This is useful to call during tear down, for tests that rely on
         starting from a clean DB.
