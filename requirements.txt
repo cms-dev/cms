@@ -5,7 +5,6 @@ psycopg2>=2.7,<2.8  # http://initd.org/psycopg/articles/tag/release/
 sqlalchemy>=1.1,<1.2  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
 netifaces>=0.10,<0.11  # https://bitbucket.org/al45tair/netifaces/src/
 pycrypto>=2.6,<2.7  # https://github.com/dlitz/pycrypto/blob/master/ChangeLog
-pytz  # https://pypi.python.org/pypi/pytz
 psutil>=5.4,<5.5  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
 six>=1.11,<1.12  # https://github.com/benjaminp/six/blob/master/CHANGES
 requests>=2.18,<2.19  # https://pypi.python.org/pypi/requests

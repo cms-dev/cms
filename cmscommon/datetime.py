@@ -24,20 +24,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import iteritems
 
 import os
-import sys
 import time
-from datetime import tzinfo, timedelta, datetime
-from pytz import timezone, all_timezones
+import sys
+from datetime import datetime
+
+import babel.dates
 
 
 __all__ = [
     "make_datetime", "make_timestamp",
     "get_timezone", "get_system_timezone",
 
-    "utc",
+    "utc", "local",
 
     "monotonic_time",
     ]
@@ -76,6 +76,10 @@ def make_timestamp(_datetime=None):
         return (_datetime - EPOCH).total_seconds()
 
 
+utc = babel.dates.UTC
+local = babel.dates.LOCALTZ
+
+
 def get_timezone(user, contest):
     """Return the timezone for the given user and contest
 
@@ -85,106 +89,30 @@ def get_timezone(user, contest):
     return (tzinfo): the timezone information for the user.
 
     """
-    if user.timezone is not None and user.timezone in all_timezones:
-        return timezone(user.timezone)
-    if contest.timezone is not None and contest.timezone in all_timezones:
-        return timezone(contest.timezone)
+    if user.timezone is not None:
+        try:
+            return babel.dates.get_timezone(user.timezone)
+        except LookupError:
+            pass
+    if contest.timezone is not None:
+        try:
+            return babel.dates.get_timezone(contest.timezone)
+        except LookupError:
+            pass
     return local
 
 
 def get_system_timezone():
-    """Return the timezone of the system.
+    """Return the name of the system timezone.
 
-    See http://stackoverflow.com/questions/7669938/
-        get-the-olson-tz-name-for-the-local-timezone
-
-    return (unicode|None): one among the possible timezone description
-        strings in the form Europe/Rome, or None if nothing is found.
+    return (unicode): the "best" description of the timezone of the
+        local system clock that we were able to find, in a format like
+        "Europe/Rome", "CET", etc.
 
     """
-    if time.daylight:
-        local_offset = time.altzone
-        localtz = time.tzname[1]
-    else:
-        local_offset = time.timezone
-        localtz = time.tzname[0]
-
-    local_offset = timedelta(seconds=-local_offset)
-
-    for name in all_timezones:
-        tz = timezone(name)
-        if not hasattr(tz, '_tzinfos'):
-            continue
-        for (utcoffset, daylight, tzname), _ in iteritems(tz._tzinfos):
-            if utcoffset == local_offset and tzname == localtz:
-                return name
-
-    return None
-
-
-# The following code provides some sample timezone implementations
-# (i.e. tzinfo subclasses). It has been copied (almost) verbatim
-# from the official datetime module documentation:
-# http://docs.python.org/library/datetime.html#tzinfo-objects
-
-ZERO = timedelta(0)
-HOUR = timedelta(hours=1)
-
-
-# A UTC class.
-
-class UTC(tzinfo):
-    """UTC"""
-
-    def utcoffset(self, dt):
-        return ZERO
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return ZERO
-
-utc = UTC()
-
-
-# A class capturing the platform's idea of local time.
-
-STDOFFSET = timedelta(seconds=-time.timezone)
-if time.daylight:
-    DSTOFFSET = timedelta(seconds=-time.altzone)
-else:
-    DSTOFFSET = STDOFFSET
-
-DSTDIFF = DSTOFFSET - STDOFFSET
-
-
-class LocalTimezone(tzinfo):
-
-    def utcoffset(self, dt):
-        if self._isdst(dt):
-            return DSTOFFSET
-        else:
-            return STDOFFSET
-
-    def dst(self, dt):
-        if self._isdst(dt):
-            return DSTDIFF
-        else:
-            return ZERO
-
-    def tzname(self, dt):
-        return time.tzname[self._isdst(dt)]
-
-    def _isdst(self, dt):
-        tt = (dt.year, dt.month, dt.day,
-              dt.hour, dt.minute, dt.second,
-              dt.weekday(), 0, 0)
-        stamp = time.mktime(tt)
-        tt = time.localtime(stamp)
-        return tt.tm_isdst > 0
-
-local = LocalTimezone()
+    if hasattr(local, 'zone'):
+        return local.zone
+    return local.tzname(make_datetime())
 
 
 if sys.version_info >= (3, 3):
@@ -204,6 +132,7 @@ if sys.version_info >= (3, 3):
         return (float): the value of the clock, in seconds.
 
         """
+        # Raw means it's immune even to NTP time adjustments.
         return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
 
 # Taken from http://bugs.python.org/file19461/monotonic.py and
@@ -214,7 +143,7 @@ else:
         pointer
     from ctypes.util import find_library
 
-    # Raw means it's immune even to NTP time adjustements.
+    # Raw means it's immune even to NTP time adjustments.
     CLOCK_MONOTONIC_RAW = 4
 
     class timespec(Structure):
