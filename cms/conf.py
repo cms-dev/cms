@@ -137,17 +137,11 @@ class Config(object):
         self.max_submission_length = 100000
         self.max_input_length = 5000000
         self.stl_path = "/usr/share/doc/stl-manual/html/"
-        # Prefix of 'iso-codes'[1] installation. It can be found out
-        # using `pkg-config --variable=prefix iso-codes`, but it's
-        # almost universally the same (i.e. '/usr') so it's hardly
-        # necessary to change it.
-        # [1] http://pkg-isocodes.alioth.debian.org/
-        self.iso_codes_prefix = "/usr"
-        # Prefix of 'shared-mime-info'[2] installation. It can be found
+        # Prefix of 'shared-mime-info'[1] installation. It can be found
         # out using `pkg-config --variable=prefix shared-mime-info`, but
         # it's almost universally the same (i.e. '/usr') so it's hardly
         # necessary to change it.
-        # [2] http://freedesktop.org/wiki/Software/shared-mime-info
+        # [1] http://freedesktop.org/wiki/Software/shared-mime-info
         self.shared_mime_info_prefix = "/usr"
 
         # AdminWebServer.

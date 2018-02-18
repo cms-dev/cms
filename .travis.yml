@@ -25,7 +25,6 @@ addons:
       - fp-units-rtl
       - postgresql-client
       - python2.7
-      - iso-codes
       - shared-mime-info
       - stl-manual
       - cgroup-lite
