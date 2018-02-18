@@ -65,7 +65,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        assert "fortesting" in str(cms.db.engine), \
+        assert str(cms.db.engine).endswith("fortesting"), \
             "Monkey patching of DB connection string failed"
         drop_db()
         init_db()
