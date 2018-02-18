@@ -190,8 +190,8 @@
                         <span class="name">{{ filename }}</span>
                         <span class="size">{{ translation.format_size(file_size) }}</span>
                     </span>
-            {% if type_icon is not None %}
-                    <span class="type">{{ _(type_name) }}</span>
+            {% if type_name is not None %}
+                    <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
             {% end %}
                 </a>
             </li>

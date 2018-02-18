@@ -21,16 +21,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
+import errno
 from future.builtins.disabled import *
 from future.builtins import *
 
 import io
 import os.path
-import fnmatch
-import mimetypes
-from xml import sax
-from xml.sax.handler import ContentHandler
-from xml.dom import XML_NAMESPACE as _XML_NS
+
+import xdg.BaseDirectory
+import xdg.Mime
 
 
 __all__ = [
@@ -39,108 +39,62 @@ __all__ = [
     ]
 
 
-_XDG_NS = "http://www.freedesktop.org/standards/shared-mime-info"
-
-# We need the config to access the shared_mime_info_prefix value. It
-# would be better not to depend on cms (i.e. be standalone). The best
-# solution would be to get the prefix at installation-time (using
-# pkgconfig), like many C libraries/applications do, and store it
-# somehow. Yet, I don't know what's the best way to do this in Python...
-from cms import config
-
-
-# FIXME the following code doesn't take comments into account.
-# FIXME the specification requires to look in XDG_DATA_HOME and
-# XDG_DATA_DIRS instead of the installation dir of shared-mime-info...
-# TODO use python-xdg (or similar libraries) instead of doing the
-# parsing ourselves. they also provide ways to find the MIME type.
-
-_aliases = dict(tuple(l.strip().split()) for l in
-                io.open(os.path.join(config.shared_mime_info_prefix,
-                                     "share", "mime", "aliases"),
-                        "rt", encoding="utf-8").readlines())
-
-_icons = dict(tuple(l.strip().split(':')) for l in
-              io.open(os.path.join(config.shared_mime_info_prefix,
-                                   "share", "mime", "generic-icons"),
-                      "rt", encoding="utf-8").readlines())
-
-_types = list(l.strip() for l in
-              io.open(os.path.join(config.shared_mime_info_prefix,
-                                   "share", "mime", "types"),
-                      "rt", encoding="utf-8").readlines())
-
-_comments = dict()
-
-
-class _get_comment(ContentHandler):
-    def __init__(self):
-        self.inside = False
-        self.result = None
-
-    def startElementNS(self, name, qname, attrs):
-        if name == (_XDG_NS, "comment") and \
-                ((_XML_NS, "lang") not in attrs or
-                 attrs[(_XML_NS, "lang")] in ["en", "en_US"]):
-            self.inside = True
-            self.result = ''
-
-    def endElementNS(self, name, qname):
-        self.inside = False
-
-    def characters(self, content):
-        if self.inside:
-            self.result += content
-
-
-def get_icon_for_type(name):
-    if name in _aliases:
-        name = _aliases[name]
-    if name not in _types:
-        return None
-
-    if name in _icons:
-        return _icons[name]
-    return name[:name.index('/')] + "-x-generic"
-
-
-def get_name_for_type(name):
-    if name in _aliases:
-        name = _aliases[name]
-    if name not in _types:
-        return None
-
-    if name not in _comments:
+def _retrieve_icons():
+    res = dict()
+    for d in reversed([xdg.BaseDirectory.xdg_data_home]
+                      + xdg.BaseDirectory.xdg_data_dirs):
         try:
-            media, subtype = name.split('/')
-            path = os.path.join(config.shared_mime_info_prefix,
-                                'share', 'mime', media, "%s.xml" % subtype)
-
-            handler = _get_comment()
-            parser = sax.make_parser()
-            parser.setContentHandler(handler)
-            parser.setFeature(sax.handler.feature_namespaces, 1)
-            parser.parse(path)
-
-            _comments[name] = handler.result
-        except:
-            pass
-
-    if name in _comments:
-        return _comments[name]
+            with io.open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
+                res.update(tuple(l.strip().split(':')) for l in f.readlines())
+        except IOError as err:
+            if err.errno != errno.ENOENT:
+                raise
+    return res
 
 
-def get_type_for_file_name(name):
-    # Provide support for some commonly used types and fallback on
-    # Python's mimetypes module. In the future we could be using a
-    # proper library here (i.e. an interface to shared-mime-info).
-    for glob, mime in [('*.tar.gz', 'application/x-compressed-tar'),
-                       ('*.tar.bz2', 'application/x-bzip-compressed-tar'),
-                       ('*.c', 'text/x-csrc'),
-                       ('*.h', 'text/x-chdr'),
-                       ('*.cpp', 'text/x-c++src'),
-                       ('*.hpp', 'text/x-c++hdr'),
-                       ('*.pas', 'text/x-pascal')]:
-        if fnmatch.fnmatchcase(name, glob):
-            return mime
-    return mimetypes.guess_type(name)[0]
+_icons = _retrieve_icons()
+
+
+def get_icon_for_type(typename):
+    """Get a generic icon name for the given MIME type.
+
+    typename (str): a MIME type, e.g., "application/pdf".
+
+    return (str): the generic icon that best depicts the given MIME
+        type, e.g., "x-office-document".
+
+    """
+    mimetype = xdg.Mime.lookup(typename).canonical()
+    typename = "%s/%s" % (mimetype.media, mimetype.subtype)
+    if typename in _icons:
+        return _icons[typename]
+    return mimetype.media + "-x-generic"
+
+
+def get_name_for_type(typename):
+    """Get the natural language description of the MIME type.
+
+    typename (str): a MIME type, e.g., "application/pdf".
+
+    return (str): the human-readable description (also called comment)
+        of the given MIME type, e.g., "PDF document".
+
+    """
+    mimetype = xdg.Mime.lookup(typename).canonical()
+    return mimetype.get_comment()
+
+
+def get_type_for_file_name(filename):
+    """Guess the MIME type of a file given its name.
+
+    filename (str): the name of a file (just the base name, without the
+        directory name), e.g., "statement.pdf".
+
+    return (str|None): a guess of what MIME type that file might have,
+        e.g., "application/pdf".
+
+    """
+    mimetype = xdg.Mime.get_type_by_name(filename).canonical()
+    if mimetype is None:
+        return None
+    return "%s/%s" % (mimetype.media, mimetype.subtype)
