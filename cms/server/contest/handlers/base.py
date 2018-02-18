@@ -86,7 +86,6 @@ class BaseHandler(CommonRequestHandler):
 
     def get(self):
         self.r_params = self.render_params()
-
         self.render("contest_list.html", **self.r_params)
 
     def prepare(self):
