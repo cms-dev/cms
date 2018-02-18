@@ -42,10 +42,10 @@ __all__ = [
 _icons = dict()
 
 
-for dir in reversed([xdg.BaseDirectory.xdg_data_home]
-                    + xdg.BaseDirectory.xdg_data_dirs):
+for d in reversed([xdg.BaseDirectory.xdg_data_home]
+                  + xdg.BaseDirectory.xdg_data_dirs):
     try:
-        with io.open(os.path.join(dir, "mime", "generic-icons"), "rt") as f:
+        with io.open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
             _icons.update(tuple(l.strip().split(':')) for l in f.readlines())
     except IOError as err:
         if err.errno != errno.ENOENT:
