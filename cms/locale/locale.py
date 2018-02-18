@@ -80,7 +80,7 @@ class Translation(object):
     def identifier(self):
         return babel.core.get_locale_identifier(
             (self.locale.language, self.locale.territory,
-             self.locale.script, self.locale.variant))
+             self.locale.script, self.locale.variant), sep="-")
 
     @property
     def name(self):
@@ -294,7 +294,7 @@ def get_translations():
         catalog
 
     """
-    result = {"en": DEFAULT_TRANSLATION}
+    result = {DEFAULT_TRANSLATION.identifier: DEFAULT_TRANSLATION}
 
     for lang_code in sorted(pkg_resources.resource_listdir("cms.locale", "")):
         mofile_path = os.path.join(lang_code, "LC_MESSAGES", "cms.mo")
@@ -307,41 +307,69 @@ def get_translations():
     return result
 
 
-def filter_language_codes(lang_codes, prefix_filter):
+def filter_language_codes(lang_codes, prefixes):
     """Keep only codes that begin with one of the given prefixes.
 
+    Filter the given list of language codes (i.e., locale identifiers)
+    and return only those that are more specific than any of the given
+    allowed prefixes. By "more specific" it is meant that there exists
+    a prefix that, for each of the four components of the language code
+    (namely language, territory, script and variant), either matches
+    the component or leaves it unspecified. This way, for example, the
+    prefix "en" matches the language codes "en", "en_US", etc. It's the
+    same approach promoted by HTTP in its Accept header parsing rules.
+    The returned language codes will be in the same relative order as
+    they were given.
+
     lang_codes ([string]): list of language codes
-    prefix_filter ([string]): whitelist of prefix
+    prefixes ([string]): whitelist of prefix
 
     return ([string]): the codes that match one of the prefixes
 
     """
-    # TODO Be more fussy with prefix checking: validate strings
-    # (match with "[A-Za-z]+(_[A-Za-z]+)*") and verify that the
-    # prefix is on the underscores.
-    useless = [prefix for prefix in prefix_filter
-               if all(not lang_code.startswith(prefix)
-                      for lang_code in lang_codes)]
-    if useless:
-        logger.warning("The following allowed localizations don't match any "
-                       "installed one: %s", ",".join(useless))
+    parsed_lang_codes = list()
+    for lang_code in lang_codes:
+        try:
+            parsed_lang_code = babel.core.parse_locale(lang_code, sep="-")
+        except ValueError:
+            logger.error("Invalid installed locale: %s", lang_code)
+        else:
+            parsed_lang_codes.append(parsed_lang_code)
 
-    # We just check if a prefix of each language is allowed
-    # because this way one can just type "en" to include also
-    # "en_US" (and similar cases with other languages). It's
-    # the same approach promoted by HTTP in its Accept header
-    # parsing rules.
-    # TODO Be more fussy with prefix checking: validate strings
-    # (match with "[A-Za-z]+(_[A-Za-z]+)*") and verify that the
-    # prefix is on the underscores.
-    # It needs to maintain order of allowed_localizations(prefix_filter)
-    lang_codes = [lang_code for prefix in prefix_filter
-                  for lang_code in lang_codes
-                  if lang_code.startswith(prefix)]
+    parsed_prefixes = list()
+    for prefix in prefixes:
+        try:
+            parsed_prefix = babel.core.parse_locale(prefix, sep="-")
+        except ValueError:
+            logger.error("Invalid allowed locale: %s", prefix)
+        else:
+            parsed_prefixes.append(parsed_prefix)
 
-    if not lang_codes:
-        logger.warning("No allowed localization matches any installed one."
-                       "Resorting to en.")
-        lang_codes = ["en"]
+    parsed_filtered_lang_codes = list()
+    for parsed_lang_code in parsed_lang_codes:
+        for parsed_prefix in parsed_prefixes:
+            # parsed_lang_code and parsed_prefix are tuples, whose
+            # components are language, territory, script and variant.
+            # All the components of lang_code need to match the
+            # corresponding ones in prefix. An undefined component in
+            # prefix acts like a wildcard.
+            if all(p_c is None or lc_c == p_c
+                   for lc_c, p_c in zip(parsed_lang_code, parsed_prefix)):
+                parsed_filtered_lang_codes.append(parsed_lang_code)
+                break
 
-    return lang_codes
+    if len(parsed_filtered_lang_codes) == 0:
+        logger.warning("No allowed locale matches any installed one. "
+                       "Resorting to %s.", DEFAULT_TRANSLATION.identifier)
+        return [DEFAULT_TRANSLATION.identifier]
+
+    filtered_lang_codes = list()
+    for parsed_lang_code in parsed_filtered_lang_codes:
+        lang_code = babel.core.get_locale_identifier(parsed_lang_code, sep="-")
+        filtered_lang_codes.append(lang_code)
+
+    return filtered_lang_codes
+
+
+def choose_language_code(preferred, available):
+    return babel.core.negotiate_locale(preferred, available, sep="-")
