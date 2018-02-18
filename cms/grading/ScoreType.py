@@ -37,7 +37,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import iterkeys
+from six import iterkeys, with_metaclass
 
 import logging
 import re
@@ -56,13 +56,11 @@ def N_(message):
     return message
 
 
-class ScoreType(object):
+class ScoreType(with_metaclass(ABCMeta, object)):
     """Base class for all score types, that must implement all methods
     defined here.
 
     """
-
-    __metaclass__ = ABCMeta
 
     TEMPLATE = ""
 

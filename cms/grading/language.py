@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import with_metaclass
 
 import logging
 import os
@@ -34,10 +35,8 @@ from abc import ABCMeta, abstractmethod
 logger = logging.getLogger(__name__)
 
 
-class Language(object):
+class Language(with_metaclass(ABCMeta, object)):
     """A supported programming language"""
-
-    __metaclass__ = ABCMeta
 
     @property
     @abstractmethod

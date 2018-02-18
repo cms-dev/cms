@@ -36,6 +36,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import with_metaclass
 
 import logging
 import re
@@ -92,7 +93,7 @@ def delete_sandbox(sandbox, success=True):
             logger.warning(err_msg, exc_info=True)
 
 
-class TaskType(object):
+class TaskType(with_metaclass(ABCMeta, object)):
     """Base class with common operation that (more or less) all task
     types must do sometimes.
 
@@ -108,8 +109,6 @@ class TaskType(object):
       operations; must be overloaded.
 
     """
-
-    __metaclass__ = ABCMeta
 
     # If ALLOW_PARTIAL_SUBMISSION is True, then we allow the user to
     # submit only some of the required files; moreover, we try to fill

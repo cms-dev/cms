@@ -26,7 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import iteritems
+from six import iteritems, with_metaclass
 
 import io
 import logging
@@ -185,13 +185,11 @@ class Truncator(io.RawIOBase):
         raise io.UnsupportedOperation('write')
 
 
-class SandboxBase(object):
+class SandboxBase(with_metaclass(ABCMeta, object)):
     """A base class for all sandboxes, meant to contain common
     resources.
 
     """
-
-    __metaclass__ = ABCMeta
 
     EXIT_SANDBOX_ERROR = 'sandbox error'
     EXIT_OK = 'ok'

@@ -34,18 +34,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import with_metaclass
 
 from abc import ABCMeta, abstractmethod
 
 from tornado.template import Template
 
 
-class ParameterType(object):
+class ParameterType(with_metaclass(ABCMeta, object)):
     """Base class for parameter types.
 
     """
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, name, short_name, description):
         """Initialization.

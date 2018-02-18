@@ -24,11 +24,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import with_metaclass
 
 from abc import ABCMeta, abstractmethod
 
 
-class BaseLoader(object):
+class BaseLoader(with_metaclass(ABCMeta, object)):
     """Base class for deriving loaders.
 
     Each loader must extend this class and support the following
@@ -37,8 +38,6 @@ class BaseLoader(object):
       * The class method detect() can be called at any time.
 
     """
-
-    __metaclass__ = ABCMeta
 
     # Short name of this loader, meant to be a unique identifier.
     short_name = None
