@@ -3,12 +3,12 @@
 {% from cms.grading import format_status_text %}
 
 {% if tr is not None and tr.evaluated() %}
-<h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
+<h3>{{ _("Evaluation outcome") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
 <pre>{{ format_status_text(tr.evaluation_text, translation=translation) }}</pre>
 {% endif %}
 
 {% if tr is not None and tr.compiled() %}
-<h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
+<h3>{{ _("Compilation output") }}</h3>{# TODO: trim long outputs and add facility to see raw #}
 <table class="table table-bordered" style="table-layout: fixed;">
     <tbody>
         <tr>

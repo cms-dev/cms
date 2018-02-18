@@ -122,7 +122,7 @@
     <div class="span4">
         <div class="well per_user_time">
             <p>
-        {% comment TODO would be very nice to write something like "just for 3 consecutive hours"... %}
+        {# TODO would be very nice to write something like "just for 3 consecutive hours"... #}
         {{ _("Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s.") % {"per_user_time": translation.format_timedelta(contest.per_user_time)} }}
             </p>
 
