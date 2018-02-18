@@ -33,17 +33,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
-import copy
-
-import math
 from future.builtins.disabled import *
 from future.builtins import *
 import six
 
-import pkg_resources
+import copy
 import logging
+import math
 import os
+import pkg_resources
 
 import babel.core
 import babel.dates
@@ -75,7 +73,8 @@ class Translation(object):
         else:
             self.translation = babel.support.NullTranslations()
         self.mimetype_translation = babel.support.Translations.load(
-            domain="shared-mime-info", locales=[self.locale])
+            os.path.join(config.shared_mime_info_prefix, "share", "locale"),
+            [self.locale], "shared-mime-info")
 
     @property
     def identifier(self):
