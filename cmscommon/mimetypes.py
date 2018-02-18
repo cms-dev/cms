@@ -90,8 +90,8 @@ def get_type_for_file_name(filename):
     filename (str): the name of a file (just the base name, without the
         directory name), e.g., "statement.pdf".
 
-    return (str): a guess of what MIME type that file might have, e.g.,
-        "application/pdf".
+    return (str|None): a guess of what MIME type that file might have,
+        e.g., "application/pdf".
 
     """
     mimetype = xdg.Mime.get_type_by_name(filename).canonical()
