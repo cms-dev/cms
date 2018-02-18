@@ -33,7 +33,7 @@ var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.n
 // FIXME use Date objects
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
                              {{ make_timestamp(now) }},
-                             {% comment What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. %}
+                             {# What we do is: if timezone is +HH:MM we return the UNIX timestamp + 3600*HH + 60*MM. #}
                              {{ make_timestamp(now.replace(tzinfo=utc).astimezone(timezone).replace(tzinfo=None)) }},
                              {{ make_timestamp(current_phase_begin) }},
                              {{ make_timestamp(current_phase_end) }},
@@ -193,7 +193,7 @@ $(document).ready(function () {
                             <li{% if request.path == '/documentation' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("documentation") }}">{{ _("Documentation") }}</a>
                             </li>
-    {% if actual_phase == 0 or current_user.unrestricted %}{% comment FIXME maybe >= 0? %}
+    {% if actual_phase == 0 or current_user.unrestricted %}{# FIXME maybe >= 0? #}
         {% if testing_enabled %}
                             <li{% if request.path == '/testing' %} class="active"{% endif %}>
                                 <a href="{{ contest_url("testing") }}">{{ _("Testing") }}</a>
