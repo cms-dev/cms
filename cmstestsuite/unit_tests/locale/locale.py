@@ -31,13 +31,13 @@ from future.builtins import *
 import unittest
 from datetime import datetime, timedelta
 
-import pytz
+import babel.dates
 
 from cms.locale import Translation, DEFAULT_TRANSLATION
 
 
-UTC = pytz.utc
-ROME = pytz.timezone("Europe/Rome")
+UTC = babel.dates.UTC
+ROME = babel.dates.get_timezone("Europe/Rome")
 
 ENGLISH = DEFAULT_TRANSLATION
 FRENCH = Translation("fr")
