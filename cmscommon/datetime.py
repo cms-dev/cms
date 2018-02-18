@@ -103,13 +103,11 @@ def get_timezone(user, contest):
 
 
 def get_system_timezone():
-    """Return the timezone of the system.
+    """Return the name of the system timezone.
 
-    See http://stackoverflow.com/questions/7669938/
-        get-the-olson-tz-name-for-the-local-timezone
-
-    return (unicode|None): one among the possible timezone description
-        strings in the form Europe/Rome, or None if nothing is found.
+    return (unicode): the "best" description of the timezone of the
+        local system clock that we were able to find, in a format like
+        "Europe/Rome", "CET", etc.
 
     """
     if hasattr(local, 'zone'):
