@@ -63,9 +63,15 @@ class BaseHandler(CommonRequestHandler):
 
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
+        # The list of interface translations the user can choose from.
         self.available_translations = self.service.translations
+        # The translation that best matches the user's system settings
+        # (as reflected by the browser in the HTTP request's
+        # Accept-Language header).
         self.automatic_translation = DEFAULT_TRANSLATION
+        # The translation that the user specifically manually picked.
         self.cookie_translation = None
+        # The translation that we are going to use.
         self.translation = DEFAULT_TRANSLATION
         self._ = self.translation.gettext
         self.n_ = self.translation.ngettext
