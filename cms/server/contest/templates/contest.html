@@ -59,12 +59,12 @@ $(document).ready(function () {
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ contest_url() }}">{{ contest.description }}</a>
-{% if len(lang_names) > 1 %}
+{% if len(available_translations) > 1 %}
                     <p class="navbar-text pull-right">
                         <select id="lang" class="form-control btn btn-info" onchange="utils.switch_lang()">
-                            <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }}</option>
-                        {% for lang_code, lang_name in sorted(iteritems(lang_names), key=lambda x: x[1]) %}
-                            <option value="{{ lang_code }}"{% if cookie_lang == lang_code %} selected{% end %}>{{ lang_name }}</option>
+                            <option value=""{% if cookie_translation is None %} selected{% end %}>{{ _("Automatic (%s)") % automatic_translation.name }}</option>
+                        {% for lang_code, t in sorted(iteritems(available_translations), key=lambda x: x[1].name) %}
+                            <option value="{{ lang_code }}"{% if t == cookie_translation %} selected{% end %}>{{ t.name }}</option>
                         {% end %}
                         </select>
                     </p>

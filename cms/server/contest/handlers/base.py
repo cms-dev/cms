@@ -61,15 +61,16 @@ class BaseHandler(CommonRequestHandler):
         super(BaseHandler, self).__init__(*args, **kwargs)
         # The list of interface translations the user can choose from.
         self.available_translations = self.service.translations
-        # The locale that best matches the user's system settings (as
-        # reflected by the browser in the HTTP request's
+        # The translation that best matches the user's system settings
+        # (as reflected by the browser in the HTTP request's
         # Accept-Language header).
-        self.browser_lang = DEFAULT_TRANSLATION.identifier
-        # The locale that the user specifically manually picked.
-        self.cookie_lang = None
+        self.automatic_translation = DEFAULT_TRANSLATION
+        # The translation that the user specifically manually picked.
+        self.cookie_translation = None
         # The translation that we are going to use.
         self.translation = DEFAULT_TRANSLATION
         self._ = self.translation.gettext
+        self.n_ = self.translation.ngettext
 
         # We need this to be computed for each request because we want to be
         # able to import new contests without having to restart CWS. But only
@@ -83,12 +84,6 @@ class BaseHandler(CommonRequestHandler):
         self.r_params = self.render_params()
 
         self.render("contest_list.html", **self.r_params)
-
-    def prepare(self):
-        """This method is executed at the beginning of each request.
-
-        """
-        super(BaseHandler, self).prepare()
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
