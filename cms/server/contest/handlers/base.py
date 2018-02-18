@@ -109,9 +109,11 @@ class BaseHandler(CommonRequestHandler):
 
         cookie_lang = self.get_cookie("language", None)
         if cookie_lang is not None:
-            self.cookie_translation = self.available_translations[cookie_lang]
             chosen_lang = \
                 choose_language_code([cookie_lang, automatic_lang], lang_codes)
+            if chosen_lang == cookie_lang:
+                self.cookie_translation = \
+                    self.available_translations[cookie_lang]
         else:
             chosen_lang = automatic_lang
         self.translation = self.available_translations[chosen_lang]
