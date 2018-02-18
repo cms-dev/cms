@@ -108,7 +108,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_contest(self, **kwargs):
         """Create a contest and add it to the session"""
-        contest = TestCaseWithDatabase.get_contest(**kwargs)
+        contest = self.get_contest(**kwargs)
         self.session.add(contest)
         return contest
 
@@ -127,7 +127,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_user(self, **kwargs):
         """Create a user and add it to the session"""
-        user = TestCaseWithDatabase.get_user(**kwargs)
+        user = self.get_user(**kwargs)
         self.session.add(user)
         return user
 
@@ -147,7 +147,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_participation(self, **kwargs):
         """Create a participation and add it to the session"""
-        participation = TestCaseWithDatabase.get_participation(**kwargs)
+        participation = self.get_participation(**kwargs)
         self.session.add(participation)
         return participation
 
@@ -164,7 +164,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_task(self, **kwargs):
         """Create a task and add it to the session"""
-        task = TestCaseWithDatabase.get_task(**kwargs)
+        task = self.get_task(**kwargs)
         self.session.add(task)
         return task
 
@@ -190,7 +190,7 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_dataset(self, **kwargs):
         """Create a dataset and add it to the session"""
-        dataset = TestCaseWithDatabase.get_dataset(**kwargs)
+        dataset = self.get_dataset(**kwargs)
         self.session.add(dataset)
         return dataset
 
@@ -344,6 +344,6 @@ class TestCaseWithDatabase(unittest.TestCase):
 
     def add_team(self, **kwargs):
         """Create a team and add it to the session"""
-        team = TestCaseWithDatabase.get_team(**kwargs)
+        team = self.get_team(**kwargs)
         self.session.add(team)
         return team
