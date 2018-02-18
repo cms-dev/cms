@@ -348,6 +348,11 @@ def filter_language_codes(lang_codes, prefixes):
     parsed_filtered_lang_codes = list()
     for parsed_lang_code in parsed_lang_codes:
         for parsed_prefix in parsed_prefixes:
+            # parsed_lang_code and parsed_prefix are tuples, whose
+            # components are language, territory, script and variant.
+            # All the components of lang_code need to match the
+            # corresponding ones in prefix. An undefined component in
+            # prefix acts like a wildcard.
             if all(p_c is None or lc_c == p_c
                    for lc_c, p_c in zip(parsed_lang_code, parsed_prefix)):
                 parsed_filtered_lang_codes.append(parsed_lang_code)
