@@ -148,6 +148,9 @@ class BaseHandler(CommonRequestHandler):
         ret["gettext"] = self._
         ret["ngettext"] = self.n_
 
+        # FIXME this is cheating
+        ret["handler"] = self
+
         ret["xsrf_form_html"] = self.xsrf_form_html()
 
         return ret
