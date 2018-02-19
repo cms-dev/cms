@@ -111,7 +111,7 @@
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>
     <th rowspan="{{ compilation_commands|length }}">{{ _("Compilation commands") }}</th>
-    {% for l, c in iteritems(contest.languages)|sort %}
+    {% for l, c in contest.languages|dictsort(by="key") %}
         {% if not loop.first %}
 </tr>
 <tr>
@@ -164,7 +164,7 @@
     <h2>{{ _("Attachments") }}</h2>
     <div id="attachments">
         <ul>
-    {% for filename, attachment in iteritems(task.attachments|sort) %}
+    {% for filename, attachment in task.attachments|dictsort(by="key") %}
         {% set mime_type = get_mimetype_for_file_name(filename) %}
         {% if mime_type is not none %}
             {% set type_name = get_name_for_mimetype(mime_type) %}
