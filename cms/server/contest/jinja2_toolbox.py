@@ -34,8 +34,6 @@ from six import iteritems
 
 from jinja2 import PackageLoader
 
-from cmscommon.datetime import utc
-from cms.grading.languagemanager import get_language
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
 
@@ -44,14 +42,8 @@ def extract_token_params(o):
             for k, v in iteritems(o.__dict__) if k.startswith("token_")}
 
 
-def astimezone(dt, tz):
-    return dt.replace(tzinfo=utc).astimezone(tz).replace(tzinfo=None)
-
-
 def instrument_cms_toolbox(env):
     env.filters["extract_token_params"] = extract_token_params
-    env.filters["get_language"] = get_language
-    env.filters["astimezone"] = astimezone
 
 
 CWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
