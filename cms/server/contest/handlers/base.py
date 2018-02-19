@@ -174,7 +174,7 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
     """
     def is_multi_contest(self):
         """Return whether CWS serves all contests."""
-        return self.service.contest_id is None
+        return self.application.service.contest_id is None
 
     def get_absolute_path(self, root, path_or_contest_name):
         if self.is_multi_contest():
