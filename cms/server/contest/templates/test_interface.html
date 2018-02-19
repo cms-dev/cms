@@ -132,7 +132,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if task.submission_format|map(attribute="filename")|select("endswith", ".%l")|list|length == 0 %}
+{% if not task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "test") }}" method="POST">
             {{ xsrf_form_html|safe }}
