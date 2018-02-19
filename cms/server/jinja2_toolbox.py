@@ -45,6 +45,18 @@ from cms.server.contest.formatting import get_score_class
 
 @contextfilter
 def all_(ctx, l, test=None, *args):
+    """Check if all elements of the given list pass the given test.
+
+    ctx (Context): a Jinja2 context, needed to retrieve the test
+        function by its name and to execute it.
+    l (list): a list of objects.
+    test (str|None): the name of the test to execute on each object of
+        l (leave unspecified to just check their truth value).
+    *args: parameters to pass to the test function.
+
+    return (bool): all(test(i, *args) for i in l).
+
+    """
     if test is None:
         test = bool
     else:
@@ -57,6 +69,18 @@ def all_(ctx, l, test=None, *args):
 
 @contextfilter
 def any_(ctx, l, test=None, *args):
+    """Check if any element of the given list passes the given test.
+
+    ctx (Context): a Jinja2 context, needed to retrieve the test
+        function by its name and to execute it.
+    l (list): a list of objects.
+    test (str|None): the name of the test to execute on each object of
+        l (leave unspecified to just check their truth value).
+    *args: parameters to pass to the test function.
+
+    return (bool): any(test(i, *args) for i in l).
+
+    """
     if test is None:
         test = bool
     else:
@@ -70,6 +94,21 @@ def any_(ctx, l, test=None, *args):
 # FIXME once we drop py2 do dictselect(ctx, d, test=None, *args, by="key")
 @contextfilter
 def dictselect(ctx, d, test=None, *args, **kwargs):
+    """Filter the given dict: keep only items that pass the given test.
+
+    ctx (Context): a Jinja2 context, needed to retrieve the test
+        function by its name and execute it.
+    d (dict): a dict.
+    test (str|None): the name of the test to execute on either the key
+        or the value of each item of d (leave unspecified to just check
+        the truth value).
+    *args: parameters to pass to the test function.
+    by (str): either "key" (default) or "value", specifies on which
+        component to perform the test.
+
+    return (dict): {k, v for k, v in d.items() if test(k/v, *args)}.
+
+    """
     if test is None:
         test = bool
     else:
@@ -86,6 +125,15 @@ def dictselect(ctx, d, test=None, *args, **kwargs):
 
 @contextfilter
 def today(ctx, dt):
+    """Returns whether the given datetime is today.
+
+    ctx (Context): a Jinja2 context, needed to retrieve the current
+        datetime and the timezone to use when comparing.
+    dt (datetime): a datetime.
+
+    return (bool): whether dt occurred today in the timezone.
+
+    """
     now = ctx["now"]
     timezone = ctx["timezone"]
     return dt.replace(tzinfo=utc).astimezone(timezone).date() \
@@ -111,14 +159,24 @@ def instrument_generic_toolbox(env):
     env.filters["dictselect"] = dictselect
     env.filters["make_timestamp"] = make_timestamp
 
-    env.filters["get_language"] = get_language
+    env.filters["to_language"] = get_language
 
     env.tests["endswith"] = lambda s, p: s.endswith(p)
 
 
 GLOBAL_ENVIRONMENT = Environment(
-    trim_blocks=True, lstrip_blocks=True, undefined=StrictUndefined,
-    autoescape=True, cache_size=-1, auto_reload=False)
+    # These cause a line that only contains a control block to be
+    # suppressed from the output, making it more readable.
+    trim_blocks=True, lstrip_blocks=True,
+    # This causes an error when we try to render an undefined value.
+    undefined=StrictUndefined,
+    # Force autoescape of string, always and forever.
+    autoescape=True,
+    # Cache all templates, no matter how many.
+    cache_size=-1,
+    # Don't check the disk every time to see whether the templates'
+    # files have changed.
+    auto_reload=False)
 
 
 instrument_generic_toolbox(GLOBAL_ENVIRONMENT)
