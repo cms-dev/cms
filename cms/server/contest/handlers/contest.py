@@ -133,9 +133,9 @@ class ContestHandler(BaseHandler):
             contest_name = self.path_args[0]
 
             # Select the correct contest or return an error
-            try:
-                self.contest = self.contest_list[contest_name]
-            except KeyError:
+            self.contest = self.sql_session.query(Contest)\
+                .filter(Contest.name == contest_name).first()
+            if self.contest is None:
                 self.contest = Contest(
                     name=contest_name, description=contest_name)
                 # render_params in this class assumes the contest is loaded,

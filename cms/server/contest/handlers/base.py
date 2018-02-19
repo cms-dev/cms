@@ -76,17 +76,15 @@ class BaseHandler(CommonRequestHandler):
         self._ = self.translation.gettext
         self.n_ = self.translation.ngettext
 
-        # We need this to be computed for each request because we want to be
-        # able to import new contests without having to restart CWS. But only
-        # in multi-contest mode.
-        self.contest_list = {}
-        if self.is_multi_contest():
-            for contest in self.sql_session.query(Contest).all():
-                self.contest_list[contest.name] = contest
-
     def get(self):
         self.r_params = self.render_params()
-        self.render("contest_list.html", **self.r_params)
+        # We need this to be computed for each request because we want to be
+        # able to import new contests without having to restart CWS.
+        contest_list = dict()
+        for contest in self.sql_session.query(Contest).all():
+            contest_list[contest.name] = contest
+        self.render("contest_list.html", contest_list=contest_list,
+                    **self.r_params)
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -132,8 +130,6 @@ class BaseHandler(CommonRequestHandler):
         ret = {}
         ret["now"] = self.timestamp
         ret["url"] = self.url
-
-        ret["contest_list"] = self.contest_list
 
         ret["available_translations"] = self.available_translations
 
