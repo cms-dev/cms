@@ -18,7 +18,7 @@ update_user_test_row = function (task_id, user_test_id, data) {
     var row = $(".user_test_list[data-task=\"" + task_id + "\"] tbody tr[data-user-test=\"" + user_test_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").html(data["status_text"]);
-    if (data["status"] == 4) {
+    if (data["status"] == {{ UserTestResult.EVALUATED }}) {
         if (data["output"]) {
             var btn = row.children("td.output").children("a.btn");
             btn.text('{% trans %}Download{% endtrans %}');
@@ -35,7 +35,7 @@ update_user_test_row = function (task_id, user_test_id, data) {
             row.children("td.memory").removeClass("undefined");
             row.children("td.memory").text(data["memory"]);
         }
-    } else if (data["status"] == 2) {
+    } else if (data["status"] == {{ UserTestResult.COMPILATION_FAILED }}) {
         row.children("td.output").children("a.btn").text("{% trans %}N/A{% endtrans %}");
     } else {
         schedule_update_user_test_row(task_id, user_test_id);
@@ -51,7 +51,7 @@ schedule_update_user_test_row = function (task_id, user_test_id) {
 }
 
 $(document).ready(function () {
-    $('.user_test_list tbody tr[data-status][data-status!="2"][data-status!="4"]').each(function (idx, elem) {
+    $('.user_test_list tbody tr[data-status][data-status!="{{ UserTestResult.COMPILATION_FAILED }}"][data-status!="{{ UserTestResult.EVALUATED }}"]').each(function (idx, elem) {
         var $this = $(this);
         schedule_update_user_test_row($this.parent().parent().attr("data-task"), $this.attr("data-user-test"));
     });
