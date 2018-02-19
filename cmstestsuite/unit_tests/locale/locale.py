@@ -33,17 +33,61 @@ from datetime import datetime, timedelta
 
 import babel.dates
 
-from cms.locale import Translation, DEFAULT_TRANSLATION
+from cms.locale import Translation, DEFAULT_TRANSLATION, filter_language_codes, \
+    choose_language_code
 
 
 UTC = babel.dates.UTC
 ROME = babel.dates.get_timezone("Europe/Rome")
 
 ENGLISH = DEFAULT_TRANSLATION
+BRITISH_ENGLISH = Translation("en_GB")
 FRENCH = Translation("fr")
 HINDI = Translation("hi")
 ITALIAN = Translation("it")
 NORWEGIAN = Translation("no")
+CHINESE = Translation("zh_CN")
+
+
+class TestIdentifier(unittest.TestCase):
+
+    def test_language_only(self):
+        self.assertEqual(ENGLISH.identifier, "en")
+        self.assertEqual(ITALIAN.identifier, "it")
+
+    def test_language_and_country(self):
+        self.assertEqual(BRITISH_ENGLISH.identifier, "en-GB")
+
+    def test_language_country_and_inferred_script(self):
+        self.assertEqual(CHINESE.identifier, "zh-Hans-CN")
+
+
+class TestName(unittest.TestCase):
+
+    def test_own_name_language_only(self):
+        self.assertEqual(ENGLISH.name, "English")
+        self.assertEqual(ITALIAN.name, "italiano")
+
+    def test_own_name_language_and_country(self):
+        self.assertEqual(BRITISH_ENGLISH.name, "English (United Kingdom)")
+
+    def test_own_name_language_country_and_inferred_script(self):
+        self.assertEqual(CHINESE.name, "中文 (简体, 中国)")
+
+    def test_other_name_language_only(self):
+        self.assertEqual(ENGLISH.format_locale("it"), "Italian")
+        self.assertEqual(ITALIAN.format_locale("en"), "inglese")
+
+    def test_other_name_language_and_country(self):
+        self.assertEqual(ITALIAN.format_locale("en_GB"),
+                         "inglese (Regno Unito)")
+        self.assertEqual(FRENCH.format_locale("fr_CA"), "français (Canada)")
+
+    def test_other_name_language_country_and_inferred_script(self):
+        self.assertEqual(ENGLISH.format_locale("zh_CN"),
+                         "Chinese (Simplified, China)")
+        self.assertEqual(ITALIAN.format_locale("zh_CN"),
+                         "cinese (semplificato, Cina)")
 
 
 class TestFormatDatetime(unittest.TestCase):
@@ -499,6 +543,76 @@ class TestFormatDecimal(unittest.TestCase):
         # Use Hindi as they have a peculiar separator rule.
         self.assertEqual(HINDI.format_decimal(1234567890),
                          "1,23,45,67,890")
+
+
+class TestTranslateMimetype(unittest.TestCase):
+
+    def test_translate_mimetype(self):
+        self.assertEqual(ENGLISH.translate_mimetype("PDF document"),
+                         "PDF document")
+        self.assertEqual(ITALIAN.translate_mimetype("PDF document"),
+                         "Documento PDF")
+
+    def test_graceful_failure(self):
+        self.assertEqual(ENGLISH.translate_mimetype("Not a MIME type"),
+                         "Not a MIME type")
+        self.assertEqual(ITALIAN.translate_mimetype("Not a MIME type"),
+                         "Not a MIME type")
+
+
+class TestFilterLanguageCodes(unittest.TestCase):
+
+    def test_exact_match(self):
+        self.assertListEqual(filter_language_codes(["en-US", "fr-FR", "it-IT"],
+                                                   ["en-US", "it-IT", "de-DE"]),
+                             ["en-US", "it-IT"])
+
+    def test_prefix_match(self):
+        self.assertListEqual(filter_language_codes(["en-US", "fr-FR", "it-IT"],
+                                                   ["en", "it", "de"]),
+                             ["en-US", "it-IT"])
+
+    def test_no_match(self):
+        self.assertListEqual(filter_language_codes(["it-IT"], ["fr"]), ["en"])
+        self.assertListEqual(filter_language_codes([], ["fr"]), ["en"])
+        self.assertListEqual(filter_language_codes(["it-IT"], []), ["en"])
+
+    def test_invalid_locale(self):
+        self.assertListEqual(filter_language_codes(["it", "froobar", "fr-FR"],
+                                                   ["fr"]),
+                             ["fr-FR"])
+
+    def test_invalid_prefix(self):
+        self.assertListEqual(filter_language_codes(["it", "fr-FR"],
+                                                   ["de", "froobar", "fr"]),
+                             ["fr-FR"])
+
+
+class TestChooseLanguageCode(unittest.TestCase):
+
+    def test_exact_match(self):
+        self.assertEqual(
+            choose_language_code(["it-IT", "fr-FR"], ["fr-FR", "en-US"]),
+            "fr-FR")
+
+    def test_prefix_match(self):
+        self.assertEqual(
+            choose_language_code(["it", "fr"], ["fr-FR", "en-US"]), "fr-FR")
+        self.assertEqual(
+            choose_language_code(["fr-FR", "en-US"], ["fr", "en"]), "fr")
+
+    def test_no_match(self):
+        self.assertEqual(
+            choose_language_code(["fr", "en"], ["it", "de"]), None)
+        self.assertEqual(choose_language_code(["fr", "en"], []), None)
+        self.assertEqual(choose_language_code([], ["it", "de"]), None)
+
+    def test_invalid_locale(self):
+        self.assertEqual(
+            choose_language_code(["it", "froobar", "fr-FR"], ["fr"]), "fr")
+        self.assertEqual(
+            choose_language_code(["it", "fr-FR"], ["de", "froobar", "fr"]),
+            "fr")
 
 
 if __name__ == "__main__":
