@@ -34,8 +34,8 @@ from six import iteritems
 
 from jinja2 import PackageLoader
 
-import cms.grading.languagemanager
 from cmscommon.datetime import utc
+from cms.grading.languagemanager import get_language
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
 
@@ -50,7 +50,7 @@ def astimezone(dt, tz):
 
 def instrument_cms_toolbox(env):
     env.filters["extract_token_params"] = extract_token_params
-    env.filters["get_language"] = cms.grading.languagemanager.get_language
+    env.filters["get_language"] = get_language
     env.filters["astimezone"] = astimezone
 
 
