@@ -167,7 +167,7 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 
-{% set show_date = user_tests[task.id]|map(attribute="timestamp")|map("astimezone", timezone)|map(attribute="date")|map("call")|select("ne", (now|astimezone(timezone)).date())|list|length > 0 %}
+{% set show_date = not user_test|map(attribute="timestamp")|all("today") %}
 
 
 <table class="user_test_list table table-bordered table-striped" data-task="{{ task.name }}">

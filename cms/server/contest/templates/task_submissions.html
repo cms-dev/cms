@@ -207,7 +207,7 @@ $(document).ready(function () {
     {% set score_type = none %}
 {% endtry %}
 
-{% set show_date = submissions|map(attribute="timestamp")|map("astimezone", timezone)|map(attribute="date")|map("call")|select("ne", (now|astimezone(timezone)).date())|list|length > 0 %}
+{% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
 
 <table id="submission_list" class="table table-bordered table-striped">
