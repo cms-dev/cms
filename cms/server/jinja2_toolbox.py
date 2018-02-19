@@ -35,6 +35,8 @@ from six import iterkeys, itervalues, iteritems
 from jinja2 import environmentfilter, Environment, StrictUndefined
 
 from cmscommon.datetime import make_timestamp
+from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
+    get_icon_for_type
 
 
 @environmentfilter
@@ -54,7 +56,6 @@ def dictselect(env, d, *args, **kwargs):
         return dict((k, v) for k, v in iteritems(d) if test(v, *args))
     raise ValueError("Invalid value of \"by\" keyword argument: %s" % by)
 
-import cmscommon.mimetypes
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
 from cms.server.contest.formatting import get_score_class
@@ -70,12 +71,9 @@ def instrument_generic_toolbox(env):
 
     env.globals["get_score_class"] = get_score_class()
 
-    env.globals["get_mimetype_for_file_name"] = \
-        cmscommon.mimetypes.get_type_for_file_name
-    env.globals["get_name_for_mimetype"] = \
-        cmscommon.mimetypes.get_name_for_type
-    env.globals["get_icon_for_mimetype"] = \
-        cmscommon.mimetypes.get_icon_for_type
+    env.globals["get_mimetype_for_file_name"] = get_type_for_file_name
+    env.globals["get_name_for_mimetype"] = get_name_for_type
+    env.globals["get_icon_for_mimetype"] = get_icon_for_type
 
     env.filters["call"] = lambda c, *args, **kwargs: c(*args, **kwargs)
     env.filters["dictselect"] = dictselect
