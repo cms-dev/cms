@@ -32,7 +32,8 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iterkeys, itervalues, iteritems
 
-from jinja2 import Environment, StrictUndefined, contextfilter, contextfunction
+from jinja2 import Environment, StrictUndefined, contextfilter, contextfunction, \
+    environmentfunction
 
 from cmscommon.datetime import make_timestamp, utc
 from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
@@ -140,14 +141,30 @@ def today(ctx, dt):
         == now.replace(tzinfo=utc).astimezone(timezone).date()
 
 
+@environmentfunction
+def safe_get_task_type(env, *args, **kwargs):
+    try:
+        return get_task_type(*args, **kwargs)
+    except Exception as err:
+        return env.undefined("TaskType not found", exc=err)
+
+
+@environmentfunction
+def safe_get_score_type(env, *args, **kwargs):
+    try:
+        return get_score_type(*args, **kwargs)
+    except Exception as err:
+        return env.undefined("ScoreType not found", exc=err)
+
+
 def instrument_generic_toolbox(env):
     env.globals["iterkeys"] = iterkeys
     env.globals["itervalues"] = itervalues
     env.globals["iteritems"] = iteritems
     env.globals["next"] = next
 
-    env.globals["get_task_type"] = get_task_type
-    env.globals["get_score_type"] = get_score_type
+    env.globals["get_task_type"] = safe_get_task_type
+    env.globals["get_score_type"] = safe_get_score_type
 
     env.globals["get_score_class"] = get_score_class
 

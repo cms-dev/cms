@@ -9,10 +9,10 @@
     <td class="status">
         {% trans %}Compiling...{% endtrans %}
     </td>
-    {% if score_type is not none and score_type.max_public_score != 0 %}
+    {% if score_type is defined and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
-    {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
+    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% elif sr.compilation_outcome == "fail" %}
@@ -22,10 +22,10 @@
         {% trans %}Compilation failed{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
     </td>
-    {% if score_type is not none and score_type.max_public_score != 0 %}
+    {% if score_type is defined and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
-    {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
+    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% elif not sr.evaluated() %}
@@ -34,10 +34,10 @@
     <td class="status">
         {% trans %}Evaluating...{% endtrans %}
     </td>
-    {% if score_type is not none and score_type.max_public_score != 0 %}
+    {% if score_type is defined and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
-    {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
+    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% elif not sr.scored() %}
@@ -46,10 +46,10 @@
     <td class="status">
         {% trans %}Scoring...{% endtrans %}
     </td>
-    {% if score_type is not none and score_type.max_public_score != 0 %}
+    {% if score_type is defined and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
-    {% if score_type is not none and score_type.max_public_score != score_type.max_score %}
+    {% if score_type is defined and score_type.max_public_score != score_type.max_score %}
     <td class="total_score undefined">{% trans %}N/A{% endtrans %}</td>
     {% endif %}
 {% else %}
