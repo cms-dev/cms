@@ -41,25 +41,35 @@ class Sum(ScoreTypeAlone):
 
     """
     # Mark strings for localization.
+    N_("#")
     N_("Outcome")
     N_("Details")
     N_("Execution time")
     N_("Memory used")
     N_("N/A")
     TEMPLATE = """\
-{% from cms.grading import format_status_text %}
 <table class="testcase-list">
     <thead>
         <tr>
-            <th class="idx">{{ _("#") }}</th>
-            <th class="outcome">{{ _("Outcome") }}</th>
-            <th class="details">{{ _("Details") }}</th>
-            <th class="execution-time">{{ _("Execution time") }}</th>
-            <th class="memory-used">{{ _("Memory used") }}</th>
+            <th class="idx">
+                {% trans %}#{% endtrans %}
+            </th>
+            <th class="outcome">
+                {% trans %}Outcome{% endtrans %}
+            </th>
+            <th class="details">
+                {% trans %}Details{% endtrans %}
+            </th>
+            <th class="execution-time">
+                {% trans %}Execution time{% endtrans %}
+            </th>
+            <th class="memory-used">
+                {% trans %}Memory used{% endtrans %}
+            </th>
         </tr>
     </thead>
     <tbody>
-    {% for idx, tc in enumerate(details, start=1) %}
+    {% for tc in details %}
         {% if "outcome" in tc and "text" in tc %}
             {% if tc["outcome"] == "Correct" %}
         <tr class="correct">
@@ -67,34 +77,32 @@ class Sum(ScoreTypeAlone):
         <tr class="notcorrect">
             {% else %}
         <tr class="partiallycorrect">
-            {% end %}
-            <td class="idx">{{ idx }}</td>
+            {% endif %}
+            <td class="idx">{{ loop.index }}</td>
             <td class="outcome">{{ _(tc["outcome"]) }}</td>
-            <td class="details">
-                {{ format_status_text(tc["text"], translation=translation) }}
-            </td>
+            <td class="details">{{ tc["text"]|format_status_text }}</td>
             <td class="execution-time">
-            {% if tc["time"] is not None %}
-                {{ translation.format_duration(tc["time"]) }}
+            {% if tc["time"] is not none %}
+                {{ tc["time"]|format_duration }}
             {% else %}
-                {{ _("N/A") }}
-            {% end %}
+                {% trans %}N/A{% endtrans %}
+            {% endif %}
             </td>
             <td class="memory-used">
-            {% if tc["memory"] is not None %}
-                {{ translation.format_size(tc["memory"]) }}
+            {% if tc["memory"] is not none %}
+                {{ tc["memory"]|format_size }}
             {% else %}
-                {{ _("N/A") }}
-            {% end %}
+                {% trans %}N/A{% endtrans %}
+            {% endif %}
             </td>
         {% else %}
         <tr class="undefined">
             <td colspan="5">
-                {{ _("N/A") }}
+                {% trans %}N/A{% endtrans %}
             </td>
         </tr>
-        {% end %}
-    {% end %}
+        {% endif %}
+    {% endfor %}
     </tbody>
 </table>"""
 
