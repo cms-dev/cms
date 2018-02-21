@@ -32,8 +32,8 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iterkeys, itervalues, iteritems
 
-from jinja2 import Environment, StrictUndefined, contextfilter, contextfunction, \
-    environmentfunction
+from jinja2 import Environment, StrictUndefined, contextfilter, \
+    contextfunction, environmentfunction
 
 from cmscommon.datetime import make_timestamp, utc
 from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
