@@ -1,5 +1,7 @@
 {% extends "contest.html" %}
 
+{% set page = "task_submissions" %}
+
 {% block additional_js %}
 
 $(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
@@ -163,7 +165,7 @@ $(document).ready(function () {
 
 {% if tokens_contest != 0 and tokens_tasks != 0 and actual_phase == 0 %}
 <div style="padding-bottom:10px">
-    {% set tokens_info = contest.tokens_available(current_user, task, now) %}
+    {% set tokens_info = contest.tokens_available(participation, task, now) %}
     {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
     {% set need_to_wait = tokens_info[2] is not none %}
     {% if can_play_token %}
@@ -205,11 +207,7 @@ $(document).ready(function () {
 {% endif %}
 
 
-{% try %}
-    {% set score_type = get_score_type(dataset=task.active_dataset) %}
-{% except %}
-    {% set score_type = none %}
-{% endtry %}
+{% set score_type = get_score_type(dataset=task.active_dataset) %}
 
 {% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
@@ -222,7 +220,7 @@ $(document).ready(function () {
         <col class="time"/>
 {% endif %}
         <col class="status"/>
-{% if score_type is not none and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+{% if score_type is defined and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
         <col class="public_score"/>
         <col class="total_score"/>
 {% else %}
@@ -246,7 +244,7 @@ $(document).ready(function () {
             <th class="time">{% trans %}Time{% endtrans %}</th>
 {% endif %}
             <th class="status">{% trans %}Status{% endtrans %}</th>
-{% if score_type is not none and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+{% if score_type is defined and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
             <th class="public_score">{% trans %}Public score{% endtrans %}</th>
             <th class="total_score">{% trans %}Total score{% endtrans %}</th>
 {% else %}
@@ -276,7 +274,7 @@ $(document).ready(function () {
         {% for s in submissions|sort(attribute="timestamp")|reverse %}
             {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
             {% set s_idx = submissions|length - loop.index0 %}
-            {% set sr = s.get_result(s.task.active_dataset) %}
+            {% set sr = s.get_result_or_create(s.task.active_dataset) %}
             {% include "submission_row.html" %}
         {% endfor %}
     {% endif %}
