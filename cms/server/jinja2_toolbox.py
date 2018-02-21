@@ -145,16 +145,16 @@ def today(ctx, dt):
 def safe_get_task_type(env, *args, **kwargs):
     try:
         return get_task_type(*args, **kwargs)
-    except Exception as err:
-        return env.undefined("TaskType not found", exc=err)
+    except (KeyError, ValueError) as err:
+        return env.undefined("TaskType not found: %s" % err)
 
 
 @environmentfunction
 def safe_get_score_type(env, *args, **kwargs):
     try:
         return get_score_type(*args, **kwargs)
-    except Exception as err:
-        return env.undefined("ScoreType not found", exc=err)
+    except (KeyError, ValueError) as err:
+        return env.undefined("ScoreType not found: %s" % err)
 
 
 def instrument_generic_toolbox(env):
