@@ -145,7 +145,9 @@ def today(ctx, dt):
 def safe_get_task_type(env, *args, **kwargs):
     try:
         return get_task_type(*args, **kwargs)
-    except (KeyError, ValueError) as err:
+    # The task type's constructor is called, which may raise any
+    # arbitrary exception, hence we stay as general al possible.
+    except Exception as err:
         return env.undefined("TaskType not found: %s" % err)
 
 
@@ -153,7 +155,9 @@ def safe_get_task_type(env, *args, **kwargs):
 def safe_get_score_type(env, *args, **kwargs):
     try:
         return get_score_type(*args, **kwargs)
-    except (KeyError, ValueError) as err:
+    # The score type's constructor is called, which may raise any
+    # arbitrary exception, hence we stay as general al possible.
+    except Exception as err:
         return env.undefined("ScoreType not found: %s" % err)
 
 
