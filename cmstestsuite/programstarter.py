@@ -43,6 +43,7 @@ import threading
 import time
 from future.moves.urllib.parse import urlsplit
 
+from cmscommon.datetime import monotonic_time
 from cmstestsuite import CONFIG, TestException
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
 
@@ -147,9 +148,17 @@ class Program(object):
         # If it didn't understand, use bad manners.
         self._check()
         if self.healthy:
-            logger.info("Killing %s/%s.", self.service_name, self.shard)
-            os.kill(self.instance.pid, signal.SIGINT)
-            self.instance.wait()
+            logger.info("Interrupting %s/%s.", self.service_name, self.shard)
+            self.instance.send_signal(signal.SIGINT)
+            # FIXME on py3 this becomes self.instance.wait(timeout=5)
+            t = monotonic_time()
+            while monotonic_time() - t < 5:
+                if self.instance.poll() is not None:
+                    break
+                time.sleep(0.1)
+            else:
+                logger.info("Killing %s/%s.", self.service_name, self.shard)
+                self.instance.kill()
 
     def _check_with_backoff(self):
         """Check and wait that the service is healthy."""
