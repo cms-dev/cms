@@ -29,6 +29,7 @@ import argparse
 import io
 import logging
 import os
+import re
 import sys
 import subprocess
 import datetime
@@ -131,6 +132,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Runs the CMS unittest suite.")
     parser.add_argument(
+        "regex", action="store", type=utf8_decoder, nargs='*',
+        help="a regex to match to run a subset of tests")
+    parser.add_argument(
         "-n", "--dry-run", action="store_true",
         help="show what tests would be run, but do not run them")
     parser.add_argument(
@@ -142,9 +146,6 @@ def main():
         FAILED_UNITTEST_FILENAME)
 
     # Unused parameters.
-    parser.add_argument(
-        "regex", action="store", type=utf8_decoder, nargs='*',
-        help="unused")
     parser.add_argument(
         "-l", "--languages", action="store", type=utf8_decoder, default="",
         help="unused")
@@ -171,6 +172,15 @@ def main():
         test_list = load_failed_tests()
     else:
         test_list = get_all_tests()
+
+    if args.regex:
+        # Require at least one regex to match to include it in the list.
+        filter_regexps = [re.compile(regex) for regex in args.regex]
+
+        def test_match(t):
+            return any(r.search(t) is not None for r in filter_regexps)
+
+        test_list = [t for t in test_list if test_match(' '.join(t))]
 
     if args.dry_run:
         for t in test_list:
