@@ -119,7 +119,7 @@ class Communication(TaskType):
         # Create the sandbox
         sandbox = create_sandbox(
             file_cacher,
-            temp_prefix="CMS-compile-",
+            name="compile",
             multithreaded=job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
@@ -188,12 +188,12 @@ class Communication(TaskType):
         # Create sandboxes and FIFOs
         sandbox_mgr = create_sandbox(
             file_cacher,
-            temp_prefix="CMS-manager_evaluate-",
+            name="manager_evaluate",
             multithreaded=job.multithreaded_sandbox)
         sandbox_user = [
             create_sandbox(
                 file_cacher,
-                temp_prefix="CMS-user_evaluate-",
+                name="user_evaluate",
                 multithreaded=job.multithreaded_sandbox)
             for i in indices]
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]

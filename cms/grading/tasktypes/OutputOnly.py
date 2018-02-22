@@ -101,7 +101,7 @@ class OutputOnly(TaskType):
         """See TaskType.evaluate."""
         sandbox = create_sandbox(
             file_cacher,
-            temp_prefix="CMS-evaluate-",
+            name="evaluate",
             job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 

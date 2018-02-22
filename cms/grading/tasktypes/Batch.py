@@ -163,7 +163,7 @@ class Batch(TaskType):
         # Create the sandbox
         sandbox = create_sandbox(
             file_cacher,
-            temp_prefix="CMS-compile-",
+            name="compile",
             multithreaded=job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
@@ -227,7 +227,7 @@ class Batch(TaskType):
         # Create the sandbox
         sandbox = create_sandbox(
             file_cacher,
-            temp_prefix="CMS-evaluate-",
+            name="evaluate",
             multithreaded=job.multithreaded_sandbox)
 
         # Prepare the execution
@@ -321,7 +321,7 @@ class Batch(TaskType):
                     # Create the checkbox: a brand-new sandbox, just for checking
                     checkbox = create_sandbox(
                         file_cacher,
-                        temp_prefix="CMS-check-",
+                        name="check",
                         multithreaded=False)  # do we need multithreading?
                     checker_didnt_crash = True
 
