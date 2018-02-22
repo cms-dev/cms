@@ -42,7 +42,7 @@ utils.show_page("questions", 1);
 <div id="questions" class="notifications">
   <div id="page_selector_questions"></div>
   <div id="paged_content_questions">
-  {% for msg_i, msg in enumerate(questions) %}
+  {% for msg in questions %}
   <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
       <div class="notification_timestamp">
@@ -72,14 +72,14 @@ utils.show_page("questions", 1);
       </div>
       {% endif %}
       <div class="reply_question_toggle">
-        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
+        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">Reply</a>
       </div>
       <div class="reply_question" >
         <hr/>
         <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
           {% module xsrf_form_html() %}
           Precompiled answer:
-          <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
+          <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
             <option value="yes">Yes</option>
             <option value="no">No</option>
             <option value="answered">Answered in task description</option>

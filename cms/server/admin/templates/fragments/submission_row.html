@@ -53,9 +53,9 @@
             </tr>
           </thead>
           <tbody>
-            {% for idx, ev in enumerate(sr.evaluations|sort(attribute="codename"), start=1) %}
+            {% for ev in sr.evaluations|sort(attribute="codename") %}
             <tr>
-              <td>{{ idx }}</td>
+              <td>{{ loop.index }}</td>
               <td>{{ ev.codename }}</td>
               <td>{{ ev.outcome }}</td>
               <td style="text-align: center">
