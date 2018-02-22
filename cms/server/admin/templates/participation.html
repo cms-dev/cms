@@ -46,7 +46,7 @@ function update_additional_answer(element, invoker)
   </p>
 
   {% set page_url = ["contest", contest.id, "user", selected_user.id, "edit"] %}
-  {% include fragments/submission_rows.html %}
+  {% include "fragments/submission_rows.html" %}
 
   <div class="hr"></div>
 </div>
@@ -80,7 +80,7 @@ function update_additional_answer(element, invoker)
         </td>
         <td>
           {% set hashed_password = participation.password %}
-          {% include fragments/hashed_password_form.html %}
+          {% include "fragments/hashed_password_form.html" %}
         </td>
       </tr>
       <tr>
