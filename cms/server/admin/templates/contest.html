@@ -5,7 +5,7 @@
   <h1>Contest configuration</h1>
 </div>
 
-{% include fragments/overload_warning.html %}
+{% include "fragments/overload_warning.html" %}
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("contest", contest.id) }}" method="POST" name="edit_contest" style="display:inline;">

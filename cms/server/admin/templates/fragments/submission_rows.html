@@ -34,7 +34,7 @@
   <tbody>
     {% set score_types = {} %}
     {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
-      {% include submission_row.html %}
+      {% include "fragments/submission_row.html" %}
     {% endfor %}
   </tbody>
 </table>

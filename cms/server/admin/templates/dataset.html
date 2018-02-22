@@ -8,7 +8,7 @@
 </div>
 
 {% set dataset_selector_par_url = url("dataset") %}
-{% include fragments/dataset_selector.html %}
+{% include "fragments/dataset_selector.html" %}
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
@@ -20,7 +20,7 @@
   </p>
 
   {% set page_url = ["dataset", shown_dataset.id] %}
-  {% include fragments/submission_rows.html %}
+  {% include "fragments/submission_rows.html" %}
 
   <div class="hr"></div>
 </div>

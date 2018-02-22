@@ -30,7 +30,7 @@
   </thead>
   <tbody>
     {% for ut in sorted(user_tests, key=lambda s: s.timestamp, reverse=True) %}
-      {% include user_test_row.html %}
+      {% include "fragments/user_test_row.html" %}
     {% endfor %}
   </tbody>
 </table>

@@ -5,7 +5,7 @@
   <h1>Users list</h1>
 </div>
 
-{% include fragments/overload_warning.html %}
+{% include "fragments/overload_warning.html" %}
 
 <form action="{{ url("contest", contest.id, "users", "add") }}" method="POST">
   {% module xsrf_form_html() %}
