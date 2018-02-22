@@ -50,7 +50,7 @@ class Updater(object):
                     # make_timestamp(datetime(2000, 01, 01))
                     v["start"] = 946684800.0
                 if v["stop"] is None:
-                    # make_timestamp(datetime(2100, 01, 01))
-                    v["stop"] = 4102444800.0
+                    # make_timestamp(datetime(2030, 01, 01))
+                    v["stop"] = 1893456000.0
 
         return self.objs
