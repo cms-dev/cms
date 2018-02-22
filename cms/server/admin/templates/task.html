@@ -270,7 +270,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
 {% for dataset in task.datasets|sort(attribute="description") %}
 
-  <h3 id="title_dataset_{{ dataset.id }}" class="toggling_on">Dataset: {{ dataset.description }}{{ format_dataset_attrs(dataset) }}</h3>
+  <h3 id="title_dataset_{{ dataset.id }}" class="toggling_on">Dataset: {{ dataset.description }}{{ dataset|format_dataset_attrs }}</h3>
   <div id="dataset_{{ dataset.id }}" class="task_dataset">
 
     <p>
