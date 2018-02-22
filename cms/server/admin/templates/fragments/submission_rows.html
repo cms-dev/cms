@@ -4,7 +4,7 @@
 
 {% else %}
 
-{% if submission_count > len(submissions) %}
+{% if submission_count > submissions|length %}
 <div>
   Pages:
   {% for i in range(submission_pages) %}

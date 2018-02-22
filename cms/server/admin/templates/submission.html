@@ -253,7 +253,7 @@
 <div id="compilation">
 
   <h3>Outcome</h3>
-  <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
+  <pre>{% if sr.compilation_text|length > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
 
   <h3>Standard output</h3>
   <pre>{% if sr.compilation_stdout is not None %}{{ sr.compilation_stdout }}{% endif %}</pre>

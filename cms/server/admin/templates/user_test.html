@@ -104,7 +104,7 @@
 <div id="evaluation">
 
   <h3>Outcome</h3>
-  <pre>{% if len(utr.evaluation_text) > 0 %}{{ format_status_text(utr.evaluation_text) }}{% endif %}</pre>
+  <pre>{% if utr.evaluation_text|length > 0 %}{{ format_status_text(utr.evaluation_text) }}{% endif %}</pre>
 
     {% if utr.output is not None %}
   <h3>Output</h3>
@@ -121,7 +121,7 @@
 <div id="compilation">
 
   <h3>Outcome</h3>
-  <pre>{% if len(utr.compilation_text) > 0 %}{{ format_status_text(utr.compilation_text) }}{% endif %}</pre>
+  <pre>{% if utr.compilation_text|length > 0 %}{{ format_status_text(utr.compilation_text) }}{% endif %}</pre>
 
   <h3>Standard output</h3>
   <pre>{% if utr.compilation_stdout is not None %}{{ utr.compilation_stdout }}{% endif %}</pre>
