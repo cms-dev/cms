@@ -55,7 +55,7 @@ from cms.db.filecacher import FileCacher
 from cms.locale import get_translations
 
 from .handlers import HANDLERS
-from .handlers.base import BaseHandler
+from .handlers.base import ContestListHandler
 from .handlers.main import MainHandler
 
 
@@ -90,7 +90,7 @@ class ContestWebServer(WebService):
 
         if self.contest_id is None:
             HANDLERS.append((r"", MainHandler))
-            handlers = [(r'/', BaseHandler)]
+            handlers = [(r'/', ContestListHandler)]
             for h in HANDLERS:
                 handlers.append((r'/([^/]+)' + h[0],) + h[1:])
         else:

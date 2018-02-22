@@ -77,17 +77,6 @@ class BaseHandler(CommonRequestHandler):
         self._ = self.translation.gettext
         self.n_ = self.translation.ngettext
 
-    def get(self):
-        # TODO: this should go in its own handler, otherwise it gets inherited
-        self.r_params = self.render_params()
-        # We need this to be computed for each request because we want to be
-        # able to import new contests without having to restart CWS.
-        contest_list = dict()
-        for contest in self.sql_session.query(Contest).all():
-            contest_list[contest.name] = contest
-        self.render("contest_list.html", contest_list=contest_list,
-                    **self.r_params)
-
     def render(self, template_name, **params):
         t = self.service.jinja2_environment.get_template(template_name)
         for chunk in t.generate(**params):
@@ -176,6 +165,18 @@ class BaseHandler(CommonRequestHandler):
     def is_multi_contest(self):
         """Return whether CWS serves all contests."""
         return self.service.contest_id is None
+
+
+class ContestListHandler(BaseHandler):
+    def get(self):
+        self.r_params = self.render_params()
+        # We need this to be computed for each request because we want to be
+        # able to import new contests without having to restart CWS.
+        contest_list = dict()
+        for contest in self.sql_session.query(Contest).all():
+            contest_list[contest.name] = contest
+        self.render("contest_list.html", contest_list=contest_list,
+                    **self.r_params)
 
 
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
