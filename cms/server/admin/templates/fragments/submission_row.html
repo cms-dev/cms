@@ -77,7 +77,7 @@
       Scored ({{ sr.score }} / {{ max_score }})
       <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
         {% try %}
-          {% raw score_type.get_html_details(sr.score_details) %}
+          {{ score_type.get_html_details(sr.score_details)|safe }}
         {% except %}
         [Cannot get score type - see logs]
         {% endtry %}

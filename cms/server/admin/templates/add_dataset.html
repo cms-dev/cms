@@ -94,7 +94,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
           <tr>
             <td>{{ param_def.name }}</td>
             <td>
-              {% raw param_def.render("TaskTypeOptions_%s_"|format(task_type.__name__), previous_value=val) %}
+              {{ param_def.render("TaskTypeOptions_%s_"|format(task_type.__name__), previous_value=val)|safe }}
             </td>
           </tr>
           {% endfor %}

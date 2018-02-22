@@ -441,6 +441,10 @@ table.TaskTypeOptions {
     font-weight: bold;
 }
 
+.preserve_line_breaks {
+    white-space: pre-line;
+}
+
 
 
 
