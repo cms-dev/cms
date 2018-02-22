@@ -88,7 +88,7 @@
       <div id="evaluation_{{ s.id }}" style="display: none;">
 
       {% endif %}
-        <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
+        <h3>Compilation output</h3>{# TODO: trim long outputs and add facility to see raw #}
         <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
       </div>
     </div>
