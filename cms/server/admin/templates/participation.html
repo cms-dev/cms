@@ -120,7 +120,7 @@ function update_additional_answer(element, invoker)
                                     If this is non-zero, all the events (token generation, end of contest) for this contestant will be shifted of the appropriate amount."></span>
           Delay
         </td>
-        <td><input type="text" name="delay_time" value="{{ int(participation.delay_time.total_seconds()) }}"></td>
+        <td><input type="text" name="delay_time" value="{{ participation.delay_time.total_seconds()|int }}"></td>
       </tr>
       <tr>
         <td>
@@ -128,7 +128,7 @@ function update_additional_answer(element, invoker)
                                     If this is non-zero, the end of the contest will be shifted of the appropriate amount for this contestant."></span>
           Extra time
         </td>
-        <td><input type="text" name="extra_time" value="{{ int(participation.extra_time.total_seconds()) }}"></td>
+        <td><input type="text" name="extra_time" value="{{ participation.extra_time.total_seconds()|int }}"></td>
       </tr>
     </table>
     <input type="submit" value="Update" />

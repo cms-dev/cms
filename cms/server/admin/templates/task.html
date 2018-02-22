@@ -161,7 +161,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     It is used only if tokens are finite."></span>
           Minimum interval between tokens
         </td>
-        <td><input type="text" name="token_min_interval" value="{{ int(task.token_min_interval.total_seconds()) }}" /></td>
+        <td><input type="text" name="token_min_interval" value="{{ task.token_min_interval.total_seconds()|int }}" /></td>
       </tr>
       <tr>
         <td>
@@ -185,7 +185,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     It is used only if tokens are finite."></span>
           Token generation period
         </td>
-        <td><input type="text" name="token_gen_interval" value="{{ int(task.token_gen_interval.total_seconds() / 60) }}" /></td>
+        <td><input type="text" name="token_gen_interval" value="{{ task.token_gen_interval.total_seconds()|int // 60 }}" /></td>
       </tr>
       <tr>
         <td>
@@ -219,7 +219,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Leave empty for no limits."></span>
           Minimum interval between submissions
         </td>
-        <td><input type="text" name="min_submission_interval" value="{{ int(task.min_submission_interval.total_seconds()) if task.min_submission_interval is not none else "" }}"></td>
+        <td><input type="text" name="min_submission_interval" value="{{ task.min_submission_interval.total_seconds()|int if task.min_submission_interval is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -227,7 +227,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Leave empty for no limits."></span>
           Minimum interval between user tests
         </td>
-        <td><input type="text" name="min_user_test_interval" value="{{ int(task.min_user_test_interval.total_seconds()) if task.min_user_test_interval is not none else "" }}"></td>
+        <td><input type="text" name="min_user_test_interval" value="{{ task.min_user_test_interval.total_seconds()|int if task.min_user_test_interval is not none else "" }}"></td>
       </tr>
 
       <tr><td colspan=2><h2>Score options</h2></td></tr>
