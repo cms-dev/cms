@@ -77,6 +77,7 @@ class BaseHandler(CommonRequestHandler):
         self.n_ = self.translation.ngettext
 
     def get(self):
+        # TODO: this should go in its own handler, otherwise it gets inherited
         self.r_params = self.render_params()
         # We need this to be computed for each request because we want to be
         # able to import new contests without having to restart CWS.
