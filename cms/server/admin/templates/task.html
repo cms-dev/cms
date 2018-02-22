@@ -366,7 +366,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <tr>
                 <td>{{ param_def.name }}</td>
                 <td>
-                  {% raw param_def.render("TaskTypeOptions_%d_%s_"|format(dataset.id, task_type.__name__), parameter_value) %}
+                  {{ param_def.render("TaskTypeOptions_%d_%s_"|format(dataset.id, task_type.__name__), parameter_value)|safe }}
                 </td>
               </tr>
             {% endfor %}
