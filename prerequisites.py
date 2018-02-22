@@ -37,6 +37,13 @@ from __future__ import unicode_literals
 # the user will be using and in which the requirements were installed
 # (e.g. the site installation rather than a venv).
 
+# Alias raw_input as input on py2 only.
+try:
+    input = raw_input
+    del raw_input
+except NameError:
+    pass
+
 import argparse
 import grp
 import os
