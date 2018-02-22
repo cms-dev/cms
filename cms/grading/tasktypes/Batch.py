@@ -318,11 +318,11 @@ class Batch(TaskType):
                 # Otherwise evaluate the output file.
                 else:
 
-                    # Create the checkbox: a brand-new sandbox, just for checking
+                    # Create the checkbox: a brand-new sandbox just for checking
                     checkbox = create_sandbox(
                         file_cacher,
                         name="check",
-                        multithreaded=False)  # do we need multithreading?
+                        multithreaded=True)  # it's all admin code anyway
                     checker_didnt_crash = True
 
                     # Put the reference solution into the checkbox
