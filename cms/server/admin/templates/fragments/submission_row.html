@@ -53,7 +53,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for idx, ev in enumerate(sorted(sr.evaluations, key=lambda ev: ev.codename), start=1) %}
+            {% for idx, ev in enumerate(sr.evaluations|sort(attribute="codename"), start=1) %}
             <tr>
               <td>{{ idx }}</td>
               <td>{{ ev.codename }}</td>
