@@ -18,8 +18,6 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% endblock js_init %}
 
 {% block core %}
-{% from cms.server.admin.formatting import format_dataset_attrs %}
-{% from cms import plugin_list, SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX %}
 {% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
 {% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
 

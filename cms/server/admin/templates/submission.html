@@ -1,8 +1,6 @@
 {% extends base.html %}
 
 {% block core %}
-{% from cms.grading import format_status_text %}
-{% from cms.grading.scoretypes import get_score_type %}
 {% set st = get_score_type(dataset=shown_dataset) %}
 {% set sr = s.get_result(shown_dataset) %}
 {% set status = SubmissionResult.COMPILING %}

@@ -1,7 +1,6 @@
 {% extends base.html %}
 
 {% block core %}
-{% from cms.grading import format_status_text %}
 {% set utr = ut.get_result(shown_dataset) %}
 {% set status = UserTestResult.COMPILING %}
 {% if utr is not None %}
