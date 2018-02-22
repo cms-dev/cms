@@ -7,7 +7,7 @@
 </div>
 
 <form action="{{ url("tasks") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Edit selected task:
    <input type="submit"
          name="operation"

@@ -44,7 +44,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("task", task.id) }}" method="POST" style="display:inline;">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <h2 id="title_task_configuration" class="toggling_on">Task configuration</h2>
   <div id="task_configuration">
     <table>
@@ -478,7 +478,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   <input type="reset" value="Reset" />
 </form>
 <form action="{{ url("tasks") }}" method="POST" style="display:inline;">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <input type="hidden" name="task_id" value="{{ task.id }}"/>
     <input type="submit"
          name="operation"
