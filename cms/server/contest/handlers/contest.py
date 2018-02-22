@@ -97,6 +97,14 @@ class ContestHandler(BaseHandler):
         super(ContestHandler, self).__init__(*args, **kwargs)
         self.contest_url = None
 
+    def get(self, *args, **kwargs):
+        # This method should be implemented by child classes
+        raise tornado.web.HTTPError(405, "Method Not Allowed")
+
+    def post(self, *args, **kwargs):
+        # This method should be implemented by child classes
+        raise tornado.web.HTTPError(405, "Method Not Allowed")
+
     def prepare(self):
         self.choose_contest()
 
