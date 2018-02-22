@@ -147,10 +147,10 @@ function update_additional_answer(element, invoker)
       <div class="notification_msg">
         <div class="notification_timestamp">{{ str(msg.question_timestamp) }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
-        <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
+        <div class="notification_text">{% raw xhtml_escape(msg.text)|replace('\n', '<br/>') %}</div>
         {% if msg.reply_timestamp is not none %}
         <div class="notification_subject">Reply. {{ msg.reply_subject }}</div>
-        <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
+        <div class="notification_text">{% raw xhtml_escape(msg.reply_text)|replace('\n', '<br/>') %}</div>
         {% else %}
         <div class="notification_subject">Not yet replied.</div>
         {% endif %}
@@ -220,7 +220,7 @@ function update_additional_answer(element, invoker)
         <div class="notification_msg">
           <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
+          <div class="notification_text">{% raw xhtml_escape(msg.text)|replace('\n', '<br/>') %}</div>
         </div>
       </div>
       {% endfor %}

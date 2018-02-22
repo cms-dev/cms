@@ -42,7 +42,7 @@
           </div>
           <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
+          <div class="notification_text">{% raw xhtml_escape(msg.text)|replace('\n', '<br/>') %}</div>
 
         </div>
       </div>

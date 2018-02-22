@@ -49,10 +49,10 @@ utils.show_page("questions", 1);
         <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ str(msg.question_timestamp) }}
       </div>
       <div class="notification_subject">{{ msg.subject }}</div>
-      <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
+      <div class="notification_text">{% raw xhtml_escape(msg.text)|replace('\n', '<br/>') %}</div>
       {% if msg.reply_timestamp is not none %}
       <div class="notification_subject">Reply: {{ msg.reply_subject }}</div>
-      <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
+      <div class="notification_text">{% raw xhtml_escape(msg.reply_text)|replace('\n', '<br/>') %}</div>
       {% else %}
       <div class="notification_subject">Not yet replied.</div>
       {% endif %}
