@@ -29,13 +29,13 @@
 function init()
 {
     {% if contest is none %}
-    utils = new CMS.AWSUtils("{{ url() }}", {{ make_timestamp(timestamp) }}, 0, 0, 0, 0, -1);
+    utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }}, 0, 0, 0, 0, -1);
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);
     {% else %}
-    utils = new CMS.AWSUtils("{{ url() }}", {{ make_timestamp(timestamp) }},
-        {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }},
-        {{ make_timestamp(contest.analysis_start) }}, {{ make_timestamp(contest.analysis_stop) }},
+    utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }},
+        {{ contest.start|make_timestamp }}, {{ contest.stop|make_timestamp }},
+        {{ contest.analysis_start|make_timestamp }}, {{ contest.analysis_stop|make_timestamp }},
         {{ phase }});
 
     {% if phase < 3 %}
