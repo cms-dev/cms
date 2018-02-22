@@ -30,6 +30,8 @@ from future.builtins import *
 from six import iterkeys, iteritems
 
 import logging
+import os
+import shutil
 
 from cms.grading import compilation_step, evaluation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
@@ -310,15 +312,41 @@ class Batch(TaskType):
                 # Otherwise evaluate the output file.
                 else:
 
-                    # Put the reference solution into the sandbox
-                    sandbox.create_file_from_storage(
+                    # Create the checkbox: brand-new sandbox just for checking.
+                    # Only admin code runs in it, so we allow multithreading.
+                    checkbox = create_sandbox(file_cacher, multithreaded=True)
+                    checker_success = True
+
+                    # Put the reference solution into the checkbox
+                    checkbox.create_file_from_storage(
                         "res.txt",
                         job.output)
+
+                    # Put the input file into the checkbox
+                    checkbox.create_file_from_storage(
+                        input_filename,
+                        job.input)
+
+                    # Put the user-produced output file into the checkbox
+                    try:
+                        output_src = os.path.join(
+                            sandbox.get_root_path(),
+                            output_filename)
+                        output_dst = os.path.join(
+                            checkbox.get_root_path(),
+                            output_filename)
+
+                        if os.path.islink(output_src):
+                            raise FileNotFoundError
+
+                        shutil.copyfile(output_src, output_dst)
+                    except FileNotFoundError as e:
+                        pass
 
                     # Check the solution with white_diff
                     if self.parameters[2] == "diff":
                         outcome, text = white_diff_step(
-                            sandbox, output_filename, "res.txt")
+                            checkbox, output_filename, "res.txt")
 
                     # Check the solution with a comparator
                     elif self.parameters[2] == "comparator":
@@ -329,56 +357,41 @@ class Batch(TaskType):
                                          "invalid comparator (it must be "
                                          "named 'checker')",
                                          extra={"operation": job.info})
-                            success = False
+                            checker_success = False
 
                         else:
-                            sandbox.create_file_from_storage(
+                            checkbox.create_file_from_storage(
                                 manager_filename,
                                 job.managers[manager_filename].digest,
                                 executable=True)
-                            # Rewrite input file. The untrusted
-                            # contestant program should not be able to
-                            # modify it; however, the grader may
-                            # destroy the input file to prevent the
-                            # contestant's program from directly
-                            # accessing it. Since we cannot create
-                            # files already existing in the sandbox,
-                            # we try removing the file first.
-                            try:
-                                sandbox.remove_file(input_filename)
-                            except OSError as e:
-                                # Let us be extra sure that the file
-                                # was actually removed and we did not
-                                # mess up with permissions.
-                                assert not sandbox.file_exists(input_filename)
-                            sandbox.create_file_from_storage(
-                                input_filename,
-                                job.input)
 
                             # Allow using any number of processes (because e.g.
                             # one may want to write a bash checker who calls
                             # other processes). Set to a high number because
                             # to avoid fork-bombing the worker.
-                            sandbox.max_processes = 1000
+                            checkbox.max_processes = 1000
 
-                            success, _ = evaluation_step(
-                                sandbox,
+                            checker_success, _ = evaluation_step(
+                                checkbox,
                                 [["./%s" % manager_filename,
                                   input_filename, "res.txt", output_filename]])
-                        if success:
+                        if checker_success:
                             try:
                                 outcome, text = \
-                                    extract_outcome_and_text(sandbox)
+                                    extract_outcome_and_text(checkbox)
                             except ValueError as e:
                                 logger.error("Invalid output from "
                                              "comparator: %s", e.message,
                                              extra={"operation": job.info})
-                                success = False
+                                checker_success = False
 
                     else:
                         raise ValueError("Unrecognized third parameter"
                                          " `%s' for Batch tasktype." %
                                          self.parameters[2])
+
+                    success = success and checker_success
+                    delete_sandbox(checkbox, checker_success)
 
         # Whatever happened, we conclude.
         job.success = success
