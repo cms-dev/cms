@@ -37,6 +37,13 @@ from __future__ import unicode_literals
 # the user will be using and in which the requirements were installed
 # (e.g. the site installation rather than a venv).
 
+# from future.builtins import input
+try:
+    input = raw_input
+    del raw_input
+except NameError:
+    pass
+
 import argparse
 import grp
 import os
