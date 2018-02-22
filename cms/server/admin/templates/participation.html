@@ -142,7 +142,7 @@ function update_additional_answer(element, invoker)
 <div id="questions">
   {% if participation.questions != [] %}
   <div class="notifications">
-    {% for msg_i, msg in enumerate(participation.questions) %}
+    {% for msg in participation.questions %}
     <div class="notification communication">
       <div class="notification_msg">
         <div class="notification_timestamp">{{ str(msg.question_timestamp) }}</div>
@@ -155,7 +155,7 @@ function update_additional_answer(element, invoker)
         <div class="notification_subject">Not yet replied.</div>
         {% endif %}
         <div class="reply_question_toggle">
-          <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
+          <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">Reply</a>
         </div>
         <div class="reply_question" >
           <hr/>
@@ -163,7 +163,7 @@ function update_additional_answer(element, invoker)
             {% module xsrf_form_html() %}
             <input type="hidden" name="ref" value="/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit"/>
             Precompiled answer:
-            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
+            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
               <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="answered">Answered in task description</option>
@@ -215,7 +215,7 @@ function update_additional_answer(element, invoker)
 
     {% if participation.messages != [] %}
 
-      {% for msg_i, msg in enumerate(participation.messages|reverse) %}
+      {% for msg in participation.messages|reverse %}
       <div class="notification communication">
         <div class="notification_msg">
           <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
