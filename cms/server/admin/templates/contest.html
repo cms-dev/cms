@@ -32,7 +32,7 @@
                                   Example: 'en,ja' (without quotes)."></span>
         Allowed localizations
       </td>
-      <td><input type="text" name="allowed_localizations" value="{{ ",".join(contest.allowed_localizations) }}"/></td>
+      <td><input type="text" name="allowed_localizations" value="{{ contest.allowed_localizations|join(",") }}"/></td>
     </tr>
     <tr>
       <td>

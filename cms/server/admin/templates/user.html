@@ -121,7 +121,7 @@
                                     Example: 'en, ja'."></span>
           Preferred languages
         </td>
-        <td><input type="text" name="preferred_languages" value="{{ ", ".join(user.preferred_languages) }}"></td>
+        <td><input type="text" name="preferred_languages" value="{{ user.preferred_languages|join(", ") }}"></td>
       </tr>
     </table>
     <input type="submit" value="Update" />
