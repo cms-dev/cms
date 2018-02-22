@@ -220,11 +220,13 @@ $(document).ready(function () {
         <col class="time"/>
 {% endif %}
         <col class="status"/>
-{% if score_type is defined and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+{% if score_type is defined %}
+    {% if 0 < score_type.max_public_score < score_type.max_score %}
         <col class="public_score"/>
         <col class="total_score"/>
-{% else %}
+    {% else %}
         <col class="total_score"/>
+    {% endif %}
 {% endif %}
 {% if actual_phase >= +3 %}
         <col class="considered_in_score"/>
@@ -244,11 +246,13 @@ $(document).ready(function () {
             <th class="time">{% trans %}Time{% endtrans %}</th>
 {% endif %}
             <th class="status">{% trans %}Status{% endtrans %}</th>
-{% if score_type is defined and score_type.max_public_score != 0 and score_type.max_public_score != score_type.max_score %}
+{% if score_type is defined %}
+    {% if 0 < score_type.max_public_score < score_type.max_score %}
             <th class="public_score">{% trans %}Public score{% endtrans %}</th>
             <th class="total_score">{% trans %}Total score{% endtrans %}</th>
-{% else %}
+    {% else %}
             <th class="total_score">{% trans %}Score{% endtrans %}</th>
+    {% endif %}
 {% endif %}
 {% if actual_phase >= +3 %}
             <th class="considered_in_score">{% trans %}Official{% endtrans %}</th>
