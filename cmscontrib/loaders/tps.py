@@ -40,13 +40,13 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
-class CpsTaskLoader(TaskLoader):
+class TpsTaskLoader(TaskLoader):
     # TODO: doc string
-    """ Loader for CPS exported tasks
+    """ Loader for TPS exported tasks
     """
 
-    short_name = 'cps_task'
-    description = 'CPS task format'
+    short_name = 'tps_task'
+    description = 'TPS task format'
 
     @staticmethod
     def detect(path):
@@ -175,7 +175,7 @@ class CpsTaskLoader(TaskLoader):
         else:
             args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
 
-        # These options cannot be configured in the CPS format.
+        # These options cannot be configured in the TPS format.
         # Uncomment the following to set specific values for them.
 
         # args['max_submission_number'] = 100
