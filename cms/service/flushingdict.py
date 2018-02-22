@@ -26,11 +26,12 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import iteritems
 
-import gevent
 import logging
 
-from datetime import datetime, timedelta
+import gevent
 from gevent.lock import RLock
+
+from cmscommon.datetime import monotonic_time
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,7 @@ class FlushingDict(object):
         self.size = size
 
         # How much time we wait for other key-values before flushing.
-        self.flush_latency = timedelta(seconds=flush_latency_seconds)
+        self.flush_latency_seconds = flush_latency_seconds
 
         # Function to flush the data to.
         self.callback = callback
@@ -74,13 +75,13 @@ class FlushingDict(object):
         self.d_lock = RLock()
 
         # Time when an item was last inserted in the dict
-        self.last_insert = datetime.now()
+        self.last_insert = monotonic_time()
 
     def add(self, key, value):
         logger.debug("Adding item %s", key)
         with self.d_lock:
             self.d[key] = value
-            self.last_insert = datetime.now()
+            self.last_insert = monotonic_time()
 
     def flush(self):
         logger.debug("Flushing items")
@@ -98,10 +99,10 @@ class FlushingDict(object):
         while True:
             while True:
                 with self.d_lock:
-                    since_last_insert = datetime.now() - self.last_insert
+                    since_last_insert = monotonic_time() - self.last_insert
                     if len(self.d) != 0 and (
                             len(self.d) >= self.size or
-                            since_last_insert > self.flush_latency):
+                            since_last_insert > self.flush_latency_seconds):
                         break
                 gevent.sleep(0.05)
             self.flush()
