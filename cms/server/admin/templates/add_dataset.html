@@ -21,7 +21,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
   <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Create dataset</h1>
 </div>
 
-{% if original_dataset is None %}
+{% if original_dataset is none %}
 <form enctype="multipart/form-data" action="{{ url("task", task.id, "add_dataset") }}" method="POST">
 {% else %}
 You are cloning the dataset "{{ original_dataset.description }}".
@@ -39,7 +39,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
         <input type="text" name="description" value="{{ default_description }}"/>
       </td>
     </tr>
-    {% if original_dataset is not None %}
+    {% if original_dataset is not none %}
     <tr>
       <td>
         <span class="info" title="Whether to copy over the evaluations from the original dataset."></span>
@@ -57,14 +57,14 @@ You are cloning the dataset "{{ original_dataset.description }}".
         <span class="info" title="Total maximum time for each evaluation, in seconds."></span>
         Time limit
       </td>
-      <td><input type="text" name="time_limit" value="{{ 1 if original_dataset is None else original_dataset.time_limit or "" }}"/> second(s)</td>
+      <td><input type="text" name="time_limit" value="{{ 1 if original_dataset is none else original_dataset.time_limit or "" }}"/> second(s)</td>
     </tr>
     <tr>
       <td>
         <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
         Memory limit
       </td>
-      <td><input type="text" name="memory_limit" value="{{ 512 if original_dataset is None else original_dataset.memory_limit or "" }}"/> MiB</td>
+      <td><input type="text" name="memory_limit" value="{{ 512 if original_dataset is none else original_dataset.memory_limit or "" }}"/> MiB</td>
     </tr>
 
     <tr><td colspan=2><h2>Task type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Task%20types.html" target="_blank">documentation</a>)</h2></td></tr>
@@ -77,20 +77,20 @@ You are cloning the dataset "{{ original_dataset.description }}".
 
         <select name="task_type">
           {% for task_type in task_type_list %}
-          <option value="{{ task_type.__name__ }}"{% if original_dataset is not None and task_type.__name__ == original_dataset.task_type %} selected{% endif %}>{{ task_type.__name__ }}</option>
+          <option value="{{ task_type.__name__ }}"{% if original_dataset is not none and task_type.__name__ == original_dataset.task_type %} selected{% endif %}>{{ task_type.__name__ }}</option>
           {% endfor %}
         </select>
 
         {% for task_type in task_type_list %}
         <table class="TaskTypeOptions bordered" id="TaskType{{ task_type.__name__ }}Options" style="display: none;">
-          {% if original_dataset is not None and task_type.__name__ == original_dataset.task_type %}
+          {% if original_dataset is not none and task_type.__name__ == original_dataset.task_type %}
             {% set values = original_dataset_task_type_parameters %}
           {% else %}
-            {% set values = None %}
+            {% set values = none %}
           {% endif %}
           {% for i in range(task_type.ACCEPTED_PARAMETERS|length) %}
             {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
-            {% set val = values[i] if values is not None else None %}
+            {% set val = values[i] if values is not none else none %}
           <tr>
             <td>{{ param_def.name }}</td>
             <td>
@@ -105,7 +105,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
       </td>
     </tr>
 
-    {% if original_dataset is not None and original_dataset.managers|length != 0 %}
+    {% if original_dataset is not none and original_dataset.managers|length != 0 %}
     <tr>
       <td>
         <span class="info" title="Whether to copy the managers from the original dataset."></span>
@@ -124,7 +124,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
       <td>
         <select name="score_type">
           {% for score_type in score_type_list %}
-          <option value="{{ score_type.__name__}}"{% if original_dataset is not None and score_type.__name__ == original_dataset.score_type %} selected{% endif %}>{{ score_type.__name__ }}</option>
+          <option value="{{ score_type.__name__}}"{% if original_dataset is not none and score_type.__name__ == original_dataset.score_type %} selected{% endif %}>{{ score_type.__name__ }}</option>
           {% endfor %}
         </select>
 
@@ -135,7 +135,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
         <span class="info" title="Please see the score type documentation."></span>
         Score Parameters
       </td>
-      <td><textarea name="score_type_parameters">{{ json.dumps(original_dataset.score_type_parameters) if original_dataset is not None else "" }}</textarea></td>
+      <td><textarea name="score_type_parameters">{{ json.dumps(original_dataset.score_type_parameters) if original_dataset is not none else "" }}</textarea></td>
     </tr>
   </table>
 <input type="submit" value="Create"/>

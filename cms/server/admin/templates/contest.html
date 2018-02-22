@@ -141,7 +141,7 @@
                                   It is used only if tokens are finite."></span>
         Maximum number of tokens
       </td>
-      <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not None else "" }}" size="3"></td>
+      <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not none else "" }}" size="3"></td>
     </tr>
     <tr>
       <td>
@@ -181,7 +181,7 @@
                                   It is used only if tokens are finite."></span>
         Maximum accumulated tokens
       </td>
-      <td><input type="text" name="token_gen_max" value="{{ contest.token_gen_max if contest.token_gen_max is not None else "" }}" size="3"></td>
+      <td><input type="text" name="token_gen_max" value="{{ contest.token_gen_max if contest.token_gen_max is not none else "" }}" size="3"></td>
     </tr>
 
     <tr><td colspan=2><h2>Times</h2></td></tr>
@@ -207,7 +207,7 @@
                                   Example: 'Europe/Rome', 'America/New_York', ..."></span>
         Timezone
       </td>
-      <td><input type="text" name="timezone" value="{{ contest.timezone if contest.timezone is not None else "" }}"></td>
+      <td><input type="text" name="timezone" value="{{ contest.timezone if contest.timezone is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -216,7 +216,7 @@
                                   If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."></span>
         Length of the contest
       </td>
-      <td><input type="text" name="per_user_time" value="{{ int(contest.per_user_time.total_seconds()) if contest.per_user_time is not None else "" }}"></td>
+      <td><input type="text" name="per_user_time" value="{{ int(contest.per_user_time.total_seconds()) if contest.per_user_time is not none else "" }}"></td>
     </tr>
 
     <tr><td colspan=2><h2>Limits</h2></td></tr>
@@ -226,7 +226,7 @@
                                   Leave empty for no limits."></span>
         Maximum number of submissions
       </td>
-      <td><input type="text" name="max_submission_number" value="{{ contest.max_submission_number if contest.max_submission_number is not None else "" }}"></td>
+      <td><input type="text" name="max_submission_number" value="{{ contest.max_submission_number if contest.max_submission_number is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -234,7 +234,7 @@
                                   Leave empty for no limits."></span>
         Maximum number of user tests
       </td>
-      <td><input type="text" name="max_user_test_number" value="{{ contest.max_user_test_number if contest.max_user_test_number is not None else "" }}"></td>
+      <td><input type="text" name="max_user_test_number" value="{{ contest.max_user_test_number if contest.max_user_test_number is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -242,7 +242,7 @@
                                   Leave empty for no limits."></span>
         Minimum interval between submissions
       </td>
-      <td><input type="text" name="min_submission_interval" value="{{ int(contest.min_submission_interval.total_seconds()) if contest.min_submission_interval is not None else "" }}"></td>
+      <td><input type="text" name="min_submission_interval" value="{{ int(contest.min_submission_interval.total_seconds()) if contest.min_submission_interval is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -250,7 +250,7 @@
                                   Leave empty for no limits."></span>
         Minimum interval between user tests
       </td>
-      <td><input type="text" name="min_user_test_interval" value="{{ int(contest.min_user_test_interval.total_seconds()) if contest.min_user_test_interval is not None else "" }}"></td>
+      <td><input type="text" name="min_user_test_interval" value="{{ int(contest.min_user_test_interval.total_seconds()) if contest.min_user_test_interval is not none else "" }}"></td>
     </tr>
     <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
     <tr>

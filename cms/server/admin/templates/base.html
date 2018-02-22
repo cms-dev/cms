@@ -18,7 +18,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shCore.css") }}"/>
     <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shThemeDefault.css") }}"/>
 
-    {% if contest is None %}
+    {% if contest is none %}
     <title>Admin</title>
     {% else %}
     <title>Admin: {{ contest.description }}</title>
@@ -28,7 +28,7 @@
 <!--
 function init()
 {
-    {% if contest is None %}
+    {% if contest is none %}
     utils = new CMS.AWSUtils("{{ url() }}", {{ make_timestamp(timestamp) }}, 0, 0, 0, 0, -1);
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);
@@ -66,7 +66,7 @@ $(document).ready(init);
   <body class="admin">
     <div id="global">
       <div id="sidebar">
-{% if current_user is None %}
+{% if current_user is none %}
         <div id="sidebar_header">
           <h1 class="parent">Administration</h1>
         </div>
@@ -76,7 +76,7 @@ $(document).ready(init);
             Hello, <a href="{{ url("admins") }}">{{ current_user.name }}</a>.
               <form class="inline" action="{{ url("logout") }}" method="POST">{% module xsrf_form_html() %}<input type="submit" value="Logout"></form>
           </div>
-          {% if contest is None %}
+          {% if contest is none %}
           <h1 class="parent">Administration</h1>
           {% else %}
           <h1 class="parent"><a href="{{ url() }}">Administration</a></h1>
@@ -91,7 +91,7 @@ $(document).ready(init);
         </div>
         {% endif %}
         <ul class="menu">
-        {% if contest is None %}
+        {% if contest is none %}
           <li class="menu_entry"><a class="menu_link" href="{{ url() }}">Overview</a></li>
           <li class="menu_entry"><a class="menu_link" href="{{ url("resourceslist") }}">Resource usage</a></li>
         {% else %}
@@ -101,7 +101,7 @@ $(document).ready(init);
         </ul>
         <div class="hr"></div>
 
-        {% if contest is None %}
+        {% if contest is none %}
         <h1><a class="menu_link" href="{{ url("contests") }}">Contests</a></h1>
         <ul class="menu">
           {% if contest_list|length < 1 %}

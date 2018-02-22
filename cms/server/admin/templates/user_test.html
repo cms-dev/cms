@@ -3,7 +3,7 @@
 {% block core %}
 {% set utr = ut.get_result(shown_dataset) %}
 {% set status = UserTestResult.COMPILING %}
-{% if utr is not None %}
+{% if utr is not none %}
   {% set status = utr.get_status() %}
 {% endif %}
 <div class="core_title">
@@ -41,7 +41,7 @@
         <td>
           {% for filename in ut.task.submission_format|map(attribute="filename") %}
             {% if filename in ut.files %}
-              {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
+              {% set real_filename = filename if ut.language is none else filename.replace(".%l", get_language(ut.language).source_extension) %}
           <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("user_test_file", ut.files[filename].id) }}')">
             {{ real_filename }}
           </a>
@@ -53,7 +53,7 @@
       <tr>
         <td>Language</td>
         <td>
-          {% if ut.language is None %}
+          {% if ut.language is none %}
           N/A
           {% else %}
           {{ ut.language }}
@@ -75,7 +75,7 @@
           {% endif %}
         </td>
       </tr>
-      {% if utr is not None %}
+      {% if utr is not none %}
       <tr>
         <td>Failures during compilation</td>
         <td>{{ utr.compilation_tries }}</td>
@@ -98,7 +98,7 @@
 
 </div>
 
-  {% if utr is not None and utr.evaluated() %}
+  {% if utr is not none and utr.evaluated() %}
 
 <h2 id="title_evaluation" class="toggling_on">Evaluation</h2>
 <div id="evaluation">
@@ -106,7 +106,7 @@
   <h3>Outcome</h3>
   <pre>{% if utr.evaluation_text|length > 0 %}{{ format_status_text(utr.evaluation_text) }}{% endif %}</pre>
 
-    {% if utr.output is not None %}
+    {% if utr.output is not none %}
   <h3>Output</h3>
   <a href="javascript:void(0);" onclick="utils.show_file('output','{{ url("file", utr.output, "output") }}')">See output</a>
     {% endif %}
@@ -115,7 +115,7 @@
 
   {% endif %}
 
-  {% if utr is not None and utr.compiled() %}
+  {% if utr is not none and utr.compiled() %}
 
 <h2 id="title_compilation" class="toggling_on">Compilation</h2>
 <div id="compilation">
@@ -124,10 +124,10 @@
   <pre>{% if utr.compilation_text|length > 0 %}{{ format_status_text(utr.compilation_text) }}{% endif %}</pre>
 
   <h3>Standard output</h3>
-  <pre>{% if utr.compilation_stdout is not None %}{{ utr.compilation_stdout }}{% endif %}</pre>
+  <pre>{% if utr.compilation_stdout is not none %}{{ utr.compilation_stdout }}{% endif %}</pre>
 
   <h3>Standard error</h3>
-  <pre>{% if utr.compilation_stderr is not None %}{{ utr.compilation_stderr }}{% endif %}</pre>
+  <pre>{% if utr.compilation_stderr is not none %}{{ utr.compilation_stderr }}{% endif %}</pre>
 
 </div>
 

@@ -194,7 +194,7 @@ function update_logs(response)
 function update_statuses()
 {
 
-    {% if contest is not None %}
+    {% if contest is not none %}
     if (!update_statuses.submissions_request
             || update_statuses.submissions_request.state() != "pending") {
         update_statuses.submissions_request =
@@ -236,7 +236,7 @@ update_statuses();
 <h1>Overview</h1>
 <span id="update_time"></span>
 
-{% if contest is not None %}
+{% if contest is not none %}
 <h2 id="title_submissions_status" class="toggling_on">Submissions status</h2>
 <div id="submissions_status">
   <table id="submissions_status_table" class="sub_table">
