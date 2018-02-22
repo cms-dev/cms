@@ -40,7 +40,7 @@
           <div class="announcement_remove">
             <a onclick="CMS.AWSUtils.ajax_delete('{{ url("contest", contest.id, "announcement", msg.id) }}'); ">Remove</a>
           </div>
-          <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
+          <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
           <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
 

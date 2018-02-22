@@ -191,7 +191,7 @@
                                   Example: '2015-12-31 15:00:00'."></span>
         Start time (in UTC)
       </td>
-      <td><input type="text" name="start" value="{{ str(contest.start) }}"></td>
+      <td><input type="text" name="start" value="{{ contest.start }}"></td>
     </tr>
     <tr>
       <td>
@@ -199,7 +199,7 @@
                                   Example: '2015-12-31 18:00:00'."></span>
         End time (in UTC)
       </td>
-      <td><input type="text" name="stop" value="{{ str(contest.stop) }}"></td>
+      <td><input type="text" name="stop" value="{{ contest.stop }}"></td>
     </tr>
     <tr>
       <td>
@@ -268,7 +268,7 @@
                                   Example: '2015-12-31 15:00:00'."></span>
         Analysis mode start time (in UTC)
       </td>
-      <td><input type="text" name="analysis_start" value="{{ str(contest.analysis_start) }}"></td>
+      <td><input type="text" name="analysis_start" value="{{ contest.analysis_start }}"></td>
     </tr>
     <tr>
       <td>
@@ -276,7 +276,7 @@
                                   Example: '2015-12-31 18:00:00'."></span>
         Analysis mode end time (in UTC)
       </td>
-      <td><input type="text" name="analysis_stop" value="{{ str(contest.analysis_stop) }}"></td>
+      <td><input type="text" name="analysis_stop" value="{{ contest.analysis_stop }}"></td>
     </tr>
   </table>
   <input type="submit"
