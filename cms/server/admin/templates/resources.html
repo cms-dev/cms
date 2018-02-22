@@ -10,7 +10,7 @@ var getters = [];
     RSgetter = function(shard, plotOptions)
     {
         this.shard = shard;
-        this.last_time = {{ make_timestamp(timestamp) }} - 60 * 11;
+        this.last_time = {{ timestamp|make_timestamp }} - 60 * 11;
         this.first = true;
     }
 
