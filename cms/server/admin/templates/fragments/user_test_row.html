@@ -14,7 +14,7 @@
   {% set status = utr.get_status() %}
 {% endif %}
 <tr>
-  <td><a href="{{ url("user_test", ut.id) }}">{{ str(ut.timestamp) }}</a></td>
+  <td><a href="{{ url("user_test", ut.id) }}">{{ ut.timestamp }}</a></td>
   <td><a href="{{ url("contest", ut.participation.contest.id, "user", ut.participation.user.id, "edit") }}">{{ ut.participation.user.username }}</a></td>
   <td><a href="{{ url("task", ut.task.id) }}">{{ ut.task.name }}</a></td>
   <td>

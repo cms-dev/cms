@@ -112,7 +112,7 @@ function update_additional_answer(element, invoker)
                                     Example: '2015-12-31 15:00:00'."></span>
           Time of first login (in UTC)
         </td>
-        <td><input type="text" name="starting_time" value="{{ str(participation.starting_time) if participation.starting_time is not none else "" }}"></td>
+        <td><input type="text" name="starting_time" value="{{ participation.starting_time if participation.starting_time is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -145,7 +145,7 @@ function update_additional_answer(element, invoker)
     {% for msg in participation.questions %}
     <div class="notification communication">
       <div class="notification_msg">
-        <div class="notification_timestamp">{{ str(msg.question_timestamp) }}</div>
+        <div class="notification_timestamp">{{ msg.question_timestamp }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
         {% if msg.reply_timestamp is not none %}
@@ -218,7 +218,7 @@ function update_additional_answer(element, invoker)
       {% for msg in participation.messages|reverse %}
       <div class="notification communication">
         <div class="notification_msg">
-          <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
+          <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
           <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
         </div>
