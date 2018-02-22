@@ -114,7 +114,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v iteritems(in self.objs):
+        for k, v in iteritems(self.objs):
             if k.startswith("_"):
                 continue
 
