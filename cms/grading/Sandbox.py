@@ -200,7 +200,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, multithreaded, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, temp_prefix=None, temp_dir=None):
         """Initialization.
 
         multithreaded (boolean): whether the sandbox should allow
@@ -213,6 +213,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         """
         self.multithreaded = multithreaded
         self.file_cacher = file_cacher
+        self.temp_prefix = temp_prefix if temp_prefix is not None else "tmp"
         self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
 
         self.cmd_file = "commands.log"
@@ -868,13 +869,13 @@ class IsolateSandbox(SandboxBase):
     # on the current directory.
     SECURE_COMMANDS = ["/bin/cp", "/bin/mv", "/usr/bin/zip", "/usr/bin/unzip"]
 
-    def __init__(self, multithreaded, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, temp_prefix=None, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, multithreaded, file_cacher, temp_dir)
+        SandboxBase.__init__(self, multithreaded, file_cacher, temp_prefix, temp_dir)
 
         # Isolate only accepts ids between 0 and 99. We assign the
         # range [(shard+1)*10, (shard+2)*10) to each Worker and keep
@@ -897,7 +898,7 @@ class IsolateSandbox(SandboxBase):
         # system to, which is why the outer directory exists with no read
         # permissions.
         self.inner_temp_dir = "/tmp"
-        self.outer_temp_dir = tempfile.mkdtemp(dir=self.temp_dir)
+        self.outer_temp_dir = tempfile.mkdtemp(dir=self.temp_dir, prefix=self.temp_prefix)
         # Don't use os.path.join here, because the absoluteness of /tmp will
         # bite you.
         self.path = self.outer_temp_dir + self.inner_temp_dir

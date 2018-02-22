@@ -161,7 +161,10 @@ class Batch(TaskType):
             return
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        sandbox = create_sandbox(
+            file_cacher,
+            temp_prefix="CMS-compile-",
+            multithreaded=job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
@@ -222,7 +225,10 @@ class Batch(TaskType):
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        sandbox = create_sandbox(
+            file_cacher,
+            temp_prefix="CMS-evaluate-",
+            multithreaded=job.multithreaded_sandbox)
 
         # Prepare the execution
         assert len(job.executables) == 1
@@ -313,7 +319,10 @@ class Batch(TaskType):
                 else:
 
                     # Create the checkbox: a brand-new sandbox, just for checking
-                    checkbox = create_sandbox(file_cacher, False)  # do we need multithreading?
+                    checkbox = create_sandbox(
+                        file_cacher,
+                        temp_prefix="CMS-check-",
+                        multithreaded=False)  # do we need multithreading?
                     checker_didnt_crash = True
 
                     # Put the reference solution into the checkbox
