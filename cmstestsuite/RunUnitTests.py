@@ -174,7 +174,7 @@ def main():
 
     if args.dry_run:
         for t in test_list:
-            print(t[0].name, t[1])
+            print(t[0], t[1])
         return 0
 
     if args.retry_failed:
