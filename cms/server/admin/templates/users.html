@@ -26,7 +26,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for u in sorted(user_list, key=lambda x: x.username) %}
+      {% for u in user_list|sort(attribute="username") %}
       <tr>
         <td>
           <input type="radio" name="user_id" value="{{ u.id }}"/>

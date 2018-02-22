@@ -45,14 +45,14 @@
       </tr>
     </thead>
     <tbody>
-      {% for p in sorted(contest.participations, key=lambda x: x.user.username) %}
+      {% for u in contest.participations|map(attribute="user")|sort(attribute="username") %}
       <tr>
         <td>
-          <input type="radio" name="user_id" value="{{ p.user.id }}"/>
+          <input type="radio" name="user_id" value="{{ u.id }}"/>
         </td>
-        <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
-        <td>{{ p.user.first_name }}</td>
-        <td>{{ p.user.last_name }}</td>
+        <td><a href="{{ url("contest", contest.id, "user", u.id, "edit") }}">{{ u.username }}</a></td>
+        <td>{{ u.first_name }}</td>
+        <td>{{ u.last_name }}</td>
       </tr>
       {% endfor %}
     </tbody>

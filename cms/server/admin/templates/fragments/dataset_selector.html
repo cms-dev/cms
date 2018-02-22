@@ -10,7 +10,7 @@
   Click on one of the following items to view the results under a
   different dataset.</p>
   <table>
-  {% for dataset in sorted(datasets, key=lambda d: d.description) %}
+  {% for dataset in datasets|sort(attribute="description") %}
     <tr><td>
     {% if dataset is shown_dataset %}
       <strong>

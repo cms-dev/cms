@@ -24,7 +24,7 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
     {# This template assumes participations have two fields in addition to those in the DB: #}
     {# - scores: a list of pairs (score, is score partial) for each task; #}
     {# - total_score: the total score for the contest. #}
-    {% for p in sorted(contest.participations, key=lambda p: p.total_score, reverse=True) %}
+    {% for p in contest.participations|sort(attribute="total_score")|reverse %}
       {% if not p.hidden %}
     <tr>
       <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
