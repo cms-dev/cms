@@ -304,6 +304,7 @@ class BaseHandler(CommonRequestHandler):
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
         params["url"] = self.url
+        params["xsrf_form_html"] = self.xsrf_form_html()
         if self.current_user is not None:
             params["current_user"] = self.current_user
         if self.contest is not None:

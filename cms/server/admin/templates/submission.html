@@ -78,7 +78,7 @@
         <td>Official</td>
         <td>
             <form action="{{ url("submission", s.id, shown_dataset.id, "official") }}" name="official_status_form" method="POST">
-            {% module xsrf_form_html() %}
+            {{ xsrf_form_html|safe }}
             {% if s.official %}
               <input type="hidden" name="official" value="no"/>
               Yes
@@ -167,7 +167,7 @@
 
 <div id="comment">
   <form enctype="multipart/form-data" action="{{ url("submission", s.id, shown_dataset.id, "comment") }}" method="POST">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea><br/>
     <input
 {% if not current_user.permission_all %}

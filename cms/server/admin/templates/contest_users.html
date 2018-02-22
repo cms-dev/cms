@@ -8,7 +8,7 @@
 {% include "fragments/overload_warning.html" %}
 
 <form action="{{ url("contest", contest.id, "users", "add") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Add a new user:
   <select name="user_id">
     <option value="null" selected>Select a new user</option>
@@ -26,7 +26,7 @@
 </form>
 
 <form action="{{ url("contest", contest.id, "users") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Edit selected user:
   <input type="submit"
          name="operation"

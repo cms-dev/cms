@@ -8,7 +8,7 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("admin", admin.id) }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <h2>Admin information</h2>
 
   {% include "fragments/admin_form.html" %}

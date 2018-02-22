@@ -18,7 +18,7 @@
     {% endif %}
 <p>Please log in:</p>
 <form action="{{ url("login") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   {% set next_page = handler.get_argument("next", none) %}
   {% if next_page is not none %}
   <input type="hidden" name="next" value="{{ next_page }}">

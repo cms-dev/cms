@@ -60,7 +60,7 @@ utils.show_page("questions", 1);
       {% if msg.reply_timestamp is none %}
       <div class="ignore_reply">
         <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
-          {% module xsrf_form_html() %}
+          {{ xsrf_form_html|safe }}
           {% if not msg.ignored %}
           <input type="hidden" name="ignore" value="yes"/>
           <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
@@ -77,7 +77,7 @@ utils.show_page("questions", 1);
       <div class="reply_question" >
         <hr/>
         <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
-          {% module xsrf_form_html() %}
+          {{ xsrf_form_html|safe }}
           Precompiled answer:
           <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
             <option value="yes">Yes</option>

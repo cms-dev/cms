@@ -9,7 +9,7 @@
 <div id="participations">
 
   <form action="{{ url("user", user.id, "add_participation") }}" method="POST">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     Add a new participation:
     <select name="contest_id">
       <option value="null" selected>Select a contest</option>
@@ -28,7 +28,7 @@
   <p>No participations found.</p>
   {% else %}
   <form action="{{ url("user", user.id, "edit_participation") }}" method="POST">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     Edit selected participation:
     <input type="submit" name="operation" value="Remove" />
     <table class="bordered">
@@ -67,7 +67,7 @@
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
   <form enctype="multipart/form-data" action="{{ url("user", user.id) }}" method="POST" style="display:inline;">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <table>
       <tr>
         <td>
@@ -128,7 +128,7 @@
     <input type="reset" value="Reset" />
   </form>
   <form action="{{ url("users") }}" method="POST" style="display:inline;">
-      {% module xsrf_form_html() %}
+      {{ xsrf_form_html|safe }}
       <input type="hidden" name="user_id" value="{{ user.id }}"/>
       <input type="submit"
            name="operation"

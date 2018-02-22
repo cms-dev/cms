@@ -9,7 +9,7 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("contest", contest.id) }}" method="POST" name="edit_contest" style="display:inline;">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <table class="sub_table">
     <tr><td colspan=2><h2>Contest information</h2></td></tr>
     <tr>
@@ -288,7 +288,7 @@
   <input type="reset" value="Reset">
 </form>
 <form action="{{ url("contests") }}" method="POST" style="display:inline;">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <input type="hidden" name="contest_id" value="{{ contest.id }}"/>
     <input type="submit"
          name="operation"

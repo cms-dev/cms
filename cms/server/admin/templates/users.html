@@ -7,7 +7,7 @@
 </div>
 
 <form action="{{ url("users") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Edit selected user:
    <input type="submit"
          name="operation"
