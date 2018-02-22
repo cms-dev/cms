@@ -2,7 +2,7 @@
 {% block core %}
 
 <div class="core_title">
-    <h1>{{ "Error %d" % status_code }}</h1>
+    <h1>{{ "Error %(status_code)s"|format(status_code=status_code) }}</h1>
 </div>
 
 <p>

@@ -366,7 +366,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <tr>
                 <td>{{ param_def.name }}</td>
                 <td>
-                  {% raw param_def.render("TaskTypeOptions_%d_%s_" % (dataset.id, task_type.__name__), parameter_value) %}
+                  {% raw param_def.render("TaskTypeOptions_%d_%s_"|format(dataset.id, task_type.__name__), parameter_value) %}
                 </td>
               </tr>
             {% endfor %}
@@ -453,10 +453,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <input type="checkbox" name="testcase_{{ testcase.id }}_public" {% if testcase.public %}checked{% endif %} />
             </td>
             <td>
-              <a href="javascript:void(0);" onclick="utils.show_file('input_{{ testcase.codename }}','{{ url("file", testcase.input, "input_%s" % testcase.codename) }}')">Show input</a>
+              <a href="javascript:void(0);" onclick="utils.show_file('input_{{ testcase.codename }}','{{ url("file", testcase.input, "input_%s"|format(testcase.codename)) }}')">Show input</a>
             </td>
             <td>
-              <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url("file", testcase.output, "output_%s" % testcase.codename) }}')">Show output</a>
+              <a href="javascript:void(0);" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url("file", testcase.output, "output_%s"|format(testcase.codename)) }}')">Show output</a>
             </td>
             <td>
               <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "testcase", testcase.id, "delete") }}');">Delete</a>
