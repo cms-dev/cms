@@ -215,7 +215,7 @@ function update_additional_answer(element, invoker)
 
     {% if participation.messages != [] %}
 
-      {% for msg_i, msg in enumerate(reversed(participation.messages)) %}
+      {% for msg_i, msg in enumerate(participation.messages|reverse) %}
       <div class="notification communication">
         <div class="notification_msg">
           <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
