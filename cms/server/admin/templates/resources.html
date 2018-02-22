@@ -265,7 +265,7 @@ var plotOptions = {
 {% endblock js %}
 
 {% block js_init %}
-var shards = {% raw json_encode(resource_addresses) %};
+var shards = {{ resource_addresses|tojson }};
 for (var i in shards)
 {
     getters[i] = new RSgetter(i, plotOptions);
