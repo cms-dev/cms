@@ -94,7 +94,7 @@ scores. No notifications will be sent.</p>
         Public score: {{ c.old_public_score }} -&gt; {{ c.new_public_score }}<br/>
         {% endif %}
         {% if c.old_ranking_score_details is not none or c.new_ranking_score_details is not none %}
-        Ranking score: {{ json.dumps(c.old_ranking_score_details) }} -&gt; {{ json.dumps(c.new_ranking_score_details) }}<br/>
+        Ranking score: {{ c.old_ranking_score_details|tojson|forceescape }} -&gt; {{ c.new_ranking_score_details|tojson|forceescape }}<br/>
         {% endif %}
       </td>
     </tr>
