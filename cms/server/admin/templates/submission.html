@@ -4,7 +4,7 @@
 {% set st = get_score_type(dataset=shown_dataset) %}
 {% set sr = s.get_result(shown_dataset) %}
 {% set status = SubmissionResult.COMPILING %}
-{% if sr is not None %}
+{% if sr is not none %}
   {% set status = sr.get_status() %}
 {% endif %}
 <div class="core_title">
@@ -46,7 +46,7 @@
         <td>
           {% for filename in s.task.submission_format|map(attribute="filename") %}
             {% if filename in s.files %}
-              {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
+              {% set real_filename = filename if s.language is none else filename.replace(".%l", get_language(s.language).source_extension) %}
           <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", s.files[filename].id) }}')">
             {{ real_filename }}
           </a>
@@ -58,7 +58,7 @@
       <tr>
         <td>Language</td>
         <td>
-          {% if s.language is None %}
+          {% if s.language is none %}
           N/A
           {% else %}
           {{ s.language }}
@@ -67,7 +67,7 @@
       <tr>
         <td>Token</td>
         <td>
-          {% if s.token is None %}
+          {% if s.token is none %}
           No
           {% else %}
           Yes
@@ -122,7 +122,7 @@
           {% endif %}
         </td>
       </tr>
-      {% if sr is not None %}
+      {% if sr is not none %}
       <tr>
         <td>Failures during compilation</td>
         <td>{{ sr.compilation_tries }}</td>
@@ -142,11 +142,11 @@
         {% set t, m = sr.get_max_evaluation_resources() %}
       <tr>
         <td>Max execution time</td>
-        <td>{% if t is not None %}{{ t }} s{% else %}N/A{% endif %}</td>
+        <td>{% if t is not none %}{{ t }} s{% else %}N/A{% endif %}</td>
       </tr>
       <tr>
         <td>Max memory used</td>
-        <td>{% if m is not None %}{{ m // (1024 ** 2) }} MiB{% else %}N/A{% endif %}</td>
+        <td>{% if m is not none %}{{ m // (1024 ** 2) }} MiB{% else %}N/A{% endif %}</td>
       </tr>
       {% endif %}
       <tr>
@@ -178,7 +178,7 @@
   </form>
 </div>
 
-  {% if sr is not None and sr.scored() %}
+  {% if sr is not none and sr.scored() %}
 
 <h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
 <div id="evaluation_user">
@@ -194,7 +194,7 @@
 
   {% endif %}
 
-  {% if sr is not None and sr.evaluated() %}
+  {% if sr is not none and sr.evaluated() %}
 
 <h2 id="title_evaluation_admin" class="toggling_on">Evaluation (as seen by the admin)</h2>
 <div id="evaluation_admin">
@@ -220,18 +220,18 @@
           <td>{{ ev.codename }}</td>
           <td id="eval_outcome_{{ ev.codename }}">{{ ev.outcome }}</td>
           <td style="text-align: center">
-            <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
+            <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
           </td>
           <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.text) }}</td>
           <td>{{ ev.evaluation_shard }}</td>
           <td>
-            {% if ev.execution_time is not None %}
+            {% if ev.execution_time is not none %}
             ({{ ev.execution_time }} s)
             {% endif %}
-            {% if ev.execution_wall_clock_time is not None %}
+            {% if ev.execution_wall_clock_time is not none %}
             ({{ ev.execution_wall_clock_time }} s)
             {% endif %}
-            {% if ev.execution_memory is not None %}
+            {% if ev.execution_memory is not none %}
             ({{ (ev.execution_memory // 1024) // 1024 }} MiB)
             {% endif %}
           </td>
@@ -247,7 +247,7 @@
 
   {% endif %}
 
-  {% if sr is not None and sr.compiled() %}
+  {% if sr is not none and sr.compiled() %}
 
 <h2 id="title_compilation" class="toggling_on">Compilation</h2>
 <div id="compilation">
@@ -256,10 +256,10 @@
   <pre>{% if sr.compilation_text|length > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
 
   <h3>Standard output</h3>
-  <pre>{% if sr.compilation_stdout is not None %}{{ sr.compilation_stdout }}{% endif %}</pre>
+  <pre>{% if sr.compilation_stdout is not none %}{{ sr.compilation_stdout }}{% endif %}</pre>
 
   <h3>Standard error</h3>
-  <pre>{% if sr.compilation_stderr is not None %}{{ sr.compilation_stderr }}{% endif %}</pre>
+  <pre>{% if sr.compilation_stderr is not none %}{{ sr.compilation_stderr }}{% endif %}</pre>
 
 </div>
 

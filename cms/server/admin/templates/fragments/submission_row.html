@@ -10,7 +10,7 @@
 
 {# The submission result might be missing in some cases (e.g., cloned dataset); these cases are equivalent to the compiling state. #}
 {% set status = SubmissionResult.COMPILING %}
-{% if sr is not None %}
+{% if sr is not none %}
   {% set status = sr.get_status() %}
 {% endif %}
 {% if s.task.name in score_types %}
@@ -59,7 +59,7 @@
               <td>{{ ev.codename }}</td>
               <td>{{ ev.outcome }}</td>
               <td style="text-align: center">
-                <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
+                <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
               </td>
               <td>{{ format_status_text(ev.text) }}</td>
             </tr>
@@ -96,12 +96,12 @@
   </td>
   <td>
     {% for filename, sub_file in s.files|dictsort(by="key") %}
-      {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
+      {% set real_filename = filename if s.language is none else filename.replace(".%l", get_language(s.language).source_extension) %}
     <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
     {% endfor %}
   </td>
   <td>
-    {% if s.token is None %}
+    {% if s.token is none %}
     No
     {% else %}
     Yes

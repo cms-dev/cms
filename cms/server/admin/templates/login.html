@@ -11,7 +11,7 @@
   <body class="admin">
     <div id="login-content">
 
-{% if current_user is None %}
+{% if current_user is none %}
 <h1>Welcome</h1>
     {% if handler.get_argument("login_error", "") != "" %}
 <h4 class="alert">Failed to log in.</h4>
@@ -19,8 +19,8 @@
 <p>Please log in:</p>
 <form action="{{ url("login") }}" method="POST">
   {% module xsrf_form_html() %}
-  {% set next_page = handler.get_argument("next", None) %}
-  {% if next_page is not None %}
+  {% set next_page = handler.get_argument("next", none) %}
+  {% if next_page is not none %}
   <input type="hidden" name="next" value="{{ next_page }}">
   {% endif %}
   <div class="section">

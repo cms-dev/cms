@@ -43,21 +43,21 @@ utils.show_page("questions", 1);
   <div id="page_selector_questions"></div>
   <div id="paged_content_questions">
   {% for msg in questions %}
-  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
+  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not none else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
       <div class="notification_timestamp">
         <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ str(msg.question_timestamp) }}
       </div>
       <div class="notification_subject">{{ msg.subject }}</div>
       <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
-      {% if msg.reply_timestamp is not None %}
+      {% if msg.reply_timestamp is not none %}
       <div class="notification_subject">Reply: {{ msg.reply_subject }}</div>
       <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
       {% else %}
       <div class="notification_subject">Not yet replied.</div>
       {% endif %}
 {% if current_user.permission_all or current_user.permission_messaging %}
-      {% if msg.reply_timestamp is None %}
+      {% if msg.reply_timestamp is none %}
       <div class="ignore_reply">
         <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
           {% module xsrf_form_html() %}

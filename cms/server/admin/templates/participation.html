@@ -64,7 +64,7 @@ function update_additional_answer(element, invoker)
           Team
         </td>
         <td>
-          <input list="teams" name="team" value="{{ participation.team.code if participation.team is not None else "" }}"/>
+          <input list="teams" name="team" value="{{ participation.team.code if participation.team is not none else "" }}"/>
           <datalist id="teams">
             {% for t in teams %}
             <option value="{{ t.code }}">
@@ -104,7 +104,7 @@ function update_additional_answer(element, invoker)
                                     Used for IP-based login restrictions and/or for autologin (in this case, it must be a single address)."></span>
           IP address or subnet
         </td>
-        <td><input type="text" name="ip" value="{{ ", ".join(participation.ip|map("string")) if participation.ip is not None else "" }}"/></td>
+        <td><input type="text" name="ip" value="{{ ", ".join(participation.ip|map("string")) if participation.ip is not none else "" }}"/></td>
       </tr>
       <tr>
         <td>
@@ -112,7 +112,7 @@ function update_additional_answer(element, invoker)
                                     Example: '2015-12-31 15:00:00'."></span>
           Time of first login (in UTC)
         </td>
-        <td><input type="text" name="starting_time" value="{{ str(participation.starting_time) if participation.starting_time is not None else "" }}"></td>
+        <td><input type="text" name="starting_time" value="{{ str(participation.starting_time) if participation.starting_time is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -148,7 +148,7 @@ function update_additional_answer(element, invoker)
         <div class="notification_timestamp">{{ str(msg.question_timestamp) }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
-        {% if msg.reply_timestamp is not None %}
+        {% if msg.reply_timestamp is not none %}
         <div class="notification_subject">Reply. {{ msg.reply_subject }}</div>
         <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
         {% else %}

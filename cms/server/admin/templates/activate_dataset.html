@@ -21,7 +21,7 @@ setDefaultNotifyCheckboxes();
 {% endblock js_init %}
 
 {% block core %}
-{% set current_score_type = None %}
+{% set current_score_type = none %}
 
 <div class="core_title">
   <h1>Preview dataset change for {{ task.title }} (<a href="{{ url("task", task.id) }}">{{ task.name }}</a>)</h1>
@@ -87,13 +87,13 @@ scores. No notifications will be sent.</p>
       </td>
       <td><a href="{{ url("submission", c.submission.id) }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
       <td>
-        {% if c.old_score is not None or c.new_score is not None %}
+        {% if c.old_score is not none or c.new_score is not none %}
         Score: {{ c.old_score }} -&gt; {{ c.new_score }}<br/>
         {% endif %}
-        {% if c.old_public_score is not None or c.new_public_score is not None %}
+        {% if c.old_public_score is not none or c.new_public_score is not none %}
         Public score: {{ c.old_public_score }} -&gt; {{ c.new_public_score }}<br/>
         {% endif %}
-        {% if c.old_ranking_score_details is not None or c.new_ranking_score_details is not None %}
+        {% if c.old_ranking_score_details is not none or c.new_ranking_score_details is not none %}
         Ranking score: {{ json.dumps(c.old_ranking_score_details) }} -&gt; {{ json.dumps(c.new_ranking_score_details) }}<br/>
         {% endif %}
       </td>

@@ -153,7 +153,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     It is used only if tokens are finite."></span>
           Maximum number of tokens
         </td>
-        <td><input type="text" name="token_max_number" value="{{ task.token_max_number if task.token_max_number is not None else "" }}" /></td>
+        <td><input type="text" name="token_max_number" value="{{ task.token_max_number if task.token_max_number is not none else "" }}" /></td>
       </tr>
       <tr>
         <td>
@@ -193,7 +193,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     It is used only if tokens are finite."></span>
           Maximum accumulated tokens
         </td>
-        <td><input type="text" name="token_gen_max" value="{{ task.token_gen_max if task.token_gen_max is not None else "" }}" /></td>
+        <td><input type="text" name="token_gen_max" value="{{ task.token_gen_max if task.token_gen_max is not none else "" }}" /></td>
       </tr>
 
       <tr><td colspan=2><h2>Limits</h2></td></tr>
@@ -203,7 +203,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Leave empty for no limits."></span>
           Maximum number of submissions
         </td>
-        <td><input type="text" name="max_submission_number" value="{{ task.max_submission_number if task.max_submission_number is not None else "" }}"></td>
+        <td><input type="text" name="max_submission_number" value="{{ task.max_submission_number if task.max_submission_number is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -211,7 +211,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Leave empty for no limits."></span>
           Maximum number of user tests
         </td>
-        <td><input type="text" name="max_user_test_number" value="{{ task.max_user_test_number if task.max_user_test_number is not None else "" }}"></td>
+        <td><input type="text" name="max_user_test_number" value="{{ task.max_user_test_number if task.max_user_test_number is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -219,7 +219,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Leave empty for no limits."></span>
           Minimum interval between submissions
         </td>
-        <td><input type="text" name="min_submission_interval" value="{{ int(task.min_submission_interval.total_seconds()) if task.min_submission_interval is not None else "" }}"></td>
+        <td><input type="text" name="min_submission_interval" value="{{ int(task.min_submission_interval.total_seconds()) if task.min_submission_interval is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -227,7 +227,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Leave empty for no limits."></span>
           Minimum interval between user tests
         </td>
-        <td><input type="text" name="min_user_test_interval" value="{{ int(task.min_user_test_interval.total_seconds()) if task.min_user_test_interval is not None else "" }}"></td>
+        <td><input type="text" name="min_user_test_interval" value="{{ int(task.min_user_test_interval.total_seconds()) if task.min_user_test_interval is not none else "" }}"></td>
       </tr>
 
       <tr><td colspan=2><h2>Score options</h2></td></tr>
@@ -333,14 +333,14 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <span class="info" title="Total maximum time for each evaluation, in seconds."></span>
             Time limit
           </td>
-          <td><input type="text" name="time_limit_{{ dataset.id }}" value="{{ dataset.time_limit if dataset.time_limit is not None else "" }}"/> second(s)</td>
+          <td><input type="text" name="time_limit_{{ dataset.id }}" value="{{ dataset.time_limit if dataset.time_limit is not none else "" }}"/> second(s)</td>
         </tr>
         <tr>
           <td>
             <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
             Memory limit
           </td>
-          <td><input type="text" name="memory_limit_{{ dataset.id }}" value="{{ dataset.memory_limit if dataset.memory_limit is not None else "" }}"/> MiB</td>
+          <td><input type="text" name="memory_limit_{{ dataset.id }}" value="{{ dataset.memory_limit if dataset.memory_limit is not none else "" }}"/> MiB</td>
         </tr>
 
         <tr><td colspan=2><h3>Task type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Task%20types.html" target="_blank">documentation</a>)</h3></td></tr>
@@ -362,7 +362,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <table class="TaskTypeOptions TaskTypeOptions_{{ dataset.id }} bordered" id="TaskType{{ task_type.__name__ }}Options_{{ dataset.id }}" style="display: none;">
             {% for i in range(task_type.ACCEPTED_PARAMETERS|length) %}
               {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
-              {% set parameter_value = parameters[i] if dataset.task_type == task_type.__name__ and parameters is not None and i < parameters|length else None %}
+              {% set parameter_value = parameters[i] if dataset.task_type == task_type.__name__ and parameters is not none and i < parameters|length else none %}
               <tr>
                 <td>{{ param_def.name }}</td>
                 <td>

@@ -105,7 +105,7 @@
           <span class="info" title="Contestant e-mail address."></span>
           E-mail
         </td>
-        <td><input type="text" name="email" value="{{ user.email if user.email is not None else "" }}"/></td>
+        <td><input type="text" name="email" value="{{ user.email if user.email is not none else "" }}"/></td>
       </tr>
       <tr>
         <td>
@@ -113,7 +113,7 @@
                                     Example: 'Europe/Rome', 'America/New_York', ..."></span>
           Timezone
         </td>
-        <td><input type="text" name="timezone" value="{{ user.timezone if user.timezone is not None else "" }}"></td>
+        <td><input type="text" name="timezone" value="{{ user.timezone if user.timezone is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
