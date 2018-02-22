@@ -32,7 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import itervalues, iteritems
+from six import PY3, itervalues, iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -122,10 +122,9 @@ def encode_value(type_, value):
     """
     if value is None:
         return None
-    elif isinstance(type_, (Boolean, Integer, Float, Unicode, Enum, JSONB)):
+    elif isinstance(type_, (
+            Boolean, Integer, Float, String, Unicode, Enum, JSONB)):
         return value
-    elif isinstance(type_, String):
-        return value.decode('latin1')
     elif isinstance(type_, DateTime):
         return make_timestamp(value)
     elif isinstance(type_, Interval):
@@ -253,9 +252,13 @@ class DumpExporter(object):
 
                 data["_version"] = model_version
 
-                with io.open(os.path.join(export_dir,
-                                          "contest.json"), "wb") as fout:
-                    json.dump(data, fout, indent=4, sort_keys=True)
+                destination = os.path.join(export_dir, "contest.json")
+                if PY3:
+                    with io.open(destination, "wt", encoding="utf-8") as fout:
+                        json.dump(data, fout, indent=4, sort_keys=True)
+                else:
+                    with io.open(destination, "wb") as fout:
+                        json.dump(data, fout, indent=4, sort_keys=True)
 
         # If the admin requested export to file, we do that.
         if archive_info["write_mode"] != "":

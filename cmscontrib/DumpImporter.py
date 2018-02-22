@@ -108,10 +108,9 @@ def decode_value(type_, value):
     """
     if value is None:
         return None
-    elif isinstance(type_, (Boolean, Integer, Float, Unicode, Enum, JSONB)):
+    elif isinstance(type_, (
+            Boolean, Integer, Float, String, Unicode, Enum, JSONB)):
         return value
-    elif isinstance(type_, String):
-        return value.encode('latin1')
     elif isinstance(type_, DateTime):
         return make_datetime(value)
     elif isinstance(type_, Interval):
