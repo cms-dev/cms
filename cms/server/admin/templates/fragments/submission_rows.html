@@ -33,7 +33,7 @@
   </thead>
   <tbody>
     {% set score_types = {} %}
-    {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+    {% for s in submissions|sort(attribute="timestamp")|reverse %}
       {% include "fragments/submission_row.html" %}
     {% endfor %}
   </tbody>

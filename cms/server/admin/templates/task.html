@@ -268,7 +268,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% endif %}
     </p>
 
-{% for dataset in sorted(task.datasets, key=lambda d: d.description) %}
+{% for dataset in task.datasets|sort(attribute="description") %}
 
   <h3 id="title_dataset_{{ dataset.id }}" class="toggling_on">Dataset: {{ dataset.description }}{{ format_dataset_attrs(dataset) }}</h3>
   <div id="dataset_{{ dataset.id }}" class="task_dataset">
@@ -444,7 +444,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         </thead>
         <tbody>
           {% set idx = 0 %}
-          {% for codename, testcase in sorted(iteritems(dataset.testcases)) %}
+          {% for codename, testcase in dataset.testcases|dictsort(by="key") %}
             {% set idx = idx + 1 %}
           <tr>
             <td style="font-weight:bold;">{{ idx }}</td>
