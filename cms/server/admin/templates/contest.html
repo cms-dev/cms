@@ -149,7 +149,7 @@
                                   It is used only if tokens are finite."></span>
         Minimum interval between tokens
       </td>
-      <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3"></td>
+      <td><input type="text" name="token_min_interval" value="{{ contest.token_min_interval.total_seconds()|int }}" size="3"></td>
     </tr>
     <tr>
       <td>
@@ -173,7 +173,7 @@
                                   It is used only if tokens are finite."></span>
         Token generation period
       </td>
-      <td><input type="text" name="token_gen_interval" value="{{ int(contest.token_gen_interval.total_seconds() / 60) }}" size="3"></td>
+      <td><input type="text" name="token_gen_interval" value="{{ contest.token_gen_interval.total_seconds()|int // 60 }}" size="3"></td>
     </tr>
     <tr>
       <td>
@@ -216,7 +216,7 @@
                                   If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."></span>
         Length of the contest
       </td>
-      <td><input type="text" name="per_user_time" value="{{ int(contest.per_user_time.total_seconds()) if contest.per_user_time is not none else "" }}"></td>
+      <td><input type="text" name="per_user_time" value="{{ contest.per_user_time.total_seconds()|int if contest.per_user_time is not none else "" }}"></td>
     </tr>
 
     <tr><td colspan=2><h2>Limits</h2></td></tr>
@@ -242,7 +242,7 @@
                                   Leave empty for no limits."></span>
         Minimum interval between submissions
       </td>
-      <td><input type="text" name="min_submission_interval" value="{{ int(contest.min_submission_interval.total_seconds()) if contest.min_submission_interval is not none else "" }}"></td>
+      <td><input type="text" name="min_submission_interval" value="{{ contest.min_submission_interval.total_seconds()|int if contest.min_submission_interval is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -250,7 +250,7 @@
                                   Leave empty for no limits."></span>
         Minimum interval between user tests
       </td>
-      <td><input type="text" name="min_user_test_interval" value="{{ int(contest.min_user_test_interval.total_seconds()) if contest.min_user_test_interval is not none else "" }}"></td>
+      <td><input type="text" name="min_user_test_interval" value="{{ contest.min_user_test_interval.total_seconds()|int if contest.min_user_test_interval is not none else "" }}"></td>
     </tr>
     <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
     <tr>
