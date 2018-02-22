@@ -200,19 +200,22 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, multithreaded, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
         multithreaded (boolean): whether the sandbox should allow
             multithreading.
         file_cacher (FileCacher): an instance of the FileCacher class
             (to interact with FS), if the sandbox needs it.
+        name (string|None): name of the sandbox, which might appear in the
+            path and in system logs.
         temp_dir (unicode|None): temporary directory to use; if None, use the
             default temporary directory specified in the configuration.
 
         """
         self.multithreaded = multithreaded
         self.file_cacher = file_cacher
+        self.name = name if name is not None else "unnamed"
         self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
 
         self.cmd_file = "commands.log"
@@ -542,16 +545,18 @@ class StupidSandbox(SandboxBase):
 
     """
 
-    def __init__(self, multithreaded, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, multithreaded, file_cacher, temp_dir)
+        SandboxBase.__init__(self, multithreaded, file_cacher, name, temp_dir)
 
         # Make box directory
-        self.path = tempfile.mkdtemp(dir=self.temp_dir)
+        self.path = tempfile.mkdtemp(
+            dir=self.temp_dir,
+            prefix="cms-%s-" % (self.name))
 
         self.exec_num = -1
         self.popen = None
@@ -868,13 +873,13 @@ class IsolateSandbox(SandboxBase):
     # on the current directory.
     SECURE_COMMANDS = ["/bin/cp", "/bin/mv", "/usr/bin/zip", "/usr/bin/unzip"]
 
-    def __init__(self, multithreaded, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, multithreaded, file_cacher, temp_dir)
+        SandboxBase.__init__(self, multithreaded, file_cacher, name, temp_dir)
 
         # Isolate only accepts ids between 0 and 99. We assign the
         # range [(shard+1)*10, (shard+2)*10) to each Worker and keep
@@ -897,7 +902,9 @@ class IsolateSandbox(SandboxBase):
         # system to, which is why the outer directory exists with no read
         # permissions.
         self.inner_temp_dir = "/tmp"
-        self.outer_temp_dir = tempfile.mkdtemp(dir=self.temp_dir)
+        self.outer_temp_dir = tempfile.mkdtemp(
+            dir=self.temp_dir,
+            prefix="cms-%s-" % (self.name))
         # Don't use os.path.join here, because the absoluteness of /tmp will
         # bite you.
         self.path = self.outer_temp_dir + self.inner_temp_dir

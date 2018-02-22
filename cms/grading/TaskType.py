@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 ## Sandbox lifecycle. ##
 
-def create_sandbox(file_cacher, multithreaded=False):
+def create_sandbox(file_cacher, multithreaded=False, name=None):
     """Create a sandbox, and return it.
 
     file_cacher (FileCacher): a file cacher instance.
@@ -65,7 +65,7 @@ def create_sandbox(file_cacher, multithreaded=False):
 
     """
     try:
-        sandbox = Sandbox(multithreaded, file_cacher)
+        sandbox = Sandbox(multithreaded, file_cacher, name=name)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)

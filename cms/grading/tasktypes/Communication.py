@@ -117,7 +117,10 @@ class Communication(TaskType):
         source_ext = language.source_extension
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        sandbox = create_sandbox(
+            file_cacher,
+            multithreaded=job.multithreaded_sandbox,
+            name="compile")
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
@@ -183,9 +186,16 @@ class Communication(TaskType):
             num_processes = self.parameters[0]
         indices = range(num_processes)
         # Create sandboxes and FIFOs
-        sandbox_mgr = create_sandbox(file_cacher, job.multithreaded_sandbox)
-        sandbox_user = [create_sandbox(file_cacher, job.multithreaded_sandbox)
-                        for i in indices]
+        sandbox_mgr = create_sandbox(
+            file_cacher,
+            multithreaded=job.multithreaded_sandbox,
+            name="manager_evaluate")
+        sandbox_user = [
+            create_sandbox(
+                file_cacher,
+                multithreaded=job.multithreaded_sandbox,
+                name="user_evaluate")
+            for i in indices]
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
         fifo_in = [os.path.join(fifo_dir[i], "in%d" % i) for i in indices]
         fifo_out = [os.path.join(fifo_dir[i], "out%d" % i) for i in indices]

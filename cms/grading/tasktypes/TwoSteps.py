@@ -145,7 +145,10 @@ class TwoSteps(TaskType):
             return
 
         # First and only one compilation.
-        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        sandbox = create_sandbox(
+            file_cacher,
+            multithreaded=job.multithreaded_sandbox,
+            name="compile")
         job.sandboxes.append(sandbox.path)
         files_to_get = {}
 
@@ -204,8 +207,14 @@ class TwoSteps(TaskType):
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         # f stand for first, s for second.
-        first_sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
-        second_sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        first_sandbox = create_sandbox(
+            file_cacher,
+            multithreaded=job.multithreaded_sandbox,
+            name="first_evaluate")
+        second_sandbox = create_sandbox(
+            file_cacher,
+            multithreaded=job.multithreaded_sandbox,
+            name="second_evaluate")
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
