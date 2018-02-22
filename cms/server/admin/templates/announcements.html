@@ -33,7 +33,7 @@
     </div>
 {% endif %}
     {% if contest.announcements != [] %}
-      {% for msg in reversed(contest.announcements) %}
+      {% for msg in contest.announcements|reverse %}
       <div class="notification communication">
         <div class="notification_msg">
 
