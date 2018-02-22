@@ -314,6 +314,7 @@ class Batch(TaskType):
 
                     # Create the checkbox: a brand-new sandbox, just for checking
                     checkbox = create_sandbox(file_cacher, False)  # do we need multithreading?
+                    checker_didnt_crash = True
 
                     # Put the reference solution into the checkbox
                     checkbox.create_file_from_storage(
@@ -344,7 +345,7 @@ class Batch(TaskType):
                                          "invalid comparator (it must be "
                                          "named 'checker')",
                                          extra={"operation": job.info})
-                            success = False
+                            checker_didnt_crash = False
 
                         else:
                             checkbox.create_file_from_storage(
@@ -358,11 +359,11 @@ class Batch(TaskType):
                             # to avoid fork-bombing the worker.
                             checkbox.max_processes = 1000
 
-                            success, _ = evaluation_step(
+                            checker_didnt_crash, _ = evaluation_step(
                                 checkbox,
                                 [["./%s" % manager_filename,
                                   input_filename, "res.txt", output_filename]])
-                        if success:
+                        if checker_didnt_crash:
                             try:
                                 outcome, text = \
                                     extract_outcome_and_text(checkbox)
@@ -370,12 +371,15 @@ class Batch(TaskType):
                                 logger.error("Invalid output from "
                                              "comparator: %s", e.message,
                                              extra={"operation": job.info})
-                                success = False
+                                checker_didnt_crash = False
 
                     else:
                         raise ValueError("Unrecognized third parameter"
                                          " `%s' for Batch tasktype." %
                                          self.parameters[2])
+
+                    success = success and checker_didnt_crash
+                    delete_sandbox(checkbox, checker_didnt_crash)
 
         # Whatever happened, we conclude.
         job.success = success
@@ -383,4 +387,3 @@ class Batch(TaskType):
         job.text = text
 
         delete_sandbox(sandbox, job.success)
-        delete_sandbox(checkbox, job.success)
