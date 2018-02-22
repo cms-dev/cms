@@ -52,7 +52,7 @@
   </td>
   <td>
     {% for filename, sub_file in ut.files|dictsort(by="key") %}
-      {% set real_filename = filename if ut.language is none else filename|replace(".%l", get_language(ut.language).source_extension) %}
+      {% set real_filename = filename if ut.language is none else filename|replace(".%l", (ut.language|to_language).source_extension) %}
     <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("user_test_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
     {% endfor %}
   </td>
