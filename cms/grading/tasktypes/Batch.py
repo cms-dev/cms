@@ -336,9 +336,12 @@ class Batch(TaskType):
                         job.input)
 
                     # Put the user-produced output file into the checkbox
-                    shutil.copyfile(
-                        os.path.join(sandbox.get_root_path(), output_filename),
-                        os.path.join(checkbox.get_root_path(), output_filename))
+                    try:
+                        shutil.copyfile(
+                            os.path.join(sandbox.get_root_path(), output_filename),
+                            os.path.join(checkbox.get_root_path(), output_filename))
+                    except FileNotFoundError as e:
+                        pass
 
                     # Check the solution with white_diff
                     if self.parameters[2] == "diff":
