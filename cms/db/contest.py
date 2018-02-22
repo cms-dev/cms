@@ -200,7 +200,7 @@ class Contest(Base):
     stop = Column(
         DateTime,
         nullable=False,
-        default=datetime(2100, 1, 1))
+        default=datetime(2030, 1, 1))
 
     # Beginning and ending of the contest anaylsis mode.
     analysis_enabled = Column(
@@ -210,11 +210,11 @@ class Contest(Base):
     analysis_start = Column(
         DateTime,
         nullable=False,
-        default=datetime(2100, 1, 1))
+        default=datetime(2030, 1, 1))
     analysis_stop = Column(
         DateTime,
         nullable=False,
-        default=datetime(2100, 1, 1))
+        default=datetime(2030, 1, 1))
 
     # Timezone for the contest. All timestamps in CWS will be shown
     # using the timezone associated to the logged-in user or (if it's
