@@ -413,7 +413,6 @@ class TaskSubmissionsHandler(ContestHandler):
                     task=task, submissions=submissions,
                     submissions_left=submissions_left,
                     submissions_download_allowed=download_allowed,
-                    SubmissionResult=SubmissionResult,
                     **self.r_params)
 
 

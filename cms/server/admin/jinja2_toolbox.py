@@ -33,10 +33,23 @@ from future.builtins import *  # noqa
 
 from jinja2 import PackageLoader
 
+from cms import plugin_list
+from cms.grading.languagemanager import LANGUAGES
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
+from cmscommon.crypto import get_hex_random_key, parse_authentication
+
+
+def instrument_cms_toolbox(env):
+    env.globals["LANGUAGES"] = LANGUAGES
+    env.globals["plugin_list"] = plugin_list
+    env.globals["get_hex_random_key"] = get_hex_random_key
+    env.globals["parse_authentication"] = parse_authentication
 
 
 AWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
     # Load templates from AWS's package (use package rather than file
     # system as that works even in case of a compressed distribution).
     loader=PackageLoader('cms.server.admin', 'templates'))
+
+
+instrument_cms_toolbox(AWS_ENVIRONMENT)

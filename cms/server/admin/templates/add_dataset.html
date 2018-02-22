@@ -14,7 +14,6 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% endblock js_init %}
 
 {% block core %}
-{% from cms import plugin_list %}
 {% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
 {% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
 

@@ -32,7 +32,6 @@
     </tr>
   </thead>
   <tbody>
-    {% from cms.grading.scoretypes import get_score_type %}
     {% set score_types = {} %}
     {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       {% include submission_row.html %}

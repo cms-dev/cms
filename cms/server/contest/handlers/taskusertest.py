@@ -120,7 +120,6 @@ class UserTestInterfaceHandler(ContestHandler):
 
         self.render("test_interface.html", default_task=default_task,
                     user_tests=user_tests, user_tests_left=user_tests_left,
-                    UserTestResult=UserTestResult,
                     **self.r_params)
 
 
