@@ -57,8 +57,6 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 * if you are running low on disk space, you may want to make sure ``keep_sandbox`` is set to ``false``;
 
-* if you want to run CMS without installing it, you need to change ``process_cmdline`` to reflect that.
-
 If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, using non-trivial username and password.
 
 .. warning::
