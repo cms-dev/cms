@@ -18,7 +18,7 @@ setDefaultNotifyCheckboxes = function() {
     }
 };
 setDefaultNotifyCheckboxes();
-{% end %}
+{% endblock js_init %}
 
 {% block core %}
 {% from cms import plugin_list %}
@@ -80,28 +80,28 @@ scores. No notifications will be sent.</p>
       <td style="text-align: right;">
         {% if c.submission.participation.id != prev_id %}
         <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.id in default_notify_participations else "off" }}" name="notify_{{ c.submission.participation.id }}"/>
-        {% end %}
+        {% endif %}
       </td>
       <td>
         {% if c.submission.participation.id != prev_id %}
         <a href="{{ url("user", c.submission.participation.user.id) }}">{{ c.submission.participation.user.username }}</a>
-        {% end %}
+        {% endif %}
       </td>
       <td><a href="{{ url("submission", c.submission.id) }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
       <td>
         {% if c.old_score is not None or c.new_score is not None %}
         Score: {{ c.old_score }} -&gt; {{ c.new_score }}<br/>
-        {% end %}
+        {% endif %}
         {% if c.old_public_score is not None or c.new_public_score is not None %}
         Public score: {{ c.old_public_score }} -&gt; {{ c.new_public_score }}<br/>
-        {% end %}
+        {% endif %}
         {% if c.old_ranking_score_details is not None or c.new_ranking_score_details is not None %}
         Ranking score: {{ json.dumps(c.old_ranking_score_details) }} -&gt; {{ json.dumps(c.new_ranking_score_details) }}<br/>
-        {% end %}
+        {% endif %}
       </td>
     </tr>
   {% set prev_id = c.submission.participation.id %}
-{% end %}
+{% endfor %}
   </tbody>
 </table>
 
@@ -134,7 +134,7 @@ The following message will be sent to the selected users:
     </div>
   </div>
 </div>
-{% end %}
+{% endif %}
 
 <p>
 
@@ -144,4 +144,4 @@ The following message will be sent to the selected users:
 </p>
 </form>
 
-{% end %}
+{% endblock core %}

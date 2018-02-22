@@ -5,7 +5,7 @@
   {% set dataset = shown_dataset %}
 {% except %}
   {% set dataset = ut.task.active_dataset %}
-{% end %}
+{% endtry %}
 
 {% set utr = ut.get_result(dataset) %}
 
@@ -13,7 +13,7 @@
 {% set status = UserTestResult.COMPILING %}
 {% if utr is not None %}
   {% set status = utr.get_status() %}
-{% end %}
+{% endif %}
 <tr>
   <td><a href="{{ url("user_test", ut.id) }}">{{ str(ut.timestamp) }}</a></td>
   <td><a href="{{ url("contest", ut.participation.contest.id, "user", ut.participation.user.id, "edit") }}">{{ ut.participation.user.username }}</a></td>
@@ -40,13 +40,13 @@
       [Unknown status]
       <div id="evaluation_{{ ut.id }}" style="display: none;">
 
-      {% end %}
+      {% endif %}
         <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-        <pre>{% if len(utr.compilation_text) > 0 %}{{ format_status_text(utr.compilation_text) }}{% end %}</pre>
+        <pre>{% if len(utr.compilation_text) > 0 %}{{ format_status_text(utr.compilation_text) }}{% endif %}</pre>
       </div>
     </div>
 
-    {% end %}
+    {% endif %}
   </td>
   <td>
     <a href="javascript:void(0);" onclick="utils.show_file('input','{{ url("file", ut.input, "input") }}')">See input</a>
@@ -55,6 +55,6 @@
     {% for filename, sub_file in iteritems(ut.files) %}
       {% set real_filename = filename if ut.language is None else filename.replace(".%l", get_language(ut.language).source_extension) %}
     <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("user_test_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
-    {% end %}
+    {% endfor %}
   </td>
 </tr>

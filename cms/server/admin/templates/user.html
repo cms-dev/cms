@@ -19,7 +19,7 @@
       <option value="{{ c.id }}">
         {{ c.name }}
       </option>
-      {% end %}
+      {% endfor %}
     </select>
     <input type="checkbox" name="hidden" id="hidden" /><label for="hidden">Hidden</label>
     <input type="checkbox" name="unrestricted" id="unrestricted" /><label for="unrestricted">Unrestricted</label>
@@ -56,11 +56,11 @@
           <td><a href="{{ url("contest", p.contest.id) }}">{{ p.contest.name }}</a></td>
           <td>{{ p.contest.description }}</td>
         </tr>
-        {% end %}
+        {% endfor %}
       </tbody>
     </table>
   </form>
-  {% end %}
+  {% endif %}
   <div class="hr"></div>
 </div>
 
@@ -137,11 +137,11 @@
            value="Remove" style="float: right;"
   {% if not current_user.permission_all %}
            disabled
-  {% end %}
+  {% endif %}
            />
   </form>
   <div class="hr"></div>
 </div>
 
 
-{% end %}
+{% endblock core %}

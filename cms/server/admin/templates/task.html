@@ -13,9 +13,9 @@ showTaskTypeOption({{ dataset.id }});
 $("select[name=task_type_{{ dataset.id }}]").change(function() {
     showTaskTypeOption({{ dataset.id }});
 });
-{% end %}
+{% endfor %}
 
-{% end %}
+{% endblock js_init %}
 
 {% block core %}
 {% from cms.server.admin.formatting import format_dataset_attrs %}
@@ -38,9 +38,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       1 submission
       {% else %}
       {{ len(submissions) }} submissions
-      {% end %}
+      {% endif %}
     </a>
-  {% end %}
+  {% endif %}
   <div class="hr"></div>
 </div>
 
@@ -78,7 +78,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           Statements
 {% if current_user.permission_all %}
           [<a href="{{ url("task", task.id, "statements", "add") }}">add</a>]
-{% end %}
+{% endif %}
         </td>
         <td>
           {% if len(task.statements) == 0 %}
@@ -91,16 +91,16 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                 <td><a href="{{ url("file", statement.digest, "statement.pdf") }}">Statement for language "{{ statement.language }}"</a></td>
                 <td>
                   <label>
-                    <input type="checkbox" name="primary_statement_{{ statement.language }}" {% if statement.language in primary_statements %}checked{% end %} />
+                    <input type="checkbox" name="primary_statement_{{ statement.language }}" {% if statement.language in primary_statements %}checked{% endif %} />
                     Primary?
                   </label>
                 </td>
                 <td><a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "statement", statement.id) }}'); ">Delete</a></td>
               </tr>
-            {% end %}
+            {% endfor %}
             </tbody>
           </table>
-          {% end %}
+          {% endif %}
         </td>
       </tr>
       <tr>
@@ -109,7 +109,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           Attachments
 {% if current_user.permission_all %}
           [<a href="{{ url("task", task.id, "attachments", "add") }}">add</a>]
-{% end %}
+{% endif %}
         </td>
         <td>
           {% if len(task.attachments) == 0 %}
@@ -120,8 +120,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                 <a href="{{ url("file", attachment.digest, attachment.filename) }}">{{ attachment.filename }}</a>
                 - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "attachment", attachment.id) }}'); ">Delete</a>
               </div>
-            {% end %}
-          {% end %}
+            {% endfor %}
+          {% endif %}
         </td>
       </tr>
       <tr>
@@ -264,10 +264,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     <p>
 {% if len(task.datasets) == 0 %}
     No datasets have been created for this task.<br/>
-{% end %}
+{% endif %}
 {% if current_user.permission_all %}
     <a href="{{ url("task", task.id, "add_dataset") }}">Create a new dataset</a><br/>
-{% end %}
+{% endif %}
     </p>
 
 {% for dataset in sorted(task.datasets, key=lambda d: d.description) %}
@@ -281,18 +281,18 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       [Make Live ...]
       {% else %}
       <a href="{{ url("dataset", dataset.id, "activate") }}">[Make Live ...]</a>
-      {% end %}
+      {% endif %}
       <a href="{{ url("dataset", dataset.id, "clone") }}">[Clone]</a>
       <a href="{{ url("dataset", dataset.id, "rename") }}">[Rename]</a>
       {% if dataset is task.active_dataset %}
       [Delete]
       {% else %}
       <a href="{{ url("dataset", dataset.id, "delete") }}">[Delete]</a>
-      {% end %}
+      {% endif %}
       {% if dataset is not task.active_dataset %}
-        <a onclick="CMS.AWSUtils.ajax_post('{{ url("dataset", dataset.id, "autojudge") }}');">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
-      {% end %}
-{% end %}
+        <a onclick="CMS.AWSUtils.ajax_post('{{ url("dataset", dataset.id, "autojudge") }}');">[{% if dataset.autojudge %}Disable{% else %}Enable{% endif %} background judging]</a>
+      {% endif %}
+{% endif %}
       <a href="{{ url("dataset", dataset.id) }}">[View results]</a>
     </p>
 
@@ -311,7 +311,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           "without updating the task to avoid losing the parameters.");
       });
     </script>
-    {% end %}
+    {% endif %}
 
     {% if dataset.score_type not in [score_type.__name__ for score_type in score_type_list] %}
     <script type="text/javascript">
@@ -324,7 +324,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           "without updating the task to avoid losing the parameters.");
       });
     </script>
-    {% end %}
+    {% endif %}
 
     <div id="task_type_{{ dataset.id }}" class="task_dataset_params">
       <table>
@@ -355,8 +355,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
             <select name="task_type_{{ dataset.id }}">
               {% for task_type in task_type_list %}
-              <option value="{{ task_type.__name__ }}" {% if dataset.task_type == task_type.__name__ %}selected{% end %}>{{ task_type.__name__ }}</option>
-              {% end %}
+              <option value="{{ task_type.__name__ }}" {% if dataset.task_type == task_type.__name__ %}selected{% endif %}>{{ task_type.__name__ }}</option>
+              {% endfor %}
             </select>
           {% set parameters = dataset.task_type_parameters %}
 
@@ -371,9 +371,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                   {% raw param_def.render("TaskTypeOptions_%d_%s_" % (dataset.id, task_type.__name__), parameter_value) %}
                 </td>
               </tr>
-            {% end %}
+            {% endfor %}
           </table>
-          {% end %}
+          {% endfor %}
 
           </td>
         </tr>
@@ -383,7 +383,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             Managers
 {% if current_user.permission_all %}
             [<a href="{{ url("dataset", dataset.id, "managers", "add") }}">add</a>]
-{% end %}
+{% endif %}
           </td>
           <td>
             {% if len(dataset.managers) == 0 %}
@@ -394,8 +394,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                   <a href="{{ url("file", manager.digest, manager.filename) }}">{{ manager.filename }}</a>
                   - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "manager", manager.id, "delete") }}');">Delete</a>
                 </div>
-              {% end %}
-            {% end %}
+              {% endfor %}
+            {% endif %}
           </td>
         </tr>
 
@@ -408,8 +408,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <td>
             <select name="score_type_{{ dataset.id }}">
               {% for score_type in score_type_list %}
-              <option value="{{ score_type.__name__}}" {% if dataset.score_type == score_type.__name__ %}selected{% end %}>{{ score_type.__name__ }}</option>
-              {% end %}
+              <option value="{{ score_type.__name__}}" {% if dataset.score_type == score_type.__name__ %}selected{% endif %}>{{ score_type.__name__ }}</option>
+              {% endfor %}
             </select>
           </td>
         </tr>
@@ -431,7 +431,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if current_user.permission_all %}
       <a href="{{ url("dataset", dataset.id, "testcases", "add") }}">Add a testcase</a>
       <a href="{{ url("dataset", dataset.id, "testcases", "add_multiple") }}">Add multiple testcases</a>
-{% end %}
+{% endif %}
       <a href="{{ url("dataset", dataset.id, "testcases", "download") }}">Download all testcases</a>
       <table class="bordered" style="text-align:center">
         <thead>
@@ -452,7 +452,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <td style="font-weight:bold;">{{ idx }}</td>
             <td>{{ codename }}</td>
             <td style="font-weight:bold;">
-              <input type="checkbox" name="testcase_{{ testcase.id }}_public" {% if testcase.public %}checked{% end %} />
+              <input type="checkbox" name="testcase_{{ testcase.id }}_public" {% if testcase.public %}checked{% endif %} />
             </td>
             <td>
               <a href="javascript:void(0);" onclick="utils.show_file('input_{{ testcase.codename }}','{{ url("file", testcase.input, "input_%s" % testcase.codename) }}')">Show input</a>
@@ -464,18 +464,18 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "testcase", testcase.id, "delete") }}');">Delete</a>
             </td>
           </tr>
-          {% end %}
+          {% endfor %}
         </tbody>
       </table>
       <div class="hr"></div>
     </div>
   </div>
-  {% end %}
+  {% endfor %}
   </div>
   <input type="submit"
 {% if not current_user.permission_all %}
          disabled
-{% end %}
+{% endif %}
          value="Update" />
   <input type="reset" value="Reset" />
 </form>
@@ -487,7 +487,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
          value="Remove" style="float: right;"
 {% if not current_user.permission_all %}
          disabled
-{% end %}
+{% endif %}
          />
 </form>
-{% end %}
+{% endblock core %}

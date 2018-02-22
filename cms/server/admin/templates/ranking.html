@@ -12,10 +12,10 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
       <th>User</th>
       {% if show_teams %}
       <th>Team</th>
-      {% end %}
+      {% endif %}
       {% for task in contest.tasks %}
       <th><a href="{{ url("task", task.id) }}">{{ task.name }}</a></th>
-      {% end %}
+      {% endfor %}
       <th>Global</th>
     </tr>
   </thead>
@@ -34,16 +34,16 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
         <td><a href="{{ url("team", p.team_id) }}">{{ p.team.name }}</a></td>
         {% else %}
         <td></td>
-        {% end %}
-      {% end %}
+        {% endif %}
+      {% endif %}
       {% for t_score, t_partial in p.scores %}
-      <td>{{ t_score }}{% if t_partial %}*{% end %}</td>
-      {% end %}
+      <td>{{ t_score }}{% if t_partial %}*{% endif %}</td>
+      {% endfor %}
       {% set total_score, partial = p.total_score %}
-      <td>{{ total_score }}{% if partial %}*{% end %}</td>
+      <td>{{ total_score }}{% if partial %}*{% endif %}</td>
     </tr>
-      {% end %}
-    {% end %}
+      {% endif %}
+    {% endfor %}
   </tbody>
 </table>
-{% end %}
+{% endblock core %}

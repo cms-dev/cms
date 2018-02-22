@@ -19,7 +19,7 @@
             <datalist id="task_names_list">
               {% for task in contest.tasks %}
               <option value="{{ task.name }}">
-              {% end %}
+              {% endfor %}
             </datalist>
           </div>
           <div class="notification_text">
@@ -31,7 +31,7 @@
         </form>
       </div>
     </div>
-{% end %}
+{% endif %}
     {% if contest.announcements != [] %}
       {% for msg in reversed(contest.announcements) %}
       <div class="notification communication">
@@ -46,14 +46,14 @@
 
         </div>
       </div>
-      {% end %}
+      {% endfor %}
     {% else %}
       No announcements.
-    {% end %}
+    {% endif %}
   </div>
 
   <div class="hr"></div>
 </div>
 
 
-{% end %}
+{% endblock core %}

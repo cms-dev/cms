@@ -12,10 +12,10 @@
   <a href="{{ url(*page_url, page=i) }}">{{ i + 1 }}</a>
     {% else %}
   {{ i + 1 }}
-    {% end %}
-  {% end %}
+    {% endif %}
+  {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
 <table class="bordered">
   <thead>
@@ -36,7 +36,7 @@
     {% set score_types = {} %}
     {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       {% include submission_row.html %}
-    {% end %}
+    {% endfor %}
   </tbody>
 </table>
-{% end %}
+{% endif %}
