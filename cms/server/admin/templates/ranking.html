@@ -28,7 +28,7 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
       {% if not p.hidden %}
     <tr>
       <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
-      <td>{{ "%s %s" % (p.user.first_name, p.user.last_name) }}</td>
+      <td>{{ "%s %s"|format(p.user.first_name, p.user.last_name) }}</td>
       {% if show_teams %}
         {% if p.team %}
         <td><a href="{{ url("team", p.team_id) }}">{{ p.team.name }}</a></td>
