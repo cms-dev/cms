@@ -5,7 +5,7 @@
   {% set dataset = shown_dataset %}
 {% except %}
   {% set dataset = s.task.active_dataset %}
-{% end %}
+{% endtry %}
 
 {% set sr = s.get_result(dataset) %}
 
@@ -13,13 +13,13 @@
 {% set status = SubmissionResult.COMPILING %}
 {% if sr is not None %}
   {% set status = sr.get_status() %}
-{% end %}
+{% endif %}
 {% if s.task.name in score_types %}
   {% set score_type = score_types[s.task.name] %}
 {% else %}
   {% set score_type = get_score_type(dataset=dataset) %}
   {% set score_types[s.task.name] = score_type %}
-{% end %}
+{% endif %}
 <tr>
   <td><a href="{{ url("submission", s.id) }}">{{ str(s.timestamp) }}</a></td>
   <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
@@ -64,56 +64,56 @@
               </td>
               <td>{{ format_status_text(ev.text) }}</td>
             </tr>
-            {% end %}
+            {% endfor %}
           </tbody>
         </table>
-        {% end %}
+        {% endif %}
 
       {% elif status == SubmissionResult.SCORED %}
         {% try %}
           {% set max_score = score_type.max_score %}
         {% except %}
           {% set max_score = "[Cannot get score type - see logs]" %}
-        {% end %}
+        {% endtry %}
       Scored ({{ sr.score }} / {{ max_score }})
       <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
         {% try %}
           {% raw score_type.get_html_details(sr.score_details) %}
         {% except %}
         [Cannot get score type - see logs]
-        {% end %}
+        {% endtry %}
 
       {% else %}
       [Unknown status]
       <div id="evaluation_{{ s.id }}" style="display: none;">
 
-      {% end %}
+      {% endif %}
         <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-        <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+        <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
       </div>
     </div>
 
-    {% end %}
+    {% endif %}
   </td>
   <td>
     {% for filename, sub_file in iteritems(s.files) %}
       {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
     <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
-    {% end %}
+    {% endfor %}
   </td>
   <td>
     {% if s.token is None %}
     No
     {% else %}
     Yes
-    {% end %}
+    {% endif %}
   </td>
   <td>
     {% if s.official %}
     Yes
     {% else %}
     No
-    {% end %}
+    {% endif %}
   </td>
   <td>
     {{ s.short_comment }}

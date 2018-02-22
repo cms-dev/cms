@@ -12,10 +12,10 @@
   <a href="{{ url(*page_url, page=i) }}">{{ i + 1 }}</a>
     {% else %}
   {{ i + 1 }}
-    {% end %}
-  {% end %}
+    {% endif %}
+  {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
 <table class="bordered">
   <thead>
@@ -31,7 +31,7 @@
   <tbody>
     {% for ut in sorted(user_tests, key=lambda s: s.timestamp, reverse=True) %}
       {% include user_test_row.html %}
-    {% end %}
+    {% endfor %}
   </tbody>
 </table>
-{% end %}
+{% endif %}

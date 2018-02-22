@@ -20,9 +20,9 @@
         <td><a href="{{ url("team", t.id) }}">{{ t.code }}</a></td>
         <td>{{ t.name }}</td>
       </tr>
-      {% end %}
+      {% endfor %}
     </tbody>
   </table>
 </div>
 
-{% end %}
+{% endblock core %}

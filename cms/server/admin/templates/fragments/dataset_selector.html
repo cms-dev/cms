@@ -17,18 +17,18 @@
       <strong>
     {% else %}
       <a href="{{ dataset_selector_par_url }}/{{ dataset.id }}">
-    {% end %}
+    {% endif %}
     {{ dataset.description }}
     {% if dataset is shown_dataset %}
       </strong>
     {% else %}
       </a>
-    {% end %}
+    {% endif %}
     {{ format_dataset_attrs(dataset) }}
     </td></tr>
-  {% end %}
+  {% endfor %}
   </table>
-  {% end %}
-{% end %}
+  {% endif %}
+{% endif %}
 </div>
 

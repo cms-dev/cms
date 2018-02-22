@@ -26,13 +26,13 @@
           <a href="{{ url("admin", a.id) }}">{{ a.username }}</a>
           {% else %}
           {{ a.username }}
-          {% end %}
+          {% endif %}
         </td>
         <td>{{ a.name }}</td>
         <td>{{ a.permission_all }}</td>
         <td>{{ a.permission_messaging }}</td>
       </tr>
-      {% end %}
+      {% endfor %}
     </tbody>
   </table>
 </div>
@@ -41,7 +41,7 @@
 <hr/>
 
 <a href="{{ url("admins", "add") }}">Add a new admin</a>
-{% end %}
+{% endif %}
 
 <hr/>
 
@@ -55,4 +55,4 @@
     and announcements.</li>
 </ul>
 
-{% end %}
+{% endblock core %}

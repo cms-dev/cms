@@ -6,7 +6,7 @@
 {% set status = UserTestResult.COMPILING %}
 {% if utr is not None %}
   {% set status = utr.get_status() %}
-{% end %}
+{% endif %}
 <div class="core_title">
   <h1>User test {{ ut.id }} (Task: <a href="{{ url("task", ut.task.id) }}">{{ ut.task.name }}</a>)</h1>
 </div>
@@ -47,8 +47,8 @@
             {{ real_filename }}
           </a>
           <br/>
-            {% end %}
-          {% end %}
+            {% endif %}
+          {% endfor %}
         </td>
       </tr>
       <tr>
@@ -58,7 +58,7 @@
           N/A
           {% else %}
           {{ ut.language }}
-          {% end %}
+          {% endif %}
       </tr>
       <tr>
         <td>Status</td>
@@ -73,7 +73,7 @@
           Evaluated
           {% else %}
           N/A
-          {% end %}
+          {% endif %}
         </td>
       </tr>
       {% if utr is not None %}
@@ -93,7 +93,7 @@
         <td>Failures during evaluation</td>
         <td>{{ utr.evaluation_tries }}</td>
       </tr>
-      {% end %}
+      {% endif %}
     </tbody>
   </table>
 
@@ -105,16 +105,16 @@
 <div id="evaluation">
 
   <h3>Outcome</h3>
-  <pre>{% if len(utr.evaluation_text) > 0 %}{{ format_status_text(utr.evaluation_text) }}{% end %}</pre>
+  <pre>{% if len(utr.evaluation_text) > 0 %}{{ format_status_text(utr.evaluation_text) }}{% endif %}</pre>
 
     {% if utr.output is not None %}
   <h3>Output</h3>
   <a href="javascript:void(0);" onclick="utils.show_file('output','{{ url("file", utr.output, "output") }}')">See output</a>
-    {% end %}
+    {% endif %}
 
 </div>
 
-  {% end %}
+  {% endif %}
 
   {% if utr is not None and utr.compiled() %}
 
@@ -122,16 +122,16 @@
 <div id="compilation">
 
   <h3>Outcome</h3>
-  <pre>{% if len(utr.compilation_text) > 0 %}{{ format_status_text(utr.compilation_text) }}{% end %}</pre>
+  <pre>{% if len(utr.compilation_text) > 0 %}{{ format_status_text(utr.compilation_text) }}{% endif %}</pre>
 
   <h3>Standard output</h3>
-  <pre>{% if utr.compilation_stdout is not None %}{{ utr.compilation_stdout }}{% end %}</pre>
+  <pre>{% if utr.compilation_stdout is not None %}{{ utr.compilation_stdout }}{% endif %}</pre>
 
   <h3>Standard error</h3>
-  <pre>{% if utr.compilation_stderr is not None %}{{ utr.compilation_stderr }}{% end %}</pre>
+  <pre>{% if utr.compilation_stderr is not None %}{{ utr.compilation_stderr }}{% endif %}</pre>
 
 </div>
 
-  {% end %}
+  {% endif %}
 
-{% end %}
+{% endblock core %}

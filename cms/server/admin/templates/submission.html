@@ -8,7 +8,7 @@
 {% set status = SubmissionResult.COMPILING %}
 {% if sr is not None %}
   {% set status = sr.get_status() %}
-{% end %}
+{% endif %}
 <div class="core_title">
   <h1>Submission {{ s.id }} (Task: <a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a>)</h1>
 </div>
@@ -53,8 +53,8 @@
             {{ real_filename }}
           </a>
           <br/>
-            {% end %}
-          {% end %}
+            {% endif %}
+          {% endfor %}
         </td>
       </tr>
       <tr>
@@ -64,7 +64,7 @@
           N/A
           {% else %}
           {{ s.language }}
-          {% end %}
+          {% endif %}
       </tr>
       <tr>
         <td>Token</td>
@@ -73,7 +73,7 @@
           No
           {% else %}
           Yes
-          {% end %}
+          {% endif %}
         </td>
       </tr>
       <tr>
@@ -87,7 +87,7 @@
               <input
               {% if not current_user.permission_all %}
                   disabled
-              {% end %}
+              {% endif %}
                type="submit" value="Make unofficial" />
             {% else %}
               <input type="hidden" name="official" value="yes"/>
@@ -95,9 +95,9 @@
               <input
               {% if not current_user.permission_all %}
                   disabled
-              {% end %}
+              {% endif %}
                type="submit" value="Make official" />
-            {% end %}
+            {% endif %}
             </form>
         </td>
       </tr>
@@ -117,11 +117,11 @@
               {% set max_score = st.max_score %}
             {% except %}
               {% set max_score = "[Cannot get score type - see logs]" %}
-            {% end %}
+            {% endtry %}
           Scored ({{ sr.score }} / {{ max_score }})
           {% else %}
           N/A
-          {% end %}
+          {% endif %}
         </td>
       </tr>
       {% if sr is not None %}
@@ -144,13 +144,13 @@
         {% set t, m = sr.get_max_evaluation_resources() %}
       <tr>
         <td>Max execution time</td>
-        <td>{% if t is not None %}{{ t }} s{% else %}N/A{% end %}</td>
+        <td>{% if t is not None %}{{ t }} s{% else %}N/A{% endif %}</td>
       </tr>
       <tr>
         <td>Max memory used</td>
-        <td>{% if m is not None %}{{ m // (1024 ** 2) }} MiB{% else %}N/A{% end %}</td>
+        <td>{% if m is not None %}{{ m // (1024 ** 2) }} MiB{% else %}N/A{% endif %}</td>
       </tr>
-      {% end %}
+      {% endif %}
       <tr>
         <td>Reevaluate</td>
         <td>
@@ -174,7 +174,7 @@
     <input
 {% if not current_user.permission_all %}
        disabled
-{% end %}
+{% endif %}
        type="submit"/>
     <input type="reset" value="Reset" />
   </form>
@@ -190,11 +190,11 @@
       {% raw st.get_html_details(sr.score_details) %}
     {% else %}
       {% raw st.get_html_details(sr.public_score_details) %}
-    {% end %}
+    {% endif %}
   </div>
 </div>
 
-  {% end %}
+  {% endif %}
 
   {% if sr is not None and sr.evaluated() %}
 
@@ -229,25 +229,25 @@
           <td>
             {% if ev.execution_time is not None %}
             ({{ ev.execution_time }} s)
-            {% end %}
+            {% endif %}
             {% if ev.execution_wall_clock_time is not None %}
             ({{ ev.execution_wall_clock_time }} s)
-            {% end %}
+            {% endif %}
             {% if ev.execution_memory is not None %}
             ({{ (ev.execution_memory // 1024) // 1024 }} MiB)
-            {% end %}
+            {% endif %}
           </td>
           <td>{{ ev.evaluation_sandbox }}</td>
         </tr>
-        {% end %}
-      {% end %}
+        {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 
 </div>
 
 
-  {% end %}
+  {% endif %}
 
   {% if sr is not None and sr.compiled() %}
 
@@ -255,16 +255,16 @@
 <div id="compilation">
 
   <h3>Outcome</h3>
-  <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+  <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
 
   <h3>Standard output</h3>
-  <pre>{% if sr.compilation_stdout is not None %}{{ sr.compilation_stdout }}{% end %}</pre>
+  <pre>{% if sr.compilation_stdout is not None %}{{ sr.compilation_stdout }}{% endif %}</pre>
 
   <h3>Standard error</h3>
-  <pre>{% if sr.compilation_stderr is not None %}{{ sr.compilation_stderr }}{% end %}</pre>
+  <pre>{% if sr.compilation_stderr is not None %}{{ sr.compilation_stderr }}{% endif %}</pre>
 
 </div>
 
-  {% end %}
+  {% endif %}
 
-{% end %}
+{% endblock core %}

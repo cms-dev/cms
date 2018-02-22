@@ -25,13 +25,13 @@ function update_additional_answer(element, invoker)
   else
     obj.style.display = "none";
 }
-{% end %}
+{% endblock js %}
 
 {% block js_init %}
 
 utils.show_page("questions", 1);
 
-{% end %}
+{% endblock js_init %}
 {% block core %}
 
 <div class="core_title">
@@ -55,7 +55,7 @@ utils.show_page("questions", 1);
       <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
       {% else %}
       <div class="notification_subject">Not yet replied.</div>
-      {% end %}
+      {% endif %}
 {% if current_user.permission_all or current_user.permission_messaging %}
       {% if msg.reply_timestamp is None %}
       <div class="ignore_reply">
@@ -67,10 +67,10 @@ utils.show_page("questions", 1);
           {% else %}
           <input type="hidden" name="ignore" value="no"/>
           <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
-          {% end %}
+          {% endif %}
         </form>
       </div>
-      {% end %}
+      {% endif %}
       <div class="reply_question_toggle">
         <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
       </div>
@@ -95,17 +95,17 @@ utils.show_page("questions", 1);
           <input type="submit" value="Send"/>
         </form>
       </div>
-{% end %}
+{% endif %}
     </div>
   </div>
-  {% end %}
+  {% endfor %}
   </div>
 </div>
 
 {% else %}
 No questions.
 
-{% end %}
+{% endif %}
 
 
-{% end %}
+{% endblock core %}

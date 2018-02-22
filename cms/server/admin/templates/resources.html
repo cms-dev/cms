@@ -165,7 +165,7 @@ var getters = [];
                     if (s.lastIndexOf("LogService,", 0) !== 0 &&
                         s.lastIndexOf("ResourceService,", 0) !== 0)
                       strings.push(" <a onclick='window.getters[" + this.shard + "].kill_service(\"" + s + "\", this);'>[Kill]</a>");
-{% end %}
+{% endif %}
                     strings.push('</td><td style="text-align: center;">');
                     strings.push(response['data'][l-1][1]['services'][s]['threads']);
                     strings.push('</td><td style="text-align: center;">');
@@ -185,13 +185,13 @@ var getters = [];
                   strings.push(" <input type='checkbox' checked onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);'");
 {% if not current_user.permission_all %}
                   strings.push(" disabled");
-{% end %}
+{% endif %}
                   strings.push(" />");
                 } else if (response['data'][l-1][1]['services'][s]['autorestart'] == false) {
                   strings.push(" <input type='checkbox' onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);'");
 {% if not current_user.permission_all %}
                   strings.push(" disabled");
-{% end %}
+{% endif %}
                   strings.push(" />");
                 } else {
                   strings.push('N/A');
@@ -263,7 +263,7 @@ var plotOptions = {
     }
 };
 
-{% end %}
+{% endblock js %}
 
 {% block js_init %}
 var shards = {% raw json_encode(resource_addresses) %};
@@ -276,7 +276,7 @@ for (var i in shards)
 
 }
 
-{% end %}
+{% endblock js_init %}
 
 {% block core %}
 
@@ -328,6 +328,6 @@ for (var i in shards)
 
   <div class="hr"></div>
 </div>
-{% end %}
+{% endfor %}
 
-{% end %}
+{% endblock core %}

@@ -14,7 +14,7 @@
          value="Remove"
 {% if not current_user.permission_all %}
          disabled
-{% end %}
+{% endif %}
          />
   <table class="bordered">
     <thead>
@@ -35,9 +35,9 @@
         <td>{{ u.first_name }}</td>
         <td>{{ u.last_name }}</td>
       </tr>
-      {% end %}
+      {% endfor %}
     </tbody>
   </table>
 </form>
 
-{% end %}
+{% endblock core %}

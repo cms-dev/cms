@@ -43,7 +43,7 @@
       <td>
         {% for lang in LANGUAGES %}
           <label><input type="checkbox" name="languages" value="{{ lang.name }}" {{ "checked" if lang.name in contest.languages else "" }}>{{ lang.name }}</label>
-        {% end %}
+        {% endfor %}
       </td>
     </tr>
     <tr>
@@ -283,7 +283,7 @@
          value="Update"
 {% if not current_user.permission_all %}
          disabled
-{% end %}
+{% endif %}
          >
   <input type="reset" value="Reset">
 </form>
@@ -295,9 +295,9 @@
          value="Remove" style="float: right;"
 {% if not current_user.permission_all %}
          disabled
-{% end %}
+{% endif %}
          />
 </form>
 
 
-{% end %}
+{% endblock core %}

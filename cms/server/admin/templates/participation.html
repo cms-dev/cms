@@ -25,7 +25,7 @@ function update_additional_answer(element, invoker)
   else
     obj.style.display = "none";
 }
-{% end %}
+{% endblock js %}
 
 {% block core %}
 {% from cmscommon.crypto import parse_authentication %}
@@ -70,7 +70,7 @@ function update_additional_answer(element, invoker)
           <datalist id="teams">
             {% for t in teams %}
             <option value="{{ t.code }}">
-            {% end %}
+            {% endfor %}
           </datalist>
         </td>
       </tr>
@@ -90,7 +90,7 @@ function update_additional_answer(element, invoker)
           <span class="info" title="Whether the contestant's results will be visible in the external ranking."></span>
           Hidden participation
         </td>
-        <td><input type="checkbox" name="hidden" {% if participation.hidden %}checked{% end %}/></td>
+        <td><input type="checkbox" name="hidden" {% if participation.hidden %}checked{% endif %}/></td>
       </tr>
       <tr>
         <td>
@@ -98,7 +98,7 @@ function update_additional_answer(element, invoker)
                                     and minimum interval between submissions, user tests, and contest time."></span>
           Unrestricted participation
         </td>
-        <td><input type="checkbox" name="unrestricted" {% if participation.unrestricted %}checked{% end %}/></td>
+        <td><input type="checkbox" name="unrestricted" {% if participation.unrestricted %}checked{% endif %}/></td>
       </tr>
       <tr>
         <td>
@@ -155,7 +155,7 @@ function update_additional_answer(element, invoker)
         <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
         {% else %}
         <div class="notification_subject">Not yet replied.</div>
-        {% end %}
+        {% endif %}
         <div class="reply_question_toggle">
           <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
         </div>
@@ -183,13 +183,13 @@ function update_additional_answer(element, invoker)
         </div>
       </div>
     </div>
-    {% end %}
+    {% endfor %}
   </div>
 
   {% else %}
   No questions.
 
-  {% end %}
+  {% endif %}
   <div class="hr"></div>
 </div>
 
@@ -225,14 +225,14 @@ function update_additional_answer(element, invoker)
           <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         </div>
       </div>
-      {% end %}
+      {% endfor %}
 
     {% else %}
       No messages.
-    {% end %}
+    {% endif %}
   </div>
   <div class="hr"></div>
 </div>
 
 
-{% end %}
+{% endblock core %}

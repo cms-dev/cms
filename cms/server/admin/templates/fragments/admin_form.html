@@ -12,7 +12,7 @@
   {% set admin_permission_all = True %}
   {% set admin_permission_messaging = False %}
   {% set admin_enabled = True %}
-{% end %}
+{% endtry %}
 
 <div>
   <table>
@@ -32,21 +32,21 @@
     <tr>
       <td>All permissions</td>
       <td>
-        <input type="checkbox" name="permission_all" {% if admin_permission_all %}checked{% end %} />
+        <input type="checkbox" name="permission_all" {% if admin_permission_all %}checked{% endif %} />
       </td>
     </tr>
     <tr>
       <td>Messaging permissions</td>
       <td>
-        <input type="checkbox" name="permission_messaging" {% if admin_permission_messaging %}checked{% end %} />
+        <input type="checkbox" name="permission_messaging" {% if admin_permission_messaging %}checked{% endif %} />
       </td>
     </tr>
     <tr>
       <td>Enabled</td>
       <td>
-        <input type="checkbox" name="enabled" {% if admin_enabled %}checked{% end %} />
+        <input type="checkbox" name="enabled" {% if admin_enabled %}checked{% endif %} />
       </td>
     </tr>
-    {% end %}
+    {% endif %}
   </table>
 </div>
