@@ -125,7 +125,7 @@ def encode_value(type_, value):
     elif isinstance(type_, (Boolean, Integer, Float, Unicode, Enum, JSONB)):
         return value
     elif isinstance(type_, String):
-        return value.decode('latin1')
+        return value
     elif isinstance(type_, DateTime):
         return make_timestamp(value)
     elif isinstance(type_, Interval):
@@ -253,8 +253,8 @@ class DumpExporter(object):
 
                 data["_version"] = model_version
 
-                with io.open(os.path.join(export_dir,
-                                          "contest.json"), "wb") as fout:
+                with io.open(os.path.join(export_dir, "contest.json"),
+                             "wt", encoding="utf-8") as fout:
                     json.dump(data, fout, indent=4, sort_keys=True)
 
         # If the admin requested export to file, we do that.
