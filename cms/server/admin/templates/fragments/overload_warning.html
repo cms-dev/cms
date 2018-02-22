@@ -8,8 +8,8 @@
   warning early on.
 #}
 
-{% if len(config.contest_listen_port) > 0 %}
-  {% set ratio = round(len(contest.participations) * 1.0 / len(config.contest_listen_port), 2) %}
+{% if config.contest_listen_port|length > 0 %}
+  {% set ratio = round(contest.participations|length * 1.0 / config.contest_listen_port|length, 2) %}
   {% if ratio > 100 %}
 <p>
   At the moment, you have {{ ratio }} users for each ContestWebServer, on average.<br/>

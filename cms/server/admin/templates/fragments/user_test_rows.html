@@ -4,7 +4,7 @@
 
 {% else %}
 
-{% if user_test_count > len(user_tests) %}
+{% if user_test_count > user_tests|length %}
 <div>
   Pages:
   {% for i in range(user_test_pages) %}

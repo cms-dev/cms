@@ -104,7 +104,7 @@ $(document).ready(init);
         {% if contest is None %}
         <h1><a class="menu_link" href="{{ url("contests") }}">Contests</a></h1>
         <ul class="menu">
-          {% if len(contest_list) < 1 %}
+          {% if contest_list|length < 1 %}
           <li class="menu_entry">
             (no contests available)
           </li>
@@ -118,7 +118,7 @@ $(document).ready(init);
           </li>
           {% endfor %}
 
-          {% if len(contest_list) > 5 %}
+          {% if contest_list|length > 5 %}
           <li>
             <a class="menu_link" href="{{ url("contests") }}">
               (show more...)
@@ -137,7 +137,7 @@ $(document).ready(init);
 
         <h1><a class="menu_link" href="{{ url("tasks") }}">Tasks</a></h1>
         <ul class="menu">
-          {% if len(task_list) < 1 %}
+          {% if task_list|length < 1 %}
           <li class="menu_entry">
             (no tasks available)
           </li>
@@ -151,7 +151,7 @@ $(document).ready(init);
           </li>
           {% endfor %}
 
-          {% if len(task_list) > 5 %}
+          {% if task_list|length > 5 %}
           <li>
             <a class="menu_link" href="{{ url("tasks") }}">
               (show more...)
@@ -170,17 +170,17 @@ $(document).ready(init);
 
         <h1><a class="menu_link" href="{{ url("users") }}">Users</a></h1>
         <ul class="menu">
-          {% if len(user_list) == 0 %}
+          {% if user_list|length == 0 %}
             <li class="menu_entry">
               (no user available)
             </li>
           {% else %}
             <li>
               <a class="menu_link" href="{{ url("users") }}">
-                {% if len(user_list) == 1 %}
+                {% if user_list|length == 1 %}
                   (show the only user...)
                 {% else %}
-                  (show the {{ len(user_list) }} users...)
+                  (show the {{ user_list|length }} users...)
                 {% endif %}
               </a>
             </li>
@@ -197,17 +197,17 @@ $(document).ready(init);
 
         <h1><a class="menu_link" href="{{ url("teams") }}">Teams</a></h1>
         <ul class="menu">
-          {% if len(team_list) == 0 %}
+          {% if team_list|length == 0 %}
             <li class="menu_entry">
               (no team available)
             </li>
           {% else %}
             <li>
               <a class="menu_link" href="{{ url("teams") }}">
-                {% if len(team_list) == 1 %}
+                {% if team_list|length == 1 %}
                   (show the only team...)
                 {% else %}
-                  (show the {{ len(team_list) }} teams...)
+                  (show the {{ team_list|length }} teams...)
                 {% endif %}
               </a>
             </li>

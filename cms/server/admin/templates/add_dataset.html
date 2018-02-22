@@ -88,7 +88,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
           {% else %}
             {% set values = None %}
           {% endif %}
-          {% for i in range(len(task_type.ACCEPTED_PARAMETERS)) %}
+          {% for i in range(task_type.ACCEPTED_PARAMETERS|length) %}
             {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
             {% set val = values[i] if values is not None else None %}
           <tr>
@@ -105,7 +105,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
       </td>
     </tr>
 
-    {% if original_dataset is not None and len(original_dataset.managers) != 0 %}
+    {% if original_dataset is not None and original_dataset.managers|length != 0 %}
     <tr>
       <td>
         <span class="info" title="Whether to copy the managers from the original dataset."></span>
