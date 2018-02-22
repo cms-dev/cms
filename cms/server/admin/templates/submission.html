@@ -222,7 +222,7 @@
           <td style="text-align: center">
             <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
           </td>
-          <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.text) }}</td>
+          <td id="eval_text_{{ ev.codename }}">{{ ev.text|format_status_text }}</td>
           <td>{{ ev.evaluation_shard }}</td>
           <td>
             {% if ev.execution_time is not none %}
@@ -253,7 +253,7 @@
 <div id="compilation">
 
   <h3>Outcome</h3>
-  <pre>{% if sr.compilation_text|length > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
+  <pre>{% if sr.compilation_text|length > 0 %}{{ sr.compilation_text|format_status_text }}{% endif %}</pre>
 
   <h3>Standard output</h3>
   <pre>{% if sr.compilation_stdout is not none %}{{ sr.compilation_stdout }}{% endif %}</pre>

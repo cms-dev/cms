@@ -41,7 +41,7 @@
 
       {% endif %}
         <h3>Compilation output</h3>{# TODO: trim long outputs and add facility to see raw #}
-        <pre>{% if utr.compilation_text|length > 0 %}{{ format_status_text(utr.compilation_text) }}{% endif %}</pre>
+        <pre>{% if utr.compilation_text|length > 0 %}{{ utr.compilation_text|format_status_text }}{% endif %}</pre>
       </div>
     </div>
 
