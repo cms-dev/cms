@@ -99,7 +99,10 @@ class OutputOnly(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        sandbox = create_sandbox(file_cacher, job.multithreaded_sandbox)
+        sandbox = create_sandbox(
+            file_cacher,
+            name="evaluate",
+            multithreaded=job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return
