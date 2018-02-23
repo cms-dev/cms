@@ -687,7 +687,7 @@ class FileCacher(object):
         # compressed or require network communication).
         # XXX We're *almost* reimplementing copyfileobj.
         with tempfile.NamedTemporaryFile('wb', delete=False,
-                                         dir=config.temp_dir) as dst:
+                                         dir=self.temp_dir) as dst:
             hasher = hashlib.sha1()
             buf = src.read(self.CHUNK_SIZE)
             while len(buf) > 0:
