@@ -48,8 +48,7 @@ from sqlalchemy.orm import contains_eager
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Participation, User
-from cms.server import compute_actual_phase, file_handler_gen, \
-    create_url_builder
+from cms.server import compute_actual_phase, file_handler_gen
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
 
@@ -111,8 +110,7 @@ class ContestHandler(BaseHandler):
         super(ContestHandler, self).prepare()
 
         if self.is_multi_contest():
-            self.contest_url = \
-                create_url_builder(self.url(self.contest.name))
+            self.contest_url = self.url[self.contest.name]
         else:
             self.contest_url = self.url
 

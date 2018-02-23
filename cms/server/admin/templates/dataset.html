@@ -19,7 +19,7 @@
            dataset_id=shown_dataset.id) %}
   </p>
 
-  {% set page_url = ["dataset", shown_dataset.id] %}
+  {% set page_url = url["dataset"][shown_dataset.id] %}
   {% include "fragments/submission_rows.html" %}
 
   <div class="hr"></div>
