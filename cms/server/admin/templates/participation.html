@@ -45,7 +45,7 @@ function update_additional_answer(element, invoker)
            user_id=participation.user_id) %}
   </p>
 
-  {% set page_url = ["contest", contest.id, "user", selected_user.id, "edit"] %}
+  {% set page_url = url["contest"][contest.id]["user"][selected_user.id]["edit"] %}
   {% include "fragments/submission_rows.html" %}
 
   <div class="hr"></div>

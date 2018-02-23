@@ -14,7 +14,7 @@
            contest.id) %}
   </p>
 
-  {% set page_url = ["contest", contest.id, "submissions"] %}
+  {% set page_url = url["contest"][contest.id]["submissions"] %}
   {% include "fragments/submission_rows.html" %}
 </div>
 
