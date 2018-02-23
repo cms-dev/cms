@@ -390,7 +390,7 @@ class Batch(TaskType):
                                     extract_outcome_and_text(checkbox)
                             except ValueError as e:
                                 logger.error("Invalid output from "
-                                             "comparator: %s", e.message,
+                                             "comparator: %s", e,
                                              extra={"operation": job.info})
                                 checker_success = False
 

@@ -315,8 +315,8 @@ class TestRunner(object):
             try:
                 test.submit(task_id, self.user_id, lang)
             except TestFailure as f:
-                logging.error("(FAILED (while submitting): %s)", f.message)
-                self.failures.append((test, lang, f.message))
+                logging.error("(FAILED (while submitting): %s)", f)
+                self.failures.append((test, lang, str(f)))
 
         for i, (test, lang) in enumerate(self._all_user_tests()):
             logging.info("Submitting user test  %s/%s: %s (%s)",
@@ -325,8 +325,8 @@ class TestRunner(object):
             try:
                 test.submit_user_test(task_id, self.user_id, lang)
             except TestFailure as f:
-                logging.error("(FAILED (while submitting): %s)", f.message)
-                self.failures.append((test, lang, f.message))
+                logging.error("(FAILED (while submitting): %s)", f)
+                self.failures.append((test, lang, str(f)))
 
         if not concurrent_submit_and_eval:
             self.ps.start("EvaluationService", contest=self.contest_id)
@@ -344,8 +344,8 @@ class TestRunner(object):
             try:
                 test.wait(self.contest_id, lang)
             except TestFailure as f:
-                logging.error("(FAILED (while evaluating): %s)", f.message)
-                self.failures.append((test, lang, f.message))
+                logging.error("(FAILED (while evaluating): %s)", f)
+                self.failures.append((test, lang, str(f)))
 
         for i, (test, lang) in enumerate(self._all_user_tests()):
             logging.info("Waiting for user test %s/%s: %s (%s)",
@@ -353,8 +353,7 @@ class TestRunner(object):
             try:
                 test.wait_user_test(self.contest_id, lang)
             except TestFailure as f:
-                logging.error("(FAILED (while evaluating user test): %s)",
-                              f.message)
-                self.failures.append((test, lang, f.message))
+                logging.error("(FAILED (while evaluating user test): %s)", f)
+                self.failures.append((test, lang, str(f)))
 
         return self.failures

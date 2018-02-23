@@ -369,7 +369,7 @@ class TwoSteps(TaskType):
                                         second_sandbox)
                                 except ValueError as e:
                                     logger.error("Invalid output from "
-                                                 "comparator: %s", e.message,
+                                                 "comparator: %s", e,
                                                  extra={"operation": job.info})
                                     success = False
                     else:
