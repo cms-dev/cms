@@ -57,7 +57,7 @@ __all__ = [
     # base
     "metadata", "Base",
     # fsobject
-    "FSObject",
+    "FSObject", "LargeObject",
     # validation
     "CodenameConstraint", "FilenameConstraint", "DigestConstraint",
     # contest
@@ -100,7 +100,7 @@ from .session import Session, ScopedSession, SessionGen, \
 
 from .types import CastingArray
 from .base import metadata, Base
-from .fsobject import FSObject
+from .fsobject import FSObject, LargeObject
 from .validation import CodenameConstraint, FilenameConstraint, \
     DigestConstraint
 from .contest import Contest, Announcement
