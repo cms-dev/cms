@@ -41,7 +41,6 @@ from functools import wraps, partial
 
 import gevent
 from gevent import subprocess
-#import gevent_subprocess as subprocess
 
 from cms import config
 from cms.io.GeventUtils import copyfileobj, rmtree

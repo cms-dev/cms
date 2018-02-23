@@ -102,7 +102,7 @@ class OutputOnly(TaskType):
         sandbox = create_sandbox(
             file_cacher,
             name="evaluate",
-            job.multithreaded_sandbox)
+            multithreaded=job.multithreaded_sandbox)
         job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return

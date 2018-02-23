@@ -318,7 +318,7 @@ class Batch(TaskType):
                 # Otherwise evaluate the output file.
                 else:
 
-                    # Create the checkbox: a brand-new sandbox just for checking
+                    # Create the checkbox: brand-new sandbox just for checking
                     checkbox = create_sandbox(
                         file_cacher,
                         name="check",
@@ -337,9 +337,17 @@ class Batch(TaskType):
 
                     # Put the user-produced output file into the checkbox
                     try:
-                        shutil.copyfile(
-                            os.path.join(sandbox.get_root_path(), output_filename),
-                            os.path.join(checkbox.get_root_path(), output_filename))
+                        output_src = os.path.join(
+                            sandbox.get_root_path(),
+                            output_filename)
+                        output_dst = os.path.join(
+                            checkbox.get_root_path(),
+                            output_filename)
+
+                        if os.path.islink(output_src):
+                            raise FileNotFoundError
+
+                        shutil.copyfile(output_src, output_dst)
                     except FileNotFoundError as e:
                         pass
 
