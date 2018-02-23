@@ -32,6 +32,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+import atexit
 import hashlib
 import io
 import logging
@@ -465,6 +466,7 @@ class FileCacher(object):
 
         if service is None:
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
+            atexit.register(lambda: rmtree(self.file_dir))
         else:
             self.file_dir = os.path.join(
                 config.cache_dir,
@@ -476,6 +478,7 @@ class FileCacher(object):
                 or not mkdir(self.file_dir) or not mkdir(self.temp_dir):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
+        atexit.register(lambda: rmtree(self.temp_dir))
 
     def load(self, digest, if_needed=False):
         """Load the file with the given digest into the cache.
