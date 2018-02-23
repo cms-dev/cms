@@ -164,6 +164,13 @@ class Batch(TaskType):
     def _uses_grader(self):
         return self.compilation == Batch.COMPILATION_GRADER
 
+    @staticmethod
+    def _is_manager_for_compilation(filename):
+        """Return if a manager should be copied in the compilation sandbox"""
+        return any(filename.endswith(header) for header in HEADER_EXTS) or \
+            any(filename.endswith(source) for source in SOURCE_EXTS) or \
+            any(filename.endswith(obj) for obj in OBJECT_EXTS)
+
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
@@ -184,46 +191,33 @@ class Batch(TaskType):
                          len(job.files), extra={"operation": job.info})
             return
 
-        # Create the sandbox
+        # Create the sandbox.
         sandbox = create_sandbox(
             file_cacher,
             multithreaded=job.multithreaded_sandbox,
             name="compile")
         job.sandboxes.append(sandbox.path)
 
-        # Prepare the source files in the sandbox
-        files_to_get = {}
-        format_filename = next(iterkeys(job.files))
-        source_filenames = []
-        source_filenames.append(format_filename.replace(".%l", source_ext))
-        files_to_get[source_filenames[0]] = \
-            job.files[format_filename].digest
-        # If a grader is specified, we add to the command line (and to
-        # the files to get) the corresponding manager. The grader must
-        # be the first file in source_filenames.
+        user_file_format = next(iterkeys(job.files))
+        user_source_filename = user_file_format.replace(".%l", source_ext)
+        executable_filename = user_file_format.replace(".%l", "")
+
+        # Copy required files in the sandbox (includes the grader if present).
+        sandbox.create_file_from_storage(
+            user_source_filename, job.files[user_file_format].digest)
+        for filename in iterkeys(job.managers):
+            if Batch._is_manager_for_compilation(filename):
+                sandbox.create_file_from_storage(
+                    filename, job.managers[filename].digest)
+
+        # Create the list of filenames to be passed to the compiler. If we use
+        # a grader, it needs to be in first position in the command line.
+        source_filenames = [user_source_filename]
         if self._uses_grader():
             grader_source_filename = Batch.GRADER_BASENAME + source_ext
             source_filenames.insert(0, grader_source_filename)
-            files_to_get[grader_source_filename] = \
-                job.managers[grader_source_filename].digest
 
-        # Also copy all managers that might be useful during compilation.
-        for filename in iterkeys(job.managers):
-            if any(filename.endswith(header) for header in HEADER_EXTS):
-                files_to_get[filename] = \
-                    job.managers[filename].digest
-            elif any(filename.endswith(source) for source in SOURCE_EXTS):
-                files_to_get[filename] = \
-                    job.managers[filename].digest
-            elif any(filename.endswith(obj) for obj in OBJECT_EXTS):
-                files_to_get[filename] = \
-                    job.managers[filename].digest
-
-        for filename, digest in iteritems(files_to_get):
-            sandbox.create_file_from_storage(filename, digest)
-
-        # Prepare the compilation command
-        executable_filename = format_filename.replace(".%l", "")
+        # Prepare the compilation command.
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
 
