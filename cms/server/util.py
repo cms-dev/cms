@@ -375,21 +375,35 @@ def get_url_root(request_path):
         return "."
 
 
-def create_url_builder(url_root):
-    """Return a function that builds an URL relative to the given root.
-
-    Generate a function that assembles an URL using its positional
-    parameters as URL components and its keyword arguments as the query
-    string. The URL will be relative to the root given here.
-
-    url_root (str): the root of all paths that are generated.
-
-    return (function): an URL generator.
+class Url(object):
+    """An object that helps in building a URL piece by piece.
 
     """
-    assert not url_root.endswith("/") or url_root == "/"
-    def result(*args, **kwargs):
-        url = url_root
+
+    def __init__(self, url_root):
+        """Create a URL relative to the given root.
+
+        url_root (str): the root of all paths that are generated.
+
+        """
+        assert not url_root.endswith("/") or url_root == "/"
+        self.url_root = url_root
+
+    def __call__(self, *args, **kwargs):
+        """Generate a URL.
+
+        Assemble a URL using the positional arguments as URL components
+        and the keyword arguments as the query string. The URL will be
+        relative to the root given to the constructor.
+
+        args ([object]): the path components (will be cast to strings).
+        kwargs ({str: object}): the query parameters (values will be
+            cast to strings).
+
+        return (str): the desired URL.
+
+        """
+        url = self.url_root
         for component in args:
             if not url.endswith("/"):
                 url += "/"
@@ -397,7 +411,21 @@ def create_url_builder(url_root):
         if kwargs:
             url += "?" + urlencode(kwargs)
         return url
-    return result
+
+    def __getitem__(self, component):
+        """Produce a new Url obtained by extending this instance.
+
+        Return a new Url object that will generate paths based on this
+        instance's URL root extended with the path component given as
+        argument. That is, if url() is "/foo", then url["bar"]() is
+        "/foo/bar".
+
+        component (object): the path component (will be cast to string).
+
+        return (Url): the extended URL generator.
+
+        """
+        return self.__class__(self.__call__(component))
 
 
 class CommonRequestHandler(RequestHandler):
@@ -423,7 +451,7 @@ class CommonRequestHandler(RequestHandler):
 
         """
         super(CommonRequestHandler, self).prepare()
-        self.url = create_url_builder(get_url_root(self.request.path))
+        self.url = Url(get_url_root(self.request.path))
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
     def finish(self, *args, **kwargs):
