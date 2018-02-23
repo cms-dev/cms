@@ -79,14 +79,32 @@ class Batch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
+    # Filename of the reference solution in the sandbox evaluating the output.
+    CORRECT_OUTPUT_FILENAME = "res.txt"
+    # Filename of the admin-provided comparator.
+    CHECKER_FILENAME = "checker"
+    # Basename of the grader, used in the manager filename and as the main
+    # class in languages that require us to specify it.
+    GRADER_BASENAME = "grader"
+    # Default input and output filenames when not provided as parameters.
+    DEFAULT_INPUT_FILENAME = "input.txt"
+    DEFAULT_OUTPUT_FILENAME = "output.txt"
+
+    # Constants used in the parameter definition.
+    OUTPUT_EVAL_DIFF = "diff"
+    OUTPUT_EVAL_CHECKER = "comparator"
+    COMPILATION_ALONE = "alone"
+    COMPILATION_GRADER = "grader"
+
+    # Other constants to specify the task type behaviour and parameters.
     ALLOW_PARTIAL_SUBMISSION = False
 
     _COMPILATION = ParameterTypeChoice(
         "Compilation",
         "compilation",
         "",
-        {"alone": "Submissions are self-sufficient",
-         "grader": "Submissions are compiled with a grader"})
+        {COMPILATION_ALONE: "Submissions are self-sufficient",
+         COMPILATION_GRADER: "Submissions are compiled with a grader"})
 
     _USE_FILE = ParameterTypeCollection(
         "I/O (blank for stdin/stdout)",
@@ -101,8 +119,8 @@ class Batch(TaskType):
         "Output evaluation",
         "output_eval",
         "",
-        {"diff": "Outputs compared with white diff",
-         "comparator": "Outputs are compared by a comparator"})
+        {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
 
@@ -118,7 +136,7 @@ class Batch(TaskType):
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager.
         if self._uses_grader():
-            source_filenames.append("grader.%l")
+            source_filenames.append(Batch.GRADER_BASENAME + ".%l")
         source_filenames.append(submission_format[0])
         executable_filename = submission_format[0].replace(".%l", "")
         res = dict()
@@ -138,7 +156,7 @@ class Batch(TaskType):
         return []
 
     def _uses_grader(self):
-        return self.parameters[0] == "grader"
+        return self.parameters[0] == Batch.COMPILATION_GRADER
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -178,9 +196,10 @@ class Batch(TaskType):
         # the files to get) the corresponding manager. The grader must
         # be the first file in source_filenames.
         if self._uses_grader():
-            source_filenames.insert(0, "grader%s" % source_ext)
-            files_to_get["grader%s" % source_ext] = \
-                job.managers["grader%s" % source_ext].digest
+            grader_source_filename = Batch.GRADER_BASENAME + source_ext
+            source_filenames.insert(0, grader_source_filename)
+            files_to_get[grader_source_filename] = \
+                job.managers[grader_source_filename].digest
 
         # Also copy all managers that might be useful during compilation.
         for filename in iterkeys(job.managers):
@@ -234,9 +253,10 @@ class Batch(TaskType):
         assert len(job.executables) == 1
         executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
+        main = Batch.GRADER_BASENAME \
+            if self._uses_grader() else executable_filename
         commands = language.get_evaluation_commands(
-            executable_filename,
-            main="grader" if self._uses_grader() else executable_filename)
+            executable_filename, main=main)
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest
@@ -246,10 +266,10 @@ class Batch(TaskType):
         stdout_redirect = None
         files_allowing_write = []
         if len(input_filename) == 0:
-            input_filename = "input.txt"
+            input_filename = Batch.DEFAULT_INPUT_FILENAME
             stdin_redirect = input_filename
         if len(output_filename) == 0:
-            output_filename = "output.txt"
+            output_filename = Batch.DEFAULT_OUTPUT_FILENAME
             stdout_redirect = output_filename
         else:
             files_allowing_write.append(output_filename)
@@ -328,7 +348,7 @@ class Batch(TaskType):
 
                     # Put the reference solution into the checkbox
                     checkbox.create_file_from_storage(
-                        "res.txt",
+                        Batch.CORRECT_OUTPUT_FILENAME,
                         job.output)
 
                     # Put the input file into the checkbox
@@ -353,25 +373,24 @@ class Batch(TaskType):
                         pass
 
                     # Check the solution with white_diff
-                    if self.parameters[2] == "diff":
+                    if self.parameters[2] == Batch.OUTPUT_EVAL_DIFF:
                         outcome, text = white_diff_step(
-                            checkbox, output_filename, "res.txt")
+                            checkbox, output_filename,
+                            Batch.CORRECT_OUTPUT_FILENAME)
 
                     # Check the solution with a comparator
-                    elif self.parameters[2] == "comparator":
-                        manager_filename = "checker"
-
-                        if manager_filename not in job.managers:
+                    elif self.parameters[2] == Batch.OUTPUT_EVAL_CHECKER:
+                        if Batch.CHECKER_FILENAME not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
-                                         "named 'checker')",
+                                         "named '%s')", Batch.CHECKER_FILENAME,
                                          extra={"operation": job.info})
                             checker_success = False
 
                         else:
                             checkbox.create_file_from_storage(
-                                manager_filename,
-                                job.managers[manager_filename].digest,
+                                Batch.CHECKER_FILENAME,
+                                job.managers[Batch.CHECKER_FILENAME].digest,
                                 executable=True)
 
                             # Allow using any number of processes (because e.g.
@@ -382,8 +401,10 @@ class Batch(TaskType):
 
                             checker_success, _ = evaluation_step(
                                 checkbox,
-                                [["./%s" % manager_filename,
-                                  input_filename, "res.txt", output_filename]])
+                                [["./%s" % Batch.CHECKER_FILENAME,
+                                  input_filename,
+                                  Batch.CORRECT_OUTPUT_FILENAME,
+                                  output_filename]])
                         if checker_success:
                             try:
                                 outcome, text = \
