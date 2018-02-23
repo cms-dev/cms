@@ -79,14 +79,23 @@ class Batch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
+    # Some local constants used in this class.
+    CORRECT_OUTPUT_FILENAME = "res.txt"
+    CHECKER_FILENAME = "checker"
+    OUTPUT_EVAL_DIFF = "diff"
+    OUTPUT_EVAL_CHECKER = "comparator"
+    COMPILATION_ALONE = "alone"
+    COMPILATION_GRADER = "grader"
+
+    # Other constants to specify the task type behaviour and parameters.
     ALLOW_PARTIAL_SUBMISSION = False
 
     _COMPILATION = ParameterTypeChoice(
         "Compilation",
         "compilation",
         "",
-        {"alone": "Submissions are self-sufficient",
-         "grader": "Submissions are compiled with a grader"})
+        {COMPILATION_ALONE: "Submissions are self-sufficient",
+         COMPILATION_GRADER: "Submissions are compiled with a grader"})
 
     _USE_FILE = ParameterTypeCollection(
         "I/O (blank for stdin/stdout)",
@@ -101,8 +110,8 @@ class Batch(TaskType):
         "Output evaluation",
         "output_eval",
         "",
-        {"diff": "Outputs compared with white diff",
-         "comparator": "Outputs are compared by a comparator"})
+        {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
 
@@ -138,7 +147,7 @@ class Batch(TaskType):
         return []
 
     def _uses_grader(self):
-        return self.parameters[0] == "grader"
+        return self.parameters[0] == Batch.COMPILATION_GRADER
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -328,7 +337,7 @@ class Batch(TaskType):
 
                     # Put the reference solution into the checkbox
                     checkbox.create_file_from_storage(
-                        "res.txt",
+                        Batch.CORRECT_OUTPUT_FILENAME,
                         job.output)
 
                     # Put the input file into the checkbox
@@ -353,15 +362,14 @@ class Batch(TaskType):
                         pass
 
                     # Check the solution with white_diff
-                    if self.parameters[2] == "diff":
+                    if self.parameters[2] == Batch.OUTPUT_EVAL_DIFF:
                         outcome, text = white_diff_step(
-                            checkbox, output_filename, "res.txt")
+                            checkbox, output_filename,
+                            Batch.CORRECT_OUTPUT_FILENAME)
 
                     # Check the solution with a comparator
-                    elif self.parameters[2] == "comparator":
-                        manager_filename = "checker"
-
-                        if manager_filename not in job.managers:
+                    elif self.parameters[2] == Batch.OUTPUT_EVAL_CHECKER:
+                        if Batch.CHECKER_FILENAME not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named 'checker')",
@@ -370,8 +378,8 @@ class Batch(TaskType):
 
                         else:
                             checkbox.create_file_from_storage(
-                                manager_filename,
-                                job.managers[manager_filename].digest,
+                                Batch.CHECKER_FILENAME,
+                                job.managers[Batch.CHECKER_FILENAME].digest,
                                 executable=True)
 
                             # Allow using any number of processes (because e.g.
@@ -382,8 +390,10 @@ class Batch(TaskType):
 
                             checker_success, _ = evaluation_step(
                                 checkbox,
-                                [["./%s" % manager_filename,
-                                  input_filename, "res.txt", output_filename]])
+                                [["./%s" % Batch.CHECKER_FILENAME,
+                                  input_filename,
+                                  Batch.CORRECT_OUTPUT_FILENAME,
+                                  output_filename]])
                         if checker_success:
                             try:
                                 outcome, text = \
