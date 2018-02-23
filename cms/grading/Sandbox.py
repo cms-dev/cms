@@ -544,16 +544,18 @@ class StupidSandbox(SandboxBase):
 
     """
 
-    def __init__(self, multithreaded, file_cacher, temp_dir=None):
+    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, multithreaded, file_cacher, temp_dir)
+        SandboxBase.__init__(self, multithreaded, file_cacher, name, temp_dir)
 
         # Make box directory
-        self.path = tempfile.mkdtemp(dir=self.temp_dir)
+        self.path = tempfile.mkdtemp(
+            dir=self.temp_dir,
+            prefix="cms-%s-" % (self.name))
 
         self.exec_num = -1
         self.popen = None
@@ -901,7 +903,7 @@ class IsolateSandbox(SandboxBase):
         self.inner_temp_dir = "/tmp"
         self.outer_temp_dir = tempfile.mkdtemp(
             dir=self.temp_dir,
-            prefix="CMS-%s-" % (self.name))
+            prefix="cms-%s-" % (self.name))
         # Don't use os.path.join here, because the absoluteness of /tmp will
         # bite you.
         self.path = self.outer_temp_dir + self.inner_temp_dir
