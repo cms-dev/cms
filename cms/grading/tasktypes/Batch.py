@@ -130,6 +130,12 @@ class Batch(TaskType):
         # TODO add some details if a grader/comparator is used, etc...
         return "Batch"
 
+    def __init__(self, parameters):
+        super(Batch, self).__init__(parameters)
+        self.compilation = self.parameters[0]
+        self.input_filename, self.output_filename = self.parameters[1]
+        self.output_eval = self.parameters[2]
+
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         source_filenames = []
@@ -156,7 +162,7 @@ class Batch(TaskType):
         return []
 
     def _uses_grader(self):
-        return self.parameters[0] == Batch.COMPILATION_GRADER
+        return self.compilation == Batch.COMPILATION_GRADER
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -261,20 +267,19 @@ class Batch(TaskType):
             executable_filename:
             job.executables[executable_filename].digest
             }
-        input_filename, output_filename = self.parameters[1]
         stdin_redirect = None
         stdout_redirect = None
         files_allowing_write = []
-        if len(input_filename) == 0:
-            input_filename = Batch.DEFAULT_INPUT_FILENAME
-            stdin_redirect = input_filename
-        if len(output_filename) == 0:
-            output_filename = Batch.DEFAULT_OUTPUT_FILENAME
-            stdout_redirect = output_filename
+        if len(self.input_filename) == 0:
+            self.input_filename = Batch.DEFAULT_INPUT_FILENAME
+            stdin_redirect = self.input_filename
+        if len(self.output_filename) == 0:
+            self.output_filename = Batch.DEFAULT_OUTPUT_FILENAME
+            stdout_redirect = self.output_filename
         else:
-            files_allowing_write.append(output_filename)
+            files_allowing_write.append(self.output_filename)
         files_to_get = {
-            input_filename: job.input
+            self.input_filename: job.input
             }
 
         # Put the required files into the sandbox
@@ -314,10 +319,10 @@ class Batch(TaskType):
         else:
 
             # Check that the output file was created
-            if not sandbox.file_exists(output_filename):
+            if not sandbox.file_exists(self.output_filename):
                 outcome = 0.0
                 text = [N_("Evaluation didn't produce file %s"),
-                        output_filename]
+                        self.output_filename]
                 if job.get_output:
                     job.user_output = None
 
@@ -325,7 +330,7 @@ class Batch(TaskType):
                 # If asked so, put the output file into the storage
                 if job.get_output:
                     job.user_output = sandbox.get_file_to_storage(
-                        output_filename,
+                        self.output_filename,
                         "Output file in job %s" % job.info,
                         trunc_len=100 * 1024)
 
@@ -353,17 +358,17 @@ class Batch(TaskType):
 
                     # Put the input file into the checkbox
                     checkbox.create_file_from_storage(
-                        input_filename,
+                        self.input_filename,
                         job.input)
 
                     # Put the user-produced output file into the checkbox
                     try:
                         output_src = os.path.join(
                             sandbox.get_root_path(),
-                            output_filename)
+                            self.output_filename)
                         output_dst = os.path.join(
                             checkbox.get_root_path(),
-                            output_filename)
+                            self.output_filename)
 
                         if os.path.islink(output_src):
                             raise FileNotFoundError
@@ -373,13 +378,13 @@ class Batch(TaskType):
                         pass
 
                     # Check the solution with white_diff
-                    if self.parameters[2] == Batch.OUTPUT_EVAL_DIFF:
+                    if self.output_eval == Batch.OUTPUT_EVAL_DIFF:
                         outcome, text = white_diff_step(
-                            checkbox, output_filename,
+                            checkbox, self.output_filename,
                             Batch.CORRECT_OUTPUT_FILENAME)
 
                     # Check the solution with a comparator
-                    elif self.parameters[2] == Batch.OUTPUT_EVAL_CHECKER:
+                    elif self.output_eval == Batch.OUTPUT_EVAL_CHECKER:
                         if Batch.CHECKER_FILENAME not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
@@ -402,9 +407,9 @@ class Batch(TaskType):
                             checker_success, _ = evaluation_step(
                                 checkbox,
                                 [["./%s" % Batch.CHECKER_FILENAME,
-                                  input_filename,
+                                  self.input_filename,
                                   Batch.CORRECT_OUTPUT_FILENAME,
-                                  output_filename]])
+                                  self.output_filename]])
                         if checker_success:
                             try:
                                 outcome, text = \
@@ -418,7 +423,7 @@ class Batch(TaskType):
                     else:
                         raise ValueError("Unrecognized third parameter"
                                          " `%s' for Batch tasktype." %
-                                         self.parameters[2])
+                                         self.output_eval)
 
                     success = success and checker_success
                     delete_sandbox(checkbox, checker_success)
