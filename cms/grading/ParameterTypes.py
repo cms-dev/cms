@@ -34,7 +34,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import with_metaclass
+from six import string_types, with_metaclass
 
 from abc import ABCMeta, abstractmethod
 
@@ -59,6 +59,17 @@ class ParameterType(with_metaclass(ABCMeta, object)):
         self.name = name
         self.short_name = short_name
         self.description = description
+
+    @abstractmethod
+    def validate(self, value):
+        """Validate that the passed value is syntactically appropriate
+
+        value (object): the value to test
+
+        raise (ValueError): if the value is malformed for this parameter.
+
+        """
+        pass
 
     @abstractmethod
     def parse_string(self, value):
@@ -94,6 +105,11 @@ class ParameterTypeString(ParameterType):
     TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
         "value=\"{{parameter_value}}\" />"
 
+    def validate(self, value):
+        if not isinstance(value, string_types):
+            raise ValueError("Invalid value for string parameter %s" %
+                             self.name)
+
     def parse_string(self, value):
         """Returns the specified string.
         """
@@ -110,6 +126,11 @@ class ParameterTypeFloat(ParameterType):
 
     TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
         "value=\"{{parameter_value}}\" />"
+
+    def validate(self, value):
+        if not isinstance(value, float):
+            raise ValueError("Invalid value for float parameter %s" %
+                             self.name)
 
     def parse_string(self, value):
         """Attempts to parse the specified string as a float and
@@ -129,6 +150,10 @@ class ParameterTypeInt(ParameterType):
     TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
         "value=\"{{parameter_value}}\" />"
 
+    def validate(self, value):
+        if not isinstance(value, int):
+            raise ValueError("Invalid value for int parameter %s" % self.name)
+
     def parse_string(self, value):
         """Attempts to parse the specified string as a float and
         returns the parsed value.
@@ -147,6 +172,11 @@ class ParameterTypeBoolean(ParameterType):
 
     TEMPLATE = "<input type=\"checkbox\" name=\"{{parameter_name}}\" " \
         "{% if checked %}checked{% end %} />"
+
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("Invalid value for boolean parameter %s" %
+                             self.name)
 
     def parse_string(self, value):
         """Returns True if the value is not None.
@@ -183,6 +213,11 @@ class ParameterTypeChoice(ParameterType):
         ParameterType.__init__(self, name, short_name, description)
         self.values = values
 
+    def validate(self, value):
+        if value not in self.values:
+            raise ValueError("Invalid choice %s for parameter %s" %
+                             (value, self.name))
+
     def parse_string(self, value):
         """Tests whether the string is an accepted value.
 
@@ -218,6 +253,12 @@ class ParameterTypeArray(ParameterType):
     def __init__(self, name, short_name, description, subparameter):
         ParameterType.__init__(self, name, short_name, description)
         self.subparameter = subparameter
+
+    def validate(self, value):
+        if not isinstance(value, list):
+            raise ValueError("Parameter %s should be a list" % self.name)
+        for val in value:
+            self.subparameter.validate(val)
 
     def parse_string(self, value):
         pass
@@ -259,6 +300,14 @@ class ParameterTypeCollection(ParameterType):
     def __init__(self, name, shortname, description, subparameters):
         ParameterType.__init__(self, name, shortname, description)
         self.subparameters = subparameters
+
+    def validate(self, value):
+        if not isinstance(value, list):
+            raise ValueError("Parameter %s should be a list" % self.name)
+        if len(value) != len(self.subparameters):
+            raise ValueError("Invalid value for parameter %s" % self.name)
+        for subvalue, subparameter in zip(value, self.subparameters):
+            subparameter.validate(subvalue)
 
     def parse_string(self, value):
         pass

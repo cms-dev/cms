@@ -152,6 +152,27 @@ class TaskType(with_metaclass(ABCMeta, object)):
 
         """
         self.parameters = parameters
+        self.validate_parameters()
+
+    def validate_parameters(self):
+        """Validate the parameters syntactically.
+
+        raise (ValueError): if the parameters are malformed.
+
+        """
+        if not isinstance(self.parameters, list):
+            raise ValueError(
+                "Task type parameters for %s are not a list" % self.__class__)
+
+        if len(self.parameters) != len(self.ACCEPTED_PARAMETERS):
+            raise ValueError(
+                "Task type %s should have %s parameters, received %s" %
+                (self.__class__,
+                 len(self.ACCEPTED_PARAMETERS),
+                 len(self.parameters)))
+
+        for value, parameter in zip(self.parameters, self.ACCEPTED_PARAMETERS):
+            parameter.validate(value)
 
     @property
     def name(self):
