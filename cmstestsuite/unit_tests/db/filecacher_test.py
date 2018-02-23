@@ -142,6 +142,30 @@ class TestFileCacher(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.cache_base_path, ignore_errors=True)
 
+    def check_stored_file(self, digest):
+        """Ensure that a given file digest has been stored correctly."""
+        # Remove it from the filesystem.
+        cache_path = os.path.join(self.cache_base_path, digest)
+        try:
+            os.unlink(cache_path)
+        except OSError:
+            pass
+
+        # Pull it out of the file_cacher and compute the hash
+        hash_file = HashingFile()
+        try:
+            self.file_cacher.get_file_to_fobj(digest, hash_file)
+        except Exception as error:
+            self.fail("Error received: %r." % error)
+        my_digest = hash_file.digest
+        hash_file.close()
+
+        # Ensure the digest matches.
+        if digest != my_digest:
+            self.fail("Content differs.")
+        if not os.path.exists(cache_path):
+            self.fail("File not stored in local cache.")
+
     def test_file_life(self):
         """Send a ~100B random binary file to the storage through
         FileCacher as a file-like object. FC should cache the content
@@ -302,24 +326,52 @@ class TestFileCacher(unittest.TestCase):
         self.cache_path = os.path.join(self.cache_base_path, data)
         self.digest = data
 
-        # Get the ~100MB file from FileCacher.
-        os.unlink(self.cache_path)
-        hash_file = HashingFile()
-        try:
-            self.file_cacher.get_file_to_fobj(self.digest, hash_file)
-        except Exception as error:
-            self.fail("Error received: %r." % error)
-        my_digest = hash_file.digest
-        hash_file.close()
+        # Check file is stored correctly in FileCacher.
+        self.check_stored_file(self.digest)
 
-        try:
-            if self.digest != my_digest:
-                self.fail("Content differs.")
-            if not os.path.exists(self.cache_path):
-                self.fail("File not stored in local cache.")
-        finally:
-            self.file_cacher.delete(self.digest)
+        self.file_cacher.delete(self.digest)
 
+    def test_file_duplicates(self):
+        """Send multiple copies of the same random file to the storage through
+        FileCacher. FC should handle this gracefully and only end up with one
+        copy.
+        """
+        # We need to wrap the generator in a list because of a
+        # shortcoming of future's bytes implementation.
+        size = 100
+        rand_file = RandomFile(size)
+        content = rand_file.read(size)
+        digest = rand_file.digest
+        rand_file.close()
+
+        # Test writing the same file to the DB in parallel.
+        # Create empty files.
+        num_files = 4
+        fobjs = []
+        for i in range(num_files):
+            fobj = self.file_cacher.backend.create_file(digest)
+            # As the file contains random data, we don't expect to have put
+            # this into the DB previously.
+            assert fobj is not None
+            fobjs.append(fobj)
+
+        # Close them in a different order.
+        random.shuffle(fobjs)
+
+        # Write the files and commit them.
+        for i, fobj in enumerate(fobjs):
+            fobj.write(content)
+            # Ensure that only one copy made it into the database.
+            commit_ok = \
+                self.file_cacher.backend.commit_file(fobj,
+                                                     digest,
+                                                     desc='Copy %d' % i)
+            # Only the first commit should succeed.
+            assert commit_ok == (i == 0), \
+                "Commit of %d was %s unexpectedly" % (i, commit_ok)
+
+        # Check that the file was stored correctly.
+        self.check_stored_file(digest)
 
 if __name__ == "__main__":
     unittest.main()

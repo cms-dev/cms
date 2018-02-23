@@ -394,10 +394,10 @@ class FSObject(Base):
              given, `rb' is used.
 
         """
+        assert self.loid != 0, "Expected LO to have already been created!"
         # Here we rely on the fact that we're using psycopg2 as
         # PostgreSQL backend.
         lobj = LargeObject(self.loid, mode)
-        self.loid = lobj.loid
 
         # FIXME Wrap with a io.BufferedReader/Writer/Random?
         return lobj
