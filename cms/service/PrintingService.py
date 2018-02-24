@@ -252,7 +252,7 @@ class PrintingService(TriggeredService):
         counter = 0
         with SessionGen() as session:
             for printjob in session.query(PrintJob) \
-                    .filter(PrintJob.done == False).all():  # noqa
+                    .filter(PrintJob.done.is_(False)).all():
                 self.enqueue(PrintingOperation(printjob.id),
                              timestamp=printjob.timestamp)
                 counter += 1

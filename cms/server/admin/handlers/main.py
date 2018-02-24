@@ -155,9 +155,9 @@ class NotificationsHandler(BaseHandler):
         # Keep "== None" in filter arguments. SQLAlchemy does not
         # understand "is None".
         questions = self.sql_session.query(Question)\
-            .filter(Question.reply_timestamp == None)\
+            .filter(Question.reply_timestamp.is_(None))\
             .filter(Question.question_timestamp > last_notification)\
-            .all()  # noqa
+            .all()
 
         for question in questions:
             res.append({

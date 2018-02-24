@@ -303,14 +303,12 @@ class BaseHandler(CommonRequestHandler):
             params["current_user"] = self.current_user
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
-            # Keep "== None" in filter arguments. SQLAlchemy does not
-            # understand "is None".
             params["unanswered"] = self.sql_session.query(Question)\
                 .join(Participation)\
                 .filter(Participation.contest_id == self.contest.id)\
-                .filter(Question.reply_timestamp == None)\
-                .filter(Question.ignored == False)\
-                .count()  # noqa
+                .filter(Question.reply_timestamp.is_(None))\
+                .filter(Question.ignored.is_(False))\
+                .count()
         # TODO: not all pages require all these data.
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["task_list"] = self.sql_session.query(Task).all()

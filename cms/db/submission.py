@@ -462,7 +462,7 @@ class SubmissionResult(Base):
         """Return a filtering expression for compiled submission results.
 
         """
-        return SubmissionResult.compilation_outcome != None  # noqa
+        return SubmissionResult.compilation_outcome.isnot(None)
 
     def compilation_failed(self):
         """Return whether the submission result did not compile.
@@ -513,7 +513,7 @@ class SubmissionResult(Base):
         """Return a filtering lambda for evaluated submission results.
 
         """
-        return SubmissionResult.evaluation_outcome != None  # noqa
+        return SubmissionResult.evaluation_outcome.isnot(None)
 
     def needs_scoring(self):
         """Return whether the submission result needs to be scored.
@@ -540,11 +540,11 @@ class SubmissionResult(Base):
         """Return a filtering lambda for scored submission results.
 
         """
-        return ((SubmissionResult.score != None)
-                & (SubmissionResult.score_details != None)
-                & (SubmissionResult.public_score != None)
-                & (SubmissionResult.public_score_details != None)
-                & (SubmissionResult.ranking_score_details != None))  # noqa
+        return ((SubmissionResult.score.isnot(None))
+                & (SubmissionResult.score_details.isnot(None))
+                & (SubmissionResult.public_score.isnot(None))
+                & (SubmissionResult.public_score_details.isnot(None))
+                & (SubmissionResult.ranking_score_details.isnot(None)))
 
     def invalidate_compilation(self):
         """Blank all compilation and evaluation outcomes, and the score.

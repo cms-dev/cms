@@ -52,8 +52,8 @@ class ContestTasksHandler(BaseHandler):
         self.r_params["contest"] = self.contest
         self.r_params["unassigned_tasks"] = \
             self.sql_session.query(Task)\
-                .filter(Task.contest == None)\
-                .all()  # noqa
+                .filter(Task.contest_id.is_(None))\
+                .all()
         self.render("contest_tasks.html", **self.r_params)
 
     @require_permission(BaseHandler.PERMISSION_ALL)
