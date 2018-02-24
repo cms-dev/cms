@@ -33,6 +33,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import itervalues
 
+import copy
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
@@ -427,6 +428,15 @@ class Dataset(Base):
     # managers (dict of Manager objects indexed by filename)
     # testcases (dict of Testcase objects indexed by codename)
 
+    def __init__(self, *args, **kwargs):
+        super(Dataset, self).__init__(*args, **kwargs)
+        self._cached_task_type = None
+        self._cached_task_type_parameters = None
+        self._cached_task_type_object = None
+        self._cached_score_type = None
+        self._cached_score_type_parameters = None
+        self._cached_score_type_object = None
+
     @property
     def active(self):
         """Shorthand for detecting if the dataset is active.
@@ -436,6 +446,30 @@ class Dataset(Base):
 
         """
         return self is self.task.active_dataset
+
+    @property
+    def task_type_object(self):
+        if (self._cached_task_type, self._cached_task_type_parameters) \
+                != (self.task_type, self.task_type_parameters):
+            self._cached_task_type = self.task_type
+            self._cached_task_type_parameters = \
+                copy.deepcopy(self.task_type_parameters)
+            # Import late to avoid a circular dependency.
+            from cms.grading.tasktypes import get_task_type
+            self._cached_task_type_object = get_task_type(dataset=self)
+        return self._cached_task_type_object
+
+    @property
+    def score_type_object(self):
+        if (self._cached_score_type, self._cached_score_type_parameters) \
+                != (self.score_type, self.score_type_parameters):
+            self._cached_score_type = self.score_type
+            self._cached_score_type_parameters = \
+                copy.deepcopy(self.score_type_parameters)
+            # Import late to avoid a circular dependency.
+            from cms.grading.scoretypes import get_score_type
+            self._cached_score_type_object = get_score_type(dataset=self)
+        return self._cached_score_type_object
 
     def clone_from(self, old_dataset, clone_managers=True,
                    clone_testcases=True, clone_results=False):
