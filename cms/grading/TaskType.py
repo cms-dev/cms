@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -51,8 +51,6 @@ from cms.grading.Job import CompilationJob, EvaluationJob
 logger = logging.getLogger(__name__)
 
 
-## Sandbox lifecycle. ##
-
 def create_sandbox(file_cacher, multithreaded=False, name=None):
     """Create a sandbox, and return it.
 
@@ -91,6 +89,26 @@ def delete_sandbox(sandbox, success=True):
         except (IOError, OSError):
             err_msg = "Couldn't delete sandbox."
             logger.warning(err_msg, exc_info=True)
+
+
+def is_manager_for_compilation(filename, language):
+    """Return whether a manager should be copied in the compilation sandbox.
+
+    Only return true for managers required by the language of the submission.
+
+    filename (str): filename of the manager.
+    language (Language): the programming language of the submission.
+
+    return (bool): whether the manager is required for the compilation.
+
+    """
+    return (
+        any(filename.endswith(source)
+            for source in language.source_extensions)
+        or any(filename.endswith(header)
+               for header in language.header_extensions)
+        or any(filename.endswith(obj)
+               for obj in language.object_extensions))
 
 
 class TaskType(with_metaclass(ABCMeta, object)):

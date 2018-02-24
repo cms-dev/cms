@@ -36,12 +36,11 @@ import shutil
 from cms.grading import compilation_step, evaluation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     white_diff_step
-from cms.grading.languagemanager import \
-    LANGUAGES, HEADER_EXTS, SOURCE_EXTS, OBJECT_EXTS, get_language
+from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox
+    create_sandbox, delete_sandbox, is_manager_for_compilation
 from cms.db import Executable
 
 
@@ -178,13 +177,6 @@ class Batch(TaskType):
     def _uses_checker(self):
         return self.output_eval == Batch.OUTPUT_EVAL_CHECKER
 
-    @staticmethod
-    def _is_manager_for_compilation(filename):
-        """Return if a manager should be copied in the compilation sandbox"""
-        return any(filename.endswith(header) for header in HEADER_EXTS) or \
-            any(filename.endswith(source) for source in SOURCE_EXTS) or \
-            any(filename.endswith(obj) for obj in OBJECT_EXTS)
-
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
@@ -220,7 +212,7 @@ class Batch(TaskType):
         sandbox.create_file_from_storage(
             user_source_filename, job.files[user_file_format].digest)
         for filename in iterkeys(job.managers):
-            if Batch._is_manager_for_compilation(filename):
+            if is_manager_for_compilation(filename, language):
                 sandbox.create_file_from_storage(
                     filename, job.managers[filename].digest)
 
