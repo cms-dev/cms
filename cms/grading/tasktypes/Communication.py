@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
@@ -40,11 +40,10 @@ from cms.grading import compilation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     merge_evaluation_results
-from cms.grading.languagemanager import \
-    LANGUAGES, HEADER_EXTS, SOURCE_EXTS, OBJECT_EXTS, get_language
+from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox
+    create_sandbox, delete_sandbox, is_manager_for_compilation
 from cms.db import Executable
 
 
@@ -137,13 +136,7 @@ class Communication(TaskType):
 
         # Also copy all managers that might be useful during compilation.
         for filename in iterkeys(job.managers):
-            if any(filename.endswith(header) for header in HEADER_EXTS):
-                files_to_get[filename] = \
-                    job.managers[filename].digest
-            elif any(filename.endswith(source) for source in SOURCE_EXTS):
-                files_to_get[filename] = \
-                    job.managers[filename].digest
-            elif any(filename.endswith(obj) for obj in OBJECT_EXTS):
+            if is_manager_for_compilation(filename, language):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
