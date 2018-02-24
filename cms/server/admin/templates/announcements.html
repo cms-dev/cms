@@ -8,7 +8,7 @@
 <h2 id="title_announcements" class="toggling_on">Announcements</h2>
 <div id="announcements">
   <div class="notifications">
-{% if current_user.permission_all or current_user.permission_messaging %}
+{% if admin.permission_all or admin.permission_messaging %}
     <div class="notification communication">
       <div class="notification_msg">
         <form method="post" action="{{ url("contest", contest.id, "announcements", "add") }}">

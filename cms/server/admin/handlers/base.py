@@ -306,7 +306,7 @@ class BaseHandler(CommonRequestHandler):
         params["url"] = self.url
         params["xsrf_form_html"] = self.xsrf_form_html()
         if self.current_user is not None:
-            params["current_user"] = self.current_user
+            params["admin"] = self.current_user
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
             params["unanswered"] = self.sql_session.query(Question)\
