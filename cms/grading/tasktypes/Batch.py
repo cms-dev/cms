@@ -136,7 +136,7 @@ class Batch(TaskType):
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager.
         if self._uses_grader():
-            source_filenames.append("grader.%l")
+            source_filenames.append(Batch.GRADER_BASENAME + ".%l")
         source_filenames.append(submission_format[0])
         executable_filename = submission_format[0].replace(".%l", "")
         res = dict()
@@ -196,9 +196,10 @@ class Batch(TaskType):
         # the files to get) the corresponding manager. The grader must
         # be the first file in source_filenames.
         if self._uses_grader():
-            source_filenames.insert(0, "grader%s" % source_ext)
-            files_to_get["grader%s" % source_ext] = \
-                job.managers["grader%s" % source_ext].digest
+            grader_source_filename = Batch.GRADER_BASENAME + source_ext
+            source_filenames.insert(0, grader_source_filename)
+            files_to_get[grader_source_filename] = \
+                job.managers[grader_source_filename].digest
 
         # Also copy all managers that might be useful during compilation.
         for filename in iterkeys(job.managers):
@@ -252,7 +253,7 @@ class Batch(TaskType):
         assert len(job.executables) == 1
         executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
-        main = Batch.GRADER_EXECUTABLE_FILENAME \
+        main = Batch.GRADER_BASENAME \
             if self._uses_grader() else executable_filename
         commands = language.get_evaluation_commands(
             executable_filename, main=main)
