@@ -493,6 +493,8 @@ class FileCacher(object):
 
         if service is None:
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
+            # Delete this directory on exit since it has a random name and
+            # won't be used again.
             atexit.register(lambda: rmtree(self.file_dir))
         else:
             self.file_dir = os.path.join(
