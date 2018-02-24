@@ -133,6 +133,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Runs the CMS unittest suite.")
     parser.add_argument(
+        "regex", action="store", type=utf8_decoder, nargs='*',
+        help="a regex to match to run a subset of tests")
+    parser.add_argument(
         "-n", "--dry-run", action="store_true",
         help="show what tests would be run, but do not run them")
     parser.add_argument(
@@ -144,9 +147,6 @@ def main():
         FAILED_UNITTEST_FILENAME)
 
     # Unused parameters.
-    parser.add_argument(
-        "regex", action="store", type=utf8_decoder, nargs='*',
-        help="unused")
     parser.add_argument(
         "-l", "--languages", action="store", type=utf8_decoder, default="",
         help="unused")
@@ -179,7 +179,7 @@ def main():
         filter_regexps = [re.compile(regex) for regex in args.regex]
 
         def test_match(t):
-            return any([r.search(t) is not None for r in filter_regexps])
+            return any(r.search(t) is not None for r in filter_regexps)
 
         test_list = [t for t in test_list if test_match(' '.join(t))]
 
