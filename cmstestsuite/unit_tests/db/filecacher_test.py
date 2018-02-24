@@ -129,7 +129,8 @@ class TestFileCacherBase(object):
 
     """
 
-    def setUp(self, file_cacher):
+    def _setUp(self, file_cacher):
+        """Common initialization that should be called by derived classes."""
         self.file_cacher = file_cacher
         self.cache_base_path = self.file_cacher.file_dir
         self.cache_path = None
@@ -382,7 +383,7 @@ class TestFileCacherDB(TestFileCacherBase, unittest.TestCase):
 
     def setUp(self):
         file_cacher = FileCacher()
-        super(TestFileCacherDB, self).setUp(file_cacher)
+        self._setUp(file_cacher)
 
     def tearDown(self):
         shutil.rmtree(self.cache_base_path, ignore_errors=True)
@@ -395,7 +396,7 @@ class TestFileCacherFS(TestFileCacherBase, unittest.TestCase):
 
     def setUp(self):
         file_cacher = FileCacher(path="fs-storage")
-        super(TestFileCacherFS, self).setUp(file_cacher)
+        self._setUp(file_cacher)
 
     def tearDown(self):
         shutil.rmtree(self.cache_base_path, ignore_errors=True)
