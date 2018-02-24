@@ -48,7 +48,7 @@ import tornado.web
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import subqueryload
 
-from cms import __version__
+from cms import __version__, config
 from cms.db import Admin, Contest, Participation, Question, \
     Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User, \
     UserTest
@@ -305,6 +305,10 @@ class BaseHandler(CommonRequestHandler):
         params["contest"] = self.contest
         params["url"] = self.url
         params["xsrf_form_html"] = self.xsrf_form_html()
+        # FIXME These objects provide too broad an access: their usage
+        # should be extracted into with narrower-scoped parameters.
+        params["config"] = config
+        params["handler"] = self
         if self.current_user is not None:
             params["admin"] = self.current_user
         if self.contest is not None:
