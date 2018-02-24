@@ -188,6 +188,8 @@ class TaskType(with_metaclass(ABCMeta, object)):
         return re.sub("([A-Z])", r" \g<1>",
                       self.__class__.__name__).strip().capitalize()
 
+    # Whether user tests are enabled for task of this type (provided they are
+    # enabled in the contest).
     testable = True
 
     @abstractmethod
