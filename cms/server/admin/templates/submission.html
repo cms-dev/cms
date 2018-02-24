@@ -83,7 +83,7 @@
               <input type="hidden" name="official" value="no"/>
               Yes
               <input
-              {% if not current_user.permission_all %}
+              {% if not admin.permission_all %}
                   disabled
               {% endif %}
                type="submit" value="Make unofficial" />
@@ -91,7 +91,7 @@
               <input type="hidden" name="official" value="yes"/>
               No
               <input
-              {% if not current_user.permission_all %}
+              {% if not admin.permission_all %}
                   disabled
               {% endif %}
                type="submit" value="Make official" />
@@ -170,7 +170,7 @@
     {{ xsrf_form_html|safe }}
     <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea><br/>
     <input
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
        disabled
 {% endif %}
        type="submit"/>

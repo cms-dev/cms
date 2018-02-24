@@ -11,7 +11,7 @@
   <body class="admin">
     <div id="login-content">
 
-{% if current_user is none %}
+{% if admin is undefined %}
 <h1>Welcome</h1>
     {% if handler.get_argument("login_error", "") != "" %}
 <h4 class="alert">Failed to log in.</h4>

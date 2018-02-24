@@ -160,7 +160,7 @@ var getters = [];
                 {
                     strings.push('</td><td>');
                     strings.push(utils.repr_time_ago_short((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
                     if (s.lastIndexOf("LogService,", 0) !== 0 &&
                         s.lastIndexOf("ResourceService,", 0) !== 0)
                       strings.push(" <a onclick='window.getters[" + this.shard + "].kill_service(\"" + s + "\", this);'>[Kill]</a>");
@@ -182,13 +182,13 @@ var getters = [];
                   strings.push('N/A');
                 } else if (response['data'][l-1][1]['services'][s]['autorestart'] == true) {
                   strings.push(" <input type='checkbox' checked onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);'");
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
                   strings.push(" disabled");
 {% endif %}
                   strings.push(" />");
                 } else if (response['data'][l-1][1]['services'][s]['autorestart'] == false) {
                   strings.push(" <input type='checkbox' onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);'");
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
                   strings.push(" disabled");
 {% endif %}
                   strings.push(" />");

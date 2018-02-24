@@ -42,7 +42,7 @@ contest_id (int|None): the id of the contest to invalidate.
                   'level': 'compilation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                  );"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
         disabled
 {% endif %}
         title="Compilation" >C</button>
@@ -55,7 +55,7 @@ contest_id (int|None): the id of the contest to invalidate.
                   'level': 'evaluation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                   );"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
         disabled
 {% endif %}
         title="Evaluation" >E</button>
@@ -68,7 +68,7 @@ contest_id (int|None): the id of the contest to invalidate.
                  },
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                  );"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
         disabled
 {% endif %}
         title="Score" >S</button>

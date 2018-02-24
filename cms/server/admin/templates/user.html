@@ -133,7 +133,7 @@
       <input type="submit"
            name="operation"
            value="Remove" style="float: right;"
-  {% if not current_user.permission_all %}
+  {% if not admin.permission_all %}
            disabled
   {% endif %}
            />
