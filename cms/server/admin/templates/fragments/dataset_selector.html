@@ -12,13 +12,13 @@
   <table>
   {% for dataset in datasets|sort(attribute="description") %}
     <tr><td>
-    {% if dataset is shown_dataset %}
+    {% if dataset is sameas shown_dataset %}
       <strong>
     {% else %}
       <a href="{{ dataset_selector_par_url }}/{{ dataset.id }}">
     {% endif %}
     {{ dataset.description }}
-    {% if dataset is shown_dataset %}
+    {% if dataset is sameas shown_dataset %}
       </strong>
     {% else %}
       </a>
