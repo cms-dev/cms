@@ -79,9 +79,18 @@ class Batch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
-    # Some local constants used in this class.
+    # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
+    # Filename of the admin-provided comparator.
     CHECKER_FILENAME = "checker"
+    # Basename of the grader, used in the manager filename and as the main
+    # class in languages that require us to specify it.
+    GRADER_BASENAME = "grader"
+    # Default input and output filenames when not provided as parameters.
+    DEFAULT_INPUT_FILENAME = "input.txt"
+    DEFAULT_OUTPUT_FILENAME = "output.txt"
+
+    # Constants used in the parameter definition.
     OUTPUT_EVAL_DIFF = "diff"
     OUTPUT_EVAL_CHECKER = "comparator"
     COMPILATION_ALONE = "alone"
@@ -243,9 +252,10 @@ class Batch(TaskType):
         assert len(job.executables) == 1
         executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
+        main = Batch.GRADER_EXECUTABLE_FILENAME \
+            if self._uses_grader() else executable_filename
         commands = language.get_evaluation_commands(
-            executable_filename,
-            main="grader" if self._uses_grader() else executable_filename)
+            executable_filename, main=main)
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest
@@ -255,10 +265,10 @@ class Batch(TaskType):
         stdout_redirect = None
         files_allowing_write = []
         if len(input_filename) == 0:
-            input_filename = "input.txt"
+            input_filename = Batch.DEFAULT_INPUT_FILENAME
             stdin_redirect = input_filename
         if len(output_filename) == 0:
-            output_filename = "output.txt"
+            output_filename = Batch.DEFAULT_OUTPUT_FILENAME
             stdout_redirect = output_filename
         else:
             files_allowing_write.append(output_filename)
@@ -372,7 +382,7 @@ class Batch(TaskType):
                         if Batch.CHECKER_FILENAME not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
-                                         "named 'checker')",
+                                         "named '%s')", Batch.CHECKER_FILENAME,
                                          extra={"operation": job.info})
                             checker_success = False
 
