@@ -146,9 +146,8 @@ class OutputOnly(TaskType):
         # First and only one step: diffing (manual or with manager).
 
         # Put user output and reference solution into the sandbox.
-        output_digest = job.files[user_output_filename].digest
         sandbox.create_file_from_storage(
-            OutputOnly.OUTPUT_FILENAME, output_digest)
+            OutputOnly.OUTPUT_FILENAME, job.files[user_output_filename].digest)
         sandbox.create_file_from_storage(
             OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
 
