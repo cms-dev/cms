@@ -13,12 +13,7 @@
 {% if sr is not none %}
   {% set status = sr.get_status() %}
 {% endif %}
-{% if s.task.name in score_types %}
-  {% set score_type = score_types[s.task.name] %}
-{% else %}
-  {% set score_type = get_score_type(dataset=dataset) %}
-  {% set score_types[s.task.name] = score_type %}
-{% endif %}
+{% set score_type = dataset.score_type_object %}
 <tr>
   <td><a href="{{ url("submission", s.id) }}">{{ s.timestamp }}</a></td>
   <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
