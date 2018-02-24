@@ -145,8 +145,7 @@ class OutputOnly(TaskType):
 
         # First and only one step: diffing (manual or with manager).
 
-        # Put input, output and reference solution into the sandbox.
-        sandbox.create_file_from_storage(OutputOnly.INPUT_FILENAME, job.input)
+        # Put user output and reference solution into the sandbox.
         output_digest = job.files[user_output_filename].digest
         sandbox.create_file_from_storage(
             OutputOnly.OUTPUT_FILENAME, output_digest)
@@ -154,6 +153,9 @@ class OutputOnly(TaskType):
             OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
 
         if self._uses_checker():
+            # Checker also requires the input file.
+            sandbox.create_file_from_storage(
+                OutputOnly.INPUT_FILENAME, job.input)
             success, outcome, text = self._run_checker(sandbox, job)
         else:
             success = True
