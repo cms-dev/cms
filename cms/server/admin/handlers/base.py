@@ -287,6 +287,11 @@ class BaseHandler(CommonRequestHandler):
         super(BaseHandler, self).prepare()
         self.contest = None
 
+    def render(self, template_name, **params):
+        t = self.service.jinja2_environment.get_template(template_name)
+        for chunk in t.generate(**params):
+            self.write(chunk)
+
     def render_params(self):
         """Return the default render params used by almost all handlers.
 

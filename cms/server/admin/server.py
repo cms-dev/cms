@@ -35,7 +35,6 @@ from future.builtins import *  # noqa
 from six import iterkeys, itervalues
 
 import logging
-import pkg_resources
 
 from sqlalchemy import func, not_
 
@@ -46,9 +45,9 @@ from cms.db.filecacher import FileCacher
 from cms.io import WebService, rpc_method
 from cms.service import EvaluationService
 
-from .handlers import HANDLERS
-from .handlers import views
 from .authentication import AWSAuthMiddleware
+from .jinja2_toolbox import AWS_ENVIRONMENT
+from .handlers import HANDLERS
 from .rpc_authorization import rpc_authorization_checker
 
 
@@ -61,9 +60,6 @@ class AdminWebServer(WebService):
     """
     def __init__(self, shard):
         parameters = {
-            "ui_modules": views,
-            "template_path": pkg_resources.resource_filename(
-                "cms.server.admin", "templates"),
             "static_files": [("cms.server", "static"),
                              ("cms.server.admin", "static")],
             "cookie_secret": hex_to_bin(config.secret_key),
@@ -79,6 +75,8 @@ class AdminWebServer(WebService):
             parameters,
             shard=shard,
             listen_address=config.admin_listen_address)
+
+        self.jinja2_environment = AWS_ENVIRONMENT
 
         # A list of pending notifications.
         self.notifications = []
