@@ -35,13 +35,14 @@ from six import iterkeys, itervalues, iteritems
 from jinja2 import Environment, StrictUndefined, contextfilter, \
     contextfunction, environmentfunction
 
-from cmscommon.datetime import make_timestamp, utc
+from cmscommon.datetime import make_datetime, make_timestamp, utc, local_tz
 from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
     get_icon_for_type
+from cms.grading import format_status_text
 from cms.grading.languagemanager import get_language
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
-from cms.server.contest.formatting import get_score_class
+from cms.locale import DEFAULT_TRANSLATION
 
 
 @contextfilter
@@ -135,10 +136,27 @@ def today(ctx, dt):
     return (bool): whether dt occurred today in the timezone.
 
     """
-    now = ctx["now"]
-    timezone = ctx["timezone"]
+    now = ctx.get("now", make_datetime())
+    timezone = ctx.get("timezone", local_tz)
     return dt.replace(tzinfo=utc).astimezone(timezone).date() \
         == now.replace(tzinfo=utc).astimezone(timezone).date()
+
+
+def instrument_generic_toolbox(env):
+    env.globals["iterkeys"] = iterkeys
+    env.globals["itervalues"] = itervalues
+    env.globals["iteritems"] = iteritems
+    env.globals["next"] = next
+
+    env.filters["all"] = all_
+    env.filters["any"] = any_
+    env.filters["dictselect"] = dictselect
+    env.filters["make_timestamp"] = make_timestamp
+
+    env.tests["contains"] = lambda s, p: p in s
+    env.tests["endswith"] = lambda s, p: s.endswith(p)
+
+    env.tests["today"] = today
 
 
 @environmentfunction
@@ -161,32 +179,79 @@ def safe_get_score_type(env, *args, **kwargs):
         return env.undefined("ScoreType not found: %s" % err)
 
 
-def instrument_generic_toolbox(env):
-    env.globals["iterkeys"] = iterkeys
-    env.globals["itervalues"] = itervalues
-    env.globals["iteritems"] = iteritems
-    env.globals["next"] = next
-
+def instrument_cms_toolbox(env):
     env.globals["get_task_type"] = safe_get_task_type
     env.globals["get_score_type"] = safe_get_score_type
-
-    env.globals["get_score_class"] = get_score_class
 
     env.globals["get_mimetype_for_file_name"] = get_type_for_file_name
     env.globals["get_name_for_mimetype"] = get_name_for_type
     env.globals["get_icon_for_mimetype"] = get_icon_for_type
 
-    env.filters["all"] = all_
-    env.filters["any"] = any_
-    env.filters["dictselect"] = dictselect
-    env.filters["make_timestamp"] = make_timestamp
-
     env.filters["to_language"] = get_language
 
-    env.tests["contains"] = lambda s, p: p in s
-    env.tests["endswith"] = lambda s, p: s.endswith(p)
 
-    env.tests["today"] = today
+@contextfilter
+def format_datetime(ctx, dt):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    timezone = ctx.get("timezone", local_tz)
+    return translation.format_datetime(dt, timezone)
+
+
+@contextfilter
+def format_time(ctx, dt):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    timezone = ctx.get("timezone", local_tz)
+    return translation.format_time(dt, timezone)
+
+
+@contextfilter
+def format_datetime_smart(ctx, dt):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    now = ctx.get("now", make_datetime())
+    timezone = ctx.get("timezone", local_tz)
+    return translation.format_datetime_smart(dt, now, timezone)
+
+
+@contextfilter
+def format_timedelta(ctx, td):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    return translation.format_timedelta(td)
+
+
+@contextfilter
+def format_duration(ctx, d, length="short"):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    return translation.format_duration(d, length)
+
+
+@contextfilter
+def format_size(ctx, s):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    return translation.format_size(s)
+
+
+@contextfilter
+def format_decimal(ctx, n):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    return translation.format_decimal(n)
+
+
+@contextfilter
+def wrapped_format_status_text(ctx, status_text):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    return format_status_text(status_text, translation=translation)
+
+
+def instrument_formatting_toolbox(env):
+    env.filters["format_datetime"] = format_datetime
+    env.filters["format_time"] = format_time
+    env.filters["format_datetime_smart"] = format_datetime_smart
+    env.filters["format_timedelta"] = format_timedelta
+    env.filters["format_duration"] = format_duration
+    env.filters["format_size"] = format_size
+    env.filters["format_decimal"] = format_decimal
+
+    env.filters["format_status_text"] = wrapped_format_status_text
 
 
 GLOBAL_ENVIRONMENT = Environment(
@@ -205,3 +270,5 @@ GLOBAL_ENVIRONMENT = Environment(
 
 
 instrument_generic_toolbox(GLOBAL_ENVIRONMENT)
+instrument_cms_toolbox(GLOBAL_ENVIRONMENT)
+instrument_formatting_toolbox(GLOBAL_ENVIRONMENT)
