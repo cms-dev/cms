@@ -58,14 +58,27 @@ class OutputOnly(TaskType):
     the evaluation is done via white diff or via a comparator.
 
     """
+    # Filename of the reference solution in the sandbox evaluating the output.
+    CORRECT_OUTPUT_FILENAME = "res.txt"
+    # Filename of the admin-provided comparator.
+    CHECKER_FILENAME = "checker"
+    # Name of input and user output files.
+    INPUT_FILENAME = "input.txt"
+    OUTPUT_FILENAME = "output.txt"
+
+    # Constants used in the parameter definition.
+    OUTPUT_EVAL_DIFF = "diff"
+    OUTPUT_EVAL_CHECKER = "comparator"
+
+    # Other constants to specify the task type behaviour and parameters.
     ALLOW_PARTIAL_SUBMISSION = True
 
     _EVALUATION = ParameterTypeChoice(
         "Output evaluation",
         "output_eval",
         "",
-        {"diff": "Outputs compared with white diff",
-         "comparator": "Outputs are compared by a comparator"})
+        {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
 
@@ -76,6 +89,10 @@ class OutputOnly(TaskType):
         return "Output only"
 
     testable = False
+
+    def __init__(self, parameters):
+        super(OutputOnly, self).__init__(parameters)
+        self.output_eval = self.parameters[0]
 
     def get_compilation_commands(self, unused_submission_format):
         """See TaskType.get_compilation_commands."""
@@ -127,40 +144,44 @@ class OutputOnly(TaskType):
 
         # Put the files into the sandbox
         sandbox.create_file_from_storage(
-            "res.txt",
+            OutputOnly.CORRECT_OUTPUT_FILENAME,
             job.output)
         sandbox.create_file_from_storage(
-            "output.txt",
+            OutputOnly.OUTPUT_FILENAME,
             output_digest)
 
-        if self.parameters[0] == "diff":
+        if self.output_eval == OutputOnly.OUTPUT_EVAL_DIFF:
             # No manager: I'll do a white_diff between the submission
-            # file and the correct output res.txt.
+            # file and the correct output.
             success = True
             outcome, text = white_diff_step(
-                sandbox, "output.txt", "res.txt")
+                sandbox,
+                OutputOnly.OUTPUT_FILENAME,
+                OutputOnly.CORRECT_OUTPUT_FILENAME)
 
-        elif self.parameters[0] == "comparator":
+        elif self.output_eval == OutputOnly.OUTPUT_EVAL_CHECKER:
             # Manager present: wonderful, it will do all the work.
-            manager_filename = "checker"
-            if manager_filename not in job.managers:
+            if OutputOnly.CHECKER_FILENAME not in job.managers:
                 logger.error("Configuration error: missing or "
                              "invalid comparator (it must be "
-                             "named `checker')", extra={"operation": job.info})
+                             "named `%s')", OutputOnly.CHECKER_FILENAME,
+                             extra={"operation": job.info})
                 success = False
             else:
                 sandbox.create_file_from_storage(
-                    manager_filename,
-                    job.managers[manager_filename].digest,
+                    OutputOnly.CHECKER_FILENAME,
+                    job.managers[OutputOnly.CHECKER_FILENAME].digest,
                     executable=True)
                 input_digest = job.input
                 sandbox.create_file_from_storage(
-                    "input.txt",
+                    OutputOnly.INPUT_FILENAME,
                     input_digest)
-                success, _ = evaluation_step(
-                    sandbox,
-                    [["./%s" % manager_filename,
-                      "input.txt", "res.txt", "output.txt"]])
+                command = [
+                    "./%s" % OutputOnly.CHECKER_FILENAME,
+                    OutputOnly.INPUT_FILENAME,
+                    OutputOnly.CORRECT_OUTPUT_FILENAME,
+                    OutputOnly.OUTPUT_FILENAME]
+                success, _ = evaluation_step(sandbox, [command])
                 if success:
                     outcome, text = extract_outcome_and_text(sandbox)
 
@@ -168,7 +189,7 @@ class OutputOnly(TaskType):
             raise ValueError("Unrecognized first parameter "
                              "`%s' for OutputOnly tasktype. "
                              "Should be `diff' or `comparator'." %
-                             self.parameters[0])
+                             self.output_eval)
 
         # Whatever happened, we conclude.
         job.success = success
