@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+import errno
 import hashlib
 import io
 import os
@@ -123,15 +124,13 @@ class HashingFile(object):
         pass
 
 
-class TestFileCacher(unittest.TestCase):
-    """Service that performs automatically some tests for the
-    FileCacher service.
+class TestFileCacherBase(object):
+    """Base class for performing tests for the FileCacher service.
 
     """
 
-    def setUp(self):
-        self.file_cacher = FileCacher()
-        #self.file_cacher = FileCacher(self, path="fs-storage")
+    def setUp(self, file_cacher):
+        self.file_cacher = file_cacher
         self.cache_base_path = self.file_cacher.file_dir
         self.cache_path = None
         self.content = None
@@ -139,17 +138,17 @@ class TestFileCacher(unittest.TestCase):
         self.digest = None
         self.file_obj = None
 
-    def tearDown(self):
-        shutil.rmtree(self.cache_base_path, ignore_errors=True)
-
     def check_stored_file(self, digest):
         """Ensure that a given file digest has been stored correctly."""
         # Remove it from the filesystem.
         cache_path = os.path.join(self.cache_base_path, digest)
         try:
             os.unlink(cache_path)
-        except OSError:
-            pass
+        except OSError as e:
+            # Only ignore if the file didn't exist. Other failures we should
+            # know about!
+            if e.errno == errno.ENOENT:
+                pass
 
         # Pull it out of the file_cacher and compute the hash
         hash_file = HashingFile()
@@ -332,31 +331,33 @@ class TestFileCacher(unittest.TestCase):
         self.file_cacher.delete(self.digest)
 
     def test_file_duplicates(self):
-        """Send multiple copies of the same random file to the storage through
-        FileCacher. FC should handle this gracefully and only end up with one
-        copy.
+        """Send multiple copies of the a file into FileCacher.
+
+        Generates a random file and attempts to store them into the FileCacher.
+        FC should handle this gracefully and only end up with one copy.
+
         """
-        # We need to wrap the generator in a list because of a
-        # shortcoming of future's bytes implementation.
-        size = 100
-        rand_file = RandomFile(size)
-        content = rand_file.read(size)
-        digest = rand_file.digest
-        rand_file.close()
+        content = os.urandom(100)
+        h = hashlib.sha1()
+        h.update(content)
+        digest = bin_to_hex(h.digest())
 
         # Test writing the same file to the DB in parallel.
         # Create empty files.
         num_files = 4
         fobjs = []
-        for i in range(num_files):
+        for _ in range(num_files):
             fobj = self.file_cacher.backend.create_file(digest)
             # As the file contains random data, we don't expect to have put
             # this into the DB previously.
             assert fobj is not None
             fobjs.append(fobj)
 
-        # Close them in a different order.
-        random.shuffle(fobjs)
+        # Close them in a different order. Seed to make the shuffle
+        # deterministic.
+        r = random.Random()
+        r.seed(num_files)
+        r.shuffle(fobjs)
 
         # Write the files and commit them.
         for i, fobj in enumerate(fobjs):
@@ -372,6 +373,34 @@ class TestFileCacher(unittest.TestCase):
 
         # Check that the file was stored correctly.
         self.check_stored_file(digest)
+
+
+class TestFileCacherDB(TestFileCacherBase, unittest.TestCase):
+    """Service that tests the FileCacher service with a database backend.
+
+    """
+
+    def setUp(self):
+        file_cacher = FileCacher()
+        super(TestFileCacherDB, self).setUp(file_cacher)
+
+    def tearDown(self):
+        shutil.rmtree(self.cache_base_path, ignore_errors=True)
+
+
+class TestFileCacherFS(TestFileCacherBase, unittest.TestCase):
+    """Service that tests the FileCacher service with a filesystem backend.
+
+    """
+
+    def setUp(self):
+        file_cacher = FileCacher(path="fs-storage")
+        super(TestFileCacherFS, self).setUp(file_cacher)
+
+    def tearDown(self):
+        shutil.rmtree(self.cache_base_path, ignore_errors=True)
+        shutil.rmtree("fs-storage", ignore_errors=True)
+
 
 if __name__ == "__main__":
     unittest.main()

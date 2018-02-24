@@ -79,9 +79,10 @@ class FileCacherBackend(object):
         raise NotImplementedError("Please subclass this class.")
 
     def create_file(self, digest):
-        """Create an empty file that will live in the storage. Once the caller
-        has written the contents to the file, the commit_file() method must
-        be called to commit it into the store.
+        """Create an empty file that will live in the storage.
+
+        Once the caller has written the contents to the file, the commit_file()
+        method must be called to commit it into the store.
 
         digest (unicode): the digest of the file to store.
 
@@ -93,9 +94,11 @@ class FileCacherBackend(object):
         raise NotImplementedError("Please subclass this class.")
 
     def commit_file(self, fobj, digest, desc=""):
-        """Given a file object returned by create_file(), this function
-        populates the database to record that this file now legitimately exists
-        and can be used.
+        """Commit a file created by create_file() to be stored.
+
+        Given a file object returned by create_file(), this function populates
+        the database to record that this file now legitimately exists and can
+        be used.
 
         fobj (fileobj): the object returned by create_file()
 
@@ -105,9 +108,10 @@ class FileCacherBackend(object):
             store, intended for human beings.
 
         return (bool): True if the file was committed successfully, False if
-        there was already a file with the same digest in the database. This
-        shouldn't make any difference to the caller, except for testing
-        purposes!
+            there was already a file with the same digest in the database. This
+            shouldn't make any difference to the caller, except for testing
+            purposes!
+
         """
         raise NotImplementedError("Please subclass this class.")
 
@@ -198,16 +202,39 @@ class FSBackend(FileCacherBackend):
         """See FileCacherBackend.create_file().
 
         """
+        # Check if the file already exists. Return None if so, to inform the
+        # caller they don't need to store the file.
         file_path = os.path.join(self.path, digest)
 
         if os.path.exists(file_path):
             return None
 
-        return io.open(file_path, 'wb')
+        # Create a temporary file in the same directory
+        temp_file = tempfile.NamedTemporaryFile('wb', delete=False,
+                                                prefix=".tmp.",
+                                                suffix=digest,
+                                                dir=self.path)
+        return temp_file
 
     def commit_file(self, fobj, digest, desc=""):
+        """See FileCacherBackend.commit_file().
+
+        """
         fobj.close()
-        return True
+
+        file_path = os.path.join(self.path, digest)
+        # Move it into place in the cache. Skip if it already exists, and
+        # delete the temporary file instead.
+        if not os.path.exists(file_path):
+            # There is a race condition here if someone else puts the file here
+            # between checking and renaming. Put it doesn't matter in practice,
+            # because rename will replace the file anyway (which should be
+            # identical).
+            os.rename(fobj.name, file_path)
+            return True
+        else:
+            os.unlink(fobj.name)
+            return False
 
     def describe(self, digest):
         """See FileCacherBackend.describe().
@@ -632,11 +659,10 @@ class FileCacher(object):
         if fobj is None:
             return
 
-        try:
-            with io.open(cache_file_path, 'rb') as src:
-                copyfileobj(src, fobj, self.CHUNK_SIZE)
-        finally:
-            self.backend.commit_file(fobj, digest, desc)
+        with io.open(cache_file_path, 'rb') as src:
+            copyfileobj(src, fobj, self.CHUNK_SIZE)
+
+        self.backend.commit_file(fobj, digest, desc)
 
     def put_file_from_fobj(self, src, desc=""):
         """Store a file in the storage.
