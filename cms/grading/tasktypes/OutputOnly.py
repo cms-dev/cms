@@ -65,6 +65,9 @@ class OutputOnly(TaskType):
     # Name of input and user output files.
     INPUT_FILENAME = "input.txt"
     OUTPUT_FILENAME = "output.txt"
+    # Template for the filename of the output files provided by the user; %s
+    # represent the testcase codename.
+    USER_OUTPUT_FILENAME_TEMPLATE = "output_%s.txt"
 
     # Constants used in the parameter definition.
     OUTPUT_EVAL_DIFF = "diff"
@@ -109,6 +112,11 @@ class OutputOnly(TaskType):
     def _uses_checker(self):
         return self.output_eval == OutputOnly.OUTPUT_EVAL_CHECKER
 
+    @staticmethod
+    def _get_user_output_filename(job):
+        return OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
+            job.operation["testcase_codename"]
+
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # No compilation needed.
@@ -132,8 +140,7 @@ class OutputOnly(TaskType):
         outcome = None
         text = []
 
-        user_output_filename = \
-            "output_%s.txt" % job.operation["testcase_codename"]
+        user_output_filename = self._get_user_output_filename(job)
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
