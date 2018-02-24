@@ -28,8 +28,6 @@ function update_additional_answer(element, invoker)
 {% endblock js %}
 
 {% block core %}
-{% set score_types = {} %}
-
 <h1>
   Participation of <a href="{{ url("user", selected_user.id) }}">{{ selected_user.username }}</a> in <a href="{{ url("contest", contest.id) }}">{{ contest.name }}</a>
 </h1>
