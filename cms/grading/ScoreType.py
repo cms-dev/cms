@@ -44,7 +44,7 @@ import re
 from abc import ABCMeta, abstractmethod
 
 from cms.locale import DEFAULT_TRANSLATION
-from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
+from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class ScoreType(with_metaclass(ABCMeta, object)):
         self.max_score, self.max_public_score, self.ranking_headers = \
             self.max_scores()
 
-        self.template = CWS_ENVIRONMENT.from_string(self.TEMPLATE)
+        self.template = GLOBAL_ENVIRONMENT.from_string(self.TEMPLATE)
 
     @staticmethod
     def format_score(score, max_score, unused_score_details,

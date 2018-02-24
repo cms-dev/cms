@@ -61,14 +61,9 @@ def instrument_formatting_toolbox(env):
 
 
 CWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
-    # Allow the use of {% trans %} tags to localize strings.
-    extensions=['jinja2.ext.i18n'],
     # Load templates from CWS's package (use package rather than file
     # system as that works even in case of a compressed distribution).
     loader=PackageLoader('cms.server.contest', 'templates'))
-# This compresses all leading/trailing whitespace and line breaks of
-# internationalized messages when translating and extracting them.
-CWS_ENVIRONMENT.policies['ext.i18n.trimmed'] = True
 
 
 instrument_cms_toolbox(CWS_ENVIRONMENT)

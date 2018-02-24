@@ -266,7 +266,12 @@ GLOBAL_ENVIRONMENT = Environment(
     cache_size=-1,
     # Don't check the disk every time to see whether the templates'
     # files have changed.
-    auto_reload=False)
+    auto_reload=False,
+    # Allow the use of {% trans %} tags to localize strings.
+    extensions=['jinja2.ext.i18n'])
+# This compresses all leading/trailing whitespace and line breaks of
+# internationalized messages when translating and extracting them.
+GLOBAL_ENVIRONMENT.policies['ext.i18n.trimmed'] = True
 
 
 instrument_generic_toolbox(GLOBAL_ENVIRONMENT)
