@@ -67,14 +67,14 @@ $(document).ready(init);
   <body class="admin">
     <div id="global">
       <div id="sidebar">
-{% if current_user is none %}
+{% if admin is undefined %}
         <div id="sidebar_header">
           <h1 class="parent">Administration</h1>
         </div>
 {% else %}
         <div id="sidebar_header">
           <div class="login_notice">
-            Hello, <a href="{{ url("admins") }}">{{ current_user.name }}</a>.
+            Hello, <a href="{{ url("admins") }}">{{ admin.name }}</a>.
               <form class="inline" action="{{ url("logout") }}" method="POST">{{ xsrf_form_html|safe }}<input type="submit" value="Logout"></form>
           </div>
           {% if contest is none %}
@@ -127,7 +127,7 @@ $(document).ready(init);
           </li>
           {% endif %}
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url("contests", "add") }}">
               (create new contest...)
@@ -160,7 +160,7 @@ $(document).ready(init);
           </li>
           {% endif %}
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url("tasks", "add") }}">
               (create new task...)
@@ -187,7 +187,7 @@ $(document).ready(init);
             </li>
           {% endif %}
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url("users", "add") }}">
               (create new user...)
@@ -214,7 +214,7 @@ $(document).ready(init);
             </li>
           {% endif %}
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
           <li class="menu_entry">
             <a class="menu_link" href="{{ url("teams", "add") }}">
               (create new team...)

@@ -19,7 +19,7 @@
     {% endfor %}
   </select>
   <input type="submit"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Add user" />
@@ -31,7 +31,7 @@
   <input type="submit"
          name="operation"
          value="Remove from contest"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          />

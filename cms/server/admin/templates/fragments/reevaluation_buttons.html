@@ -47,7 +47,7 @@
                   'level': 'compilation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                  );"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
         disabled
 {% endif %}
         title="Compilation" >C</button>
@@ -60,7 +60,7 @@
                   'level': 'evaluation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                   );"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
         disabled
 {% endif %}
         title="Evaluation" >E</button>
@@ -73,7 +73,7 @@
                  },
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                  );"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
         disabled
 {% endif %}
         title="Score" >S</button>

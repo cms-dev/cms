@@ -5,7 +5,7 @@
   <h1>Remove Participation</h1>
 </div>
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
 <p>
   Are you sure you want to remove user {{ user.username }} from contest {{ contest.name }}, including all related data?
   <br>
