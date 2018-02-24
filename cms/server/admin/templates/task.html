@@ -275,19 +275,19 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
     <p>
 {% if current_user.permission_all %}
-      {% if dataset is task.active_dataset %}
+      {% if dataset is sameas (task.active_dataset) %}
       [Make Live ...]
       {% else %}
       <a href="{{ url("dataset", dataset.id, "activate") }}">[Make Live ...]</a>
       {% endif %}
       <a href="{{ url("dataset", dataset.id, "clone") }}">[Clone]</a>
       <a href="{{ url("dataset", dataset.id, "rename") }}">[Rename]</a>
-      {% if dataset is task.active_dataset %}
+      {% if dataset is sameas (task.active_dataset) %}
       [Delete]
       {% else %}
       <a href="{{ url("dataset", dataset.id, "delete") }}">[Delete]</a>
       {% endif %}
-      {% if dataset is not task.active_dataset %}
+      {% if dataset is not sameas (task.active_dataset) %}
         <a onclick="CMS.AWSUtils.ajax_post('{{ url("dataset", dataset.id, "autojudge") }}');">[{% if dataset.autojudge %}Disable{% else %}Enable{% endif %} background judging]</a>
       {% endif %}
 {% endif %}
