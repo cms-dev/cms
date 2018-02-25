@@ -58,14 +58,30 @@ class OutputOnly(TaskType):
     the evaluation is done via white diff or via a comparator.
 
     """
+    # Filename of the reference solution in the sandbox evaluating the output.
+    CORRECT_OUTPUT_FILENAME = "res.txt"
+    # Filename of the admin-provided comparator.
+    CHECKER_FILENAME = "checker"
+    # Name of input and user output files.
+    INPUT_FILENAME = "input.txt"
+    OUTPUT_FILENAME = "output.txt"
+    # Template for the filename of the output files provided by the user; %s
+    # represent the testcase codename.
+    USER_OUTPUT_FILENAME_TEMPLATE = "output_%s.txt"
+
+    # Constants used in the parameter definition.
+    OUTPUT_EVAL_DIFF = "diff"
+    OUTPUT_EVAL_CHECKER = "comparator"
+
+    # Other constants to specify the task type behaviour and parameters.
     ALLOW_PARTIAL_SUBMISSION = True
 
     _EVALUATION = ParameterTypeChoice(
         "Output evaluation",
         "output_eval",
         "",
-        {"diff": "Outputs compared with white diff",
-         "comparator": "Outputs are compared by a comparator"})
+        {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
 
@@ -76,6 +92,10 @@ class OutputOnly(TaskType):
         return "Output only"
 
     testable = False
+
+    def __init__(self, parameters):
+        super(OutputOnly, self).__init__(parameters)
+        self.output_eval = self.parameters[0]
 
     def get_compilation_commands(self, unused_submission_format):
         """See TaskType.get_compilation_commands."""
@@ -88,6 +108,14 @@ class OutputOnly(TaskType):
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
         return []
+
+    def _uses_checker(self):
+        return self.output_eval == OutputOnly.OUTPUT_EVAL_CHECKER
+
+    @staticmethod
+    def _get_user_output_filename(job):
+        return OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
+            job.operation["testcase_codename"]
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -112,63 +140,35 @@ class OutputOnly(TaskType):
         outcome = None
         text = []
 
+        user_output_filename = self._get_user_output_filename(job)
+
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
-        if "output_%s.txt" % job.operation["testcase_codename"] \
-                not in job.files:
+        if user_output_filename not in job.files:
             job.success = True
             job.outcome = "0.0"
             job.text = [N_("File not submitted")]
             return
 
         # First and only one step: diffing (manual or with manager).
-        output_digest = job.files["output_%s.txt" %
-                                  job.operation["testcase_codename"]].digest
 
-        # Put the files into the sandbox
+        # Put user output and reference solution into the sandbox.
         sandbox.create_file_from_storage(
-            "res.txt",
-            job.output)
+            OutputOnly.OUTPUT_FILENAME, job.files[user_output_filename].digest)
         sandbox.create_file_from_storage(
-            "output.txt",
-            output_digest)
+            OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
 
-        if self.parameters[0] == "diff":
-            # No manager: I'll do a white_diff between the submission
-            # file and the correct output res.txt.
+        if self._uses_checker():
+            # Checker also requires the input file.
+            sandbox.create_file_from_storage(
+                OutputOnly.INPUT_FILENAME, job.input)
+            success, outcome, text = OutputOnly._run_checker(sandbox)
+        else:
             success = True
             outcome, text = white_diff_step(
-                sandbox, "output.txt", "res.txt")
-
-        elif self.parameters[0] == "comparator":
-            # Manager present: wonderful, it will do all the work.
-            manager_filename = "checker"
-            if manager_filename not in job.managers:
-                logger.error("Configuration error: missing or "
-                             "invalid comparator (it must be "
-                             "named `checker')", extra={"operation": job.info})
-                success = False
-            else:
-                sandbox.create_file_from_storage(
-                    manager_filename,
-                    job.managers[manager_filename].digest,
-                    executable=True)
-                input_digest = job.input
-                sandbox.create_file_from_storage(
-                    "input.txt",
-                    input_digest)
-                success, _ = evaluation_step(
-                    sandbox,
-                    [["./%s" % manager_filename,
-                      "input.txt", "res.txt", "output.txt"]])
-                if success:
-                    outcome, text = extract_outcome_and_text(sandbox)
-
-        else:
-            raise ValueError("Unrecognized first parameter "
-                             "`%s' for OutputOnly tasktype. "
-                             "Should be `diff' or `comparator'." %
-                             self.parameters[0])
+                sandbox,
+                OutputOnly.OUTPUT_FILENAME,
+                OutputOnly.CORRECT_OUTPUT_FILENAME)
 
         # Whatever happened, we conclude.
         job.success = success
@@ -176,3 +176,45 @@ class OutputOnly(TaskType):
         job.text = text
 
         delete_sandbox(sandbox, job.success)
+
+    @staticmethod
+    def _run_checker(sandbox, job):
+        """Run the explicit checker given by the admins
+
+        sandbox (Sandbox): the sandbox to run the checker in; should already
+            contain input, correct output, and user output.
+        job (Job): the job triggering this checker run.
+
+        return (bool, float|None, [str]): success (true if the checker was able
+            to check the solution successfully), outcome and text.
+
+        """
+        # Copy the checker in the sandbox, after making sure it was provided.
+        if OutputOnly.CHECKER_FILENAME not in job.managers:
+            logger.error("Configuration error: missing or invalid comparator "
+                         "(it must be named `%s')",
+                         OutputOnly.CHECKER_FILENAME,
+                         extra={"operation": job.info})
+            return False, None, []
+        sandbox.create_file_from_storage(
+            OutputOnly.CHECKER_FILENAME,
+            job.managers[OutputOnly.CHECKER_FILENAME].digest,
+            executable=True)
+
+        command = [
+            "./%s" % OutputOnly.CHECKER_FILENAME,
+            OutputOnly.INPUT_FILENAME,
+            OutputOnly.CORRECT_OUTPUT_FILENAME,
+            OutputOnly.OUTPUT_FILENAME]
+        success, _ = evaluation_step(sandbox, [command])
+        if not success:
+            return False, None, []
+
+        try:
+            outcome, text = extract_outcome_and_text(sandbox)
+        except ValueError as e:
+            logger.error("Invalid output from comparator: %s", e,
+                         extra={"operation": job.info})
+            return False, None, []
+
+        return True, outcome, text
