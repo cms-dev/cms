@@ -101,9 +101,7 @@ class FileCacherBackend(object):
         be used.
 
         fobj (fileobj): the object returned by create_file()
-
         digest (unicode): the digest of the file to store.
-
         desc (unicode): the optional description of the file to
             store, intended for human beings.
 
