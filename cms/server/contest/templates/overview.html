@@ -74,8 +74,8 @@
 
 
 
-{% if tokens_contest != "disabled" and tokens_tasks != "disabled" %}
-    {% if tokens_contest == "infinite" and tokens_tasks == "infinite" %}
+{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
+    {% if tokens_contest == TOKEN_MODE_INFINITE and tokens_tasks == TOKEN_MODE_INFINITE %}
         <p>
         {% trans %}You have an infinite number of tokens.{% endtrans %}
         </p>
@@ -84,7 +84,7 @@
         {% trans %}You can see the detailed result of a submission by using a token on it.{% endtrans %}
         {% trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
         </p>
-    {% elif tokens_contest == "infinite" %}
+    {% elif tokens_contest == TOKEN_MODE_INFINITE %}
         <p>
         {% trans %}You have a distinct set of tokens for each task.{% endtrans %}
         {% trans type_pl=_("tokens") %}You can find the rules for the {{ type_pl }} on each task's description page.{% endtrans %}
@@ -94,7 +94,7 @@
         {% trans %}You can see the detailed result of a submission by using a token on it.{% endtrans %}
         {% trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
         </p>
-    {% elif tokens_tasks == "infinite" %}
+    {% elif tokens_tasks == TOKEN_MODE_INFINITE %}
         <p>
         {% trans %}You have a set of tokens shared among all tasks.{% endtrans %}
         {{ contest|extract_token_params|format_token_rules }}
@@ -197,7 +197,7 @@
             <th>{% trans %}Memory limit{% endtrans %}</th>
             <th>{% trans %}Type{% endtrans %}</th>
             <th>{% trans %}Files{% endtrans %}</th>
-{% if tokens_contest != "disabled" and tokens_tasks != "disabled" %}
+{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
             <th>{% trans %}Tokens{% endtrans %}</th>
 {% endif %}
         </tr>
@@ -224,7 +224,7 @@
             </td>
             <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
             <td>{{ t_iter.submission_format|map(attribute="filename")|map("replace", ".%l", extensions)|join(" ") }}</td>
-    {% if tokens_contest != "disabled" and tokens_tasks != "disabled" %}
+    {% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
             <td>
         {% if t_iter.token_mode == "finite" or t_iter.token_mode == "infinite" %}
             {% trans %}Yes{% endtrans %}
