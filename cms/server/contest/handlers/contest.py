@@ -46,7 +46,7 @@ from datetime import timedelta
 import tornado.web
 from sqlalchemy.orm import contains_eager
 
-from cms import config
+from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Participation, User
 from cms.server import compute_actual_phase, file_handler_gen, \
     create_url_builder
@@ -349,7 +349,7 @@ class ContestHandler(BaseHandler):
         if len(t_tokens) == 1:
             ret["tokens_tasks"] = next(iter(t_tokens))
         else:
-            ret["tokens_tasks"] = "mixed"
+            ret["tokens_tasks"] = TOKEN_MODE_MIXED
 
         return ret
 
