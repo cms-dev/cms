@@ -157,8 +157,7 @@ def main():
     )
     parser.add_argument(
         "-A", "--all",
-        action="store_const", const="a",
-        default=None,
+        action="store_true",
         help="try to import all users inside target"
     )
     parser.add_argument(
