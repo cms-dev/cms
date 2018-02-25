@@ -139,8 +139,7 @@ def main():
     )
     parser.add_argument(
         "-A", "--all",
-        action="store_const", const="a",
-        default=None,
+        action="store_true",
         help="try to import the needed teams inside target (not "
              "necessarily all of them)"
     )
