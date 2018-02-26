@@ -32,6 +32,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
+import atexit
 import hashlib
 import io
 import logging
@@ -44,7 +45,7 @@ from sqlalchemy.exc import IntegrityError
 
 from cmscommon.binary import bin_to_hex
 from cms import config, mkdir
-from cms.db import SessionGen, FSObject
+from cms.db import SessionGen, FSObject, LargeObject
 from cms.io.GeventUtils import copyfileobj, move, rmtree
 
 
@@ -77,16 +78,37 @@ class FileCacherBackend(object):
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def put_file(self, digest, desc=""):
-        """Store a file to the storage.
+    def create_file(self, digest):
+        """Create an empty file that will live in the storage.
+
+        Once the caller has written the contents to the file, the commit_file()
+        method must be called to commit it into the store.
 
         digest (unicode): the digest of the file to store.
-        desc (unicode): the optional description of the file to
-            store, intended for human beings.
 
         return (fileobj): a writable binary file-like object on which
             to write the contents of the file, or None if the file is
             already stored.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def commit_file(self, fobj, digest, desc=""):
+        """Commit a file created by create_file() to be stored.
+
+        Given a file object returned by create_file(), this function populates
+        the database to record that this file now legitimately exists and can
+        be used.
+
+        fobj (fileobj): the object returned by create_file()
+        digest (unicode): the digest of the file to store.
+        desc (unicode): the optional description of the file to
+            store, intended for human beings.
+
+        return (bool): True if the file was committed successfully, False if
+            there was already a file with the same digest in the database. This
+            shouldn't make any difference to the caller, except for testing
+            purposes!
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -174,16 +196,43 @@ class FSBackend(FileCacherBackend):
 
         return io.open(file_path, 'rb')
 
-    def put_file(self, digest, desc=""):
-        """See FileCacherBackend.put_file().
+    def create_file(self, digest):
+        """See FileCacherBackend.create_file().
 
         """
+        # Check if the file already exists. Return None if so, to inform the
+        # caller they don't need to store the file.
         file_path = os.path.join(self.path, digest)
 
         if os.path.exists(file_path):
             return None
 
-        return io.open(file_path, 'wb')
+        # Create a temporary file in the same directory
+        temp_file = tempfile.NamedTemporaryFile('wb', delete=False,
+                                                prefix=".tmp.",
+                                                suffix=digest,
+                                                dir=self.path)
+        return temp_file
+
+    def commit_file(self, fobj, digest, desc=""):
+        """See FileCacherBackend.commit_file().
+
+        """
+        fobj.close()
+
+        file_path = os.path.join(self.path, digest)
+        # Move it into place in the cache. Skip if it already exists, and
+        # delete the temporary file instead.
+        if not os.path.exists(file_path):
+            # There is a race condition here if someone else puts the file here
+            # between checking and renaming. Put it doesn't matter in practice,
+            # because rename will replace the file anyway (which should be
+            # identical).
+            os.rename(fobj.name, file_path)
+            return True
+        else:
+            os.unlink(fobj.name)
+            return False
 
     def describe(self, digest):
         """See FileCacherBackend.describe().
@@ -244,45 +293,53 @@ class DBBackend(FileCacherBackend):
 
             return fso.get_lobject(mode='rb')
 
-    def put_file(self, digest, desc=""):
-        """See FileCacherBackend.put_file().
+    def create_file(self, digest):
+        """See FileCacherBackend.create_file().
 
         """
+        with SessionGen() as session:
+            fso = FSObject.get_from_digest(digest, session)
+
+            # Check digest uniqueness
+            if fso is not None:
+                logger.debug("File %s already stored on database, not "
+                             "sending it again.", digest)
+                session.rollback()
+                return None
+
+            # If it is not already present, copy the file into the
+            # lobject
+            else:
+                # Create the large object first. This should be populated
+                # and committed before putting it into the FSObjects table.
+                return LargeObject(0, mode='wb')
+
+    def commit_file(self, fobj, digest, desc=""):
+        """See FileCacherBackend.commit_file().
+
+        """
+        fobj.close()
         try:
             with SessionGen() as session:
-                fso = FSObject.get_from_digest(digest, session)
+                fso = FSObject(description=desc)
+                fso.digest = digest
+                fso.loid = fobj.loid
 
-                # Check digest uniqueness
-                if fso is not None:
-                    logger.debug("File %s already stored on database, not "
-                                 "sending it again.", digest)
-                    session.rollback()
-                    return None
+                session.add(fso)
 
-                # If it is not already present, copy the file into the
-                # lobject
-                else:
-                    fso = FSObject(description=desc)
-                    fso.digest = digest
+                session.commit()
 
-                    session.add(fso)
-
-                    logger.debug("File %s stored on the database.", digest)
-
-                    # FIXME There is a remote possibility that someone
-                    # will try to access this file, believing it has
-                    # already been stored (since its FSObject exists),
-                    # while we're still sending its content.
-
-                    lobject = fso.get_lobject(mode='wb')
-
-                    session.commit()
-
-                    return lobject
+                logger.info("File %s (%s) stored on the database.",
+                            digest, desc)
 
         except IntegrityError:
-            logger.warning("File %s caused an IntegrityError, ignoring...",
-                           digest)
+            # If someone beat us to adding the same object to the database, we
+            # should at least drop the large object.
+            LargeObject.unlink(fobj.loid)
+            logger.warning("File %s (%s) caused an IntegrityError, ignoring.",
+                           digest, desc)
+            return False
+        return True
 
     def describe(self, digest):
         """See FileCacherBackend.describe().
@@ -361,8 +418,11 @@ class NullBackend(FileCacherBackend):
     def get_file(self, digest):
         raise KeyError("File not found.")
 
-    def put_file(self, digest, desc=""):
+    def create_file(self, digest):
         return None
+
+    def commit_file(self, fobj, digest, desc=""):
+        return False
 
     def describe(self, digest):
         raise KeyError("File not found.")
@@ -431,6 +491,9 @@ class FileCacher(object):
 
         if service is None:
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
+            # Delete this directory on exit since it has a random name and
+            # won't be used again.
+            atexit.register(lambda: rmtree(self.file_dir))
         else:
             self.file_dir = os.path.join(
                 config.cache_dir,
@@ -442,6 +505,7 @@ class FileCacher(object):
                 or not mkdir(self.file_dir) or not mkdir(self.temp_dir):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
+        atexit.register(lambda: rmtree(self.temp_dir))
 
     def load(self, digest, if_needed=False):
         """Load the file with the given digest into the cache.
@@ -590,16 +654,15 @@ class FileCacher(object):
             raise TombstoneError()
         cache_file_path = os.path.join(self.file_dir, digest)
 
-        fobj = self.backend.put_file(digest, desc)
+        fobj = self.backend.create_file(digest)
 
         if fobj is None:
             return
 
-        try:
-            with io.open(cache_file_path, 'rb') as src:
-                copyfileobj(src, fobj, self.CHUNK_SIZE)
-        finally:
-            fobj.close()
+        with io.open(cache_file_path, 'rb') as src:
+            copyfileobj(src, fobj, self.CHUNK_SIZE)
+
+        self.backend.commit_file(fobj, digest, desc)
 
     def put_file_from_fobj(self, src, desc=""):
         """Store a file in the storage.
@@ -629,7 +692,7 @@ class FileCacher(object):
         # compressed or require network communication).
         # XXX We're *almost* reimplementing copyfileobj.
         with tempfile.NamedTemporaryFile('wb', delete=False,
-                                         dir=config.temp_dir) as dst:
+                                         dir=self.temp_dir) as dst:
             hasher = hashlib.sha1()
             buf = src.read(self.CHUNK_SIZE)
             while len(buf) > 0:
