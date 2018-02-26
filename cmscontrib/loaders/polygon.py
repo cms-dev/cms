@@ -4,7 +4,6 @@
 # Programming contest management system
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,7 +36,6 @@ import xml.etree.ElementTree as ET
 from cms import config
 from cms.db import Contest, User, Task, Statement, \
     SubmissionFormatElement, Dataset, Manager, Testcase
-from cmscommon.crypto import build_password
 from cmscontrib import touch
 
 from .base_loader import ContestLoader, TaskLoader, UserLoader
@@ -325,7 +323,7 @@ class PolygonUserLoader(UserLoader):
             logger.info("Loading parameters for user %s.", username)
             args = {}
             args['username'] = userdata[0]
-            args['password'] = build_password(userdata[1])
+            args['password'] = userdata[1]
             args['first_name'] = userdata[2]
             args['last_name'] = userdata[3]
             args['hidden'] = (len(userdata) > 4 and userdata[4] == '1')
@@ -450,7 +448,7 @@ class PolygonContestLoader(ContestLoader):
                     user = user.split(';')
                     participations.append({
                         "username": user[0].strip(),
-                        "password": build_password(user[1].strip()),
+                        "password": user[1].strip(),
                         "hidden": user[4].strip()
                         # "ip" is not passed
                     })
