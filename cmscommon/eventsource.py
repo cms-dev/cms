@@ -271,7 +271,7 @@ class EventSource(object):
         # transfer-encoding. The PEP states just that "the server *may*
         # use chunked encoding" to send each piece of data we give it,
         # if we don't specify a Content-Length header and if both the
-        # client and the server support it. Accoring to the HTTP spec.
+        # client and the server support it. According to the HTTP spec.
         # all (and only) HTTP/1.1 compliant clients have to support it.
         # We'll assume that the server software supports it too, and
         # actually uses it (gevent does!) even if we have no way to
@@ -291,7 +291,7 @@ class EventSource(object):
         # the previous one) is that no one in the application-to-client
         # chain does response buffering: neither any middleware nor the
         # server (gevent doesn't!). This should also hold outside the
-        # server realm (i.e. no proxy buffering) but that's definetly
+        # server realm (i.e. no proxy buffering) but that's definitely
         # not our responsibility.
 
         # The fourth "hack" is to avoid an error to be printed on the
@@ -309,7 +309,7 @@ class EventSource(object):
         # Initialize the response and get the write() callback. The
         # Cache-Control header is useless for conforming clients, as
         # the spec. already imposes that behavior on them, but we set
-        # it explictly to avoid unwanted caching by unaware proxies and
+        # it explicitly to avoid unwanted caching by unaware proxies and
         # middlewares.
         write = start_response(
             b"200 OK",
