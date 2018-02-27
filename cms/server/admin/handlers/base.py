@@ -54,7 +54,7 @@ from cms.db import Admin, Contest, Participation, Question, \
     UserTest
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
-from cms.server import CommonRequestHandler, file_handler_gen
+from cms.server import CommonRequestHandler
 from cmscommon.datetime import make_datetime
 from cmscommon.crypto import hash_password, parse_authentication
 
@@ -630,18 +630,6 @@ class BaseHandler(CommonRequestHandler):
 
         """
         return self.url("login")
-
-
-FileHandler = file_handler_gen(BaseHandler)
-
-
-class FileFromDigestHandler(FileHandler):
-    """Return the file, using the given name, and as plain text."""
-    @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, digest, filename):
-        # TODO: Accept a MIME type
-        self.sql_session.close()
-        self.fetch(digest, "text/plain", filename)
 
 
 def SimpleHandler(page, authenticated=True, permission_all=False):

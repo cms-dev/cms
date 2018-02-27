@@ -34,20 +34,15 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-import time
 import logging
 from datetime import datetime, timedelta
+from functools import wraps
 from future.moves.urllib.parse import quote, urlencode
 
-from functools import wraps
 from tornado.web import RequestHandler
 
-import gevent
-import io
-
-from cms.db import Session
-from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_datetime
+from cms.db import Session
 
 
 logger = logging.getLogger(__name__)
@@ -273,88 +268,6 @@ def filter_ascii(string):
             return '*'
 
     return "".join(filter_ascii_char(c) for c in string)
-
-
-def file_handler_gen(BaseClass):
-    """This generates an extension of the BaseHandler that allows us
-    to send files to the user. This *Gen is needed because the code in
-    the class FileHandler is exactly the same (in AWS and CWS) but
-    they inherits from different BaseHandler.
-
-    BaseClass (type): the BaseHandler of our server.
-
-    return (type): a FileHandler extending BaseClass.
-
-    """
-    class FileHandler(BaseClass):
-        """Base class for handlers that need to serve a file to the user.
-
-        """
-        def fetch(self, digest, content_type, filename):
-            """Send a file from FileCacher by its digest."""
-            if len(digest) == 0:
-                logger.error("No digest given")
-                self.finish()
-                return
-            try:
-                self.temp_file = \
-                    self.service.file_cacher.get_file(digest)
-            except Exception:
-                logger.error("Exception while retrieving file `%s'.", digest,
-                             exc_info=True)
-                self.finish()
-                return
-            self._fetch_temp_file(content_type, filename)
-
-        def fetch_from_filesystem(self, filepath, content_type, filename):
-            """Send a file from filesystem by filepath."""
-            try:
-                self.temp_file = io.open(filepath, 'rb')
-            except Exception:
-                logger.error("Exception while retrieving file `%s'.", filepath,
-                             exc_info=True)
-                self.finish()
-                return
-            self._fetch_temp_file(content_type, filename)
-
-        def _fetch_temp_file(self, content_type, filename):
-            """When calling this method, self.temp_file must be a fileobj
-            seeked at the beginning of the file.
-
-            """
-            self.set_header("Content-Type", content_type)
-            self.set_header("Content-Disposition",
-                            "attachment; filename=\"%s\"" % filename)
-            self.start_time = time.time()
-            self.size = 0
-
-            # TODO - Here I'm changing things as few as possible when
-            # switching from the asynchronous to the greenlet-based
-            # framework; at some point this should be rewritten in a
-            # somewhat more greenlet-idomatic way...
-            ret = True
-            while ret:
-                ret = self._fetch_write_chunk()
-                gevent.sleep(0)
-
-        def _fetch_write_chunk(self):
-            """Send a chunk of the file to the browser.
-
-            """
-            data = self.temp_file.read(FileCacher.CHUNK_SIZE)
-            length = len(data)
-            self.size += length / (1024 * 1024)
-            self.write(data)
-            if length < FileCacher.CHUNK_SIZE:
-                self.temp_file.close()
-                duration = time.time() - self.start_time
-                logger.info("%.3lf seconds for %.3lf MB",
-                            duration, self.size)
-                self.finish()
-                return False
-            return True
-
-    return FileHandler
 
 
 def get_url_root(request_path):

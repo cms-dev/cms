@@ -26,14 +26,11 @@ from future.builtins import *
 
 from .util import \
     CommonRequestHandler, actual_phase_required, compute_actual_phase, \
-    file_handler_gen, filter_ascii, \
-    create_url_builder, multi_contest
+    filter_ascii, create_url_builder, multi_contest
 
 
 __all__ = [
     # util
     "CommonRequestHandler", "actual_phase_required", "compute_actual_phase",
-    "file_handler_gen", "filter_ascii",
-    "create_url_builder",
-    "multi_contest",
+    "filter_ascii", "create_url_builder", "multi_contest",
 ]

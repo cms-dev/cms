@@ -31,7 +31,7 @@ from future.builtins import *
 from cms.db import Dataset, UserTestFile, UserTest
 from cms.grading.languagemanager import get_language
 
-from .base import BaseHandler, FileHandler, require_permission
+from .base import BaseHandler, require_permission
 
 
 class UserTestHandler(BaseHandler):
@@ -59,7 +59,7 @@ class UserTestHandler(BaseHandler):
         self.render("user_test.html", **self.r_params)
 
 
-class UserTestFileHandler(FileHandler):
+class UserTestFileHandler(BaseHandler):
     """Shows a user test file."""
     # We cannot use FileFromDigestHandler as it does not know how to
     # set the proper name (i.e., converting %l to the language).
@@ -74,5 +74,6 @@ class UserTestFileHandler(FileHandler):
                 ".%l", get_language(user_test.language).source_extension)
         digest = user_test_file.digest
 
-        self.sql_session.close()
-        self.fetch(digest, "text/plain", real_filename)
+        self.redirect(self.url("file", digest, real_filename,
+                               mimetype="text/plain"),
+                      permanent=False, status=303)

@@ -58,8 +58,7 @@ from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
-    NOTIFICATION_SUCCESS
+from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
@@ -532,7 +531,7 @@ class UserTestDetailsHandler(ContestHandler):
                     **self.r_params)
 
 
-class UserTestIOHandler(FileHandler):
+class UserTestIOHandler(ContestHandler):
     """Send back a submission file.
 
     """
@@ -571,10 +570,12 @@ class UserTestIOHandler(FileHandler):
 
         mimetype = 'text/plain'
 
-        self.fetch(digest, mimetype, io)
+        self.redirect(self.url("file", digest, io,
+                               mimetype=mimetype),
+                      permanent=False, status=303)
 
 
-class UserTestFileHandler(FileHandler):
+class UserTestFileHandler(ContestHandler):
     """Send back a submission file.
 
     """
@@ -622,4 +623,6 @@ class UserTestFileHandler(FileHandler):
         if mimetype is None:
             mimetype = 'application/octet-stream'
 
-        self.fetch(digest, mimetype, filename)
+        self.redirect(self.url("file", digest, filename,
+                               mimetype=mimetype),
+                      permanent=False, status=303)

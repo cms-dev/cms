@@ -42,7 +42,6 @@ from sqlalchemy import func, not_
 from cmscommon.binary import hex_to_bin, bin_to_b64
 from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
-from cms.db.filecacher import FileCacher
 from cms.io import WebService, rpc_method
 from cms.service import EvaluationService
 
@@ -83,7 +82,6 @@ class AdminWebServer(WebService):
         # A list of pending notifications.
         self.notifications = []
 
-        self.file_cacher = FileCacher(self)
         self.admin_web_server = self.connect_to(
             ServiceCoord("AdminWebServer", 0))
         self.evaluation_service = self.connect_to(

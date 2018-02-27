@@ -44,7 +44,7 @@ import tornado.web
 from cms.server import actual_phase_required, multi_contest
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .contest import ContestHandler, FileHandler
+from .contest import ContestHandler
 
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class TaskDescriptionHandler(ContestHandler):
         self.render("task_description.html", task=task, **self.r_params)
 
 
-class TaskStatementViewHandler(FileHandler):
+class TaskStatementViewHandler(ContestHandler):
     """Shows the statement file of a task in the contest.
 
     """
@@ -104,10 +104,12 @@ class TaskStatementViewHandler(FileHandler):
         else:
             filename = "%s.pdf" % task.name
 
-        self.fetch(statement, "application/pdf", filename)
+        self.redirect(self.url("file", statement, filename,
+                               mimetype="application/pdf"),
+                      permanent=False, status=303)
 
 
-class TaskAttachmentViewHandler(FileHandler):
+class TaskAttachmentViewHandler(ContestHandler):
     """Shows an attachment file of a task in the contest.
 
     """
@@ -130,4 +132,6 @@ class TaskAttachmentViewHandler(FileHandler):
         if mimetype is None:
             mimetype = 'application/octet-stream'
 
-        self.fetch(attachment, mimetype, filename)
+        self.redirect(self.url("file", attachment, filename,
+                               mimetype=mimetype),
+                      permanent=False, status=303)

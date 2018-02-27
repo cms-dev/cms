@@ -40,7 +40,7 @@ from cms.db import Dataset, File, Submission
 from cms.grading.languagemanager import get_language
 from cmscommon.datetime import make_datetime
 
-from .base import BaseHandler, FileHandler, require_permission
+from .base import BaseHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class SubmissionHandler(BaseHandler):
         self.render("submission.html", **self.r_params)
 
 
-class SubmissionFileHandler(FileHandler):
+class SubmissionFileHandler(BaseHandler):
     """Shows a submission file.
 
     """
@@ -93,8 +93,9 @@ class SubmissionFileHandler(FileHandler):
                 ".%l", get_language(submission.language).source_extension)
         digest = sub_file.digest
 
-        self.sql_session.close()
-        self.fetch(digest, "text/plain", real_filename)
+        self.redirect(self.url("file", digest, real_filename,
+                               mimetype="text/plain"),
+                      permanent=False, status=303)
 
 
 class SubmissionCommentHandler(BaseHandler):
