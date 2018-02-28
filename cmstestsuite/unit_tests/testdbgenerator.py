@@ -43,21 +43,21 @@ import unittest
 
 from datetime import timedelta
 
-
 import cms
 
 # Monkeypatch the db string.
-cms.config.database += "fortesting"
+# Noqa to avoid complaints due to imports after a statement.
+cms.config.database += "fortesting"  # noqa
 
 import cms.db
 
 from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
-from cms.db import Contest, Dataset, Evaluation, Participation, Session, \
-    Submission, SubmissionResult, Task, Team, Testcase, User, UserTest, \
-    UserTestResult, \
-    drop_db, init_db, Base
+from cms.db import Base, Contest, Dataset, Evaluation, Executable, File, \
+    Participation, Session, Statement, Submission, SubmissionResult, Task, \
+    Team, Testcase, User, UserTest, UserTestResult, drop_db, init_db
+from cms.db.filecacher import DBBackend
 
 
 class TestCaseWithDatabase(unittest.TestCase):
@@ -94,6 +94,13 @@ class TestCaseWithDatabase(unittest.TestCase):
         for table in itervalues(Base.metadata.tables):
             self.session.execute(table.delete())
         self.session.commit()
+
+    @staticmethod
+    def add_fsobject(digest, content):
+        dbbackend = DBBackend()
+        fobj = dbbackend.create_file(digest)
+        fobj.write(content)
+        dbbackend.commit_file(fobj, digest)
 
     @staticmethod
     def get_contest(**kwargs):
@@ -168,6 +175,19 @@ class TestCaseWithDatabase(unittest.TestCase):
         self.session.add(task)
         return task
 
+    def add_statement(self, task=None, **kwargs):
+        """Create a statement and add it to the session"""
+        task = task if task is not None else self.add_task()
+        args = {
+            "task": task,
+            "digest": unique_digest(),
+            "language": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        statement = Statement(**args)
+        self.session.add(statement)
+        return statement
+
     @staticmethod
     def get_dataset(task=None, **kwargs):
         """Create a dataset"""
@@ -226,6 +246,20 @@ class TestCaseWithDatabase(unittest.TestCase):
         self.session.add(submission)
         return submission
 
+    def add_file(self, submission=None, **kwargs):
+        """Create a file and add it to the session"""
+        if submission is None:
+            submission = self.add_sbubmission()
+        args = {
+            "submission": submission,
+            "filename": unique_unicode_id(),
+            "digest": unique_digest(),
+        }
+        args.update(kwargs)
+        file = File(**args)
+        self.session.add(file)
+        return file
+
     def add_submission_result(self, submission=None, dataset=None, **kwargs):
         """Add a submission result."""
         task = None
@@ -245,6 +279,21 @@ class TestCaseWithDatabase(unittest.TestCase):
         self.session.add(submission_result)
         return submission_result
 
+    def add_executable(self, submission_result=None, **kwargs):
+        """Create an executable and add it to the session"""
+        submission_result = submission_result \
+            if submission_result is not None \
+            else self.add_submission_result()
+        args = {
+            "submission_result": submission_result,
+            "digest": unique_digest(),
+            "filename": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        executable = Executable(**args)
+        self.session.add(executable)
+        return executable
+
     def add_evaluation(self, submission_result=None, testcase=None, **kwargs):
         """Add an evaluation."""
         dataset = None
@@ -252,7 +301,8 @@ class TestCaseWithDatabase(unittest.TestCase):
             if submission_result is not None else dataset
         dataset = testcase.dataset if testcase is not None else dataset
         submission_result = submission_result \
-            if submission_result is not None else self.add_submission_result()
+            if submission_result is not None \
+            else self.add_submission_result(dataset=dataset)
         testcase = testcase if testcase is not None else self.add_testcase()
         assert submission_result.dataset == testcase.dataset
         args = {
