@@ -32,13 +32,10 @@ from six import itervalues, iteritems
 
 import datetime
 import io
-import os
+import requests
 import sys
 import time
 import traceback
-import urllib
-
-import requests
 
 
 debug = False
@@ -79,6 +76,7 @@ class Browser(object):
                 data['_xsrf'] = self.xsrf_token
                 response = self.session.post(url, data)
         else:
+            file_objs = {}
             try:
                 data = data.copy()
                 data['_xsrf'] = self.xsrf_token
