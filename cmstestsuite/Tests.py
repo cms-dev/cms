@@ -32,6 +32,8 @@ import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 import cmstestsuite.tasks.communication2 as communication2
+import cmstestsuite.tasks.outputonly as outputonly
+import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
 
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
@@ -117,6 +119,41 @@ ALL_TESTS = [
          task=batch_fileio, filenames=['incorrect-fileio-with-stdio.%l'],
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100)]),
+
+    # OutputOnly tasks
+
+    Test('correct-outputonly',
+         task=outputonly, filenames=['correct-outputonly-000.txt',
+                                     'correct-outputonly-001.txt'],
+         languages=[None], checks=[CheckOverallScore(100, 100)]),
+
+    Test('incorrect-outputonly',
+         task=outputonly, filenames=['incorrect-outputonly-000.txt',
+                                     'incorrect-outputonly-001.txt'],
+         languages=[None], checks=[CheckOverallScore(0, 100)]),
+
+    Test('partial-correct-outputonly',
+         task=outputonly, filenames=['correct-outputonly-000.txt',
+                                     'incorrect-outputonly-001.txt'],
+         languages=[None], checks=[CheckOverallScore(50, 100)]),
+
+    Test('correct-outputonly-comparator',
+         task=outputonly_comparator,
+         filenames=['correct-outputonly-000.txt',
+                    'correct-outputonly-001.txt'],
+         languages=[None], checks=[CheckOverallScore(100, 100)]),
+
+    Test('incorrect-outputonly-comparator',
+         task=outputonly_comparator,
+         filenames=['incorrect-outputonly-000.txt',
+                    'incorrect-outputonly-001.txt'],
+         languages=[None], checks=[CheckOverallScore(0, 100)]),
+
+    Test('partial-correct-outputonly-comparator',
+         task=outputonly_comparator,
+         filenames=['correct-outputonly-000.txt',
+                    'incorrect-outputonly-001.txt'],
+         languages=[None], checks=[CheckOverallScore(50, 100)]),
 
     # Failed compilation.
 

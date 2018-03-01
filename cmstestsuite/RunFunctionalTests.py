@@ -81,6 +81,8 @@ def load_test_list_from_file(filename):
             continue
 
         name, lang = bits
+        if lang == "None":
+            lang = None
 
         if name not in name_to_test_map:
             print("ERROR: %s:%d invalid test case: %s" %

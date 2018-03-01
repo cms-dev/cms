@@ -83,6 +83,9 @@ PACKAGE_DATA = {
         os.path.join("tasks", "communication", "data", "*.*"),
         os.path.join("tasks", "communication2", "code", "*"),
         os.path.join("tasks", "communication2", "data", "*.*"),
+        os.path.join("tasks", "outputonly", "data", "*.*"),
+        os.path.join("tasks", "outputonly_comparator", "code", "*"),
+        os.path.join("tasks", "outputonly_comparator", "data", "*.*"),
     ],
 }
 
@@ -119,7 +122,7 @@ setup(
                 "for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
-    cmdclass = {"build_py": build_py_and_l10n},
+    cmdclass={"build_py": build_py_and_l10n},
     scripts=["scripts/cmsLogService",
              "scripts/cmsScoringService",
              "scripts/cmsEvaluationService",
