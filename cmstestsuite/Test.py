@@ -163,9 +163,12 @@ class Test(object):
         path = os.path.join(os.path.dirname(__file__), 'code')
 
         # Choose the correct file to submit.
-        filenames = [
-            filename.replace(".%l", get_language(language).source_extension)
-            for filename in self.filenames]
+        if language is not None:
+            ext = get_language(language).source_extension
+            filenames = [filename.replace(".%l", ext)
+                         for filename in self.filenames]
+        else:
+            filenames = self.filenames
 
         full_paths = [os.path.join(path, filename) for filename in filenames]
 
