@@ -46,7 +46,7 @@ from sqlalchemy.exc import IntegrityError
 from cmscommon.binary import bin_to_hex
 from cms import config, mkdir
 from cms.db import SessionGen, FSObject, LargeObject
-from cms.io.GeventUtils import copyfileobj, move, rmtree
+from cms.io.GeventUtils import copyfileobj, rmtree
 
 
 logger = logging.getLogger(__name__)
@@ -713,7 +713,7 @@ class FileCacher(object):
             cache_file_path = os.path.join(self.file_dir, digest)
 
             if not os.path.exists(cache_file_path):
-                move(dst.name, cache_file_path)
+                os.rename(dst.name, cache_file_path)
             else:
                 os.unlink(dst.name)
 
