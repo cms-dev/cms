@@ -54,7 +54,7 @@ import cms.db
 from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
-from cms.db import Base, Contest, Dataset, Evaluation, Executable, \
+from cms.db import Base, Contest, Dataset, Evaluation, Executable, File, \
     Participation, Session, Statement, Submission, SubmissionResult, Task, \
     Team, Testcase, User, UserTest, UserTestResult, drop_db, init_db
 from cms.db.filecacher import DBBackend
@@ -96,7 +96,7 @@ class TestCaseWithDatabase(unittest.TestCase):
         self.session.commit()
 
     @staticmethod
-    def add_file(digest, content):
+    def add_fsobject(digest, content):
         dbbackend = DBBackend()
         fobj = dbbackend.create_file(digest)
         fobj.write(content)
@@ -245,6 +245,20 @@ class TestCaseWithDatabase(unittest.TestCase):
         submission = Submission(**args)
         self.session.add(submission)
         return submission
+
+    def add_file(self, submission=None, **kwargs):
+        """Create a file and add it to the session"""
+        if submission is None:
+            submission = self.add_sbubmission()
+        args = {
+            "submission": submission,
+            "filename": unique_unicode_id(),
+            "digest": unique_digest(),
+        }
+        args.update(kwargs)
+        file = File(**args)
+        self.session.add(file)
+        return file
 
     def add_submission_result(self, submission=None, dataset=None, **kwargs):
         """Add a submission result."""

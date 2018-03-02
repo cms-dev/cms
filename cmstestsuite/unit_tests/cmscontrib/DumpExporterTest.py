@@ -56,12 +56,17 @@ class TestDumpExporter(TestCaseWithDatabase):
         # Add a file to be used as a statement.
         self.st_content = b"statement"
         self.st_digest = "bbb930cc426507ed3f6b7c343c75dd0e041494b7"
-        self.add_file(self.st_digest, self.st_content)
+        self.add_fsobject(self.st_digest, self.st_content)
+
+        # Add a file to be used as a submission source.
+        self.file_content = b"source"
+        self.file_digest = "828d338a9b04221c9cbe286f50cd389f68de4ecf"
+        self.add_fsobject(self.file_digest, self.file_content)
 
         # Add a file to be used as an executable.
         self.exe_content = b"executable"
         self.exe_digest = "0d5602f9eacdb79b54a675b2e91433cd13ed246e"
-        self.add_file(self.exe_digest, self.exe_content)
+        self.add_fsobject(self.exe_digest, self.exe_content)
 
         self.contest = self.add_contest(description="你好")
         self.participation = self.add_participation(contest=self.contest)
@@ -72,6 +77,8 @@ class TestDumpExporter(TestCaseWithDatabase):
         self.dataset = self.add_dataset(task=self.task)
         self.task.active_dataset = self.task.datasets[0]
         self.submission = self.add_submission(self.task, self.participation)
+        self.file = self.add_file(
+            submission=self.submission, digest=self.file_digest)
 
         # Add the executable to the submission
         self.submission_result = self.add_submission_result(
@@ -190,6 +197,7 @@ class TestDumpExporter(TestCaseWithDatabase):
 
         self.assertFileInDump(self.st_digest, self.st_content)
         self.assertFileInDump(self.exe_digest, self.exe_content)
+        self.assertFileInDump(self.file_digest, self.file_content)
 
         # Root objects are the contests, the users, and unattached tasks.
         assertCountEqual(self, self.dump["_objects"],
@@ -211,6 +219,7 @@ class TestDumpExporter(TestCaseWithDatabase):
 
         self.assertFileInDump(self.st_digest, self.st_content)
         self.assertFileInDump(self.exe_digest, self.exe_content)
+        self.assertFileInDump(self.file_digest, self.file_content)
 
     def test_export_single_contest_no_files(self):
         """Test exporting a contest does not export files of other contests."""
@@ -226,6 +235,7 @@ class TestDumpExporter(TestCaseWithDatabase):
 
         self.assertFileNotInDump(self.st_digest)
         self.assertFileNotInDump(self.exe_digest)
+        self.assertFileNotInDump(self.file_digest)
 
     def test_skip_files(self):
         """Test skipping files, generated or original."""
@@ -235,6 +245,7 @@ class TestDumpExporter(TestCaseWithDatabase):
         self.assertInDump(Executable, digest=self.exe_digest)
         self.assertFileNotInDump(self.st_digest)
         self.assertFileNotInDump(self.exe_digest)
+        self.assertFileNotInDump(self.file_digest)
 
     def test_skip_submissions(self):
         """Test skipping submissions.
@@ -251,6 +262,7 @@ class TestDumpExporter(TestCaseWithDatabase):
         self.assertNotInDump(Submission)
         self.assertNotInDump(SubmissionResult)
         self.assertFileNotInDump(self.exe_digest)
+        self.assertFileNotInDump(self.file_digest)
 
     def test_skip_generated(self):
         """Test skipping generated file.
@@ -263,6 +275,8 @@ class TestDumpExporter(TestCaseWithDatabase):
 
         self.assertInDump(Statement, digest=self.st_digest)
         self.assertFileInDump(self.st_digest, self.st_content)
+        self.assertInDump(Submission)
+        self.assertFileInDump(self.file_digest, self.file_content)
 
         self.assertNotInDump(SubmissionResult)
         self.assertFileNotInDump(self.exe_digest)
