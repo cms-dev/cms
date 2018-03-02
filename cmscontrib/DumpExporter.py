@@ -52,12 +52,11 @@ from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
-from cms import utf8_decoder
+from cms import rmtree, utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
     SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
-from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.datetime import make_timestamp

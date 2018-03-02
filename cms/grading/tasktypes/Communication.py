@@ -34,7 +34,7 @@ import os
 import tempfile
 from functools import reduce
 
-from cms import config
+from cms import config, rmtree
 from cms.grading.Sandbox import wait_without_std, Sandbox
 from cms.grading import compilation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
@@ -46,7 +46,6 @@ from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
-from cms.io.GeventUtils import rmtree
 
 
 logger = logging.getLogger(__name__)

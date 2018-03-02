@@ -42,8 +42,7 @@ from functools import wraps, partial
 import gevent
 from gevent import subprocess
 
-from cms import config
-from cms.io.GeventUtils import rmtree
+from cms import config, rmtree
 from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import monotonic_time
 

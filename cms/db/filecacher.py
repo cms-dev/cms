@@ -44,9 +44,8 @@ import gevent
 from sqlalchemy.exc import IntegrityError
 
 from cmscommon.binary import bin_to_hex
-from cms import config, mkdir
+from cms import config, mkdir, rmtree
 from cms.db import SessionGen, FSObject, LargeObject
-from cms.io.GeventUtils import rmtree
 
 
 logger = logging.getLogger(__name__)

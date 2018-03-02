@@ -37,6 +37,7 @@ import os
 import sys
 import grp
 
+import gevent
 import gevent.socket
 
 from cms import ServiceCoord, ConfigError, async_config, config
@@ -65,6 +66,38 @@ def mkdir(path):
         if error.errno != errno.EEXIST:
             return False
     return True
+
+
+# This function is vulnerable to a symlink attack, see:
+# https://bugs.python.org/issue4489
+# It appears the only bulletproof fix requires the ability to traverse
+# directories using file descriptors (like fwalk) which is only in py3.
+def rmtree(path):
+    """Recursively delete a directory tree.
+
+    Remove the directory at the given path, but first remove the files
+    it contains and recursively remove the subdirectories it contains.
+    Be cooperative with other greenlets by yielding often.
+
+    path (str): the path to a directory.
+
+    raise (OSError): in case of errors in the elementary operations.
+
+    """
+    if os.path.islink(path):
+        raise OSError("unsafe to call rmtree on a symlink")
+
+    for dirpath, subdirnames, filenames in os.walk(path, topdown=False):
+        for filename in filenames:
+            os.remove(os.path.join(dirpath, filename))
+            gevent.sleep(0)
+        for subdirname in subdirnames:
+            subdirpath = os.path.join(dirpath, subdirname)
+            if os.path.islink(subdirpath):
+                os.remove(subdirpath)
+                gevent.sleep(0)
+        os.rmdir(dirpath)
+        gevent.sleep(0)
 
 
 def utf8_decoder(value):

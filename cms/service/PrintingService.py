@@ -38,10 +38,9 @@ import tempfile
 from tornado import template
 from PyPDF2 import PdfFileReader, PdfFileMerger
 
-from cms import config
+from cms import config, rmtree
 from cms.db.filecacher import FileCacher
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
-from cms.io.GeventUtils import rmtree
 from cms.db import SessionGen, PrintJob
 from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import get_timezone, utc
