@@ -36,7 +36,7 @@ import datetime
 
 from cms import utf8_decoder
 from cmstestsuite import CONFIG, TestException, clear_coverage, \
-    combine_coverage, coverage_cmdline, sh
+    combine_coverage, coverage_cmdline, send_coverage_to_codecov, sh
 
 
 logger = logging.getLogger(__name__)
@@ -146,6 +146,9 @@ def main():
         "-r", "--retry-failed", action="store_true",
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_UNITTEST_FILENAME)
+    parser.add_argument(
+        "--codecov", action="store_true",
+        help="send coverage results to Codecov")
 
     # Unused parameters.
     parser.add_argument(
@@ -215,6 +218,9 @@ def main():
 
     end_time = datetime.datetime.now()
     print("Time elapsed: %s" % (end_time - start_time))
+
+    if args.codecov:
+        send_coverage_to_codecov("unittests")
 
     if passed:
         return 0

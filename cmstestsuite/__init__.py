@@ -107,3 +107,12 @@ def combine_coverage():
     if CONFIG.get('COVERAGE', False):
         logger.info("Combining coverage results.")
         sh([sys.executable, "-m", "coverage", "combine"])
+
+
+def send_coverage_to_codecov(flag):
+    """Send the coverage report to Codecov with the given flag."""
+    if CONFIG.get('COVERAGE', False):
+        logger.info("Sending coverage results to codecov for flag %s." % flag)
+        subprocess.call(
+            "bash -c 'bash <(curl -s https://codecov.io/bash) -c -F %s'" %
+            flag, shell=True)
