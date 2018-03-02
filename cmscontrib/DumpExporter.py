@@ -122,9 +122,8 @@ def encode_value(type_, value):
     """
     if value is None:
         return None
-    elif isinstance(type_, (Boolean, Integer, Float, Unicode, Enum, JSONB)):
-        return value
-    elif isinstance(type_, String):
+    elif isinstance(type_, (
+            Boolean, Integer, Float, String, Unicode, Enum, JSONB)):
         return value
     elif isinstance(type_, DateTime):
         return make_timestamp(value)
