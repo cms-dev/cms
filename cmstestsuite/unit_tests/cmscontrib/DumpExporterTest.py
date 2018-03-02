@@ -128,7 +128,7 @@ class TestDumpExporter(TestCaseWithDatabase,
                     all(obj[k] == v for k, v in iteritems(kwargs)):
                 return key
         raise AssertionError("Cannot find object of class %s with fields %s" %
-                             (cls.__name__, str(kwargs)))
+                             (cls.__name__, kwargs))
 
     def assertNotInDump(self, cls, **kwargs):
         """Assert that an object is not in the dump.
@@ -144,7 +144,7 @@ class TestDumpExporter(TestCaseWithDatabase,
                     all(obj[k] == v for k, v in iteritems(kwargs)):
                 raise AssertionError("Object of class %s with fields %s "
                                      "should not appear in the dump" %
-                                     (cls.__name__, str(kwargs)))
+                                     (cls.__name__, kwargs))
 
     def assertFileInDump(self, digest, content):
         path = os.path.join(self.base, "files", digest)

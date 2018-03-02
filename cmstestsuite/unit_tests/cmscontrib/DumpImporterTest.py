@@ -58,6 +58,7 @@ class TestDumpImporter(TestCaseWithDatabase,
             "name": "taskname",
             "title": "task title",
             "num": 0,
+            "contest": "contest_key",
             "datasets": ["dataset_key"],
             "active_dataset": "dataset_key",
             "submissions": ["sub_key"],
@@ -159,8 +160,8 @@ class TestDumpImporter(TestCaseWithDatabase,
         d_path = os.path.join(self.base, "descriptions")
         os.makedirs(d_path)
         for digest, (desc, content) in iteritems(data):
-            with io.open(os.path.join(d_path, digest), "wt", encoding="utf-8")\
-                    as f:
+            with io.open(
+                    os.path.join(d_path, digest), "wt", encoding="utf-8") as f:
                 f.write(desc)
             with io.open(os.path.join(f_path, digest), "wb") as f:
                 f.write(content)
@@ -172,10 +173,8 @@ class TestDumpImporter(TestCaseWithDatabase,
         The query is done by contest name, and to avoid caching, we query from
         a brand new session.
 
-        From contest_id on, parameters are checked only if not None.
-
         """
-        db_contests = self.session.query(Contest) \
+        db_contests = self.session.query(Contest)\
             .filter(Contest.name == name).all()
         self.assertEqual(len(db_contests), 1)
         c = db_contests[0]
@@ -189,7 +188,7 @@ class TestDumpImporter(TestCaseWithDatabase,
 
     def assertContestNotInDb(self, name):
         """Assert that the contest with the given name is not in the DB."""
-        db_contests = self.session.query(Contest) \
+        db_contests = self.session.query(Contest)\
             .filter(Contest.name == name).all()
         self.assertEqual(len(db_contests), 0)
 
@@ -292,6 +291,7 @@ class TestDumpImporter(TestCaseWithDatabase,
                 "task_type_parameters": "[]",
                 "score_type": "Sum",
                 "score_type_parameters": "[]",
+                "contest": "contest_key",
                 "managers": {},
                 "testcases": {},
                 "submissions": ["sub_key"],
