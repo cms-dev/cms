@@ -35,7 +35,7 @@ import re
 import sys
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG, combine_coverage, sh
+from cmstestsuite import CONFIG, clear_coverage, combine_coverage
 from cmstestsuite.Tests import ALL_TESTS
 from testrunner import TestRunner
 
@@ -212,9 +212,7 @@ def main():
         logger.info(
             "Re-running %s failed tests from last run.", len(test_list))
 
-    # Clear out any old coverage data.
-    logging.info("Clearing old coverage data.")
-    sh([sys.executable, "-m", "coverage", "erase"])
+    clear_coverage()
 
     # Startup the test runner.
     runner = TestRunner(test_list, contest_id=args.contest, workers=4)

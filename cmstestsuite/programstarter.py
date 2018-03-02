@@ -38,13 +38,12 @@ import os
 import signal
 import socket
 import subprocess
-import sys
 import threading
 import time
 from future.moves.urllib.parse import urlsplit
 
 from cmscommon.datetime import monotonic_time
-from cmstestsuite import CONFIG, TestException
+from cmstestsuite import CONFIG, TestException, coverage_cmdline
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
 
 
@@ -99,9 +98,6 @@ class RemoteService(object):
 
 class Program(object):
     """An instance of a program, which might be running or not."""
-
-    _COVERAGE_CMDLINE = \
-        [sys.executable, "-m", "coverage", "run", "-p", "--source=cms"]
 
     def __init__(self, cms_config, service_name, shard=0, contest=None):
         self.cms_config = cms_config
@@ -233,8 +229,8 @@ class Program(object):
         if CONFIG["VERBOSITY"] >= 1:
             logger.info("$ %s", " ".join(cmdline))
 
-        if CONFIG["TEST_DIR"] is not None and CONFIG.get("COVERAGE"):
-            cmdline = Program._COVERAGE_CMDLINE + cmdline
+        if CONFIG["TEST_DIR"] is not None:
+            cmdline = coverage_cmdline(cmdline)
 
         if CONFIG["VERBOSITY"] >= 3:
             stdout = None

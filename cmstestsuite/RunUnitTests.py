@@ -35,7 +35,8 @@ import subprocess
 import datetime
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG, TestException, combine_coverage, sh
+from cmstestsuite import CONFIG, TestException, clear_coverage, \
+    combine_coverage, coverage_cmdline, sh
 
 
 logger = logging.getLogger(__name__)
@@ -61,8 +62,7 @@ def run_unittests(test_list):
         logger.info("Running test %d/%d: %s.%s",
                     i + 1, num_tests_to_execute, path, filename)
         try:
-            sh([sys.executable, "-m", "coverage", "run", "-p", "--source=cms",
-                os.path.join(path, filename)])
+            sh(coverage_cmdline([os.path.join(path, filename)]))
         except TestException:
             logger.info("  (FAILED: %s)", filename)
 
@@ -204,9 +204,7 @@ def main():
         os.chdir("%(TEST_DIR)s" % CONFIG)
         os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
-        # Clear out any old coverage data.
-        logger.info("Clearing old coverage data.")
-        sh([sys.executable, "-m", "coverage", "erase"])
+    clear_coverage()
 
     # Run all of our test cases.
     passed, test_results = run_unittests(test_list)
