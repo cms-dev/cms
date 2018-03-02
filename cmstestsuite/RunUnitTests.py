@@ -116,7 +116,8 @@ def get_all_tests():
     files = sorted(os.walk(os.path.join("cmstestsuite", "unit_tests")))
     for path, _, names in files:
         for name in sorted(names):
-            if name.endswith(".py"):
+            full_path = os.path.join(path, name)
+            if name.endswith(".py") and os.access(full_path, os.X_OK):
                 tests.append((path, name))
     return tests
 
