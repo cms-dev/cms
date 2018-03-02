@@ -74,6 +74,36 @@ def sh(cmdline, ignore_failure=False):
             (ret & 0xff, ret >> 8, ' '.join(cmdline)))
 
 
+_COVERAGE_DIRECTORIES = [
+    "cms",
+    "cmscommon",
+    "cmscompat",
+    "cmscontrib",
+    "cmsranking",
+    "cmstaskenv",
+]
+_COVERAGE_CMDLINE = [
+    sys.executable, "-m", "coverage", "run", "-p",
+    "--source=%s" % ",".join(_COVERAGE_DIRECTORIES)]
+
+
+def coverage_cmdline(cmdline):
+    """Return a cmdline possibly decorated to record coverage."""
+    if CONFIG.get('COVERAGE', False):
+        return _COVERAGE_CMDLINE + cmdline
+    else:
+        return cmdline
+
+
+def clear_coverage():
+    """Clear existing coverage reports."""
+    if CONFIG.get('COVERAGE', False):
+        logging.info("Clearing old coverage data.")
+        sh([sys.executable, "-m", "coverage", "erase"])
+
+
 def combine_coverage():
-    logger.info("Combining coverage results.")
-    sh([sys.executable, "-m", "coverage", "combine"])
+    """Combine coverage reports from different programs."""
+    if CONFIG.get('COVERAGE', False):
+        logger.info("Combining coverage results.")
+        sh([sys.executable, "-m", "coverage", "combine"])
