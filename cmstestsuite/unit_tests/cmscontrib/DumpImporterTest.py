@@ -30,6 +30,7 @@ from six import assertCountEqual, iteritems
 import json
 import io
 import os
+import shutil
 import tempfile
 import unittest
 
@@ -135,6 +136,7 @@ class TestDumpImporter(TestCaseWithDatabase):
 
     def tearDown(self):
         self.delete_data()
+        shutil.rmtree(self.base)
         super(TestDumpImporter, self).tearDown()
 
     def do_import(self, drop=False, load_files=True,

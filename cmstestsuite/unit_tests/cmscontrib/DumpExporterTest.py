@@ -30,6 +30,7 @@ from six import assertCountEqual, iteritems, itervalues
 import json
 import io
 import os
+import shutil
 import tempfile
 import unittest
 
@@ -95,6 +96,7 @@ class TestDumpExporter(TestCaseWithDatabase):
 
     def tearDown(self):
         self.delete_data()
+        shutil.rmtree(self.base)
         super(TestDumpExporter, self).tearDown()
 
     def do_export(self, contest_ids, dump_files=True, skip_generated=False,
