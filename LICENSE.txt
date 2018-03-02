@@ -63,11 +63,6 @@ Copyright: 2010 Daniele Varrazzo <daniele.varrazzo@gmail.com>
            2013 The CMS development team <contestms@freelists.org>
 License: Expat
 
-Files: cms/io/GeventUtils.py
-Copyright: 2013 The CMS development team <contestms@freelists.org>
-           2001-2007 Python Software Foundation
-License: AGPL-3+ and Python-2.0
-
 Files: cms/log.py
 Copyright: 2013 The CMS development team <contestms@freelists.org>
            2001-2013 Vinay Sajip
