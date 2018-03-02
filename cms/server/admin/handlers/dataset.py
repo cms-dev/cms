@@ -36,23 +36,20 @@ from future.builtins.disabled import *
 from future.builtins import *
 from six import itervalues
 
+import io
 import logging
-import os
 import re
-import shutil
-import tempfile
 import zipfile
 
 import tornado.web
 
-from cms import config
 from cms.db import Dataset, Manager, Message, Participation, \
     Session, Submission, Task, Testcase
 from cms.grading import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 from cmscommon.importers import import_testcases_from_zipfile
 
-from .base import BaseHandler, FileHandler, require_permission
+from .base import BaseHandler, require_permission
 
 
 logger = logging.getLogger(__name__)
@@ -570,7 +567,7 @@ class DeleteTestcaseHandler(BaseHandler):
         self.write("./%d" % task_id)
 
 
-class DownloadTestcasesHandler(FileHandler):
+class DownloadTestcasesHandler(BaseHandler):
     """Download all testcases in a zip file.
 
     """
@@ -610,10 +607,11 @@ class DownloadTestcasesHandler(FileHandler):
         input_template = input_template.strip().replace("*", "%s")
         output_template = output_template.strip().replace("*", "%s")
 
-        # Create a temp dir to contain the content of the zip file.
-        tempdir = tempfile.mkdtemp(dir=config.temp_dir)
-        zip_path = os.path.join(tempdir, "testcases.zip")
-        with zipfile.ZipFile(zip_path, "w") as zip_file:
+        # FIXME When Tornado will stop having the WSGI adapter buffer
+        # the whole response, we could use a tempfile.TemporaryFile so
+        # to avoid having the whole ZIP file in memory at once.
+        temp_file = io.BytesIO()
+        with zipfile.ZipFile(temp_file, "w") as zip_file:
             for testcase in itervalues(dataset.testcases):
                 # Get input, output file path
                 input_path = self.service.file_cacher.\
@@ -624,8 +622,9 @@ class DownloadTestcasesHandler(FileHandler):
                     input_path, input_template % testcase.codename)
                 zip_file.write(
                     output_path, output_template % testcase.codename)
-            zip_file.close()
 
-        self.fetch_from_filesystem(zip_path, "application/zip", zip_filename)
+        self.set_header("Content-Type", "application/zip")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s\"" % zip_filename)
 
-        shutil.rmtree(tempdir)
+        self.write(temp_file.getvalue())
