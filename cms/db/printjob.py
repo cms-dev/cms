@@ -31,6 +31,7 @@ from future.builtins import *
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Unicode, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from . import Base, Participation, FilenameConstraint, DigestConstraint
 
@@ -80,5 +81,6 @@ class PrintJob(Base):
         default=False)
 
     status = Column(
-        Unicode,
-        nullable=True)
+        ARRAY(String),
+        nullable=False,
+        default=[])

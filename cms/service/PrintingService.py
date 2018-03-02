@@ -30,7 +30,6 @@ from future.builtins.disabled import *
 from future.builtins import *
 
 import cups
-import json
 import io
 import logging
 import os
@@ -144,8 +143,7 @@ class PrintingExecutor(Executor):
                 if not os.path.exists(source_ps):
                     logger.warning("Unable to convert from text to ps.")
                     printjob.done = True
-                    printjob.status = json.dumps([
-                        N_("Invalid file")])
+                    printjob.status = [N_("Invalid file")]
                     session.commit()
                     rmtree(directory)
                     return
@@ -172,8 +170,7 @@ class PrintingExecutor(Executor):
             if page_count > config.max_pages_per_job:
                 logger.info("Too many pages.")
                 printjob.done = True
-                printjob.status = json.dumps([
-                    N_("Print job has too many pages")])
+                printjob.status = [N_("Print job has too many pages")]
                 session.commit()
                 rmtree(directory)
                 return
@@ -215,7 +212,7 @@ class PrintingExecutor(Executor):
                 logger.error("Unable to print: `%s'.", error)
             else:
                 printjob.done = True
-                printjob.status = json.dumps([N_("Sent to printer")])
+                printjob.status = [N_("Sent to printer")]
                 session.commit()
             finally:
                 rmtree(directory)
