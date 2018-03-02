@@ -30,9 +30,8 @@ from six import assertCountEqual, iteritems
 import json
 import io
 import os
+import tempfile
 import unittest
-
-from pyfakefs import fake_filesystem_unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
@@ -43,8 +42,7 @@ from cms.db import Contest, FSObject, Session, version
 from cmscontrib.DumpImporter import DumpImporter
 
 
-class TestDumpImporter(TestCaseWithDatabase,
-                       fake_filesystem_unittest.TestCase):
+class TestDumpImporter(TestCaseWithDatabase):
 
     DUMP = {
         "contest_key": {
@@ -113,11 +111,10 @@ class TestDumpImporter(TestCaseWithDatabase,
 
     def setUp(self):
         super(TestDumpImporter, self).setUp()
-        self.setUpPyfakefs()
         if not os.path.exists(config.temp_dir):
             os.makedirs(config.temp_dir)
 
-        self.base = "/tmp/target"
+        self.base = tempfile.mkdtemp()
 
         # Another contest, to make sure it's not wiped on import.
         self.other_contest = self.add_contest()

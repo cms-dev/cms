@@ -30,9 +30,8 @@ from six import assertCountEqual, iteritems, itervalues
 import json
 import io
 import os
+import tempfile
 import unittest
-
-from pyfakefs import fake_filesystem_unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
@@ -44,16 +43,14 @@ from cms.db import Contest, Executable, Participation, Statement, Submission, \
 from cmscontrib.DumpExporter import DumpExporter
 
 
-class TestDumpExporter(TestCaseWithDatabase,
-                       fake_filesystem_unittest.TestCase):
+class TestDumpExporter(TestCaseWithDatabase):
 
     def setUp(self):
         super(TestDumpExporter, self).setUp()
-        self.setUpPyfakefs()
         if not os.path.exists(config.temp_dir):
             os.makedirs(config.temp_dir)
 
-        self.base = "/tmp/target"
+        self.base = os.path.join(tempfile.mkdtemp(), "target")
         self.dump = None
 
         # Add a file to be used as a statement.
@@ -104,9 +101,10 @@ class TestDumpExporter(TestCaseWithDatabase,
             skip_generated=skip_generated,
             skip_submissions=skip_submissions,
             skip_user_tests=False).do_export()
+        dump_path = os.path.join(self.base, "contest.json")
         try:
-            self.dump = json.load(
-                io.open("/tmp/target/contest.json", "rt", encoding="utf-8"))
+            with io.open(dump_path, "rt", encoding="utf-8") as f:
+                self.dump = json.load(f)
         except Exception:
             self.dump = None
 
