@@ -25,7 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import assertCountEqual, iteritems
+from six import PY3, assertCountEqual, iteritems
 
 import json
 import io
@@ -154,8 +154,14 @@ class TestDumpImporter(TestCaseWithDatabase):
     def write_dump(self, dump):
         if not os.path.exists(self.base):
             os.makedirs(self.base)
-        with io.open(os.path.join(self.base, "contest.json"), "wt") as f:
-            json.dump(dump, f)
+
+        destination = os.path.join(self.base, "contest.json")
+        if PY3:
+            with io.open(destination, "wt", encoding="utf-8") as f:
+                json.dump(dump, f, indent=4, sort_keys=True)
+        else:
+            with io.open(destination, "wb") as f:
+                json.dump(dump, f, indent=4, sort_keys=True)
 
     def write_files(self, data):
         """Write files and descriptions on the filesystem.

@@ -252,15 +252,13 @@ class DumpExporter(object):
 
                 data["_version"] = model_version
 
+                destination = os.path.join(export_dir, "contest.json")
                 if PY3:
-                    with io.open(os.path.join(export_dir, "contest.json"),
-                                 "wt", encoding="utf-8") as fout:
+                    with io.open(destination, "wt", encoding="utf-8") as fout:
                         json.dump(data, fout, indent=4, sort_keys=True)
                 else:
-                    with io.open(os.path.join(export_dir, "contest.json"),
-                                 "wb") as fout:
-                        json.dump(data, fout, indent=4, sort_keys=True,
-                                  encoding="utf-8")
+                    with io.open(destination, "wb") as fout:
+                        json.dump(data, fout, indent=4, sort_keys=True)
 
         # If the admin requested export to file, we do that.
         if archive_info["write_mode"] != "":

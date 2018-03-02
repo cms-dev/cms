@@ -96,7 +96,7 @@ class TestDumpExporter(TestCaseWithDatabase):
 
     def tearDown(self):
         self.delete_data()
-        shutil.rmtree(self.base)
+        shutil.rmtree(os.path.dirname(self.base))
         super(TestDumpExporter, self).tearDown()
 
     def do_export(self, contest_ids, dump_files=True, skip_generated=False,
