@@ -35,7 +35,8 @@ import re
 import sys
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG, clear_coverage, combine_coverage
+from cmstestsuite import CONFIG,\
+    clear_coverage, combine_coverage, send_coverage_to_codecov
 from cmstestsuite.Tests import ALL_TESTS
 from testrunner import TestRunner
 
@@ -171,6 +172,9 @@ def main():
     parser.add_argument(
         "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
+    parser.add_argument(
+        "--codecov", action="store_true",
+        help="send coverage results to Codecov")
     args = parser.parse_args()
 
     CONFIG["VERBOSITY"] = args.verbose
@@ -228,6 +232,9 @@ def main():
     runner.shutdown()
     runner.log_elapsed_time()
     combine_coverage()
+
+    if args.codecov:
+        send_coverage_to_codecov("functionaltests")
 
     logger.info("Executed: %s", tests)
     logger.info("Failed: %s", len(failures))
