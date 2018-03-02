@@ -34,6 +34,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
+from six import PY3
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -145,8 +146,12 @@ def main():
 
     assert data["_version"] == to_version
 
-    with io.open(path, 'wb') as fout:
-        json.dump(data, fout, indent=4, sort_keys=True)
+    if PY3:
+        with io.open(path, 'wt', encoding="utf-8") as fout:
+            json.dump(data, fout, indent=4, sort_keys=True)
+    else:
+        with io.open(path, 'wb') as fout:
+            json.dump(data, fout, indent=4, sort_keys=True)
 
     if archive is not None:
         # Keep the old archive, just rename it

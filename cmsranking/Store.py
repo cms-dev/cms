@@ -23,7 +23,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
-from six import iterkeys, iteritems
+from six import PY3, iterkeys, iteritems
 
 import io
 import json
@@ -167,8 +167,12 @@ class Store(object):
             # reflect changes on the persistent storage
             try:
                 path = os.path.join(self._path, key + '.json')
-                with io.open(path, 'wb') as rec:
-                    json.dump(self._store[key].get(), rec)
+                if PY3:
+                    with io.open(path, 'wt', encoding="utf-8") as rec:
+                        json.dump(self._store[key].get(), rec)
+                else:
+                    with io.open(path, 'wb') as rec:
+                        json.dump(self._store[key].get(), rec)
             except IOError:
                 logger.error("I/O error occured while creating entity",
                              exc_info=True)
@@ -206,8 +210,12 @@ class Store(object):
             # reflect changes on the persistent storage
             try:
                 path = os.path.join(self._path, key + '.json')
-                with io.open(path, 'wb') as rec:
-                    json.dump(self._store[key].get(), rec)
+                if PY3:
+                    with io.open(path, 'wt', encoding="utf-8") as rec:
+                        json.dump(self._store[key].get(), rec)
+                else:
+                    with io.open(path, 'wb') as rec:
+                        json.dump(self._store[key].get(), rec)
             except IOError:
                 logger.error("I/O error occured while updating entity",
                              exc_info=True)
@@ -262,8 +270,12 @@ class Store(object):
                 # reflect changes on the persistent storage
                 try:
                     path = os.path.join(self._path, key + '.json')
-                    with io.open(path, 'wb') as rec:
-                        json.dump(value.get(), rec)
+                    if PY3:
+                        with io.open(path, 'wt', encoding="utf-8") as rec:
+                            json.dump(value.get(), rec)
+                    else:
+                        with io.open(path, 'wb') as rec:
+                            json.dump(value.get(), rec)
                 except IOError:
                     logger.error(
                         "I/O error occured while merging entity lists",
