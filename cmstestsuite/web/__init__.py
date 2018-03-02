@@ -32,10 +32,11 @@ from six import itervalues, iteritems
 
 import datetime
 import io
-import requests
 import sys
 import time
 import traceback
+
+import requests
 
 
 debug = False
