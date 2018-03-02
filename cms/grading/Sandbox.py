@@ -43,7 +43,7 @@ import gevent
 from gevent import subprocess
 
 from cms import config
-from cms.io.GeventUtils import copyfileobj, rmtree
+from cms.io.GeventUtils import rmtree
 from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import monotonic_time
 
@@ -387,19 +387,6 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         file_ = self.create_file(path, executable)
         file_.write(content)
         file_.close()
-
-    def create_file_from_fileobj(self, path, file_obj, executable=False):
-        """Write a file in the sandbox copying the content of an open
-        file-like object.
-
-        path (string): relative path of the file inside the sandbox.
-        file_obj (file): where from read the file content.
-        executable (bool): to set permissions.
-
-        """
-        dest = self.create_file(path, executable)
-        copyfileobj(file_obj, dest)
-        dest.close()
 
     def get_file(self, path, trunc_len=None):
         """Open a file in the sandbox given its relative path.

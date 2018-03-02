@@ -46,10 +46,40 @@ from sqlalchemy.exc import IntegrityError
 from cmscommon.binary import bin_to_hex
 from cms import config, mkdir
 from cms.db import SessionGen, FSObject, LargeObject
-from cms.io.GeventUtils import copyfileobj, rmtree
+from cms.io.GeventUtils import rmtree
 
 
 logger = logging.getLogger(__name__)
+
+
+def copyfileobj(source_fobj, destination_fobj,
+                buffer_size=io.DEFAULT_BUFFER_SIZE):
+    """Read all content from one file object and write it to another.
+
+    Repeatedly read from the given source file object, until no content
+    is left, and at the same time write the content to the destination
+    file object. Never read or write more than the given buffer size.
+    Be cooperative with other greenlets by yielding often.
+
+    source_fobj (fileobj): a file object open for reading, in either
+        binary or text mode (doesn't need to be buffered).
+    destination_fobj (fileobj): a file object open for writing, in the
+        same mode as the source (doesn't need to be buffered).
+    buffer_size (int): the size of the read/write buffer.
+
+    """
+    while True:
+        buffer = source_fobj.read(buffer_size)
+        if len(buffer) == 0:
+            break
+        while len(buffer) > 0:
+            gevent.sleep(0)
+            written = destination_fobj.write(buffer)
+            # FIXME remove this when we drop py2
+            if written is None:
+                break
+            buffer = buffer[written:]
+        gevent.sleep(0)
 
 
 class TombstoneError(RuntimeError):
