@@ -177,21 +177,3 @@ class ContestListHandler(BaseHandler):
             contest_list[contest.name] = contest
         self.render("contest_list.html", contest_list=contest_list,
                     **self.r_params)
-
-
-class StaticFileHandler(tornado.web.StaticFileHandler):
-    """Handle static files in a multi-contest aware way.
-
-    """
-    def is_multi_contest(self):
-        """Return whether CWS serves all contests."""
-        return self.application.service.contest_id is None
-
-    def get_absolute_path(self, root, path_or_contest_name):
-        if self.is_multi_contest():
-            # In multi contest mode, the second argument is the contest name,
-            # and we retrieve the file path from path_args.
-            return os.path.abspath(os.path.join(root, self.path_args[1]))
-        else:
-            # Otherwise, we can just use the second argument.
-            return os.path.abspath(os.path.join(root, path_or_contest_name))

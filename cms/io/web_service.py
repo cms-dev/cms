@@ -102,8 +102,16 @@ class WebService(Service):
         if num_proxies_used > 0:
             self.wsgi_app = ProxyFix(self.wsgi_app, num_proxies_used)
 
-        self.web_server = WSGIServer((listen_address, listen_port),
-                                     self.wsgi_app)
+        self.web_server = WSGIServer((listen_address, listen_port), self)
+
+    def __call__(self, environ, start_response):
+        """Execute this instance as a WSGI application.
+
+        See the PEP for the meaning of parameters. The separation of
+        __call__ and wsgi_app eases the insertion of middlewares.
+
+        """
+        return self.wsgi_app(environ, start_response)
 
     def run(self):
         """Start the WebService.

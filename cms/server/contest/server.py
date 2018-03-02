@@ -47,6 +47,8 @@ from future.builtins import *
 
 import logging
 
+from werkzeug.wsgi import SharedDataMiddleware
+
 from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
 from cmscommon.binary import hex_to_bin, bin_to_b64
 from cms import ConfigError, ServiceCoord, config
@@ -60,6 +62,9 @@ from .handlers.main import MainHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+SECONDS_IN_A_YEAR = 365 * 24 * 60 * 60
 
 
 class ContestWebServer(WebService):
@@ -103,6 +108,11 @@ class ContestWebServer(WebService):
             parameters,
             shard=shard,
             listen_address=listen_address)
+
+        self.wsgi_app = SharedDataMiddleware(
+            self.wsgi_app, {"/stl": config.stl_path},
+            cache=True, cache_timeout=SECONDS_IN_A_YEAR,
+            fallback_mimetype="application/octet-stream")
 
         self.jinja2_environment = CWS_ENVIRONMENT
 

@@ -31,10 +31,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *
 from future.builtins import *
 
-from cms import config
-
-from .base import \
-    StaticFileHandler
 from .main import \
     LoginHandler, \
     LogoutHandler, \
@@ -75,7 +71,6 @@ HANDLERS = [
     (r"/notifications", NotificationsHandler),
     (r"/printing", PrintingHandler),
     (r"/documentation", DocumentationHandler),
-    (r"/stl/(.*)", StaticFileHandler, {"path": config.stl_path}),
 
     # Tasks
 
@@ -107,6 +102,10 @@ HANDLERS = [
 
     (r"/communication", CommunicationHandler),
     (r"/question", QuestionHandler),
+
+    # The following prefixes are handled by WSGI middlewares:
+    # * /static, defined in cms/io/web_service.py
+    # * /stl, defined in cms/server/contest/server.py
 ]
 
 

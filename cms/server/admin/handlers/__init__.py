@@ -223,6 +223,10 @@ HANDLERS = [
 
     (r"/user_test/([0-9]+)(?:/([0-9]+))?", UserTestHandler),
     (r"/user_test_file/([0-9]+)", UserTestFileHandler),
+
+    # The following prefixes are handled by WSGI middlewares:
+    # * /rpc, defined in cms/io/web_service.py
+    # * /static, defined in cms/io/web_service.py
 ]
 
 
