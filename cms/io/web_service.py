@@ -45,6 +45,9 @@ from .web_rpc import RPCMiddleware
 logger = logging.getLogger(__name__)
 
 
+SECONDS_IN_A_YEAR = 365 * 24 * 60 * 60
+
+
 class WebService(Service):
     """RPC service with Web server capabilities.
 
@@ -65,8 +68,12 @@ class WebService(Service):
         self.wsgi_app.service = self
 
         for entry in static_files:
+            # TODO If we will introduce a flag to trigger autoreload in
+            # Jinja2 templates, use it to disable the cache arg here.
             self.wsgi_app = SharedDataMiddleware(
-                self.wsgi_app, {"/static": entry})
+                self.wsgi_app, {"/static": entry},
+                cache=True, cache_timeout=SECONDS_IN_A_YEAR,
+                fallback_mimetype="application/octet-stream")
 
         if rpc_enabled:
             self.wsgi_app = DispatcherMiddleware(
