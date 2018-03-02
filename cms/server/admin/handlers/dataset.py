@@ -42,7 +42,6 @@ import re
 import shutil
 import tempfile
 import zipfile
-from io import StringIO
 
 import tornado.web
 
@@ -529,7 +528,7 @@ class AddTestcasesHandler(BaseHandler):
         output_re = re.compile(re.escape(output_template).replace("\\*",
                                "(.*)") + "$")
 
-        fp = StringIO(archive["body"])
+        fp = io.BytesIO(archive["body"])
         try:
             successful_subject, successful_text = \
                 import_testcases_from_zipfile(
