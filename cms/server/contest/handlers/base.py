@@ -179,8 +179,8 @@ class ContestListHandler(BaseHandler):
                     **self.r_params)
 
 
-class StaticFileGzHandler(tornado.web.StaticFileHandler):
-    """Handle files which may be gzip-compressed on the filesystem.
+class StaticFileHandler(tornado.web.StaticFileHandler):
+    """Handle static files in a multi-contest aware way.
 
     """
     def is_multi_contest(self):
@@ -195,24 +195,3 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
         else:
             # Otherwise, we can just use the second argument.
             return os.path.abspath(os.path.join(root, path_or_contest_name))
-
-    def validate_absolute_path(self, root, absolute_path):
-        self.is_gzipped = False
-        try:
-            return tornado.web.StaticFileHandler.validate_absolute_path(
-                self, root, absolute_path)
-        except tornado.web.HTTPError as e:
-            if e.status_code != 404:
-                raise
-            self.is_gzipped = True
-            self.absolute_path = \
-                tornado.web.StaticFileHandler.validate_absolute_path(
-                    self, root, absolute_path + ".gz")
-            self.set_header("Content-encoding", "gzip")
-            return self.absolute_path
-
-    def get_content_type(self):
-        if self.is_gzipped:
-            return "text/plain"
-        else:
-            return tornado.web.StaticFileHandler.get_content_type(self)

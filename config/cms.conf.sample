@@ -119,7 +119,7 @@
     "max_input_length": 5000000,
 
     "_help": "STL documentation path in the system (exposed in CWS).",
-    "stl_path": "/usr/share/doc/stl-manual/html/",
+    "stl_path": "/usr/share/cppreference/doc/html/",
 
 
 

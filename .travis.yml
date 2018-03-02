@@ -25,7 +25,7 @@ addons:
       - fp-units-rtl
       - postgresql-client
       - python2.7
-      - stl-manual
+      - cppreference-doc-en-html
       - cgroup-lite
       - libcap-dev
       - python-dev

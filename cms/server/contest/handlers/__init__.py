@@ -34,7 +34,7 @@ from future.builtins import *
 from cms import config
 
 from .base import \
-    StaticFileGzHandler
+    StaticFileHandler
 from .main import \
     LoginHandler, \
     LogoutHandler, \
@@ -75,7 +75,7 @@ HANDLERS = [
     (r"/notifications", NotificationsHandler),
     (r"/printing", PrintingHandler),
     (r"/documentation", DocumentationHandler),
-    (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
+    (r"/stl/(.*)", StaticFileHandler, {"path": config.stl_path}),
 
     # Tasks
 
