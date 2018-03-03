@@ -77,7 +77,6 @@ def sh(cmdline, ignore_failure=False):
 _COVERAGE_DIRECTORIES = [
     "cms",
     "cmscommon",
-    "cmscompat",
     "cmscontrib",
     "cmsranking",
     "cmstaskenv",
