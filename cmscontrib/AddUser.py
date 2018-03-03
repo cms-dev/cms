@@ -34,7 +34,7 @@ from future.builtins import *
 import gevent.monkey
 
 
-gevent.monkey.patch_all()
+gevent.monkey.patch_all()  # noqa
 
 import argparse
 import logging
