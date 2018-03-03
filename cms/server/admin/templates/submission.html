@@ -152,10 +152,10 @@
       <tr>
         <td>Reevaluate</td>
         <td>
-          {% module ReevaluationButtons(
-                 url,
+          {{ ReevaluationButtons(
+                 url("submission", s.id, shown_dataset.id),
                  submission_id=s.id,
-                 dataset_id=shown_dataset.id) %}
+                 dataset_id=shown_dataset.id) }}
         </td>
       </tr>
     </tbody>

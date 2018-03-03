@@ -118,9 +118,9 @@
     {{ s.short_comment }}
   </td>
   <td>
-    {% module ReevaluationButtons(
-           url,
+    {{ ReevaluationButtons(
+           url("submission", s.id, dataset.id),
            submission_id=s.id,
-           dataset_id=dataset.id) %}
+           dataset_id=dataset.id) }}
   </td>
 </tr>

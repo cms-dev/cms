@@ -14,9 +14,9 @@
 <div id="submissions">
   <p>
     Reevaluate all {{ submission_count }} submissions for this dataset
-    {% module ReevaluationButtons(
-           url,
-           dataset_id=shown_dataset.id) %}
+    {{ ReevaluationButtons(
+           url("dataset", shown_dataset.id),
+           dataset_id=shown_dataset.id) }}
   </p>
 
   {% set page_url = url["dataset"][shown_dataset.id] %}
