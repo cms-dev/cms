@@ -23,8 +23,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import errno
-from future.builtins.disabled import *
-from future.builtins import *
+from future.builtins.disabled import *  # noqa
+from future.builtins import *  # noqa
 
 import io
 import os.path
