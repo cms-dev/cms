@@ -50,9 +50,9 @@ below, and wait for it to complete.
 
 <p>
     Reevaluate all submissions for the dataset "{{ dataset.description }}":
-    {% module ReevaluationButtons(
-           url,
-           dataset_id = dataset.id) %}
+    {{ ReevaluationButtons(
+           url("dataset", dataset.id),
+           dataset_id=dataset.id) }}
 </p>
 
 <form action="{{ url("dataset", dataset.id, "activate") }}" method="POST">
