@@ -1926,6 +1926,9 @@ NORETURN void InStream::quit(TResult result, const char* msg)
     } else if (result == _dirt) {
       std::fprintf(stdout, "0.0\n");
       std::fprintf(stderr, "Wrong Output Format\n");
+    } else if (result == _points) {
+      std::fprintf(stdout, "%f\n", __testlib_points);
+      std::fprintf(stderr, "Partial Score\n");
     } else if (result == _unexpected_eof) {
       std::fprintf(stdout, "0.0\n");
       std::fprintf(stderr, "Wrong Output Format\n");
