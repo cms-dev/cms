@@ -215,6 +215,7 @@ class AddStatementHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -302,6 +303,7 @@ class AddAttachmentHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -379,6 +381,7 @@ class AddDatasetHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
 
         original_dataset = None
         description = "Default"
