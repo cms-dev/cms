@@ -1,0 +1,350 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Tests for authentication functions.
+
+"""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from future.builtins.disabled import *  # noqa
+from future.builtins import *  # noqa
+
+import ipaddress
+import unittest
+from datetime import timedelta
+from unittest.mock import patch
+
+# Needs to be first to allow for monkey patching the DB connection string.
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
+
+from cms import config
+from cms.server.contest.authentication import validate_first_login, \
+    validate_returning_login
+# Prefer build_password (which defaults to a plaintext method) over
+# hash_password (which defaults to bcrypt) as it is a lot faster.
+from cmscommon.crypto import build_password, hash_password
+from cmscommon.datetime import make_datetime
+
+
+class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(TestValidateFirstLogin, self).setUp()
+        self.timestamp = make_datetime()
+        self.contest = self.add_contest()
+        self.user = self.add_user(
+            username="myuser", password=build_password("mypass"))
+        self.participation = self.add_participation(
+            contest=self.contest, user=self.user)
+
+    def assertSuccess(self, username, password, ip_address):
+        authenticated_participation, cookie = validate_first_login(
+            self.session, self.contest, self.timestamp,
+            username, password, ip_address)
+
+        self.assertIsNotNone(authenticated_participation)
+        self.assertIsNotNone(cookie)
+        self.assertIs(authenticated_participation, self.participation)
+
+    def assertFailure(self, username, password, ip_address):
+        authenticated_participation, cookie = validate_first_login(
+            self.session, self.contest, self.timestamp,
+            username, password, ip_address)
+
+        self.assertIsNone(authenticated_participation)
+        self.assertIsNone(cookie)
+
+    def test_successful_login(self):
+        self.contest.allow_password_authentication = True
+
+        self.assertSuccess("myuser", "mypass", "127.0.0.1")
+
+    def test_no_user(self):
+        self.contest.allow_password_authentication = True
+
+        self.assertFailure("myotheruser", "mypass", "127.0.0.1")
+
+    def test_no_participation_for_user_in_contest(self):
+        self.contest.allow_password_authentication = True
+        other_contest = self.add_contest(allow_password_authentication=True)
+        other_user = self.add_user(
+            username="myotheruser", password=build_password("mypass"))
+        self.add_participation(contest=other_contest, user=other_user)
+
+        self.assertFailure("myotheruser", "mypass", "127.0.0.1")
+
+    def test_participation_specific_password(self):
+        self.contest.allow_password_authentication = True
+        self.participation.password = build_password("myotherpass")
+
+        self.assertFailure("myuser", "mypass", "127.0.0.1")
+        self.assertSuccess("myuser", "myotherpass", "127.0.0.1")
+
+    def test_unallowed_password_authentication(self):
+        self.contest.allow_password_authentication = False
+
+        self.assertFailure("myuser", "mypass", "127.0.0.1")
+
+    def test_unallowed_hidden_participation(self):
+        self.contest.allow_password_authentication = True
+        self.contest.block_hidden_participations = True
+        self.participation.hidden = True
+
+        self.assertFailure("myuser", "mypass", "127.0.0.1")
+
+    def test_invalid_password_stored_in_user(self):
+        self.contest.allow_password_authentication = True
+        # It's invalid, as it's not created by build_password.
+        self.user.password = "mypass"
+
+        # Mainly checks that no exception is raised.
+        self.assertFailure("myuser", "mypass", "127.0.0.1")
+
+    def test_invalid_password_stored_in_participation(self):
+        self.contest.allow_password_authentication = True
+        # It's invalid, as it's not created by build_password.
+        self.participation.password = "myotherpass"
+
+        # Mainly checks that no exception is raised.
+        self.assertFailure("myuser", "mypass", "127.0.0.1")
+
+    def test_ip_lock(self):
+        self.contest.allow_password_authentication = True
+        self.contest.ip_restriction = True
+        self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
+
+        self.assertSuccess("myuser", "mypass", "10.0.0.1")
+        self.assertFailure("myuser", "wrongpass", "10.0.0.1")
+        self.assertFailure("myuser", "mypass", "10.0.1.1")
+
+        # Corner cases.
+        self.participation.ip = []
+        self.assertFailure("myuser", "mypass", "10.0.0.1")
+
+        self.participation.ip = None
+        self.assertSuccess("myuser", "mypass", "10.0.0.1")
+
+    def test_deactivated_ip_lock(self):
+        self.contest.allow_password_authentication = True
+        self.contest.ip_restriction = False
+        self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
+
+        self.assertSuccess("myuser", "mypass", "10.0.1.1")
+
+
+class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(TestValidateReturningLogin, self).setUp()
+        self.timestamp = make_datetime()
+        self.contest = self.add_contest()
+        self.user = self.add_user(
+            username="myuser", password=build_password("mypass"))
+        self.participation = self.add_participation(
+            contest=self.contest, user=self.user)
+        _, self.cookie = validate_first_login(
+            self.session, self.contest, self.timestamp, self.user.username,
+            "mypass", "10.0.0.1")
+
+    def attempt_authentication(self, **kwargs):
+        return validate_returning_login(
+            self.session, self.contest,
+            kwargs.get("timestamp", self.timestamp),
+            kwargs.get("cookie", self.cookie),
+            kwargs.get("ip_address", "10.0.0.1"))
+
+    def assertSuccess(self, **kwargs):
+        authenticated_participation, cookie = \
+            self.attempt_authentication(**kwargs)
+        self.assertIsNotNone(authenticated_participation)
+        self.assertIs(authenticated_participation, self.participation)
+        return cookie
+
+    def assertSuccessWithCookie(self, **kwargs):
+        cookie = self.assertSuccess(**kwargs)
+        self.assertIsNotNone(cookie)
+        return cookie
+
+    def assertSuccessWithoutCookie(self, **kwargs):
+        cookie = self.assertSuccess(**kwargs)
+        self.assertIsNone(cookie)
+
+    def assertFailure(self, **kwargs):
+        authenticated_participation, cookie = \
+            self.attempt_authentication(**kwargs)
+        self.assertIsNone(authenticated_participation)
+        self.assertIsNone(cookie)
+
+    @patch.object(config, "cookie_duration", 10)
+    def test_cookie_contains_timestamp(self):
+        self.contest.ip_autologin = False
+        self.contest.allow_password_authentication = True
+
+        # The cookie allows to authenticate.
+        self.assertSuccessWithCookie()
+
+        # Until the duration expires.
+        new_cookie = self.assertSuccessWithCookie(
+            timestamp=self.timestamp + timedelta(seconds=8))
+
+        # But not after it expires.
+        self.assertFailure(timestamp = self.timestamp + timedelta(seconds=14))
+
+        # Unless the cookie is refreshed.
+        self.assertSuccessWithCookie(
+            timestamp=self.timestamp + timedelta(seconds=14),
+            cookie=new_cookie)
+
+    def test_cookie_contains_password(self):
+        self.contest.ip_autologin = False
+
+        # Cookies are of no use if one cannot login by password.
+        self.contest.allow_password_authentication = False
+        self.assertFailure()
+
+        # The cookie works with all methods as it holds the plaintext password.
+        self.contest.allow_password_authentication = True
+        self.user.password = hash_password("mypass", method="bcrypt")
+        self.assertSuccessWithCookie()
+
+        self.user.password = hash_password("mypass", method="plaintext")
+        self.assertSuccessWithCookie()
+
+        # Cookies contain the password, which is validated every time.
+        self.user.password = build_password("newpass")
+        self.assertFailure()
+
+        # Contest-specific passwords take precedence over global ones.
+        self.participation.password = build_password("mypass")
+        self.assertSuccessWithCookie()
+
+        # And they do so in the negative case too.
+        self.user.password = build_password("mypass")
+        self.participation.password = build_password("newpass")
+        self.assertFailure()
+
+    def test_ip_autologin(self):
+        self.contest.ip_autologin = True
+        self.contest.allow_password_authentication = False
+
+        self.participation.ip = [ipaddress.ip_network("10.0.0.1/32")]
+        self.assertSuccessWithoutCookie()
+
+        self.assertFailure(ip_address="10.1.0.1")
+
+        self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
+        self.assertFailure()
+
+    def test_ip_autologin_with_ambiguous_addresses(self):
+        # If two users have the same IP address neither of them can autologin.
+        self.contest.ip_autologin = True
+        self.contest.allow_password_authentication = False
+        self.participation.ip = [ipaddress.ip_network("10.0.0.1/32")]
+        other_user = self.add_user()
+        other_participation = self.add_participation(
+            contest=self.contest, user=other_user,
+            ip=[ipaddress.ip_network("10.0.0.1/32")])
+        self.assertFailure()
+
+        # In fact, they don't even fall back to cookie-based authentication.
+        self.contest.allow_password_authentication = True
+        self.assertFailure()
+
+        # But if IP autologin is disabled altogether, ambiguous IP addresses
+        # are disregarded and cookie-based authentication kicks in.
+        self.contest.ip_autologin = False
+        self.assertSuccessWithCookie()
+
+        # Ambiguous IP addresses are allowed if only one of them is non-hidden
+        # (and hidden users are barred from logging in).
+        self.contest.ip_autologin = True
+        self.contest.block_hidden_participations = True
+        other_participation.hidden = True
+        self.assertSuccessWithoutCookie()
+
+        # But not if hidden users aren't blocked.
+        self.contest.block_hidden_participations = False
+        self.assertFailure()
+
+    def test_invalid_password_in_database(self):
+        self.contest.ip_autologin = False
+        self.contest.allow_password_authentication = True
+        self.user.password = "not a valid password"
+        self.assertFailure()
+
+        self.user.password = build_password("mypass")
+        self.participation.password = "not a valid password"
+        self.assertFailure()
+
+    def test_invalid_cookie(self):
+        self.contest.ip_autologin = False
+        self.contest.allow_password_authentication = True
+        self.assertFailure(cookie=None)
+        self.assertFailure(cookie="not a valid cookie")
+
+    def test_invalid_ip_address_from_web_server(self):
+        self.contest.ip_autologin = True
+        self.contest.allow_password_authentication = True
+        # If a cookie is returned it means that IP autologin doesn't succeed
+        # but that the authentication successfully falls back on the cookie.
+        self.assertSuccessWithCookie(ip_address="not a valid IP address")
+
+    def test_no_user(self):
+        self.session.delete(self.user)
+        self.assertFailure()
+
+    def test_no_participation_for_user_in_contest(self):
+        self.session.delete(self.participation)
+        self.assertFailure()
+
+    def test_hidden_user(self):
+        self.contest.ip_autologin = True
+        self.contest.allow_password_authentication = True
+        self.contest.block_hidden_participations = True
+        self.participation.hidden = True
+        self.assertFailure()
+
+    def test_ip_lock(self):
+        self.contest.ip_autologin = True
+        self.contest.allow_password_authentication = True
+        self.contest.ip_restriction = True
+        self.participation.ip = [ipaddress.ip_network("10.0.0.0/24"),
+                                 ipaddress.ip_network("127.0.0.1/32")]
+
+        self.assertSuccessWithoutCookie(ip_address="127.0.0.1")
+        self.assertSuccessWithCookie(ip_address="10.0.0.1")
+        self.assertFailure(ip_address="10.1.0.1")
+
+        self.contest.ip_restriction = False
+        self.assertSuccessWithCookie()
+
+        # Corner cases.
+        self.contest.ip_restriction = True
+        self.participation.ip = []
+        self.assertFailure()
+
+        self.participation.ip = None
+        self.assertSuccessWithCookie()
+
+
+if __name__ == "__main__":
+    unittest.main()
