@@ -37,23 +37,22 @@ from future.builtins import *  # noqa
 from six import iterkeys, itervalues
 
 import datetime
+import ipaddress
 import json
 import logging
-import pickle
 
 import tornado.web
 
 from cms import config
-from cms.db import Participation, PrintJob, User
+from cms.db import PrintJob
 from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES
-from cms.server import filter_ascii, multi_contest
+from cms.server import multi_contest
+from cms.server.contest.authentication import validate_login
 from cmscommon.datetime import make_datetime, make_timestamp
-from cmscommon.crypto import validate_password
 
 from ..phase_management import actual_phase_required
 
-from .contest import ContestHandler, check_ip, \
-    NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
 
 logger = logging.getLogger(__name__)
@@ -88,62 +87,28 @@ class LoginHandler(ContestHandler):
 
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        user = self.sql_session.query(User)\
-            .filter(User.username == username)\
-            .first()
-        participation = self.sql_session.query(Participation)\
-            .filter(Participation.contest == self.contest)\
-            .filter(Participation.user == user)\
-            .first()
 
-        if user is None:
-            # TODO: notify the user that they don't exist
-            self.redirect(error_page)
-            return
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
+        participation, cookie = validate_login(
+            self.sql_session, self.contest, self.timestamp, username, password,
+            ip_address)
+
+        cookie_name = self.contest.name + "_login"
+        if cookie is None:
+            self.clear_cookie(cookie_name)
+        else:
+            self.set_secure_cookie(cookie_name, cookie, expires_days=None)
 
         if participation is None:
-            # TODO: notify the user that they're uninvited
             self.redirect(error_page)
-            return
-
-        # If a contest-specific password is defined, use that. If it's
-        # not, use the user's main password.
-        if participation.password is None:
-            correct_password = user.password
         else:
-            correct_password = participation.password
-
-        filtered_user = filter_ascii(username)
-        filtered_pass = filter_ascii(password)
-
-        if not validate_password(correct_password, password):
-            logger.info("Login error: user=%s pass=%s remote_ip=%s." %
-                        (filtered_user, filtered_pass, self.request.remote_ip))
-            self.redirect(error_page)
-            return
-
-        if self.contest.ip_restriction and participation.ip is not None \
-                and not check_ip(self.request.remote_ip, participation.ip):
-            logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s.",
-                        filtered_user, filtered_pass, self.request.remote_ip)
-            self.redirect(error_page)
-            return
-
-        if participation.hidden and self.contest.block_hidden_participations:
-            logger.info("Hidden user login attempt: "
-                        "user=%s pass=%s remote_ip=%s.",
-                        filtered_user, filtered_pass, self.request.remote_ip)
-            self.redirect(error_page)
-            return
-
-        logger.info("User logged in: user=%s remote_ip=%s.",
-                    filtered_user, self.request.remote_ip)
-        self.set_secure_cookie(self.contest.name + "_login",
-                               pickle.dumps((user.username,
-                                             correct_password,
-                                             make_timestamp())),
-                               expires_days=None)
-        self.redirect(next_page)
+            self.redirect(next_page)
 
 
 class StartHandler(ContestHandler):
