@@ -25,12 +25,12 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from .util import \
-    CommonRequestHandler, actual_phase_required, compute_actual_phase, \
-    file_handler_gen, filter_ascii, Url, multi_contest
+    CommonRequestHandler, file_handler_gen, filter_ascii, Url, \
+    multi_contest
 
 
 __all__ = [
     # util
-    "CommonRequestHandler", "actual_phase_required", "compute_actual_phase",
-    "file_handler_gen", "filter_ascii", "Url", "multi_contest",
+    "CommonRequestHandler", "file_handler_gen", "filter_ascii", "Url",
+    "multi_contest",
 ]

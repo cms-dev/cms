@@ -54,11 +54,13 @@ from cms.db import File, Submission, SubmissionResult, Task, Token
 from cms.grading.languagemanager import get_language
 from cms.grading.scoretypes import get_score_type
 from cms.grading.tasktypes import get_task_type
-from cms.server import actual_phase_required, multi_contest
+from cms.server import multi_contest
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
+
+from ..phase_management import actual_phase_required
 
 from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
     NOTIFICATION_SUCCESS, NOTIFICATION_WARNING

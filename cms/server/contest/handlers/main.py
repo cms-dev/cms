@@ -46,9 +46,11 @@ import tornado.web
 from cms import config
 from cms.db import Participation, PrintJob, User
 from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES
-from cms.server import actual_phase_required, filter_ascii, multi_contest
+from cms.server import filter_ascii, multi_contest
 from cmscommon.datetime import make_datetime, make_timestamp
 from cmscommon.crypto import validate_password
+
+from ..phase_management import actual_phase_required
 
 from .contest import ContestHandler, check_ip, \
     NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
