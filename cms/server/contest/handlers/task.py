@@ -41,8 +41,10 @@ import logging
 
 import tornado.web
 
-from cms.server import actual_phase_required, multi_contest
+from cms.server import multi_contest
 from cmscommon.mimetypes import get_type_for_file_name
+
+from ..phase_management import actual_phase_required
 
 from .contest import ContestHandler, FileHandler
 

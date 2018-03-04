@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for common server functions.
+"""Tests for phase management functions.
 
 """
 
@@ -32,7 +32,7 @@ from future.builtins import *  # noqa
 import unittest
 from datetime import datetime, timedelta
 
-from cms.server import compute_actual_phase
+from cms.server.contest.phase_management import compute_actual_phase
 
 
 def parse_datetime(value):

@@ -48,9 +48,11 @@ from sqlalchemy.orm import contains_eager
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Participation, User
-from cms.server import compute_actual_phase, file_handler_gen
+from cms.server import file_handler_gen
 from cms.locale import filter_language_codes
 from cmscommon.datetime import get_timezone, make_datetime, make_timestamp
+
+from ..phase_management import compute_actual_phase
 
 from .base import BaseHandler
 
