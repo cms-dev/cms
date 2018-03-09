@@ -894,7 +894,8 @@ class EvaluationService(TriggeredService):
         with SessionGen() as session:
             # When invalidating a dataset we need to know the task_id, otherwise
             # get_submissions will return all the submissions of the contest.
-            if dataset_id is not None and task_id is None:
+            if dataset_id is not None and task_id is None \
+                    and submission_id is None:
                 task_id = Dataset.get_from_id(dataset_id, session).task_id
             # First we load all involved submissions.
             submissions = get_submissions(
