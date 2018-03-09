@@ -112,7 +112,10 @@ def import_testcases_from_zipfile(
                         output, "Testcase output for task %s" % task_name)
                 except Exception:
                     raise Exception("Testcase storage failed")
-
+                try:
+                    codename = codename.decode("utf-8")
+                except AttributeError:
+                    pass
                 testcase = Testcase(codename, public, input_digest,
                                     output_digest, dataset=dataset)
                 session.add(testcase)
