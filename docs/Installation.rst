@@ -58,7 +58,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
     # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-8-jre openjdk-8-jdk fpc \
         postgresql postgresql-client gettext python2.7 \
-        iso-codes shared-mime-info stl-manual cgroup-lite
+        iso-codes shared-mime-info stl-manual cgroup-lite libcap-dev
 
     # Only if you are going to use pip/virtualenv to install python dependencies
     sudo apt-get install python-dev libpq-dev libcups2-dev libyaml-dev \
@@ -77,7 +77,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
 
     sudo pacman -S base-devel jre8-openjdk jdk8-openjdk fpc \
          postgresql postgresql-client python2 \
-         iso-codes shared-mime-info
+         iso-codes shared-mime-info libcap
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
