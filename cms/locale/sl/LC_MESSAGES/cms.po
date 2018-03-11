@@ -110,8 +110,8 @@ msgid "N/A"
 msgstr "Ni odgovora"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Podnaloga %d"
+msgid "Subtask %(index)s"
+msgstr "Podnaloga %(index)s"
 
 msgid "Outcome"
 msgstr "Rezultat"

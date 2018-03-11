@@ -151,8 +151,8 @@ msgid "N/A"
 msgstr "N/A"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "부분문제 %d"
+msgid "Subtask %(index)s"
+msgstr "부분문제 %(index)s"
 
 msgid "Outcome"
 msgstr "결과"

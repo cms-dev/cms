@@ -131,8 +131,8 @@ msgid "N/A"
 msgstr "(空)"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "子问题 %d"
+msgid "Subtask %(index)s"
+msgstr "子问题 %(index)s"
 
 msgid "Outcome"
 msgstr "评测结果"

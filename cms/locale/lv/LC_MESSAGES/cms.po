@@ -161,8 +161,8 @@ msgid "Score details temporarily unavailable."
 msgstr "Vērtēšanas detaļas pašlaik nav pieejamas."
 
 #, python-format
-msgid "Subtask %d"
-msgstr "%d. apakšuzdevums"
+msgid "Subtask %(index)s"
+msgstr "%(index)s. apakšuzdevums"
 
 msgid "Outcome"
 msgstr "Iznākums"

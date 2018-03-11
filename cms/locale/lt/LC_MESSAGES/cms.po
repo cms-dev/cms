@@ -160,8 +160,8 @@ msgid "Score details temporarily unavailable."
 msgstr ""
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Dalinė užduotis %d"
+msgid "Subtask %(index)s"
+msgstr "Dalinė užduotis %(index)s"
 
 msgid "Outcome"
 msgstr "Rezultatas"

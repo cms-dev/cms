@@ -140,8 +140,8 @@ msgid "N/A"
 msgstr "Неизвестно"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Подзадача %d"
+msgid "Subtask %(index)s"
+msgstr "Подзадача %(index)s"
 
 msgid "Outcome"
 msgstr "Резултат"

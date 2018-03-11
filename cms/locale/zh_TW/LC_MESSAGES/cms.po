@@ -64,8 +64,8 @@ msgid "Evaluation didn't produce file %s"
 msgstr "執行後並未產生檔案 %s"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "子問題 %d"
+msgid "Subtask %(index)s"
+msgstr "子問題 %(index)s"
 
 msgid "Outcome"
 msgstr "評測結果"

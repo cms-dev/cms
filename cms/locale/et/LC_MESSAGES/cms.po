@@ -141,8 +141,8 @@ msgid "Score details temporarily unavailable."
 msgstr ""
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Alamülesanne %d"
+msgid "Subtask %(index)s"
+msgstr "Alamülesanne %(index)s"
 
 msgid "Outcome"
 msgstr "Tulemus"

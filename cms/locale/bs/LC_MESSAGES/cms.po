@@ -62,8 +62,8 @@ msgid "Evaluation didn't produce file %s"
 msgstr "Evaluacija nije proizvela datoteku %s"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Podzadatak %d"
+msgid "Subtask %(index)s"
+msgstr "Podzadatak %(index)s"
 
 msgid "Outcome"
 msgstr "Ishod"

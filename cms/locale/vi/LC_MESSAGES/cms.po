@@ -148,8 +148,8 @@ msgid "N/A"
 msgstr "N/A"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Subtask %d"
+msgid "Subtask %(index)s"
+msgstr "Subtask %(index)s"
 
 msgid "Outcome"
 msgstr "Kết quả"

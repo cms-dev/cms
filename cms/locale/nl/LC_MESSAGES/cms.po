@@ -159,8 +159,8 @@ msgid "N/A"
 msgstr "Niet beschikbaar"
 
 #, python-format
-msgid "Subtask %d"
-msgstr "Subtaak %d"
+msgid "Subtask %(index)s"
+msgstr "Subtaak %(index)s"
 
 msgid "Outcome"
 msgstr "Uitkomst"
