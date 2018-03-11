@@ -104,7 +104,7 @@
 {% if task.active_dataset.memory_limit is not none %}
         <tr>
             <th>{% trans %}Memory limit{% endtrans %}</th>
-            <td colspan="2">{{ (task.active_dataset.memory_limit * 1024 * 1024)|format_size }}</td>
+            <td colspan="2">{{ task.active_dataset.memory_limit|format_size }}</td>
         </tr>
 {% endif %}
 {% set compilation_commands = task_type.get_compilation_commands(task.submission_format|map(attribute="filename")|list) %}

@@ -270,7 +270,7 @@ def compilation_step(sandbox, commands):
     sandbox.max_processes = None
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
-    sandbox.address_space = 512 * 1024
+    sandbox.address_space = 500 * 1000 * 1000
 
     # Actually run the compilation commands, logging stdout and stderr.
     logger.debug("Starting compilation step.")
@@ -397,7 +397,7 @@ def evaluation_step(sandbox, commands,
     sandbox (Sandbox): the sandbox we consider.
     commands ([[string]]): the actual evaluation lines.
     time_limit (float): time limit in seconds.
-    memory_limit (int): memory limit in MB.
+    memory_limit (int): memory limit in bytes.
     allow_dirs ([string]|None): if not None, a list of external
         directories to map inside the sandbox
     writable_files ([string]|None): if not None, a list of inner file
@@ -448,7 +448,7 @@ def evaluation_step_before_run(sandbox, command,
     else:
         sandbox.timeout = 0
         sandbox.wallclock_timeout = 0
-    sandbox.address_space = memory_limit * 1024
+    sandbox.address_space = memory_limit
     sandbox.fsize = config.max_file_size
 
     if stdin_redirect is not None:

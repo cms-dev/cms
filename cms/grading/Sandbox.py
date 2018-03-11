@@ -253,7 +253,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
             time_str = "(time unknown)"
         memory_used = self.get_memory_used()
         if memory_used is not None:
-            mem_str = "%.2f MB" % (memory_used / (1024 * 1024))
+            mem_str = "%.2f MB" % (memory_used / (1000 * 1000))
         else:
             mem_str = "(memory usage unknown)"
         return "[%s - %s]" % (time_str, mem_str)
@@ -404,7 +404,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
             file_ = Truncator(file_, trunc_len)
         return file_
 
-    def get_file_to_string(self, path, maxlen=1024):
+    def get_file_to_string(self, path, maxlen=1000):
         """Return the content of a file in the sandbox given its
         relative path.
 
@@ -729,12 +729,12 @@ class StupidSandbox(SandboxBase):
                                    (rlimit_cpu, rlimit_cpu))
 
             if self.address_space:
-                rlimit_data = int(self.address_space * 1024)
+                rlimit_data = self.address_space
                 resource.setrlimit(resource.RLIMIT_DATA,
                                    (rlimit_data, rlimit_data))
 
             if self.stack_space:
-                rlimit_stack = int(self.stack_space * 1024)
+                rlimit_stack = self.stack_space
                 resource.setrlimit(resource.RLIMIT_STACK,
                                    (rlimit_stack, rlimit_stack))
 
@@ -1059,12 +1059,14 @@ class IsolateSandbox(SandboxBase):
         if self.stdin_file is not None:
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
-            res += ["--stack=%d" % self.stack_space]
+            # Isolate wants memory values as KiB.
+            res += ["--stack=%d" % (self.stack_space // 1024)]
         if self.address_space is not None:
+            # Isolate wants memory values as KiB.
             if self.cgroup:
-                res += ["--cg-mem=%d" % self.address_space]
+                res += ["--cg-mem=%d" % (self.address_space // 1024)]
             else:
-                res += ["--mem=%d" % self.address_space]
+                res += ["--mem=%d" % (self.address_space // 1024)]
         if self.stdout_file is not None:
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
@@ -1141,6 +1143,7 @@ class IsolateSandbox(SandboxBase):
 
         """
         if 'cg-mem' in self.log:
+            # Isolate returns memory measurements in KiB.
             return int(self.log['cg-mem'][0]) * 1024
         return None
 

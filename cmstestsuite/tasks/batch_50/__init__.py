@@ -31,7 +31,7 @@ task_info = {
     "submission_format_choice": "other",
     "submission_format": "[\"batch.%l\"]",
     "time_limit_{{dataset_id}}": "0.5",
-    "memory_limit_{{dataset_id}}": "128",
+    "memory_limit_{{dataset_id}}": "125",
     "task_type_{{dataset_id}}": "Batch",
     "TaskTypeOptions_{{dataset_id}}_Batch_compilation": "alone",
     "TaskTypeOptions_{{dataset_id}}_Batch_io_0_inputfile": "",

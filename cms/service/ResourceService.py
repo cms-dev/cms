@@ -55,7 +55,7 @@ from cms.io import Service, rpc_method
 logger = logging.getLogger(__name__)
 
 
-B_TO_MB = 1024 * 1024
+B_TO_MB = 1000 * 1000
 
 MAX_RESOURCE_SECONDS = 11 * 60  # MAX time window for remote resource query
 

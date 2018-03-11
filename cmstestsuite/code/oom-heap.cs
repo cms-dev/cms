@@ -4,11 +4,11 @@ public static class Batchstdio
 {
     public static void Main()
     {
-        int[] big = new int[128 * 1024 * 1024 / 4];
-        
+        int[] big = new int[125 * 1000 * 1000 / 4];
+
         // If we don't do this cycle, the compiler is smart enough not to
         // map the array into resident memory.
-        for (int i = 0; i < 128 * 1024 * 1024 / sizeof(int); i++)
+        for (int i = 0; i < 125 * 1000 * 1000 / sizeof(int); i++)
         {
             big[i] = 0;
         }

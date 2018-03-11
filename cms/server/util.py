@@ -157,7 +157,7 @@ def file_handler_gen(BaseClass):
             """
             data = self.temp_file.read(FileCacher.CHUNK_SIZE)
             length = len(data)
-            self.size += length / (1024 * 1024)
+            self.size += length / (1000 * 1000)
             self.write(data)
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
