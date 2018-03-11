@@ -111,11 +111,11 @@
           {% elif status == SubmissionResult.SCORING %}
           Scoring...
           {% elif status == SubmissionResult.SCORED %}
-            {% try %}
+            {% if st is defined %}
               {% set max_score = st.max_score %}
-            {% except %}
+            {% else %}
               {% set max_score = "[Cannot get score type - see logs]" %}
-            {% endtry %}
+            {% endif %}
           Scored ({{ sr.score }} / {{ max_score }})
           {% else %}
           N/A
