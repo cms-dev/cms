@@ -130,7 +130,7 @@ class CheckSignal(CheckAbstractEvaluationFailure):
     def __init__(self, signal_number):
         CheckAbstractEvaluationFailure.__init__(
             self, "died on a signal",
-            "Execution killed with signal %d" % signal_number)
+            "Execution killed with signal %s" % signal_number)
 
 
 class CheckNonzeroReturn(CheckAbstractEvaluationFailure):

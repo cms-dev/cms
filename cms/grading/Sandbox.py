@@ -653,7 +653,7 @@ class StupidSandbox(SandboxBase):
             return "Execution successfully finished (with exit code %d)" % \
                 self.get_exit_code()
         elif status == self.EXIT_SIGNAL:
-            return "Execution killed with signal %d" % \
+            return "Execution killed with signal %s" % \
                 self.get_killing_signal()
 
     def _popen(self, command,
@@ -1266,7 +1266,7 @@ class IsolateSandbox(SandboxBase):
         elif status == self.EXIT_TIMEOUT_WALL:
             return "Execution timed out (wall clock limit exceeded)"
         elif status == self.EXIT_SIGNAL:
-            return "Execution killed with signal %d" % \
+            return "Execution killed with signal %s" % \
                 self.get_killing_signal()
         elif status == self.EXIT_NONZERO_RETURN:
             return "Execution failed because the return code was nonzero"

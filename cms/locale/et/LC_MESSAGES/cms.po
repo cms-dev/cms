@@ -43,7 +43,7 @@ msgid ""
 "Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Kompileerimine katkes signaali %d tagajärjel (võib olla tingitud "
+"Kompileerimine katkes signaali %s tagajärjel (võib olla tingitud "
 "mälupiirangute ületamisest) "
 
 msgid ""

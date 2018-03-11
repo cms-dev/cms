@@ -42,7 +42,7 @@ msgid ""
 "Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Компилирането беше прекратено със сигнал %d (може да бъде причинено от "
+"Компилирането беше прекратено със сигнал %s (може да бъде причинено от "
 "нарушаване на ограниченията за памет)"
 
 msgid ""

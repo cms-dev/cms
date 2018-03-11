@@ -40,7 +40,7 @@ msgstr "程序编译超时。比如说，这可能是因为过度使用C++模板
 msgid ""
 "Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr "编译程序因内存违规存取而强制终止 (信号 %d)"
+msgstr "编译程序因内存违规存取而强制终止 (信号 %s)"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "

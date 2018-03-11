@@ -31,8 +31,8 @@ msgid "Compilation timed out"
 msgstr "Kompajliranje je trajalo predugo"
 
 #, python-format
-msgid "Compilation killed with signal %d (could be triggered by violating memory limits)"
-msgstr "Kompajliranje prekinuto signalom %d (možda je izazvano prekoračenjem dozvoljene memorije)"
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Kompajliranje prekinuto signalom %s (možda je izazvano prekoračenjem dozvoljene memorije)"
 
 msgid "Execution timed out"
 msgstr "Vrijeme za izvršavanje je isteklo"

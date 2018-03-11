@@ -30,9 +30,9 @@ msgstr "編譯逾時"
 
 #, python-format
 msgid ""
-"Compilation killed with signal %d (could be triggered by violating memory "
+"Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr "編譯程式因記憶體違規存取而強制終止 (信號 %d)"
+msgstr "編譯程式因記憶體違規存取而強制終止 (信號 %s)"
 
 msgid "Execution timed out"
 msgstr "超過時間限制"

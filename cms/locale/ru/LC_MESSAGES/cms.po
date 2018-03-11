@@ -46,7 +46,7 @@ msgid ""
 "Compilation killed with signal %s (could be triggered by violating memory "
 "limits)"
 msgstr ""
-"Компиляция завершилась с сигналом %d (это могло быть вызвано превышением "
+"Компиляция завершилась с сигналом %s (это могло быть вызвано превышением "
 "ограничения по памяти)"
 
 msgid ""

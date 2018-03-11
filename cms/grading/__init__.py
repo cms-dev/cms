@@ -505,7 +505,7 @@ def evaluation_step_after_run(sandbox):
     # the error to the user.
     elif exit_status == Sandbox.EXIT_SIGNAL:
         signal = sandbox.get_killing_signal()
-        logger.debug("Execution killed with signal %d.", signal)
+        logger.debug("Execution killed with signal %s.", signal)
         success = True
         plus["signal"] = signal
 
