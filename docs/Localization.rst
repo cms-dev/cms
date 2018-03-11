@@ -31,3 +31,9 @@ When the developers update the ``cms.pot`` file, you do not need to start from s
 .. sourcecode:: bash
 
     ./setup.py update_catalog -l <code>
+
+After you are done translating the messages, please run the following command and check that no error messages are reported (the developers will be glad to assist you if any of them isn't clear):
+
+.. sourcecode:: bash
+
+    ./setup.py compile_catalog -l <code>
