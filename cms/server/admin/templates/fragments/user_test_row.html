@@ -1,10 +1,10 @@
 {# This snippet shows a row of a user_test table using the variable ut as input #}
 
-{% try %}
+{% if shown_dataset is defined %}
   {% set dataset = shown_dataset %}
-{% except %}
+{% else %}
   {% set dataset = ut.task.active_dataset %}
-{% endtry %}
+{% endif %}
 
 {% set utr = ut.get_result(dataset) %}
 

@@ -1,10 +1,10 @@
 {# This snippet shows a row of a submission table using the variable s as input #}
 
-{% try %}
+{% if shown_dataset is defined %}
   {% set dataset = shown_dataset %}
-{% except %}
+{% else %}
   {% set dataset = s.task.active_dataset %}
-{% endtry %}
+{% endif %}
 
 {% set sr = s.get_result(dataset) %}
 
@@ -69,18 +69,18 @@
         {% endif %}
 
       {% elif status == SubmissionResult.SCORED %}
-        {% try %}
+        {% if score_type is defined %}
           {% set max_score = score_type.max_score %}
-        {% except %}
+        {% else %}
           {% set max_score = "[Cannot get score type - see logs]" %}
-        {% endtry %}
+        {% endif %}
       Scored ({{ sr.score }} / {{ max_score }})
       <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-        {% try %}
+        {% if score_type is defined %}
           {{ score_type.get_html_details(sr.score_details)|safe }}
-        {% except %}
+        {% else %}
         [Cannot get score type - see logs]
-        {% endtry %}
+        {% endif %}
 
       {% else %}
       [Unknown status]
