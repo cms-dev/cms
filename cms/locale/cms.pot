@@ -1,22 +1,47 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Translations template for Contest Management System.
+# Copyright (C) 2018 CMS development group
+# This file is distributed under the same license as the Contest Management
+# System project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-21 15:35+0300\n"
+"Project-Id-Version: Contest Management System 1.4.dev0\n"
+"Report-Msgid-Bugs-To: contestms-dev@freelists.org\n"
+"POT-Creation-Date: 2018-03-11 17:10+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Generated-By: Babel 2.4.0\n"
+
+msgid "Score details temporarily unavailable."
+msgstr ""
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr ""
+
+msgid "#"
+msgstr ""
+
+msgid "Outcome"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Execution time"
+msgstr ""
+
+msgid "Memory used"
+msgstr ""
+
+msgid "N/A"
+msgstr ""
 
 msgid "Compilation succeeded"
 msgstr ""
@@ -99,8 +124,8 @@ msgstr ""
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit. Note that if this is the "
-"reason, the memory usage visible in the submission details is the usage "
+"this might be caused by exceeding the memory limit. Note that if this is the"
+" reason, the memory usage visible in the submission details is the usage "
 "before the allocation that caused the signal."
 msgstr ""
 
@@ -124,30 +149,7 @@ msgstr ""
 msgid "Execution failed because the return code was nonzero"
 msgstr ""
 
-msgid ""
-"Your submission failed because it exited with a return code different from 0."
-msgstr ""
-
-msgid "N/A"
-msgstr ""
-
-msgid "Score details temporarily unavailable."
-msgstr ""
-
-#, python-format
-msgid "Subtask %d"
-msgstr ""
-
-msgid "Outcome"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "Execution time"
-msgstr ""
-
-msgid "Memory used"
+msgid "Your submission failed because it exited with a return code different from 0."
 msgstr ""
 
 msgid "Not correct"
@@ -169,12 +171,6 @@ msgid "No compilation needed"
 msgstr ""
 
 msgid "File not submitted"
-msgstr ""
-
-msgid "loading..."
-msgstr ""
-
-msgid "unknown"
 msgstr ""
 
 msgid "contest-token"
@@ -277,8 +273,7 @@ msgstr ""
 msgid "Question received"
 msgstr ""
 
-msgid ""
-"Your question has been received, you will be notified when it is answered."
+msgid "Your question has been received, you will be notified when it is answered."
 msgstr ""
 
 msgid "Too many print jobs!"
@@ -314,26 +309,22 @@ msgid "Your print job has been received."
 msgstr ""
 
 #, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
 msgstr ""
 
 #, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
+msgid "You have reached the maximum limit of at most %d submissions on this task."
 msgstr ""
 
 msgid "Too many submissions!"
 msgstr ""
 
 #, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
 msgstr ""
 
 #, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
+msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr ""
 
 msgid "Submissions too frequent!"
@@ -581,6 +572,9 @@ msgstr ""
 msgid "GNU Affero General Public License"
 msgstr ""
 
+msgid "Choose a contest"
+msgstr ""
+
 msgid "Programming languages and libraries"
 msgstr ""
 
@@ -588,8 +582,8 @@ msgid "Standard Template Library"
 msgstr ""
 
 msgid ""
-"The main Java class of the solution should have exactly the same name as the "
-"task."
+"The main Java class of the solution should have exactly the same name as the"
+" task."
 msgstr ""
 
 msgid "Submission details for compilation"
@@ -612,14 +606,14 @@ msgid "An error occured while the server was handling your request."
 msgstr ""
 
 msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing "
-"the server with customized URLs) may be considered cheating and may lead to "
-"disqualification."
+"Note that attempts to tamper with Contest Management System (such as probing"
+" the server with customized URLs) may be considered cheating and may lead to"
+" disqualification."
 msgstr ""
 
 msgid ""
-"If you encountered this error during normal usage, please notify the contest "
-"administrators."
+"If you encountered this error during normal usage, please notify the contest"
+" administrators."
 msgstr ""
 
 msgid "General information"
@@ -650,16 +644,14 @@ msgid "The analysis mode hasn't started yet."
 msgstr ""
 
 #, python-format
-msgid ""
-"The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
 msgstr ""
 
 msgid "The analysis mode is currently running."
 msgstr ""
 
 #, python-format
-msgid ""
-"The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
 msgstr ""
 
 msgid "The analysis mode has already ended."
@@ -684,8 +676,7 @@ msgid "You have a distinct set of tokens for each task."
 msgstr ""
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on each task's description page."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
 msgstr ""
 
 msgid "You have a set of tokens shared among all tasks."
@@ -711,8 +702,8 @@ msgstr ""
 
 #, python-format
 msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
-"time frame of %(per_user_time)s."
+"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted"
+" time frame of %(per_user_time)s."
 msgstr ""
 
 msgid "As soon as the contest starts you can choose to start your time frame."
@@ -731,13 +722,12 @@ msgid "You started your time frame at %(start_time)s."
 msgstr ""
 
 msgid ""
-"You can submit solutions until the end of the time frame or until the end of "
-"the contest, whatever comes first."
+"You can submit solutions until the end of the time frame or until the end of"
+" the contest, whatever comes first."
 msgstr ""
 
 #, python-format
-msgid ""
-"You started your time frame at %(start_time)s and you already finished it."
+msgid "You started your time frame at %(start_time)s and you already finished it."
 msgstr ""
 
 msgid "There's nothing you can do now."
@@ -803,8 +793,7 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
-msgid ""
-"You cannot print anything any more as you have used up your printing quota."
+msgid "You cannot print anything any more as you have used up your printing quota."
 msgstr ""
 
 msgid "Previous print jobs"
@@ -822,10 +811,10 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-msgid "no print jobs yet"
+msgid "Preparing..."
 msgstr ""
 
-msgid "Preparing..."
+msgid "no print jobs yet"
 msgstr ""
 
 msgid "Compilation output"
@@ -909,16 +898,22 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
-"\">contest overview page</a>."
+"You can find the rules for the %(type_pl)s on the <a "
+"href=\"%(contest_root)s\">contest overview page</a>."
 msgstr ""
 
 msgid ""
-"Remember that to see the detailed result of a submission you need to use both "
-"a contest-token and a task-token."
+"Remember that to see the detailed result of a submission you need to use "
+"both a contest-token and a task-token."
 msgstr ""
 
 msgid "Attachments"
+msgstr ""
+
+msgid "unknown"
+msgstr ""
+
+msgid "loading..."
 msgstr ""
 
 #, python-format
@@ -926,6 +921,9 @@ msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr ""
 
 msgid "Submit a solution"
+msgstr ""
+
+msgid "You may submit any subset of outputs in a single submission."
 msgstr ""
 
 #, python-format
@@ -1017,3 +1015,4 @@ msgstr ""
 
 msgid "Evaluation outcome"
 msgstr ""
+
