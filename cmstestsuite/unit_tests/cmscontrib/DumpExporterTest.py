@@ -41,6 +41,8 @@ from cms import config
 from cms.db import Contest, Executable, Participation, Statement, Submission, \
     SubmissionResult, Task, User, version
 
+from cmscommon.digest import bytes_digest
+
 from cmscontrib.DumpExporter import DumpExporter
 
 
@@ -56,17 +58,17 @@ class TestDumpExporter(TestCaseWithDatabase):
 
         # Add a file to be used as a statement.
         self.st_content = b"statement"
-        self.st_digest = "bbb930cc426507ed3f6b7c343c75dd0e041494b7"
+        self.st_digest = bytes_digest(self.st_content)
         self.add_fsobject(self.st_digest, self.st_content)
 
         # Add a file to be used as a submission source.
         self.file_content = b"source"
-        self.file_digest = "828d338a9b04221c9cbe286f50cd389f68de4ecf"
+        self.file_digest = bytes_digest(self.file_content)
         self.add_fsobject(self.file_digest, self.file_content)
 
         # Add a file to be used as an executable.
         self.exe_content = b"executable"
-        self.exe_digest = "0d5602f9eacdb79b54a675b2e91433cd13ed246e"
+        self.exe_digest = bytes_digest(self.exe_content)
         self.add_fsobject(self.exe_digest, self.exe_content)
 
         self.contest = self.add_contest(description="你好")

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Luca Versari <veluca93@gmail.com>
@@ -33,7 +33,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import atexit
-import hashlib
 import io
 import logging
 import os
@@ -43,7 +42,7 @@ import gevent
 
 from sqlalchemy.exc import IntegrityError
 
-from cmscommon.binary import bin_to_hex
+from cmscommon.digest import Digester
 from cms import config, mkdir, rmtree
 from cms.db import SessionGen, FSObject, LargeObject
 
@@ -722,10 +721,10 @@ class FileCacher(object):
         # XXX We're *almost* reimplementing copyfileobj.
         with tempfile.NamedTemporaryFile('wb', delete=False,
                                          dir=self.temp_dir) as dst:
-            hasher = hashlib.sha1()
+            d = Digester()
             buf = src.read(self.CHUNK_SIZE)
             while len(buf) > 0:
-                hasher.update(buf)
+                d.update(buf)
                 while len(buf) > 0:
                     written = dst.write(buf)
                     # Cooperative yield.
@@ -734,7 +733,7 @@ class FileCacher(object):
                         break
                     buf = buf[written:]
                 buf = src.read(self.CHUNK_SIZE)
-            digest = bin_to_hex(hasher.digest())
+            digest = d.digest()
             dst.flush()
 
             logger.debug("File has digest %s.", digest)
@@ -887,15 +886,15 @@ class FileCacher(object):
         clean = True
         for digest, _ in self.list():
             fobj = self.backend.get_file(digest)
-            hasher = hashlib.sha1()
+            d = Digester()
             try:
                 buf = fobj.read(self.CHUNK_SIZE)
                 while len(buf) > 0:
-                    hasher.update(buf)
+                    d.update(buf)
                     buf = fobj.read(self.CHUNK_SIZE)
             finally:
                 fobj.close()
-            computed_digest = bin_to_hex(hasher.digest())
+            computed_digest = d.digest()
             if digest != computed_digest:
                 logger.error("File with hash %s actually has hash %s",
                              digest, computed_digest)

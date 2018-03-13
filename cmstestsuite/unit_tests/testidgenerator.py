@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,10 +26,9 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-import hashlib
 import random
 
-from cmscommon.binary import bin_to_hex
+from cmscommon.digest import bytes_digest
 
 
 def unique_long_id():
@@ -47,6 +46,4 @@ def unique_unicode_id():
 
 def unique_digest():
     """Return a unique digest-like string."""
-    hasher = hashlib.sha1()
-    hasher.update(str(unique_long_id()).encode('ascii'))
-    return bin_to_hex(hasher.digest())
+    return bytes_digest(unique_unicode_id().encode("utf-8"))
