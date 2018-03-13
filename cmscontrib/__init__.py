@@ -28,29 +28,8 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-import hashlib
 import io
 import os
-
-from cmscommon.binary import bin_to_hex
-
-
-def sha1sum(path):
-    """Calculates the SHA1 sum of a file, given by its path.
-
-    path (string): path of the file we are interested in.
-
-    return (string): SHA1 sum of the file in path.
-
-    """
-    buffer_length = 8192
-    with io.open(path, 'rb') as fin:
-        hasher = hashlib.new("sha1")
-        buf = fin.read(buffer_length)
-        while len(buf) > 0:
-            hasher.update(buf)
-            buf = fin.read(buffer_length)
-        return bin_to_hex(hasher.digest())
 
 
 # Taken from

@@ -40,18 +40,24 @@ from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
 from cms import config
 from cms.db import Contest, FSObject, Session, version
 
+from cmscommon.digest import bytes_digest
+
 from cmscontrib.DumpImporter import DumpImporter
 
 
 class TestDumpImporter(TestCaseWithDatabase):
 
-    GENERATED_FILE_DIGEST = "040f06fd774092478d450774f5ba30c5da78acc8"
-    NOT_GENERATED_FILE_DIGEST = "828d338a9b04221c9cbe286f50cd389f68de4ecf"
+    GENERATED_FILE_CONTENT = b"content"
+    NON_GENERATED_FILE_CONTENT = b"source"
+
+    GENERATED_FILE_DIGEST = bytes_digest(GENERATED_FILE_CONTENT)
+    NON_GENERATED_FILE_DIGEST = bytes_digest(NON_GENERATED_FILE_CONTENT)
 
     FILES = {
-        GENERATED_FILE_DIGEST: ("desc", b"content"),
-        NOT_GENERATED_FILE_DIGEST: ("subsource", b"source"),
+        GENERATED_FILE_DIGEST: ("desc", GENERATED_FILE_CONTENT),
+        NON_GENERATED_FILE_DIGEST: ("subsource", NON_GENERATED_FILE_CONTENT),
     }
+
     DUMP = {
         "contest_key": {
             "_class": "Contest",
@@ -101,7 +107,7 @@ class TestDumpImporter(TestCaseWithDatabase):
             "_class": "File",
             "submission": "sub_key",
             "filename": "source",
-            "digest": NOT_GENERATED_FILE_DIGEST,
+            "digest": NON_GENERATED_FILE_DIGEST,
         },
         "sr_key": {
             "_class": "SubmissionResult",
@@ -238,7 +244,7 @@ class TestDumpImporter(TestCaseWithDatabase):
         self.assertFileInDb(
             TestDumpImporter.GENERATED_FILE_DIGEST, "desc", b"content")
         self.assertFileInDb(
-            TestDumpImporter.NOT_GENERATED_FILE_DIGEST, "subsource", b"source")
+            TestDumpImporter.NON_GENERATED_FILE_DIGEST, "subsource", b"source")
 
     def test_import_with_drop(self):
         """Test importing everything, but dropping existing data."""
@@ -258,7 +264,7 @@ class TestDumpImporter(TestCaseWithDatabase):
         self.assertFileInDb(
             TestDumpImporter.GENERATED_FILE_DIGEST, "desc", b"content")
         self.assertFileInDb(
-            TestDumpImporter.NOT_GENERATED_FILE_DIGEST, "subsource", b"source")
+            TestDumpImporter.NON_GENERATED_FILE_DIGEST, "subsource", b"source")
 
     def test_import_skip_generated(self):
         """Test importing everything but the generated data."""
@@ -274,7 +280,7 @@ class TestDumpImporter(TestCaseWithDatabase):
 
         self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
         self.assertFileInDb(
-            TestDumpImporter.NOT_GENERATED_FILE_DIGEST, "subsource", b"source")
+            TestDumpImporter.NON_GENERATED_FILE_DIGEST, "subsource", b"source")
 
     def test_import_skip_files(self):
         """Test importing the json but not the files."""
@@ -289,7 +295,7 @@ class TestDumpImporter(TestCaseWithDatabase):
             self.other_contest_name, self.other_contest_description, [], [])
 
         self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
-        self.assertFileNotInDb(TestDumpImporter.NOT_GENERATED_FILE_DIGEST)
+        self.assertFileNotInDb(TestDumpImporter.NON_GENERATED_FILE_DIGEST)
 
     def test_import_old(self):
         """Test importing an old dump.
@@ -359,7 +365,7 @@ class TestDumpImporter(TestCaseWithDatabase):
                 "_class": "Executable",
                 "submission": "sub_key",
                 "filename": "exe",
-                "digest": "040f06fd774092478d450774f5ba30c5da78acc8",
+                "digest": TestDumpImporter.GENERATED_FILE_DIGEST,
             },
             "_version": 1,
             "_objects": ["contest_key", "user_key"],
