@@ -39,7 +39,7 @@ import pkg_resources
 
 from sqlalchemy import func, not_
 
-from cmscommon.binary import hex_to_bin, bin_to_b64
+from cmscommon.binary import hex_to_bin
 from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
 from cms.db.filecacher import FileCacher

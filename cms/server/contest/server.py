@@ -50,7 +50,7 @@ import logging
 from werkzeug.wsgi import SharedDataMiddleware
 
 from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
-from cmscommon.binary import hex_to_bin, bin_to_b64
+from cmscommon.binary import hex_to_bin
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.db.filecacher import FileCacher
