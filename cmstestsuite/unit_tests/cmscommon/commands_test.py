@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Tests for the binary module"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -26,22 +26,33 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+import unittest
 
-__all__ = [
-    "pretty_print_cmdline",
-]
+from cmscommon.commands import pretty_print_cmdline
 
 
-def pretty_print_cmdline(cmdline):
-    """Pretty print a command line.
+class TestPrettyPrintCmdline(unittest.TestCase):
 
-    Take a command line suitable to be passed to a Popen-like call and
-    returns a string that represents it in a way that preserves the
-    structure of arguments and can be passed to bash as is.
+    def test_success(self):
+        self.assertEqual(
+            pretty_print_cmdline(["ls", "-al", "file"]),
+            "'ls' '-al' 'file'")
 
-    More precisely, delimitate every item of the command line with
-    single apstrophes and join all the arguments separating them with
-    spaces.
+    def test_spaces(self):
+        self.assertEqual(
+            pretty_print_cmdline(["ls", "-al", "file with spaces"]),
+            "'ls' '-al' 'file with spaces'")
 
-    """
-    return " ".join(["'%s'" % (x.replace("'", "'\"'\"'")) for x in cmdline])
+    def test_quotes(self):
+        self.assertEqual(
+            pretty_print_cmdline(["ls", "-al", "file'with'quotes"]),
+            """'ls' '-al' 'file'"'"'with'"'"'quotes'""")
+
+    def test_double_quotes(self):
+        self.assertEqual(
+            pretty_print_cmdline(["ls", "-al", "file\"with\"dblquotes"]),
+            """'ls' '-al' 'file"with"dblquotes'""")
+
+
+if __name__ == "__main__":
+    unittest.main()
