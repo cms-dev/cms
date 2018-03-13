@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -64,9 +64,9 @@ from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
     UserTest, UserTestResult, init_db, drop_db
 from cms.db.filecacher import FileCacher
 
-from cmscontrib import sha1sum
-from cmscommon.datetime import make_datetime
 from cmscommon.archive import Archive
+from cmscommon.datetime import make_datetime
+from cmscommon.digest import path_digest
 
 
 logger = logging.getLogger(__name__)
@@ -448,7 +448,7 @@ class DumpImporter(object):
             return False
 
         # Then check the digest.
-        calc_digest = sha1sum(path)
+        calc_digest = path_digest(path)
         if digest != calc_digest:
             logger.critical("File %s has hash %s, but the server returned %s, "
                             "aborting.", path, calc_digest, digest)

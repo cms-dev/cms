@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -32,7 +32,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import errno
-import hashlib
 import io
 import os
 import random
@@ -40,7 +39,7 @@ import shutil
 import unittest
 from io import BytesIO
 
-from cmscommon.binary import bin_to_hex
+from cmscommon.digest import Digester, bytes_digest
 from cms.db.filecacher import FileCacher
 
 
@@ -53,7 +52,7 @@ class RandomFile(object):
         self.dim = dim
         # FIXME We could use os.urandom() instead.
         self.source = io.open('/dev/urandom', 'rb')
-        self.hasher = hashlib.sha1()
+        self.digester = Digester()
 
     def read(self, byte_num):
         """Read byte_num bytes from the source and return them,
@@ -70,7 +69,7 @@ class RandomFile(object):
             return b''
         buf = self.source.read(byte_num)
         self.dim -= len(buf)
-        self.hasher.update(buf)
+        self.digester.update(buf)
         return buf
 
     def close(self):
@@ -86,7 +85,7 @@ class RandomFile(object):
         return (string): digest.
 
         """
-        return bin_to_hex(self.hasher.digest())
+        return self.digester.digest()
 
 
 class HashingFile(object):
@@ -94,7 +93,7 @@ class HashingFile(object):
 
     """
     def __init__(self):
-        self.hasher = hashlib.sha1()
+        self.digester = Digester()
 
     def write(self, buf):
         """Update the hashing with the content of buf.
@@ -104,7 +103,7 @@ class HashingFile(object):
         return (int): length of buf.
 
         """
-        self.hasher.update(buf)
+        self.digester.update(buf)
         return len(buf)
 
     @property
@@ -114,7 +113,7 @@ class HashingFile(object):
         return (string): digest.
 
         """
-        return bin_to_hex(self.hasher.digest())
+        return self.digester.digest()
 
     def close(self):
         """Do nothing, because there is no hidden file we are writing
@@ -339,9 +338,7 @@ class TestFileCacherBase(object):
 
         """
         content = os.urandom(100)
-        h = hashlib.sha1()
-        h.update(content)
-        digest = bin_to_hex(h.digest())
+        digest = bytes_digest(content)
 
         # Test writing the same file to the DB in parallel.
         # Create empty files.

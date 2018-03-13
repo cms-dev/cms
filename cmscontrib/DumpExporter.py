@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
@@ -58,8 +58,8 @@ from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
     SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
 
-from cmscontrib import sha1sum
 from cmscommon.datetime import make_timestamp
+from cmscommon.digest import path_digest
 
 from datetime import date
 
@@ -372,7 +372,7 @@ class DumpExporter(object):
             return False
 
         # Then check the digest
-        calc_digest = sha1sum(path)
+        calc_digest = path_digest(path)
         if digest != calc_digest:
             logger.critical("File %s has wrong hash %s.",
                             digest, calc_digest)
