@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -172,7 +172,8 @@ class SubmitHandler(ContestHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(filename) != 1 for filename in itervalues(self.request.files)):
+        if any(len(filename) != 1
+               for filename in itervalues(self.request.files)):
             self._send_error(
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
@@ -354,7 +355,8 @@ class SubmitHandler(ContestHandler):
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
         self.redirect(self.contest_url(
-            *self.fallback_page, submission_id=encrypt_number(submission.id)))
+            *self.fallback_page,
+            submission_id=encrypt_number(submission.id, config.secret_key)))
 
 
 class TaskSubmissionsHandler(ContestHandler):
@@ -406,11 +408,11 @@ class TaskSubmissionsHandler(ContestHandler):
         if submissions_left is not None:
             submissions_left = max(0, submissions_left)
 
+        download_allowed = self.contest.submissions_download_allowed
         self.render("task_submissions.html",
                     task=task, submissions=submissions,
                     submissions_left=submissions_left,
-                    submissions_download_allowed=
-                        self.contest.submissions_download_allowed,
+                    submissions_download_allowed=download_allowed,
                     SubmissionResult=SubmissionResult,
                     **self.r_params)
 

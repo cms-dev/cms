@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -244,7 +244,8 @@ class UserTestHandler(ContestHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(filename) != 1 for filename in itervalues(self.request.files)):
+        if any(len(filename) != 1
+               for filename in itervalues(self.request.files)):
             self._send_error(
                 self._("Invalid test format!"),
                 self._("Please select the correct files."))
@@ -435,7 +436,8 @@ class UserTestHandler(ContestHandler):
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the user test id).
         self.redirect(self.contest_url(
-            *self.fallback_page, user_test_id=encrypt_number(user_test.id),
+            *self.fallback_page,
+            user_test_id=encrypt_number(user_test.id, config.secret_key),
             **self.fallback_args))
 
 

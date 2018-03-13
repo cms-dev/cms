@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
@@ -35,14 +35,13 @@ import random
 
 from string import ascii_lowercase
 
+from Crypto import Random
 from Crypto.Cipher import AES
 
 from cmscommon.binary import bin_to_hex, hex_to_bin, bin_to_b64, b64_to_bin
 
 
 __all__ = [
-    "is_random_secure",
-
     "get_random_key", "get_hex_random_key",
 
     "encrypt_string", "decrypt_string",
@@ -55,32 +54,14 @@ __all__ = [
     ]
 
 
-# Some older versions of pycrypto don't provide a Random module
-# If that's the case, fallback to weak standard library PRG
-try:
-    from Crypto import Random
-    get_random_bits = Random.new().read
-    is_random_secure = True
-except ImportError:
-    def get_random_bits(x):
-        # We need to wrap the generator in a list because of a
-        # shortcoming of future's bytes implementation.
-        return bytes([random.getrandbits(8) for _ in range(x)])
-    is_random_secure = False
-
-
-def _get_secret_key_unhex():
-    # Only import this if we need it. Otherwise, we would prefer to
-    # remain independent of the rest of CMS.
-    from cms import config
-    return hex_to_bin(config.secret_key)
+_get_random_bits = Random.new().read
 
 
 def get_random_key():
     """Generate 16 random bytes, safe to be used as AES key.
 
     """
-    return get_random_bits(16)
+    return _get_random_bits(16)
 
 
 def get_hex_random_key():
@@ -91,7 +72,7 @@ def get_hex_random_key():
     return bin_to_hex(get_random_key())
 
 
-def encrypt_string(pt, key=None):
+def encrypt_string(pt, key_hex):
     """Encrypt the plaintext (pt) with the 16-bytes key. Moreover, it
     encrypts it using a random IV, so that encrypting repeatedly the
     same string gives different outputs. This way no analisys can made
@@ -99,11 +80,8 @@ def encrypt_string(pt, key=None):
     string uses the alphabet { 'a', ..., 'z', 'A', ..., 'Z', '0', ...,
     '9', '.', '-', '_' }, so it is safe to use in URLs.
 
-    If key is not specified, it is obtained from the configuration.
-
     """
-    if key is None:
-        key = _get_secret_key_unhex()
+    key = hex_to_bin(key_hex)
     # Pad the plaintext to make its length become a multiple of the block size
     # (that is, for AES, 16 bytes), using a byte 0x01 followed by as many bytes
     # 0x00 as needed. If the length of the message is already a multiple of 16
@@ -123,15 +101,12 @@ def encrypt_string(pt, key=None):
     return ct_b64
 
 
-def decrypt_string(ct_b64, key=None):
+def decrypt_string(ct_b64, key_hex):
     """Decrypt a ciphertext (ct_b64) encrypted with encrypt_string and
     return the corresponding plaintext.
 
-    If key is not specified, it is obtained from the configuration.
-
     """
-    if key is None:
-        key = _get_secret_key_unhex()
+    key = hex_to_bin(key_hex)
     try:
         # Convert the ciphertext from a URL-safe base64 encoding to a
         # bytestring, which contains both the IV (the first 16 bytes) as well
@@ -152,24 +127,20 @@ def decrypt_string(ct_b64, key=None):
         raise ValueError('Wrong AES cryptogram length.')
 
 
-def encrypt_number(num, key=None):
+def encrypt_number(num, key_hex):
     """Encrypt an integer number, with the same properties as
     encrypt_string().
 
-    If key is not specified, it is obtained from the configuration.
-
     """
     hexnum = b"%x" % num
-    return encrypt_string(hexnum, key)
+    return encrypt_string(hexnum, key_hex)
 
 
-def decrypt_number(enc, key=None):
+def decrypt_number(enc, key_hex):
     """Decrypt an integer number encrypted with encrypt_number().
 
-    If key is not specified, it is obtained from the configuration.
-
     """
-    return int(decrypt_string(enc, key), 16)
+    return int(decrypt_string(enc, key_hex), 16)
 
 
 def generate_random_password():
