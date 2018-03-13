@@ -46,4 +46,4 @@ def unique_unicode_id():
 
 def unique_digest():
     """Return a unique digest-like string."""
-    return bytes_digest(unique_unicode_id().encode())
+    return bytes_digest(unique_unicode_id().encode("utf-8"))
