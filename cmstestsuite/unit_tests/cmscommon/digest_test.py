@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import PY2
 
 import io
 import os
@@ -54,6 +55,7 @@ class TestDigester(unittest.TestCase):
         self.d.update(b"")
         self.assertEqual(self.d.digest(), _EMPTY_DIGEST)
 
+    @unittest.skipIf(PY2, "Python2 allows strings")
     def test_string(self):
         with self.assertRaises(TypeError):
             self.d.update("")
@@ -67,6 +69,7 @@ class TestBytesDigest(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(bytes_digest(b""), _EMPTY_DIGEST)
 
+    @unittest.skipIf(PY2, "Python2 allows strings")
     def test_string(self):
         with self.assertRaises(TypeError):
             bytes_digest("")
@@ -100,6 +103,7 @@ class TestPathDigest(unittest.TestCase):
         self.write_file(content)
         self.assertEqual(path_digest(self.path), bytes_digest(content))
 
+    @unittest.skipIf(PY2, "Python2 uses IOError")
     def test_not_found(self):
         with self.assertRaises(FileNotFoundError):
             path_digest(self.path)
