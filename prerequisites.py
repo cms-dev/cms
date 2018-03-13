@@ -37,6 +37,17 @@ from __future__ import unicode_literals
 # the user will be using and in which the requirements were installed
 # (e.g. the site installation rather than a venv).
 
+### Start Python 2+3 compatibility
+
+# Equivalent to running: from future.builtins import input
+try:
+    input = raw_input
+    del raw_input
+except NameError:
+    pass
+
+### End Python 2+3 compatibility
+
 import argparse
 import grp
 import os
