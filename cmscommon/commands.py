@@ -26,6 +26,12 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+try:
+    from shlex import quote
+except ImportError:
+    # Python 2
+    from pipes import quote
+
 
 __all__ = [
     "pretty_print_cmdline",
@@ -44,4 +50,4 @@ def pretty_print_cmdline(cmdline):
     spaces.
 
     """
-    return " ".join(["'%s'" % (x.replace("'", "'\"'\"'")) for x in cmdline])
+    return " ".join(quote(x) for x in cmdline)

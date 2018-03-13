@@ -36,22 +36,22 @@ class TestPrettyPrintCmdline(unittest.TestCase):
     def test_success(self):
         self.assertEqual(
             pretty_print_cmdline(["ls", "-al", "file"]),
-            "'ls' '-al' 'file'")
+            "ls -al file")
 
     def test_spaces(self):
         self.assertEqual(
             pretty_print_cmdline(["ls", "-al", "file with spaces"]),
-            "'ls' '-al' 'file with spaces'")
+            "ls -al 'file with spaces'")
 
     def test_quotes(self):
         self.assertEqual(
             pretty_print_cmdline(["ls", "-al", "file'with'quotes"]),
-            """'ls' '-al' 'file'"'"'with'"'"'quotes'""")
+            """ls -al 'file'"'"'with'"'"'quotes'""")
 
     def test_double_quotes(self):
         self.assertEqual(
             pretty_print_cmdline(["ls", "-al", "file\"with\"dblquotes"]),
-            """'ls' '-al' 'file"with"dblquotes'""")
+            """ls -al 'file"with"dblquotes'""")
 
 
 if __name__ == "__main__":
