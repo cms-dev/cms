@@ -54,14 +54,14 @@ __all__ = [
     ]
 
 
-_get_random_bits = Random.new().read
+_RANDOM = Random.new()
 
 
 def get_random_key():
     """Generate 16 random bytes, safe to be used as AES key.
 
     """
-    return _get_random_bits(16)
+    return _RANDOM.read(16)
 
 
 def get_hex_random_key():
