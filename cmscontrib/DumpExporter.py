@@ -58,8 +58,8 @@ from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
     SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
 
-from cmscommon.digest import path_digest
 from cmscommon.datetime import make_timestamp
+from cmscommon.digest import path_digest
 
 from datetime import date
 
