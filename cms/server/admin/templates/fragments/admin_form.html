@@ -1,18 +1,18 @@
 {# This snippet shows a form to add/edit an admin; if admin is set, its data will be used as defaults. #}
 
-{% try %}
+{% if admin is defined %}
   {% set admin_username = admin.username %}
   {% set admin_name = admin.name %}
   {% set admin_permission_all = admin.permission_all %}
   {% set admin_permission_messaging = admin.permission_messaging %}
   {% set admin_enabled = admin.enabled %}
-{% except %}
+{% else %}
   {% set admin_username = "" %}
   {% set admin_name = "" %}
   {% set admin_permission_all = True %}
   {% set admin_permission_messaging = False %}
   {% set admin_enabled = True %}
-{% end %}
+{% endif %}
 
 <div>
   <table>
@@ -28,25 +28,25 @@
       <td>Name</td>
       <td><input type="text" name="name" value="{{ admin_name }}"/></td>
     </tr>
-    {% if current_user.permission_all %}
+    {% if admin.permission_all %}
     <tr>
       <td>All permissions</td>
       <td>
-        <input type="checkbox" name="permission_all" {% if admin_permission_all %}checked{% end %} />
+        <input type="checkbox" name="permission_all" {% if admin_permission_all %}checked{% endif %} />
       </td>
     </tr>
     <tr>
       <td>Messaging permissions</td>
       <td>
-        <input type="checkbox" name="permission_messaging" {% if admin_permission_messaging %}checked{% end %} />
+        <input type="checkbox" name="permission_messaging" {% if admin_permission_messaging %}checked{% endif %} />
       </td>
     </tr>
     <tr>
       <td>Enabled</td>
       <td>
-        <input type="checkbox" name="enabled" {% if admin_enabled %}checked{% end %} />
+        <input type="checkbox" name="enabled" {% if admin_enabled %}checked{% endif %} />
       </td>
     </tr>
-    {% end %}
+    {% endif %}
   </table>
 </div>

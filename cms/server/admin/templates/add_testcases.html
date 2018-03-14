@@ -1,11 +1,11 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
   <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Upload testcases</h1>
 </div>
 <form enctype="multipart/form-data" action="{{ url("dataset", dataset.id, "testcases", "add_multiple") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <table>
     <tr>
       <td>Archive (a zip file containing files only):</td>
@@ -41,4 +41,4 @@
   <input type="submit" value="Upload">
   <input type="Reset" >
 </form>
-{% end %}
+{% endblock core %}

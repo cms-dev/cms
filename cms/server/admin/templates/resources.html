@@ -1,8 +1,7 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block js %}
 
-{% from cmscommon.datetime import make_timestamp %}
 
 var getters = [];
 
@@ -11,7 +10,7 @@ var getters = [];
     RSgetter = function(shard, plotOptions)
     {
         this.shard = shard;
-        this.last_time = {{ make_timestamp(timestamp) }} - 60 * 11;
+        this.last_time = {{ timestamp|make_timestamp }} - 60 * 11;
         this.first = true;
     }
 
@@ -161,11 +160,11 @@ var getters = [];
                 {
                     strings.push('</td><td>');
                     strings.push(utils.repr_time_ago_short((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
                     if (s.lastIndexOf("LogService,", 0) !== 0 &&
                         s.lastIndexOf("ResourceService,", 0) !== 0)
                       strings.push(" <a onclick='window.getters[" + this.shard + "].kill_service(\"" + s + "\", this);'>[Kill]</a>");
-{% end %}
+{% endif %}
                     strings.push('</td><td style="text-align: center;">');
                     strings.push(response['data'][l-1][1]['services'][s]['threads']);
                     strings.push('</td><td style="text-align: center;">');
@@ -183,15 +182,15 @@ var getters = [];
                   strings.push('N/A');
                 } else if (response['data'][l-1][1]['services'][s]['autorestart'] == true) {
                   strings.push(" <input type='checkbox' checked onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);'");
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
                   strings.push(" disabled");
-{% end %}
+{% endif %}
                   strings.push(" />");
                 } else if (response['data'][l-1][1]['services'][s]['autorestart'] == false) {
                   strings.push(" <input type='checkbox' onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);'");
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
                   strings.push(" disabled");
-{% end %}
+{% endif %}
                   strings.push(" />");
                 } else {
                   strings.push('N/A');
@@ -263,10 +262,10 @@ var plotOptions = {
     }
 };
 
-{% end %}
+{% endblock js %}
 
 {% block js_init %}
-var shards = {% raw json_encode(resource_addresses) %};
+var shards = {{ resource_addresses|tojson }};
 for (var i in shards)
 {
     getters[i] = new RSgetter(i, plotOptions);
@@ -276,7 +275,7 @@ for (var i in shards)
 
 }
 
-{% end %}
+{% endblock js_init %}
 
 {% block core %}
 
@@ -328,6 +327,6 @@ for (var i in shards)
 
   <div class="hr"></div>
 </div>
-{% end %}
+{% endfor %}
 
-{% end %}
+{% endblock core %}

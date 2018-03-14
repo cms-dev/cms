@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 
@@ -7,14 +7,14 @@
 </div>
 
 <form action="{{ url("contests") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Edit selected contest:
    <input type="submit"
          name="operation"
          value="Remove"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
-{% end %}
+{% endif %}
          />
   <table class="bordered">
     <thead>
@@ -33,9 +33,9 @@
         <td><a href="{{ url("contest", c.id) }}">{{ c.name }}</a></td>
         <td>{{ c.description }}</td>
       </tr>
-      {% end %}
+      {% endfor %}
     </tbody>
   </table>
 </form>
 
-{% end %}
+{% endblock core %}

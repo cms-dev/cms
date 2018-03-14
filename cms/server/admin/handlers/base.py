@@ -48,7 +48,7 @@ import tornado.web
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import subqueryload
 
-from cms import __version__
+from cms import __version__, config
 from cms.db import Admin, Contest, Participation, Question, \
     Submission, SubmissionFormatElement, SubmissionResult, Task, Team, User, \
     UserTest
@@ -287,6 +287,11 @@ class BaseHandler(CommonRequestHandler):
         super(BaseHandler, self).prepare()
         self.contest = None
 
+    def render(self, template_name, **params):
+        t = self.service.jinja2_environment.get_template(template_name)
+        for chunk in t.generate(**params):
+            self.write(chunk)
+
     def render_params(self):
         """Return the default render params used by almost all handlers.
 
@@ -299,8 +304,12 @@ class BaseHandler(CommonRequestHandler):
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
         params["url"] = self.url
+        params["xsrf_form_html"] = self.xsrf_form_html()
+        params["config"] = config
+        # FIXME this is cheating
+        params["handler"] = self
         if self.current_user is not None:
-            params["current_user"] = self.current_user
+            params["admin"] = self.current_user
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
             params["unanswered"] = self.sql_session.query(Question)\

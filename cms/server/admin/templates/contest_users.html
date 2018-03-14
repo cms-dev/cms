@@ -1,14 +1,14 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
   <h1>Users list</h1>
 </div>
 
-{% include fragments/overload_warning.html %}
+{% include "fragments/overload_warning.html" %}
 
 <form action="{{ url("contest", contest.id, "users", "add") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Add a new user:
   <select name="user_id">
     <option value="null" selected>Select a new user</option>
@@ -16,24 +16,24 @@
     <option value="{{ u.id }}">
       {{ u.username }}
     </option>
-    {% end %}
+    {% endfor %}
   </select>
   <input type="submit"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
-{% end %}
+{% endif %}
          value="Add user" />
 </form>
 
 <form action="{{ url("contest", contest.id, "users") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Edit selected user:
   <input type="submit"
          name="operation"
          value="Remove from contest"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
-{% end %}
+{% endif %}
          />
   <table class="bordered">
     <thead>
@@ -45,18 +45,18 @@
       </tr>
     </thead>
     <tbody>
-      {% for p in sorted(contest.participations, key=lambda x: x.user.username) %}
+      {% for u in contest.participations|map(attribute="user")|sort(attribute="username") %}
       <tr>
         <td>
-          <input type="radio" name="user_id" value="{{ p.user.id }}"/>
+          <input type="radio" name="user_id" value="{{ u.id }}"/>
         </td>
-        <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
-        <td>{{ p.user.first_name }}</td>
-        <td>{{ p.user.last_name }}</td>
+        <td><a href="{{ url("contest", contest.id, "user", u.id, "edit") }}">{{ u.username }}</a></td>
+        <td>{{ u.first_name }}</td>
+        <td>{{ u.last_name }}</td>
       </tr>
-      {% end %}
+      {% endfor %}
     </tbody>
   </table>
 </form>
 
-{% end %}
+{% endblock core %}

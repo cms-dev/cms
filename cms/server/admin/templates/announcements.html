@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
@@ -8,18 +8,18 @@
 <h2 id="title_announcements" class="toggling_on">Announcements</h2>
 <div id="announcements">
   <div class="notifications">
-{% if current_user.permission_all or current_user.permission_messaging %}
+{% if admin.permission_all or admin.permission_messaging %}
     <div class="notification communication">
       <div class="notification_msg">
         <form method="post" action="{{ url("contest", contest.id, "announcements", "add") }}">
-          {% module xsrf_form_html() %}
+          {{ xsrf_form_html|safe }}
           <div class="notification_subject">
             <label for="new_subject">Subject</label>
             <input type="text" name="subject" id="new_subject" style="width: 100%" list="task_names_list" autocomplete="off">
             <datalist id="task_names_list">
               {% for task in contest.tasks %}
               <option value="{{ task.name }}">
-              {% end %}
+              {% endfor %}
             </datalist>
           </div>
           <div class="notification_text">
@@ -31,29 +31,29 @@
         </form>
       </div>
     </div>
-{% end %}
+{% endif %}
     {% if contest.announcements != [] %}
-      {% for msg in reversed(contest.announcements) %}
+      {% for msg in contest.announcements|reverse %}
       <div class="notification communication">
         <div class="notification_msg">
 
           <div class="announcement_remove">
             <a onclick="CMS.AWSUtils.ajax_delete('{{ url("contest", contest.id, "announcement", msg.id) }}'); ">Remove</a>
           </div>
-          <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
+          <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
+          <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
 
         </div>
       </div>
-      {% end %}
+      {% endfor %}
     {% else %}
       No announcements.
-    {% end %}
+    {% endif %}
   </div>
 
   <div class="hr"></div>
 </div>
 
 
-{% end %}
+{% endblock core %}

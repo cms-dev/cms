@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
@@ -7,10 +7,10 @@
 
 See resource usage of the machines:
 <ul>
-  {% set url_suffix = [] if contest is None else [contest.id] %}
+  {% set url_suffix = [] if contest is none else [contest.id] %}
   {% for shard in resource_addresses %}
   <li><a href="{{ url(*(["resources", shard] + url_suffix)) }}">{{ resource_addresses[shard] }}</a> ({{ shard }})</li>
-  {% end %}
+  {% endfor %}
   <li><a href="{{ url(*(["resources", "all"] + url_suffix)) }}">All</a></li>
 </ul>
-{% end %}
+{% endblock core %}

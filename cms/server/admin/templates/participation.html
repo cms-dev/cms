@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block js %}
 function question_reply_toggle(element, invoker)
@@ -25,13 +25,9 @@ function update_additional_answer(element, invoker)
   else
     obj.style.display = "none";
 }
-{% end %}
+{% endblock js %}
 
 {% block core %}
-{% from cmscommon.crypto import parse_authentication %}
-{% from cms.grading.scoretypes import get_score_type %}
-{% set score_types = {} %}
-
 <h1>
   Participation of <a href="{{ url("user", selected_user.id) }}">{{ selected_user.username }}</a> in <a href="{{ url("contest", contest.id) }}">{{ contest.name }}</a>
 </h1>
@@ -40,15 +36,13 @@ function update_additional_answer(element, invoker)
 <div id="submissions">
   <p>
     Reevaluate all {{ submission_count }} submissions for this user in this contest (for all datasets)
-    {% module ReevaluationButtons(
-           url,
-           contest.id,
-           participation_id=participation.id,
-           user_id=participation.user_id) %}
+    {{ ReevaluationButtons(
+           url("contest", contest.id, "user", participation.user_id, "edit"),
+           participation_id=participation.id) }}
   </p>
 
-  {% set page_url = ["contest", contest.id, "user", selected_user.id, "edit"] %}
-  {% include fragments/submission_rows.html %}
+  {% set page_url = url["contest"][contest.id]["user"][selected_user.id]["edit"] %}
+  {% include "fragments/submission_rows.html" %}
 
   <div class="hr"></div>
 </div>
@@ -58,7 +52,7 @@ function update_additional_answer(element, invoker)
 <div id="participation_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
   <form enctype="multipart/form-data" action="{{ url("contest", contest.id, "user", selected_user.id, "edit") }}" method="POST">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <table>
       <tr>
         <td>
@@ -66,11 +60,11 @@ function update_additional_answer(element, invoker)
           Team
         </td>
         <td>
-          <input list="teams" name="team" value="{{ participation.team.code if participation.team is not None else "" }}"/>
+          <input list="teams" name="team" value="{{ participation.team.code if participation.team is not none else "" }}"/>
           <datalist id="teams">
             {% for t in teams %}
             <option value="{{ t.code }}">
-            {% end %}
+            {% endfor %}
           </datalist>
         </td>
       </tr>
@@ -82,7 +76,7 @@ function update_additional_answer(element, invoker)
         </td>
         <td>
           {% set hashed_password = participation.password %}
-          {% include fragments/hashed_password_form.html %}
+          {% include "fragments/hashed_password_form.html" %}
         </td>
       </tr>
       <tr>
@@ -90,7 +84,7 @@ function update_additional_answer(element, invoker)
           <span class="info" title="Whether the contestant's results will be visible in the external ranking."></span>
           Hidden participation
         </td>
-        <td><input type="checkbox" name="hidden" {% if participation.hidden %}checked{% end %}/></td>
+        <td><input type="checkbox" name="hidden" {% if participation.hidden %}checked{% endif %}/></td>
       </tr>
       <tr>
         <td>
@@ -98,7 +92,7 @@ function update_additional_answer(element, invoker)
                                     and minimum interval between submissions, user tests, and contest time."></span>
           Unrestricted participation
         </td>
-        <td><input type="checkbox" name="unrestricted" {% if participation.unrestricted %}checked{% end %}/></td>
+        <td><input type="checkbox" name="unrestricted" {% if participation.unrestricted %}checked{% endif %}/></td>
       </tr>
       <tr>
         <td>
@@ -106,7 +100,7 @@ function update_additional_answer(element, invoker)
                                     Used for IP-based login restrictions and/or for autologin (in this case, it must be a single address)."></span>
           IP address or subnet
         </td>
-        <td><input type="text" name="ip" value="{{ ", ".join("%s" % network for network in participation.ip) if participation.ip is not None else "" }}"/></td>
+        <td><input type="text" name="ip" value="{{ participation.ip|map("string")|join(", ") if participation.ip is not none else "" }}"/></td>
       </tr>
       <tr>
         <td>
@@ -114,7 +108,7 @@ function update_additional_answer(element, invoker)
                                     Example: '2015-12-31 15:00:00'."></span>
           Time of first login (in UTC)
         </td>
-        <td><input type="text" name="starting_time" value="{{ str(participation.starting_time) if participation.starting_time is not None else "" }}"></td>
+        <td><input type="text" name="starting_time" value="{{ participation.starting_time if participation.starting_time is not none else "" }}"></td>
       </tr>
       <tr>
         <td>
@@ -122,7 +116,7 @@ function update_additional_answer(element, invoker)
                                     If this is non-zero, all the events (token generation, end of contest) for this contestant will be shifted of the appropriate amount."></span>
           Delay
         </td>
-        <td><input type="text" name="delay_time" value="{{ int(participation.delay_time.total_seconds()) }}"></td>
+        <td><input type="text" name="delay_time" value="{{ participation.delay_time.total_seconds()|int }}"></td>
       </tr>
       <tr>
         <td>
@@ -130,7 +124,7 @@ function update_additional_answer(element, invoker)
                                     If this is non-zero, the end of the contest will be shifted of the appropriate amount for this contestant."></span>
           Extra time
         </td>
-        <td><input type="text" name="extra_time" value="{{ int(participation.extra_time.total_seconds()) }}"></td>
+        <td><input type="text" name="extra_time" value="{{ participation.extra_time.total_seconds()|int }}"></td>
       </tr>
     </table>
     <input type="submit" value="Update" />
@@ -144,28 +138,28 @@ function update_additional_answer(element, invoker)
 <div id="questions">
   {% if participation.questions != [] %}
   <div class="notifications">
-    {% for msg_i, msg in enumerate(participation.questions) %}
+    {% for msg in participation.questions %}
     <div class="notification communication">
       <div class="notification_msg">
-        <div class="notification_timestamp">{{ str(msg.question_timestamp) }}</div>
+        <div class="notification_timestamp">{{ msg.question_timestamp }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
-        <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
-        {% if msg.reply_timestamp is not None %}
+        <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
+        {% if msg.reply_timestamp is not none %}
         <div class="notification_subject">Reply. {{ msg.reply_subject }}</div>
-        <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
+        <div class="notification_text preserve_line_breaks">{{ msg.reply_text }}</div>
         {% else %}
         <div class="notification_subject">Not yet replied.</div>
-        {% end %}
+        {% endif %}
         <div class="reply_question_toggle">
-          <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
+          <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">Reply</a>
         </div>
         <div class="reply_question" >
           <hr/>
           <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
-            {% module xsrf_form_html() %}
+            {{ xsrf_form_html|safe }}
             <input type="hidden" name="ref" value="/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit"/>
             Precompiled answer:
-            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
+            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
               <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="answered">Answered in task description</option>
@@ -183,13 +177,13 @@ function update_additional_answer(element, invoker)
         </div>
       </div>
     </div>
-    {% end %}
+    {% endfor %}
   </div>
 
   {% else %}
   No questions.
 
-  {% end %}
+  {% endif %}
   <div class="hr"></div>
 </div>
 
@@ -200,7 +194,7 @@ function update_additional_answer(element, invoker)
   <div class="notifications">
       <div class="notification communication">
         <form id="send_message_form" action="{{ url("contest", contest.id, "user", selected_user.id, "message") }}" method="POST">
-          {% module xsrf_form_html() %}
+          {{ xsrf_form_html|safe }}
           <div class="notification_msg">
             <div class="notification_subject">
               Subject:
@@ -217,22 +211,22 @@ function update_additional_answer(element, invoker)
 
     {% if participation.messages != [] %}
 
-      {% for msg_i, msg in enumerate(reversed(participation.messages)) %}
+      {% for msg in participation.messages|reverse %}
       <div class="notification communication">
         <div class="notification_msg">
-          <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
+          <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
+          <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
         </div>
       </div>
-      {% end %}
+      {% endfor %}
 
     {% else %}
       No messages.
-    {% end %}
+    {% endif %}
   </div>
   <div class="hr"></div>
 </div>
 
 
-{% end %}
+{% endblock core %}

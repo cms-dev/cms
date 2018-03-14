@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 
@@ -8,13 +8,13 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("admins", "add") }}" method="post" >
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <h2>Admin information</h2>
 
-  {% include fragments/admin_form.html %}
+  {% include "fragments/admin_form.html" %}
 
   <input type="submit" value="Create" />
   <input type="reset" value="Reset" />
 </form>
-{% end %}
+{% endblock core %}
 

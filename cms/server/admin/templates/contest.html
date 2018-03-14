@@ -1,15 +1,15 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
   <h1>Contest configuration</h1>
 </div>
 
-{% include fragments/overload_warning.html %}
+{% include "fragments/overload_warning.html" %}
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("contest", contest.id) }}" method="POST" name="edit_contest" style="display:inline;">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <table class="sub_table">
     <tr><td colspan=2><h2>Contest information</h2></td></tr>
     <tr>
@@ -32,7 +32,7 @@
                                   Example: 'en,ja' (without quotes)."></span>
         Allowed localizations
       </td>
-      <td><input type="text" name="allowed_localizations" value="{{ ",".join(contest.allowed_localizations) }}"/></td>
+      <td><input type="text" name="allowed_localizations" value="{{ contest.allowed_localizations|join(",") }}"/></td>
     </tr>
     <tr>
       <td>
@@ -43,7 +43,7 @@
       <td>
         {% for lang in LANGUAGES %}
           <label><input type="checkbox" name="languages" value="{{ lang.name }}" {{ "checked" if lang.name in contest.languages else "" }}>{{ lang.name }}</label>
-        {% end %}
+        {% endfor %}
       </td>
     </tr>
     <tr>
@@ -141,7 +141,7 @@
                                   It is used only if tokens are finite."></span>
         Maximum number of tokens
       </td>
-      <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not None else "" }}" size="3"></td>
+      <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not none else "" }}" size="3"></td>
     </tr>
     <tr>
       <td>
@@ -149,7 +149,7 @@
                                   It is used only if tokens are finite."></span>
         Minimum interval between tokens
       </td>
-      <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3"></td>
+      <td><input type="text" name="token_min_interval" value="{{ contest.token_min_interval.total_seconds()|int }}" size="3"></td>
     </tr>
     <tr>
       <td>
@@ -173,7 +173,7 @@
                                   It is used only if tokens are finite."></span>
         Token generation period
       </td>
-      <td><input type="text" name="token_gen_interval" value="{{ int(contest.token_gen_interval.total_seconds() / 60) }}" size="3"></td>
+      <td><input type="text" name="token_gen_interval" value="{{ contest.token_gen_interval.total_seconds()|int // 60 }}" size="3"></td>
     </tr>
     <tr>
       <td>
@@ -181,7 +181,7 @@
                                   It is used only if tokens are finite."></span>
         Maximum accumulated tokens
       </td>
-      <td><input type="text" name="token_gen_max" value="{{ contest.token_gen_max if contest.token_gen_max is not None else "" }}" size="3"></td>
+      <td><input type="text" name="token_gen_max" value="{{ contest.token_gen_max if contest.token_gen_max is not none else "" }}" size="3"></td>
     </tr>
 
     <tr><td colspan=2><h2>Times</h2></td></tr>
@@ -191,7 +191,7 @@
                                   Example: '2015-12-31 15:00:00'."></span>
         Start time (in UTC)
       </td>
-      <td><input type="text" name="start" value="{{ str(contest.start) }}"></td>
+      <td><input type="text" name="start" value="{{ contest.start }}"></td>
     </tr>
     <tr>
       <td>
@@ -199,7 +199,7 @@
                                   Example: '2015-12-31 18:00:00'."></span>
         End time (in UTC)
       </td>
-      <td><input type="text" name="stop" value="{{ str(contest.stop) }}"></td>
+      <td><input type="text" name="stop" value="{{ contest.stop }}"></td>
     </tr>
     <tr>
       <td>
@@ -207,7 +207,7 @@
                                   Example: 'Europe/Rome', 'America/New_York', ..."></span>
         Timezone
       </td>
-      <td><input type="text" name="timezone" value="{{ contest.timezone if contest.timezone is not None else "" }}"></td>
+      <td><input type="text" name="timezone" value="{{ contest.timezone if contest.timezone is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -216,7 +216,7 @@
                                   If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."></span>
         Length of the contest
       </td>
-      <td><input type="text" name="per_user_time" value="{{ int(contest.per_user_time.total_seconds()) if contest.per_user_time is not None else "" }}"></td>
+      <td><input type="text" name="per_user_time" value="{{ contest.per_user_time.total_seconds()|int if contest.per_user_time is not none else "" }}"></td>
     </tr>
 
     <tr><td colspan=2><h2>Limits</h2></td></tr>
@@ -226,7 +226,7 @@
                                   Leave empty for no limits."></span>
         Maximum number of submissions
       </td>
-      <td><input type="text" name="max_submission_number" value="{{ contest.max_submission_number if contest.max_submission_number is not None else "" }}"></td>
+      <td><input type="text" name="max_submission_number" value="{{ contest.max_submission_number if contest.max_submission_number is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -234,7 +234,7 @@
                                   Leave empty for no limits."></span>
         Maximum number of user tests
       </td>
-      <td><input type="text" name="max_user_test_number" value="{{ contest.max_user_test_number if contest.max_user_test_number is not None else "" }}"></td>
+      <td><input type="text" name="max_user_test_number" value="{{ contest.max_user_test_number if contest.max_user_test_number is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -242,7 +242,7 @@
                                   Leave empty for no limits."></span>
         Minimum interval between submissions
       </td>
-      <td><input type="text" name="min_submission_interval" value="{{ int(contest.min_submission_interval.total_seconds()) if contest.min_submission_interval is not None else "" }}"></td>
+      <td><input type="text" name="min_submission_interval" value="{{ contest.min_submission_interval.total_seconds()|int if contest.min_submission_interval is not none else "" }}"></td>
     </tr>
     <tr>
       <td>
@@ -250,7 +250,7 @@
                                   Leave empty for no limits."></span>
         Minimum interval between user tests
       </td>
-      <td><input type="text" name="min_user_test_interval" value="{{ int(contest.min_user_test_interval.total_seconds()) if contest.min_user_test_interval is not None else "" }}"></td>
+      <td><input type="text" name="min_user_test_interval" value="{{ contest.min_user_test_interval.total_seconds()|int if contest.min_user_test_interval is not none else "" }}"></td>
     </tr>
     <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
     <tr>
@@ -268,7 +268,7 @@
                                   Example: '2015-12-31 15:00:00'."></span>
         Analysis mode start time (in UTC)
       </td>
-      <td><input type="text" name="analysis_start" value="{{ str(contest.analysis_start) }}"></td>
+      <td><input type="text" name="analysis_start" value="{{ contest.analysis_start }}"></td>
     </tr>
     <tr>
       <td>
@@ -276,28 +276,28 @@
                                   Example: '2015-12-31 18:00:00'."></span>
         Analysis mode end time (in UTC)
       </td>
-      <td><input type="text" name="analysis_stop" value="{{ str(contest.analysis_stop) }}"></td>
+      <td><input type="text" name="analysis_stop" value="{{ contest.analysis_stop }}"></td>
     </tr>
   </table>
   <input type="submit"
          value="Update"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
-{% end %}
+{% endif %}
          >
   <input type="reset" value="Reset">
 </form>
 <form action="{{ url("contests") }}" method="POST" style="display:inline;">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <input type="hidden" name="contest_id" value="{{ contest.id }}"/>
     <input type="submit"
          name="operation"
          value="Remove" style="float: right;"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
-{% end %}
+{% endif %}
          />
 </form>
 
 
-{% end %}
+{% endblock core %}

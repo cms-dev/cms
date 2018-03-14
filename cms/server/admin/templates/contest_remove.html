@@ -1,15 +1,15 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
   <h1>Remove Contest</h1>
 </div>
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
 <p>
   Are you sure you want to remove contest {{ contest.name }} from CMS, including all related data?
   <br>
-  This will remove {{ len(contest.participations) }} participation(s) and {{ submission_count }} submission(s).
+  This will remove {{ contest.participations|length }} participation(s) and {{ submission_count }} submission(s).
   <br>
   This operation cannot be undone.
 </p>
@@ -19,6 +19,6 @@
 
 {% else %}
 You do not have permission to remove a contest.
-{% end %}
+{% endif %}
 
-{% end %}
+{% endblock core %}

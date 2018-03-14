@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block js %}
 function question_reply_toggle(element, invoker)
@@ -25,13 +25,13 @@ function update_additional_answer(element, invoker)
   else
     obj.style.display = "none";
 }
-{% end %}
+{% endblock js %}
 
 {% block js_init %}
 
 utils.show_page("questions", 1);
 
-{% end %}
+{% endblock js_init %}
 {% block core %}
 
 <div class="core_title">
@@ -42,44 +42,44 @@ utils.show_page("questions", 1);
 <div id="questions" class="notifications">
   <div id="page_selector_questions"></div>
   <div id="paged_content_questions">
-  {% for msg_i, msg in enumerate(questions) %}
-  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
+  {% for msg in questions %}
+  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not none else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
       <div class="notification_timestamp">
-        <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ str(msg.question_timestamp) }}
+        <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ msg.question_timestamp }}
       </div>
       <div class="notification_subject">{{ msg.subject }}</div>
-      <div class="notification_text">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
-      {% if msg.reply_timestamp is not None %}
+      <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
+      {% if msg.reply_timestamp is not none %}
       <div class="notification_subject">Reply: {{ msg.reply_subject }}</div>
-      <div class="notification_text">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
+      <div class="notification_text preserve_line_breaks">{{ msg.reply_text }}</div>
       {% else %}
       <div class="notification_subject">Not yet replied.</div>
-      {% end %}
-{% if current_user.permission_all or current_user.permission_messaging %}
-      {% if msg.reply_timestamp is None %}
+      {% endif %}
+{% if admin.permission_all or admin.permission_messaging %}
+      {% if msg.reply_timestamp is none %}
       <div class="ignore_reply">
         <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
-          {% module xsrf_form_html() %}
+          {{ xsrf_form_html|safe }}
           {% if not msg.ignored %}
           <input type="hidden" name="ignore" value="yes"/>
           <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
           {% else %}
           <input type="hidden" name="ignore" value="no"/>
           <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
-          {% end %}
+          {% endif %}
         </form>
       </div>
-      {% end %}
+      {% endif %}
       <div class="reply_question_toggle">
-        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
+        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">Reply</a>
       </div>
       <div class="reply_question" >
         <hr/>
         <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
-          {% module xsrf_form_html() %}
+          {{ xsrf_form_html|safe }}
           Precompiled answer:
-          <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
+          <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
             <option value="yes">Yes</option>
             <option value="no">No</option>
             <option value="answered">Answered in task description</option>
@@ -95,17 +95,17 @@ utils.show_page("questions", 1);
           <input type="submit" value="Send"/>
         </form>
       </div>
-{% end %}
+{% endif %}
     </div>
   </div>
-  {% end %}
+  {% endfor %}
   </div>
 </div>
 
 {% else %}
 No questions.
 
-{% end %}
+{% endif %}
 
 
-{% end %}
+{% endblock core %}

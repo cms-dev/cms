@@ -63,6 +63,8 @@ class ScoreType(with_metaclass(ABCMeta, object)):
 
     TEMPLATE = ""
 
+    N_("Score details temporarily unavailable.")
+
     def __init__(self, parameters, public_testcases):
         """Initializer.
 
@@ -79,7 +81,7 @@ class ScoreType(with_metaclass(ABCMeta, object)):
         self.max_score, self.max_public_score, self.ranking_headers = \
             self.max_scores()
 
-        self.template = GLOBAL_ENVIRONMENT.from_string(self.TEMPLATE)
+        self.template = GLOBAL_ENVIRONMENT.from_string("{% macro render(self, details) %}{% if details is none %}{% trans %}Score details temporarily unavailable.{% endtrans %}{% else %}" + self.TEMPLATE + "{% endif %}{% endmacro %}")
 
     @staticmethod
     def format_score(score, max_score, unused_score_details,
@@ -106,30 +108,6 @@ class ScoreType(with_metaclass(ABCMeta, object)):
         return "%s / %s" % (
             translation.format_decimal(round(score, score_precision)),
             translation.format_decimal(round(max_score, score_precision)))
-
-    def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
-        """Return an HTML string representing the score details of a
-        submission.
-
-        score_details (object): the data saved by the score type
-            itself in the database; can be public or private.
-        translation (Translation): the translation to use.
-
-        return (string): an HTML string representing score_details.
-
-        """
-        _ = translation.gettext
-        n_ = translation.ngettext
-        if score_details is None:
-            logger.error("Found a null score details string. "
-                         "Try invalidating scores.")
-            return _("Score details temporarily unavailable.")
-        else:
-            # FIXME we should provide to the template all the variables
-            # of a typical CWS context as it's entitled to expect them.
-            return self.template.render(details=score_details,
-                                        translation=translation,
-                                        gettext=_, ngettext=n_)
 
     @abstractmethod
     def max_scores(self):

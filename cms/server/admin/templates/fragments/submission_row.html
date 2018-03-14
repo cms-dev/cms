@@ -1,27 +1,21 @@
 {# This snippet shows a row of a submission table using the variable s as input #}
-{% from cms.grading import format_status_text %}
 
-{% try %}
+{% if shown_dataset is defined %}
   {% set dataset = shown_dataset %}
-{% except %}
+{% else %}
   {% set dataset = s.task.active_dataset %}
-{% end %}
+{% endif %}
 
 {% set sr = s.get_result(dataset) %}
 
 {# The submission result might be missing in some cases (e.g., cloned dataset); these cases are equivalent to the compiling state. #}
 {% set status = SubmissionResult.COMPILING %}
-{% if sr is not None %}
+{% if sr is not none %}
   {% set status = sr.get_status() %}
-{% end %}
-{% if s.task.name in score_types %}
-  {% set score_type = score_types[s.task.name] %}
-{% else %}
-  {% set score_type = get_score_type(dataset=dataset) %}
-  {% set score_types[s.task.name] = score_type %}
-{% end %}
+{% endif %}
+{% set score_type = get_score_type(dataset=dataset) %}
 <tr>
-  <td><a href="{{ url("submission", s.id) }}">{{ str(s.timestamp) }}</a></td>
+  <td><a href="{{ url("submission", s.id) }}">{{ s.timestamp }}</a></td>
   <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
   <td><a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a></td>
   <td>
@@ -54,74 +48,74 @@
             </tr>
           </thead>
           <tbody>
-            {% for idx, ev in enumerate(sorted(sr.evaluations, key=lambda ev: ev.codename), start=1) %}
+            {% for ev in sr.evaluations|sort(attribute="codename") %}
             <tr>
-              <td>{{ idx }}</td>
+              <td>{{ loop.index }}</td>
               <td>{{ ev.codename }}</td>
               <td>{{ ev.outcome }}</td>
               <td style="text-align: center">
-                <input type="checkbox" disabled{{ " checked" if s.token is not None or ev.testcase.public else "" }}>
+                <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
               </td>
-              <td>{{ format_status_text(ev.text) }}</td>
+              <td>{{ ev.text|format_status_text }}</td>
             </tr>
-            {% end %}
+            {% endfor %}
           </tbody>
         </table>
-        {% end %}
+        {% endif %}
 
       {% elif status == SubmissionResult.SCORED %}
-        {% try %}
+        {% if score_type is defined %}
           {% set max_score = score_type.max_score %}
-        {% except %}
+        {% else %}
           {% set max_score = "[Cannot get score type - see logs]" %}
-        {% end %}
+        {% endif %}
       Scored ({{ sr.score }} / {{ max_score }})
       <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-        {% try %}
-          {% raw score_type.get_html_details(sr.score_details) %}
-        {% except %}
+        {% if score_type is defined %}
+          {{ score_type.get_html_details(sr.score_details)|safe }}
+        {% else %}
         [Cannot get score type - see logs]
-        {% end %}
+        {% endif %}
 
       {% else %}
       [Unknown status]
       <div id="evaluation_{{ s.id }}" style="display: none;">
 
-      {% end %}
-        <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-        <pre>{% if len(sr.compilation_text) > 0 %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
+      {% endif %}
+        <h3>Compilation output</h3>{# TODO: trim long outputs and add facility to see raw #}
+        <pre>{% if sr.compilation_text|length > 0 %}{{ sr.compilation_text|format_status_text }}{% endif %}</pre>
       </div>
     </div>
 
-    {% end %}
+    {% endif %}
   </td>
   <td>
-    {% for filename, sub_file in iteritems(s.files) %}
-      {% set real_filename = filename if s.language is None else filename.replace(".%l", get_language(s.language).source_extension) %}
+    {% for filename, sub_file in s.files|dictsort(by="key") %}
+      {% set real_filename = filename if s.language is none else filename|replace(".%l", (s.language|to_language).source_extension) %}
     <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", sub_file.id) }}')">{{ real_filename }}</a><br/>
-    {% end %}
+    {% endfor %}
   </td>
   <td>
-    {% if s.token is None %}
+    {% if s.token is none %}
     No
     {% else %}
     Yes
-    {% end %}
+    {% endif %}
   </td>
   <td>
     {% if s.official %}
     Yes
     {% else %}
     No
-    {% end %}
+    {% endif %}
   </td>
   <td>
     {{ s.short_comment }}
   </td>
   <td>
-    {% module ReevaluationButtons(
-           url,
+    {{ ReevaluationButtons(
+           url("submission", s.id, dataset.id),
            submission_id=s.id,
-           dataset_id=dataset.id) %}
+           dataset_id=dataset.id) }}
   </td>
 </tr>

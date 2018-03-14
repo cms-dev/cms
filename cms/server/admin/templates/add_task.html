@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 
@@ -8,7 +8,7 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("tasks", "add") }}" method="post" >
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <span class="info" title="A short name for the task, preferably using only letters, numbers and underscores."></span>
   Name:
   <input type="text" name="name">
@@ -16,5 +16,5 @@
   <input type="submit">
 </form>
 
-{% end %}
+{% endblock core %}
 

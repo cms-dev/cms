@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
@@ -6,11 +6,11 @@
 </div>
 
 <form action="{{ url("dataset", dataset.id, "delete") }}" method="POST">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
 
     Are you sure you want to delete the dataset "{{ dataset.description }}" and all associated managers, test cases, and submission results?<br/>
 
     <input type="submit" value="Delete">
     <input type="button" value="Cancel" onclick="javascript:history.back();">
 </form>
-{% end %}
+{% endblock core %}

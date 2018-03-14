@@ -1,11 +1,11 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
   <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Download all testcases</h1>
 </div>
 <form action="{{ url("dataset", dataset.id, "testcases", "download") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <table>
     <tr>
       <td>Zip file name</td>
@@ -29,4 +29,4 @@
   <input type="submit" value="Download">
   <input type="Reset" >
 </form>
-{% end %}
+{% endblock core %}

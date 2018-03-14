@@ -35,11 +35,12 @@ from six import iterkeys, itervalues, iteritems
 from jinja2 import Environment, StrictUndefined, contextfilter, \
     contextfunction, environmentfunction
 
+from cms.db import SubmissionResult, UserTestResult
 from cmscommon.datetime import make_datetime, make_timestamp, utc, local_tz
 from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
     get_icon_for_type
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    TOKEN_MODE_MIXED
+    TOKEN_MODE_MIXED, SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX
 from cms.grading import format_status_text
 from cms.grading.languagemanager import get_language
 from cms.grading.scoretypes import get_score_type
@@ -149,6 +150,13 @@ def instrument_generic_toolbox(env):
     env.globals["itervalues"] = itervalues
     env.globals["iteritems"] = iteritems
     env.globals["next"] = next
+
+    # Needed for some constants.
+    env.globals["SubmissionResult"] = SubmissionResult
+    env.globals["UserTestResult"] = UserTestResult
+
+    env.globals["SCORE_MODE_MAX"] = SCORE_MODE_MAX
+    env.globals["SCORE_MODE_MAX_TOKENED_LAST"] = SCORE_MODE_MAX_TOKENED_LAST
 
     env.globals["TOKEN_MODE_DISABLED"] = TOKEN_MODE_DISABLED
     env.globals["TOKEN_MODE_FINITE"] = TOKEN_MODE_FINITE

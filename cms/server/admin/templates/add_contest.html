@@ -1,8 +1,8 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block js %}
 
-{% end %}
+{% endblock js %}
 
 {% block core %}
 <div class="core_title">
@@ -11,7 +11,7 @@
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url("contests", "add") }}" method="POST" name="add_contest">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <span class="info" title="A short name for the contest, preferably using only letters, numbers and underscores."></span>
   Name:
   <input type="text" name="name">
@@ -19,4 +19,4 @@
   <input type="submit">
 </form>
 
-{% end %}
+{% endblock core %}

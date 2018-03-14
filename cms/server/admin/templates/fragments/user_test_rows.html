@@ -4,18 +4,18 @@
 
 {% else %}
 
-{% if user_test_count > len(user_tests) %}
+{% if user_test_count > user_tests|length %}
 <div>
   Pages:
   {% for i in range(user_test_pages) %}
     {% if i != user_test_page %}
-  <a href="{{ url(*page_url, page=i) }}">{{ i + 1 }}</a>
+  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
     {% else %}
   {{ i + 1 }}
-    {% end %}
-  {% end %}
+    {% endif %}
+  {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
 <table class="bordered">
   <thead>
@@ -29,9 +29,9 @@
     </tr>
   </thead>
   <tbody>
-    {% for ut in sorted(user_tests, key=lambda s: s.timestamp, reverse=True) %}
-      {% include user_test_row.html %}
-    {% end %}
+    {% for ut in user_tests|sort(attribute="timestamp")|reverse %}
+      {% include "fragments/user_test_row.html" %}
+    {% endfor %}
   </tbody>
 </table>
-{% end %}
+{% endif %}

@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
@@ -6,7 +6,7 @@
 </div>
 
 <form action="{{ url("dataset", dataset.id, "rename") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   <table>
     <tr>
       <td>Edit description (each dataset must have a unique description):</td>
@@ -17,4 +17,4 @@
   </table>
   <input type="submit" value="Rename">
 </form>
-{% end %}
+{% endblock core %}

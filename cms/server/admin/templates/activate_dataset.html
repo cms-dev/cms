@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block js_init %}
 setAllNotifyCheckboxes = function(state) {
@@ -18,12 +18,10 @@ setDefaultNotifyCheckboxes = function() {
     }
 };
 setDefaultNotifyCheckboxes();
-{% end %}
+{% endblock js_init %}
 
 {% block core %}
-{% from cms import plugin_list %}
-{% from cms.grading.scoretypes import get_score_type %}
-{% set current_score_type = None %}
+{% set current_score_type = none %}
 
 <div class="core_title">
   <h1>Preview dataset change for {{ task.title }} (<a href="{{ url("task", task.id) }}">{{ task.name }}</a>)</h1>
@@ -52,14 +50,14 @@ below, and wait for it to complete.
 
 <p>
     Reevaluate all submissions for the dataset "{{ dataset.description }}":
-    {% module ReevaluationButtons(
-           url,
-           dataset_id = dataset.id) %}
+    {{ ReevaluationButtons(
+           url("dataset", dataset.id),
+           dataset_id=dataset.id) }}
 </p>
 
 <form action="{{ url("dataset", dataset.id, "activate") }}" method="POST">
-{% module xsrf_form_html() %}
-{% if len(changes) == 0 %}
+{{ xsrf_form_html|safe }}
+{% if changes|length == 0 %}
 <p>Good news! At present, switching to this dataset will have no effect on the
 scores. No notifications will be sent.</p>
 {% else %}
@@ -74,34 +72,34 @@ scores. No notifications will be sent.</p>
     </tr>
   </thead>
   <tbody>
-{% set prev_id = None %}
-{% for c in sorted(changes, key=lambda c: (c.submission.participation.id, c.submission.id)) %}
+{% for p, changes_by_participation in changes|groupby("submission.participation.id")|sort %}
+    {% for c in changes_by_participation|sort(attribute="submission.id") %}
     <tr>
       <td style="text-align: right;">
-        {% if c.submission.participation.id != prev_id %}
+        {% if loop.first %}
         <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.participation.id in default_notify_participations else "off" }}" name="notify_{{ c.submission.participation.id }}"/>
-        {% end %}
+        {% endif %}
       </td>
       <td>
-        {% if c.submission.participation.id != prev_id %}
+        {% if loop.first %}
         <a href="{{ url("user", c.submission.participation.user.id) }}">{{ c.submission.participation.user.username }}</a>
-        {% end %}
+        {% endif %}
       </td>
       <td><a href="{{ url("submission", c.submission.id) }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
       <td>
-        {% if c.old_score is not None or c.new_score is not None %}
+        {% if c.old_score is not none or c.new_score is not none %}
         Score: {{ c.old_score }} -&gt; {{ c.new_score }}<br/>
-        {% end %}
-        {% if c.old_public_score is not None or c.new_public_score is not None %}
+        {% endif %}
+        {% if c.old_public_score is not none or c.new_public_score is not none %}
         Public score: {{ c.old_public_score }} -&gt; {{ c.new_public_score }}<br/>
-        {% end %}
-        {% if c.old_ranking_score_details is not None or c.new_ranking_score_details is not None %}
-        Ranking score: {{ json.dumps(c.old_ranking_score_details) }} -&gt; {{ json.dumps(c.new_ranking_score_details) }}<br/>
-        {% end %}
+        {% endif %}
+        {% if c.old_ranking_score_details is not none or c.new_ranking_score_details is not none %}
+        Ranking score: {{ c.old_ranking_score_details|tojson }} -&gt; {{ c.new_ranking_score_details|tojson }}<br/>
+        {% endif %}
       </td>
     </tr>
-  {% set prev_id = c.submission.participation.id %}
-{% end %}
+    {% endfor %}
+{% endfor %}
   </tbody>
 </table>
 
@@ -134,7 +132,7 @@ The following message will be sent to the selected users:
     </div>
   </div>
 </div>
-{% end %}
+{% endif %}
 
 <p>
 
@@ -144,4 +142,4 @@ The following message will be sent to the selected users:
 </p>
 </form>
 
-{% end %}
+{% endblock core %}

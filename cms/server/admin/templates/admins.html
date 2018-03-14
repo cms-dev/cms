@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 
@@ -22,26 +22,26 @@
       <tr>
         <td>{{ a.enabled }}</td>
         <td>
-          {% if current_user.permission_all or current_user.id == a.id %}
+          {% if admin.permission_all or admin.id == a.id %}
           <a href="{{ url("admin", a.id) }}">{{ a.username }}</a>
           {% else %}
           {{ a.username }}
-          {% end %}
+          {% endif %}
         </td>
         <td>{{ a.name }}</td>
         <td>{{ a.permission_all }}</td>
         <td>{{ a.permission_messaging }}</td>
       </tr>
-      {% end %}
+      {% endfor %}
     </tbody>
   </table>
 </div>
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
 <hr/>
 
 <a href="{{ url("admins", "add") }}">Add a new admin</a>
-{% end %}
+{% endif %}
 
 <hr/>
 
@@ -55,4 +55,4 @@
     and announcements.</li>
 </ul>
 
-{% end %}
+{% endblock core %}

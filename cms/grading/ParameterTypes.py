@@ -38,13 +38,15 @@ from six import string_types, with_metaclass
 
 from abc import ABCMeta, abstractmethod
 
-from tornado.template import Template
+from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
 
 class ParameterType(with_metaclass(ABCMeta, object)):
     """Base class for parameter types.
 
     """
+
+    TEMPLATE = ""
 
     def __init__(self, name, short_name, description):
         """Initialization.
@@ -59,6 +61,7 @@ class ParameterType(with_metaclass(ABCMeta, object)):
         self.name = name
         self.short_name = short_name
         self.description = description
+        self.template = GLOBAL_ENVIRONMENT.from_string("{% macro render(self, prefix, previous_value=None) %}" + self.TEMPLATE + "{% endmacro %}")
 
     @abstractmethod
     def validate(self, value):
@@ -94,16 +97,13 @@ class ParameterType(with_metaclass(ABCMeta, object)):
         return self.parse_string(handler.get_argument(
             prefix + self.short_name))
 
-    @abstractmethod
-    def render(self, prefix, previous_value=None):
-        pass
-
 
 class ParameterTypeString(ParameterType):
     """String parameter type."""
 
-    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
-        "value=\"{{parameter_value}}\" />"
+    TEMPLATE = """
+<input type="text" name="{{ prefix ~ self.short_name }}" value="{{ previous_value }}"/>
+"""
 
     def validate(self, value):
         if not isinstance(value, string_types):
@@ -115,17 +115,13 @@ class ParameterTypeString(ParameterType):
         """
         return value
 
-    def render(self, prefix, previous_value=None):
-        return Template(self.TEMPLATE).generate(
-            parameter_name=prefix + self.short_name,
-            parameter_value=previous_value)
-
 
 class ParameterTypeFloat(ParameterType):
     """Numeric parameter type."""
 
-    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
-        "value=\"{{parameter_value}}\" />"
+    TEMPLATE = """
+<input type="text" name="{{ prefix ~ self.short_name }}" value="{{ previous_value }}"/>
+"""
 
     def validate(self, value):
         if not isinstance(value, float):
@@ -138,17 +134,13 @@ class ParameterTypeFloat(ParameterType):
         """
         return float(value)
 
-    def render(self, prefix, previous_value=None):
-        return Template(self.TEMPLATE).generate(
-            parameter_name=prefix + self.short_name,
-            parameter_value=previous_value)
-
 
 class ParameterTypeInt(ParameterType):
     """Numeric parameter type."""
 
-    TEMPLATE = "<input type=\"text\" name=\"{{parameter_name}}\" " \
-        "value=\"{{parameter_value}}\" />"
+    TEMPLATE = """
+<input type="text" name="{{ prefix ~ self.short_name }}" value="{{ previous_value }}"/>
+"""
 
     def validate(self, value):
         if not isinstance(value, int):
@@ -160,18 +152,14 @@ class ParameterTypeInt(ParameterType):
         """
         return int(value)
 
-    def render(self, prefix, previous_value=None):
-        return Template(self.TEMPLATE).generate(
-            parameter_name=prefix + self.short_name,
-            parameter_value=previous_value)
-
 
 class ParameterTypeBoolean(ParameterType):
     """Boolean parameter type.
     """
 
-    TEMPLATE = "<input type=\"checkbox\" name=\"{{parameter_name}}\" " \
-        "{% if checked %}checked{% end %} />"
+    TEMPLATE = """
+<input type="checkbox" name="{{ prefix ~ self.short_name }}"{% if previous_value %} checked{% endif %}/>
+"""
 
     def validate(self, value):
         if not isinstance(value, bool):
@@ -183,27 +171,19 @@ class ParameterTypeBoolean(ParameterType):
         """
         return value is not None
 
-    def render(self, prefix, previous_value=False):
-        return Template(self.TEMPLATE).generate(
-            parameter_name=prefix + self.short_name,
-            enabled=(previous_value is True))
-
 
 class ParameterTypeChoice(ParameterType):
     """Parameter type representing a limited number of choices."""
 
-    TEMPLATE = "{% from six import iteritems %}" \
-        "<select name=\"{{parameter_name}}\">" \
-        "{% for choice_value, choice_description "\
-        " in iteritems(choices) %}" \
-        "<option value=\"{{choice_value}}\" " \
-        "{% if choice_value == parameter_value %}" \
-        "selected" \
-        "{% end %}>" \
-        "{{choice_description}}" \
-        "</option>" \
-        "{% end %}" \
-        "</select>"
+    TEMPLATE = """
+<select name="{{ prefix ~ self.short_name }}">
+{% for choice_value, choice_description in iteritems(self.values) %}
+    <option value="{{ choice_value }}"{% if choice_value == previous_value %} selected{% endif %}>
+        {{ choice_description }}
+    </option>
+{% endfor %}
+</select>
+"""
 
     def __init__(self, name, short_name, description, values):
         """
@@ -229,12 +209,6 @@ class ParameterTypeChoice(ParameterType):
                              % value)
         return value
 
-    def render(self, prefix, previous_value=None):
-        return Template(self.TEMPLATE).generate(
-            parameter_name=prefix + self.short_name,
-            choices=self.values,
-            parameter_value=previous_value)
-
 
 class ParameterTypeArray(ParameterType):
     """Parameter type representing an arbitrary-size array of sub-parameters.
@@ -242,13 +216,19 @@ class ParameterTypeArray(ParameterType):
     Only a single sub-parameter type is supported.
     """
 
-    TEMPLATE = "<a href=\"#\">Add element</a>" \
-        "<table>" \
-        "{% for element in elements%}" \
-        "<tr><td>{{element.name}}</td>" \
-        "<td>{% raw element.content %}</td></tr>" \
-        "{% end %}" \
-        "</table>"
+    TEMPLATE = """
+<a href="#">Add element</a>
+<table>
+{% for subp_previous_value in previous_value if previous_value is not none else [] %}
+    {% set subp_prefix = "%s%s_%d_"|format(prefix, self.short_name, loop.index0) %}
+    {% from self.subparameter.template import render %}
+    <tr>
+        <td>{{ self.subparameter.name }}</td>
+        <td>{{ render(self.subparameter, subp_prefix, subp_previous_value) }}</td>
+    </tr>
+{% endfor %}
+</table>
+"""
 
     def __init__(self, name, short_name, description, subparameter):
         ParameterType.__init__(self, name, short_name, description)
@@ -273,29 +253,23 @@ class ParameterTypeArray(ParameterType):
                 self.subparameter.parse_handler(handler, new_prefix))
         return parsed_values
 
-    def render(self, prefix, previous_value=None):
-        if previous_value is None:
-            previous_value = []
-        elements = []
-        for i in range(len(previous_value)):
-            subparam_value = previous_value[i]
-            new_prefix = "%s%s_%d_" % (prefix, self.short_name, i)
-            elements.append({
-                "name": self.subparameter.name,
-                "content": self.subparameter.render(new_prefix,
-                                                    subparam_value)})
-        return Template(self.TEMPLATE).generate(elements=elements)
-
 
 class ParameterTypeCollection(ParameterType):
     """A fixed-size list of subparameters."""
 
-    TEMPLATE = "<table>" \
-        "{% for element in elements %}" \
-        "<tr><td>{{element['name']}}</td>" \
-        "<td>{% raw element['content'] %}</td></tr>" \
-        "{% end %}" \
-        "</table>"
+    TEMPLATE = """
+<table>
+{% for subp in self.subparameters %}
+    {% set subp_prefix = "%s%s_%d_"|format(prefix, self.short_name, loop.index0) %}
+    {% set subp_previous_value = previous_value[loop.index0] if previous_value is not none else none %}
+    {% from subp.template import render %}
+    <tr>
+        <td>{{ subp.name }}</td>
+        <td>{{ render(subp, subp_prefix, subp_previous_value) }}</td>
+    </tr>
+{% endfor %}
+</table>
+"""
 
     def __init__(self, name, shortname, description, subparameters):
         ParameterType.__init__(self, name, shortname, description)
@@ -319,17 +293,3 @@ class ParameterTypeCollection(ParameterType):
             parsed_values.append(
                 self.subparameters[i].parse_handler(handler, new_prefix))
         return parsed_values
-
-    def render(self, prefix, previous_value=None):
-        elements = []
-        for i in range(len(self.subparameters)):
-            try:
-                subparam_value = previous_value[i]
-            except:
-                subparam_value = ''
-            new_prefix = "%s%s_%d_" % (prefix, self.short_name, i)
-            elements.append({
-                "name": self.subparameters[i].name,
-                "content": self.subparameters[i].render(new_prefix,
-                                                        subparam_value)})
-        return Template(self.TEMPLATE).generate(elements=elements)

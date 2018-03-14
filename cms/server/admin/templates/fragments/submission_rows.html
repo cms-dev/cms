@@ -4,18 +4,18 @@
 
 {% else %}
 
-{% if submission_count > len(submissions) %}
+{% if submission_count > submissions|length %}
 <div>
   Pages:
   {% for i in range(submission_pages) %}
     {% if i != submission_page %}
-  <a href="{{ url(*page_url, page=i) }}">{{ i + 1 }}</a>
+  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
     {% else %}
   {{ i + 1 }}
-    {% end %}
-  {% end %}
+    {% endif %}
+  {% endfor %}
 </div>
-{% end %}
+{% endif %}
 
 <table class="bordered">
   <thead>
@@ -32,11 +32,9 @@
     </tr>
   </thead>
   <tbody>
-    {% from cms.grading.scoretypes import get_score_type %}
-    {% set score_types = {} %}
-    {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
-      {% include submission_row.html %}
-    {% end %}
+    {% for s in submissions|sort(attribute="timestamp")|reverse %}
+      {% include "fragments/submission_row.html" %}
+    {% endfor %}
   </tbody>
 </table>
-{% end %}
+{% endif %}

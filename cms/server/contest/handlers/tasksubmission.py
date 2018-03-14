@@ -411,7 +411,6 @@ class TaskSubmissionsHandler(ContestHandler):
                     submissions_left=submissions_left,
                     submissions_download_allowed=
                         self.contest.submissions_download_allowed,
-                    SubmissionResult=SubmissionResult,
                     **self.r_params)
 
 
@@ -519,8 +518,7 @@ class SubmissionDetailsHandler(ContestHandler):
                 details = sr.public_score_details
 
             if sr.scored():
-                details = score_type.get_html_details(
-                    details, translation=self.translation)
+                details = score_type.template.make_module(self.r_params).render(score_type, details)
             else:
                 details = None
 

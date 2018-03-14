@@ -1,4 +1,3 @@
-{% from six import iterkeys, itervalues, iteritems %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,18 +11,18 @@
   <body class="admin">
     <div id="login-content">
 
-{% if current_user is None %}
+{% if admin is undefined %}
 <h1>Welcome</h1>
     {% if handler.get_argument("login_error", "") != "" %}
 <h4 class="alert">Failed to log in.</h4>
-    {% end %}
+    {% endif %}
 <p>Please log in:</p>
 <form action="{{ url("login") }}" method="POST">
-  {% module xsrf_form_html() %}
-  {% set next_page = handler.get_argument("next", None) %}
-  {% if next_page is not None %}
+  {{ xsrf_form_html|safe }}
+  {% set next_page = handler.get_argument("next", none) %}
+  {% if next_page is not none %}
   <input type="hidden" name="next" value="{{ next_page }}">
-  {% end %}
+  {% endif %}
   <div class="section">
     <label>
       <span>Username</span>
@@ -46,7 +45,7 @@
 You are already logged in. <a href="{{ url("logout") }}">Logout</a>
 or go to the <a href="{{ url() }}">overview</a>.
 
-{% end %}
+{% endif %}
 
     </div>
   </body>

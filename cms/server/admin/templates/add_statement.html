@@ -1,14 +1,14 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 <div class="core_title">
   <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Upload statement</h1>
 </div>
 <form enctype="multipart/form-data" action="{{ url("task", task.id, "statements", "add") }}" method="POST">
-  {% module xsrf_form_html() %}
+  {{ xsrf_form_html|safe }}
   Language code: <input type="text" name="language"/><br/>
   <input type="file" name="statement"/><br/>
   <input type="submit" value="Upload">
   <input type="Reset" >
 </form>
-{% end %}
+{% endblock core %}

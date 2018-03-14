@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block js %}
 
@@ -128,15 +128,15 @@ function update_workers_status(response)
         strings.push('<td>' + start_time + '</td>');
         if (response['data'][i]['operations'] == "disabled") {
             strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;"' +
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
                          ' disabled' +
-{% end %}
+{% endif %}
                          '>Enable</button></td>');
         } else {
             strings.push('<td><button onclick="javascript:disable_worker(' + i + '); return true;"' +
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
                          ' disabled' +
-{% end %}
+{% endif %}
                          '>Disable</button></td>');
         }
         strings.push('</tr>');
@@ -194,7 +194,7 @@ function update_logs(response)
 function update_statuses()
 {
 
-    {% if contest is not None %}
+    {% if contest is not none %}
     if (!update_statuses.submissions_request
             || update_statuses.submissions_request.state() != "pending") {
         update_statuses.submissions_request =
@@ -203,7 +203,7 @@ function update_statuses()
                            {"contest_id": {{ contest.id }}},
                            update_submissions_status);
     }
-    {% end %}
+    {% endif %}
     if (!update_statuses.queue_request
             || update_statuses.queue_request.state() != "pending") {
         update_statuses.queue_request =
@@ -222,21 +222,21 @@ function update_statuses()
                    update_logs);
 }
 
-{% end %}
+{% endblock js %}
 
 {% block js_init %}
 
 setInterval(update_statuses, 5000);
 update_statuses();
 
-{% end %}
+{% endblock js_init %}
 
 {% block core %}
 
 <h1>Overview</h1>
 <span id="update_time"></span>
 
-{% if contest is not None %}
+{% if contest is not none %}
 <h2 id="title_submissions_status" class="toggling_on">Submissions status</h2>
 <div id="submissions_status">
   <table id="submissions_status_table" class="sub_table">
@@ -252,7 +252,7 @@ update_statuses();
   </table>
   <div class="hr"></div>
 </div>
-{% end %}
+{% endif %}
 
 <h2 id="title_queue_status" class="toggling_on">Queue status</h2>
 <div id="queue_status">
@@ -310,4 +310,4 @@ update_statuses();
   </table>
   <div class="hr"></div>
 </div>
-{% end %}
+{% endblock core %}

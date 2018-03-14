@@ -1,4 +1,4 @@
-{% extends base.html %}
+{% extends "base.html" %}
 
 {% block core %}
 
@@ -8,7 +8,7 @@
 <div id="general_info">
   <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
   <form enctype="multipart/form-data" action="{{ url("team", team.id) }}" method="POST">
-    {% module xsrf_form_html() %}
+    {{ xsrf_form_html|safe }}
     <table>
       <tr>
         <td>Code</td>
@@ -26,4 +26,4 @@
 </div>
 
 
-{% end %}
+{% endblock core %}
