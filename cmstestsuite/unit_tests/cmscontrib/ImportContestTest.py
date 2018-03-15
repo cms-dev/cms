@@ -30,7 +30,7 @@ import six
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
-from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Contest, SessionGen, Submission
 
@@ -88,7 +88,7 @@ def fake_loader_factory(contest, contest_has_changed=False,
     return FakeLoader
 
 
-class TestImportContest(TestCaseWithDatabase):
+class TestImportContest(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestImportContest, self).setUp()

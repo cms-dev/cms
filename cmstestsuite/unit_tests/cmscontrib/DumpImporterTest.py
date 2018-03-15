@@ -35,7 +35,7 @@ import tempfile
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
-from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms import config
 from cms.db import Contest, FSObject, Session, version
@@ -45,7 +45,7 @@ from cmscommon.digest import bytes_digest
 from cmscontrib.DumpImporter import DumpImporter
 
 
-class TestDumpImporter(TestCaseWithDatabase):
+class TestDumpImporter(DatabaseMixin, unittest.TestCase):
 
     GENERATED_FILE_CONTENT = b"content"
     NON_GENERATED_FILE_CONTENT = b"source"

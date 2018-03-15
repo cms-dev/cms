@@ -32,12 +32,12 @@ from six import iterkeys, iteritems
 
 import unittest
 
-from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.service.scoringoperations import ScoringOperation, get_operations
 
 
-class TestScoringOperations(TestCaseWithDatabase):
+class TestScoringOperations(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestScoringOperations, self).setUp()
