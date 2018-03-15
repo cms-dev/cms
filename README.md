@@ -44,27 +44,32 @@ git submodule update --init
 Support
 -------
 
-The complete CMS documentation is at <https://cms.readthedocs.org/>.
+To learn how to install and use CMS, please read the **documentation**, available at <https://cms.readthedocs.org/>.
 
-The mailing list for announcements, user support and general discussion
-is <contestms@freelists.org>. You can subscribe at
-<http://www.freelists.org/list/contestms>. So far, it is an extremely
-low traffic mailing list.
+If you have questions or need help troubleshooting some problem,
+contact us in the **chat** at [gitter](https://gitter.im/cms-dev/cms),
+or write on the **general mailing list** <contestms@freelists.org> (you
+can subscribe and see the archives on
+[freelists](http://www.freelists.org/list/contestms)). We use this
+mailing list also for announcements (like new versions of CMS).
 
-The mailing list for development discussion (to submit feedback,
-proposals and critics, get opinions and reviews, etc.) is
-<contestms-dev@freelists.org>. You can subscribe at
-<http://www.freelists.org/list/contestms-dev>.
+To help with the troubleshooting, you can upload on some online
+pastebin the relevant **log files**, that you can find in
+/var/local/log/cms/ (if CMS was running installed) or in ./log (if it
+was running from the local copy).
 
-**Please don't use these mailing lists for bug reports. File them on
-[github](https://github.com/cms-dev/cms/issues) instead.**
+If you encountered a bug, please file an
+[issue](https://github.com/cms-dev/cms/issues) on **GitHub** following
+the instructions in the issue template.
 
-For extemporaneous support and discussion, join the Gitter chat (see
-link above).
+**Please don't file issues to ask for help**, we are happy to help
+on the mailing list or on gitter, and it is more likely somebody will
+answer your query sooner.
 
-To help with the troubleshooting, you can collect the complete log
-files that are placed in /var/local/log/cms/ (if CMS was running
-installed) or in ./log (if it was running from the local copy).
+For **development** queries, you can write to
+<contestms-dev@freelists.org> and as before subscribe or see the
+archives on [freelists](http://www.freelists.org/list/contestms-dev).
+
 
 
 Testimonials

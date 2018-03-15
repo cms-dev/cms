@@ -20,6 +20,11 @@ If instead you have found a possible bug, please go ahead filing the issue using
 
 **Actual:** [What happened instead?]
 
+### Logs
+
+[Please attach relevant logs of the component(s) that caused the problem; you can find them in /var/local/log/cms/ (if CMS was running
+installed) or in ./log (if it was running from the local copy).]
+
 ### System Information
 
 **CMS version:** [master, or a specific version]
