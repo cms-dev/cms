@@ -30,11 +30,11 @@ master branch, is intended for developers and everyone interested in
 contributing or just curious to see how the code works and wanting to
 hack on it.
 
-Please note that since the sandbox is contained in a [git submodule]
-(http://git-scm.com/docs/git-submodule) you should append `--recursive`
-to the standard `git clone` command to obtain it. Or, if you have
-already cloned CMS, simply run the following command from inside the
-repository:
+Please note that since the sandbox is contained in a
+[git submodule](http://git-scm.com/docs/git-submodule) you should append
+`--recursive` to the standard `git clone` command to obtain it. Or, if
+you have already cloned CMS, simply run the following command from
+inside the repository:
 
 ```bash
 git submodule update --init
