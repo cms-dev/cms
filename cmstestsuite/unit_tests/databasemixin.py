@@ -18,11 +18,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Utilities to create objects in a testing DB.
+"""A unittest.TestCase mixin for tests interacting with the database.
 
-Apart from a base class for tests using a testing DB, this module
-offers a series of add_<object> functions to create the minimal object
-possible in the database.
+This mixin will connect to a different DB, recreating it for each
+testing class; it will also create a session at each test setup.
+
+The mixin also offers a series of get_<object> (to build an object, not
+attached to any session) and add_<object> (to build and add the object
+to the default session) methods. Without arguments, these will create
+minimal objects with random values in the fields, and callers can
+specify as many fields as they like.
 
 When the object depends on a "parent" object, the caller can specify
 it, or leave it for the function to create. When there is a common
@@ -38,8 +43,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import itervalues
-
-import unittest
 
 from datetime import timedelta
 
@@ -60,11 +63,12 @@ from cms.db import Base, Contest, Dataset, Evaluation, Executable, File, \
 from cms.db.filecacher import DBBackend
 
 
-class TestCaseWithDatabase(unittest.TestCase):
-    """TestCase subclass starting with a clean testing database."""
+class DatabaseMixin(object):
+    """Mixin for tests with database access."""
 
     @classmethod
     def setUpClass(cls):
+        super(DatabaseMixin, cls).setUpClass()
         assert "fortesting" in str(cms.db.engine), \
             "Monkey patching of DB connection string failed"
         drop_db()
@@ -77,12 +81,15 @@ class TestCaseWithDatabase(unittest.TestCase):
         drop_db()
         cls.connection.close()
         cms.db.engine.dispose()
+        super(DatabaseMixin, cls).tearDownClass()
 
     def setUp(self):
+        super(DatabaseMixin, self).setUp()
         self.session = Session()
 
     def tearDown(self):
         self.session.rollback()
+        super(DatabaseMixin, self).tearDown()
 
     def delete_data(self):
         """Delete all the data in the DB.
@@ -141,9 +148,9 @@ class TestCaseWithDatabase(unittest.TestCase):
     @staticmethod
     def get_participation(user=None, contest=None, **kwargs):
         """Create a participation"""
-        user = user if user is not None else TestCaseWithDatabase.get_user()
+        user = user if user is not None else DatabaseMixin.get_user()
         contest = contest \
-            if contest is not None else TestCaseWithDatabase.get_contest()
+            if contest is not None else DatabaseMixin.get_contest()
         args = {
             "user": user,
             "contest": contest,
@@ -191,7 +198,7 @@ class TestCaseWithDatabase(unittest.TestCase):
     @staticmethod
     def get_dataset(task=None, **kwargs):
         """Create a dataset"""
-        task = task if task is not None else TestCaseWithDatabase.get_task()
+        task = task if task is not None else DatabaseMixin.get_task()
         args = {
             "task": task,
             "description": unique_unicode_id(),

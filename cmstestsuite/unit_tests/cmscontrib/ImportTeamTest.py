@@ -29,7 +29,7 @@ from future.builtins import *  # noqa
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
-from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import SessionGen, Team
 
@@ -53,7 +53,7 @@ def fake_loader_factory(team):
     return FakeLoader
 
 
-class TestImportTeam(TestCaseWithDatabase):
+class TestImportTeam(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestImportTeam, self).setUp()

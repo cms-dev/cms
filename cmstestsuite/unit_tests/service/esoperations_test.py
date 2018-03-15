@@ -32,14 +32,14 @@ from six import iterkeys, iteritems
 
 import unittest
 
-from cmstestsuite.unit_tests.testdbgenerator import TestCaseWithDatabase
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.io.priorityqueue import PriorityQueue
 from cms.service.esoperations import ESOperation, get_submissions_operations, \
     get_user_tests_operations
 
 
-class TestESOperations(TestCaseWithDatabase):
+class TestESOperations(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestESOperations, self).setUp()
