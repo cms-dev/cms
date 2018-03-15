@@ -30,14 +30,12 @@ from six import assertCountEqual, iteritems, itervalues
 import json
 import io
 import os
-import shutil
-import tempfile
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
-from cms import config
 from cms.db import Contest, Executable, Participation, Statement, Submission, \
     SubmissionResult, Task, User, version
 
@@ -46,14 +44,12 @@ from cmscommon.digest import bytes_digest
 from cmscontrib.DumpExporter import DumpExporter
 
 
-class TestDumpExporter(DatabaseMixin, unittest.TestCase):
+class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestDumpExporter, self).setUp()
-        if not os.path.exists(config.temp_dir):
-            os.makedirs(config.temp_dir)
 
-        self.base = os.path.join(tempfile.mkdtemp(), "target")
+        self.target = self.get_path("target")
         self.dump = None
 
         # Add a file to be used as a statement.
@@ -98,7 +94,6 @@ class TestDumpExporter(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        shutil.rmtree(os.path.dirname(self.base))
         super(TestDumpExporter, self).tearDown()
 
     def do_export(self, contest_ids, dump_files=True, skip_generated=False,
@@ -106,13 +101,13 @@ class TestDumpExporter(DatabaseMixin, unittest.TestCase):
         """Create an exporter and call do_export in a convenient way"""
         r = DumpExporter(
             contest_ids,
-            self.base,
+            self.target,
             dump_files=dump_files,
             dump_model=True,
             skip_generated=skip_generated,
             skip_submissions=skip_submissions,
             skip_user_tests=False).do_export()
-        dump_path = os.path.join(self.base, "contest.json")
+        dump_path = os.path.join(self.target, "contest.json")
         try:
             with io.open(dump_path, "rt", encoding="utf-8") as f:
                 self.dump = json.load(f)
@@ -156,20 +151,20 @@ class TestDumpExporter(DatabaseMixin, unittest.TestCase):
                                      (cls.__name__, kwargs))
 
     def assertFileInDump(self, digest, content):
-        path = os.path.join(self.base, "files", digest)
+        path = os.path.join(self.target, "files", digest)
         self.assertTrue(os.path.exists(path))
         with io.open(path, "rb") as f:
             self.assertEqual(content, f.read())
 
     def assertFileNotInDump(self, digest):
-        path = os.path.join(self.base, "files", digest)
+        path = os.path.join(self.target, "files", digest)
         self.assertFalse(os.path.exists(path))
 
     def test_dont_overwrite(self):
-        with io.open(self.base, "wt", encoding="utf-8") as f:
+        with io.open(self.target, "wt", encoding="utf-8") as f:
             f.write("hello!")
         self.assertFalse(self.do_export(None))
-        with io.open(self.base, "rt") as f:
+        with io.open(self.target, "rt") as f:
             self.assertEqual(f.read(), "hello!")
 
     def test_export_all(self):

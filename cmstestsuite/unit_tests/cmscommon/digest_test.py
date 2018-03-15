@@ -27,11 +27,9 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import PY2
 
-import io
-import os
-import shutil
-import tempfile
 import unittest
+
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 from cmscommon.digest import Digester, bytes_digest, path_digest
 
@@ -75,32 +73,24 @@ class TestBytesDigest(unittest.TestCase):
             bytes_digest("")
 
 
-class TestPathDigest(unittest.TestCase):
+class TestPathDigest(FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestPathDigest, self).setUp()
-        self.base = tempfile.mkdtemp()
-        self.path = os.path.join(self.base, "f")
-
-    def tearDown(self):
-        shutil.rmtree(self.base)
-        super(TestPathDigest, self).tearDown()
-
-    def write_file(self, content):
-        with io.open(self.path, "wb") as f:
-            f.write(content)
+        self.filename = "f"
+        self.path = self.get_path(self.filename)
 
     def test_success(self):
-        self.write_file(b"content")
+        self.write_file(self.filename, b"content")
         self.assertEqual(path_digest(self.path), _CONTENT_DIGEST)
 
     def test_empty(self):
-        self.write_file(b"")
+        self.write_file(self.filename, b"")
         self.assertEqual(path_digest(self.path), _EMPTY_DIGEST)
 
     def test_long(self):
         content = b"0" * 1000000
-        self.write_file(content)
+        self.write_file(self.filename, content)
         self.assertEqual(path_digest(self.path), bytes_digest(content))
 
     @unittest.skipIf(PY2, "Python2 uses IOError")

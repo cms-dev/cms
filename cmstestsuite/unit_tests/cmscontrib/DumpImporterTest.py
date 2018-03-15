@@ -30,14 +30,12 @@ from six import PY3, assertCountEqual, iteritems
 import json
 import io
 import os
-import shutil
-import tempfile
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
-from cms import config
 from cms.db import Contest, FSObject, Session, version
 
 from cmscommon.digest import bytes_digest
@@ -45,7 +43,7 @@ from cmscommon.digest import bytes_digest
 from cmscontrib.DumpImporter import DumpImporter
 
 
-class TestDumpImporter(DatabaseMixin, unittest.TestCase):
+class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     GENERATED_FILE_CONTENT = b"content"
     NON_GENERATED_FILE_CONTENT = b"source"
@@ -128,10 +126,6 @@ class TestDumpImporter(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestDumpImporter, self).setUp()
-        if not os.path.exists(config.temp_dir):
-            os.makedirs(config.temp_dir)
-
-        self.base = tempfile.mkdtemp()
 
         # Another contest, to make sure it's not wiped on import.
         self.other_contest = self.add_contest()
@@ -142,7 +136,6 @@ class TestDumpImporter(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        shutil.rmtree(self.base)
         super(TestDumpImporter, self).tearDown()
 
     def do_import(self, drop=False, load_files=True,
@@ -150,7 +143,7 @@ class TestDumpImporter(DatabaseMixin, unittest.TestCase):
         """Create an importer and call do_import in a convenient way"""
         return DumpImporter(
             drop,
-            self.base,
+            self.base_dir,
             load_files=load_files,
             load_model=True,
             skip_generated=skip_generated,
@@ -158,10 +151,7 @@ class TestDumpImporter(DatabaseMixin, unittest.TestCase):
             skip_user_tests=False).do_import()
 
     def write_dump(self, dump):
-        if not os.path.exists(self.base):
-            os.makedirs(self.base)
-
-        destination = os.path.join(self.base, "contest.json")
+        destination = self.get_path("contest.json")
         if PY3:
             with io.open(destination, "wt", encoding="utf-8") as f:
                 json.dump(dump, f, indent=4, sort_keys=True)
@@ -176,10 +166,8 @@ class TestDumpImporter(DatabaseMixin, unittest.TestCase):
             and content.
 
         """
-        f_path = os.path.join(self.base, "files")
-        os.makedirs(f_path)
-        d_path = os.path.join(self.base, "descriptions")
-        os.makedirs(d_path)
+        f_path = self.makedirs("files")
+        d_path = self.makedirs("descriptions")
         for digest, (desc, content) in iteritems(data):
             with io.open(
                     os.path.join(d_path, digest), "wt", encoding="utf-8") as f:
