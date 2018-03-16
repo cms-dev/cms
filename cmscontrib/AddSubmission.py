@@ -27,7 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iteritems
+from six import iterkeys, iteritems
 
 import argparse
 import logging
@@ -51,6 +51,33 @@ def maybe_send_notification(submission_id):
     rs.connect()
     rs.new_submission(submission_id=submission_id)
     rs.disconnect()
+
+
+def language_from_submitted_files(files):
+    """Return the language inferred from the submitted files.
+
+    files ({str: str}): dictionary mapping the expected filename to a path in
+        the file system.
+
+    return (Language|None): the language inferred from the files.
+
+    raise (ValueError): if different files point to different languages, or if
+        it is impossible to extract the language from a file when it should be.
+
+    """
+    # TODO: deduplicate with the code in SubmitHandler.
+    language = None
+    for filename in iterkeys(files):
+        this_language = filename_to_language(files[filename])
+        if this_language is None and ".%l" in filename:
+            raise ValueError(
+                "Cannot recognize language for file `%s'." % filename)
+
+        if language is None:
+            language = this_language
+        elif this_language is not None and language != this_language:
+            raise ValueError("Mixed-language submission detected.")
+    return language
 
 
 def add_submission(contest_id, username, task_name, timestamp, files):
@@ -86,21 +113,21 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             logger.warning("Not all files from the submission format were "
                            "provided.")
 
-        # files and elements now coincide. We compute the language for
-        # each file and check that they do not mix.
+        # files is now a subset of elements.
+        # We ensure we can infer a language if the task requires it.
         language = None
-        for file_ in files:
-            this_language = filename_to_language(files[file_])
-            if this_language is None and ".%l" in file_:
-                logger.critical("Cannot recognize language for file `%s'.",
-                                file_)
+        need_lang = any(element.find(".%l") != -1 for element in elements)
+        if need_lang:
+            try:
+                language = language_from_submitted_files(files)
+            except ValueError as e:
+                logger.critical(e)
                 return False
-
             if language is None:
-                language = this_language
-            elif this_language is not None and language != this_language:
-                logger.critical("Mixed-language submission detected.")
+                # This might happen in case not all files were provided.
+                logger.critical("Unable to infer language from submission.")
                 return False
+        language_name = None if language is None else language.name
 
         # Store all files from the arguments, and obtain their digests..
         file_digests = {}
@@ -111,13 +138,12 @@ def add_submission(contest_id, username, task_name, timestamp, files):
                     "Submission file %s sent by %s at %d."
                     % (file_, username, timestamp))
                 file_digests[file_] = digest
-        except:
-            logger.critical("Error while storing submission's file.",
-                            exc_info=True)
+        except Exception as e:
+            logger.critical("Error while storing submission's file: %s.", e)
             return False
 
         # Create objects in the DB.
-        submission = Submission(make_datetime(timestamp), language.name,
+        submission = Submission(make_datetime(timestamp), language_name,
                                 participation=participation, task=task)
         for filename, digest in iteritems(file_digests):
             session.add(File(filename, digest, submission=submission))
