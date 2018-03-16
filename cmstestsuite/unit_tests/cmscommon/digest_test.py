@@ -33,6 +33,7 @@ from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 from cmscommon.digest import Digester, bytes_digest, path_digest
 
+
 _EMPTY_DIGEST = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
 _CONTENT_DIGEST = "040f06fd774092478d450774f5ba30c5da78acc8"
 
