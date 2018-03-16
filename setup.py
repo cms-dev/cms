@@ -115,7 +115,7 @@ setup(
     name="cms",
     version=find_version(),
     author="The CMS development team",
-    author_email="contestms@freelists.org",
+    author_email="contestms@googlegroups.com",
     url="https://github.com/cms-dev/cms",
     download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",
     description="A contest management system and grader "

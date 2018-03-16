@@ -4,7 +4,7 @@ Sorry to hear you have trouble with CMS!
 
 We use GitHub's issues to track bugs and sometimes feature requests. If you're just looking for help with CMS, there are better channels:
 * the [gitter chat](https://gitter.im/cms-dev/cms) (currently where you are more likely to get support quickly);
-* the mailing list <contestms@freelists.org>.
+* the mailing list <contestms-support@googlegroups.com>.
 
 If instead you have found a possible bug, please go ahead filing the issue using the following template. Feel free to remove non-relevant information.
 

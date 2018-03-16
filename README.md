@@ -44,14 +44,15 @@ git submodule update --init
 Support
 -------
 
-To learn how to install and use CMS, please read the **documentation**, available at <https://cms.readthedocs.org/>.
+To learn how to install and use CMS, please read the **documentation**,
+available at <https://cms.readthedocs.org/>.
 
 If you have questions or need help troubleshooting some problem,
 contact us in the **chat** at [gitter](https://gitter.im/cms-dev/cms),
-or write on the **general mailing list** <contestms@freelists.org> (you
-can subscribe and see the archives on
-[freelists](http://www.freelists.org/list/contestms)). We use this
-mailing list also for announcements (like new versions of CMS).
+or write on the **support mailing list**
+<contestms-support@googlegroups.com>, where no registration is required
+(you can see the archives on
+[Google Groups](https://groups.google.com/forum/#!forum/contestms-support)).
 
 To help with the troubleshooting, you can upload on some online
 pastebin the relevant **log files**, that you can find in
@@ -66,9 +67,14 @@ the instructions in the issue template.
 on the mailing list or on gitter, and it is more likely somebody will
 answer your query sooner.
 
+You can subscribe to <contestms-announce@googlegroups.com> to receive
+**announcements** of new releases and other important news. Register on
+[Google Groups](https://groups.google.com/forum/#!forum/contestms-announce).
+
 For **development** queries, you can write to
-<contestms-dev@freelists.org> and as before subscribe or see the
-archives on [freelists](http://www.freelists.org/list/contestms-dev).
+<contestms-discuss@googlegroups.com> and as before subscribe or see the
+archives on
+[Google Groups](https://groups.google.com/forum/#!forum/contestms-discuss).
 
 
 

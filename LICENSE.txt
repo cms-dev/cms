@@ -1,12 +1,12 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: cms
-Upstream-Contact: CMS Mailing List <contestms@freelists.org>
+Upstream-Contact: CMS Mailing List <contestms@googlegroups.com>
 Source: http://github.com/cms-dev/cms
-Copyright: 2010-2013 The CMS development team <contestms@freelists.org>
+Copyright: 2010-2013 The CMS development team <contestms@googlegroups.com>
 License: AGPL-3+
 
 Files: *
-Copyright: 2010-2013 The CMS development team <contestms@freelists.org>
+Copyright: 2010-2013 The CMS development team <contestms@googlegroups.com>
 License: AGPL-3+
 
 Files: cmsranking/images/*
@@ -60,11 +60,11 @@ License: GPL-2
 
 Files: cms/io/PsycoGevent.py
 Copyright: 2010 Daniele Varrazzo <daniele.varrazzo@gmail.com>
-           2013 The CMS development team <contestms@freelists.org>
+           2013 The CMS development team <contestms@googlegroups.com>
 License: Expat
 
 Files: cms/log.py
-Copyright: 2013 The CMS development team <contestms@freelists.org>
+Copyright: 2013 The CMS development team <contestms@googlegroups.com>
            2001-2013 Vinay Sajip
 License: AGPL-3+ and HPND-VinaySajip
 

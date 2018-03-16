@@ -1,6 +1,6 @@
 # Contributing and pull request process
 
-To contribute, please send an email to contestms-dev@freelists.org, or ping us on gitter with what you plan to do (unless uncontroversial and/or small), so that we can agree on the best way to implement it.
+To contribute, please send an email to contestms-discuss@googlegroups.com, or ping us on gitter with what you plan to do (unless uncontroversial and/or small), so that we can agree on the best way to implement it.
 
 We appreciate small commits that do one thing, but also that, when possible, each commit doesn't break the master branch. Please use your best judgement for the size of the commit according to these guidelines. If a commit breaks master, we at least require to push together all commits until master is fixed.
 
