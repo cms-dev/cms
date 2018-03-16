@@ -58,8 +58,9 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
 from cms.db import Base, Contest, Dataset, Evaluation, Executable, File, \
-    Participation, Session, Statement, Submission, SubmissionResult, Task, \
-    Team, Testcase, User, UserTest, UserTestResult, drop_db, init_db
+    Participation, Session, Statement, Submission, SubmissionFormatElement, \
+    SubmissionResult, Task, Team, Testcase, User, UserTest, UserTestResult, \
+    drop_db, init_db
 from cms.db.filecacher import DBBackend
 
 
@@ -181,6 +182,18 @@ class DatabaseMixin(object):
         task = self.get_task(**kwargs)
         self.session.add(task)
         return task
+
+    def add_submission_format_element(self, task=None, **kwargs):
+        """Create a submission format element and add it to the session"""
+        task = task if task is not None else self.add_task()
+        args = {
+            "task": task,
+            "filename": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        sfe = SubmissionFormatElement(**args)
+        self.session.add(sfe)
+        return sfe
 
     def add_statement(self, task=None, **kwargs):
         """Create a statement and add it to the session"""
