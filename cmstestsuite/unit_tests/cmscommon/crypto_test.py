@@ -129,8 +129,7 @@ class TestGenerateRandomPassword(unittest.TestCase):
     """Tests for the function generate_random_password."""
 
     def test_alphabet(self):
-        p = generate_random_password()
-        self.assertEqual(re.match("[a-z]+", p).group(0), p)
+        six.assertRegex(self, generate_random_password(), r"^[a-z]*$")
 
     def test_random(self):
         self.assertNotEqual(generate_random_password(),
