@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+import six
 
 import re
 import unittest
@@ -48,9 +49,7 @@ class TestGetHexRandomKey(unittest.TestCase):
     """Tests for the function get_hex_random_key."""
 
     def test_valid(self):
-        valid = "0123456789abcdef"
-        for x in get_hex_random_key():
-            self.assertIn(x, valid)
+        six.assertRegex(self, get_hex_random_key(), r"^[0-9a-f]*$")
 
     def test_length(self):
         # Should be 16 bytes.
