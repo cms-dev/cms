@@ -83,7 +83,7 @@ def encrypt_binary(pt, key_hex):
     key_hex (str): a 16-bytes key in hex (a string of 32 hex chars).
 
     return (str): pt encrypted using the key, in a format URL-safe
-        (more precisely, base64-encoded with alphabet a-zA-Z0-9.-_
+        (more precisely, base64-encoded with alphabet "a-zA-Z0-9.-_").
 
     """
     key = hex_to_bin(key_hex)
