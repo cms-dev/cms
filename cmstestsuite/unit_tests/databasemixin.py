@@ -20,15 +20,14 @@
 
 """A unittest.TestCase mixin for tests interacting with the database.
 
-This mixin will connect to a different DB, recreating for each testing
-class; it will also create a session at each test setup.
+This mixin will connect to a different DB, recreating it for each
+testing class; it will also create a session at each test setup.
 
 The mixin also offers a series of get_<object> (to build an object, not
 attached to any session) and add_<object> (to build and add the object
 to the default session) methods. Without arguments, these will create
 minimal objects with random values in the fields, and callers can
-specify as many fields as they like.minimal object possible in the
-database.
+specify as many fields as they like.
 
 When the object depends on a "parent" object, the caller can specify
 it, or leave it for the function to create. When there is a common
