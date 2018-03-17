@@ -60,7 +60,7 @@ from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
-from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
+from .contest import ContestHandler, NOTIFICATION_ERROR, \
     NOTIFICATION_SUCCESS, NOTIFICATION_WARNING
 
 
@@ -530,7 +530,7 @@ class SubmissionDetailsHandler(ContestHandler):
                     **self.r_params)
 
 
-class SubmissionFileHandler(FileHandler):
+class SubmissionFileHandler(ContestHandler):
     """Send back a submission file.
 
     """
@@ -581,7 +581,9 @@ class SubmissionFileHandler(FileHandler):
         if mimetype is None:
             mimetype = 'application/octet-stream'
 
-        self.fetch(digest, mimetype, filename)
+        self.redirect(self.url("file", digest, filename,
+                               mimetype=mimetype),
+                      permanent=False, status=303)
 
 
 class UseTokenHandler(ContestHandler):

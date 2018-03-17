@@ -53,7 +53,6 @@ from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
 from cmscommon.binary import hex_to_bin
 from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
-from cms.db.filecacher import FileCacher
 from cms.locale import get_translations
 
 from .handlers import HANDLERS
@@ -126,7 +125,6 @@ class ContestWebServer(WebService):
         # Retrieve the available translations.
         self.translations = get_translations()
 
-        self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
         self.scoring_service = self.connect_to(
