@@ -36,6 +36,7 @@ from six import iterkeys, itervalues
 
 import logging
 import pkg_resources
+import gevent
 
 from sqlalchemy import func, not_
 
@@ -98,8 +99,8 @@ class AdminWebServer(WebService):
 
         self.resource_services = []
         for i in range(get_service_shards("ResourceService")):
-            self.resource_services.append(self.connect_to(
-                ServiceCoord("ResourceService", i)))
+            gevent.spawn(lambda self, i: self.resource_services.append(
+                self.connect_to(ServiceCoord("ResourceService", i))), self, i)
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
     def is_rpc_authorized(self, service, shard, method):
