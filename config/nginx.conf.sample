@@ -1,5 +1,5 @@
 # This config requires the following Ubuntu packages to be installed:
-# nginx-full php5-cgi php5-fpm phppgadmin
+# nginx-full php7.2-cgi php7.2-fpm phppgadmin
 
 user www-data;
 
@@ -83,7 +83,7 @@ http {
         ssl_certificate_key /etc/nginx/ssl/server.key;
 
         # Serve phppgadmin on a prefix. This assumes that you have the
-        # phppgadmin and php5-fpm packages properly installed and
+        # phppgadmin and php7.2-fpm packages properly installed and
         # configured.
         location /phppgadmin/ {
             alias /usr/share/phppgadmin/;
@@ -104,7 +104,7 @@ http {
             try_files $uri $uri/ =404;
 
             location ~ \.php$ {
-                fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+                fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
                 fastcgi_index index.php;
                 include fastcgi_params;
             }
