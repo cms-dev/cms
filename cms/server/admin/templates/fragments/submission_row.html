@@ -1,10 +1,10 @@
 {# This snippet shows a row of a submission table using the variable s as input #}
 
-{% try %}
+{% if shown_dataset is defined %}
   {% set dataset = shown_dataset %}
-{% except %}
+{% else %}
   {% set dataset = s.task.active_dataset %}
-{% endtry %}
+{% endif %}
 
 {% set sr = s.get_result(dataset) %}
 
@@ -13,12 +13,7 @@
 {% if sr is not none %}
   {% set status = sr.get_status() %}
 {% endif %}
-{% if s.task.name in score_types %}
-  {% set score_type = score_types[s.task.name] %}
-{% else %}
-  {% set score_type = get_score_type(dataset=dataset) %}
-  {% set score_types[s.task.name] = score_type %}
-{% endif %}
+{% set score_type = dataset.score_type_object %}
 <tr>
   <td><a href="{{ url("submission", s.id) }}">{{ s.timestamp }}</a></td>
   <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
@@ -61,7 +56,7 @@
               <td style="text-align: center">
                 <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
               </td>
-              <td>{{ format_status_text(ev.text) }}</td>
+              <td>{{ ev.text|format_status_text }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -69,18 +64,18 @@
         {% endif %}
 
       {% elif status == SubmissionResult.SCORED %}
-        {% try %}
+        {% if score_type is defined %}
           {% set max_score = score_type.max_score %}
-        {% except %}
+        {% else %}
           {% set max_score = "[Cannot get score type - see logs]" %}
-        {% endtry %}
+        {% endif %}
       Scored ({{ sr.score }} / {{ max_score }})
       <div id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-        {% try %}
+        {% if score_type is defined %}
           {{ score_type.get_html_details(sr.score_details)|safe }}
-        {% except %}
+        {% else %}
         [Cannot get score type - see logs]
-        {% endtry %}
+        {% endif %}
 
       {% else %}
       [Unknown status]
@@ -88,7 +83,7 @@
 
       {% endif %}
         <h3>Compilation output</h3>{# TODO: trim long outputs and add facility to see raw #}
-        <pre>{% if sr.compilation_text|length > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
+        <pre>{% if sr.compilation_text|length > 0 %}{{ sr.compilation_text|format_status_text }}{% endif %}</pre>
       </div>
     </div>
 
@@ -118,9 +113,9 @@
     {{ s.short_comment }}
   </td>
   <td>
-    {% module ReevaluationButtons(
-           url,
+    {{ ReevaluationButtons(
+           url("submission", s.id, dataset.id),
            submission_id=s.id,
-           dataset_id=dataset.id) %}
+           dataset_id=dataset.id) }}
   </td>
 </tr>

@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block core %}
-{% set score_types = {} %}
-
 <h1>{{ user.first_name }} {{ user.last_name }} ({{ user.username }})</h1>
 
 <h2 id="title_participations" class="toggling_on">Participations</h2>
@@ -133,7 +131,7 @@
       <input type="submit"
            name="operation"
            value="Remove" style="float: right;"
-  {% if not current_user.permission_all %}
+  {% if not admin.permission_all %}
            disabled
   {% endif %}
            />

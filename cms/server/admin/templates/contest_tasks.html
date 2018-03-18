@@ -17,7 +17,7 @@
     {% endfor %}
   </select>
   <input type="submit"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Add task" />
@@ -27,17 +27,17 @@
   {{ xsrf_form_html|safe }}
   Edit selected task:
   <input type="submit" name="operation"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Move up" />
   <input type="submit" name="operation"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Move down" />
   <input type="submit" name="operation"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Remove from contest" />

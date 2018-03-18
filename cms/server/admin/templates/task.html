@@ -74,7 +74,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         <td>
           <span class="info" title="The statements of this task, by language code. Primary statements are shown prominently to contestants."></span>
           Statements
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
           [<a href="{{ url("task", task.id, "statements", "add") }}">add</a>]
 {% endif %}
         </td>
@@ -105,7 +105,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         <td>
           <span class="info" title="Attachments for this task. Contestant can view and download attachments from the task page."></span>
           Attachments
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
           [<a href="{{ url("task", task.id, "attachments", "add") }}">add</a>]
 {% endif %}
         </td>
@@ -129,7 +129,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           Submission format
         </td>
         <td>
-          <input type="text" name="submission_format" value="{{ task.submission_format|map(attribute="filename")|list|tojson }}"/>
+          <input type="text" name="submission_format" value="{{ task.submission_format|map(attribute="filename")|list|tojson|forceescape }}"/>
         </td>
       </tr>
       <tr><td colspan=2><h2>Tokens parameters (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">documentation</a>)</h2></td></tr>
@@ -263,18 +263,18 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% if task.datasets|length == 0 %}
     No datasets have been created for this task.<br/>
 {% endif %}
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
     <a href="{{ url("task", task.id, "add_dataset") }}">Create a new dataset</a><br/>
 {% endif %}
     </p>
 
 {% for dataset in task.datasets|sort(attribute="description") %}
 
-  <h3 id="title_dataset_{{ dataset.id }}" class="toggling_on">Dataset: {{ dataset.description }}{{ format_dataset_attrs(dataset) }}</h3>
+  <h3 id="title_dataset_{{ dataset.id }}" class="toggling_on">Dataset: {{ dataset.description }}{{ dataset|format_dataset_attrs }}</h3>
   <div id="dataset_{{ dataset.id }}" class="task_dataset">
 
     <p>
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
       {% if dataset is sameas (task.active_dataset) %}
       [Make Live ...]
       {% else %}
@@ -379,7 +379,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <td>
             <span class="info" title="Managers for this task. Managers are sources, headers, libraries or binaries used during the evaluation."></span>
             Managers
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
             [<a href="{{ url("dataset", dataset.id, "managers", "add") }}">add</a>]
 {% endif %}
           </td>
@@ -416,7 +416,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <span class="info" title="Please see the score type documentation."></span>
             Score Parameters
           </td>
-          <td><textarea name="score_type_parameters_{{ dataset.id }}">{{ dataset.score_type_parameters|tojson }}</textarea></td>
+          <td><textarea name="score_type_parameters_{{ dataset.id }}">{{ dataset.score_type_parameters|tojson|forceescape }}</textarea></td>
         </tr>
       </table>
       <div class="hr"></div>
@@ -426,7 +426,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 
   <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
     <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
       <a href="{{ url("dataset", dataset.id, "testcases", "add") }}">Add a testcase</a>
       <a href="{{ url("dataset", dataset.id, "testcases", "add_multiple") }}">Add multiple testcases</a>
 {% endif %}
@@ -471,7 +471,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
   {% endfor %}
   </div>
   <input type="submit"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Update" />
@@ -483,7 +483,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
     <input type="submit"
          name="operation"
          value="Remove" style="float: right;"
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
          disabled
 {% endif %}
          />

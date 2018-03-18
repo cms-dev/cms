@@ -9,7 +9,7 @@
   Pages:
   {% for i in range(submission_pages) %}
     {% if i != submission_page %}
-  <a href="{{ url(*page_url, page=i) }}">{{ i + 1 }}</a>
+  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
     {% else %}
   {{ i + 1 }}
     {% endif %}
@@ -32,7 +32,6 @@
     </tr>
   </thead>
   <tbody>
-    {% set score_types = {} %}
     {% for s in submissions|sort(attribute="timestamp")|reverse %}
       {% include "fragments/submission_row.html" %}
     {% endfor %}

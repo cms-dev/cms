@@ -137,7 +137,8 @@ class BaseHandler(CommonRequestHandler):
         ret["gettext"] = self._
         ret["ngettext"] = self.n_
 
-        # FIXME this is cheating
+        # FIXME The handler provides too broad an access: its usage
+        # should be extracted into with narrower-scoped parameters.
         ret["handler"] = self
 
         ret["xsrf_form_html"] = self.xsrf_form_html()

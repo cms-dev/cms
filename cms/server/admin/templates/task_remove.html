@@ -5,7 +5,7 @@
   <h1>Remove Task</h1>
 </div>
 
-{% if current_user.permission_all %}
+{% if admin.permission_all %}
 <p>
   Are you sure you want to remove task {{ task.name }} from CMS, including all related data?
   <br>

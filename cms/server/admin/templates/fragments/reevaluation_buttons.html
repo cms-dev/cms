@@ -1,0 +1,75 @@
+{% macro ReevaluationButtons(next_page,
+                             submission_id=None,
+                             dataset_id=None,
+                             participation_id=None,
+                             contest_id=None) %}
+{#
+Render reevaluation buttons for the given filters.
+
+These are the possible configuration of not-none arguments received:
+- submission_id and dataset_id: reevaluate the submission result of the
+  given submission on the given dataset;
+- dataset_id: reevaluate all submission results of the given dataset
+  (they belong to the submissions for the dataset's task);
+- participation_id: reevaluate all submission results (on all datasets)
+  of the submissions that were handed in by the given participation;
+- contest_id: reevaluate all submission results of the contest (of all
+  participations and tasks, for all datasets).
+
+next_page (str): the URL to redirect to after the invalidation request
+    has been sent.
+submission_id (int|None): id of the submission to invalidate.
+dataset_id (int|None): id of the dataset to invalidate.
+participation_id (int|None): id of the participation to invalidate.
+contest_id (int|None): the id of the contest to invalidate.
+#}
+{% if submission_id is not none and dataset_id is not none %}
+  {% set invalidate_arguments = {"submission_id": submission_id,
+                                 "dataset_id": dataset_id} %}
+{% elif dataset_id is not none %}
+  {% set invalidate_arguments = {"dataset_id": dataset_id} %}
+{% elif participation_id is not none %}
+  {% set invalidate_arguments = {"participation_id": participation_id} %}
+{% elif contest_id is not none %}
+  {% set invalidate_arguments = {"contest_id": contest_id} %}
+{% endif %}
+<button onclick="cmsrpc_request(
+                 'EvaluationService', 0,
+                 'invalidate_submission', {
+{% for key, value in iteritems(invalidate_arguments) %}
+                 '{{ key }}': {{ value }},
+{% endfor %}
+                  'level': 'compilation'},
+                 function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
+                 );"
+{% if not admin.permission_all %}
+        disabled
+{% endif %}
+        title="Compilation" >C</button>
+<button onclick="cmsrpc_request(
+                 'EvaluationService', 0,
+                 'invalidate_submission', {
+{% for key, value in iteritems(invalidate_arguments) %}
+                 '{{ key }}': {{ value }},
+{% endfor %}
+                  'level': 'evaluation'},
+                 function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
+                  );"
+{% if not admin.permission_all %}
+        disabled
+{% endif %}
+        title="Evaluation" >E</button>
+<button onclick="cmsrpc_request(
+                 'ScoringService', 0,
+                 'invalidate_submission', {
+{% for key, value in iteritems(invalidate_arguments) %}
+                 '{{ key }}': {{ value }},
+{% endfor %}
+                 },
+                 function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
+                 );"
+{% if not admin.permission_all %}
+        disabled
+{% endif %}
+        title="Score" >S</button>
+{% endmacro %}

@@ -1,3 +1,8 @@
-{% block core %}{% from itertools import izip %}{{ "%20s" % "Username"}} {{ "%30s" % "User"}}{% if show_teams %}{{ "%30s" % "Team"}}{% endif %} {% for task in contest.tasks %}{{ "%14s" % task.name }} {% endfor %}{{ "%8s" % "Global" }}
-{% for p in sorted(contest.participations, key=lambda p: p.total_score, reverse=True) %}{% if not p.hidden %}{{ "%20s" % p.user.username }} {{ "%30s" % ("%s %s" % (p.user.first_name, p.user.last_name)) }}{% if show_teams %}{{ "%30s" % (p.team.name if p.team else "") }}{% endif %} {% for (t_score, t_partial), task in izip(p.scores, contest.tasks) %}{{ ("%%13.%dlf" % task.score_precision) % t_score }}{% if t_partial %}*{% else %} {% endif %} {% endfor %}{% set total_score, partial = p.total_score %}{{ ("%%7.%dlf" % contest.score_precision) % total_score }}{% if partial %}*{% else %} {% endif %}
-{% endif %}{% endfor %}{% endblock core %}
+{% block core %}
+{{ "%20s"|format("Username") }} {{ "%30s"|format("User") }}{% if show_teams %}{{ "%30s"|format("Team") }}{% endif %} {% for task in contest.tasks %}{{ "%14s"|format(task.name) }} {% endfor %}{{ "%8s"|format("Global") }}
+{% for p in contest.participations|sort(attribute="total_score")|reverse %}
+{% if not p.hidden %}
+{{ "%20s"|format(p.user.username) }} {{ "%30s"|format("%s %s"|format(p.user.first_name, p.user.last_name)) }}{% if show_teams %}{{ "%30s"|format(p.team.name if p.team else "") }}{% endif %} {% for task in contest.tasks %}{% set t_score, t_partial = p.scores[loop.index0] %}{{ "%%13.%dlf"|format(task.score_precision)|format(t_score) }}{% if t_partial %}*{% else %} {% endif %} {% endfor %}{% set total_score, partial = p.total_score %}{{ "%%7.%dlf"|format(contest.score_precision)|format(total_score) }}{% if partial %}*{% else %} {% endif %}
+{% endif %}
+{% endfor %}
+{% endblock core %}

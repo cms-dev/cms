@@ -1,20 +1,18 @@
 {% extends "base.html" %}
 
 {% block core %}
-{% set score_types = {} %}
-
 <h1>All Submissions</h1>
 
 <div id="submissions">
 
   <p>
     Reevaluate all {{ submission_count }} submissions in this contest (for all datasets)
-    {% module ReevaluationButtons(
-           url,
-           contest.id) %}
+    {{ ReevaluationButtons(
+           url("contest", contest.id, "submissions"),
+           contest_id=contest.id) }}
   </p>
 
-  {% set page_url = ["contest", contest.id, "submissions"] %}
+  {% set page_url = url["contest"][contest.id]["submissions"] %}
   {% include "fragments/submission_rows.html" %}
 </div>
 

@@ -83,7 +83,7 @@
               <input type="hidden" name="official" value="no"/>
               Yes
               <input
-              {% if not current_user.permission_all %}
+              {% if not admin.permission_all %}
                   disabled
               {% endif %}
                type="submit" value="Make unofficial" />
@@ -91,7 +91,7 @@
               <input type="hidden" name="official" value="yes"/>
               No
               <input
-              {% if not current_user.permission_all %}
+              {% if not admin.permission_all %}
                   disabled
               {% endif %}
                type="submit" value="Make official" />
@@ -111,11 +111,11 @@
           {% elif status == SubmissionResult.SCORING %}
           Scoring...
           {% elif status == SubmissionResult.SCORED %}
-            {% try %}
+            {% if st is defined %}
               {% set max_score = st.max_score %}
-            {% except %}
+            {% else %}
               {% set max_score = "[Cannot get score type - see logs]" %}
-            {% endtry %}
+            {% endif %}
           Scored ({{ sr.score }} / {{ max_score }})
           {% else %}
           N/A
@@ -152,10 +152,10 @@
       <tr>
         <td>Reevaluate</td>
         <td>
-          {% module ReevaluationButtons(
-                 url,
+          {{ ReevaluationButtons(
+                 url("submission", s.id, shown_dataset.id),
                  submission_id=s.id,
-                 dataset_id=shown_dataset.id) %}
+                 dataset_id=shown_dataset.id) }}
         </td>
       </tr>
     </tbody>
@@ -170,7 +170,7 @@
     {{ xsrf_form_html|safe }}
     <textarea name="comment" cols="40" rows="3">{{ s.comment }}</textarea><br/>
     <input
-{% if not current_user.permission_all %}
+{% if not admin.permission_all %}
        disabled
 {% endif %}
        type="submit"/>
@@ -222,7 +222,7 @@
           <td style="text-align: center">
             <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
           </td>
-          <td id="eval_text_{{ ev.codename }}">{{ format_status_text(ev.text) }}</td>
+          <td id="eval_text_{{ ev.codename }}">{{ ev.text|format_status_text }}</td>
           <td>{{ ev.evaluation_shard }}</td>
           <td>
             {% if ev.execution_time is not none %}
@@ -253,7 +253,7 @@
 <div id="compilation">
 
   <h3>Outcome</h3>
-  <pre>{% if sr.compilation_text|length > 0 %}{{ format_status_text(sr.compilation_text) }}{% endif %}</pre>
+  <pre>{% if sr.compilation_text|length > 0 %}{{ sr.compilation_text|format_status_text }}{% endif %}</pre>
 
   <h3>Standard output</h3>
   <pre>{% if sr.compilation_stdout is not none %}{{ sr.compilation_stdout }}{% endif %}</pre>

@@ -35,15 +35,28 @@ from jinja2 import PackageLoader
 
 from cms import plugin_list
 from cms.grading.languagemanager import LANGUAGES
+from cms.server.admin.formatting import format_dataset_attrs
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from cmscommon.crypto import get_hex_random_key, parse_authentication
+
+
+def safe_parse_authentication(auth):
+    try:
+        method, password = parse_authentication(auth)
+    except ValueError:
+        method, password = "plaintext", ""
+    return method, password
 
 
 def instrument_cms_toolbox(env):
     env.globals["LANGUAGES"] = LANGUAGES
     env.globals["plugin_list"] = plugin_list
     env.globals["get_hex_random_key"] = get_hex_random_key
-    env.globals["parse_authentication"] = parse_authentication
+    env.globals["parse_authentication"] = safe_parse_authentication
+
+
+def instrument_formatting_toolbox(env):
+    env.filters["format_dataset_attrs"] = format_dataset_attrs
 
 
 AWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
@@ -53,3 +66,4 @@ AWS_ENVIRONMENT = GLOBAL_ENVIRONMENT.overlay(
 
 
 instrument_cms_toolbox(AWS_ENVIRONMENT)
+instrument_formatting_toolbox(AWS_ENVIRONMENT)
