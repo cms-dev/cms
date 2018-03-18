@@ -65,6 +65,6 @@ class PascalFpc(CompiledLanguage):
         command = ["/usr/bin/fpc"]
         if for_evaluation:
             command += ["-dEVAL"]
-        command += ["-XS", "-O2", "-o%s" % executable_filename]
+        command += ["-O2", "-XSs", "-o%s" % executable_filename]
         command += [source_filenames[0]]
         return [command]
