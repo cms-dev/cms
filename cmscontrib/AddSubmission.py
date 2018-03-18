@@ -27,7 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iteritems
+from six import iterkeys, iteritems
 
 import argparse
 import logging
@@ -56,8 +56,8 @@ def maybe_send_notification(submission_id):
 def language_from_submitted_files(files):
     """Return the language inferred from the submitted files.
 
-    files ({string: string}): dictionary mapping the expected filename to a
-        path in the file system.
+    files ({str: str}): dictionary mapping the expected filename to a path in
+        the file system.
 
     return (Language|None): the language inferred from the files.
 
@@ -66,11 +66,11 @@ def language_from_submitted_files(files):
 
     """
     language = None
-    for file_ in files:
-        this_language = filename_to_language(files[file_])
-        if this_language is None and ".%l" in file_:
+    for filename in iterkeys(files):
+        this_language = filename_to_language(files[filename])
+        if this_language is None and ".%l" in filename:
             raise ValueError(
-                "Cannot recognize language for file `%s'." % file_)
+                "Cannot recognize language for file `%s'." % filename)
 
         if language is None:
             language = this_language

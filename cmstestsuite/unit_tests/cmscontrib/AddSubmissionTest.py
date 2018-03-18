@@ -83,7 +83,6 @@ class TestAddSubmissionMixin(DatabaseMixin, FileSystemMixin):
         self.assertEqual(len(db_submissions), 1)
         s = db_submissions[0]
         self.assertEqual(s.participation_id, self.participation.id)
-        self.assertEqual(s.task_id, task.id)
 
         # Check the submission's files are exactly those expected.
         db_files = self.session.query(File)\
