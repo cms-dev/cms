@@ -305,7 +305,8 @@ class BaseHandler(CommonRequestHandler):
         params["contest"] = self.contest
         params["url"] = self.url
         params["xsrf_form_html"] = self.xsrf_form_html()
-        # FIXME these are cheating
+        # FIXME These objects provide too broad an access: their usage
+        # should be extracted into with narrower-scoped parameters.
         params["config"] = config
         params["handler"] = self
         if self.current_user is not None:
