@@ -233,6 +233,50 @@ class TestAddSubmissionTwoSourcesWithLanguage(
         self.assertSubmissionNotInDb(_TS)
 
 
+class TestAddSubmissionTwoSourcesOneLanguage(
+        TestAddSubmissionMixin, unittest.TestCase):
+    """Tests for AddSubmission with one source with language and one not."""
+
+    def setUp(self):
+        super(TestAddSubmissionTwoSourcesOneLanguage, self).setUp()
+
+        self.task = self.add_task(contest=self.contest)
+        self.sfe = self.add_submission_format_element(
+            task=self.task, filename="source1.%l")
+        self.sfe = self.add_submission_format_element(
+            task=self.task, filename="source2")
+
+        self.session.commit()
+
+    def test_success_many(self):
+        self.assertTrue(add_submission(
+            self.contest.id, self.user.username, self.task.name, _TS, {
+                "source1.%l": self.get_path(_FILENAME_1),
+                "source2": self.get_path(_FILENAME_2),
+             }))
+        self.assertSubmissionInDb(_TS, self.task, _LANGUAGE_1, {
+            "source1.%l": _DIGEST_1,
+            "source2": _DIGEST_2,
+        })
+
+    def test_success_missing_source_without_language(self):
+        # We allow submissions with missing files, as long as we can identify
+        # the language.
+        self.assertTrue(add_submission(
+            self.contest.id, self.user.username, self.task.name, _TS,
+            {"source1.%l": self.get_path(_FILENAME_1)}))
+        self.assertSubmissionInDb(_TS, self.task, _LANGUAGE_1,
+                                  {"source1.%l": _DIGEST_1})
+
+    def test_fail_missing_source_with_language(self):
+        # We allow submissions with missing files, as long as we can identify
+        # the language.
+        self.assertFalse(add_submission(
+            self.contest.id, self.user.username, self.task.name, _TS,
+            {"source2": self.get_path(_FILENAME_2)}))
+        self.assertSubmissionNotInDb(_TS)
+
+
 class TestAddSubmissionOutputOnly(
         TestAddSubmissionMixin, unittest.TestCase):
     """Tests for AddSubmission when there the submission has no language."""
