@@ -28,6 +28,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import PY3
+
+if PY3:
+    from shlex import quote as shell_quote
+else:
+    from pipes import quote as shell_quote
 
 from cms.grading import Language
 
@@ -62,28 +68,20 @@ class JavaJDK(Language):
                                  source_filenames, executable_filename,
                                  for_evaluation=True):
         """See Language.get_compilation_commands."""
+        compile_command = ["/usr/bin/javac"] + source_filenames
         # We need to let the shell expand *.class as javac create
         # a class file for each inner class.
-        compile_command = ["/usr/bin/javac"] + source_filenames
         if JavaJDK.USE_JAR:
-            jar_command = ["/bin/bash", "-c",
-                           " ".join([
-                               "/usr/bin/jar", "cf",
-                               "%s.jar" % executable_filename,
-                               "*.class"])]
-            mv_command = ["/bin/mv",
-                          "%s.jar" % executable_filename,
-                          executable_filename]
-            return [compile_command, jar_command, mv_command]
-        else:
-            zip_command = ["/bin/bash", "-c",
-                           " ".join(["/usr/bin/zip", "-r",
-                                     "%s.zip" % executable_filename,
+            jar_command = ["/bin/sh", "-c",
+                           " ".join(["jar", "cf",
+                                     shell_quote(executable_filename),
                                      "*.class"])]
-            mv_command = ["/bin/mv",
-                          "%s.zip" % executable_filename,
-                          executable_filename]
-            return [compile_command, zip_command, mv_command]
+            return [compile_command, jar_command]
+        else:
+            zip_command = ["/bin/sh", "-c",
+                           " ".join(["zip", "-r", "-", "*.class", ">",
+                                     shell_quote(executable_filename)])]
+            return [compile_command, zip_command]
 
     def get_evaluation_commands(
             self, executable_filename, main=None, args=None):
@@ -92,9 +90,10 @@ class JavaJDK(Language):
         if JavaJDK.USE_JAR:
             # executable_filename is a jar file, main is the name of
             # the main java class
-            return [["/usr/bin/java", "-Xmx512M", "-Xss64M", "-cp",
-                     executable_filename, main] + args]
+            return [["/usr/bin/java", "-Deval=true", "-Xmx512M", "-Xss64M",
+                     "-cp", executable_filename, main] + args]
         else:
             unzip_command = ["/usr/bin/unzip", executable_filename]
-            command = ["/usr/bin/java", "-Xmx512M", "-Xss64M", main] + args
+            command = ["/usr/bin/java", "-Deval=true", "-Xmx512M", "-Xss64M",
+                       main] + args
             return [unzip_command, command]
