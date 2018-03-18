@@ -176,7 +176,7 @@ class TestAddSubmissionSingleSourceWithLanguage(
 
 class TestAddSubmissionTwoSourcesWithLanguage(
         TestAddSubmissionMixin, unittest.TestCase):
-    """Tests for AddSubmission when the task has a single source file."""
+    """Tests for AddSubmission when the task has two source files."""
 
     def setUp(self):
         super(TestAddSubmissionTwoSourcesWithLanguage, self).setUp()
@@ -220,7 +220,7 @@ class TestAddSubmissionTwoSourcesWithLanguage(
 
 class TestAddSubmissionOutputOnly(
         TestAddSubmissionMixin, unittest.TestCase):
-    """Tests for AddSubmission when the task has a single source file."""
+    """Tests for AddSubmission when there the submission has no language."""
 
     def setUp(self):
         super(TestAddSubmissionOutputOnly, self).setUp()
