@@ -39,12 +39,13 @@ from cmscommon.digest import bytes_digest
 from cmscontrib.AddStatement import add_statement
 
 
-class TestAddStatement(DatabaseMixin, FileSystemMixin, unittest.TestCase):
+_CONTENT_1 = b"this is a pdf"
+_CONTENT_2 = b"this is another pdf"
+_DIGEST_1 = bytes_digest(_CONTENT_1)
+_DIGEST_2 = bytes_digest(_CONTENT_2)
 
-    CONTENT_1 = b"this is a pdf"
-    CONTENT_2 = b"this is another pdf"
-    DIGEST_1 = bytes_digest(CONTENT_1)
-    DIGEST_2 = bytes_digest(CONTENT_2)
+
+class TestAddStatement(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
         super(TestAddStatement, self).setUp()
@@ -63,8 +64,6 @@ class TestAddStatement(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             .filter(Statement.language == language).all()
         self.assertEqual(len(db_statements), 1)
         s = db_statements[0]
-        self.assertEqual(s.task_id, self.task.id)
-        self.assertEqual(s.language, language)
         self.assertEqual(s.digest, digest)
 
     def assertStatementNotInDb(self, language):
@@ -75,19 +74,19 @@ class TestAddStatement(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertEqual(len(db_statements), 0)
 
     def test_success(self):
-        path = self.write_file("statement.pdf", TestAddStatement.CONTENT_1)
+        path = self.write_file("statement.pdf", _CONTENT_1)
         self.assertTrue(add_statement(self.task.name, "en", path, False))
-        self.assertStatementInDb("en", TestAddStatement.DIGEST_1)
+        self.assertStatementInDb("en", _DIGEST_1)
 
     def test_success_another_statement(self):
-        path = self.write_file("statement.pdf", TestAddStatement.CONTENT_1)
+        path = self.write_file("statement.pdf", _CONTENT_1)
         self.assertTrue(add_statement(self.task.name, "en", path, False))
 
-        path = self.write_file("statement2.pdf", TestAddStatement.CONTENT_2)
+        path = self.write_file("statement2.pdf", _CONTENT_2)
         self.assertTrue(add_statement(self.task.name, "zh_TW", path, False))
 
-        self.assertStatementInDb("en", TestAddStatement.DIGEST_1)
-        self.assertStatementInDb("zh_TW", TestAddStatement.DIGEST_2)
+        self.assertStatementInDb("en", _DIGEST_1)
+        self.assertStatementInDb("zh_TW", _DIGEST_2)
 
     def test_no_file(self):
         path = self.get_path("statement.pdf")
@@ -95,29 +94,29 @@ class TestAddStatement(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertStatementNotInDb("en")
 
     def test_not_pdf(self):
-        path = self.write_file("statement.txt", TestAddStatement.CONTENT_1)
+        path = self.write_file("statement.txt", _CONTENT_1)
         self.assertFalse(add_statement(self.task.name, "en", path, False))
         self.assertStatementNotInDb("en")
 
     def test_dont_overwrite(self):
-        path = self.write_file("statement.pdf", TestAddStatement.CONTENT_1)
+        path = self.write_file("statement.pdf", _CONTENT_1)
         self.assertTrue(add_statement(self.task.name, "en", path, False))
-        self.assertStatementInDb("en", TestAddStatement.DIGEST_1)
+        self.assertStatementInDb("en", _DIGEST_1)
 
         # We try to overwrite, should fail and keep the previous digest.
-        path = self.write_file("statement2.pdf", TestAddStatement.CONTENT_2)
+        path = self.write_file("statement2.pdf", _CONTENT_2)
         self.assertFalse(add_statement(self.task.name, "en", path, False))
-        self.assertStatementInDb("en", TestAddStatement.DIGEST_1)
+        self.assertStatementInDb("en", _DIGEST_1)
 
     def test_overwrite(self):
-        path = self.write_file("statement.pdf", TestAddStatement.CONTENT_1)
+        path = self.write_file("statement.pdf", _CONTENT_1)
         self.assertTrue(add_statement(self.task.name, "en", path, False))
-        self.assertStatementInDb("en", TestAddStatement.DIGEST_1)
+        self.assertStatementInDb("en", _DIGEST_1)
 
         # We try to overwrite and force it.
-        path = self.write_file("statement2.pdf", TestAddStatement.CONTENT_2)
+        path = self.write_file("statement2.pdf", _CONTENT_2)
         self.assertTrue(add_statement(self.task.name, "en", path, True))
-        self.assertStatementInDb("en", TestAddStatement.DIGEST_2)
+        self.assertStatementInDb("en", _DIGEST_2)
 
 
 if __name__ == "__main__":

@@ -50,7 +50,6 @@ class TestAddAdmin(DatabaseMixin, unittest.TestCase):
             .filter(Admin.username == username).all()
         self.assertEqual(len(db_admins), 1)
         a = db_admins[0]
-        self.assertEqual(a.username, username)
         self.assertTrue(validate_password(a.authentication, pwd))
         self.assertEqual(a.name, name)
         self.assertEqual(a.enabled, enabled)

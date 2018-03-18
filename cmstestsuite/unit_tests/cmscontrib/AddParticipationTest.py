@@ -63,8 +63,6 @@ class TestAddParticipation(DatabaseMixin, unittest.TestCase):
             .filter(Participation.contest_id == contest_id).all()
         self.assertEqual(len(db_participations), 1)
         p = db_participations[0]
-        self.assertEqual(p.user_id, user_id)
-        self.assertEqual(p.contest_id, contest_id)
         self.assertTrue(validate_password(p.password, password))
         self.assertEqual(p.hidden, hidden)
         self.assertEqual(p.unrestricted, unrestricted)
