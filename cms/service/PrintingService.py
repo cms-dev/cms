@@ -35,15 +35,18 @@ import logging
 import os
 import subprocess
 import tempfile
-from tornado import template
+
+from jinja2 import PackageLoader
 from PyPDF2 import PdfFileReader, PdfFileMerger
 
 from cms import config, rmtree
 from cms.db.filecacher import FileCacher
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
 from cms.db import SessionGen, PrintJob
+from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import get_timezone, utc
+from cmscommon.tex import escape_tex_normal, escape_tex_tt
 
 
 logger = logging.getLogger(__name__)
@@ -70,9 +73,11 @@ class PrintingExecutor(Executor):
         super(PrintingExecutor, self).__init__()
 
         self.file_cacher = file_cacher
-        template_dir = os.path.join(os.path.dirname(__file__),
-                                    "templates", "printing")
-        self.template_loader = template.Loader(template_dir, autoescape=None)
+        self.jinja2_env = GLOBAL_ENVIRONMENT.overlay(
+            loader=PackageLoader("cms.service", "templates/printing"),
+            autoescape=False)
+        self.jinja2_env.filters["escape_tex_normal"] = escape_tex_normal
+        self.jinja2_env.filters["escape_tex_tt"] = escape_tex_tt
 
     def execute(self, entry):
         """Print a print job.
@@ -178,11 +183,11 @@ class PrintingExecutor(Executor):
             title_tex = os.path.join(directory, "title_page.tex")
             title_pdf = os.path.join(directory, "title_page.pdf")
             with io.open(title_tex, "wb") as f:
-                f.write(self.template_loader.load("title_page.tex")
-                        .generate(user=user, filename=filename,
-                                  timestr=timestr,
-                                  page_count=page_count,
-                                  paper_size=config.paper_size))
+                f.write(self.jinja2_env.get_template("title_page.tex")
+                        .render(user=user, filename=filename,
+                                timestr=timestr,
+                                page_count=page_count,
+                                paper_size=config.paper_size))
             cmd = ["pdflatex",
                    "-interaction",
                    "nonstopmode",
