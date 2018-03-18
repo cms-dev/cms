@@ -49,6 +49,9 @@ _CONTENT_3 = b"this is one more"
 _DIGEST_1 = bytes_digest(_CONTENT_1)
 _DIGEST_2 = bytes_digest(_CONTENT_2)
 _DIGEST_3 = bytes_digest(_CONTENT_3)
+_FILENAME_1 = "file.c"
+_FILENAME_2 = "file"
+_FILENAME_3 = "file.py"
 
 
 class TestAddSubmissionMixin(DatabaseMixin, FileSystemMixin):
@@ -57,9 +60,9 @@ class TestAddSubmissionMixin(DatabaseMixin, FileSystemMixin):
     def setUp(self):
         super(TestAddSubmissionMixin, self).setUp()
 
-        self.write_file("file.c", _CONTENT_1)
-        self.write_file("file", _CONTENT_2)
-        self.write_file("file.py", _CONTENT_3)
+        self.write_file(_FILENAME_1, _CONTENT_1)
+        self.write_file(_FILENAME_2, _CONTENT_2)
+        self.write_file(_FILENAME_3, _CONTENT_3)
 
         self.contest = self.add_contest()
         self.other_contest = self.add_contest()
@@ -113,7 +116,7 @@ class TestAddSubmissionSingleSourceWithLanguage(
     def test_success(self):
         self.assertTrue(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS,
-            {"source.%l": self.get_path("file.c")}))
+            {"source.%l": self.get_path(_FILENAME_1)}))
         self.assertSubmissionInDb(_TS, self.task, {"source.%l": _DIGEST_1})
 
     def test_fail_no_task(self):
@@ -156,7 +159,7 @@ class TestAddSubmissionSingleSourceWithLanguage(
         # an extension defining the language.
         self.assertFalse(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS,
-            {"source.%l": self.get_path("file")}))
+            {"source.%l": self.get_path(_FILENAME_2)}))
         self.assertSubmissionNotInDb(_TS)
 
     def test_fail_file_not_found(self):
@@ -170,7 +173,7 @@ class TestAddSubmissionSingleSourceWithLanguage(
         # We provide a file, but for the wrong filename.
         self.assertFalse(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS,
-            {"wrong_source.%l": self.get_path("file.c")}))
+            {"wrong_source.%l": self.get_path(_FILENAME_1)}))
         self.assertSubmissionNotInDb(_TS)
 
 
@@ -192,8 +195,8 @@ class TestAddSubmissionTwoSourcesWithLanguage(
     def test_success_many(self):
         self.assertTrue(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS, {
-                "source1.%l": self.get_path("file.c"),
-                "source2.%l": self.get_path("file.c"),
+                "source1.%l": self.get_path(_FILENAME_1),
+                "source2.%l": self.get_path(_FILENAME_1),
              }))
         self.assertSubmissionInDb(_TS, self.task, {
             "source1.%l": _DIGEST_1,
@@ -205,15 +208,23 @@ class TestAddSubmissionTwoSourcesWithLanguage(
         # the language.
         self.assertTrue(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS,
-            {"source1.%l": self.get_path("file.c")}))
+            {"source1.%l": self.get_path(_FILENAME_1)}))
         self.assertSubmissionInDb(_TS, self.task, {"source1.%l": _DIGEST_1})
+
+    def test_fail_language_only_in_one(self):
+        self.assertFalse(add_submission(
+            self.contest.id, self.user.username, self.task.name, _TS, {
+                "source1.%l": self.get_path(_FILENAME_1),
+                "source2.%l": self.get_path(_FILENAME_2),
+             }))
+        self.assertSubmissionNotInDb(_TS)
 
     def test_fail_inconsistent_language(self):
         # Language for the two files is different.
         self.assertFalse(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS, {
-                "source1.%l": self.get_path("file.c"),
-                "source2.%l": self.get_path("file.py"),
+                "source1.%l": self.get_path(_FILENAME_1),
+                "source2.%l": self.get_path(_FILENAME_3),
             }))
         self.assertSubmissionNotInDb(_TS)
 
@@ -234,7 +245,7 @@ class TestAddSubmissionOutputOnly(
     def test_success_no_language(self):
         self.assertTrue(add_submission(
             self.contest.id, self.user.username, self.task.name, _TS,
-            {"source": self.get_path("file")}))
+            {"source": self.get_path(_FILENAME_2)}))
         self.assertSubmissionInDb(_TS, self.task, {"source": _DIGEST_2})
 
     def test_success_no_source(self):
