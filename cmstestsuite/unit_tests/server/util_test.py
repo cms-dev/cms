@@ -87,6 +87,17 @@ class TestUrl(unittest.TestCase):
         self.assertEqual(url("baz", a="b", b="a"),
                          "/foo/bar/baz?a=b&b=a")
 
+    def test_escape(self):
+        url = Url("/")
+        self.assertEqual(url("foo/bar"), "/foo%2Fbar")
+        self.assertEqual(url("foo?bar"), "/foo%3Fbar")
+        self.assertEqual(url("foo&bar"), "/foo%26bar")
+        self.assertEqual(url("foo#bar"), "/foo%23bar")
+        kwargs = {"?foo": "/bar#",
+                  "f=o?o": "?b=a&r"}
+        self.assertEqual(url(**kwargs),
+                         "/?%3Ffoo=%2Fbar%23&f%3Do%3Fo=%3Fb%3Da%26r")
+
 
 if __name__ == "__main__":
     unittest.main()
