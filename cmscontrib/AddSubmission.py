@@ -65,6 +65,7 @@ def language_from_submitted_files(files):
         it is impossible to extract the language from a file when it should be.
 
     """
+    # TODO: deduplicate with the code in SubmitHandler.
     language = None
     for filename in iterkeys(files):
         this_language = filename_to_language(files[filename])
