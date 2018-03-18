@@ -137,9 +137,8 @@ def add_submission(contest_id, username, task_name, timestamp, files):
                     "Submission file %s sent by %s at %d."
                     % (file_, username, timestamp))
                 file_digests[file_] = digest
-        except Exception:
-            logger.critical("Error while storing submission's file.",
-                            exc_info=True)
+        except Exception as e:
+            logger.critical("Error while storing submission's file: %s.", e)
             return False
 
         # Create objects in the DB.
