@@ -31,7 +31,7 @@ from future.builtins import *  # noqa
 import ipaddress
 import unittest
 from datetime import timedelta
-from unittest.mock import patch
+from mock import patch
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
