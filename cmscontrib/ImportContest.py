@@ -67,13 +67,16 @@ class ContestImporter(object):
 
     """
 
-    def __init__(self, path, zero_time, import_tasks,
-                 update_contest, update_tasks, no_statements, loader_class):
+    def __init__(self, path, yes, zero_time, import_tasks,
+                 update_contest, update_tasks, no_statements,
+                 delete_stale_participations, loader_class):
+        self.yes = yes
         self.zero_time = zero_time
         self.import_tasks = import_tasks
         self.update_contest = update_contest
         self.update_tasks = update_tasks
         self.no_statements = no_statements
+        self.delete_stale_participations = delete_stale_participations
         self.file_cacher = FileCacher()
 
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
@@ -109,11 +112,16 @@ class ContestImporter(object):
                 contest = self._contest_to_db(
                     session, contest, contest_has_changed)
                 # Detach all tasks before reattaching them
-                for t in contest.tasks:
+                for t in list(contest.tasks):
                     t.contest = None
                 for tasknum, taskname in enumerate(tasks):
                     self._task_to_db(session, contest, tasknum, taskname)
-                # Import participations.
+                # Delete stale participations if asked to, then import all
+                # others.
+                if self.delete_stale_participations:
+                    self._delete_stale_participations(
+                        session, contest,
+                        set(p["username"] for p in participations))
                 for p in participations:
                     self._participation_to_db(session, contest, p)
 
@@ -137,6 +145,7 @@ class ContestImporter(object):
             changed since the last time it was imported.
 
         return (Contest): the contest in the DB.
+
         raise (ImportDataError): if the contest already exists on the DB and
             the user did not ask to update any data.
 
@@ -179,6 +188,7 @@ class ContestImporter(object):
         taskname (string): name of the task.
 
         return (Task): the task in the DB.
+
         raise (ImportDataError): in case of one of these errors:
             - if the task is not in the DB and user did not ask to import it;
             - if the loader cannot load the task;
@@ -246,6 +256,7 @@ class ContestImporter(object):
             least "username"; may contain "team", "hidden", "ip", "password".
 
         return (Participation): the participation in the DB.
+
         raise (ImportDataError): in case of one of these errors:
             - the user for this participation does not already exist in the DB;
             - the team for this participation does not already exist in the DB.
@@ -297,6 +308,34 @@ class ContestImporter(object):
         session.add(new_p)
         return new_p
 
+    def _delete_stale_participations(self, session, contest,
+                                     usernames_to_keep):
+        """Delete the stale participations.
+
+        Stale participations are those in the contest, with a username not in
+        usernames_to_keep.
+
+        session (Session): SQL session to use.
+        contest (Contest): the contest to examine.
+        usernames_to_keep ({str}): usernames of non-stale participations.
+
+        """
+        participations = [p for p in contest.participations
+                          if p.user.username not in usernames_to_keep]
+        if len(participations) > 0:
+            ans = "y"
+            if not self.yes:
+                ans = input("There are %s stale participations. "
+                            "Are you sure you want to delete them and their "
+                            "associated data, including submissions? [y/N] "
+                            % len(participations))\
+                    .strip().lower()
+            if ans in ["y", "yes"]:
+                for p in participations:
+                    logger.info("Deleting participations for user %s.",
+                                p.user.username)
+                    session.delete(p)
+
 
 def main():
     """Parse arguments and launch process."""
@@ -316,9 +355,12 @@ If updating a contest already in the DB:
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    group = parser.add_mutually_exclusive_group()
-
-    group.add_argument(
+    parser.add_argument(
+        "-y", "--yes",
+        action="store_true",
+        help="don't ask for confirmation before deleting data"
+    )
+    parser.add_argument(
         "-z", "--zero-time",
         action="store_true",
         help="set to zero contest start and stop time"
@@ -350,6 +392,12 @@ If updating a contest already in the DB:
         help="do not import / update task statements"
     )
     parser.add_argument(
+        "--delete-stale-participations",
+        action="store_true",
+        help="when updating a contest, delete the participations not in the "
+        "new contest, including their submissions and other data"
+    )
+    parser.add_argument(
         "import_directory",
         action="store", type=utf8_decoder,
         help="source directory from where import"
@@ -363,13 +411,16 @@ If updating a contest already in the DB:
         parser.error
     )
 
-    importer = ContestImporter(path=args.import_directory,
-                               zero_time=args.zero_time,
-                               import_tasks=args.import_tasks,
-                               update_contest=args.update_contest,
-                               update_tasks=args.update_tasks,
-                               no_statements=args.no_statements,
-                               loader_class=loader_class)
+    importer = ContestImporter(
+        path=args.import_directory,
+        yes=args.yes,
+        zero_time=args.zero_time,
+        import_tasks=args.import_tasks,
+        update_contest=args.update_contest,
+        update_tasks=args.update_tasks,
+        no_statements=args.no_statements,
+        delete_stale_participations=args.delete_stale_participations,
+        loader_class=loader_class)
     success = importer.do_import()
     return 0 if success is True else 1
 
