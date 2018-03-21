@@ -105,7 +105,8 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        description="Export CMS submissions to a folder.")
+        description="Export CMS submissions to a folder.\n",
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest (default: all contests)")
     parser.add_argument("-t", "--task-id", action="store", type=int,
@@ -125,9 +126,16 @@ def main():
                              " less than this (default: 0.0)",
                         default=0.0)
     parser.add_argument("--filename", action="store", type=utf8_decoder,
-                        help="the filename format to use"
-                             " (default: {id}.{name}{ext})",
-                        default="{id}.{name}{ext}")
+                        help="the filename format to use\n"
+                             "Variables:\n"
+                             "  id: submission id\n"
+                             "  file: filename without extension\n"
+                             "  ext: filename extension\n"
+                             "  time: submission timestamp\n"
+                             "  user: username\n"
+                             "  task: taskname\n"
+                             " (default: {id}.{file}{ext})",
+                        default="{id}.{file}{ext}")
     parser.add_argument("output_dir", action="store", type=utf8_decoder,
                         help="directory where to save the submissions")
 
@@ -196,14 +204,19 @@ def main():
             s_id, s_language, s_timestamp, sr_score, f_filename, f_digest, \
                 u_id, u_name, u_fname, u_lname, t_id, t_name = row
 
-            name = f_filename
-            if name.endswith(".%l"):
-                name = name[:-3]  # remove last 3 chars
+            timef = s_timestamp.strftime('%Y%m%dT%H%M%S')
+
             ext = languagemanager.get_language(s_language).source_extension \
                 if s_language else '.txt'
+            filename_base, filename_ext = os.path.splitext(
+                f_filename.replace('.%l', ext)
+            )
 
-            filename = args.filename.format(id=s_id, name=name, ext=ext,
-                                            time=s_timestamp, user=u_name,
+            # "name" is a deprecated specifier with the same meaning as "file"
+            filename = args.filename.format(id=s_id, file=filename_base,
+                                            name=filename_base,
+                                            ext=filename_ext,
+                                            time=timef, user=u_name,
                                             task=t_name)
             filename = os.path.join(args.output_dir, filename)
             if os.path.exists(filename):
