@@ -50,7 +50,7 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
     def setUp(self):
         super(TestValidateLogin, self).setUp()
         self.timestamp = make_datetime()
-        self.contest = self.add_contest()
+        self.contest = self.add_contest(allow_password_authentication=True)
         self.user = self.add_user(
             username="myuser", password=build_password("mypass"))
         self.participation = self.add_participation(
@@ -74,17 +74,12 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertIsNone(cookie)
 
     def test_successful_login(self):
-        self.contest.allow_password_authentication = True
-
         self.assertSuccess("myuser", "mypass", "127.0.0.1")
 
     def test_no_user(self):
-        self.contest.allow_password_authentication = True
-
         self.assertFailure("myotheruser", "mypass", "127.0.0.1")
 
     def test_no_participation_for_user_in_contest(self):
-        self.contest.allow_password_authentication = True
         other_contest = self.add_contest(allow_password_authentication=True)
         other_user = self.add_user(
             username="myotheruser", password=build_password("mypass"))
@@ -93,7 +88,6 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure("myotheruser", "mypass", "127.0.0.1")
 
     def test_participation_specific_password(self):
-        self.contest.allow_password_authentication = True
         self.participation.password = build_password("myotherpass")
 
         self.assertFailure("myuser", "mypass", "127.0.0.1")
@@ -105,14 +99,12 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure("myuser", "mypass", "127.0.0.1")
 
     def test_unallowed_hidden_participation(self):
-        self.contest.allow_password_authentication = True
         self.contest.block_hidden_participations = True
         self.participation.hidden = True
 
         self.assertFailure("myuser", "mypass", "127.0.0.1")
 
     def test_invalid_password_stored_in_user(self):
-        self.contest.allow_password_authentication = True
         # It's invalid, as it's not created by build_password.
         self.user.password = "mypass"
 
@@ -120,7 +112,6 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure("myuser", "mypass", "127.0.0.1")
 
     def test_invalid_password_stored_in_participation(self):
-        self.contest.allow_password_authentication = True
         # It's invalid, as it's not created by build_password.
         self.participation.password = "myotherpass"
 
@@ -128,7 +119,6 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure("myuser", "myotherpass", "127.0.0.1")
 
     def test_ip_lock(self):
-        self.contest.allow_password_authentication = True
         self.contest.ip_restriction = True
         self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
 
@@ -151,7 +141,6 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertSuccess("myuser", "mypass", "10.0.0.1")
 
     def test_deactivated_ip_lock(self):
-        self.contest.allow_password_authentication = True
         self.contest.ip_restriction = False
         self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
 
