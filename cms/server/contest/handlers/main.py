@@ -47,7 +47,7 @@ from cms import config
 from cms.db import PrintJob
 from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
-from cms.server.contest.authentication import validate_first_login
+from cms.server.contest.authentication import validate_login
 from cmscommon.datetime import make_datetime, make_timestamp
 
 from ..phase_management import actual_phase_required
@@ -95,7 +95,7 @@ class LoginHandler(ContestHandler):
                            self.request.remote_ip)
             return None
 
-        participation, cookie = validate_first_login(
+        participation, cookie = validate_login(
             self.sql_session, self.contest, self.timestamp, username, password,
             ip_address)
 

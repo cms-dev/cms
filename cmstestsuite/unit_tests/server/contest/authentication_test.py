@@ -37,8 +37,8 @@ from mock import patch
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms import config
-from cms.server.contest.authentication import validate_first_login, \
-    validate_returning_login
+from cms.server.contest.authentication import validate_login, \
+    authenticate_request
 # Prefer build_password (which defaults to a plaintext method) over
 # hash_password (which defaults to bcrypt) as it is a lot faster.
 from cmscommon.crypto import build_password, hash_password
@@ -57,7 +57,7 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
             contest=self.contest, user=self.user)
 
     def assertSuccess(self, username, password, ip_address):
-        authenticated_participation, cookie = validate_first_login(
+        authenticated_participation, cookie = validate_login(
             self.session, self.contest, self.timestamp,
             username, password, ipaddress.ip_address(ip_address))
 
@@ -66,7 +66,7 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
         self.assertIs(authenticated_participation, self.participation)
 
     def assertFailure(self, username, password, ip_address):
-        authenticated_participation, cookie = validate_first_login(
+        authenticated_participation, cookie = validate_login(
             self.session, self.contest, self.timestamp,
             username, password, ipaddress.ip_address(ip_address))
 
@@ -161,12 +161,12 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
             username="myuser", password=build_password("mypass"))
         self.participation = self.add_participation(
             contest=self.contest, user=self.user)
-        _, self.cookie = validate_first_login(
+        _, self.cookie = validate_login(
             self.session, self.contest, self.timestamp, self.user.username,
             "mypass", ipaddress.ip_address("10.0.0.1"))
 
     def attempt_authentication(self, **kwargs):
-        return validate_returning_login(
+        return authenticate_request(
             self.session, self.contest,
             kwargs.get("timestamp", self.timestamp),
             kwargs.get("cookie", self.cookie),

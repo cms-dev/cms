@@ -47,10 +47,13 @@ from cmscommon.crypto import validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
+__all__ = ["validate_login", "authenticate_request"]
+
+
 logger = logging.getLogger(__name__)
 
 
-def validate_first_login(
+def validate_login(
         sql_session, contest, timestamp, username, password, ip_address):
     """Authenticate a user logging in, with username and password.
 
@@ -137,7 +140,7 @@ def validate_first_login(
             pickle.dumps((username, password, make_timestamp(timestamp))))
 
 
-def validate_returning_login(
+def authenticate_request(
         sql_session, contest, timestamp, cookie, ip_address):
     """Authenticate a user returning to the site, with a cookie.
 
@@ -182,7 +185,7 @@ def validate_returning_login(
 
     if contest.ip_autologin:
         try:
-            participation = authenticate_by_ip_address(
+            participation = _authenticate_request_by_ip_address(
                 sql_session, contest, ip_address)
             # If the login is IP-based, the cookie should be cleared.
             if participation is not None:
@@ -192,7 +195,7 @@ def validate_returning_login(
 
     if participation is None \
             and contest.allow_password_authentication:
-        participation, cookie = authenticate_from_cookie(
+        participation, cookie = _authenticate_request_from_cookie(
             sql_session, contest, timestamp, cookie)
 
     if participation is None:
@@ -211,7 +214,7 @@ def validate_returning_login(
     return participation, cookie
 
 
-def authenticate_by_ip_address(sql_session, contest, ip_address):
+def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
     """Return the current participation based on the IP address.
 
     sql_session (Session): the SQLAlchemy database session used to
@@ -266,7 +269,7 @@ def authenticate_by_ip_address(sql_session, contest, ip_address):
     return None
 
 
-def authenticate_from_cookie(sql_session, contest, timestamp, cookie):
+def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
     """Return the current participation based on the cookie.
 
     If a participation can be extracted, the cookie is refreshed.

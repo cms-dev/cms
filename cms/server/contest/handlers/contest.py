@@ -47,7 +47,7 @@ from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest
 from cms.server import file_handler_gen
 from cms.locale import filter_language_codes
-from cms.server.contest.authentication import validate_returning_login
+from cms.server.contest.authentication import authenticate_request
 from cmscommon.datetime import get_timezone
 
 from ..phase_management import compute_actual_phase
@@ -158,7 +158,7 @@ class ContestHandler(BaseHandler):
                            self.request.remote_ip)
             return None
 
-        participation, cookie = validate_returning_login(
+        participation, cookie = authenticate_request(
             self.sql_session, self.contest, self.timestamp, cookie, ip_address)
 
         if cookie is None:
