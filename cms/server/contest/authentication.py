@@ -246,12 +246,11 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
 
     participations = participations.all()
 
-    if len(participations) == 1:
-        participation = participations[0]
+    if len(participations) == 0:
         logger.info(
-            "Successful IP authentication from IP address %s, as user %s, on "
-            "contest %s", ip_address, participation.user.username, contest.name)
-        return participation
+            "Unsuccessful IP authentication from IP address %s, on contest "
+            "%s: no user matches the IP address", ip_address, contest.name)
+        return None
 
     # Having more than participation with the same IP, is a mistake and
     # should not happen. In such case, we disallow login for that IP
@@ -263,10 +262,11 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
             ip_address, len(participations))
         raise RuntimeError("More than one participation with the same IP.")
 
+    participation = participations[0]
     logger.info(
-        "Unsuccessful IP authentication from IP address %s, on contest %s: no "
-        "user matches the IP address", ip_address, contest.name)
-    return None
+        "Successful IP authentication from IP address %s, as user %s, on "
+        "contest %s", ip_address, participation.user.username, contest.name)
+    return participation
 
 
 def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
