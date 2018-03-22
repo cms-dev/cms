@@ -146,7 +146,7 @@ def validate_returning_login(
     allowed to log in, how and with which restrictions; timestamp for
     cookie validation/creation, IP address to either do autologin or to
     check against) try to authenticate the user and return its
-    participation and the cookie to reset to help authenticate future
+    participation and the cookie to refresh to help authenticate future
     visits.
 
     There are two way a user can authenticate:
@@ -154,14 +154,14 @@ def validate_returning_login(
       address matches the remote IP address; if a match is found, the
       user is authenticated as that participation;
     - if username/password authentication is enabled, and the cookie
-      is valid, the corresponding participation is returned, and the
-      cookie is refreshed.
+      is valid, the corresponding participation is returned, together
+      with a refreshed cookie.
 
     After finding the participation, IP login and hidden users
     restrictions are checked.
 
-    In case of any error, or of a login by other sources, the cookie is
-    deleted.
+    In case of any error, or of a login by other sources, no new cookie
+    is returned and the old one, if any, should be cleared.
 
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
@@ -184,7 +184,7 @@ def validate_returning_login(
         try:
             participation = authenticate_by_ip_address(
                 sql_session, contest, ip_address)
-            # If the login is IP-based, we delete previous cookies.
+            # If the login is IP-based, the cookie should be cleared.
             if participation is not None:
                 cookie = None
         except RuntimeError:
