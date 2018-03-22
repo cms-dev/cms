@@ -156,6 +156,10 @@ def validate_login(
             pickle.dumps((username, password, make_timestamp(timestamp))))
 
 
+class AmbiguousIPAddress(Exception):
+    pass
+
+
 def authenticate_request(
         sql_session, contest, timestamp, cookie, ip_address):
     """Authenticate a user returning to the site, with a cookie.
@@ -206,7 +210,7 @@ def authenticate_request(
             # If the login is IP-based, the cookie should be cleared.
             if participation is not None:
                 cookie = None
-        except RuntimeError:
+        except AmbiguousIPAddress:
             return None, None
 
     if participation is None \
@@ -249,7 +253,7 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
     return (Participation|None): the only participation that is allowed
         to connect from the given IP address, or None if not found.
 
-    raise (RuntimeError): if there is more than one participation
+    raise (AmbiguousIPAddress): if there is more than one participation
         matching the remote IP address.
 
     """
@@ -283,7 +287,7 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
         logger.warning(
             "Ambiguous IP address %s, assigned to %d participations.",
             ip_address, len(participations))
-        raise RuntimeError("More than one participation with the same IP.")
+        raise AmbiguousIPAddress()
 
     participation = participations[0]
     logger.info(
