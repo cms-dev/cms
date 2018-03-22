@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2017 Myungwoo Chun <mc.tamaki@gmail.com>
@@ -132,9 +132,20 @@ class Batch(TaskType):
 
     def __init__(self, parameters):
         super(Batch, self).__init__(parameters)
+
+        # Data in the parameters.
         self.compilation = self.parameters[0]
         self.input_filename, self.output_filename = self.parameters[1]
         self.output_eval = self.parameters[2]
+
+        # Actual input and output are the files used to store input and
+        # where the output is checked, regardless of using redirects or not.
+        self._actual_input = self.input_filename
+        self._actual_output = self.output_filename
+        if len(self.input_filename) == 0:
+            self._actual_input = Batch.DEFAULT_INPUT_FILENAME
+        if len(self.output_filename) == 0:
+            self._actual_output = Batch.DEFAULT_OUTPUT_FILENAME
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -265,22 +276,24 @@ class Batch(TaskType):
             executable_filename, main=main)
         executables_to_get = {
             executable_filename:
-            job.executables[executable_filename].digest
+                job.executables[executable_filename].digest
         }
+        files_to_get = {
+            self._actual_input: job.input
+        }
+
+        # Check which redirect we need to perform, and in case we don't
+        # manage the output via redirect, the submission needs to be able
+        # to write on it.
+        files_allowing_write = []
         stdin_redirect = None
         stdout_redirect = None
-        files_allowing_write = []
         if len(self.input_filename) == 0:
-            self.input_filename = Batch.DEFAULT_INPUT_FILENAME
-            stdin_redirect = self.input_filename
+            stdin_redirect = self._actual_input
         if len(self.output_filename) == 0:
-            self.output_filename = Batch.DEFAULT_OUTPUT_FILENAME
-            stdout_redirect = self.output_filename
+            stdout_redirect = self._actual_output
         else:
-            files_allowing_write.append(self.output_filename)
-        files_to_get = {
-            self.input_filename: job.input
-        }
+            files_allowing_write.append(self._actual_output)
 
         # Put the required files into the sandbox
         for filename, digest in iteritems(executables_to_get):
@@ -319,10 +332,10 @@ class Batch(TaskType):
         else:
 
             # Check that the output file was created
-            if not sandbox.file_exists(self.output_filename):
+            if not sandbox.file_exists(self._actual_output):
                 outcome = 0.0
                 text = [N_("Evaluation didn't produce file %s"),
-                        self.output_filename]
+                        self._actual_output]
                 if job.get_output:
                     job.user_output = None
 
@@ -330,7 +343,7 @@ class Batch(TaskType):
                 # If asked so, put the output file into the storage.
                 if job.get_output:
                     job.user_output = sandbox.get_file_to_storage(
-                        self.output_filename,
+                        self._actual_output,
                         "Output file in job %s" % job.info,
                         trunc_len=100 * 1024)
 
@@ -375,12 +388,12 @@ class Batch(TaskType):
         # Put the reference solution and input into the checkbox.
         sandbox.create_file_from_storage(
             Batch.CORRECT_OUTPUT_FILENAME, job.output)
-        sandbox.create_file_from_storage(self.input_filename, job.input)
+        sandbox.create_file_from_storage(self._actual_input, job.input)
 
         # Put the user-produced output file into the checkbox
-        output_src = os.path.join(eval_sandbox_path, self.output_filename)
+        output_src = os.path.join(eval_sandbox_path, self._actual_output)
         output_dst = os.path.join(
-            sandbox.get_root_path(), self.output_filename)
+            sandbox.get_root_path(), self._actual_output)
         try:
             if os.path.islink(output_src):
                 raise FileNotFoundError
@@ -393,7 +406,7 @@ class Batch(TaskType):
         else:
             success = True
             outcome, text = white_diff_step(
-                sandbox, self.output_filename, Batch.CORRECT_OUTPUT_FILENAME)
+                sandbox, self._actual_output, Batch.CORRECT_OUTPUT_FILENAME)
 
         delete_sandbox(sandbox, success)
         return success, outcome, text
@@ -422,9 +435,9 @@ class Batch(TaskType):
 
         command = [
             "./%s" % Batch.CHECKER_FILENAME,
-            self.input_filename,
+            self._actual_input,
             Batch.CORRECT_OUTPUT_FILENAME,
-            self.output_filename]
+            self._actual_output]
         success, _ = evaluation_step(sandbox, [command])
         if not success:
             return False, None, []
