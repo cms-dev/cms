@@ -92,10 +92,9 @@ def delete_sandbox(sandbox, success=True):
 
 
 def is_manager_for_compilation(filename, language):
-    """Return if a manager should be copied in the compilation sandbox.
+    """Return whether a manager should be copied in the compilation sandbox.
 
-    Only return true for manager required by the language of the
-    submission.
+    Only return true for managers required by the language of the submission.
 
     filename (str): filename of the manager.
     language (Language): the programming language of the submission.
@@ -104,12 +103,12 @@ def is_manager_for_compilation(filename, language):
 
     """
     return (
-        any(filename.endswith(header)
-            for header in language.source_extensions) or
         any(filename.endswith(source)
-            for source in language.header_extensions) or
-        any(filename.endswith(obj)
-            for obj in language.object_extensions))
+            for source in language.source_extensions)
+        or any(filename.endswith(header)
+               for header in language.header_extensions)
+        or any(filename.endswith(obj)
+               for obj in language.object_extensions))
 
 
 class TaskType(with_metaclass(ABCMeta, object)):
