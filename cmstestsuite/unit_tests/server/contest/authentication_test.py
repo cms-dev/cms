@@ -125,7 +125,7 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
         self.participation.password = "myotherpass"
 
         # Mainly checks that no exception is raised.
-        self.assertFailure("myuser", "mypass", "127.0.0.1")
+        self.assertFailure("myuser", "myotherpass", "127.0.0.1")
 
     def test_ip_lock(self):
         self.contest.allow_password_authentication = True
