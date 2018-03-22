@@ -73,7 +73,7 @@ def validate_first_login(
     ip_address (IPv4Address|IPv6Address): the IP address the request
         came from.
 
-    return ((Participation|None), (bytes|None)): if the user couldn't
+    return ((Participation, bytes)|(None, None)): if the user couldn't
         be authenticated then return None, otherwise return the
         participation that they wanted to authenticate as; if a cookie
         has to be set return it as well, otherwise return None.
@@ -172,10 +172,10 @@ def validate_returning_login(
     ip_address (IPv4Address|IPv6Address): the IP address the request
         came from.
 
-    return ((Participation|None), (bytes|None)): if the user couldn't
-        be authenticated then return None, otherwise return the
-        participation that they wanted to authenticate as; if a cookie
-        has to be set return it as well, otherwise return None.
+    return ((Participation, bytes|None)|(None, None)): if the user
+        couldn't be authenticated then return None, otherwise return
+        the participation that they wanted to authenticate as; if a
+        cookie has to be set return it as well, otherwise return None.
 
     """
     participation = None
@@ -277,7 +277,7 @@ def authenticate_from_cookie(sql_session, contest, timestamp, cookie):
     cookie (bytes): the cookie the user's browser provided in the
         request.
 
-    return ((Participation|None), (bytes|None)): the participation
+    return ((Participation, bytes)|(None, None)): the participation
         extracted from the cookie and the cookie to set/refresh, or
         None in case of errors.
 
