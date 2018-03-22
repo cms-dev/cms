@@ -232,6 +232,7 @@ def authenticate_by_ip_address(sql_session, contest, ip_address):
     ip_network = ipaddress.ip_network((ip_address, ip_address.max_prefixlen))
 
     participations = sql_session.query(Participation) \
+        .options(contains_eager(Participation.user)) \
         .filter(Participation.contest == contest) \
         .filter(Participation.ip.any(ip_network))
 
