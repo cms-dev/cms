@@ -110,10 +110,10 @@ def validate_first_login(
 
     try:
         password_valid = validate_password(correct_password, password)
-    except ValueError:
+    except ValueError as e:
         # This is either a programming or a configuration error.
         logger.warning("Invalid password stored in database for user %s in "
-                       "contest %s", filtered_user, contest.name)
+                       "contest %s: %s", filtered_user, contest.name, e)
         return None, None
 
     if not password_valid:
@@ -331,10 +331,10 @@ def authenticate_from_cookie(sql_session, contest, timestamp, cookie):
 
     try:
         password_valid = validate_password(correct_password, password)
-    except ValueError:
+    except ValueError as e:
         # This is either a programming or a configuration error.
         logger.warning("Invalid password stored in database for user %s in "
-                       "contest %s", filtered_user, contest.name)
+                       "contest %s: %s", filtered_user, contest.name, e)
         return None, None
 
     if not password_valid:
