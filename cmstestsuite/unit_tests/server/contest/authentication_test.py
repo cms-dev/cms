@@ -173,6 +173,9 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
             "mypass", ipaddress.ip_address("10.0.0.1"))
 
     def attempt_authentication(self, **kwargs):
+        # The arguments need to be passed as keywords and are timestamp, cookie
+        # and ip_address. A missing argument means the default value is used
+        # instead. An argument passed as None means that None will be used.
         return authenticate_request(
             self.session, self.contest,
             kwargs.get("timestamp", self.timestamp),
@@ -180,6 +183,10 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
             ipaddress.ip_address(kwargs.get("ip_address", "10.0.0.1")))
 
     def assertSuccess(self, **kwargs):
+        # Assert that the authentication succeeds in any way (be it through IP
+        # autologin or thanks to the cookie) and return the cookie that should
+        # be set (or None, if it should be cleared/left unset).
+        # The arguments are the same as those of attempt_authentication.
         authenticated_participation, cookie = \
             self.attempt_authentication(**kwargs)
         self.assertIsNotNone(authenticated_participation)
@@ -187,15 +194,26 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         return cookie
 
     def assertSuccessAndCookieRefreshed(self, **kwargs):
+        # Assert that the authentication succeeds and that a cookie is returned
+        # as well, to be refreshed on the client. (This typically indicates
+        # that the authentication was performed through the cookie.)
+        # The arguments are the same as those of attempt_authentication.
         cookie = self.assertSuccess(**kwargs)
         self.assertIsNotNone(cookie)
         return cookie
 
     def assertSuccessAndCookieCleared(self, **kwargs):
+        # Assert that the authentication succeeds and no cookie is returned,
+        # meaning that it needs to be cleared (or left unset) on the client.
+        # (This typically indicates that the authentication occurred by IP
+        # autologin.)
+        # The arguments are the same as those of attempt_authentication.
         cookie = self.assertSuccess(**kwargs)
         self.assertIsNone(cookie)
 
     def assertFailure(self, **kwargs):
+        # Assert that the authentication fails.
+        # The arguments are the same as those of attempt_authentication.
         authenticated_participation, cookie = \
             self.attempt_authentication(**kwargs)
         self.assertIsNone(authenticated_participation)
