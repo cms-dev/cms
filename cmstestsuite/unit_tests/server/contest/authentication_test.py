@@ -59,7 +59,7 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
     def assertSuccess(self, username, password, ip_address):
         authenticated_participation, cookie = validate_first_login(
             self.session, self.contest, self.timestamp,
-            username, password, ip_address)
+            username, password, ipaddress.ip_address(ip_address))
 
         self.assertIsNotNone(authenticated_participation)
         self.assertIsNotNone(cookie)
@@ -68,7 +68,7 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
     def assertFailure(self, username, password, ip_address):
         authenticated_participation, cookie = validate_first_login(
             self.session, self.contest, self.timestamp,
-            username, password, ip_address)
+            username, password, ipaddress.ip_address(ip_address))
 
         self.assertIsNone(authenticated_participation)
         self.assertIsNone(cookie)
@@ -163,14 +163,14 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
             contest=self.contest, user=self.user)
         _, self.cookie = validate_first_login(
             self.session, self.contest, self.timestamp, self.user.username,
-            "mypass", "10.0.0.1")
+            "mypass", ipaddress.ip_address("10.0.0.1"))
 
     def attempt_authentication(self, **kwargs):
         return validate_returning_login(
             self.session, self.contest,
             kwargs.get("timestamp", self.timestamp),
             kwargs.get("cookie", self.cookie),
-            kwargs.get("ip_address", "10.0.0.1"))
+            ipaddress.ip_address(kwargs.get("ip_address", "10.0.0.1")))
 
     def assertSuccess(self, **kwargs):
         authenticated_participation, cookie = \
@@ -207,7 +207,7 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
             timestamp=self.timestamp + timedelta(seconds=8))
 
         # But not after it expires.
-        self.assertFailure(timestamp = self.timestamp + timedelta(seconds=14))
+        self.assertFailure(timestamp=self.timestamp + timedelta(seconds=14))
 
         # Unless the cookie is refreshed.
         self.assertSuccessWithCookie(
