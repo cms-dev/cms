@@ -136,6 +136,13 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure("myuser", "wrongpass", "10.0.0.1")
         self.assertFailure("myuser", "mypass", "10.0.1.1")
 
+        self.participation.ip = [ipaddress.ip_network("10.9.0.0/24"),
+                                 ipaddress.ip_network("127.0.0.1/32")]
+
+        self.assertSuccess("myuser", "mypass", "127.0.0.1")
+        self.assertFailure("myuser", "mypass", "127.0.0.0")
+        self.assertSuccess("myuser", "mypass", "10.9.0.7")
+
         # Corner cases.
         self.participation.ip = []
         self.assertFailure("myuser", "mypass", "10.0.0.1")
