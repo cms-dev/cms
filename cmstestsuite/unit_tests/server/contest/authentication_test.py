@@ -45,10 +45,10 @@ from cmscommon.crypto import build_password, hash_password
 from cmscommon.datetime import make_datetime
 
 
-class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
+class TestValidateLogin(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestValidateFirstLogin, self).setUp()
+        super(TestValidateLogin, self).setUp()
         self.timestamp = make_datetime()
         self.contest = self.add_contest()
         self.user = self.add_user(
@@ -158,10 +158,10 @@ class TestValidateFirstLogin(DatabaseMixin, unittest.TestCase):
         self.assertSuccess("myuser", "mypass", "10.0.1.1")
 
 
-class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
+class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestValidateReturningLogin, self).setUp()
+        super(TestAuthenticateRequest, self).setUp()
         self.timestamp = make_datetime()
         self.contest = self.add_contest()
         self.user = self.add_user(
