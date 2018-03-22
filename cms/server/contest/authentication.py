@@ -49,28 +49,6 @@ from cmscommon.datetime import make_datetime, make_timestamp
 logger = logging.getLogger(__name__)
 
 
-def check_ip(address, networks):
-    """Return if client IP belongs to one of the accepted networks.
-
-    address (bytes): IP address to verify.
-    networks ([ipaddress.IPv4Network|ipaddress.IPv6Network]): IP
-        networks (addresses w/ subnets) to check against.
-
-    return (bool): whether the address belongs to one of the networks.
-
-    """
-    try:
-        address = ipaddress.ip_address(str(address))
-    except ValueError:
-        return False
-
-    for network in networks:
-        if address in network:
-            return True
-
-    return False
-
-
 def validate_first_login(
         sql_session, contest, timestamp, username, password, ip_address):
     """Authenticate a user logging in, with username and password.
@@ -91,7 +69,8 @@ def validate_first_login(
     timestamp (datetime): the date and the time of the request.
     username (str): the username the user provided.
     password (str): the password the user provided.
-    ip_address (str): the IP address the request came from.
+    ip_address (IPv4Address|IPv6Address): the IP address the request
+        came from.
 
     return ((Participation|None), (bytes|None)): if the user couldn't
         be authenticated then return None, otherwise return the
@@ -141,7 +120,7 @@ def validate_first_login(
         return None, None
 
     if contest.ip_restriction and participation.ip is not None \
-            and not check_ip(ip_address, participation.ip):
+            and not any(ip_address in network for network in participation.ip):
         log_failed_attempt("unauthorized IP address")
         return None, None
 
@@ -189,7 +168,8 @@ def validate_returning_login(
     timestamp (datetime): the date and the time of the request.
     cookie (bytes): the cookie the user's browser provided in the
         request.
-    ip_address (str): the IP address the request came from.
+    ip_address (IPv4Address|IPv6Address): the IP address the request
+        came from.
 
     return ((Participation|None), (bytes|None)): if the user couldn't
         be authenticated then return None, otherwise return the
@@ -221,7 +201,7 @@ def validate_returning_login(
     # and that is not hidden if hidden users are blocked.
     ip_login_restricted = \
         contest.ip_restriction and participation.ip is not None \
-        and not check_ip(ip_address, participation.ip)
+        and not any(ip_address in network for network in participation.ip)
     hidden_user_restricted = \
         contest.block_hidden_participations and participation.hidden
     if ip_login_restricted or hidden_user_restricted:
@@ -236,7 +216,8 @@ def authenticate_by_ip_address(sql_session, contest, ip_address):
     sql_session (Session): the SQLAlchemy database session used to
         execute queries.
     contest (Contest): the contest the user is trying to access.
-    ip_address (str): the IP address the request came from.
+    ip_address (IPv4Address|IPv6Address): the IP address the request
+        came from.
 
     return (Participation|None): the only participation that is allowed
         to connect from the given IP address, or None if not found.
@@ -245,22 +226,13 @@ def authenticate_by_ip_address(sql_session, contest, ip_address):
         matching the remote IP address.
 
     """
-    try:
-        remote_ip = ipaddress.ip_address(ip_address)
-        # We encode it as a network (i.e., we assign it a /32 or
-        # /128 mask) since we're comparing it for equality with
-        # other networks.
-        remote_ip_net = ipaddress.ip_network((remote_ip,
-                                              remote_ip.max_prefixlen))
-    except ValueError:
-        # This is a programming error.
-        logger.warning("Invalid IP address received from web server: %s",
-                       ip_address)
-        return None
+    # We encode it as a network (i.e., we assign it a /32 or /128 mask)
+    # since we're comparing it for equality with other networks.
+    ip_network = ipaddress.ip_network((ip_address, ip_address.max_prefixlen))
 
     participations = sql_session.query(Participation) \
         .filter(Participation.contest == contest) \
-        .filter(Participation.ip.any(remote_ip_net))
+        .filter(Participation.ip.any(ip_network))
 
     # If hidden users are blocked we ignore them completely.
     if contest.block_hidden_participations:

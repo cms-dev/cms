@@ -37,6 +37,7 @@ from future.builtins import *  # noqa
 from six import iterkeys, itervalues
 
 import datetime
+import ipaddress
 import json
 import logging
 
@@ -87,9 +88,16 @@ class LoginHandler(ContestHandler):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
 
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
         participation, cookie = validate_first_login(
             self.sql_session, self.contest, self.timestamp, username, password,
-            self.request.remote_ip)
+            ip_address)
 
         cookie_name = self.contest.name + "_login"
         if cookie is None:

@@ -301,13 +301,6 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure(cookie=None)
         self.assertFailure(cookie="not a valid cookie")
 
-    def test_invalid_ip_address_from_web_server(self):
-        self.contest.ip_autologin = True
-        self.contest.allow_password_authentication = True
-        # If a cookie is returned it means that IP autologin doesn't succeed
-        # but that the authentication successfully falls back on the cookie.
-        self.assertSuccessWithCookie(ip_address="not a valid IP address")
-
     def test_no_user(self):
         self.session.delete(self.user)
         self.assertFailure()

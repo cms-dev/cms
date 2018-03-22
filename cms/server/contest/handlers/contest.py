@@ -38,6 +38,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
+import ipaddress
 import logging
 
 import tornado.web
@@ -150,9 +151,15 @@ class ContestHandler(BaseHandler):
         cookie_name = self.contest.name + "_login"
         cookie = self.get_secure_cookie(cookie_name)
 
+        try:
+            ip_address = ipaddress.ip_address(self.request.remote_ip)
+        except ValueError:
+            logger.warning("Invalid IP address provided by Tornado: %s",
+                           self.request.remote_ip)
+            return None
+
         participation, cookie = validate_returning_login(
-            self.sql_session, self.contest, self.timestamp, cookie,
-            self.request.remote_ip)
+            self.sql_session, self.contest, self.timestamp, cookie, ip_address)
 
         if cookie is None:
             self.clear_cookie(cookie_name)
