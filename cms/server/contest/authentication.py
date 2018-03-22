@@ -201,14 +201,21 @@ def authenticate_request(
     if participation is None:
         return None, None
 
-    # Check if user is using the right IP (or is on the right subnet),
-    # and that is not hidden if hidden users are blocked.
-    ip_login_restricted = \
-        contest.ip_restriction and participation.ip is not None \
-        and not any(ip_address in network for network in participation.ip)
-    hidden_user_restricted = \
-        contest.block_hidden_participations and participation.hidden
-    if ip_login_restricted or hidden_user_restricted:
+    # Check if user is using the right IP (or is on the right subnet).
+    if contest.ip_restriction and participation.ip is not None \
+            and not any(ip_address in network for network in participation.ip):
+        logger.info(
+            "Unsuccessful authentication from IP address %s, on contest %s, "
+            "as %s, at %s: unauthorized IP address",
+            ip_address, contest.name, participation.user.username, timestamp)
+        return None, None
+
+    # Check that the user is not hidden if hidden users are blocked.
+    if contest.block_hidden_participations and participation.hidden:
+        logger.info(
+            "Unsuccessful authentication from IP address %s, on contest %s, "
+            "as %s, at %s: participation is hidden and unauthorized",
+            ip_address, contest.name, participation.user.username, timestamp)
         return None, None
 
     return participation, cookie
