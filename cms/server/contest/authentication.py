@@ -53,6 +53,36 @@ __all__ = ["validate_login", "authenticate_request"]
 logger = logging.getLogger(__name__)
 
 
+def safe_validate_password(participation, password):
+    """Check that the password is correct for the authentication.
+
+    Validate the given password against the participation (using either
+    the global or the contest-specific password that is stored in the
+    database), and guard against a misconfiguration.
+
+    participation (Participation): a participation.
+    password (str): a password provided by someone trying to log in
+        claiming to be the given participation.
+
+    return (bool): whether the password matches the expected one.
+    """
+    if participation.password is None:
+        correct_password = participation.user.password
+    else:
+        correct_password = participation.password
+
+    try:
+        password_valid = validate_password(correct_password, password)
+    except ValueError as e:
+        # This is either a programming or a configuration error.
+        logger.warning(
+            "Invalid password stored in database for user %s in contest %s: "
+            "%s", participation.user.username, participation.contest.name, e)
+        return False
+
+    return password_valid
+
+
 def validate_login(
         sql_session, contest, timestamp, username, password, ip_address):
     """Authenticate a user logging in, with username and password.
@@ -104,22 +134,7 @@ def validate_login(
         log_failed_attempt("user not registered to contest")
         return None, None
 
-    # If a contest-specific password is defined, use that. If it's
-    # not, use the user's main password.
-    if participation.password is None:
-        correct_password = participation.user.password
-    else:
-        correct_password = participation.password
-
-    try:
-        password_valid = validate_password(correct_password, password)
-    except ValueError as e:
-        # This is either a programming or a configuration error.
-        logger.warning("Invalid password stored in database for user %s in "
-                       "contest %s: %s", filtered_user, contest.name, e)
-        return None, None
-
-    if not password_valid:
+    if not safe_validate_password(participation, password):
         log_failed_attempt("wrong password")
         return None, None
 
@@ -333,22 +348,7 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
         log_failed_attempt("user not registered to contest")
         return None, None
 
-    # Check that the password is correct (if a contest-specific
-    # password is defined, use that instead of the user password).
-    if participation.password is None:
-        correct_password = participation.user.password
-    else:
-        correct_password = participation.password
-
-    try:
-        password_valid = validate_password(correct_password, password)
-    except ValueError as e:
-        # This is either a programming or a configuration error.
-        logger.warning("Invalid password stored in database for user %s in "
-                       "contest %s: %s", filtered_user, contest.name, e)
-        return None, None
-
-    if not password_valid:
+    if not safe_validate_password(participation, password):
         log_failed_attempt("wrong password")
         return None, None
 
