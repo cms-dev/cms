@@ -292,6 +292,7 @@ class Batch(TaskType):
             stdin_redirect = self._actual_input
         if len(self.output_filename) == 0:
             stdout_redirect = self._actual_output
+        else:
             files_allowing_write.append(self._actual_output)
 
         # Put the required files into the sandbox
