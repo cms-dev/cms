@@ -581,6 +581,14 @@ class EvaluationService(TriggeredService):
                 logger.warning(
                     "Integrity error while inserting worker result.",
                     exc_info=True)
+            except Exception:
+                # Defend against any exception. A poisonous results that fails
+                # here is attempted again without limits, thus can enter in
+                # all batches to write. Without the catch-all, it will prevent
+                # the whole batch to be written over and over. See issue #888.
+                logger.error(
+                    "Unexpected exception while inserting worker result.",
+                    exc_info=True)
 
     def write_results_one_row(self, session, object_result, operation, result):
         """Write to the DB a single result.
