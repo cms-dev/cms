@@ -65,6 +65,7 @@ def safe_validate_password(participation, password):
         claiming to be the given participation.
 
     return (bool): whether the password matches the expected one.
+
     """
     if participation.password is None:
         correct_password = participation.user.password
