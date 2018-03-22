@@ -167,8 +167,8 @@ def validate_returning_login(
         execute queries.
     contest (Contest): the contest the user is trying to access.
     timestamp (datetime): the date and the time of the request.
-    cookie (bytes): the cookie the user's browser provided in the
-        request.
+    cookie (bytes|None): the cookie the user's browser provided in the
+        request (if any).
     ip_address (IPv4Address|IPv6Address): the IP address the request
         came from.
 
@@ -275,8 +275,8 @@ def authenticate_from_cookie(sql_session, contest, timestamp, cookie):
         execute queries.
     contest (Contest): the contest the user is trying to access.
     timestamp (datetime): the date and the time of the request.
-    cookie (bytes): the cookie the user's browser provided in the
-        request.
+    cookie (bytes|None): the cookie the user's browser provided in the
+        request (if any).
 
     return ((Participation, bytes)|(None, None)): the participation
         extracted from the cookie and the cookie to set/refresh, or
