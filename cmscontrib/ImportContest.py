@@ -116,11 +116,12 @@ class ContestImporter(object):
                     t.contest = None
                 for tasknum, taskname in enumerate(tasks):
                     self._task_to_db(session, contest, tasknum, taskname)
-                # Import participations.
+                # Delete stale participations if asked to, then import all
+                # others.
                 if self.delete_stale_participations:
                     self._delete_stale_participations(
                         session, contest,
-                        [p["username"] for p in participations])
+                        set(p["username"] for p in participations))
                 for p in participations:
                     self._participation_to_db(session, contest, p)
 
@@ -309,21 +310,19 @@ class ContestImporter(object):
 
     def _delete_stale_participations(self, session, contest,
                                      usernames_to_keep):
-        """Return the stale participations.
+        """Delete the stale participations.
 
         Stale participations are those in the contest, with a username not in
         usernames_to_keep.
 
         session (Session): SQL session to use.
         contest (Contest): the contest to examine.
-        usernames_to_keep ([str]): usernames of non-stale participations.
-
-        return ([Participation]): list of stale participations.
+        usernames_to_keep ({str}): usernames of non-stale participations.
 
         """
         participations = [p for p in contest.participations
                           if p.user.username not in usernames_to_keep]
-        if participations != []:
+        if len(participations) > 0:
             ans = "y"
             if not self.yes:
                 ans = input("There are %s stale participations. "

@@ -316,7 +316,7 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
 
     def test_delete_stale_participations(self):
         # Update the existing contest, task not updated, we also ask to
-        # delete participations that we do not pass any.
+        # delete participations that we do not pass.
 
         # Add a new participation with some submissions
         other_participation = self.add_participation(contest=self.contest)
