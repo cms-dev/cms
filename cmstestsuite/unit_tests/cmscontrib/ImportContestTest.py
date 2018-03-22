@@ -32,7 +32,7 @@ import unittest
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
-from cms.db import Contest, SessionGen, Submission
+from cms.db import Contest, SessionGen, Submission, User
 
 from cmscontrib.loaders.base_loader import ContestLoader, TaskLoader
 from cmscontrib.ImportContest import ContestImporter
@@ -121,10 +121,12 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
     @staticmethod
     def do_import(contest, tasks, participations,
                   contest_has_changed=False, update_contest=False,
-                  import_tasks=False, update_tasks=False):
+                  import_tasks=False, update_tasks=False,
+                  delete_stale_participations=False):
         """Create an importer and call do_import in a convenient way"""
         return ContestImporter(
-            "path", False, import_tasks, update_contest, update_tasks, False,
+            "path", True, False, import_tasks, update_contest, update_tasks,
+            False, delete_stale_participations,
             fake_loader_factory(contest, contest_has_changed,
                                 tasks, participations)).do_import()
 
@@ -311,6 +313,39 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
 
         self.assertFalse(ret)
         self.assertSubmissionCount(1)
+
+    def test_delete_stale_participations(self):
+        # Update the existing contest, task not updated, we also ask to
+        # delete participations that we do not pass.
+
+        # Add a new participation with some submissions
+        other_participation = self.add_participation(contest=self.contest)
+        self.add_submission(self.task, other_participation)
+        self.add_submission(self.task, other_participation)
+        self.add_submission(self.task, other_participation)
+        self.session.commit()
+
+        # Update the contest, deleting the original participation.
+        description = "new_desc"
+        contest = self.get_contest(name=self.name, description=description)
+        task_title = "new_task_title"
+        task = self.get_task(name=self.task_name, title=task_title,
+                             contest=contest)
+        ret = self.do_import(contest, [(task, True)],
+                             [other_participation.user.username],
+                             contest_has_changed=True, update_contest=True,
+                             import_tasks=False, update_tasks=False,
+                             delete_stale_participations=True)
+
+        self.assertTrue(ret)
+        self.assertContestInDb(self.name, description,
+                               [(self.task_name, self.task_title)],
+                               [(other_participation.user.username,
+                                 other_participation.user.last_name)])
+        self.assertSubmissionCount(3)
+        # Even if the original participation has been deleted, the user should
+        # remain.
+        self.assertEqual(len(self.session.query(User).all()), 2)
 
     def test_update_contest_same_participations(self):
         # Update the existing contest, task not updated, participations passed.
