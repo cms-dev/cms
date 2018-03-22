@@ -186,12 +186,12 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         self.assertIs(authenticated_participation, self.participation)
         return cookie
 
-    def assertSuccessWithCookie(self, **kwargs):
+    def assertSuccessAndCookieRefreshed(self, **kwargs):
         cookie = self.assertSuccess(**kwargs)
         self.assertIsNotNone(cookie)
         return cookie
 
-    def assertSuccessWithoutCookie(self, **kwargs):
+    def assertSuccessAndCookieCleared(self, **kwargs):
         cookie = self.assertSuccess(**kwargs)
         self.assertIsNone(cookie)
 
@@ -207,17 +207,17 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         self.contest.allow_password_authentication = True
 
         # The cookie allows to authenticate.
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
         # Until the duration expires.
-        new_cookie = self.assertSuccessWithCookie(
+        new_cookie = self.assertSuccessAndCookieRefreshed(
             timestamp=self.timestamp + timedelta(seconds=8))
 
         # But not after it expires.
         self.assertFailure(timestamp=self.timestamp + timedelta(seconds=14))
 
         # Unless the cookie is refreshed.
-        self.assertSuccessWithCookie(
+        self.assertSuccessAndCookieRefreshed(
             timestamp=self.timestamp + timedelta(seconds=14),
             cookie=new_cookie)
 
@@ -231,10 +231,10 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         # The cookie works with all methods as it holds the plaintext password.
         self.contest.allow_password_authentication = True
         self.user.password = hash_password("mypass", method="bcrypt")
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
         self.user.password = hash_password("mypass", method="plaintext")
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
         # Cookies contain the password, which is validated every time.
         self.user.password = build_password("newpass")
@@ -242,7 +242,7 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
 
         # Contest-specific passwords take precedence over global ones.
         self.participation.password = build_password("mypass")
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
         # And they do so in the negative case too.
         self.user.password = build_password("mypass")
@@ -254,7 +254,7 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         self.contest.allow_password_authentication = False
 
         self.participation.ip = [ipaddress.ip_network("10.0.0.1/32")]
-        self.assertSuccessWithoutCookie()
+        self.assertSuccessAndCookieCleared()
 
         self.assertFailure(ip_address="10.1.0.1")
 
@@ -279,14 +279,14 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         # But if IP autologin is disabled altogether, ambiguous IP addresses
         # are disregarded and cookie-based authentication kicks in.
         self.contest.ip_autologin = False
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
         # Ambiguous IP addresses are allowed if only one of them is non-hidden
         # (and hidden users are barred from logging in).
         self.contest.ip_autologin = True
         self.contest.block_hidden_participations = True
         other_participation.hidden = True
-        self.assertSuccessWithoutCookie()
+        self.assertSuccessAndCookieCleared()
 
         # But not if hidden users aren't blocked.
         self.contest.block_hidden_participations = False
@@ -330,12 +330,12 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         self.participation.ip = [ipaddress.ip_network("10.0.0.0/24"),
                                  ipaddress.ip_network("127.0.0.1/32")]
 
-        self.assertSuccessWithoutCookie(ip_address="127.0.0.1")
-        self.assertSuccessWithCookie(ip_address="10.0.0.1")
+        self.assertSuccessAndCookieCleared(ip_address="127.0.0.1")
+        self.assertSuccessAndCookieRefreshed(ip_address="10.0.0.1")
         self.assertFailure(ip_address="10.1.0.1")
 
         self.contest.ip_restriction = False
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
         # Corner cases.
         self.contest.ip_restriction = True
@@ -343,7 +343,7 @@ class TestValidateReturningLogin(DatabaseMixin, unittest.TestCase):
         self.assertFailure()
 
         self.participation.ip = None
-        self.assertSuccessWithCookie()
+        self.assertSuccessAndCookieRefreshed()
 
 
 if __name__ == "__main__":
