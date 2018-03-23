@@ -36,7 +36,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, itervalues
 
-import datetime
 import ipaddress
 import json
 import logging
@@ -48,6 +47,7 @@ from cms.db import PrintJob
 from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
+from cms.server.contest.communication import get_communications
 from cmscommon.datetime import make_datetime, make_timestamp
 
 from ..phase_management import actual_phase_required
@@ -152,52 +152,14 @@ class NotificationsHandler(ContestHandler):
     @tornado.web.authenticated
     @multi_contest
     def get(self):
-        if not self.current_user:
-            raise tornado.web.HTTPError(403)
-
         participation = self.current_user
 
-        res = []
         last_notification = self.get_argument("last_notification", None)
-        last_notification = make_datetime(float(last_notification)) \
-            if last_notification is not None else datetime.datetime.min
+        if last_notification is not None:
+            last_notification = make_datetime(float(last_notification))
 
-        # Announcements
-        for announcement in self.contest.announcements:
-            if announcement.timestamp > last_notification \
-                    and announcement.timestamp < self.timestamp:
-                res.append({"type": "announcement",
-                            "timestamp":
-                            make_timestamp(announcement.timestamp),
-                            "subject": announcement.subject,
-                            "text": announcement.text})
-
-        # Private messages
-        for message in participation.messages:
-            if message.timestamp > last_notification \
-                    and message.timestamp < self.timestamp:
-                res.append({"type": "message",
-                            "timestamp": make_timestamp(message.timestamp),
-                            "subject": message.subject,
-                            "text": message.text})
-
-        # Answers to questions
-        for question in participation.questions:
-            if question.reply_timestamp is not None \
-                    and question.reply_timestamp > last_notification \
-                    and question.reply_timestamp < self.timestamp:
-                subject = question.reply_subject
-                text = question.reply_text
-                if question.reply_subject is None:
-                    subject = question.reply_text
-                    text = ""
-                elif question.reply_text is None:
-                    text = ""
-                res.append({"type": "question",
-                            "timestamp":
-                            make_timestamp(question.reply_timestamp),
-                            "subject": subject,
-                            "text": text})
+        res = get_communications(self.sql_session, participation,
+                                 self.timestamp, after=last_notification)
 
         # Simple notifications
         notifications = self.service.notifications

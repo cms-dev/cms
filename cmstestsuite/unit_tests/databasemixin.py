@@ -57,10 +57,10 @@ import cms.db
 from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
-from cms.db import Base, Contest, Dataset, Evaluation, Executable, File, \
-    Participation, Session, Statement, Submission, SubmissionFormatElement, \
-    SubmissionResult, Task, Team, Testcase, User, UserTest, UserTestResult, \
-    drop_db, init_db
+from cms.db import Announcement, Base, Contest, Dataset, Evaluation, \
+    Executable, File, Message, Participation, Question, Session, Statement, \
+    Submission, SubmissionFormatElement, SubmissionResult, Task, Team, \
+    Testcase, User, UserTest, UserTestResult, drop_db, init_db
 from cms.db.filecacher import DBBackend
 
 
@@ -128,6 +128,27 @@ class DatabaseMixin(object):
         return contest
 
     @staticmethod
+    def get_announcement(contest=None, **kwargs):
+        """Create an announcement"""
+        contest = contest \
+            if contest is not None else DatabaseMixin.get_contest()
+        args = {
+            "contest": contest,
+            "subject": unique_unicode_id(),
+            "text": unique_unicode_id(),
+            "timestamp": (contest.start + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        announcement = Announcement(**args)
+        return announcement
+
+    def add_announcement(self, **kwargs):
+        """Create an announcement and add it to the session"""
+        announcement = self.get_announcement(**kwargs)
+        self.session.add(announcement)
+        return announcement
+
+    @staticmethod
     def get_user(**kwargs):
         """Create a user"""
         args = {
@@ -165,6 +186,50 @@ class DatabaseMixin(object):
         participation = self.get_participation(**kwargs)
         self.session.add(participation)
         return participation
+
+    @staticmethod
+    def get_message(participation=None, **kwargs):
+        """Create a message."""
+        participation = participation \
+            if participation is not None else DatabaseMixin.get_participation()
+        args = {
+            "participation": participation,
+            "subject": unique_unicode_id(),
+            "text": unique_unicode_id(),
+            "timestamp": (participation.contest.start
+                          + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        message = Message(**args)
+        return message
+
+    def add_message(self, **kwargs):
+        """Create a message and add it to the session"""
+        message = self.get_message(**kwargs)
+        self.session.add(message)
+        return message
+
+    @staticmethod
+    def get_question(participation=None, **kwargs):
+        """Create a question."""
+        participation = participation \
+            if participation is not None else DatabaseMixin.get_participation()
+        args = {
+            "participation": participation,
+            "subject": unique_unicode_id(),
+            "text": unique_unicode_id(),
+            "question_timestamp": (participation.contest.start
+                                   + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        question = Question(**args)
+        return question
+
+    def add_question(self, **kwargs):
+        """Create a question and add it to the session"""
+        question = self.get_question(**kwargs)
+        self.session.add(question)
+        return question
 
     @staticmethod
     def get_task(**kwargs):

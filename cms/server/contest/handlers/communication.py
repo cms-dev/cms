@@ -39,8 +39,9 @@ import logging
 
 import tornado.web
 
-from cms.db import Question
 from cms.server import multi_contest
+from cms.server.contest.communication import accept_question, \
+    UnacceptableQuestion, QuestionsNotAllowed
 
 from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
@@ -66,46 +67,23 @@ class QuestionHandler(ContestHandler):
     @tornado.web.authenticated
     @multi_contest
     def post(self):
-        participation = self.current_user
-
-        # User can post only if we want.
-        if not self.contest.allow_questions:
-            raise tornado.web.HTTPError(404)
-
-        fallback_page = self.contest_url("communication")
-
-        subject_length = len(self.get_argument("question_subject", ""))
-        text_length = len(self.get_argument("question_text", ""))
-        if subject_length > 50 or text_length > 2000:
-            logger.warning("Long question (%d, %d) dropped for user %s.",
-                           subject_length, text_length,
-                           self.current_user.user.username)
-            self.service.add_notification(
-                self.current_user.user.username,
-                self.timestamp,
-                self._("Question too big!"),
-                self._("You have reached the question length limit."),
-                NOTIFICATION_ERROR)
-            self.redirect(fallback_page)
-            return
-
-        question = Question(self.timestamp,
+        try:
+            accept_question(self.sql_session, self.current_user, self.timestamp,
                             self.get_argument("question_subject", ""),
-                            self.get_argument("question_text", ""),
-                            participation=participation)
-        self.sql_session.add(question)
-        self.sql_session.commit()
+                            self.get_argument("question_text", ""))
+            self.sql_session.commit()
+        except QuestionsNotAllowed:
+            raise tornado.web.HTTPError(404)
+        except UnacceptableQuestion as e:
+            self.service.add_notification(
+                self.current_user.user.username, self.timestamp,
+                self._(e.subject), self._(e.text), NOTIFICATION_ERROR)
+        else:
+            self.service.add_notification(
+                self.current_user.user.username, self.timestamp,
+                self._("Question received"),
+                self._("Your question has been received, you will be notified "
+                       "when it is answered."),
+                NOTIFICATION_SUCCESS)
 
-        logger.info(
-            "Question submitted by user %s.", participation.user.username)
-
-        # Add "All ok" notification.
-        self.service.add_notification(
-            participation.user.username,
-            self.timestamp,
-            self._("Question received"),
-            self._("Your question has been received, you will be "
-                   "notified when it is answered."),
-            NOTIFICATION_SUCCESS)
-
-        self.redirect(fallback_page)
+        self.redirect(self.contest_url("communication"))

@@ -303,6 +303,9 @@ class Question(Base):
     """
     __tablename__ = 'questions'
 
+    MAX_SUBJECT_LENGTH = 50
+    MAX_TEXT_LENGTH = 2000
+
     # Auto increment primary key.
     id = Column(
         Integer,
