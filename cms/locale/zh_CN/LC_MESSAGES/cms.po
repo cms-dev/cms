@@ -916,7 +916,7 @@ msgstr "提交解答"
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
-msgstr "您可以再上传%(submissions_left)个解答"
+msgstr "您可以再上传%(submissions_left)s个解答"
 
 msgid "submission.zip"
 msgstr "submission.zip"
