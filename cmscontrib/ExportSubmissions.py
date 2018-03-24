@@ -206,6 +206,9 @@ def main():
 
             timef = s_timestamp.strftime('%Y%m%dT%H%M%S')
 
+            name = f_filename
+            if name.endswith(".%l"):
+                name = name[:-3]  # remove last 3 chars
             ext = languagemanager.get_language(s_language).source_extension \
                 if s_language else '.txt'
             filename_base, filename_ext = os.path.splitext(
@@ -213,6 +216,7 @@ def main():
             )
 
             filename = args.filename.format(id=s_id, file=filename_base,
+                                            name=name,
                                             ext=filename_ext,
                                             time=timef, user=u_name,
                                             task=t_name)
