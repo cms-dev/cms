@@ -1038,7 +1038,7 @@ class IsolateSandbox(SandboxBase):
         if self.box_id is not None:
             res += ["--box-id=%d" % self.box_id]
         if self.cgroup:
-            res += ["--cg"]
+            res += ["--cg", "--cg-timing"]
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
         for in_name, out_name, options in self.dirs:
