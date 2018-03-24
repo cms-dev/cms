@@ -204,7 +204,7 @@ def main():
             s_id, s_language, s_timestamp, sr_score, f_filename, f_digest, \
                 u_id, u_name, u_fname, u_lname, t_id, t_name = row
 
-            timef = s_timestamp.strftime('%Y%m%d%H%M%S')
+            timef = s_timestamp.strftime('%Y%m%dT%H%M%S')
 
             ext = languagemanager.get_language(s_language).source_extension \
                 if s_language else '.txt'
