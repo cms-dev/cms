@@ -105,7 +105,8 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        description="Export CMS submissions to a folder.\n", formatter_class=argparse.RawTextHelpFormatter)
+        description="Export CMS submissions to a folder.\n",
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest (default: all contests)")
     parser.add_argument("-t", "--task-id", action="store", type=int,
@@ -207,9 +208,12 @@ def main():
 
             ext = languagemanager.get_language(s_language).source_extension \
                 if s_language else '.txt'
-            filename_base, filename_ext = os.path.splitext(f_filename.replace('.%l', ext))
+            filename_base, filename_ext = os.path.splitext(
+                f_filename.replace('.%l', ext)
+            )
 
-            filename = args.filename.format(id=s_id, file=filename_base, ext=filename_ext,
+            filename = args.filename.format(id=s_id, file=filename_base,
+                                            ext=filename_ext,
                                             time=timef, user=u_name,
                                             task=t_name)
             filename = os.path.join(args.output_dir, filename)
