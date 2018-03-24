@@ -1061,7 +1061,10 @@ class IsolateSandbox(SandboxBase):
         if self.stack_space is not None:
             res += ["--stack=%d" % self.stack_space]
         if self.address_space is not None:
-            res += ["--cg-mem=%d" % self.address_space]
+            if self.cgroup:
+                res += ["--cg-mem=%d" % self.address_space]
+            else:
+                res += ["--mem=%d" % self.address_space]
         if self.stdout_file is not None:
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
