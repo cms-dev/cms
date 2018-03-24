@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -98,15 +98,21 @@ def custom_psycopg2_connection(**kwargs):
     """
     database_url = make_url(config.database)
     assert database_url.get_dialect().driver == "psycopg2"
-    database_url.query.update(kwargs)
-    if database_url.port is None:
-        database_url.port = 5432
+    # For Unix-domain socket we don't have a port nor a host and that's fine.
+    if database_url.port is None and database_url.host is not None:
         logger.warning("Using default port 5432 for Postgres DB")
+        database_url.port = 5432
 
-    return psycopg2.connect(
-        host=database_url.host,
-        port=database_url.port,
-        user=database_url.username,
-        password=database_url.password,
-        database=database_url.database,
-        **database_url.query)
+    # Unix-domain socket have the host in a query argument, so we build the
+    # arguments dict first to avoid duplicate arguments when calling connect().
+    args = {
+        "host": database_url.host,
+        "port": database_url.port,
+        "user": database_url.username,
+        "password": database_url.password,
+        "database": database_url.database,
+    }
+    args.update(database_url.query)
+    args.update(kwargs)
+
+    return psycopg2.connect(**args)
