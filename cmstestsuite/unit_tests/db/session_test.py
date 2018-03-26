@@ -46,7 +46,8 @@ class TestCustomPsycopg2Connect(unittest.TestCase):
     def test_network(self, connect):
         # Simple TCP connection.
         with _patch_db("postgresql+psycopg2://usrn:pwd@hooost:5433/dbname"):
-            custom_psycopg2_connection()
+            r = custom_psycopg2_connection()
+            self.assertIs(r, connect.return_value)
             connect.assert_called_once_with(
                 host="hooost",
                 port=5433,
@@ -57,7 +58,8 @@ class TestCustomPsycopg2Connect(unittest.TestCase):
     def test_network_missing_port(self, connect):
         # If port is missing, the default 5432 is used.
         with _patch_db("postgresql+psycopg2://usrn:pwd@hooost/dbname"):
-            custom_psycopg2_connection()
+            r = custom_psycopg2_connection()
+            self.assertIs(r, connect.return_value)
             connect.assert_called_once_with(
                 host="hooost",
                 port=5432,
@@ -67,7 +69,8 @@ class TestCustomPsycopg2Connect(unittest.TestCase):
 
     def test_unix_domain_socket(self, connect):
         with _patch_db("postgresql+psycopg2://usrn:pwd@/dbname"):
-            custom_psycopg2_connection()
+            r = custom_psycopg2_connection()
+            self.assertIs(r, connect.return_value)
             connect.assert_called_once_with(
                 host=None,
                 port=None,
@@ -78,7 +81,8 @@ class TestCustomPsycopg2Connect(unittest.TestCase):
     def test_unix_domain_socket_custom_dir(self, connect):
         with _patch_db("postgresql+psycopg2://"
                        "usrn:pwd@/dbname?host=/var/postgresql"):
-            custom_psycopg2_connection()
+            r = custom_psycopg2_connection()
+            self.assertIs(r, connect.return_value)
             connect.assert_called_once_with(
                 host="/var/postgresql",
                 port=None,
@@ -88,7 +92,8 @@ class TestCustomPsycopg2Connect(unittest.TestCase):
 
     def test_missing_password(self, connect):
         with _patch_db("postgresql+psycopg2://u@h:1/db"):
-            custom_psycopg2_connection()
+            r = custom_psycopg2_connection()
+            self.assertIs(r, connect.return_value)
             connect.assert_called_once_with(
                 host="h",
                 port=1,
