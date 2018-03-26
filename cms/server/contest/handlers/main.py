@@ -89,7 +89,9 @@ class LoginHandler(ContestHandler):
         password = self.get_argument("password", "")
 
         try:
-            ip_address = ipaddress.ip_address(self.request.remote_ip)
+            # In py2 Tornado gives us the IP address as a native binary
+            # string, whereas ipaddress wants text (unicode) strings.
+            ip_address = ipaddress.ip_address(str(self.request.remote_ip))
         except ValueError:
             logger.warning("Invalid IP address provided by Tornado: %s",
                            self.request.remote_ip)
