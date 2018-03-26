@@ -443,11 +443,9 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           </tr>
         </thead>
         <tbody>
-          {% set idx = 0 %}
           {% for codename, testcase in dataset.testcases|dictsort(by="key") %}
-            {% set idx = idx + 1 %}
           <tr>
-            <td style="font-weight:bold;">{{ idx }}</td>
+            <td style="font-weight:bold;">{{ loop.index }}</td>
             <td>{{ codename }}</td>
             <td style="font-weight:bold;">
               <input type="checkbox" name="testcase_{{ testcase.id }}_public" {% if testcase.public %}checked{% endif %} />
