@@ -177,7 +177,10 @@ def instrument_generic_toolbox(env):
 @environmentfunction
 def safe_get_task_type(env, *args, **kwargs):
     try:
-        return get_task_type(*args, **kwargs)
+        if "dataset" in kwargs:
+            return kwargs["dataset"].task_type_object
+        else:
+            get_task_type(*args, **kwargs)
     # The task type's constructor is called, which may raise any
     # arbitrary exception, hence we stay as general al possible.
     except Exception as err:
@@ -187,7 +190,10 @@ def safe_get_task_type(env, *args, **kwargs):
 @environmentfunction
 def safe_get_score_type(env, *args, **kwargs):
     try:
-        return get_score_type(*args, **kwargs)
+        if "dataset" in kwargs:
+            return kwargs["dataset"].score_type_object
+        else:
+            get_score_type(*args, **kwargs)
     # The score type's constructor is called, which may raise any
     # arbitrary exception, hence we stay as general al possible.
     except Exception as err:
