@@ -139,13 +139,13 @@ class StoreHandler(object):
             raise NotFound()
 
         response.status_code = 200
-        response.headers[b'Timestamp'] = b"%0.6f" % time.time()
+        response.headers['Timestamp'] = "%0.6f" % time.time()
         response.mimetype = "application/json"
         response.data = json.dumps(self.store.retrieve(key))
 
     def get_list(self, request, response):
         response.status_code = 200
-        response.headers[b'Timestamp'] = b"%0.6f" % time.time()
+        response.headers['Timestamp'] = "%0.6f" % time.time()
         response.mimetype = "application/json"
         response.data = json.dumps(self.store.retrieve_list())
 
@@ -322,7 +322,7 @@ def ScoreHandler(request, response):
                 result.setdefault(u_id, dict())[t_id] = score.get_score()
 
     response.status_code = 200
-    response.headers[b'Timestamp'] = b"%0.6f" % time.time()
+    response.headers['Timestamp'] = "%0.6f" % time.time()
     response.mimetype = "application/json"
     response.data = json.dumps(result)
 
