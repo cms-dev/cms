@@ -65,11 +65,14 @@ class Entity(object):
         """
         pass
 
-    def consistent(self):
+    def consistent(self, stores):
         """Check if the entity is consistent.
 
         Verify that all references to other entities are correct (i.e.
         those entities actually exist).
+
+        stores ({str: Store}): a dict of Stores that can be used to
+            validate references to other entities.
 
         return (bool): the result of this check
 

@@ -190,7 +190,3 @@ class Config(object):
                 return False
             setattr(self, key, value)
         return True
-
-
-# Create an instance of the Config class.
-config = Config()

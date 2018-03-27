@@ -25,8 +25,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from cmsranking.Entity import Entity, InvalidData
-from cmsranking.Store import Store
-from cmsranking.Submission import store as submission_store
 
 
 class User(Entity):
@@ -80,9 +78,6 @@ class User(Entity):
         del result['key']
         return result
 
-    def consistent(self):
-        from cmsranking.Team import store as team_store
-        return self.team is None or self.team in team_store
-
-
-store = Store(User, 'users', [submission_store])
+    def consistent(self, stores):
+        return self.team is None or "team" not in stores \
+               or self.team in stores["team"]

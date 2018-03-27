@@ -25,8 +25,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from cmsranking.Entity import Entity, InvalidData
-from cmsranking.Store import Store
-from cmsranking.Submission import store as submission_store
 
 
 class Task(Entity):
@@ -110,9 +108,5 @@ class Task(Entity):
         del result['key']
         return result
 
-    def consistent(self):
-        from cmsranking.Contest import store as contest_store
-        return self.contest in contest_store
-
-
-store = Store(Task, 'tasks', [submission_store])
+    def consistent(self, stores):
+        return "contest" not in stores or self.contest in stores["contest"]

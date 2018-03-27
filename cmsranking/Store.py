@@ -33,7 +33,6 @@ import re
 
 from gevent.lock import RLock
 
-from cmsranking.Config import config
 from cmsranking.Entity import Entity, InvalidKey, InvalidData
 
 
@@ -55,7 +54,7 @@ class Store(object):
     callbacks.
 
     """
-    def __init__(self, entity, dir_name, depends=None):
+    def __init__(self, entity, path, all_stores, depends=None):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind
@@ -69,7 +68,8 @@ class Store(object):
             raise ValueError("The 'entity' parameter "
                              "isn't a subclass of Entity")
         self._entity = entity
-        self._path = os.path.join(config.lib_dir, dir_name)
+        self._path = path
+        self._all_stores = all_stores
         self._depends = depends if depends is not None else []
         self._store = dict()
         self._create_callbacks = list()
@@ -157,7 +157,7 @@ class Store(object):
         with LOCK:
             item = self._entity()
             item.set(data)
-            if not item.consistent():
+            if not item.consistent(self._all_stores):
                 raise InvalidData("Inconsistent data")
             item.key = key
             self._store[key] = item
@@ -199,7 +199,7 @@ class Store(object):
         with LOCK:
             item = self._entity()
             item.set(data)
-            if not item.consistent():
+            if not item.consistent(self._all_stores):
                 raise InvalidData("Inconsistent data")
             item.key = key
             old_item = self._store[key]
@@ -246,7 +246,7 @@ class Store(object):
                         raise InvalidData("Invalid key")
                     item = self._entity()
                     item.set(value)
-                    if not item.consistent():
+                    if not item.consistent(self._all_stores):
                         raise InvalidData("Inconsistent data")
                     item.key = key
                     item_dict[key] = item
@@ -302,7 +302,7 @@ class Store(object):
             # enforce consistency
             for depend in self._depends:
                 for o_key, o_value in list(iteritems(depend._store)):
-                    if not o_value.consistent():
+                    if not o_value.consistent(self._all_stores):
                         depend.delete(o_key)
             # notify callbacks
             for callback in self._delete_callbacks:

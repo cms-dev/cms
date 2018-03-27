@@ -25,8 +25,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from cmsranking.Entity import Entity, InvalidData
-from cmsranking.Store import Store
-from cmsranking.Task import store as task_store
 
 
 class Contest(Entity):
@@ -87,6 +85,3 @@ class Contest(Entity):
         result = self.__dict__.copy()
         del result['key']
         return result
-
-
-store = Store(Contest, 'contests', [task_store])

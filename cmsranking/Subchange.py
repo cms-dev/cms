@@ -25,7 +25,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from cmsranking.Entity import Entity, InvalidData
-from cmsranking.Store import Store
 
 
 class Subchange(Entity):
@@ -97,9 +96,6 @@ class Subchange(Entity):
                 del result[field]
         return result
 
-    def consistent(self):
-        from cmsranking.Submission import store as submission_store
-        return self.submission in submission_store
-
-
-store = Store(Subchange, 'subchanges')
+    def consistent(self, stores):
+        return "submission" not in stores \
+               or self.submission in stores["submission"]
