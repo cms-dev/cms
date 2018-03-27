@@ -1055,7 +1055,8 @@ class IsolateSandbox(SandboxBase):
         for var, value in iteritems(self.set_env):
             res += ["--env=%s=%s" % (var, value)]
         if self.fsize is not None:
-            res += ["--fsize=%d" % self.fsize]
+            # Isolate wants file sizes as KiB.
+            res += ["--fsize=%d" % (self.fsize // 1024)]
         if self.stdin_file is not None:
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:

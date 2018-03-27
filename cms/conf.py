@@ -117,7 +117,7 @@ class Config(object):
         self.sandbox_implementation = 'isolate'
 
         # Sandbox.
-        self.max_file_size = 1048576
+        self.max_file_size = 1000 * 1000 * 1000
 
         # WebServers.
         self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
