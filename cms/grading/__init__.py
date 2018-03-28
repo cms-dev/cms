@@ -232,21 +232,35 @@ def format_status_text(status, translation=DEFAULT_TRANSLATION):
         # The empty msgid corresponds to the headers of the pofile.
         text = _(status[0]) if status[0] != '' else ''
         return text % tuple(status[1:])
-    except:
+    except Exception:
         logger.error("Unexpected error when formatting status "
                      "text: %r", status, exc_info=True)
         return _("N/A")
 
 
 def compilation_step(sandbox, commands):
-    """Execute some compilation commands in the sandbox, setting up the
-    sandbox itself with a standard configuration and doing standard
-    checks at the end of the compilation.
+    """Execute some compilation commands in the sandbox.
 
-    Note: this needs a sandbox already created.
+    Execute the commands sequentially in the (already created) sandbox, after
+    setting up an environment suitable for compilations (additional visible
+    directories, appropriate limits).
 
-    sandbox (Sandbox): the sandbox we consider.
-    commands ([[string]]): the actual compilation lines.
+    Terminate early after a command if the sandbox fails, or the command does
+    not terminate normally and with exit code 0.
+
+    sandbox (Sandbox): the sandbox we consider, already created.
+    commands ([[str]]): compilation commands to execute.
+
+    return ((bool, bool|None, [str]|None, dict|None)): a tuple with four items:
+        * success: True if the sandbox did not fail, in any command;
+        * compilation success: True if the compilation resulted in an
+            executable, False if not, None if success is False;
+        * text: a human readable, localized message to inform contestants
+            of the status; it is either an empty list (for no message) or a
+            list of strings were the second to the last are formatting
+            arguments for the first, or None if success is False;
+        * plus: a dictionary with statistics about the compilation, or None
+            if success is False.
 
     """
     # Set sandbox parameters suitable for compilation.
@@ -317,7 +331,7 @@ def compilation_step(sandbox, commands):
     # correctly compiled.
     success = False
     compilation_success = None
-    text = []
+    text = None
 
     if exit_status == Sandbox.EXIT_OK and exit_code == 0:
         logger.debug("Compilation successfully finished.")
@@ -367,24 +381,38 @@ def evaluation_step(sandbox, commands,
                     time_limit=0.0, memory_limit=0,
                     allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
-    """Execute some evaluation commands in the sandbox. Note that in
-    some task types, there may be more than one evaluation commands
-    (per testcase) (in others there can be none, of course).
+    """Execute some evaluation commands in the sandbox.
 
-    sandbox (Sandbox): the sandbox we consider.
-    commands ([[string]]): the actual evaluation lines.
-    time_limit (float): time limit in seconds.
-    memory_limit (int): memory limit in MB.
-    allow_dirs ([string]|None): if not None, a list of external
+    Execute the commands sequentially in the (already created) sandbox, after
+    setting up an environment suitable for evaluation, tweaked as instructed
+    by the arguments.
+
+    Terminate early after a command if the sandbox fails.
+
+    sandbox (Sandbox): the sandbox we consider, already created.
+    commands ([[str]]): evaluation commands to execute.
+    time_limit (float): time limit in seconds (applied to each command); if
+        non-positive, no time limit is enforced.
+    memory_limit (int): memory limit in MiB (applied to each command); if
+        non-positive, no memory limit is enforced.
+    allow_dirs ([str]|None): if not None, a list of external
         directories to map inside the sandbox
-    writable_files ([string]|None): if not None, a list of inner file
-        names (relative to the inner path) on which the command is
-        allow to write; if None, all files are read-only. The
-        redirected output and the standard error are implicitly added
-        to the files allowed, in any case.
+    writable_files ([str]|None): a list of inner file names (relative to
+        the inner path) on which the command is allow to write, or None to
+        indicate that all files are read-only; if applicable, redirected
+        output and the standard error are implicitly added to the files
+        allowed.
+    stdin_redirect (str|None): the name of the file that will be redirected
+        to the standard input of each command; if None, nothing will be
+        provided to stdin.
+    stdout_redirect (str|None): the name of the file that the standard output
+        of each command will be redirected to; if None, "stdout.txt" will be
+        used.
 
-    return ((bool, dict)): True if the evaluation was successful, or
-        False; and additional data.
+    return ((bool, dict|None)): a tuple with two items:
+        * success: True if the sandbox did not fail, in any command;
+        * plus: a dictionary with statistics about the evaluation, or None
+            if success is False.
 
     """
     for command in commands:
@@ -408,10 +436,15 @@ def evaluation_step_before_run(sandbox, command,
                                allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                wait=False):
-    """First part of an evaluation step, until the running.
+    """First part of an evaluation step, up to the execution, included.
 
-    return: exit code already translated if wait is True, the
-            process if wait is False.
+    See evaluation_step for the meaning of the common arguments. This version
+    only accepts one command, and in addition the argument "wait" to decide
+    whether to make the run blocking or not.
+
+    wait (bool): if True, block until the command terminates.
+
+    return (bool|Popen): sandbox success if wait is True, the process if not.
 
     """
     # Default parameters handling.
@@ -425,7 +458,9 @@ def evaluation_step_before_run(sandbox, command,
     else:
         sandbox.timeout = 0
         sandbox.wallclock_timeout = 0
+
     sandbox.address_space = memory_limit * 1024
+
     sandbox.fsize = config.max_file_size
 
     if stdin_redirect is not None:
@@ -452,7 +487,9 @@ def evaluation_step_before_run(sandbox, command,
 
 
 def evaluation_step_after_run(sandbox):
-    """Second part of an evaluation step, after the running.
+    """Final part of an evaluation step, collecting the results after the run.
+
+    See evaluation_step for the meaning of the argument and the return value.
 
     """
     # Detect the outcome of the execution.
@@ -464,7 +501,7 @@ def evaluation_step_after_run(sandbox):
         "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
         "execution_memory": sandbox.get_memory_used(),
         "exit_status": exit_status,
-        }
+    }
 
     success = False
 
@@ -632,7 +669,7 @@ def extract_outcome_and_text(sandbox):
     return outcome, [text]
 
 
-## Automatic white diff. ##
+# Automatic white diff.
 
 # We take as definition of whitespaces the intersection between ASCII
 # and Unicode White_Space characters (see
@@ -797,7 +834,7 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
     return ret
 
 
-## Computing global scores (for ranking). ##
+# Computing global scores (for ranking).
 
 def task_score(participation, task):
     """Return the score of a contest's user on a task.
