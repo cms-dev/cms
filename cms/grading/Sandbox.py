@@ -487,15 +487,13 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def translate_box_exitcode(self, _):
-        """Translate the sandbox exit code according to the
-        following table:
-         * 0 -> everything ok -> returns True
-         * 1 -> error in the program inside the sandbox ->
-                returns True
-         * 2 -> error in the sandbox itself -> returns False
+        """Translate the sandbox exit code to a boolean sandbox success.
 
-        Basically, it recognizes whether the sandbox executed
-        correctly or not.
+        _ (int): the exit code of the sandbox.
+
+        return (bool): False if the sandbox had an error, True if it
+            terminated correctly (regardless of what the internal process
+            did).
 
         """
         pass
@@ -807,8 +805,9 @@ class StupidSandbox(SandboxBase):
             return self.popen
 
     def translate_box_exitcode(self, _):
-        """The stupid box always terminates successfully (or it raises
-        an exception).
+        """Translate the sandbox exit code to a boolean sandbox success.
+
+        This sandbox never fails.
 
         """
         return True
@@ -816,8 +815,7 @@ class StupidSandbox(SandboxBase):
     def cleanup(self):
         """Cleanup the sandbox.
 
-        To be called at the end of the execution, regardless of
-        whether the sandbox should be deleted or not.
+        This sandbox needs no cleanup.
 
         """
         pass
@@ -1344,15 +1342,16 @@ class IsolateSandbox(SandboxBase):
             return popen
 
     def translate_box_exitcode(self, exitcode):
-        """Translate the sandbox exit code according to the
-        following table:
-         * 0 -> everything ok -> returns True
-         * 1 -> error in the program inside the sandbox ->
-                returns True
-         * 2 -> error in the sandbox itself -> returns False
+        """Translate the sandbox exit code to a boolean sandbox success.
 
-        Basically, it recognizes whether the sandbox executed
-        correctly or not.
+        Isolate emits the following exit codes:
+        * 0 -> both sandbox and internal process finished successfully (meta
+            file will contain "status:OK" -> return True;
+        * 1 -> sandbox finished successfully, but internal process was
+            terminated, e.g., due to timeout (meta file will contain
+            status:x" with x in (TO, SG, RE)) -> return True;
+        * 2 -> sandbox terminated with an error (meta file will contain
+            "status:XX") -> return False.
 
         """
         if exitcode == 0 or exitcode == 1:
