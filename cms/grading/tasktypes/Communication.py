@@ -237,7 +237,7 @@ class Communication(TaskType):
             sandbox_mgr,
             manager_command,
             num_processes * job.time_limit,
-            0,
+            None,
             allow_dirs=manager_allow_dirs,
             writable_files=["output.txt"],
             stdin_redirect="input.txt")

@@ -378,7 +378,7 @@ def compilation_step(sandbox, commands):
 
 
 def evaluation_step(sandbox, commands,
-                    time_limit=0.0, memory_limit=0,
+                    time_limit=None, memory_limit=None,
                     allow_dirs=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute some evaluation commands in the sandbox.
@@ -391,10 +391,10 @@ def evaluation_step(sandbox, commands,
 
     sandbox (Sandbox): the sandbox we consider, already created.
     commands ([[str]]): evaluation commands to execute.
-    time_limit (float): time limit in seconds (applied to each command); if
-        non-positive, no time limit is enforced.
-    memory_limit (int): memory limit in MiB (applied to each command); if
-        non-positive, no memory limit is enforced.
+    time_limit (float|None): time limit in seconds (applied to each command);
+        if None, no time limit is enforced.
+    memory_limit (int|None): memory limit in MiB (applied to each command); if
+        None, no memory limit is enforced.
     allow_dirs ([str]|None): if not None, a list of external
         directories to map inside the sandbox
     writable_files ([str]|None): a list of inner file names (relative to
@@ -414,6 +414,8 @@ def evaluation_step(sandbox, commands,
         * plus: a dictionary with statistics about the evaluation, or None
             if success is False.
 
+    raise (ValueError): if time or memory limit are non-positive.
+
     """
     for command in commands:
         success = evaluation_step_before_run(
@@ -432,7 +434,7 @@ def evaluation_step(sandbox, commands,
 
 
 def evaluation_step_before_run(sandbox, command,
-                               time_limit=0, memory_limit=0,
+                               time_limit=None, memory_limit=None,
                                allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                wait=False):
@@ -447,32 +449,38 @@ def evaluation_step_before_run(sandbox, command,
     return (bool|Popen): sandbox success if wait is True, the process if not.
 
     """
+    # Ensure parameters are appropriate.
+    if time_limit is not None and time_limit <= 0:
+        raise ValueError("Time limit must be positive, is %s" % time_limit)
+    if memory_limit is not None and memory_limit <= 0:
+        raise ValueError(
+            "Memory limit must be positive, is %s" % memory_limit)
+
     # Default parameters handling.
-    allow_dirs = [] if allow_dirs is None else allow_dirs
-    writable_files = [] if writable_files is None else writable_files
+    if allow_dirs is None:
+        allow_dirs = []
+    if writable_files is None:
+        writable_files = []
+    if stdout_redirect is None:
+        stdout_redirect = "stdout.txt"
 
     # Set sandbox parameters suitable for evaluation.
-    if time_limit > 0:
+    if time_limit is not None:
         sandbox.timeout = time_limit
         sandbox.wallclock_timeout = 2 * time_limit + 1
     else:
-        sandbox.timeout = 0
-        sandbox.wallclock_timeout = 0
+        sandbox.timeout = None
+        sandbox.wallclock_timeout = None
 
-    sandbox.address_space = memory_limit * 1024
+    if memory_limit is not None:
+        sandbox.address_space = memory_limit * 1024
+    else:
+        sandbox.address_space = None
 
     sandbox.fsize = config.max_file_size
 
-    if stdin_redirect is not None:
-        sandbox.stdin_file = stdin_redirect
-    else:
-        sandbox.stdin_file = None
-
-    if stdout_redirect is not None:
-        sandbox.stdout_file = stdout_redirect
-    else:
-        sandbox.stdout_file = "stdout.txt"
-
+    sandbox.stdin_file = stdin_redirect
+    sandbox.stdout_file = stdout_redirect
     sandbox.stderr_file = "stderr.txt"
 
     sandbox.add_mapped_directories(allow_dirs)
