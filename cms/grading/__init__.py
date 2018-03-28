@@ -259,7 +259,7 @@ def compilation_step(sandbox, commands):
             of the status; it is either an empty list (for no message) or a
             list of strings were the second to the last are formatting
             arguments for the first, or None if success is False;
-        * plus: a dictionary with statistics about the compilation, or None
+        * stats: a dictionary with statistics about the compilation, or None
             if success is False.
 
     """
@@ -307,22 +307,12 @@ def compilation_step(sandbox, commands):
                 sandbox.get_exit_code() != 0):
             break
 
-    # Detect the outcome of the compilation.
-    exit_status = sandbox.get_exit_status()
+    stats = execution_stats(sandbox)
+    stats["stdout"] = '\n===\n'.join(stdouts)
+    stats["stderr"] = '\n===\n'.join(stderrs)
+
+    exit_status = stats["exit_status"]
     exit_code = sandbox.get_exit_code()
-
-    stdout = '\n===\n'.join(stdouts)
-    stderr = '\n===\n'.join(stderrs)
-
-    # And retrieve some interesting data.
-    plus = {
-        "execution_time": sandbox.get_execution_time(),
-        "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
-        "execution_memory": sandbox.get_memory_used(),
-        "stdout": stdout,
-        "stderr": stderr,
-        "exit_status": exit_status,
-        }
 
     # From now on, we test for the various possible outcomes and
     # act appropriately.
@@ -362,7 +352,7 @@ def compilation_step(sandbox, commands):
         logger.debug("Compilation killed with signal %s.", signal)
         success = True
         compilation_success = False
-        plus["signal"] = signal
+        stats["signal"] = signal
         text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
 
     # Sandbox error: this isn't a user error, the administrator needs
@@ -374,7 +364,7 @@ def compilation_step(sandbox, commands):
     else:
         logger.error("Shouldn't arrive here, failing.")
 
-    return success, compilation_success, text, plus
+    return success, compilation_success, text, stats
 
 
 def evaluation_step(sandbox, commands,
@@ -411,7 +401,7 @@ def evaluation_step(sandbox, commands,
 
     return ((bool, dict|None)): a tuple with two items:
         * success: True if the sandbox did not fail, in any command;
-        * plus: a dictionary with statistics about the evaluation, or None
+        * stats: a dictionary with statistics about the evaluation, or None
             if success is False.
 
     raise (ValueError): if time or memory limit are non-positive.
@@ -426,11 +416,11 @@ def evaluation_step(sandbox, commands,
             logger.debug("Job failed in evaluation_step_before_run.")
             return False, None
 
-    success, plus = evaluation_step_after_run(sandbox)
+    success, stats = evaluation_step_after_run(sandbox)
     if not success:
-        logger.debug("Job failed in evaluation_step_after_run: %r", plus)
+        logger.debug("Job failed in evaluation_step_after_run: %r", stats)
 
-    return success, plus
+    return success, stats
 
 
 def evaluation_step_before_run(sandbox, command,
@@ -500,16 +490,8 @@ def evaluation_step_after_run(sandbox):
     See evaluation_step for the meaning of the argument and the return value.
 
     """
-    # Detect the outcome of the execution.
-    exit_status = sandbox.get_exit_status()
-
-    # And retrieve some interesting data.
-    plus = {
-        "execution_time": sandbox.get_execution_time(),
-        "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
-        "execution_memory": sandbox.get_memory_used(),
-        "exit_status": exit_status,
-    }
+    stats = execution_stats(sandbox)
+    exit_status = stats["exit_status"]
 
     success = False
 
@@ -523,13 +505,11 @@ def evaluation_step_after_run(sandbox):
         logger.debug("Execution timed out (wall clock limit exceeded).")
         success = True
 
-    # Suicide with signal (memory limit, segfault, abort): returning
-    # the error to the user.
+    # Terminated by signal (memory limit, segfault, abort): returning the
+    # error to the user.
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        signal = sandbox.get_killing_signal()
-        logger.debug("Execution killed with signal %s.", signal)
+        logger.debug("Execution killed with signal %s.", stats["signal"])
         success = True
-        plus["signal"] = signal
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment.
@@ -550,50 +530,94 @@ def evaluation_step_after_run(sandbox):
     else:
         success = True
 
-    return success, plus
+    return success, stats
 
 
-def merge_evaluation_results(plus0, plus1):
-    """Merges two evaluation results provided by different sandboxes.
+def execution_stats(sandbox):
+    """Extract statistics from a sandbox about the last ran command.
 
-    The logic is to sum execution time and memory, but take the maximum of the
-    wall clock time; for status, to take the first non-ok status, if it exists,
-    otherwise use ok.
+    sandbox (Sandbox): the sandbox to inspect.
 
-    """
-    plus = plus0.copy()
-    plus["execution_time"] += plus1["execution_time"]
-    plus["execution_wall_clock_time"] = max(
-        plus["execution_wall_clock_time"],
-        plus1["execution_wall_clock_time"])
-    plus["execution_memory"] += plus1["execution_memory"]
-    if plus0["exit_status"] == Sandbox.EXIT_OK:
-        plus["exit_status"] = plus1["exit_status"]
-        if plus1["exit_status"] == Sandbox.EXIT_SIGNAL:
-            plus["signal"] = plus1["signal"]
-
-    return plus
-
-
-def human_evaluation_message(plus):
-    """Given the plus object returned by evaluation_step, builds a
-    human-readable message about what happened.
-
-    None is returned in cases when the contestant mustn't receive any
-    message (for example, if the execution couldn't be performed) or
-    when the message will be computed somewhere else (for example, if
-    the execution was successful, then the comparator is supposed to
-    write the message).
+    return (dict): a dictionary with statistics.
 
     """
-    exit_status = plus['exit_status']
+    stats = {
+        "execution_time": sandbox.get_execution_time(),
+        "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
+        "execution_memory": sandbox.get_memory_used(),
+        "exit_status": sandbox.get_exit_status(),
+    }
+    if stats["exit_status"] == Sandbox.EXIT_SIGNAL:
+        stats["signal"] = sandbox.get_killing_signal()
+    return stats
+
+
+def merge_execution_stats(first_stats, second_stats, concurrent=True):
+    """Merge two execution statistics dictionary.
+
+    first_stats (dict): statistics about the first execution; contains
+        execution_time, execution_wall_clock_time, execution_memory,
+        exit_status, and possibly signal.
+    second_stats (dict): same for the second execution.
+    concurrent (bool): whether to merge using assuming the executions were
+        concurrent or not (see return value).
+
+    return (dict): the merged statistics:
+        * execution times are added;
+        * memory usages are added (if concurrent) or max'd (if not);
+        * wall clock times are max'd (if concurrent) or added (if not);
+        * exit_status and related values (signal) are from the first non-OK,
+            if present, or OK.
+
+    """
+    ret = first_stats.copy()
+    ret["execution_time"] += second_stats["execution_time"]
+
+    if concurrent:
+        ret["execution_wall_clock_time"] = max(
+            ret["execution_wall_clock_time"],
+            second_stats["execution_wall_clock_time"])
+        ret["execution_memory"] += second_stats["execution_memory"]
+    else:
+        ret["execution_wall_clock_time"] += \
+            second_stats["execution_wall_clock_time"]
+        ret["execution_memory"] = max(ret["execution_memory"],
+                                      second_stats["execution_memory"])
+
+    if first_stats["exit_status"] == Sandbox.EXIT_OK:
+        ret["exit_status"] = second_stats["exit_status"]
+        if second_stats["exit_status"] == Sandbox.EXIT_SIGNAL:
+            ret["signal"] = second_stats["signal"]
+
+    return ret
+
+
+def human_evaluation_message(stats):
+    """Return a human-readable message from the given execution stats.
+
+    Return a message for errors in the command ran in the evaluation, that can
+    be passed to contestants. Don't return a message for success conditions
+    (as the message will be computed elsewhere) or for sandbox error (since the
+    submission will still be "evaluating..." for contestants).
+
+    stats (dict): execution statistics for an evaluation step.
+
+    return ([str]): a list of strings composing the message (where
+        strings from the second to the last are formatting arguments for the
+        first); or an empty list if no message should be passed to
+        contestants.
+
+    """
+    exit_status = stats['exit_status']
     if exit_status == Sandbox.EXIT_TIMEOUT:
         return [EVALUATION_MESSAGES.get("timeout").message]
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [EVALUATION_MESSAGES.get("signal").message, str(plus['signal'])]
+        return [EVALUATION_MESSAGES.get("signal").message,
+                str(stats['signal'])]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+        # Contestants won't see this, the submission will still be evaluating.
         return []
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Don't tell which code: would be too much information!
@@ -601,11 +625,13 @@ def human_evaluation_message(plus):
     elif exit_status == Sandbox.EXIT_OK:
         return []
     else:
+        logger.error("Unrecognized exit status for an evaluation: %s",
+                     exit_status)
         return []
 
 
-def is_evaluation_passed(plus):
-    return plus['exit_status'] == Sandbox.EXIT_OK
+def is_evaluation_passed(stats):
+    return stats['exit_status'] == Sandbox.EXIT_OK
 
 
 def filter_ansi_escape(string):

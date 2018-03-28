@@ -39,7 +39,7 @@ from cms.grading.Sandbox import wait_without_std, Sandbox
 from cms.grading import compilation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
-    merge_evaluation_results
+    merge_execution_stats
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
@@ -272,7 +272,7 @@ class Communication(TaskType):
 
         user_results = [evaluation_step_after_run(s) for s in sandbox_user]
         success_user = all(r[0] for r in user_results)
-        plus_user = reduce(merge_evaluation_results,
+        plus_user = reduce(merge_execution_stats,
                            [r[1] for r in user_results])
         success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
