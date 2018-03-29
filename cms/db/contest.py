@@ -37,10 +37,11 @@ from six import itervalues
 
 from datetime import datetime, timedelta
 
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
     Boolean, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from cmscommon.datetime import make_datetime
@@ -262,11 +263,29 @@ class Contest(Base):
         nullable=False,
         default=0)
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # tasks (list of Task objects)
-    # announcements (list of Announcement objects)
-    # participations (list of Participation objects)
+    # These one-to-many relationships are the reversed directions of
+    # the ones defined in the "child" classes using foreign keys.
+
+    tasks = relationship(
+        "Task",
+        collection_class=ordering_list("num"),
+        order_by="[Task.num]",
+        cascade="all",
+        passive_deletes=True,
+        back_populates="contest")
+
+    announcements = relationship(
+        "Announcement",
+        order_by="[Announcement.timestamp]",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
+
+    participations = relationship(
+        "Participation",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
 
     # Moreover, we have the following methods.
     # get_submissions (defined in __init__.py)
@@ -644,8 +663,4 @@ class Announcement(Base):
         index=True)
     contest = relationship(
         Contest,
-        backref=backref(
-            'announcements',
-            order_by=[timestamp],
-            cascade="all, delete-orphan",
-            passive_deletes=True))
+        back_populates="announcements")

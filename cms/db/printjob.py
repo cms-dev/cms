@@ -30,7 +30,7 @@ from future.builtins import *  # noqa
 
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Integer, String, Unicode, DateTime, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from . import Base, Participation, FilenameConstraint, DigestConstraint
@@ -56,9 +56,7 @@ class PrintJob(Base):
         index=True)
     participation = relationship(
         Participation,
-        backref=backref("printjobs",
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="printjobs")
 
     # Submission time of the print job.
     timestamp = Column(
