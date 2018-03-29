@@ -44,15 +44,20 @@ from cmscommon.datetime import make_timestamp
 logger = logging.getLogger(__name__)
 
 
+# Dummy function to mark translatable string.
 def N_(msgid):
     return msgid
 
 
-class Unaskable(Exception):
+class QuestionsNotAllowed(Exception):
+    """Raised when questions are disallowed by the contest rules."""
+
     pass
 
 
 class UnacceptableQuestion(Exception):
+    """Raised when a question can't be accepted."""
+
     def __init__(self, subject, text):
         self.subject = subject
         self.text = text
@@ -73,14 +78,14 @@ def accept_question(sql_session, participation, timestamp, subject, text):
 
     return (Question): the question that was added to the database.
 
-    raise (Unaskable): if the contest doesn't allow contestants to ask
-        questions.
+    raise (QuestionsNotAllowed): if the contest doesn't allow
+        contestants to ask questions.
     raise (UnacceptableQuestion): if some conditions necessary to
         accept the questions were not met.
 
     """
     if not participation.contest.allow_questions:
-        raise Unaskable()
+        raise QuestionsNotAllowed()
 
     subject_length = len(subject)
     text_length = len(text)

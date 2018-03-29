@@ -36,8 +36,8 @@ from datetime import timedelta
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Question, Announcement, Message
-from cms.server.contest.communication import accept_question, Unaskable, \
-    UnacceptableQuestion, get_communications
+from cms.server.contest.communication import accept_question, \
+    QuestionsNotAllowed, UnacceptableQuestion, get_communications
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
@@ -67,7 +67,7 @@ class TestAcceptQuestion(DatabaseMixin, unittest.TestCase):
 
     def test_questions_not_allowed(self):
         self.contest.allow_questions = False
-        with self.assertRaises(Unaskable):
+        with self.assertRaises(QuestionsNotAllowed):
             self.call("mysubject", "mytext")
 
     def test_question_too_big(self):

@@ -41,7 +41,7 @@ import tornado.web
 
 from cms.server import multi_contest
 from cms.server.contest.communication import accept_question, \
-    UnacceptableQuestion, Unaskable
+    UnacceptableQuestion, QuestionsNotAllowed
 
 from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
 
@@ -71,7 +71,7 @@ class QuestionHandler(ContestHandler):
             accept_question(self.sql_session, self.current_user, self.timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""))
-        except Unaskable:
+        except QuestionsNotAllowed:
             raise tornado.web.HTTPError(404)
         except UnacceptableQuestion as e:
             self.service.add_notification(
