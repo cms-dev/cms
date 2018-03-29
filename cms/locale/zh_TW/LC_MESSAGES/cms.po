@@ -43,13 +43,6 @@ msgid ""
 "limits)"
 msgstr "測試程式因記憶體違規存取而強制終止 (信號 %s)"
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "測試程式因違規存取系統函數 %s 而強制終止"
-
-msgid "Execution killed because of forbidden file access"
-msgstr "測試程式因違規存取檔案系統而強制終止"
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "執行失敗: 程式回傳值非零"
 

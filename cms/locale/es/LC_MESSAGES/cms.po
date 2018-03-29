@@ -123,27 +123,6 @@ msgstr ""
 "memoria que se muestra en los detalles del envío corresponde a la memoria "
 "utilizada antes de la operación que desencadenó la señal."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Ejecución terminada por llamada al sistema no permitida: %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"El envío fue terminado porque intentó utilizar la llamada al sistema que se "
-"indica en el mensaje, lo cual no está permitido."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Ejecución terminada por acceso a archivo no permitido"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"El envío fue terminado porque intentó leer o escribir a un archivo no "
-"permitido."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Ejecución fallida por código de retorno distinto de cero"
 

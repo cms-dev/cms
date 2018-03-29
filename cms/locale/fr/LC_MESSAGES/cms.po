@@ -123,27 +123,6 @@ msgstr ""
 "l'utilisation mémoire visible dans les détails de soumission est "
 "l'utilisation avant l'allocation qui a causé le signal."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Exécution interrompue : utilisation interdite de l'appel système %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"Votre soumission a été interrompue car elle essayait d'utiliser l'appel "
-"système interdit spécifié dans le message."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Exécution interrompue : accès à un fichier (interdit)"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"Votre soumission a été interrompue car elle essayait de lire ou écrire un "
-"fichier interdit."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Exécution échouée: code de retour différent de zéro"
 

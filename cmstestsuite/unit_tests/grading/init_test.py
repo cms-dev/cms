@@ -68,7 +68,7 @@ class TestFormatStatusText(unittest.TestCase):
             format_status_text(["AAA %s\n%s", "AAA", "AE"], self._tr),
             "EEE AAA\nAE")
 
-    def test_insuccess(self):
+    def test_failure(self):
         # Not enough elements for the placeholders.
         self.assertEqual(format_status_text(["%s"]), "N/A")
         self.assertEqual(format_status_text(["%s"], self._tr), "N/E")
@@ -81,7 +81,7 @@ class TestMergeEvaluationResults(unittest.TestCase):
 
     @staticmethod
     def _res(execution_time, execution_wall_clock_time, execution_memory,
-             exit_status, signal=None, filename=None):
+             exit_status, signal=None):
         r = {
             "execution_time": execution_time,
             "execution_wall_clock_time": execution_wall_clock_time,
@@ -90,8 +90,6 @@ class TestMergeEvaluationResults(unittest.TestCase):
         }
         if signal is not None:
             r["signal"] = signal
-        if filename is not None:
-            r["filename"] = filename
         return r
 
     def assertRes(self, r0, r1):
@@ -101,9 +99,10 @@ class TestMergeEvaluationResults(unittest.TestCase):
                                r1["execution_wall_clock_time"])
         self.assertAlmostEqual(r0["execution_memory"], r1["execution_memory"])
         self.assertEqual(r0["exit_status"], r1["exit_status"])
-        for key in ["syscall", "signal", "filename"]:
-            self.assertEqual(key in r0, key in r1)
-            self.assertEqual(r0.get(key), r1.get(key))
+
+        key = "signal"
+        self.assertEqual(key in r0, key in r1)
+        self.assertEqual(r0.get(key), r1.get(key))
 
     def test_success_status_ok(self):
         self.assertRes(
@@ -121,46 +120,41 @@ class TestMergeEvaluationResults(unittest.TestCase):
         self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd")),
-            self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd"))
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
         self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11"))
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
 
     def test_success_first_status_not_ok(self):
         self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
             self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
         self.assertRes(
             merge_evaluation_results(
-                self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd"),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
-            self._res(0, 0, 0, Sandbox.EXIT_FILE_ACCESS, filename="asd"))
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
         self.assertRes(
             merge_evaluation_results(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="11")),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"))
-        self.assertRes(
-            merge_evaluation_results(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"),
+                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
                 self._res(0, 0, 0, Sandbox.EXIT_OK)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal="9"))
+            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
 
     def test_success_results_are_not_modified(self):
         r0 = self._res(1.0, 2.0, 300, Sandbox.EXIT_OK)
-        r1 = self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal="11")
+        r1 = self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11)
         m = merge_evaluation_results(r0, r1)
         self.assertRes(
-            m, self._res(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal="11"))
+            m, self._res(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal=11))
         self.assertRes(
             r0, self._res(1.0, 2.0, 300, Sandbox.EXIT_OK))
         self.assertRes(
-            r1, self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal="11"))
+            r1, self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11))
 
 
 class TestWhiteDiff(unittest.TestCase):

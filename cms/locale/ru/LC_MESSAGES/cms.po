@@ -112,24 +112,6 @@ msgid ""
 "before the allocation that caused the signal."
 msgstr ""
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr ""
-"Выполнение прервано в связи использованием запрещенного системного вызова %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Выполнение прервано в связи с попыткой доступа к запрещенному файлу"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Выполнение завершилось неудачно"
 

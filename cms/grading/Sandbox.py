@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -31,7 +31,6 @@ from six import iteritems, with_metaclass
 import io
 import logging
 import os
-import re
 import resource
 import select
 import stat
@@ -194,8 +193,6 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
     EXIT_SIGNAL = 'signal'
     EXIT_TIMEOUT = 'timeout'
     EXIT_TIMEOUT_WALL = 'wall timeout'
-    EXIT_FILE_ACCESS = 'file access'
-    EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
     def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
@@ -739,7 +736,7 @@ class StupidSandbox(SandboxBase):
                                    (rlimit_stack, rlimit_stack))
 
             # TODO - Doesn't work as expected
-            #resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
+            # resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
 
         # Setup std*** redirection
         if self.stdin_file:
@@ -1168,42 +1165,6 @@ class IsolateSandbox(SandboxBase):
             return int(self.log['exitcode'][0])
         return 0
 
-    # TODO - Rather fragile interface...
-    KILLING_SYSCALL_RE = re.compile("^Forbidden syscall (.*)$")
-
-    @with_log
-    def get_killing_syscall(self):
-        """Return the syscall that triggered the killing of the
-        sandboxed process, reading the log if necessary.
-
-        return (string): offending syscall, or None.
-
-        """
-        if 'message' in self.log:
-            match = self.KILLING_SYSCALL_RE.match(
-                self.log['message'][0])
-            if match is not None:
-                return match.group(1)
-        return None
-
-    # TODO - Rather fragile interface...
-    KILLING_FILE_ACCESS_RE = re.compile("^Forbidden access to file (.*)$")
-
-    @with_log
-    def get_forbidden_file_error(self):
-        """Return the error that got us killed for forbidden file
-        access.
-
-        return (string): offending error, or None.
-
-        """
-        if 'message' in self.log:
-            match = self.KILLING_FILE_ACCESS_RE.match(
-                self.log['message'][0])
-            if match is not None:
-                return match.group(1)
-        return None
-
     @with_log
     def get_status_list(self):
         """Reads the sandbox log file, and set and return the status
@@ -1226,13 +1187,6 @@ class IsolateSandbox(SandboxBase):
         status_list = self.get_status_list()
         if 'XX' in status_list:
             return self.EXIT_SANDBOX_ERROR
-        # New version seems not to report OK
-        #elif 'OK' in status_list:
-        #    return self.EXIT_OK
-        elif 'FO' in status_list:
-            return self.EXIT_SYSCALL
-        elif 'FA' in status_list:
-            return self.EXIT_FILE_ACCESS
         elif 'TO' in status_list:
             if 'message' in self.log and 'wall' in self.log['message'][0]:
                 return self.EXIT_TIMEOUT_WALL
@@ -1242,6 +1196,7 @@ class IsolateSandbox(SandboxBase):
             return self.EXIT_SIGNAL
         elif 'RE' in status_list:
             return self.EXIT_NONZERO_RETURN
+        # OK status is not reported in the log file, it's implicit.
         return self.EXIT_OK
 
     def get_human_exit_description(self):
@@ -1258,12 +1213,6 @@ class IsolateSandbox(SandboxBase):
                 self.get_exit_code()
         elif status == self.EXIT_SANDBOX_ERROR:
             return "Execution failed because of sandbox error"
-        elif status == self.EXIT_SYSCALL:
-            return "Execution killed because of forbidden syscall %s" % \
-                self.get_killing_syscall()
-        elif status == self.EXIT_FILE_ACCESS:
-            return "Execution killed because of forbidden file access: %s" \
-                % self.get_forbidden_file_error()
         elif status == self.EXIT_TIMEOUT:
             return "Execution timed out"
         elif status == self.EXIT_TIMEOUT_WALL:
