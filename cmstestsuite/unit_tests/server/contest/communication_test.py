@@ -155,9 +155,26 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
         d = self.add_announcement("subject for all", "text for all", ts)
         self.verify(ts, 5, [d])
 
+        # No interference with other contests.
+        other_contest = self.add_contest()
+        self.add_announcement("subject for others", "text for others", ts,
+                              contest=other_contest)
+        self.verify(ts, 5, [d])
+
     def test_message(self):
         ts = 2
         d = self.add_message("subject for you", "text for you", ts)
+        self.verify(ts, 5, [d])
+
+        # No interference with other contests and users.
+        # Other user in same contest.
+        other_participation1 = self.add_participation(contest=self.contest)
+        self.add_message("subject for another", "text for another", ts,
+                         participation=other_participation1)
+        # Other user in other contest.
+        other_participation2 = self.add_participation()
+        self.add_message("subject for another", "text for another", ts,
+                         participation=other_participation2)
         self.verify(ts, 5, [d])
 
     def test_question(self):
@@ -168,6 +185,19 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
         a_ts = 5
         d = self.set_answer(q, "subject for you", "text for you", a_ts)
         self.verify(a_ts, 8, [d])
+
+        # No interference with other contests and users.
+        # Other user in same contest.
+        other_participation1 = self.add_participation(contest=self.contest)
+        q1 = self.add_question("question for admins", "text for admins", q_ts,
+                               participation=other_participation1)
+        self.set_answer(q1, "subject for another", "text for another", a_ts)
+        # Other user in other contest.
+        other_participation2 = self.add_participation()
+        q2 = self.add_question("question for admins", "text for admins", q_ts,
+                               participation=other_participation2)
+        self.set_answer(q2, "subject for another", "text for another", a_ts)
+        self.verify(a_ts, 5, [d])
 
         # Test some of subject and text being None.
         d = self.set_answer(q, None, "text for you", a_ts)
