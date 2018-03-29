@@ -110,14 +110,15 @@ def accept_question(sql_session, participation, timestamp, subject, text):
     return question
 
 
-def get_communications(sql_session, participation, timestamp, since=None):
+def get_communications(sql_session, participation, timestamp, after=None):
     """Retrieve some contestant's communications at some given time.
 
     Return the list of admin-to-contestant communications (that is,
     announcements, messages and answers to questions) for the given
-    contestant that occurred up to the given time. Optionally, ignore
-    the communications that occurred before another given time. The
-    result will be returned in a JSON-like format.
+    contestant that occurred up to and including the given time.
+    Optionally, ignore the communications that occurred before another
+    given time. The result will be returned in a JSON-compatible format
+    (that is, a tree of numbers, strings, lists and dicts).
 
     sql_session (Session): the SQLAlchemy database session to use.
     participation (Participation): the participation of the user whose
@@ -142,8 +143,8 @@ def get_communications(sql_session, participation, timestamp, since=None):
     query = sql_session.query(Announcement) \
         .filter(Announcement.contest == participation.contest) \
         .filter(Announcement.timestamp <= timestamp)
-    if since is not None:
-        query = query.filter(Announcement.timestamp > since)
+    if after is not None:
+        query = query.filter(Announcement.timestamp > after)
     for announcement in query.all():
         res.append({"type": "announcement",
                     "timestamp": make_timestamp(announcement.timestamp),
@@ -154,8 +155,8 @@ def get_communications(sql_session, participation, timestamp, since=None):
     query = sql_session.query(Message) \
         .filter(Message.participation == participation) \
         .filter(Message.timestamp <= timestamp)
-    if since is not None:
-        query = query.filter(Message.timestamp > since)
+    if after is not None:
+        query = query.filter(Message.timestamp > after)
     for message in query.all():
         res.append({"type": "message",
                     "timestamp": make_timestamp(message.timestamp),
@@ -167,8 +168,8 @@ def get_communications(sql_session, participation, timestamp, since=None):
         .filter(Question.participation == participation) \
         .filter(Question.reply_timestamp.isnot(None)) \
         .filter(Question.reply_timestamp <= timestamp)
-    if since is not None:
-        query = query.filter(Question.reply_timestamp > since)
+    if after is not None:
+        query = query.filter(Question.reply_timestamp > after)
     for question in query.all():
         subject = question.reply_subject
         text = question.reply_text

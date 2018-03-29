@@ -132,21 +132,21 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
              "timestamp": make_timestamp(self.timestamp) + timestamp}
         return d
 
-    def call(self, timestamp, since=None):
+    def call(self, timestamp, after=None):
         return get_communications(
             self.session, self.participation, self.at(timestamp),
-            self.at(since) if since is not None else None)
+            after=self.at(after) if after is not None else None)
 
     def verify(self, ts, test_interval, res):
         for test_time in range(test_interval):
             six.assertCountEqual(
                 self, self.call(test_time),
                 res if ts <= test_time else [])
-        for test_time_since in range(test_interval):
-            for test_time_until in range(test_time_since + 1, test_interval):
+        for test_time_after in range(test_interval):
+            for test_time_until in range(test_time_after + 1, test_interval):
                 six.assertCountEqual(
-                    self, self.call(test_time_until, since=test_time_since),
-                    res if test_time_since < ts <= test_time_until else [])
+                    self, self.call(test_time_until, after=test_time_after),
+                    res if test_time_after < ts <= test_time_until else [])
 
     def test_no_elements(self):
         self.assertEqual(self.call(1), [])

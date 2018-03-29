@@ -161,7 +161,7 @@ class NotificationsHandler(ContestHandler):
             last_notification = make_datetime(float(last_notification))
 
         res = get_communications(self.sql_session, participation,
-                                 self.timestamp, since=last_notification)
+                                 self.timestamp, after=last_notification)
 
         # Simple notifications
         notifications = self.service.notifications
