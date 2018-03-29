@@ -52,27 +52,22 @@ class TestAcceptQuestion(DatabaseMixin, unittest.TestCase):
             contest=self.contest, user=self.user)
 
     def call(self, subject, text):
-        res = accept_question(self.session, self.participation,
-                              self.timestamp, subject, text)
-        self.session.commit()
-        return res
-
-    def assertQuestionExists(self, question):
-        q = self.session.query(Question) \
-            .filter(Question.id == question.id)
-        self.assertIs(q.first(), question)
+        return accept_question(self.session, self.participation,
+                               self.timestamp, subject, text)
 
     def test_success(self):
         q = self.call("mysubject", "mytext")
         self.assertIsNotNone(q)
-        self.assertQuestionExists(q)
+        query = self.session.query(Question) \
+            .filter(Question.subject == q.subject)
+        self.assertIs(query.first(), q)
 
     def test_questions_not_allowed(self):
         self.contest.allow_questions = False
         with self.assertRaises(QuestionsNotAllowed):
             self.call("mysubject", "mytext")
 
-    def test_question_too_big(self):
+    def test_question_too_long(self):
         with self.assertRaises(UnacceptableQuestion):
             self.call("mysubject" + Question.MAX_SUBJECT_LENGTH * ".", "mytext")
         with self.assertRaises(UnacceptableQuestion):
