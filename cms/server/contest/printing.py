@@ -30,7 +30,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, itervalues
 
 import logging
 
@@ -38,7 +37,6 @@ from sqlalchemy import func
 
 from cms import config
 from cms.db import PrintJob
-from cmscommon.datetime import make_timestamp
 
 
 logger = logging.getLogger(__name__)

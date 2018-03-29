@@ -38,8 +38,8 @@ from cms import config
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import PrintJob
-from cms.server.contest.printing import accept_print_job, UnacceptablePrintJob, \
-    Unprintable
+from cms.server.contest.printing import accept_print_job, \
+    UnacceptablePrintJob, Unprintable
 from cmscommon.datetime import make_datetime
 from cmscommon.digest import bytes_digest
 
