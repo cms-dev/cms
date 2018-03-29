@@ -68,7 +68,7 @@ class TestFormatStatusText(unittest.TestCase):
             format_status_text(["AAA %s\n%s", "AAA", "AE"], self._tr),
             "EEE AAA\nAE")
 
-    def test_insuccess(self):
+    def test_failure(self):
         # Not enough elements for the placeholders.
         self.assertEqual(format_status_text(["%s"]), "N/A")
         self.assertEqual(format_status_text(["%s"], self._tr), "N/E")
@@ -134,11 +134,6 @@ class TestMergeEvaluationResults(unittest.TestCase):
                 self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
             self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertRes(
-            merge_evaluation_results(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
         self.assertRes(
             merge_evaluation_results(
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
