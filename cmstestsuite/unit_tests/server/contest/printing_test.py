@@ -65,20 +65,15 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
             contest=self.contest, user=self.user)
 
     def call(self, files):
-        res = accept_print_job(self.session, self.file_cacher,
-                               self.participation, self.timestamp, files)
-        self.session.commit()
-        return res
-
-    def assertPrintJobExists(self, print_job):
-        q = self.session.query(PrintJob) \
-            .filter(PrintJob.id == print_job.id)
-        self.assertIs(q.first(), print_job)
+        return accept_print_job(self.session, self.file_cacher,
+                                self.participation, self.timestamp, files)
 
     def test_success(self):
         pj = self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
         self.assertIsNotNone(pj)
-        self.assertPrintJobExists(pj)
+        query = self.session.query(PrintJob) \
+            .filter(PrintJob.filename == pj.filename)
+        self.assertIs(query.first(), pj)
         self.file_cacher.put_file_content.assert_called_with(
             FILE_CONTENT, "Print job sent by %s at %s." % (self.user.username,
                                                            self.timestamp))
