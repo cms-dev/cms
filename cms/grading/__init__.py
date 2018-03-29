@@ -493,44 +493,27 @@ def evaluation_step_after_run(sandbox):
     stats = execution_stats(sandbox)
     exit_status = stats["exit_status"]
 
-    success = False
+    if exit_status in [
+            Sandbox.EXIT_OK,
+            Sandbox.EXIT_TIMEOUT,
+            Sandbox.EXIT_TIMEOUT_WALL,
+            Sandbox.EXIT_NONZERO_RETURN,
+            Sandbox.EXIT_SIGNAL]:
+        # Evaluation succeeded, and user program either succeeded or was
+        # interrupted for some error condition. We report the success, the
+        # task type will decide how to grade this evaluation.
+        logger.debug("Evaluation ended with exit status '%s'", exit_status)
+        return True, stats
 
-    # Timeout: returning the error to the user.
-    if exit_status == Sandbox.EXIT_TIMEOUT:
-        logger.debug("Execution timed out.")
-        success = True
-
-    # Wall clock timeout: returning the error to the user.
-    elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
-        logger.debug("Execution timed out (wall clock limit exceeded).")
-        success = True
-
-    # Terminated by signal (memory limit, segfault, abort): returning the
-    # error to the user.
-    elif exit_status == Sandbox.EXIT_SIGNAL:
-        logger.debug("Execution killed with signal %s.", stats["signal"])
-        success = True
-
-    # Sandbox error: this isn't a user error, the administrator needs
-    # to check the environment.
+    # Unexpected errors of various degrees; we report the failure.
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-        logger.error("Evaluation aborted because of sandbox error.")
-
-    # The exit code was nonzero: returning the error to the user.
-    elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
-        logger.debug("Execution failed because the return code was nonzero.")
-        success = True
-
-    # Last check before assuming that evaluation finished
-    # successfully; we accept the evaluation even if the exit code
-    # isn't 0.
-    elif exit_status != Sandbox.EXIT_OK:
-        logger.error("Shouldn't arrive here, failing.")
+        logger.error("Evaluation aborted because of sandbox error "
+                     "(status '%s').", exit_status)
+        return False, stats
 
     else:
-        success = True
-
-    return success, stats
+        logger.error("Unrecognized evaluation exit status '%s'.", exit_status)
+        return False, stats
 
 
 def execution_stats(sandbox):
