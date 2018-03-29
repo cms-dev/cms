@@ -114,7 +114,7 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
 
     @patch.object(config, "max_jobs_per_user", 1)
     def test_too_many_print_jobs(self):
-        self.test_success()
+        self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
         with self.assertRaises(UnacceptablePrintJob):
             self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
 
