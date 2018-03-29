@@ -33,7 +33,7 @@ from future.builtins import *  # noqa
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY
 
@@ -62,9 +62,7 @@ class UserTest(Base):
         index=True)
     participation = relationship(
         Participation,
-        backref=backref("user_tests",
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="user_tests")
 
     # Task (id and object) of the test.
     task_id = Column(
@@ -75,9 +73,7 @@ class UserTest(Base):
         index=True)
     task = relationship(
         Task,
-        backref=backref("user_tests",
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="user_tests")
 
     # Time of the request.
     timestamp = Column(
@@ -95,11 +91,28 @@ class UserTest(Base):
         DigestConstraint("input"),
         nullable=False)
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # files (dict of UserTestFile objects indexed by filename)
-    # managers (dict of UserTestManager objects indexed by filename)
-    # results (list of UserTestResult objects)
+    # These one-to-many relationships are the reversed directions of
+    # the ones defined in the "child" classes using foreign keys.
+
+    files = relationship(
+        "UserTestFile",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="user_test")
+
+    managers = relationship(
+        "UserTestManager",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="user_test")
+
+    results = relationship(
+        "UserTestResult",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="user_test")
 
     def get_result(self, dataset=None):
         """Return the result associated to a dataset.
@@ -169,11 +182,7 @@ class UserTestFile(Base):
         index=True)
     user_test = relationship(
         UserTest,
-        backref=backref('files',
-                        collection_class=
-                            attribute_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="files")
 
     # Filename and digest of the submitted file.
     filename = Column(
@@ -210,11 +219,7 @@ class UserTestManager(Base):
         index=True)
     user_test = relationship(
         UserTest,
-        backref=backref('managers',
-                        collection_class=
-                            attribute_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="managers")
 
     # Filename and digest of the submitted manager.
     filename = Column(
@@ -257,10 +262,7 @@ class UserTestResult(Base):
         primary_key=True)
     user_test = relationship(
         UserTest,
-        backref=backref(
-            "results",
-            cascade="all, delete-orphan",
-            passive_deletes=True))
+        back_populates="results")
 
     dataset_id = Column(
         Integer,
@@ -366,9 +368,15 @@ class UserTestResult(Base):
         String,
         nullable=True)
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # executables (dict of UserTestExecutable objects indexed by filename)
+    # These one-to-many relationships are the reversed directions of
+    # the ones defined in the "child" classes using foreign keys.
+
+    executables = relationship(
+        "UserTestExecutable",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="user_test_result")
 
     def get_status(self):
         """Return the status of this object.
@@ -537,11 +545,7 @@ class UserTestExecutable(Base):
     # UserTestResult owning the executable.
     user_test_result = relationship(
         UserTestResult,
-        backref=backref('executables',
-                        collection_class=
-                            attribute_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="executables")
 
     # Filename and digest of the generated executable.
     filename = Column(

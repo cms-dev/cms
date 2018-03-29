@@ -40,9 +40,8 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
@@ -95,11 +94,7 @@ class Task(Base):
         index=True)
     contest = relationship(
         Contest,
-        backref=backref('tasks',
-                        collection_class=ordering_list('num'),
-                        order_by=[num],
-                        cascade="all",
-                        passive_deletes=True))
+        back_populates="tasks")
 
     # Short name and long human readable title of the task.
     name = Column(
@@ -224,14 +219,49 @@ class Task(Base):
         # this relationship.
         post_update=True)
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # datasets (list of Dataset objects)
-    # statements (dict of Statement objects indexed by language code)
-    # attachments (dict of Attachment objects indexed by filename)
-    # submission_format (list of SubmissionFormatElement objects)
-    # submissions (list of Submission objects)
-    # user_tests (list of UserTest objects)
+    # These one-to-many relationships are the reversed directions of
+    # the ones defined in the "child" classes using foreign keys.
+
+    statements = relationship(
+        "Statement",
+        collection_class=attribute_mapped_collection("language"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
+    attachments = relationship(
+        "Attachment",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
+    submission_format = relationship(
+        "SubmissionFormatElement",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
+    datasets = relationship(
+        "Dataset",
+        # Due to active_dataset_id, SQLAlchemy cannot unambiguously
+        # figure out by itself which foreign key to use.
+        foreign_keys="[Dataset.task_id]",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
+    submissions = relationship(
+        "Submission",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
+    user_tests = relationship(
+        "UserTest",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
 
 
 class Statement(Base):
@@ -257,11 +287,7 @@ class Statement(Base):
         index=True)
     task = relationship(
         Task,
-        backref=backref('statements',
-                        collection_class=
-                            attribute_mapped_collection('language'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="statements")
 
     # Code for the language the statement is written in.
     # It can be an arbitrary string, but if it's in the form "en" or "en_US"
@@ -303,11 +329,7 @@ class Attachment(Base):
         index=True)
     task = relationship(
         Task,
-        backref=backref('attachments',
-                        collection_class=
-                            attribute_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="attachments")
 
     # Filename and digest of the provided attachment.
     filename = Column(
@@ -342,9 +364,7 @@ class SubmissionFormatElement(Base):
         index=True)
     task = relationship(
         Task,
-        backref=backref('submission_format',
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="submission_format")
 
     # Format of the given submission file.
     filename = Column(
@@ -379,9 +399,7 @@ class Dataset(Base):
     task = relationship(
         Task,
         foreign_keys=[task_id],
-        backref=backref('datasets',
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="datasets")
 
     # A human-readable text describing the dataset.
     description = Column(
@@ -423,10 +441,22 @@ class Dataset(Base):
         JSONB,
         nullable=False)
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # managers (dict of Manager objects indexed by filename)
-    # testcases (dict of Testcase objects indexed by codename)
+    # These one-to-many relationships are the reversed directions of
+    # the ones defined in the "child" classes using foreign keys.
+
+    managers = relationship(
+        "Manager",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="dataset")
+
+    testcases = relationship(
+        "Testcase",
+        collection_class=attribute_mapped_collection("codename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="dataset")
 
     @property
     def active(self):
@@ -552,11 +582,7 @@ class Manager(Base):
         index=True)
     dataset = relationship(
         Dataset,
-        backref=backref('managers',
-                        collection_class=
-                            attribute_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="managers")
 
     # Filename and digest of the provided manager.
     filename = Column(
@@ -592,11 +618,7 @@ class Testcase(Base):
         index=True)
     dataset = relationship(
         Dataset,
-        backref=backref('testcases',
-                        collection_class=
-                            attribute_mapped_collection('codename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="testcases")
 
     # Codename identifying the testcase.
     codename = Column(
