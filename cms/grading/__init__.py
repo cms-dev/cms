@@ -282,6 +282,7 @@ def compilation_step(sandbox, commands):
     logger.debug("Starting compilation step.")
     stdouts = []
     stderrs = []
+    stats = None
     for step, command in enumerate(commands):
         # Keep stdout and stderr of each compilation step
         sandbox.stdout_file = "compiler_stdout_%d.txt" % step
@@ -292,6 +293,7 @@ def compilation_step(sandbox, commands):
             logger.error("Compilation aborted because of "
                          "sandbox error in `%s'.", sandbox.path)
             return False, None, None, None
+
         stdout = sandbox.get_file_to_string(sandbox.stdout_file)\
             .decode("utf-8", errors="replace").strip()
         if len(stdout) > 0:
@@ -301,70 +303,61 @@ def compilation_step(sandbox, commands):
         if len(stderr) > 0:
             stderrs.append(stderr)
 
-        # If some command in the sequence is failed,
-        # there is no reason to continue
-        if (sandbox.get_exit_status() != Sandbox.EXIT_OK or
-                sandbox.get_exit_code() != 0):
+        this_stats = execution_stats(sandbox)
+        if stats is None:
+            stats = this_stats
+        else:
+            stats = merge_execution_stats(stats, this_stats, concurrent=False)
+
+        # If some command in the sequence has failed, we terminate early.
+        if stats["exit_status"] != Sandbox.EXIT_OK:
             break
 
-    stats = execution_stats(sandbox)
+    # Add output to the statistics.
     stats["stdout"] = '\n===\n'.join(stdouts)
     stats["stderr"] = '\n===\n'.join(stderrs)
 
+    # For each possible exit status we return an appropriate result.
     exit_status = stats["exit_status"]
-    exit_code = sandbox.get_exit_code()
 
-    # From now on, we test for the various possible outcomes and
-    # act appropriately.
-
-    # Execution finished successfully and the submission was
-    # correctly compiled.
-    success = False
-    compilation_success = None
-    text = None
-
-    if exit_status == Sandbox.EXIT_OK and exit_code == 0:
+    if exit_status == Sandbox.EXIT_OK:
+        # Execution finished successfully and the executable was generated.
         logger.debug("Compilation successfully finished.")
-        success = True
-        compilation_success = True
         text = [COMPILATION_MESSAGES.get("success").message]
+        return True, True, text, stats
 
-    # Error in compilation: returning the error to the user.
-    elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
-            exit_status == Sandbox.EXIT_NONZERO_RETURN:
+    elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
+        # Error in compilation: no executable was generated, and we return
+        # an error to the user.
         logger.debug("Compilation failed.")
-        success = True
-        compilation_success = False
         text = [COMPILATION_MESSAGES.get("fail").message]
+        return True, False, text, stats
 
-    # Timeout: returning the error to the user
     elif exit_status == Sandbox.EXIT_TIMEOUT or \
             exit_status == Sandbox.EXIT_TIMEOUT_WALL:
+        # Timeout: we assume it is the user's fault, and we return the error
+        # to them.
         logger.debug("Compilation timed out.")
-        success = True
-        compilation_success = False
         text = [COMPILATION_MESSAGES.get("timeout").message]
+        return True, False, text, stats
 
-    # Suicide with signal (probably memory limit): returning the error
-    # to the user
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        signal = sandbox.get_killing_signal()
+        # Terminated by signal: we assume again it is the user's fault, and
+        # we return the error to them.
+        signal = stats["signal"]
         logger.debug("Compilation killed with signal %s.", signal)
-        success = True
-        compilation_success = False
-        stats["signal"] = signal
         text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
+        return True, False, text, stats
 
-    # Sandbox error: this isn't a user error, the administrator needs
-    # to check the environment
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-        logger.error("Compilation aborted because of sandbox error.")
+        # We shouldn't arrive here, as we should have gotten a False success
+        # from execute_without_std.
+        logger.error("Unexpected SANDBOX_ERROR exit status.")
+        return False, None, None, None
 
-    # Why the exit status hasn't been captured before?
     else:
-        logger.error("Shouldn't arrive here, failing.")
-
-    return success, compilation_success, text, stats
+        logger.error("Unrecognized sandbox exit status '%s'.", exit_status)
+        return False, None, None, None
 
 
 def evaluation_step(sandbox, commands,
