@@ -1,7 +1,12 @@
 # We are currently targeting the versions shipped in Ubuntu 18.04.
 
 tornado>=4.5,<4.6  # http://www.tornadoweb.org/en/stable/releases.html
-psycopg2>=2.7,<2.8  # http://initd.org/psycopg/articles/tag/release/
+# Using the binary psycopg2 package may cause segmentation faults and prints
+# warnings in the logs. Tell pip to build from source instead. See:
+# http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/
+# http://initd.org/psycopg/docs/install.html#disabling-wheel-packages-for-psycopg-2-7
+# We will be able to remove the flag when upgrading to version 2.8.
+psycopg2>=2.7,<2.8 --no-binary psycopg2  # http://initd.org/psycopg/articles/tag/release/
 sqlalchemy>=1.1,<1.2  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
 netifaces>=0.10,<0.11  # https://bitbucket.org/al45tair/netifaces/src/
 pycrypto>=2.6,<2.7  # https://github.com/dlitz/pycrypto/blob/master/ChangeLog
