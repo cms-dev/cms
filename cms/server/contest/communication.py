@@ -126,7 +126,7 @@ def get_communications(sql_session, participation, timestamp, after=None):
         the communications is to be taken (i.e., communications that
         will occur after this moment, but are already in the database,
         are to be ignored).
-    since (datetime|None): if not none, ignore also the communications
+    after (datetime|None): if not none, ignore also the communications
         that were received at or before this moment in time.
 
     return ([dict]): for each communication a dictionary with 4 fields:
