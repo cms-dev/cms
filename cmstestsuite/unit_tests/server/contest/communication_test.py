@@ -137,6 +137,14 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
             after=self.at(after) if after is not None else None)
 
     def verify(self, ts, test_interval, res):
+        """Ensure that queries on intervals that contain ts return res.
+
+        Call get_communications on all intervals of the form (-oo, t]
+        and (after, t] for 0 <= after, t < test_interval and check that
+        the ones that contain ts return res and the ones that don't
+        return [].
+
+        """
         for test_time in range(test_interval):
             six.assertCountEqual(
                 self, self.call(test_time),
