@@ -75,7 +75,8 @@ def accept_print_job(sql_session, file_cacher, participation, timestamp, files):
     files ({str: [HTTPFile]}): the provided files, as a dictionary
         whose keys are the field names and whose values are lists of
         Tornado HTTPFile objects (each with a filename and a body
-        attribute).
+        attribute). The expected format consists of one item, whose key
+        is "file" and whose value is a singleton list.
 
     return (PrintJob): the PrintJob that was added to the database.
 
