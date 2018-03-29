@@ -103,7 +103,6 @@ def accept_question(sql_session, participation, timestamp, subject, text):
 
     question = Question(timestamp, subject, text, participation=participation)
     sql_session.add(question)
-    sql_session.commit()
 
     logger.info("Question submitted by user %s.", participation.user.username)
 

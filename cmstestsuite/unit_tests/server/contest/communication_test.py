@@ -52,8 +52,10 @@ class TestAcceptQuestion(DatabaseMixin, unittest.TestCase):
             contest=self.contest, user=self.user)
 
     def call(self, subject, text):
-        return accept_question(self.session, self.participation,
-                               self.timestamp, subject, text)
+        res = accept_question(self.session, self.participation,
+                              self.timestamp, subject, text)
+        self.session.commit()
+        return res
 
     def assertQuestionExists(self, question):
         q = self.session.query(Question) \

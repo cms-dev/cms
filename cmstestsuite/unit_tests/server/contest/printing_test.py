@@ -65,8 +65,10 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
             contest=self.contest, user=self.user)
 
     def call(self, files):
-        return accept_print_job(self.session, self.file_cacher,
-                                self.participation, self.timestamp, files)
+        res = accept_print_job(self.session, self.file_cacher,
+                               self.participation, self.timestamp, files)
+        self.session.commit()
+        return res
 
     def assertPrintJobExists(self, print_job):
         q = self.session.query(PrintJob) \
