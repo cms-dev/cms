@@ -132,6 +132,5 @@ def accept_print_job(sql_session, file_cacher, participation, timestamp, files):
                         filename=filename,
                         digest=digest)
     sql_session.add(printjob)
-    sql_session.commit()
 
     return printjob

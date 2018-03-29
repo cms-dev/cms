@@ -214,6 +214,7 @@ class PrintingHandler(ContestHandler):
             printjob = accept_print_job(
                 self.sql_session, self.service.file_cacher, participation,
                 self.timestamp, self.request.files)
+            self.sql_session.commit()
         except PrintingDisabled:
             raise tornado.web.HTTPError(404)
         except UnacceptablePrintJob as e:
