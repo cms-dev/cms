@@ -95,10 +95,9 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
     def add_announcement(self, subject, text, timestamp, contest=None):
         if contest is None:
             contest = self.contest
-        a = Announcement(
+        super(TestGetCommunications, self).add_announcement(
             subject=subject, text=text, timestamp=self.at(timestamp),
             contest=contest)
-        self.session.add(a)
         d = {"type": "announcement", "subject": subject, "text": text,
              "timestamp": make_timestamp(self.timestamp) + timestamp}
         return d
@@ -106,10 +105,9 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
     def add_message(self, subject, text, timestamp, participation=None):
         if participation is None:
             participation = self.participation
-        m = Message(
+        super(TestGetCommunications, self).add_message(
             subject=subject, text=text, timestamp=self.at(timestamp),
             participation=participation)
-        self.session.add(m)
         d = {"type": "message", "subject": subject, "text": text,
              "timestamp": make_timestamp(self.timestamp) + timestamp}
         return d
@@ -117,10 +115,9 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
     def add_question(self, subject, text, timestamp, participation=None):
         if participation is None:
             participation = self.participation
-        q = Question(
+        q = super(TestGetCommunications, self).add_question(
             subject=subject, text=text, question_timestamp=self.at(timestamp),
             participation=participation)
-        self.session.add(q)
         return q
 
     def set_answer(self, q, subject, text, timestamp):
