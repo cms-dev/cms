@@ -42,15 +42,20 @@ from cms.db import PrintJob
 logger = logging.getLogger(__name__)
 
 
+# Dummy function to mark translatable string.
 def N_(msgid):
     return msgid
 
 
-class Unprintable(Exception):
+class PrintingDisabled(Exception):
+    """Raised when printing is disabled."""
+
     pass
 
 
 class UnacceptablePrintJob(Exception):
+    """Raised when a printout request can't be accepted."""
+
     def __init__(self, subject, text):
         self.subject = subject
         self.text = text
@@ -74,15 +79,15 @@ def accept_print_job(sql_session, file_cacher, participation, timestamp, files):
 
     return (PrintJob): the PrintJob that was added to the database.
 
-    raise (Unprintable): if printing is disabled because there are no
-        printers available).
+    raise (PrintingDisabled): if printing is disabled because there are
+        no printers available).
     raise (UnacceptablePrintJob): if some of the requirements that have
         to be met in order for the request to be accepted don't hold.
 
     """
 
     if config.printer is None:
-        raise Unprintable()
+        raise PrintingDisabled()
 
     old_count = sql_session.query(func.count(PrintJob.id)) \
         .filter(PrintJob.participation == participation).scalar()

@@ -48,7 +48,7 @@ from cms.grading import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
-from cms.server.contest.printing import accept_print_job, Unprintable, \
+from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
 from cmscommon.datetime import make_datetime, make_timestamp
 
@@ -214,7 +214,7 @@ class PrintingHandler(ContestHandler):
             printjob = accept_print_job(
                 self.sql_session, self.service.file_cacher, participation,
                 self.timestamp, self.request.files)
-        except Unprintable:
+        except PrintingDisabled:
             raise tornado.web.HTTPError(404)
         except UnacceptablePrintJob as e:
             self.service.add_notification(

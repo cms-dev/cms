@@ -39,7 +39,7 @@ from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import PrintJob
 from cms.server.contest.printing import accept_print_job, \
-    UnacceptablePrintJob, Unprintable
+    UnacceptablePrintJob, PrintingDisabled
 from cmscommon.datetime import make_datetime
 from cmscommon.digest import bytes_digest
 
@@ -83,7 +83,7 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
 
     def test_printing_not_allowed(self):
         with patch.object(config, "printer", None):
-            with self.assertRaises(Unprintable):
+            with self.assertRaises(PrintingDisabled):
                 self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
 
     def test_bad_files(self):
