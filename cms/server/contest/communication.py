@@ -95,8 +95,11 @@ def accept_question(sql_session, participation, timestamp, subject, text):
                        subject_length, text_length,
                        participation.user.username)
         raise UnacceptableQuestion(
-            N_("Question too big!"),
-            N_("You have reached the question length limit."))
+            N_("Question too long!"),
+            N_("Subject must be at most %(max_subject_length)d characters, "
+               "content at most %(max_text_length)d."
+               % {"max_subject_length": Question.MAX_SUBJECT_LENGTH,
+                  "max_text_length": Question.MAX_TEXT_LENGTH}))
 
     question = Question(timestamp, subject, text, participation=participation)
     sql_session.add(question)
