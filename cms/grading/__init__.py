@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -186,14 +186,6 @@ EVALUATION_MESSAGES = MessageCollection([
                     "the memory usage visible in the submission details is "
                     "the usage before the allocation that caused the "
                     "signal.")),
-    HumanMessage("syscall",
-                 N_("Execution killed because of forbidden syscall %s"),
-                 N_("Your submission was killed because it tried to use "
-                    "the forbidden syscall specified in the message.")),
-    HumanMessage("fileaccess",
-                 N_("Execution killed because of forbidden file access"),
-                 N_("Your submission was killed because it tried to read "
-                    "or write a forbidden file.")),
     HumanMessage("returncode",
                  N_("Execution failed because the return code was nonzero"),
                  N_("Your submission failed because it exited with a return "
@@ -364,21 +356,6 @@ def compilation_step(sandbox, commands):
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         logger.error("Compilation aborted because of sandbox error.")
 
-    # Forbidden syscall: this shouldn't happen, probably the
-    # administrator should relax the syscall constraints
-    elif exit_status == Sandbox.EXIT_SYSCALL:
-        syscall = sandbox.get_killing_syscall()
-        logger.error("Compilation aborted "
-                     "because of forbidden syscall `%s'.", syscall)
-
-    # Forbidden file access: this could be triggered by the user
-    # including a forbidden file or too strict sandbox contraints; the
-    # administrator should have a look at it
-    elif exit_status == Sandbox.EXIT_FILE_ACCESS:
-        filename = sandbox.get_forbidden_file_error()
-        logger.error("Compilation aborted "
-                     "because of forbidden access to file `%s'.", filename)
-
     # Why the exit status hasn't been captured before?
     else:
         logger.error("Shouldn't arrive here, failing.")
@@ -514,25 +491,6 @@ def evaluation_step_after_run(sandbox):
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         logger.error("Evaluation aborted because of sandbox error.")
 
-    # Forbidden syscall: returning the error to the user. Note: this
-    # can be triggered also while allocating too much memory
-    # dynamically (offensive syscall is mprotect).
-    elif exit_status == Sandbox.EXIT_SYSCALL:
-        syscall = sandbox.get_killing_syscall()
-        logger.debug("Execution killed because of forbidden "
-                     "syscall: `%s'.", syscall)
-        success = True
-        plus["syscall"] = syscall
-
-    # Forbidden file access: returning the error to the user, without
-    # disclosing the offending file (can't we?).
-    elif exit_status == Sandbox.EXIT_FILE_ACCESS:
-        filename = sandbox.get_forbidden_file_error()
-        logger.debug("Execution killed because of forbidden "
-                     "file access: `%s'.", filename)
-        success = True
-        plus["filename"] = filename
-
     # The exit code was nonzero: returning the error to the user.
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         logger.debug("Execution failed because the return code was nonzero.")
@@ -568,10 +526,6 @@ def merge_evaluation_results(plus0, plus1):
         plus["exit_status"] = plus1["exit_status"]
         if plus1["exit_status"] == Sandbox.EXIT_SIGNAL:
             plus["signal"] = plus1["signal"]
-        elif plus1["exit_status"] == Sandbox.EXIT_SYSCALL:
-            plus["syscall"] = plus1["syscall"]
-        elif plus1["exit_status"] == Sandbox.EXIT_FILE_ACCESS:
-            plus["filename"] = plus1["filename"]
 
     return plus
 
@@ -596,11 +550,6 @@ def human_evaluation_message(plus):
         return [EVALUATION_MESSAGES.get("signal").message, str(plus['signal'])]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return []
-    elif exit_status == Sandbox.EXIT_SYSCALL:
-        return [EVALUATION_MESSAGES.get("syscall").message, plus['syscall']]
-    elif exit_status == Sandbox.EXIT_FILE_ACCESS:
-        # Don't tell which file: would be too much information!
-        return [EVALUATION_MESSAGES.get("fileaccess").message]
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Don't tell which code: would be too much information!
         return [EVALUATION_MESSAGES.get("returncode").message]

@@ -125,27 +125,6 @@ msgstr ""
 "detaļās, ir apjoms, kas tika atvēlēts pirms tika mēģināts izdalīt atmiņu, "
 "kas izraisīja signālu."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Izpilde pārtraukta aizliegta sistēmas izsaukuma %s dēļ"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"Jūsu iesūtījums ir mēģinājis veikt aizliegtu sistēmas izsaukumu, kas "
-"norādīts ziņojumā, un tā izpilde ir pārtraukta."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Izpilde pārtraukta neatļautas datņu piekļūšanas dēļ"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"Jūsu iesūtījums ir mēģinājis lasīt vai rakstīt neatļautā datnē, un tā "
-"izpilde ir pārtraukta."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Izpilde ir nesekmīga, jo atgriešanās kods nav nulle"
 

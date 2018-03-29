@@ -122,24 +122,6 @@ msgstr ""
 "을 초과하여 발생했을 수 있습니다. 이 문제가 발생한 경우, 명시된 메모리 사용량"
 "이 실제 실행 시 메모리 사용량보다 매우 적을 수 있음을 주의해주십시오."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "제한된 시스템 콜 %s로 인하여 실행이 중지되었습니다."
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr "올바르지 못한 시스템 콜 호출을 시도하여 실행이 중지되었습니다."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "제한된 파일 접근으로 인하여 실행이 중지되었습니다."
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"제한된 파일을 읽거나, 제한된 파일에 쓰려는 시도를 하여 실행이 중지되었습니다."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "return 값이 0이 아니어서 실행에 실패하였습니다."
 

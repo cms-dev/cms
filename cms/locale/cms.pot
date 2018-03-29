@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.4.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-03-11 17:10+0100\n"
+"POT-Creation-Date: 2018-03-28 13:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -127,23 +127,6 @@ msgid ""
 "this might be caused by exceeding the memory limit. Note that if this is the"
 " reason, the memory usage visible in the submission details is the usage "
 "before the allocation that caused the signal."
-msgstr ""
-
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr ""
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-
-msgid "Execution killed because of forbidden file access"
-msgstr ""
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
 msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
@@ -308,6 +291,38 @@ msgstr ""
 msgid "Your print job has been received."
 msgstr ""
 
+msgid "Compiling..."
+msgstr ""
+
+msgid "details"
+msgstr ""
+
+msgid "Evaluating..."
+msgstr ""
+
+msgid "Scoring..."
+msgstr ""
+
+msgid "Evaluated"
+msgstr ""
+
+msgid "Token request discarded"
+msgstr ""
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr ""
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+
+msgid "Token request received"
+msgstr ""
+
+msgid "Your request has been received and applied to the submission."
+msgstr ""
+
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
 msgstr ""
@@ -363,38 +378,6 @@ msgid "Submission received"
 msgstr ""
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr ""
-
-msgid "Compiling..."
-msgstr ""
-
-msgid "details"
-msgstr ""
-
-msgid "Evaluating..."
-msgstr ""
-
-msgid "Scoring..."
-msgstr ""
-
-msgid "Evaluated"
-msgstr ""
-
-msgid "Token request discarded"
-msgstr ""
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-
-msgid "Token request received"
-msgstr ""
-
-msgid "Your request has been received and applied to the submission."
 msgstr ""
 
 #, python-format

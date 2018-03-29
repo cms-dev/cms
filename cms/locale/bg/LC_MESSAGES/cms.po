@@ -108,27 +108,6 @@ msgstr ""
 "отбележете, че показаната използвана памет в детайлите на решението е от преди"
 "заделянето на памет, което е предизвикало сигнала."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Изпълнението е прекратено поради използването на забранена системна функция"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"Изпълнението на програмата беше прекратено, защото тя се опита да използва"
-"забранената системна функция указана в съобщението."
-
-msgid "Execution killed because of forbidden file access"
-msgstr ""
-"Изпълнението на вашата програма беше прекратено поради забранен достъп"
-"до файлове"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Изпълнението се провали, защото програмата върна ненулев резултат."
 

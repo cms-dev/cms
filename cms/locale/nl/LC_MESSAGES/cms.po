@@ -126,27 +126,6 @@ msgstr ""
 "weergegeven in de details van de inzending, het gebruik is vlak voor de "
 "allocatie die dit signaal veroorzaakte."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Uitvoering afgebroken vanwege verboden syscall %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"Je inzending werd afgebroken omdat het de verboden syscall probeerde zoals "
-"gespecifieerd in het bericht."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Uitvoering afgebroken vanwege verboden bestandstoegang"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"Je inzending werd afgebroken omdat het een verboden bestand probeerde te "
-"lezen of schrijven."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Uitvoering mislukt omdat de return code niet nul was"
 

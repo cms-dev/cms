@@ -87,19 +87,6 @@ msgstr "Izvajanje je bilo prekinjeno s signalom %s (lahko je posledica prekorač
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
 msgstr "Tvoja oddaja je bila prekinjena s specifičnim signalom. Med drugim je to lahko posledica prekoračitve spominske omejitve. V tem primeru je porabljen spomin, ki je viden pri podrobnostih o oddaji, tisti spomin, ki je bil uporabljen pred dodelitvijo, ki je sporžila signal."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Izvajanje je bilo prekinjeno zaradi prepovedanega sistemskega klica %s"
-
-msgid "Your submission was killed because it tried to use the forbidden syscall specified in the message."
-msgstr "Tvoja oddaja je bila prekinjena, ker je poizkušala uporabiti prepovedan sistemski klic omenjen v sporočilu."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Izvajanje prekinjeno zaradi prepovedanega dostopa do datoteke"
-
-msgid "Your submission was killed because it tried to read or write a forbidden file."
-msgstr "Tvoja oddaja je bila prekinjena, ker je poizkušala brati iz ali pisati v prepovedano datoteko."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Izvajanje je spodletelo, ker se je končala z neničelno kodo"
 

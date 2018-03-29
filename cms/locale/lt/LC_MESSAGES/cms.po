@@ -125,27 +125,6 @@ msgstr ""
 "rodomas panaudotos atminties kiekis yra toks, koks jis buvo prieš signalą "
 "sukėlusį veiksmą."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Vykdymas nutrauktas dėl draudžiamo sisteminio iškvietimo %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"Tavo sprendimo vykdymas buvo nutrauktas, nes bandė iškviesti draudžiamą "
-"sisteminį iškvietimą, nurodytą klaidos pranešime."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Vykdymas nutrauktas dėl bandymo pasiekti draudžiamą failą"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"Tavo sprendimo vykdymas buvo nutrauktas, nes bandė skaityti iš arba rašyti į "
-"draudžiamą failą."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Vykdymas nesėkmingas, nes grąžintas kodas buvo ne nulis"
 
