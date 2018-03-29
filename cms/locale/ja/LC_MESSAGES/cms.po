@@ -121,27 +121,6 @@ msgstr ""
 "よって強制終了された場合には、詳細ページに表示される消費メモリの量が、メモリ"
 "制限を超える直前に消費していたメモリの量を示していることに注意してください。"
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "禁止されたシステムコール %s を発行したことによる強制終了"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"禁止されたシステムコールを呼び出そうとしたため、提出されたプログラムは強制終"
-"了されました。"
-
-msgid "Execution killed because of forbidden file access"
-msgstr "禁止されたファイルアクセスを行ったことによる強制終了"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"禁止されたファイルへの読み込みまたは書き込みを行おうとしたため、提出されたプ"
-"ログラムは強制終了されました。"
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "戻り値がゼロでなかったことによる異常終了"
 

@@ -146,27 +146,6 @@ msgstr ""
 "použitá paměť zobrazená v detailech odevzdaného řešení je použitá paměť před "
 "alokací, která způsobila poslání signálu."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Program ukončen kvůli zakázanému systémovému volání %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"Odevzdané řešení bylo ukončeno, protože se pokusilo použít zakázané "
-"systémové volání uvedené ve zprávě."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Program ukončen kvůli zakázanému přístupu k souboru"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"Odevzdané řešení bylo ukončeno, protože se pokusilo číst nebo zapisovat z/do "
-"zakázaného soubouru."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Program selhal kvůli nenulové návratové hodnotě"
 

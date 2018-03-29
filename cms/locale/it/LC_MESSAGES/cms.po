@@ -130,27 +130,6 @@ msgstr ""
 "questo, i dettagli della sottoposizione mostreranno la quantità di memoria "
 "usata subito prima dell'allocamento che ha causato il segnale."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Esecuzione terminata a causa di chiamata di sistema vietata %s"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr ""
-"La tua sottoposizione è stata terminata perché ha cercato di usare la "
-"syscall proibita specificata nel messaggio."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Esecuzione terminata a causa di accesso a file vietato"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr ""
-"La tua sottoposizione è stat terminata perché ha cercato di leggere o "
-"scrivere un file non accessibile."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Esecuzione fallita a causa di codice di ritorno diverso da zero"
 

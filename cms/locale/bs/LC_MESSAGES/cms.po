@@ -41,13 +41,6 @@ msgstr "Vrijeme za izvršavanje je isteklo"
 msgid "Execution killed with signal %s (could be triggered by violating memory limits)"
 msgstr "Izvršavanje prekinuto signalom %s (možda je izazvano prekoračenjem dozvoljene memorije)"
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Izvršenje prekinuto zbog nedozvoljenog sistemskog poziva %s"
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Izvršenje prekinuto zbog nedozvoljenog datotečnog pristupa"
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Izvršenje nije uspjelo jer povratni kod nije bio nula"
 

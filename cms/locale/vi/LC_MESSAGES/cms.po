@@ -120,23 +120,6 @@ msgstr ""
 "giới hạn bộ nhớ. Trong trường hợp đó, lượng bộ nhớ sử dụng được hiển thị là "
 "lượng bộ nhớ ngay trước thao tác cấp phát gây ra tín hiệu ngắt."
 
-#, python-format
-msgid "Execution killed because of forbidden syscall %s"
-msgstr "Chương trình bị ngắt do syscall %s bị cấm"
-
-msgid ""
-"Your submission was killed because it tried to use the forbidden syscall "
-"specified in the message."
-msgstr "Bài nộp của bạn bị ngắt do sử dụng syscall bị cấm nêu trên."
-
-msgid "Execution killed because of forbidden file access"
-msgstr "Chương trình bị ngắt do truy cập file bị cấm"
-
-msgid ""
-"Your submission was killed because it tried to read or write a forbidden "
-"file."
-msgstr "Bài nộp của bạn bị ngắt do đọc hoặc ghi một file bị cấm."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Chương trình chạy không thành công vì exitcode khác 0"
 
