@@ -49,7 +49,6 @@ from future.moves.urllib.parse import urljoin, urlsplit
 from cms import config
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
-from cms.grading.scoretypes import get_score_type
 from cmscommon.datetime import make_timestamp
 
 
@@ -358,7 +357,7 @@ class ProxyService(TriggeredService):
             tasks = dict()
 
             for task in contest.tasks:
-                score_type = get_score_type(dataset=task.active_dataset)
+                score_type = task.active_dataset.score_type_object
                 tasks[encode_id(task.name)] = {
                     "short_name": task.name,
                     "name": task.title,

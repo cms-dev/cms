@@ -31,7 +31,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import itervalues
+from six import itervalues, iteritems
 
 import copy
 from datetime import timedelta
@@ -447,7 +447,8 @@ class Dataset(Base):
             # Import late to avoid a circular dependency.
             from cms.grading.tasktypes import get_task_type
             # This can raise.
-            self._cached_task_type_object = get_task_type(dataset=self)
+            self._cached_task_type_object = get_task_type(
+                self.task_type, self.task_type_parameters)
             # If an exception is raised these updates don't take place:
             # that way, next time this property is accessed, we get a
             # cache miss again and the same exception is raised again.
@@ -458,20 +459,24 @@ class Dataset(Base):
 
     @property
     def score_type_object(self):
+        public_testcases = {k: tc.public for k, tc in iteritems(self.testcases)}
         if not hasattr(self, "_cached_score_type_object") \
                 or self.score_type != self._cached_score_type \
                 or self.score_type_parameters \
-                   != self._cached_score_type_parameters:
+                   != self._cached_score_type_parameters \
+                or public_testcases != self._cached_public_testcases:
             # Import late to avoid a circular dependency.
             from cms.grading.scoretypes import get_score_type
             # This can raise.
-            self._cached_score_type_object = get_score_type(dataset=self)
+            self._cached_score_type_object = get_score_type(
+                self.score_type, self.score_type_parameters, public_testcases)
             # If an exception is raised these updates don't take place:
             # that way, next time this property is accessed, we get a
             # cache miss again and the same exception is raised again.
             self._cached_score_type = self.score_type
             self._cached_score_type_parameters = \
                 copy.deepcopy(self.score_type_parameters)
+            self._cached_public_testcases = public_testcases
         return self._cached_score_type_object
 
     def clone_from(self, old_dataset, clone_managers=True,

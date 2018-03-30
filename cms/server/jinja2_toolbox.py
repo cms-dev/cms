@@ -43,8 +43,6 @@ from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
     TOKEN_MODE_MIXED, SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX
 from cms.grading import format_status_text
 from cms.grading.languagemanager import get_language
-from cms.grading.scoretypes import get_score_type
-from cms.grading.tasktypes import get_task_type
 from cms.locale import DEFAULT_TRANSLATION
 
 
@@ -174,28 +172,26 @@ def instrument_generic_toolbox(env):
     env.tests["today"] = today
 
 
+# TODO When dropping py2, let the arguments be `env, *, dataset` in
+# order to force the users to pass the dataset as a keyword argument.
 @environmentfunction
-def safe_get_task_type(env, *args, **kwargs):
+def safe_get_task_type(env, dataset):
     try:
-        if "dataset" in kwargs:
-            return kwargs["dataset"].task_type_object
-        else:
-            get_task_type(*args, **kwargs)
+        return dataset.task_type_object
     # The task type's constructor is called, which may raise any
-    # arbitrary exception, hence we stay as general al possible.
+    # arbitrary exception, hence we stay as general as possible.
     except Exception as err:
         return env.undefined("TaskType not found: %s" % err)
 
 
+# TODO When dropping py2, let the arguments be `env, *, dataset` in
+# order to force the users to pass the dataset as a keyword argument.
 @environmentfunction
-def safe_get_score_type(env, *args, **kwargs):
+def safe_get_score_type(env, dataset):
     try:
-        if "dataset" in kwargs:
-            return kwargs["dataset"].score_type_object
-        else:
-            get_score_type(*args, **kwargs)
+        return dataset.score_type_object
     # The score type's constructor is called, which may raise any
-    # arbitrary exception, hence we stay as general al possible.
+    # arbitrary exception, hence we stay as general as possible.
     except Exception as err:
         return env.undefined("ScoreType not found: %s" % err)
 
