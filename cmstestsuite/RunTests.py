@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+import io
 import os
 import sys
 
@@ -62,7 +63,8 @@ def main():
     except TestException:
         if os.path.exists("./log/cms/last.log"):
             print("\n\n===== START OF LOG DUMP =====\n\n")
-            print(open("./log/cms/last.log").read())
+            with io.open("./log/cms/last.log", "rt", encoding="utf-8") as f:
+                print(f.read())
             print("\n\n===== END OF LOG DUMP =====\n\n")
         return 1
     return 0

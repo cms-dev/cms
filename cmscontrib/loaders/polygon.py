@@ -161,7 +161,7 @@ class PolygonTaskLoader(TaskLoader):
         task_cms_conf = None
         if os.path.exists(task_cms_conf_path):
             logger.info("Found additional CMS options for task %s.", name)
-            with open(task_cms_conf_path, 'r') as f:
+            with io.open(task_cms_conf_path, 'rb') as f:
                 task_cms_conf = imp.load_module('cms_conf', f,
                                                 task_cms_conf_path,
                                                 ('.py', 'r', imp.PY_SOURCE))

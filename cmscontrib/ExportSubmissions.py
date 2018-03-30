@@ -259,7 +259,7 @@ def main():
                         f_out.write(data)
                 else:
                     # Print raw, untouched binary data
-                    with open(filename, "wb") as f_out:
+                    with io.open(filename, "wb") as f_out:
                         f_out.write(data)
 
             done += 1

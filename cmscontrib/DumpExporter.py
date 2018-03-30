@@ -261,10 +261,9 @@ class DumpExporter(object):
 
         # If the admin requested export to file, we do that.
         if archive_info["write_mode"] != "":
-            archive = tarfile.open(self.export_target,
-                                   archive_info["write_mode"])
-            archive.add(export_dir, arcname=archive_info["basename"])
-            archive.close()
+            with tarfile.open(self.export_target,
+                              archive_info["write_mode"]) as archive:
+                archive.add(export_dir, arcname=archive_info["basename"])
             rmtree(export_dir)
 
         logger.info("Export finished.")

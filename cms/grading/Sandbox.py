@@ -980,7 +980,7 @@ class IsolateSandbox(SandboxBase):
         # assign the correct permissions.
         for path in (os.path.join(self.path, path) for path in paths):
             if not os.path.exists(path):
-                open(path, "w").close()
+                io.open(path, "wb").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
@@ -1273,8 +1273,8 @@ class IsolateSandbox(SandboxBase):
                 # is not forwarded to the contestants. Secure commands
                 # are "setup" commands, which should not fail or
                 # provide information for the contestants.
-                open(os.path.join(self.path, self.stdout_file), "w").close()
-                open(os.path.join(self.path, self.stderr_file), "w").close()
+                io.open(os.path.join(self.path, self.stdout_file), "wb").close()
+                io.open(os.path.join(self.path, self.stderr_file), "wb").close()
                 self._write_empty_run_log(self.exec_num)
             except OSError:
                 logger.critical(
@@ -1306,7 +1306,8 @@ class IsolateSandbox(SandboxBase):
 
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
-        with open(os.path.join(self.path, "run.log.%s" % index), "w") as f:
+        with io.open(os.path.join(self.path, "run.log.%s" % index),
+                     "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
             f.write("max-rss:0\n")
