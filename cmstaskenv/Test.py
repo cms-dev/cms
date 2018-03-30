@@ -38,7 +38,6 @@ from cms.db import Executable
 from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
-from cms.grading.tasktypes import get_task_type
 from cms.service.esoperations import ESOperation
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
@@ -136,7 +135,7 @@ def test_testcases(base_dir, solution, language, assume=None):
         input=dataset.testcases[t].input, output=dataset.testcases[t].output,
         time_limit=dataset.time_limit,
         memory_limit=dataset.memory_limit)) for t in dataset.testcases]
-    tasktype = get_task_type(dataset=dataset)
+    tasktype = dataset.task_type_object
 
     ask_again = True
     last_status = "ok"

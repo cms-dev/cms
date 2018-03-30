@@ -52,8 +52,6 @@ from sqlalchemy.orm import joinedload
 from cms import config
 from cms.db import File, Submission, SubmissionResult, Task, Token
 from cms.grading.languagemanager import get_language
-from cms.grading.scoretypes import get_score_type
-from cms.grading.tasktypes import get_task_type
 from cms.server import multi_contest
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
@@ -221,7 +219,7 @@ class SubmitHandler(ContestHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        task_type = get_task_type(dataset=task.active_dataset)
+        task_type = task.active_dataset.task_type_object
         provided = set(iterkeys(self.request.files))
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
@@ -465,7 +463,7 @@ class SubmissionStatusHandler(ContestHandler):
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Evaluated"), self._("details"))
 
-            score_type = get_score_type(dataset=task.active_dataset)
+            score_type = task.active_dataset.score_type_object
             if score_type.max_public_score > 0:
                 data["max_public_score"] = \
                     round(score_type.max_public_score, task.score_precision)
@@ -513,7 +511,7 @@ class SubmissionDetailsHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
-        score_type = get_score_type(dataset=task.active_dataset)
+        score_type = task.active_dataset.score_type_object
 
         details = None
         if sr is not None:

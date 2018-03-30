@@ -43,37 +43,20 @@ def get_score_type_class(name):
                          "cms.grading.scoretypes", "scoretypes")
 
 
-def get_score_type(name=None, parameters=None, public_testcases=None,
-                   dataset=None):
+def get_score_type(name, parameters, public_testcases):
     """Construct the ScoreType specified by parameters.
 
     Load the ScoreType class named "name" and instantiate it with the
     data structure obtained by JSON-decoding "parameters" and with the
     dict "public_testcases".
-    If "dataset" is given then all other arguments should be omitted as
-    they are obtained from the dataset.
 
-    name (unicode|None): the name of the ScoreType class.
-    parameters (object|None): the parameters.
-    public_testcases ({str: bool}|None): for each testcase (identified
-        by its codename) a flag telling whether it's public or not.
-    dataset (Dataset|None): the dataset whose ScoreType we want.
+    name (str): the name of the ScoreType class.
+    parameters (object): the parameters.
+    public_testcases ({str: bool}): for each testcase (identified by
+        its codename) a flag telling whether it's public or not.
 
     return (ScoreType): an instance of the correct ScoreType class.
 
     """
-    if dataset is not None:
-        if any(x is not None for x in (name, parameters, public_testcases)):
-            raise ValueError("Need exactly one way to get the score type.")
-
-        name = dataset.score_type
-        parameters = dataset.score_type_parameters
-        public_testcases = dict((k, tc.public)
-                                for k, tc in iteritems(dataset.testcases))
-
-    elif any(x is None for x in (name, parameters, public_testcases)):
-        raise ValueError("Need exactly one way to get the score type.")
-
     class_ = get_score_type_class(name)
-
     return class_(parameters, public_testcases)

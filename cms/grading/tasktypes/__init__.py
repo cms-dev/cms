@@ -42,19 +42,14 @@ def get_task_type_class(name):
                          "cms.grading.tasktypes", "tasktypes")
 
 
-def get_task_type(name=None, parameters=None,
-                  dataset=None):
+def get_task_type(name, parameters):
     """Construct the TaskType specified by parameters.
 
     Load the TaskType class named "name" and instantiate it with the
     data structure obtained by JSON-decoding "parameters".
-    If "dataset" is given then all other arguments should be omitted as
-    they are obtained from the dataset.
 
-    name (unicode|None): the name of the TaskType class.
-    parameters (object|None): the parameters.
-    dataset (Dataset|None): the dataset whose TaskType we want (if
-        None, use the other parameters to find the task type).
+    name (str): the name of the TaskType class.
+    parameters (object): the parameters.
 
     return (TaskType): an instance of the correct TaskType class.
 
@@ -62,16 +57,5 @@ def get_task_type(name=None, parameters=None,
         cannot be parsed.
 
     """
-    if dataset is not None:
-        if any(x is not None for x in (name, parameters)):
-            raise ValueError("Need exactly one way to get the task type.")
-
-        name = dataset.task_type
-        parameters = dataset.task_type_parameters
-
-    elif any(x is None for x in (name, parameters)):
-        raise ValueError("Need exactly one way to get the task type.")
-
     class_ = get_task_type_class(name)
-
     return class_(parameters)

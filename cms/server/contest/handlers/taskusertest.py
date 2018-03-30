@@ -51,7 +51,6 @@ from cms import config
 from cms.db import Task, UserTest, UserTestFile, UserTestManager, \
     UserTestResult
 from cms.grading.languagemanager import get_language
-from cms.grading.tasktypes import get_task_type
 from cms.server import multi_contest
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
@@ -162,7 +161,7 @@ class UserTestHandler(ContestHandler):
         self.fallback_args = {"task_name": task.name}
 
         # Check that the task is testable
-        task_type = get_task_type(dataset=task.active_dataset)
+        task_type = task.active_dataset.task_type_object
         if not task_type.testable:
             logger.warning("User %s tried to make test on task %s.",
                            participation.user.username, task_name)
