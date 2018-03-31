@@ -37,25 +37,26 @@
             {% trans %}You can see (and download) all of them using the list on the right.{% endtrans %}
             {% trans %}Some suggested translations follow.{% endtrans %}
         </p>
-    {% set task_primary = primary_statements %}
-    {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
-        {% if statement.language in task_primary %}
+    {% for statement in itervalues(task.statements)|sort(attribute="language") %}
+        {% if statement.language in task.primary_statements %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
-            {% if statement.language != statement.language_name %}
-                {% trans lang=statement.language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
+            {% set language_name = statement.language|format_locale %}
+            {% if statement.language != language_name %}
+                {% trans lang=language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
             {% else %}
-                {% trans lang=statement.language_name %}Statement in {{ lang }}{% endtrans %}
+                {% trans lang=language_name %}Statement in {{ lang }}{% endtrans %}
             {% endif %}
         </a>
         {% endif %}
     {% endfor %}
-    {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
-        {% if statement.language in user_primary and statement.language not in task_primary %}
+    {% for statement in itervalues(task.statements)|sort(attribute="language") %}
+        {% if statement.language in participation.user.preferred_languages and statement.language not in task.primary_statements %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
-            {% if statement.language != statement.language_name %}
-                {% trans lang=statement.language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
+            {% set language_name = statement.language|format_locale %}
+            {% if statement.language != language_name %}
+                {% trans lang=language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
             {% else %}
-                {% trans lang=statement.language_name %}Statement in {{ lang }}{% endtrans %}
+                {% trans lang=language_name %}Statement in {{ lang }}{% endtrans %}
             {% endif %}
         </a>
         {% endif %}
@@ -64,13 +65,14 @@
     <div class="all_statements well">
         <div>
             <ul>
-    {% for statement in itervalues(task.statements)|sort(attribute="language_name") %}
+    {% for statement in itervalues(task.statements)|sort(attribute="language") %}
                 <li>
                     <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
-        {% if statement.language != statement.language_name %}
-            {% trans lang=statement.language_name %}<b>{{ lang }}</b>{% endtrans %}
+        {% set language_name = statement.language|format_locale %}
+        {% if statement.language != language_name %}
+            {% trans lang=language_name %}<b>{{ lang }}</b>{% endtrans %}
         {% else %}
-            {% trans lang=statement.language_name %}{{ lang }}{% endtrans %}
+            {% trans lang=language_name %}{{ lang }}{% endtrans %}
         {% endif %}
                     </a>
                 </li>

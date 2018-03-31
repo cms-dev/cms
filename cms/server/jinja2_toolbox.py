@@ -254,6 +254,12 @@ def format_decimal(ctx, n):
 
 
 @contextfilter
+def format_locale(ctx, n):
+    translation = ctx.get("translation", DEFAULT_TRANSLATION)
+    return translation.format_locale(n)
+
+
+@contextfilter
 def wrapped_format_status_text(ctx, status_text):
     translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return format_status_text(status_text, translation=translation)
@@ -267,6 +273,7 @@ def instrument_formatting_toolbox(env):
     env.filters["format_duration"] = format_duration
     env.filters["format_size"] = format_size
     env.filters["format_decimal"] = format_decimal
+    env.filters["format_locale"] = format_locale
 
     env.filters["format_status_text"] = wrapped_format_status_text
 

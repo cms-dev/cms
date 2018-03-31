@@ -35,7 +35,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import itervalues
 
 import logging
 
@@ -63,20 +62,6 @@ class TaskDescriptionHandler(ContestHandler):
         task = self.get_task(task_name)
         if task is None:
             raise tornado.web.HTTPError(404)
-
-        for statement in itervalues(task.statements):
-            statement.language_name = \
-                self.translation.format_locale(statement.language)
-
-        self.r_params["primary_statements"] = task.primary_statements
-
-        try:
-            self.r_params["user_primary"] = \
-                self.current_user.user.preferred_languages
-        except ValueError as e:
-            self.r_params["user_primary"] = []
-            logger.error("Preferred languages for user %s is invalid [%r].",
-                         self.current_user.user.username, e)
 
         self.render("task_description.html", task=task, **self.r_params)
 
