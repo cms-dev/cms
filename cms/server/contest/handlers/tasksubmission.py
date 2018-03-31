@@ -60,11 +60,15 @@ from cmscommon.mimetypes import get_type_for_file_name
 
 from ..phase_management import actual_phase_required
 
-from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
-    NOTIFICATION_SUCCESS, NOTIFICATION_WARNING
+from .contest import ContestHandler, FileHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+# Dummy function to mark translatable strings.
+def N_(msgid):
+    return msgid
 
 
 class SubmitHandler(ContestHandler):
@@ -75,12 +79,7 @@ class SubmitHandler(ContestHandler):
     def _send_error(self, subject, text):
         """Shorthand for sending a notification and redirecting."""
         logger.warning("Sent error: `%s' - `%s'", subject, text)
-        self.service.add_notification(
-            self.current_user.user.username,
-            self.timestamp,
-            subject,
-            text,
-            NOTIFICATION_ERROR)
+        self.notify_error(subject, text)
         self.redirect(self.contest_url(*self.fallback_page))
 
     @tornado.web.authenticated
@@ -344,13 +343,10 @@ class SubmitHandler(ContestHandler):
         self.sql_session.commit()
         self.service.evaluation_service.new_submission(
             submission_id=submission.id)
-        self.service.add_notification(
-            participation.user.username,
-            self.timestamp,
-            self._("Submission received"),
-            self._("Your submission has been received "
-                   "and is currently being evaluated."),
-            NOTIFICATION_SUCCESS)
+        self.notify_success(
+            N_("Submission received"),
+            N_("Your submission has been received "
+               "and is currently being evaluated."))
 
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
@@ -588,13 +584,10 @@ class UseTokenHandler(ContestHandler):
             logger.warning("User %s tried to play a token when they "
                            "shouldn't.", participation.user.username)
             # Add "no luck" notification
-            self.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Token request discarded"),
-                self._("Your request has been discarded because you have no "
-                       "tokens available."),
-                NOTIFICATION_ERROR)
+            self.notify_error(
+                N_("Token request discarded"),
+                N_("Your request has been discarded because you have no "
+                   "tokens available."))
             self.redirect(fallback_page)
             return
 
@@ -603,13 +596,10 @@ class UseTokenHandler(ContestHandler):
             self.sql_session.add(token)
             self.sql_session.commit()
         else:
-            self.service.add_notification(
-                participation.user.username,
-                self.timestamp,
-                self._("Token request discarded"),
-                self._("Your request has been discarded because you already "
-                       "used a token on that submission."),
-                NOTIFICATION_WARNING)
+            self.notify_warning(
+                N_("Token request discarded"),
+                N_("Your request has been discarded because you already "
+                   "used a token on that submission."))
             self.redirect(fallback_page)
             return
 
@@ -622,12 +612,9 @@ class UseTokenHandler(ContestHandler):
                     participation.user.username, task.name)
 
         # Add "All ok" notification.
-        self.service.add_notification(
-            participation.user.username,
-            self.timestamp,
-            self._("Token request received"),
-            self._("Your request has been received "
-                   "and applied to the submission."),
-            NOTIFICATION_SUCCESS)
+        self.notify_success(
+            N_("Token request received"),
+            N_("Your request has been received "
+               "and applied to the submission."))
 
         self.redirect(fallback_page)

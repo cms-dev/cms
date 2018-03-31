@@ -44,7 +44,7 @@ from cmscommon.datetime import make_timestamp
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
+# Dummy function to mark translatable strings.
 def N_(msgid):
     return msgid
 

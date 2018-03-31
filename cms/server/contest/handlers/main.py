@@ -53,10 +53,15 @@ from cmscommon.datetime import make_datetime, make_timestamp
 
 from ..phase_management import actual_phase_required
 
-from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+# Dummy function to mark translatable strings.
+def N_(msgid):
+    return msgid
 
 
 class MainHandler(ContestHandler):
@@ -207,28 +212,19 @@ class PrintingHandler(ContestHandler):
     @actual_phase_required(0)
     @multi_contest
     def post(self):
-        participation = self.current_user
-
         try:
             printjob = accept_print_job(
-                self.sql_session, self.service.file_cacher, participation,
+                self.sql_session, self.service.file_cacher, self.current_user,
                 self.timestamp, self.request.files)
             self.sql_session.commit()
         except PrintingDisabled:
             raise tornado.web.HTTPError(404)
         except UnacceptablePrintJob as e:
-            self.service.add_notification(
-                self.current_user.user.username, self.timestamp,
-                self._(e.subject), self._(e.text), NOTIFICATION_ERROR)
+            self.notify_error(e.subject, e.text)
         else:
-            self.service.add_notification(
-                participation.user.username, self.timestamp,
-                self._("Print job received"),
-                self._("Your print job has been received."),
-                NOTIFICATION_SUCCESS)
-
-            self.service.printing_service.new_printjob(
-                printjob_id=printjob.id)
+            self.service.printing_service.new_printjob(printjob_id=printjob.id)
+            self.notify_success(N_("Print job received"),
+                                N_("Your print job has been received."))
 
         self.redirect(self.contest_url("printing"))
 

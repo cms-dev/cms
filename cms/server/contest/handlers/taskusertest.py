@@ -59,11 +59,15 @@ from cmscommon.mimetypes import get_type_for_file_name
 
 from ..phase_management import actual_phase_required
 
-from .contest import ContestHandler, FileHandler, NOTIFICATION_ERROR, \
-    NOTIFICATION_SUCCESS
+from .contest import ContestHandler, FileHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+# Dummy function to mark translatable strings.
+def N_(msgid):
+    return msgid
 
 
 class UserTestInterfaceHandler(ContestHandler):
@@ -134,12 +138,7 @@ class UserTestHandler(ContestHandler):
     def _send_error(self, subject, text):
         """Shorthand for sending a notification and redirecting."""
         logger.warning("Sent error: `%s' - `%s'", subject, text)
-        self.service.add_notification(
-            self.current_user.user.username,
-            self.timestamp,
-            subject,
-            text,
-            NOTIFICATION_ERROR)
+        self.notify_error(subject, text)
         self.redirect(self.contest_url(*self.fallback_page,
                                        **self.fallback_args))
 
@@ -424,13 +423,10 @@ class UserTestHandler(ContestHandler):
         self.sql_session.commit()
         self.service.evaluation_service.new_user_test(
             user_test_id=user_test.id)
-        self.service.add_notification(
-            participation.user.username,
-            self.timestamp,
-            self._("Test received"),
-            self._("Your test has been received "
-                   "and is currently being executed."),
-            NOTIFICATION_SUCCESS)
+        self.notify_success(
+            N_("Test received"),
+            N_("Your test has been received "
+               "and is currently being executed."))
 
         # The argument (encripted user test id) is not used by CWS
         # (nor it discloses information to the user), but it is useful

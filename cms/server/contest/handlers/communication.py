@@ -43,10 +43,15 @@ from cms.server import multi_contest
 from cms.server.contest.communication import accept_question, \
     UnacceptableQuestion, QuestionsNotAllowed
 
-from .contest import ContestHandler, NOTIFICATION_ERROR, NOTIFICATION_SUCCESS
+from .contest import ContestHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+# Dummy function to mark translatable strings.
+def N_(msgid):
+    return msgid
 
 
 class CommunicationHandler(ContestHandler):
@@ -75,15 +80,10 @@ class QuestionHandler(ContestHandler):
         except QuestionsNotAllowed:
             raise tornado.web.HTTPError(404)
         except UnacceptableQuestion as e:
-            self.service.add_notification(
-                self.current_user.user.username, self.timestamp,
-                self._(e.subject), self._(e.text), NOTIFICATION_ERROR)
+            self.notify_error(e.subject, e.text)
         else:
-            self.service.add_notification(
-                self.current_user.user.username, self.timestamp,
-                self._("Question received"),
-                self._("Your question has been received, you will be notified "
-                       "when it is answered."),
-                NOTIFICATION_SUCCESS)
+            self.notify_success(N_("Question received"),
+                                N_("Your question has been received, you "
+                                   "will be notified when it is answered."))
 
         self.redirect(self.contest_url("communication"))
