@@ -470,33 +470,36 @@ class UserTestStatusHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         ur = user_test.get_result(task.active_dataset)
-
-        # TODO: use some kind of constants to refer to the status.
         data = dict()
-        if ur is None or not ur.compiled():
-            data["status"] = 1
+
+        if ur is None:
+            data["status"] = UserTestResult.COMPILING
+        else:
+            data["status"] = ur.get_status()
+
+        if data["status"] == UserTestResult.COMPILING:
             data["status_text"] = self._("Compiling...")
-        elif ur.compilation_failed():
-            data["status"] = 2
+        elif data["status"] == UserTestResult.COMPILATION_FAILED:
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Compilation failed"), self._("details"))
-        elif not ur.evaluated():
-            data["status"] = 3
+        elif data["status"] == UserTestResult.EVALUATING:
             data["status_text"] = self._("Executing...")
-        else:
-            data["status"] = 4
+        elif data["status"] == UserTestResult.EVALUATED:
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Executed"), self._("details"))
+
             if ur.execution_time is not None:
                 data["time"] = \
                     self.translation.format_duration(ur.execution_time)
             else:
                 data["time"] = None
+
             if ur.execution_memory is not None:
                 data["memory"] = \
                     self.translation.format_size(ur.execution_memory)
             else:
                 data["memory"] = None
+
             data["output"] = ur.output is not None
 
         self.write(data)
