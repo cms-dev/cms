@@ -109,7 +109,7 @@
             <td colspan="2">{{ (task.active_dataset.memory_limit * 1024 * 1024)|format_size }}</td>
         </tr>
 {% endif %}
-{% set compilation_commands = task_type.get_compilation_commands(task.submission_format|map(attribute="filename")|list) %}
+{% set compilation_commands = task_type.get_compilation_commands(task.submission_format) %}
 {% if compilation_commands is not none %}
 {% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
 <tr>

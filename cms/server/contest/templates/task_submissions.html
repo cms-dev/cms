@@ -105,7 +105,7 @@ $(document).ready(function () {
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {{ xsrf_form_html|safe }}
             <fieldset>
-{% for filename in task.submission_format|map(attribute="filename") %}
+{% for filename in task.submission_format %}
                 <div class="control-group">
                     <label class="control-label" for="input{{ loop.index0 }}">{{ filename|replace(".%l", ": ") }}</label>
                     <div class="controls">
@@ -115,7 +115,7 @@ $(document).ready(function () {
                     </div>
                 </div>
 {% endfor %}
-{% if task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
+{% if task.submission_format|any("endswith", ".%l") %}
                 <div class="control-group">
                     <div class="controls">
                         <select id="language" name="language">
@@ -135,7 +135,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if task.submission_format|length > 1 and not task.submission_format|map(attribute="filename")|any("endswith", ".%l") %}
+{% if task.submission_format|length > 1 and not task.submission_format|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {{ xsrf_form_html|safe }}

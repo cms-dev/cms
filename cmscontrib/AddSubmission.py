@@ -101,7 +101,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             logging.critical("Unable to find task `%s'.", task_name)
             return False
 
-        elements = [format.filename for format in task.submission_format]
+        elements = set(task.submission_format)
 
         for file_ in files:
             if file_ not in elements:

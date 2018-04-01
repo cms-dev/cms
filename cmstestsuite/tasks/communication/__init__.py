@@ -30,7 +30,7 @@ task_info = {
     "title": "Test Communication Task",
     "official_language": "",
     "submission_format_choice": "other",
-    "submission_format": "[\"communication.%l\"]",
+    "submission_format": "communication.%l",
     "time_limit_{{dataset_id}}": "1.0",
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Communication",

@@ -29,7 +29,7 @@ task_info = {
     "title": "Test Batch Task",
     "official_language": "",
     "submission_format_choice": "other",
-    "submission_format": "[\"batch.%l\"]",
+    "submission_format": "batch.%l",
     "time_limit_{{dataset_id}}": "0.5",
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Batch",
