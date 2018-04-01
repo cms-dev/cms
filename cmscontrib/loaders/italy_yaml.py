@@ -40,8 +40,8 @@ import yaml
 from datetime import timedelta
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
-from cms.db import Contest, User, Task, Statement, Attachment, \
-    Team, SubmissionFormatElement, Dataset, Manager, Testcase
+from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
+    Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.crypto import build_password
 from cmscommon.datetime import make_datetime
@@ -376,8 +376,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
             args["primary_statements"] = [primary_language]
 
-        args["submission_format"] = [
-            SubmissionFormatElement("%s.%%l" % name)]
+        args["submission_format"] = ["%s.%%l" % name]
 
         if conf.get("score_mode", None) == SCORE_MODE_MAX:
             args["score_mode"] = SCORE_MODE_MAX
@@ -592,9 +591,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["time_limit"] = None
             args["memory_limit"] = None
             args["task_type_parameters"] = [evaluation_param]
-            task.submission_format = [
-                SubmissionFormatElement("output_%03d.txt" % i)
-                for i in range(n_input)]
+            task.submission_format = \
+                ["output_%03d.txt" % i for i in range(n_input)]
 
         # If there is check/manager (or equivalent), then the task
         # type is Communication

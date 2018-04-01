@@ -236,7 +236,7 @@ class UserTestHandler(ContestHandler):
             return
 
         # Required files from the user.
-        required = set([sfe.filename for sfe in task.submission_format] +
+        required = set(task.submission_format +
                        task_type.get_user_managers() +
                        ["input"])
 
@@ -407,7 +407,7 @@ class UserTestHandler(ContestHandler):
                              participation=participation,
                              task=task)
 
-        for filename in [sfe.filename for sfe in task.submission_format]:
+        for filename in task.submission_format:
             digest = file_digests[filename]
             self.sql_session.add(
                 UserTestFile(filename, digest, user_test=user_test))

@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,31 +17,50 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""A class to update a dump created by CMS.
+
+Used by ContestImporter and DumpUpdater.
+
+This updater makes submission_format become a list-of-strings column.
+
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import iteritems
 
-task_info = {
-    "name": "batchstdio",
-    "title": "Test Batch Task with stdin/stdout",
-    "official_language": "",
-    "submission_format_choice": "other",
-    "submission_format": "batchstdio.%l",
-    "time_limit_{{dataset_id}}": "0.5",
-    "memory_limit_{{dataset_id}}": "128",
-    "task_type_{{dataset_id}}": "Batch",
-    "TaskTypeOptions_{{dataset_id}}_Batch_compilation": "alone",
-    "TaskTypeOptions_{{dataset_id}}_Batch_io_0_inputfile": "",
-    "TaskTypeOptions_{{dataset_id}}_Batch_io_1_outputfile": "",
-    "TaskTypeOptions_{{dataset_id}}_Batch_output_eval": "diff",
-    "score_type_{{dataset_id}}": "Sum",
-    "score_type_parameters_{{dataset_id}}": "50",
-}
+import logging
 
-test_cases = [
-    ("1.in", "1.out", True),
-    ("2.in", "2.out", False),
-]
+
+logger = logging.getLogger(__name__)
+
+
+class Updater(object):
+
+    def __init__(self, data):
+        assert data["_version"] == 30
+        self.objs = data
+
+    def run(self):
+        to_delete = set()
+
+        for k, v in iteritems(self.objs):
+            if k.startswith("_"):
+                continue
+
+            if v["_class"] == "SubmissionFormatElement":
+                to_delete.add(k)
+
+            if v["_class"] == "Task":
+                v["submission_format"] = list(
+                    self.objs[k]["filename"]
+                    for k in v.get("submission_format", list()))
+
+        for k in to_delete:
+            del self.objs[k]
+
+        return self.objs

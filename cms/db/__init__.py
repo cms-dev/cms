@@ -67,8 +67,7 @@ __all__ = [
     # admin
     "Admin",
     # task
-    "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
-    "Manager", "Testcase",
+    "Task", "Statement", "Attachment", "Dataset", "Manager", "Testcase",
     # submission
     "Submission", "File", "Token", "SubmissionResult", "Executable",
     "Evaluation",
@@ -89,7 +88,7 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 30
+version = 31
 
 engine = create_engine(config.database, echo=config.database_debug,
                        pool_timeout=60, pool_recycle=120)
@@ -106,8 +105,7 @@ from .validation import CodenameConstraint, FilenameConstraint, \
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin
-from .task import Task, Statement, Attachment, SubmissionFormatElement, \
-    Dataset, Manager, Testcase
+from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
     Executable, Evaluation
 from .usertest import UserTest, UserTestFile, UserTestManager, \

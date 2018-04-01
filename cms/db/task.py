@@ -46,6 +46,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
+from cms.db.validation import FilenameListConstraint
 
 from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
     DigestConstraint
@@ -105,6 +106,14 @@ class Task(Base):
     title = Column(
         Unicode,
         nullable=False)
+
+    # The names of the files that the contestant needs to submit (with
+    # language-specific extensions replaced by "%l").
+    submission_format = Column(
+        ARRAY(String),
+        FilenameListConstraint("submission_format"),
+        nullable=False,
+        default=[])
 
     # The language codes of the statements that will be highlighted to
     # all users for this task.
@@ -236,12 +245,6 @@ class Task(Base):
         passive_deletes=True,
         back_populates="task")
 
-    submission_format = relationship(
-        "SubmissionFormatElement",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-        back_populates="task")
-
     datasets = relationship(
         "Dataset",
         # Due to active_dataset_id, SQLAlchemy cannot unambiguously
@@ -339,37 +342,6 @@ class Attachment(Base):
     digest = Column(
         String,
         DigestConstraint("digest"),
-        nullable=False)
-
-
-class SubmissionFormatElement(Base):
-    """Class to store the requested files that a submission must
-    include. Filenames may include %l to represent an accepted
-    language extension.
-
-    """
-    __tablename__ = 'submission_format_elements'
-
-    # Auto increment primary key.
-    id = Column(
-        Integer,
-        primary_key=True)
-
-    # Task (id and object) owning the submission format element.
-    task_id = Column(
-        Integer,
-        ForeignKey(Task.id,
-                   onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
-        index=True)
-    task = relationship(
-        Task,
-        back_populates="submission_format")
-
-    # Format of the given submission file.
-    filename = Column(
-        Unicode,
-        FilenameConstraint("filename"),
         nullable=False)
 
 

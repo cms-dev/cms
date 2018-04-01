@@ -169,7 +169,7 @@ class SubmitHandler(ContestHandler):
             return
 
         # Required files from the user.
-        required = set([sfe.filename for sfe in task.submission_format])
+        required = set(task.submission_format)
 
         # Ensure that the user did not submit multiple files with the
         # same name.

@@ -109,9 +109,8 @@ class TestAddSubmissionSingleSourceWithLanguage(
     def setUp(self):
         super(TestAddSubmissionSingleSourceWithLanguage, self).setUp()
 
-        self.task = self.add_task(contest=self.contest)
-        self.sfe = self.add_submission_format_element(
-            task=self.task, filename="source.%l")
+        self.task = self.add_task(submission_format=["source.%l"],
+                                  contest=self.contest)
 
         self.session.commit()
 
@@ -187,11 +186,9 @@ class TestAddSubmissionTwoSourcesWithLanguage(
     def setUp(self):
         super(TestAddSubmissionTwoSourcesWithLanguage, self).setUp()
 
-        self.task = self.add_task(contest=self.contest)
-        self.sfe = self.add_submission_format_element(
-            task=self.task, filename="source1.%l")
-        self.sfe = self.add_submission_format_element(
-            task=self.task, filename="source2.%l")
+        self.task = self.add_task(
+            submission_format=["source1.%l", "source2.%l"],
+            contest=self.contest)
 
         self.session.commit()
 
@@ -240,11 +237,9 @@ class TestAddSubmissionTwoSourcesOneLanguage(
     def setUp(self):
         super(TestAddSubmissionTwoSourcesOneLanguage, self).setUp()
 
-        self.task = self.add_task(contest=self.contest)
-        self.sfe = self.add_submission_format_element(
-            task=self.task, filename="source1.%l")
-        self.sfe = self.add_submission_format_element(
-            task=self.task, filename="source2")
+        self.task = self.add_task(
+            submission_format=["source1.%l", "source2"],
+            contest=self.contest)
 
         self.session.commit()
 
@@ -284,9 +279,8 @@ class TestAddSubmissionOutputOnly(
     def setUp(self):
         super(TestAddSubmissionOutputOnly, self).setUp()
 
-        self.task = self.add_task(contest=self.contest)
-        self.sfe = self.add_submission_format_element(
-            task=self.task, filename="source")
+        self.task = self.add_task(submission_format=["source"],
+                                  contest=self.contest)
 
         self.session.commit()
 

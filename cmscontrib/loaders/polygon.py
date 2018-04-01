@@ -39,8 +39,7 @@ from datetime import timedelta
 import xml.etree.ElementTree as ET
 
 from cms import config
-from cms.db import Contest, User, Task, Statement, \
-    SubmissionFormatElement, Dataset, Manager, Testcase
+from cms.db import Contest, User, Task, Statement, Dataset, Manager, Testcase
 from cmscommon.crypto import build_password
 from cmscontrib import touch
 
@@ -136,7 +135,7 @@ class PolygonTaskLoader(TaskLoader):
                     args["statements"][lang] = Statement(lang, digest)
                     args["primary_statements"].append(lang)
 
-        args["submission_format"] = [SubmissionFormatElement("%s.%%l" % name)]
+        args["submission_format"] = ["%s.%%l" % name]
 
         # These options cannot be configured in the Polygon format.
         # Uncomment the following to set specific values for them.

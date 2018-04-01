@@ -26,7 +26,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import argparse
-import json
 import logging
 import os
 import sys
@@ -53,7 +52,8 @@ class TimeTest(object):
         self.filename = filename
         self.languages = languages
         self.repetitions = repetitions
-        submission_format = json.loads(task.task_info["submission_format"])
+        submission_format = list(
+            e.strip() for e in task.task_info["submission_format"].split())
         self.submission_format_element = submission_format[0]
         self.submission_ids = []
 

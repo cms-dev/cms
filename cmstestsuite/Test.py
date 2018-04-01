@@ -25,7 +25,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-import json
 import os
 import re
 
@@ -150,7 +149,8 @@ class Test(object):
         self.filenames = filenames
         self.languages = languages
         self.checks = checks
-        submission_format = json.loads(task.task_info["submission_format"])
+        submission_format = list(
+            e.strip() for e in task.task_info["submission_format"].split(","))
         self.submission_format = submission_format
 
         self.user_tests = user_tests
