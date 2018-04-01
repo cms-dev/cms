@@ -237,7 +237,7 @@ class UserTestHandler(ContestHandler):
 
         # Required files from the user.
         required = set([sfe.filename for sfe in task.submission_format] +
-                       task_type.get_user_managers(task.submission_format) +
+                       task_type.get_user_managers() +
                        ["input"])
 
         # Ensure that the user did not submit multiple files with the
@@ -411,7 +411,7 @@ class UserTestHandler(ContestHandler):
             digest = file_digests[filename]
             self.sql_session.add(
                 UserTestFile(filename, digest, user_test=user_test))
-        for filename in task_type.get_user_managers(task.submission_format):
+        for filename in task_type.get_user_managers():
             digest = file_digests[filename]
             if submission_lang is not None:
                 extension = get_language(submission_lang).source_extension

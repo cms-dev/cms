@@ -385,6 +385,6 @@ class TwoSteps(TaskType):
         delete_sandbox(first_sandbox, job.success)
         delete_sandbox(second_sandbox, job.success)
 
-    def get_user_managers(self, unused_submission_format):
+    def get_user_managers(self):
         """See TaskType.get_user_managers."""
         return ["manager.%l"]

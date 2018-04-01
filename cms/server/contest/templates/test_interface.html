@@ -98,7 +98,7 @@ $(document).ready(function () {
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "test") }}" method="POST">
             {{ xsrf_form_html|safe }}
             <fieldset>
-{% for filename in task.submission_format|map(attribute="filename")|list + task_type.get_user_managers(task.submission_format) %}
+{% for filename in task.submission_format|map(attribute="filename")|list + task_type.get_user_managers() %}
                 <div class="control-group">
                     <label class="control-label" for="input{{ loop.index0 }}">{{ filename|replace(".%l", "") }}</label>
                     <div class="controls">
