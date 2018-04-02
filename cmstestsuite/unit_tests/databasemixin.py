@@ -60,7 +60,7 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
 from cms.db import Announcement, Base, Contest, Dataset, Evaluation, \
     Executable, File, Message, Participation, Question, Session, Statement, \
     Submission, SubmissionFormatElement, SubmissionResult, Task, Team, \
-    Testcase, User, UserTest, UserTestResult, drop_db, init_db
+    Testcase, User, UserTest, UserTestResult, drop_db, init_db, Token
 from cms.db.filecacher import DBBackend
 
 
@@ -334,16 +334,30 @@ class DatabaseMixin(object):
     def add_file(self, submission=None, **kwargs):
         """Create a file and add it to the session"""
         if submission is None:
-            submission = self.add_sbubmission()
+            submission = self.add_submission()
         args = {
             "submission": submission,
             "filename": unique_unicode_id(),
             "digest": unique_digest(),
         }
         args.update(kwargs)
-        file = File(**args)
-        self.session.add(file)
-        return file
+        file_ = File(**args)
+        self.session.add(file_)
+        return file_
+
+    def add_token(self, submission=None, **kwargs):
+        """Create a token and add it to the session"""
+        if submission is None:
+            submission = self.add_submission()
+        args = {
+            "submission": submission,
+            "timestamp": (submission.task.contest.start
+                          + timedelta(seconds=unique_long_id())),
+        }
+        args.update(kwargs)
+        token = Token(**args)
+        self.session.add(token)
+        return token
 
     def add_submission_result(self, submission=None, dataset=None, **kwargs):
         """Add a submission result."""
