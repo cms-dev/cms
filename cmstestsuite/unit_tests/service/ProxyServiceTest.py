@@ -33,57 +33,89 @@ from future.builtins import *  # noqa
 import gevent.monkey
 gevent.monkey.patch_all()  # noqa
 
-import gevent
 import unittest
-from mock import Mock
 
-import cms.service.ProxyService
+import gevent
+from mock import patch, PropertyMock
+
+# Needs to be first to allow for monkey patching the DB connection string.
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
+
+from cms import SCORE_MODE_MAX
 from cms.service.ProxyService import ProxyService
-from cmstestsuite.unit_tests.testobjectgenerator import \
-    get_contest, get_participation, get_submission, get_task
 
 
-class TestProxyService(unittest.TestCase):
+class TestProxyService(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        pass
+        super(TestProxyService, self).setUp()
+
+        patcher = patch("cms.db.Dataset.score_type_object",
+                        new_callable=PropertyMock)
+        self.score_type = patcher.start().return_value
+        self.addCleanup(patcher.stop)
+        self.score_type.max_score = 100
+        self.score_type.ranking_headers = ["100"]
+
+        patcher = patch("requests.put")
+        self.requests_put = patcher.start()
+        self.addCleanup(patcher.stop)
+        self.requests_put.return_value.status_code = 200
+
+        self.contest = self.add_contest()
+        self.contest.score_precision = 2
+
+        self.task = self.add_task(contest=self.contest)
+        self.task.score_precision = 2
+        self.task.score_mode = SCORE_MODE_MAX
+        self.dataset = self.add_dataset(task=self.task)
+        self.task.active_dataset = self.dataset
+
+        self.team = self.add_team()
+        self.user = self.add_user()
+        self.participation = self.add_participation(user=self.user,
+                                                    contest=self.contest,
+                                                    team=self.team)
+
+        self.new_sr_unscored()
+        self.new_sr_scored()
+        result = self.new_sr_scored()
+        self.add_token(submission=result.submission)
+
+        self.session.commit()
+
+    def new_sr_unscored(self):
+        submission = self.add_submission(task=self.task,
+                                         participation=self.participation)
+        result = self.add_submission_result(submission=submission,
+                                            dataset=self.dataset)
+        result.compilation_outcome = "ok"
+        result.evaluation_outcome = "ok"
+        return result
+
+    def new_sr_scored(self):
+        result = self.new_sr_unscored()
+        result.score = 100
+        result.score_details = dict()
+        result.public_score = 50
+        result.public_score_details = dict()
+        result.ranking_score_details = ["100"]
+        return result
 
     def test_startup(self):
         """Test that data is sent in the right order at startup."""
-        put_mock = Mock()
-        cms.service.ProxyService.requests.put = put_mock
-        put_mock.return_value.status_code = 200
+        ProxyService(0, self.contest.id)
 
-        task = get_task()
-        participation = get_participation()
-        TestProxyService.set_up_db([task], [participation], [
-            get_submission(task, participation),
-            get_submission(task, participation),
-            get_submission(task, participation, scored=False),
-        ])
+        gevent.sleep(0.1)
 
-        self.service = ProxyService(0, 0)
-        gevent.sleep(0)
-        gevent.sleep(0)
+        urls = [args[0] for args, _ in self.requests_put.call_args_list]
 
-        urls_data = [(call[0][0], call[0][1])
-                     for call in put_mock.call_args_list]
-
-        assert urls_data[0][0].endswith("contests/")
-        assert any(urls_data[i][0].endswith("users/") for i in [1, 2, 3])
-        assert any(urls_data[i][0].endswith("teams/") for i in [1, 2, 3])
-        assert any(urls_data[i][0].endswith("tasks/") for i in [1, 2, 3])
-        assert urls_data[4][0].endswith("submissions/")
-        assert urls_data[5][0].endswith("subchanges/")
-
-    @staticmethod
-    def set_up_db(tasks, participations, submissions):
-        contest = get_contest()
-        cms.service.ProxyService.Contest.get_from_id = \
-            Mock(return_value=contest)
-        contest.tasks = tasks
-        contest.participations = participations
-        contest.get_submissions = Mock(return_value=submissions)
+        self.assertTrue(urls[0].endswith("contests/"))
+        self.assertTrue(any(urls[i].endswith("users/") for i in [1, 2, 3]))
+        self.assertTrue(any(urls[i].endswith("teams/") for i in [1, 2, 3]))
+        self.assertTrue(any(urls[i].endswith("tasks/") for i in [1, 2, 3]))
+        self.assertTrue(urls[4].endswith("submissions/"))
+        self.assertTrue(urls[5].endswith("subchanges/"))
 
 
 if __name__ == "__main__":
