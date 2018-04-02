@@ -28,25 +28,65 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+import six
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
 gevent.monkey.patch_all()  # noqa
 
-import gevent
-import random
 import unittest
-from mock import Mock, call
 
-import cms.service.ScoringService
+import gevent
+from mock import patch, PropertyMock
+
+# Needs to be first to allow for monkey patching the DB connection string.
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
+
 from cms.service.ScoringService import ScoringService
+from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
+    unique_unicode_id
 
 
-class TestScoringService(unittest.TestCase):
+class TestScoringService(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        self.service = ScoringService(0)
+        super(TestScoringService, self).setUp()
+
+        self.score_info = (unique_long_id(), unique_long_id(),
+                           unique_long_id(), unique_long_id(),
+                           [unique_unicode_id(), unique_unicode_id()])
+
+        patcher = patch("cms.db.Dataset.score_type_object",
+                        new_callable=PropertyMock)
+        self.score_type = patcher.start().return_value
+        self.addCleanup(patcher.stop)
+        self.call_args = list()
+        self.score_type.compute_score.side_effect = self.compute_score
+
+        self.contest = self.add_contest()
+
+    def compute_score(self, sr):
+        self.call_args.append((sr.submission_id, sr.dataset_id))
+        return self.score_info
+
+    def new_sr_to_score(self):
+        task = self.add_task(contest=self.contest)
+        dataset = self.add_dataset(task=task)
+        submission = self.add_submission(task=task)
+        result = self.add_submission_result(
+            compilation_outcome="ok", evaluation_outcome="ok",
+            submission=submission, dataset=dataset)
+        return result
+
+    def new_sr_scored(self):
+        result = self.new_sr_to_score()
+        result.score = 100
+        result.score_details = dict()
+        result.public_score = 50
+        result.public_score_details = dict()
+        result.ranking_score_details = ["100"]
+        return result
 
     # Testing new_evaluation.
 
@@ -54,89 +94,56 @@ class TestScoringService(unittest.TestCase):
         """One submission is scored.
 
         """
-        score_info = self.new_score_info()
-        sr = TestScoringService.new_sr_to_score()
-        score_type = Mock()
-        score_type.compute_score.return_value = score_info
-        TestScoringService.set_up_db([sr], score_type)
+        sr = self.new_sr_to_score()
+        self.session.commit()
 
-        self.service.new_evaluation(123, 456)
+        service = ScoringService(0)
+        service.new_evaluation(sr.submission_id, sr.dataset_id)
 
-        gevent.sleep(0)  # Needed to trigger the score loop.
+        gevent.sleep(0.1)  # Needed to trigger the score loop.
+
         # Asserts that compute_score was called.
-        assert score_type.compute_score.mock_calls == [call(sr)]
-        assert (sr.score,
-                sr.score_details,
-                sr.public_score,
-                sr.public_score_details,
-                sr.ranking_score_details) == score_info
+        six.assertCountEqual(self, self.call_args,
+                             [(sr.submission_id, sr.dataset_id)])
+        self.session.expire(sr)
+        self.assertEqual((sr.score, sr.score_details,
+                          sr.public_score, sr.public_score_details,
+                          sr.ranking_score_details),
+                         self.score_info)
 
     def test_new_evaluation_two(self):
         """More than one submissions in the queue.
 
         """
-        score_type = Mock()
-        score_type.compute_score.return_value = (1, 1, 2, 2, ["1", "2"])
-        sr_a = TestScoringService.new_sr_to_score()
-        sr_b = TestScoringService.new_sr_to_score()
-        TestScoringService.set_up_db([sr_a, sr_b], score_type)
+        sr_a = self.new_sr_to_score()
+        sr_b = self.new_sr_to_score()
+        self.session.commit()
 
-        self.service.new_evaluation(123, 456)
-        self.service.new_evaluation(124, 456)
+        service = ScoringService(0)
+        service.new_evaluation(sr_a.submission_id, sr_a.dataset_id)
+        service.new_evaluation(sr_b.submission_id, sr_b.dataset_id)
 
-        gevent.sleep(0)  # Needed to trigger the score loop.
+        gevent.sleep(0.1)  # Needed to trigger the score loop.
+
         # Asserts that compute_score was called.
-        assert score_type.compute_score.mock_calls == [call(sr_a), call(sr_b)]
+        six.assertCountEqual(self, self.call_args,
+                             [(sr_a.submission_id, sr_a.dataset_id),
+                              (sr_b.submission_id, sr_b.dataset_id)])
 
     def test_new_evaluation_already_scored(self):
         """One submission is not re-scored if already scored.
 
         """
-        sr = TestScoringService.new_sr_scored()
-        score_type = Mock()
-        score_type.compute_score.return_value = (1, 1, 2, 2, ["1", "2"])
-        TestScoringService.set_up_db([sr], score_type)
+        sr = self.new_sr_scored()
+        self.session.commit()
 
-        self.service.new_evaluation(123, 456)
+        service = ScoringService(0)
+        service.new_evaluation(sr.submission_id, sr.dataset_id)
 
-        gevent.sleep(0)  # Needed to trigger the score loop.
+        gevent.sleep(0.1)  # Needed to trigger the score loop.
+
         # Asserts that compute_score was called.
-        assert score_type.compute_score.mock_calls == []
-
-    @staticmethod
-    def new_sr_to_score():
-        sr = Mock()
-        sr.needs_scoring.return_value = True
-        sr.scored.return_value = False
-        return sr
-
-    @staticmethod
-    def new_sr_scored():
-        sr = Mock()
-        sr.needs_scoring.return_value = False
-        sr.scored.return_value = True
-        return sr
-
-    @staticmethod
-    def new_score_info():
-        return (
-            random.randint(1, 1000),
-            random.randint(1, 1000),
-            random.randint(1, 1000),
-            random.randint(1, 1000),
-            ["%d" % random.randint(1, 1000), "%d" % random.randint(1, 1000)]
-        )
-
-    @staticmethod
-    def set_up_db(srs, score_type):
-        submission = Mock()
-        submission.get_result = Mock(side_effect=srs)
-        cms.service.ScoringService.Submission.get_from_id = \
-            Mock(return_value=submission)
-        cms.service.ScoringService.Dataset.get_from_id = \
-            Mock(return_value=Mock())
-        cms.service.ScoringService.get_score_type = \
-            Mock(return_value=score_type)
+        self.score_type.compute_score.assert_not_called()
 
 
 if __name__ == "__main__":
