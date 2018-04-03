@@ -50,10 +50,12 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import File, Submission, SubmissionResult, Task, Token
+from cms.db import File, Submission, SubmissionResult, Task
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cmscommon.archive import Archive
+from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
+    accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -404,9 +406,12 @@ class TaskSubmissionsHandler(ContestHandler):
         if submissions_left is not None:
             submissions_left = max(0, submissions_left)
 
+        tokens_info = tokens_available(participation, task, self.timestamp)
+
         download_allowed = self.contest.submissions_download_allowed
         self.render("task_submissions.html",
                     task=task, submissions=submissions,
+                    tokens_info=tokens_info,
                     submissions_left=submissions_left,
                     submissions_download_allowed=download_allowed,
                     **self.r_params)
@@ -563,58 +568,33 @@ class UseTokenHandler(ContestHandler):
     @actual_phase_required(0)
     @multi_contest
     def post(self, task_name, submission_num):
-        participation = self.current_user
-
         task = self.get_task(task_name)
         if task is None:
             raise tornado.web.HTTPError(404)
-
-        fallback_page = \
-            self.contest_url("tasks", task.name, "submissions")
 
         submission = self.get_submission(task, submission_num)
         if submission is None:
             raise tornado.web.HTTPError(404)
 
-        # Don't trust the user, check again if (s)he can really play
-        # the token.
-        tokens_available = self.contest.tokens_available(
-            participation, task, self.timestamp)
-        if tokens_available[0] == 0 or tokens_available[2] is not None:
-            logger.warning("User %s tried to play a token when they "
-                           "shouldn't.", participation.user.username)
-            # Add "no luck" notification
-            self.notify_error(
-                N_("Token request discarded"),
-                N_("Your request has been discarded because you have no "
-                   "tokens available."))
-            self.redirect(fallback_page)
-            return
-
-        if submission.token is None:
-            token = Token(self.timestamp, submission=submission)
-            self.sql_session.add(token)
+        try:
+            accept_token(self.sql_session, submission, self.timestamp)
             self.sql_session.commit()
+        except UnacceptableToken as e:
+            self.notify_error(e.subject, e.text)
+        except TokenAlreadyPlayed as e:
+            self.notify_warning(e.subject, e.text)
         else:
-            self.notify_warning(
-                N_("Token request discarded"),
-                N_("Your request has been discarded because you already "
-                   "used a token on that submission."))
-            self.redirect(fallback_page)
-            return
+            # Inform ProxyService and eventually the ranking that the
+            # token has been played.
+            self.service.proxy_service.submission_tokened(
+                submission_id=submission.id)
 
-        # Inform ProxyService and eventually the ranking that the
-        # token has been played.
-        self.service.proxy_service.submission_tokened(
-            submission_id=submission.id)
+            logger.info("Token played by user %s on task %s.",
+                        self.current_user.user.username, task.name)
 
-        logger.info("Token played by user %s on task %s.",
-                    participation.user.username, task.name)
+            # Add "All ok" notification.
+            self.notify_success(N_("Token request received"),
+                                N_("Your request has been received "
+                                   "and applied to the submission."))
 
-        # Add "All ok" notification.
-        self.notify_success(
-            N_("Token request received"),
-            N_("Your request has been received "
-               "and applied to the submission."))
-
-        self.redirect(fallback_page)
+        self.redirect(self.contest_url("tasks", task.name, "submissions"))

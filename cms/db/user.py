@@ -252,9 +252,6 @@ class Participation(Base):
     # submissions (list of Submission objects)
     # user_tests (list of UserTest objects)
 
-    # Moreover, we have the following methods.
-    # get_tokens (defined in __init__.py)
-
 
 class Message(Base):
     """Class to store a private message from the managers to the
