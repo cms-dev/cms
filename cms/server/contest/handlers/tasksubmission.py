@@ -88,9 +88,9 @@ class SubmitHandler(ContestHandler):
     @multi_contest
     def post(self, task_name):
         participation = self.current_user
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         self.fallback_page = ["tasks", task.name, "submissions"]
@@ -370,9 +370,8 @@ class TaskSubmissionsHandler(ContestHandler):
     def get(self, task_name):
         participation = self.current_user
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         submissions = self.sql_session.query(Submission)\
@@ -425,19 +424,11 @@ class SubmissionStatusHandler(ContestHandler):
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, submission_num):
-        participation = self.current_user
-
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        submission = self.sql_session.query(Submission)\
-            .filter(Submission.participation == participation)\
-            .filter(Submission.task == task)\
-            .order_by(Submission.timestamp)\
-            .offset(int(submission_num) - 1)\
-            .first()
+        submission = self.get_submission(task, submission_num)
         if submission is None:
             raise tornado.web.HTTPError(404)
 
@@ -494,19 +485,11 @@ class SubmissionDetailsHandler(ContestHandler):
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, submission_num):
-        participation = self.current_user
-
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        submission = self.sql_session.query(Submission)\
-            .filter(Submission.participation == participation)\
-            .filter(Submission.task == task)\
-            .order_by(Submission.timestamp)\
-            .offset(int(submission_num) - 1)\
-            .first()
+        submission = self.get_submission(task, submission_num)
         if submission is None:
             raise tornado.web.HTTPError(404)
 
@@ -541,19 +524,11 @@ class SubmissionFileHandler(FileHandler):
         if not self.contest.submissions_download_allowed:
             raise tornado.web.HTTPError(404)
 
-        participation = self.current_user
-
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        submission = self.sql_session.query(Submission)\
-            .filter(Submission.participation == participation)\
-            .filter(Submission.task == task)\
-            .order_by(Submission.timestamp)\
-            .offset(int(submission_num) - 1)\
-            .first()
+        submission = self.get_submission(task, submission_num)
         if submission is None:
             raise tornado.web.HTTPError(404)
 
@@ -594,20 +569,14 @@ class UseTokenHandler(ContestHandler):
     def post(self, task_name, submission_num):
         participation = self.current_user
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         fallback_page = \
             self.contest_url("tasks", task.name, "submissions")
 
-        submission = self.sql_session.query(Submission)\
-            .filter(Submission.participation == participation)\
-            .filter(Submission.task == task)\
-            .order_by(Submission.timestamp)\
-            .offset(int(submission_num) - 1)\
-            .first()
+        submission = self.get_submission(task, submission_num)
         if submission is None:
             raise tornado.web.HTTPError(404)
 

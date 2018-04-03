@@ -152,9 +152,8 @@ class UserTestHandler(ContestHandler):
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         self.fallback_page = ["testing"]
@@ -450,22 +449,14 @@ class UserTestStatusHandler(ContestHandler):
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num):
-        participation = self.current_user
-
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.sql_session.query(UserTest)\
-            .filter(UserTest.participation == participation)\
-            .filter(UserTest.task == task)\
-            .order_by(UserTest.timestamp)\
-            .offset(int(user_test_num) - 1)\
-            .first()
+        user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
@@ -513,22 +504,14 @@ class UserTestDetailsHandler(ContestHandler):
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num):
-        participation = self.current_user
-
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.sql_session.query(UserTest)\
-            .filter(UserTest.participation == participation)\
-            .filter(UserTest.task == task)\
-            .order_by(UserTest.timestamp)\
-            .offset(int(user_test_num) - 1)\
-            .first()
+        user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
@@ -546,22 +529,14 @@ class UserTestIOHandler(FileHandler):
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num, io):
-        participation = self.current_user
-
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.sql_session.query(UserTest)\
-            .filter(UserTest.participation == participation)\
-            .filter(UserTest.task == task)\
-            .order_by(UserTest.timestamp)\
-            .offset(int(user_test_num) - 1)\
-            .first()
+        user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
@@ -588,22 +563,14 @@ class UserTestFileHandler(FileHandler):
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num, filename):
-        participation = self.current_user
-
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.sql_session.query(UserTest)\
-            .filter(UserTest.participation == participation)\
-            .filter(UserTest.task == task)\
-            .order_by(UserTest.timestamp)\
-            .offset(int(user_test_num) - 1)\
-            .first()
+        user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 

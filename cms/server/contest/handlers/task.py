@@ -60,9 +60,8 @@ class TaskDescriptionHandler(ContestHandler):
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name):
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         for statement in itervalues(task.statements):
@@ -90,9 +89,8 @@ class TaskStatementViewHandler(FileHandler):
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, lang_code):
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         if lang_code not in task.statements:
@@ -117,9 +115,8 @@ class TaskAttachmentViewHandler(FileHandler):
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, filename):
-        try:
-            task = self.contest.get_task(task_name)
-        except KeyError:
+        task = self.get_task(task_name)
+        if task is None:
             raise tornado.web.HTTPError(404)
 
         if filename not in task.attachments:

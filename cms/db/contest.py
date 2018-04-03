@@ -274,39 +274,6 @@ class Contest(Base):
     # get_user_tests (defined in __init__.py)
     # get_user_test_results (defined in __init__.py)
 
-    # FIXME - Use SQL syntax
-    def get_task(self, task_name):
-        """Return the first task in the contest with the given name.
-
-        task_name (string): the name of the task we are interested in.
-
-        return (Task): the corresponding task object.
-
-        raise (KeyError): if no tasks with the given name are found.
-
-        """
-        for task in self.tasks:
-            if task.name == task_name:
-                return task
-        raise KeyError("Task not found")
-
-    # FIXME - Use SQL syntax
-    def get_task_index(self, task_name):
-        """Return the index of the first task in the contest with the
-        given name.
-
-        task_name (string): the name of the task we are interested in.
-
-        return (int): the index of the corresponding task.
-
-        raise (KeyError): if no tasks with the given name are found.
-
-        """
-        for idx, task in enumerate(self.tasks):
-            if task.name == task_name:
-                return idx
-        raise KeyError("Task not found")
-
     def enumerate_files(self, skip_submissions=False, skip_user_tests=False,
                         skip_generated=False):
         """Enumerate all the files (by digest) referenced by the

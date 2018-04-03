@@ -44,7 +44,7 @@ import logging
 import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest
+from cms.db import Contest, Submission, Task, UserTest
 from cms.server import file_handler_gen
 from cms.locale import filter_language_codes
 from cms.server.contest.authentication import authenticate_request
@@ -225,6 +225,55 @@ class ContestHandler(BaseHandler):
 
         """
         return self.contest_url()
+
+    def get_task(self, task_name):
+        """Return the task in the contest with the given name.
+
+        task_name (str): the name of the task we are interested in.
+
+        return (Task|None): the corresponding task object, if found.
+
+        """
+        return self.sql_session.query(Task) \
+            .filter(Task.contest == self.contest) \
+            .filter(Task.name == task_name) \
+            .one_or_none()
+
+    def get_submission(self, task, submission_num):
+        """Return the num-th contestant's submission on the given task.
+
+        task (Task): a task for the contest that is being served.
+        submission_num (str): a positive number, in decimal encoding.
+
+        return (Submission|None): the submission_num-th submission, in
+            chronological order, that was sent by the currently logged
+            in contestant on the given task (None if not found).
+
+        """
+        return self.sql_session.query(Submission) \
+            .filter(Submission.participation == self.current_user) \
+            .filter(Submission.task == task) \
+            .order_by(Submission.timestamp) \
+            .offset(int(submission_num) - 1) \
+            .one_or_none()
+
+    def get_user_test(self, task, user_test_num):
+        """Return the num-th contestant's test on the given task.
+
+        task (Task): a task for the contest that is being served.
+        user_test_num (str): a positive number, in decimal encoding.
+
+        return (UserTest|None): the user_test_num-th user test, in
+            chronological order, that was sent by the currently logged
+            in contestant on the given task (None if not found).
+
+        """
+        return self.sql_session.query(UserTest) \
+            .filter(UserTest.participation == self.current_user) \
+            .filter(UserTest.task == task) \
+            .order_by(UserTest.timestamp) \
+            .offset(int(user_test_num) - 1) \
+            .one_or_none()
 
 
 FileHandler = file_handler_gen(ContestHandler)
