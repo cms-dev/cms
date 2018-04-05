@@ -291,3 +291,7 @@ class TestAcceptToken(DatabaseMixin, unittest.TestCase):
                        timestamp=self.timestamp - timedelta(seconds=1))
         with self.assertRaises(TokenAlreadyPlayed):
             self.call()
+
+
+if __name__ == "__main__":
+    unittest.main()

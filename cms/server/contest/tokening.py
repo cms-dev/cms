@@ -147,7 +147,8 @@ def _tokens_available(mode, gen_initial, gen_number, gen_interval, gen_max,
     if gen_number > 0 and (gen_max is None or avail < gen_max):
         num_periods_so_far = \
             (timestamp - start).total_seconds() // gen_interval.total_seconds()
-        next_gen_time = start + gen_interval * (num_periods_so_far + 1)
+        # py2 needs the cast to int.
+        next_gen_time = start + gen_interval * (int(num_periods_so_far) + 1)
 
     # If we have more tokens than how many we are allowed to play, cap
     # the result, and note that no more will be generated.
@@ -260,9 +261,12 @@ def tokens_available(participation, task, timestamp):
     # Merge the results.
 
     # First, the "expiration".
-    expiration = max(
-        (exp for exp in [res_task[2], res_contest[2]] if exp is not None),
-        default=None)
+    if res_contest[2] is None:
+        expiration = res_task[2]
+    elif res_task[2] is None:
+        expiration = res_contest[2]
+    else:
+        expiration = max(res_task[2], res_contest[2])
 
     # Then, check if both are infinite
     if res_contest[0] == -1 and res_task[0] == -1:
