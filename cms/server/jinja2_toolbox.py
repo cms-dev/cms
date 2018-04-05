@@ -179,7 +179,7 @@ def safe_get_task_type(env, dataset):
     try:
         return dataset.task_type_object
     # The task type's constructor is called, which may raise any
-    # arbitrary exception, hence we stay as general al possible.
+    # arbitrary exception, hence we stay as general as possible.
     except Exception as err:
         return env.undefined("TaskType not found: %s" % err)
 
@@ -191,7 +191,7 @@ def safe_get_score_type(env, dataset):
     try:
         return dataset.score_type_object
     # The score type's constructor is called, which may raise any
-    # arbitrary exception, hence we stay as general al possible.
+    # arbitrary exception, hence we stay as general as possible.
     except Exception as err:
         return env.undefined("ScoreType not found: %s" % err)
 
