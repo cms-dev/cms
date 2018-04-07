@@ -34,9 +34,9 @@ from datetime import timedelta
 from mock import patch
 
 # Needs to be first to allow for monkey patching the DB connection string.
-from cms import TOKEN_MODE_INFINITE, TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
+from cms import TOKEN_MODE_INFINITE, TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE
 from cms.server.contest.tokening import accept_token, UnacceptableToken, \
     TokenAlreadyPlayed, tokens_available
 from cmscommon.datetime import make_datetime
@@ -77,7 +77,7 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
     def set_contest_token_disabled(self):
         self.contest.token_mode = TOKEN_MODE_DISABLED
 
-    def set_contest_token_finite(self, initial, number, interval, max_):
+    def set_contest_token_finite(self, initial, number, interval, max_=None):
         self.contest.token_mode = TOKEN_MODE_FINITE
         self.contest.token_gen_initial = initial
         self.contest.token_gen_number = number
@@ -94,7 +94,7 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
     def set_task_token_disabled(self):
         self.task.token_mode = TOKEN_MODE_DISABLED
 
-    def set_task_token_finite(self, initial, number, interval, max_):
+    def set_task_token_finite(self, initial, number, interval, max_=None):
         self.task.token_mode = TOKEN_MODE_FINITE
         self.task.token_gen_initial = initial
         self.task.token_gen_number = number
@@ -120,22 +120,30 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
         self.assertEqual(self.call(10), (0, None, None))
 
     def test_finite_on_contest(self):
-        self.set_contest_token_finite(3, 2, 4, 6)
+        self.set_contest_token_finite(initial=3, number=2, interval=4, max_=6)
         self.set_task_token_infinite()
-        self.assertEqual(self.call(3), (3, self.at(4), None))
-        self.assertEqual(self.call(6), (5, self.at(8), None))
-        self.assertEqual(self.call(10), (6, None, None))
 
+        # None generated yet.
+        self.assertEqual(self.call(3), (3, self.at(4), None))
+        # One period of generation passed.
+        self.assertEqual(self.call(6), (5, self.at(8), None))
+        # Cap hit.
+        self.assertEqual(self.call(10), (6, None, None))
+        # Once some used, regeneration resumes.
         self.add_token_to_contest(9)
         self.assertEqual(self.call(10), (5, self.at(12), None))
 
     def test_finite_on_task(self):
         self.set_contest_token_infinite()
-        self.set_task_token_finite(3, 2, 4, 6)
-        self.assertEqual(self.call(3), (3, self.at(4), None))
-        self.assertEqual(self.call(6), (5, self.at(8), None))
-        self.assertEqual(self.call(10), (6, None, None))
+        self.set_task_token_finite(initial=3, number=2, interval=4, max_=6)
 
+        # None generated yet.
+        self.assertEqual(self.call(3), (3, self.at(4), None))
+        # One period of generation passed.
+        self.assertEqual(self.call(6), (5, self.at(8), None))
+        # Cap hit.
+        self.assertEqual(self.call(10), (6, None, None))
+        # Once some used, regeneration resumes.
         self.add_token_to_task(9)
         self.assertEqual(self.call(10), (5, self.at(12), None))
 
@@ -144,8 +152,8 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
         self.assertEqual(self.call(10), (5, self.at(12), None))
 
     def test_finite_on_both(self):
-        self.set_contest_token_finite(1, 2, 5, None)
-        self.set_task_token_finite(2, 1, 4, 5)
+        self.set_contest_token_finite(initial=1, number=2, interval=5)
+        self.set_task_token_finite(initial=2, number=1, interval=4, max_=5)
 
         # 7 ║                             ┏━━━━━━━━━┛
         # 6 ║                             ┃
@@ -176,8 +184,8 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
         self.assertEqual(self.call(105), (5, None, None))
 
     def test_constraints(self):
-        self.set_contest_token_finite(3, 1, 2, 6)
-        self.set_task_token_finite(1, 2, 2, None)
+        self.set_contest_token_finite(initial=3, number=1, interval=2, max_=6)
+        self.set_task_token_finite(initial=1, number=2, interval=2)
 
         # 7 ║                       ┌───────┘
         # 6 ║                       ┢━━━━━━━━━━━━━━━
@@ -228,12 +236,16 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
         self.contest.per_user_time = timedelta(seconds=100)
         self.participation.starting_time = self.at(1000)
 
-        self.set_contest_token_finite(2, 1, 10, 10)
-        self.set_task_token_finite(10, 0, 1, None)
+        self.set_contest_token_finite(initial=2, number=1, interval=10, max_=10)
+        self.set_task_token_finite(initial=10, number=0, interval=1)
 
+        # Generation didn't start before the user's starting_time.
         self.assertEqual(self.call(1000), (2, self.at(1010), None))
+        # Then it proceeds normally.
         self.assertEqual(self.call(1011), (3, self.at(1020), None))
+        # Until the cap is hit.
         self.assertEqual(self.call(1081), (10, None, None))
+        # Played tokens are taken into account at their correct time.
         self.add_token_to_task(1050)
         self.assertEqual(self.call(1051), (6, self.at(1060), None))
         self.assertEqual(self.call(1081), (9, None, None))
@@ -273,12 +285,12 @@ class TestAcceptToken(DatabaseMixin, unittest.TestCase):
         self.assertIs(token.submission, self.submission)
         self.assertIs(token.timestamp, self.timestamp)
 
-    def test_failure(self):
-        # No tokens available.
+    def test_failure_none_available(self):
         self.tokens_available.return_value = (0, None, None)
         with self.assertRaises(UnacceptableToken):
             self.call()
-        # Tokens available but cannot use them yet.
+
+    def test_failure_cooldown_in_effect(self):
         self.tokens_available.return_value = \
             (1, None, self.timestamp + timedelta(seconds=1))
         with self.assertRaises(UnacceptableToken):

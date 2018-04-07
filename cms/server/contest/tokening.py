@@ -39,8 +39,10 @@ from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_INFINITE
 from cms.db import Token, Submission
 
 
-__all__ = ["tokens_available", "UnacceptableToken", "TokenAlreadyPlayed",
-           "accept_token"]
+__all__ = [
+    "tokens_available",
+    "UnacceptableToken", "TokenAlreadyPlayed", "accept_token"
+]
 
 
 logger = logging.getLogger(__name__)
