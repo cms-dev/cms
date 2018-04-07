@@ -45,13 +45,12 @@ import re
 
 import tornado.web
 
-from sqlalchemy import func
-
 from cms import config
-from cms.db import Task, UserTest, UserTestFile, UserTestManager, \
-    UserTestResult
+from cms.db import UserTest, UserTestFile, UserTestManager, UserTestResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
+from cms.server.contest.submission import get_submission_count, \
+    check_max_number, get_latest_submission, check_min_interval
 from cmscommon.archive import Archive
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
@@ -89,11 +88,9 @@ class UserTestInterfaceHandler(ContestHandler):
 
         user_tests_left_contest = None
         if self.contest.max_user_test_number is not None:
-            user_test_c = self.sql_session.query(func.count(UserTest.id))\
-                .join(UserTest.task)\
-                .filter(Task.contest == self.contest)\
-                .filter(UserTest.participation == participation)\
-                .scalar()
+            user_test_c = \
+                get_submission_count(self.sql_session, participation,
+                                     contest=self.contest, cls=UserTest)
             user_tests_left_contest = \
                 self.contest.max_user_test_number - user_test_c
 
@@ -169,70 +166,37 @@ class UserTestHandler(ContestHandler):
         contest = self.contest
 
         # Enforce maximum number of user_tests
-        try:
-            if contest.max_user_test_number is not None:
-                user_test_c = self.sql_session.query(func.count(UserTest.id))\
-                    .join(UserTest.task)\
-                    .filter(Task.contest == contest)\
-                    .filter(UserTest.participation == participation)\
-                    .scalar()
-                if user_test_c >= contest.max_user_test_number and \
-                        not self.current_user.unrestricted:
-                    raise ValueError(
-                        self._("You have reached the maximum limit of "
-                               "at most %d tests among all tasks.") %
-                        contest.max_user_test_number)
-            if task.max_user_test_number is not None:
-                user_test_t = self.sql_session.query(func.count(UserTest.id))\
-                    .filter(UserTest.task == task)\
-                    .filter(UserTest.participation == participation)\
-                    .scalar()
-                if user_test_t >= task.max_user_test_number and \
-                        not self.current_user.unrestricted:
-                    raise ValueError(
-                        self._("You have reached the maximum limit of "
-                               "at most %d tests on this task.") %
-                        task.max_user_test_number)
-        except ValueError as error:
-            self._send_error(self._("Too many tests!"), str(error))
+        if not check_max_number(self.sql_session, contest.max_user_test_number,
+                                participation, contest=contest, cls=UserTest):
+            self._send_error(self._("Too many submissions!"),
+                             self._("You have reached the maximum limit of "
+                                    "at most %d tests among all tasks.")
+                             % contest.max_user_test_number)
+            return
+        if not check_max_number(self.sql_session, task.max_user_test_number,
+                                participation, task=task, cls=UserTest):
+            self._send_error(self._("Too many submissions!"),
+                             self._("You have reached the maximum limit of "
+                                    "at most %d tests on this task.")
+                             % task.max_user_test_number)
             return
 
         # Enforce minimum time between user_tests
-        try:
-            if contest.min_user_test_interval is not None:
-                last_user_test_c = self.sql_session.query(UserTest)\
-                    .join(UserTest.task)\
-                    .filter(Task.contest == contest)\
-                    .filter(UserTest.participation == participation)\
-                    .order_by(UserTest.timestamp.desc())\
-                    .first()
-                if last_user_test_c is not None and \
-                        self.timestamp - last_user_test_c.timestamp < \
-                        contest.min_user_test_interval and \
-                        not self.current_user.unrestricted:
-                    raise ValueError(
-                        self._("Among all tasks, you can test again "
-                               "after %d seconds from last test.") %
-                        contest.min_user_test_interval.total_seconds())
-            # We get the last user_test even if we may not need it
-            # for min_user_test_interval because we may need it later,
-            # in case this is a ALLOW_PARTIAL_SUBMISSION task.
-            last_user_test_t = self.sql_session.query(UserTest)\
-                .filter(UserTest.participation == participation)\
-                .filter(UserTest.task == task)\
-                .order_by(UserTest.timestamp.desc())\
-                .first()
-            if task.min_user_test_interval is not None:
-                if last_user_test_t is not None and \
-                        self.timestamp - last_user_test_t.timestamp < \
-                        task.min_user_test_interval and \
-                        not self.current_user.unrestricted:
-                    raise ValueError(
-                        self._("For this task, you can test again "
-                               "after %d seconds from last test.") %
-                        task.min_user_test_interval.total_seconds())
-        except ValueError as error:
-            self._send_error(self._("Tests too frequent!"), str(error))
+        if not check_min_interval(
+                self.sql_session, contest.min_user_test_interval,
+                self.timestamp, participation, contest=contest, cls=UserTest):
+            self._send_error(self._("Too many submissions!"),
+                             self._("Among all tasks, you can test again "
+                                    "after %d seconds from last test.")
+                             % contest.min_user_test_interval.total_seconds())
+            return
+        if not check_min_interval(
+                self.sql_session, task.min_user_test_interval, self.timestamp,
+                participation, task=task, cls=UserTest):
+            self._send_error(self._("Too many submissions!"),
+                             self._("For this task, you can test again "
+                                    "after %d seconds from last test.")
+                             % task.min_user_test_interval.total_seconds())
             return
 
         # Required files from the user.
@@ -317,15 +281,17 @@ class UserTestHandler(ContestHandler):
         # non-submitted files from the previous user test. And put them
         # in file_digests (i.e. like they have already been sent to FS).
         file_digests = {}
-        if task_type.ALLOW_PARTIAL_SUBMISSION and \
-                last_user_test_t is not None and \
-                (submission_lang is None or
-                 submission_lang == last_user_test_t.language):
-            submission_lang = last_user_test_t.language
-            for filename in required.difference(provided):
-                if filename in last_user_test_t.files:
-                    file_digests[filename] = \
-                        last_user_test_t.files[filename].digest
+        if task_type.ALLOW_PARTIAL_SUBMISSION:
+            last_user_test_t = get_latest_submission(
+                self.sql_session, participation, task=task, cls=UserTest)
+            if last_user_test_t is not None \
+                    and (submission_lang is None
+                         or submission_lang == last_user_test_t.language):
+                submission_lang = last_user_test_t.language
+                for filename in required.difference(provided):
+                    if filename in last_user_test_t.files:
+                        file_digests[filename] = \
+                            last_user_test_t.files[filename].digest
 
         # Throw an error if task needs a language, but we don't have
         # it or it is not allowed / recognized.
