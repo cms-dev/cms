@@ -255,7 +255,7 @@ class Participation(Base):
 
     messages = relationship(
         "Message",
-        order_by="Message.timestamp",
+        order_by="[Message.timestamp]",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="participation")

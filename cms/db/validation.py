@@ -75,9 +75,10 @@ class FilenameListConstraint(CheckConstraint):
         # is true iff for all elements of array "<sth> <op> <element>".
         # This works for (in)equality but, as the order of the operands
         # is preserved, it doesn't work for regexp matching, where the
-        # syntax is "<text> ~ <pattern>". Our regexp is so simple we
-        # can work around it by concatenating the items of the array
-        # (using array_to_string) and match the regexp on the result.
+        # syntax is "<text> ~ <pattern>". Our regexp operates on a per
+        # character basis so we can work around it by concatenating the
+        # items of the array (using array_to_string) and match the
+        # regexp on the result.
         empty = literal_column("''")
         super(FilenameListConstraint, self).__init__(and_(
             func.array_to_string(column, empty).op("~")(

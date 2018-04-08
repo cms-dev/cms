@@ -247,6 +247,8 @@ class Task(Base):
 
     datasets = relationship(
         "Dataset",
+        # Due to active_dataset_id, SQLAlchemy cannot unambiguously
+        # figure out by itself which foreign key to use.
         foreign_keys="[Dataset.task_id]",
         cascade="all, delete-orphan",
         passive_deletes=True,
