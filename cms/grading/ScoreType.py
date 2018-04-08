@@ -327,13 +327,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 regexp = re.compile(t)
                 target = [tc for tc in indices if regexp.match(tc)]
                 if not target:
-                    raise StandardError(
+                    raise ValueError(
                         "No testcase matches against the regexp '%s'" % t)
                 targets.append(target)
 
             return targets
 
-        raise StandardError(
+        raise ValueError(
             "In the score type parameters, the second value of each element "
             "must have the same type (int or unicode)")
 
