@@ -258,7 +258,8 @@ class Communication(TaskType):
             # is the last command in commands, and that the previous
             # are "setup" that doesn't need tight control.
             if len(commands) > 1:
-                evaluation_step(sandbox_user[i], commands[:-1], 10, 256)
+                evaluation_step(sandbox_user[i], commands[:-1], 10,
+                                250 * 1000 * 1000)
             processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
                 commands[-1],

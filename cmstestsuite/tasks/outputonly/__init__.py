@@ -31,7 +31,7 @@ task_info = {
     "submission_format_choice": "other",
     "submission_format": "[\"output_000.txt\", \"output_001.txt\"]",
     "time_limit_{{dataset_id}}": "0.5",
-    "memory_limit_{{dataset_id}}": "128",
+    "memory_limit_{{dataset_id}}": "125",
     "task_type_{{dataset_id}}": "OutputOnly",
     "TaskTypeOptions_{{dataset_id}}_OutputOnly_output_eval": "diff",
     "score_type_{{dataset_id}}": "Sum",

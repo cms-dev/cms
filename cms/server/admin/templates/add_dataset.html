@@ -61,10 +61,10 @@ You are cloning the dataset "{{ original_dataset.description }}".
     </tr>
     <tr>
       <td>
-        <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
+        <span class="info" title="Total maximum memory usage for each evaluation, in MB (10^6 bytes)."></span>
         Memory limit
       </td>
-      <td><input type="text" name="memory_limit" value="{{ 512 if original_dataset is none else original_dataset.memory_limit or "" }}"/> MiB</td>
+      <td><input type="text" name="memory_limit" value="{{ 500 if original_dataset is none else original_dataset.memory_limit or "" }}"/> MB</td>
     </tr>
 
     <tr><td colspan=2><h2>Task type settings (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Task%20types.html" target="_blank">documentation</a>)</h2></td></tr>

@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2012-2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
+# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,36 +17,41 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""A class to update a dump created by CMS.
+
+Used by ContestImporter and DumpUpdater.
+
+This updater changes the unit of the memory limit from MiB to bytes.
+
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import iteritems
 
-task_info = {
-    "name": "communication2",
-    "title": "Test Communication Task",
-    "official_language": "",
-    "submission_format_choice": "other",
-    "submission_format": "[\"user1.%l\", \"user2.%l\"]",
-    "time_limit_{{dataset_id}}": "1.0",
-    "memory_limit_{{dataset_id}}": "125",
-    "task_type_{{dataset_id}}": "Communication",
-    "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "2",
-    "score_type_{{dataset_id}}": "Sum",
-    "score_type_parameters_{{dataset_id}}": "50",
-}
+import logging
 
-managers = [
-    "stub.c",
-    "stub.cpp",
-    "stub.pas",
-    "stub.java",
-    "manager",
-]
 
-test_cases = [
-    ("1.in", "1.out", True),
-    ("2.in", "2.out", False),
-]
+logger = logging.getLogger(__name__)
+
+
+class Updater(object):
+
+    def __init__(self, data):
+        assert data["_version"] == 30
+        self.objs = data
+
+    def run(self):
+        for k, v in iteritems(self.objs):
+            if k.startswith("_"):
+                continue
+
+            if v["_class"] == "Dataset":
+                if v.get("memory_limit") is not None:
+                    v["memory_limit"] *= 1024 * 1024
+
+        return self.objs

@@ -32,7 +32,7 @@ task_info = {
     "submission_format_choice": "other",
     "submission_format": "[\"communication.%l\"]",
     "time_limit_{{dataset_id}}": "1.0",
-    "memory_limit_{{dataset_id}}": "128",
+    "memory_limit_{{dataset_id}}": "125",
     "task_type_{{dataset_id}}": "Communication",
     "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "1",
     "score_type_{{dataset_id}}": "Sum",

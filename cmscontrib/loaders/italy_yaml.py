@@ -446,7 +446,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         args["autojudge"] = False
 
         load(conf, args, ["time_limit", "timeout"], conv=float)
-        load(conf, args, ["memory_limit", "memlimit"])
+        # The Italian YAML format specifies memory limits in MiB.
+        load(conf, args, ["memory_limit", "memlimit"],
+             conv=lambda mb: mb * 1024 * 1024)
 
         # Builds the parameters that depend on the task type
         args["managers"] = []

@@ -14,13 +14,13 @@ int main() {
     FILE *in = fopen("input.txt", "r");
     fscanf(in, "%d", &n);
 
-    // Seek is done in two steps so there are no probles even when
+    // Seek is done in two steps so there are no problems even when
     // type off_t is 4 bytes long. In this part everything is done
     // calling directly syscalls because apparently libc does not
     // properly report EFBIG errors.
     int outfd = open("output.txt", O_WRONLY|O_CREAT|O_TRUNC, 0666);
-    lseek(outfd, 1024 * 1024 * 1024, SEEK_CUR);
-    lseek(outfd, 1024 * 1024 * 1024, SEEK_CUR);
+    lseek(outfd, 1000 * 1000 * 1000, SEEK_CUR);
+    lseek(outfd, 1000 * 1000 * 1000, SEEK_CUR);
     i = write(outfd, "\0", 1);
     close(outfd);
 

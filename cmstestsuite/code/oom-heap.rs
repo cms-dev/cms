@@ -2,7 +2,7 @@ use std::io;
 
 fn main()
 {
-    let mut v = vec![0; 128 * 1024 * 1024];
+    let mut v = vec![0; 125 * 1000 * 1000];
     let mut s = String::new();
     match io::stdin().read_line(&mut s)
     {
