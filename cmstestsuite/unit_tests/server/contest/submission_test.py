@@ -59,14 +59,14 @@ class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             self.call()
         # If both, the task's contest cannot be None.
-        self.other_task = self.add_task()
+        other_task = self.add_task()
         with self.assertRaises(ValueError):
-            self.call(contest=self.contest, task=self.other_task)
+            self.call(contest=self.contest, task=other_task)
         # And cannot be another contest.
-        self.other_contest = self.add_contest()
-        self.other_task.contest = self.other_contest
+        other_contest = self.add_contest()
+        other_task.contest = other_contest
         with self.assertRaises(ValueError):
-            self.call(contest=self.contest, task=self.other_task)
+            self.call(contest=self.contest, task=other_task)
 
     def test_count_task(self):
         # No submissions.
@@ -111,8 +111,8 @@ class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
         self.assertEqual(self.call(contest=self.contest), 3)
 
         # Doesn't mix submissions for different contests.
-        self.other_contest = self.add_contest()
-        self.assertEqual(self.call(contest=self.other_contest), 0)
+        other_contest = self.add_contest()
+        self.assertEqual(self.call(contest=other_contest), 0)
 
         # Doesn't mix submissions with user tests.
         self.assertEqual(self.call(contest=self.contest, cls=UserTest), 0)
@@ -221,14 +221,14 @@ class TestGetLastSubmission(DatabaseMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             self.call()
         # If both, the task's contest cannot be None.
-        self.other_task = self.add_task()
+        other_task = self.add_task()
         with self.assertRaises(ValueError):
-            self.call(contest=self.contest, task=self.other_task)
+            self.call(contest=self.contest, task=other_task)
         # And cannot be another contest.
-        self.other_contest = self.add_contest()
-        self.other_task.contest = self.other_contest
+        other_contest = self.add_contest()
+        other_task.contest = other_contest
         with self.assertRaises(ValueError):
-            self.call(contest=self.contest, task=self.other_task)
+            self.call(contest=self.contest, task=other_task)
 
     def test_retrieve_task(self):
         # No submissions.
@@ -275,8 +275,8 @@ class TestGetLastSubmission(DatabaseMixin, unittest.TestCase):
         self.assertIs(self.call(contest=self.contest), s2)
 
         # Doesn't mix submissions for different contests.
-        self.other_contest = self.add_contest()
-        self.assertIsNone(self.call(contest=self.other_contest))
+        other_contest = self.add_contest()
+        self.assertIsNone(self.call(contest=other_contest))
 
         # Doesn't mix submissions with user tests.
         self.assertIsNone(self.call(contest=self.contest, cls=UserTest))
