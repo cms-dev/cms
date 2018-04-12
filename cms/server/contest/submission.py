@@ -80,7 +80,7 @@ def _filter_submission_query(q, participation, contest, task, cls):
 
 def get_submission_count(
         sql_session, participation, contest=None, task=None, cls=Submission):
-    """Return the amount of submissions the contestant sent in.
+    """Return the number of submissions the contestant sent in.
 
     Count the submissions (or user tests) for the given participation
     on the given task or contest (that is, on all the contest's tasks).
