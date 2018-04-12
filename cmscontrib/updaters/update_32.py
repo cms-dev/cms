@@ -54,7 +54,6 @@ class Updater(object):
             if v["_class"] == "Dataset":
 
                 limit = v["time_limit"]
-                print("AAA", limit)
                 # Zero explicitly meant no limits.
                 if limit == 0.0:
                     limit = None
@@ -67,9 +66,8 @@ class Updater(object):
                 v["time_limit"] = limit
 
                 limit = v["memory_limit"]
-                print("BBB", limit)
                 # Zero explicitly meant no limits.
-                if limit == 0.0:
+                if limit == 0:
                     limit = None
                 # Negative was undefined though.
                 if limit is not None and limit <= 0:
