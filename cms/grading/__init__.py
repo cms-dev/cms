@@ -245,7 +245,7 @@ def compilation_step(sandbox, commands):
     setting up an environment suitable for compilations (additional visible
     directories, appropriate limits).
 
-    Terminate early after a command if the sandbox fails, or the command did
+    Terminate early after a command if the sandbox fails, or the command does
     not terminate normally and with exit code 0.
 
     sandbox (Sandbox): the sandbox we consider, already created.
@@ -390,14 +390,14 @@ def evaluation_step(sandbox, commands,
     Terminate early after a command if the sandbox fails.
 
     sandbox (Sandbox): the sandbox we consider, already created.
-    commands ([[str]]): compilation commands to execute.
+    commands ([[str]]): evaluation commands to execute.
     time_limit (float): time limit in seconds (applied to each command); if
         non-positive, no time limit is enforced.
-    memory_limit (int): memory limit in MB (applied to each command); if
+    memory_limit (int): memory limit in MiB (applied to each command); if
         non-positive, no memory limit is enforced.
-    allow_dirs ([string]|None): if not None, a list of external
+    allow_dirs ([str]|None): if not None, a list of external
         directories to map inside the sandbox
-    writable_files ([string]|None): a list of inner file names (relative to
+    writable_files ([str]|None): a list of inner file names (relative to
         the inner path) on which the command is allow to write, or None to
         indicate that all files are read-only; if applicable, redirected
         output and the standard error are implicitly added to the files
