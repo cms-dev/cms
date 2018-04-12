@@ -47,6 +47,37 @@ from cms.db import Submission, Task
 logger = logging.getLogger(__name__)
 
 
+def _filter_submission_query(q, participation, contest, task, cls):
+    """Filter a query for submissions by participation, contest, task.
+
+    Apply to the given query some filters that narrow down the set of
+    results to the submissions that were sent in by the given
+    contestant on the given contest or task.
+
+    q (Query): a SQLAlchemy query, assumed to select from either
+        submissions or user tests (as specified by cls).
+    participation (Participation): the contestant to filter for.
+    contest (Contest|None): the contest to filter for.
+    task (Task|None): the task to filter for.
+    cls (type): either Submission or UserTest, specifies which class
+        the query selects from.
+
+    return (Query): the original query with the filters applied.
+
+    """
+    if task is not None:
+        if contest is not None and contest is not task.contest:
+            raise ValueError("contest and task don't match")
+        q = q.filter(cls.task == task)
+    elif contest is not None:
+        q = q.join(cls.task) \
+            .filter(Task.contest == contest)
+    else:
+        raise ValueError("need at least one of contest and task")
+    q = q.filter(cls.participation == participation)
+    return q
+
+
 def get_submission_count(
         sql_session, participation, contest=None, task=None, cls=Submission):
     """Return the amount of submissions the contestant sent in.
@@ -65,16 +96,7 @@ def get_submission_count(
 
     """
     q = sql_session.query(func.count(cls.id))
-    if task is not None:
-        if contest is not None and task.contest is not contest:
-            raise ValueError("contest and task don't match")
-        q = q.filter(cls.task == task)
-    elif contest is not None:
-        q = q.join(cls.task) \
-            .filter(Task.contest == contest)
-    else:
-        raise ValueError("need at least one of contest and task")
-    q = q.filter(cls.participation == participation)
+    q = _filter_submission_query(q, participation, contest, task, cls)
     return q.scalar()
 
 
@@ -129,17 +151,8 @@ def get_latest_submission(
 
     """
     q = sql_session.query(cls)
-    if task is not None:
-        if contest is not None and task.contest is not contest:
-            raise ValueError("contest and task don't match")
-        q = q.filter(cls.task == task)
-    elif contest is not None:
-        q = q.join(cls.task) \
-            .filter(Task.contest == contest)
-    else:
-        raise ValueError("need at least one of contest and task")
-    q = q.filter(cls.participation == participation) \
-        .order_by(desc(cls.timestamp))
+    q = _filter_submission_query(q, participation, contest, task, cls)
+    q = q.order_by(desc(cls.timestamp))
     return q.first()
 
 
