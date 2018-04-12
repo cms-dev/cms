@@ -69,7 +69,7 @@ class Archive(object):
 
         """
         try:
-            patoolib.test_archive(path)
+            patoolib.test_archive(path, interactive=False)
             return True
         except PatoolError:
             return False
@@ -85,7 +85,7 @@ class Archive(object):
         files = tuple(os.listdir(from_dir))
         cwd = os.getcwd()
         os.chdir(from_dir)
-        patoolib.create_archive(archive_path, files)
+        patoolib.create_archive(archive_path, files, interactive=False)
         os.chdir(cwd)
 
     @staticmethod
@@ -96,7 +96,7 @@ class Archive(object):
         to_dir (string): destination directory.
 
         """
-        patoolib.extract_archive(archive_path, outdir=to_dir)
+        patoolib.extract_archive(archive_path, outdir=to_dir, interactive=False)
 
     @staticmethod
     def from_raw_data(raw_data):
@@ -145,7 +145,8 @@ class Archive(object):
 
         """
         self.temp_dir = tempfile.mkdtemp(dir=config.temp_dir)
-        patoolib.extract_archive(self.path, outdir=self.temp_dir)
+        patoolib.extract_archive(self.path, outdir=self.temp_dir,
+                                 interactive=False)
         return self.temp_dir
 
     def repack(self, target):
