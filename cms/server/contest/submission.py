@@ -89,8 +89,8 @@ def get_submission_count(
     participation (Participation): the participation to fetch data for.
     contest (Contest|None): if given count on all the contest's tasks.
     task (Task|None): if given count only on this task (trumps contest).
-    cls (Submission|UserTest): if the UserTest class is given, count
-        user tests rather than submissions.
+    cls (type): if the UserTest class is given, count user tests rather
+        than submissions.
 
     return (int): the count.
 
@@ -116,8 +116,8 @@ def check_max_number(
     participation (Participation): the participation to fetch data for.
     contest (Contest|None): if given count on all the contest's tasks.
     task (Task|None): if given count only on this task (trumps contest).
-    cls (Submission|UserTest): if the UserTest class is given, count
-        user tests rather than submissions.
+    cls (type): if the UserTest class is given, count user tests rather
+        than submissions.
 
     return (bool): whether the contestant can submit more.
 
@@ -143,8 +143,8 @@ def get_latest_submission(
     participation (Participation): the participation to fetch data for.
     contest (Contest|None): if given look at all the contest's tasks.
     task (Task|None): if given look only at this task (trumps contest).
-    cls (Submission|UserTest): if the UserTest class is given, fetch
-        user tests rather than submissions.
+    cls (type): if the UserTest class is given, fetch user tests rather
+        than submissions.
 
     return (Submission|UserTest|None): the latest submission/user test,
         if any.
@@ -171,8 +171,8 @@ def check_min_interval(
     participation (Participation): the participation to fetch data for.
     contest (Contest|None): if given look at all the contest's tasks.
     task (Task|None): if given look only at this task (trumps contest).
-    cls (Submission|UserTest): if the UserTest class is given, fetch
-        user tests rather than submissions.
+    cls (type): if the UserTest class is given, fetch user tests rather
+        than submissions.
 
     return (bool): whether the contestant's "cool down" period has
         expired and they can submit again.
