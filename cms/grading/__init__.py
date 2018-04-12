@@ -558,17 +558,12 @@ def grading_stats(sandbox):
 def merge_grading_stats(first_stats, second_stats, concurrent=True):
     """Merge two grading statistics dictionary.
 
-    The logic is to sum execution time and memory, but take the maximum of the
-    wall clock time; for status, to take the first non-ok status, if it exists,
-    otherwise use ok.
-
     first_stats (dict): statistics about the first execution; contains
         execution_time, execution_wall_clock_time, execution_memory,
         exit_status, and possibly signal.
     second_stats (dict): same for the second execution.
     concurrent (bool): whether to merge using assuming the executions were
-        concurrent or not (the only difference is in the merging of wall
-        times).
+        concurrent or not (see return value).
 
     return (dict): the merged statistics:
         * execution times are added;
