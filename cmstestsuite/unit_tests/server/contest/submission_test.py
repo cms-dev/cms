@@ -212,10 +212,10 @@ class TestCheckMaxNumber(DatabaseMixin, unittest.TestCase):
         self.get_submission_count.assert_not_called()
 
 
-class TestGetLastSubmission(DatabaseMixin, unittest.TestCase):
+class TestGetLatestSubmission(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestGetLastSubmission, self).setUp()
+        super(TestGetLatestSubmission, self).setUp()
         self.contest = self.add_contest()
         self.task1 = self.add_task(contest=self.contest)
         self.task2 = self.add_task(contest=self.contest)
@@ -336,8 +336,8 @@ class TestCheckMinInterval(DatabaseMixin, unittest.TestCase):
     def setUp(self):
         super(TestCheckMinInterval, self).setUp()
 
-        patcher = patch("cms.server.contest.submission.get_last_submission")
-        self.get_last_submission = patcher.start()
+        patcher = patch("cms.server.contest.submission.get_latest_submission")
+        self.get_latest_submission = patcher.start()
         self.addCleanup(patcher.stop)
         self.calls = list()
 
@@ -365,7 +365,7 @@ class TestCheckMinInterval(DatabaseMixin, unittest.TestCase):
     def test_no_limit(self):
         s = self.add_submission(timestamp=self.at(5), task=self.task,
                                 participation=self.participation)
-        self.get_last_submission.return_value = s
+        self.get_latest_submission.return_value = s
         # Test different arguments to ensure they don't cause issues.
         self.assertTrue(self.call(None, 0))
         self.assertTrue(self.call(None, 1, contest=self.contest))
@@ -373,41 +373,41 @@ class TestCheckMinInterval(DatabaseMixin, unittest.TestCase):
         self.assertTrue(self.call(
             None, 3, contest=self.contest, task=self.task))
         # Having calls signals an inefficiency.
-        self.get_last_submission.assert_not_called()
+        self.get_latest_submission.assert_not_called()
 
     def test_limit(self):
         s = self.add_submission(timestamp=self.at(5), task=self.task,
                                 participation=self.participation)
-        self.get_last_submission.return_value = s
+        self.get_latest_submission.return_value = s
         # Test different arguments to ensure they are passed to the call.
         self.assertFalse(self.call(1, 4, contest=self.contest))
         self.assertFalse(self.call(3, 6, task=self.task, cls=UserTest))
         self.assertTrue(self.call(4, 11, contest=self.contest, task=self.task))
         # Arguments should have been passed unchanged.
-        self.get_last_submission.assert_has_calls(self.calls)
+        self.get_latest_submission.assert_has_calls(self.calls)
 
     def test_limit_no_submissions(self):
-        self.get_last_submission.return_value = None
+        self.get_latest_submission.return_value = None
         # Test different arguments to ensure they are passed to the call.
         self.assertTrue(self.call(1, 4, contest=self.contest, cls=UserTest))
         self.assertTrue(self.call(3, 6, task=self.task))
         self.assertTrue(self.call(4, 11, contest=self.contest, task=self.task))
         # Arguments should have been passed unchanged.
-        self.get_last_submission.assert_has_calls(self.calls)
+        self.get_latest_submission.assert_has_calls(self.calls)
 
     def test_limit_unrestricted(self):
         # Unrestricted users have no limit enforced.
         self.participation.unrestricted = True
         s = self.add_submission(timestamp=self.at(5), task=self.task,
                                 participation=self.participation)
-        self.get_last_submission.return_value = s
+        self.get_latest_submission.return_value = s
         # Test different arguments to ensure they don't cause issues.
         self.assertTrue(self.call(1, 4, contest=self.contest))
         self.assertTrue(self.call(3, 6, task=self.task))
         self.assertTrue(self.call(
             4, 11, contest=self.contest, task=self.task, cls=UserTest))
         # Having calls signals an inefficiency.
-        self.get_last_submission.assert_not_called()
+        self.get_latest_submission.assert_not_called()
 
 
 if __name__ == "__main__":
