@@ -126,9 +126,7 @@ def check_max_number(
         return True
     count = get_submission_count(
         sql_session, participation, contest=contest, task=task, cls=cls)
-    if count >= max_number:
-        return False
-    return True
+    return count < max_number
 
 
 def get_latest_submission(
@@ -182,7 +180,5 @@ def check_min_interval(
         return True
     submission = get_latest_submission(
         sql_session, participation, contest=contest, task=task, cls=cls)
-    if submission is not None \
-            and (timestamp - submission.timestamp < min_interval):
-        return False
-    return True
+    return submission is None \
+           or (timestamp - submission.timestamp >= min_interval)
