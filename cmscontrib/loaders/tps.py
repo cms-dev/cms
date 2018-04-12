@@ -4,6 +4,7 @@
 # Programming contest management system
 # Copyright © 2017 Kiarash Golezardi <kiarashgolezardi@gmail.com>
 # Copyright © 2017 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,8 +34,7 @@ import re
 
 from datetime import timedelta
 
-from cms.db import Task, SubmissionFormatElement, Dataset, Manager, \
-    Testcase, Attachment, Statement
+from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
 
 from .base_loader import TaskLoader
 
@@ -183,13 +183,11 @@ class TpsTaskLoader(TaskLoader):
         if data["task_type"] == 'OutputOnly':
             args["submission_format"] = list()
             for codename in testcase_codenames:
-                args["submission_format"].append(
-                    SubmissionFormatElement("%s.out" % codename))
+                args["submission_format"].append("%s.out" % codename)
         elif data["task_type"] == 'Notice':
             args["submission_format"] = list()
         else:
-            args["submission_format"] = [
-                SubmissionFormatElement("%s.%%l" % name)]
+            args["submission_format"] = ["%s.%%l" % name]
 
         # These options cannot be configured in the TPS format.
         # Uncomment the following to set specific values for them.
