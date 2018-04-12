@@ -388,9 +388,11 @@ class Dataset(Base):
     # Time and memory limits for every testcase.
     time_limit = Column(
         Float,
+        CheckConstraint("time_limit > 0"),
         nullable=True)
     memory_limit = Column(
         Integer,
+        CheckConstraint("memory_limit > 0"),
         nullable=True)
 
     # Name of the TaskType child class suited for the task.

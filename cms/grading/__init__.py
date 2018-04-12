@@ -392,9 +392,9 @@ def evaluation_step(sandbox, commands,
     sandbox (Sandbox): the sandbox we consider, already created.
     commands ([[str]]): evaluation commands to execute.
     time_limit (float|None): time limit in seconds (applied to each command);
-        if None or non-positive, no time limit is enforced.
+        if None, no time limit is enforced.
     memory_limit (int|None): memory limit in MiB (applied to each command); if
-        None or non-positive, no memory limit is enforced.
+        None, no memory limit is enforced.
     allow_dirs ([str]|None): if not None, a list of external
         directories to map inside the sandbox
     writable_files ([str]|None): a list of inner file names (relative to
@@ -413,6 +413,8 @@ def evaluation_step(sandbox, commands,
         * success: True if the sandbox did not fail, in any command;
         * plus: a dictionary with statistics about the evaluation, or None
             if success is False.
+
+    raise (ValueError): if time or memory limit are non-positive.
 
     """
     for command in commands:
@@ -447,11 +449,14 @@ def evaluation_step_before_run(sandbox, command,
     return (bool|Popen): sandbox success if wait is True, the process if not.
 
     """
+    # Ensure parameters are appropriate.
+    if time_limit is not None and time_limit <= 0:
+        raise ValueError("Time limit must be positive, is %s" % time_limit)
+    if memory_limit is not None and memory_limit <= 0:
+        raise ValueError(
+            "Memory limit must be positive, is %s" % memory_limit)
+
     # Default parameters handling.
-    if time_limit is None or time_limit <= 0:
-        time_limit = None
-    if memory_limit is None or memory_limit <= 0:
-        memory_limit = None
     if allow_dirs is None:
         allow_dirs = []
     if writable_files is None:
