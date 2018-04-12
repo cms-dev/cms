@@ -60,7 +60,7 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
 from cms.db import Announcement, Base, Contest, Dataset, Evaluation, \
     Executable, File, Message, Participation, Question, Session, Statement, \
     Submission, SubmissionResult, Task, Team, Testcase, User, UserTest, \
-    UserTestResult, drop_db, init_db, Token
+    UserTestResult, drop_db, init_db, Token, UserTestFile, UserTestManager
 from cms.db.filecacher import DBBackend
 
 
@@ -419,6 +419,34 @@ class DatabaseMixin(object):
         user_test = UserTest(**args)
         self.session.add(user_test)
         return user_test
+
+    def add_user_test_file(self, user_test=None, **kwargs):
+        """Create a user test file and add it to the session"""
+        if user_test is None:
+            user_test = self.add_user_test()
+        args = {
+            "user_test": user_test,
+            "filename": unique_unicode_id(),
+            "digest": unique_digest(),
+        }
+        args.update(kwargs)
+        user_test_file = UserTestFile(**args)
+        self.session.add(user_test_file)
+        return user_test_file
+
+    def add_user_test_manager(self, user_test=None, **kwargs):
+        """Create a user test manager and add it to the session"""
+        if user_test is None:
+            user_test = self.add_user_test()
+        args = {
+            "user_test": user_test,
+            "filename": unique_unicode_id(),
+            "digest": unique_digest(),
+        }
+        args.update(kwargs)
+        user_test_manager = UserTestManager(**args)
+        self.session.add(user_test_manager)
+        return user_test_manager
 
     def add_user_test_result(self, user_test=None, dataset=None, **kwargs):
         """Add a user test result."""

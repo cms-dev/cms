@@ -150,6 +150,19 @@ class Language(with_metaclass(ABCMeta, object)):
         """
         pass
 
+    # It's sometimes handy to use Language objects in sets or as dict
+    # keys. Since they have no state (they are just collections of
+    # constants and static methods) and are designed to be used as
+    # singletons, it's very easy to make them hashable.
+
+    @classmethod
+    def __eq__(cls, other):
+        return type(other) is cls
+
+    @classmethod
+    def __hash__(cls):
+        return hash(cls)
+
 
 class CompiledLanguage(Language):
     """A language where the compilation step produces an executable."""
