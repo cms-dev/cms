@@ -53,26 +53,30 @@ class Updater(object):
 
             if v["_class"] == "Dataset":
 
-                old_limit = v["time_limit"]
+                limit = v["time_limit"]
+                print("AAA", limit)
                 # Zero explicitly meant no limits.
-                if old_limit == 0.0:
-                    old_limit = None
+                if limit == 0.0:
+                    limit = None
                 # Negative was undefined though.
-                if old_limit is not None and old_limit <= 0.0:
+                if limit is not None and limit <= 0.0:
                     logger.warning("Previous time limit %s was updated, "
                                    "no time limit is enforced now.",
-                                   old_limit)
-                    v["time_limit"] = None
+                                   limit)
+                    limit = None
+                v["time_limit"] = limit
 
-                old_limit = v["memory_limit"]
+                limit = v["memory_limit"]
+                print("BBB", limit)
                 # Zero explicitly meant no limits.
-                if old_limit == 0.0:
-                    old_limit = None
+                if limit == 0.0:
+                    limit = None
                 # Negative was undefined though.
-                if old_limit is not None and old_limit <= 0:
+                if limit is not None and limit <= 0:
                     logger.warning("Previous memory limit %s was updated, "
                                    "no memory limit is enforced now.",
-                                   old_limit)
-                    v["memory_limit"] = None
+                                   limit)
+                    limit = None
+                v["memory_limit"] = limit
 
         return self.objs
