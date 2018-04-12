@@ -51,8 +51,10 @@ class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
         self.task2 = self.add_task(contest=self.contest)
         self.participation = self.add_participation(contest=self.contest)
 
-    def call(self, **kwargs):
-        return get_submission_count(self.session, self.participation, **kwargs)
+    def call(self, participation=None, **kwargs):
+        if participation is None:
+            participation = self.participation
+        return get_submission_count(self.session, participation, **kwargs)
 
     def test_bad_arguments(self):
         # Needs at least one of contest or task.
@@ -84,6 +86,11 @@ class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
         # Doesn't mix submissions for different tasks.
         self.assertEqual(self.call(task=self.task2), 0)
 
+        # Doesn't mix submissions for different users.
+        other_participation = self.add_participation(contest=self.contest)
+        self.assertEqual(self.call(participation=other_participation,
+                                   task=self.task1), 0)
+
         # Doesn't mix submissions with user tests.
         self.assertEqual(self.call(task=self.task1, cls=UserTest), 0)
 
@@ -113,6 +120,11 @@ class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
         # Doesn't mix submissions for different contests.
         other_contest = self.add_contest()
         self.assertEqual(self.call(contest=other_contest), 0)
+
+        # Doesn't mix submissions for different users.
+        other_participation = self.add_participation(contest=self.contest)
+        self.assertEqual(self.call(participation=other_participation,
+                                   contest=self.contest), 0)
 
         # Doesn't mix submissions with user tests.
         self.assertEqual(self.call(contest=self.contest, cls=UserTest), 0)
@@ -213,8 +225,10 @@ class TestGetLastSubmission(DatabaseMixin, unittest.TestCase):
     def at(self, seconds):
         return self.timestamp + timedelta(seconds=seconds)
 
-    def call(self, **kwargs):
-        return get_latest_submission(self.session, self.participation, **kwargs)
+    def call(self, participation=None, **kwargs):
+        if participation is None:
+            participation = self.participation
+        return get_latest_submission(self.session, participation, **kwargs)
 
     def test_bad_arguments(self):
         # Needs at least one of contest or task.
@@ -252,6 +266,11 @@ class TestGetLastSubmission(DatabaseMixin, unittest.TestCase):
         # Doesn't mix submissions for different tasks.
         self.assertIsNone(self.call(task=self.task2))
 
+        # Doesn't mix submissions for different users.
+        other_participation = self.add_participation(contest=self.contest)
+        self.assertIsNone(self.call(participation=other_participation,
+                                    task=self.task1))
+
         # Doesn't mix submissions with user tests.
         self.assertIsNone(self.call(task=self.task1, cls=UserTest))
 
@@ -277,6 +296,11 @@ class TestGetLastSubmission(DatabaseMixin, unittest.TestCase):
         # Doesn't mix submissions for different contests.
         other_contest = self.add_contest()
         self.assertIsNone(self.call(contest=other_contest))
+
+        # Doesn't mix submissions for different users.
+        other_participation = self.add_participation(contest=self.contest)
+        self.assertIsNone(self.call(participation=other_participation,
+                                    contest=self.contest))
 
         # Doesn't mix submissions with user tests.
         self.assertIsNone(self.call(contest=self.contest, cls=UserTest))
