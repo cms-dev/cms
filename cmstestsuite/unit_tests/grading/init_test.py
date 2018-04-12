@@ -32,7 +32,7 @@ import unittest
 from io import BytesIO
 
 from cms.grading import Sandbox, WHITES, \
-    format_status_text, merge_grading_stats, white_diff
+    format_status_text, merge_execution_stats, white_diff
 
 
 class DummyTranslation(object):
@@ -106,7 +106,7 @@ class TestMergeEvaluationResults(unittest.TestCase):
 
     def test_success_status_ok(self):
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
                 self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK)),
             self._res(1.1, 2.0, 300.3, Sandbox.EXIT_OK))
@@ -114,7 +114,7 @@ class TestMergeEvaluationResults(unittest.TestCase):
     def test_success_sequential(self):
         # In non-concurrent mode memory is max'd and wall clock is added.
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
                 self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK),
                 concurrent=False),
@@ -122,34 +122,34 @@ class TestMergeEvaluationResults(unittest.TestCase):
 
     def test_success_first_status_ok(self):
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
                 self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT)),
             self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
             self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(0, 0, 0, Sandbox.EXIT_OK),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
             self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
 
     def test_success_first_status_not_ok(self):
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
             self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
             self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
         self.assertRes(
-            merge_grading_stats(
+            merge_execution_stats(
                 self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
                 self._res(0, 0, 0, Sandbox.EXIT_OK)),
             self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
@@ -157,7 +157,7 @@ class TestMergeEvaluationResults(unittest.TestCase):
     def test_success_results_are_not_modified(self):
         r0 = self._res(1.0, 2.0, 300, Sandbox.EXIT_OK)
         r1 = self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11)
-        m = merge_grading_stats(r0, r1)
+        m = merge_execution_stats(r0, r1)
         self.assertRes(
             m, self._res(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal=11))
         self.assertRes(

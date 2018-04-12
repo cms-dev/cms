@@ -307,12 +307,9 @@ def compilation_step(sandbox, commands):
                 sandbox.get_exit_code() != 0):
             break
 
-    stdout = '\n===\n'.join(stdouts)
-    stderr = '\n===\n'.join(stderrs)
-
-    stats = grading_stats(sandbox)
-    stats["stdout"] = stdout
-    stats["stderr"] = stderr
+    stats = execution_stats(sandbox)
+    stats["stdout"] = '\n===\n'.join(stdouts)
+    stats["stderr"] = '\n===\n'.join(stderrs)
 
     exit_status = stats["exit_status"]
     exit_code = sandbox.get_exit_code()
@@ -493,7 +490,7 @@ def evaluation_step_after_run(sandbox):
     See evaluation_step for the meaning of the argument and the return value.
 
     """
-    stats = grading_stats(sandbox)
+    stats = execution_stats(sandbox)
     exit_status = stats["exit_status"]
 
     success = False
@@ -536,7 +533,7 @@ def evaluation_step_after_run(sandbox):
     return success, stats
 
 
-def grading_stats(sandbox):
+def execution_stats(sandbox):
     """Extract statistics from a sandbox about the last ran command.
 
     sandbox (Sandbox): the sandbox to inspect.
@@ -555,8 +552,8 @@ def grading_stats(sandbox):
     return stats
 
 
-def merge_grading_stats(first_stats, second_stats, concurrent=True):
-    """Merge two grading statistics dictionary.
+def merge_execution_stats(first_stats, second_stats, concurrent=True):
+    """Merge two execution statistics dictionary.
 
     first_stats (dict): statistics about the first execution; contains
         execution_time, execution_wall_clock_time, execution_memory,
