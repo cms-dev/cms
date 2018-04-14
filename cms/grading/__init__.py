@@ -492,7 +492,6 @@ def evaluation_step_after_run(sandbox):
     """
     stats = execution_stats(sandbox)
     exit_status = stats["exit_status"]
-    logger.debug("Evaluation ended with exit status '%s'", exit_status)
 
     if exit_status in [
             Sandbox.EXIT_OK,
@@ -503,11 +502,13 @@ def evaluation_step_after_run(sandbox):
         # Evaluation succeeded, and user program either succeeded or was
         # interrupted for some error condition. We report the success, the
         # task type will decide how to grade this evaluation.
+        logger.debug("Evaluation ended with exit status '%s'", exit_status)
         return True, stats
 
     # Unexpected errors of various degrees; we report the failure.
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-        logger.error("Evaluation aborted because of sandbox error.")
+        logger.error("Evaluation aborted because of sandbox error "
+                     "(status '%s').", exit_status)
         return False, stats
 
     else:
