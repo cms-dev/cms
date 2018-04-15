@@ -45,17 +45,17 @@ class HumanMessage(object):
 
     """
 
-    def __init__(self, shorthand, message, help):
+    def __init__(self, shorthand, message, help_text):
         """Initialization.
 
         shorthand (unicode): what to call this message in the code.
         message (unicode): the message itself.
-        help (unicode): a longer explanation for the help page.
+        help_text (unicode): a longer explanation for the help page.
 
         """
         self.shorthand = shorthand
         self.message = message
-        self.help = help
+        self.help_text = help_text
 
 
 class MessageCollection(object):
