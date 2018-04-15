@@ -114,8 +114,6 @@ def compilation_step(sandbox, commands):
 
     # Actually run the compilation commands, logging stdout and stderr.
     logger.debug("Starting compilation step.")
-    stdouts = []
-    stderrs = []
     stats = None
     for step, command in enumerate(commands):
         # Keep stdout and stderr of each compilation step
@@ -128,25 +126,13 @@ def compilation_step(sandbox, commands):
                          "sandbox error in `%s'.", sandbox.path)
             return False, None, None, None
 
-        stdout = sandbox.get_file_to_string(sandbox.stdout_file)\
-            .decode("utf-8", errors="replace").strip()
-        if len(stdout) > 0:
-            stdouts.append(stdout)
-        stderr = sandbox.get_file_to_string(sandbox.stderr_file)\
-            .decode("utf-8", errors="replace").strip()
-        if len(stderr) > 0:
-            stderrs.append(stderr)
-
         stats = merge_execution_stats(
-            stats, execution_stats(sandbox), concurrent=False)
+            stats, execution_stats(sandbox, collect_output=True),
+            concurrent=False)
 
         # If some command in the sequence has failed, we terminate early.
         if stats["exit_status"] != Sandbox.EXIT_OK:
             break
-
-    # Add output to the statistics.
-    stats["stdout"] = '\n===\n'.join(stdouts)
-    stats["stderr"] = '\n===\n'.join(stderrs)
 
     # For each possible exit status we return an appropriate result.
     exit_status = stats["exit_status"]

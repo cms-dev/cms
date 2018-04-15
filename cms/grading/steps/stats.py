@@ -36,10 +36,15 @@ from future.builtins import *  # noqa
 from cms.grading.Sandbox import Sandbox
 
 
-def execution_stats(sandbox):
+# TODO: stats grew enough to justify having a proper object representing them.
+
+
+def execution_stats(sandbox, collect_output=False):
     """Extract statistics from a sandbox about the last ran command.
 
     sandbox (Sandbox): the sandbox to inspect.
+    collect_output (bool): whether to collect output from the sandbox
+        stdout_file and stderr_file.
 
     return (dict): a dictionary with statistics.
 
@@ -52,6 +57,13 @@ def execution_stats(sandbox):
     }
     if stats["exit_status"] == Sandbox.EXIT_SIGNAL:
         stats["signal"] = sandbox.get_killing_signal()
+
+    if collect_output:
+        stats["stdout"] = sandbox.get_file_to_string(sandbox.stdout_file)\
+            .decode("utf-8", errors="replace").strip()
+        stats["stderr"] = sandbox.get_file_to_string(sandbox.stderr_file)\
+            .decode("utf-8", errors="replace").strip()
+
     return stats
 
 
@@ -74,7 +86,8 @@ def merge_execution_stats(first_stats, second_stats, concurrent=True):
         * memory usages are added (if concurrent) or max'd (if not);
         * wall clock times are max'd (if concurrent) or added (if not);
         * exit_status and related values (signal) are from the first non-OK,
-            if present, or OK.
+            if present, or OK;
+        * stdout and stderr, if present, are joined with a separator line.
 
     raise (ValueError): if second_stats is None.
 
@@ -102,5 +115,11 @@ def merge_execution_stats(first_stats, second_stats, concurrent=True):
         ret["exit_status"] = second_stats["exit_status"]
         if second_stats["exit_status"] == Sandbox.EXIT_SIGNAL:
             ret["signal"] = second_stats["signal"]
+
+    for f in ["stdout", "stderr"]:
+        if f in ret or f in second_stats:
+            ret[f] = "\n===\n".join(d[f]
+                                    for d in [ret, second_stats]
+                                    if f in d)
 
     return ret

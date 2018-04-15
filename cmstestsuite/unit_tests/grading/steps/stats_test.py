@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import assertRegex
 
 import unittest
 
@@ -34,8 +35,11 @@ from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
 
 
+INVALID_UTF8 = b"\xc3\x28"
+
+
 def get_stats(execution_time, execution_wall_clock_time, execution_memory,
-              exit_status, signal=None):
+              exit_status, signal=None, stdout=None, stderr=None):
     stats = {
         "execution_time": execution_time,
         "execution_wall_clock_time": execution_wall_clock_time,
@@ -44,6 +48,10 @@ def get_stats(execution_time, execution_wall_clock_time, execution_memory,
     }
     if signal is not None:
         stats["signal"] = signal
+    if stdout is not None:
+        stats["stdout"] = stdout
+    if stderr is not None:
+        stats["stderr"] = stderr
     return stats
 
 
@@ -74,6 +82,31 @@ class TestExecutionStats(unittest.TestCase):
         self.assertEqual(stats,
                          get_stats(0.1, 0.5, 1000 * 1024, Sandbox.EXIT_SIGNAL,
                                    signal=11))
+
+    def test_success_with_output(self):
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "OK")
+        self.sandbox.execute_without_std(["command"], wait=True)
+
+        stats = execution_stats(self.sandbox, collect_output=True)
+        self.assertEqual(stats,
+                         get_stats(0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK,
+                                   stdout="o", stderr="e"))
+
+    def test_invalid_utf8(self):
+        self.sandbox.fake_execute_data(
+            True,
+            b"o" + INVALID_UTF8 + b"1",
+            b"e" + INVALID_UTF8 + b"2",
+            0.1, 0.5, 1000, "OK")
+
+        self.sandbox.execute_without_std(["command"], wait=True)
+
+        stats = execution_stats(self.sandbox, collect_output=True)
+
+        # UTF-8 invalid parts are replaced with funny question marks (\uFFFD).
+        assertRegex(self, stats["stdout"], "^o.*1$")
+        assertRegex(self, stats["stderr"], "^e.*2$")
 
 
 class TestMergeExecutionStats(unittest.TestCase):
@@ -158,6 +191,21 @@ class TestMergeExecutionStats(unittest.TestCase):
         self.assertStats(m, r1)
         self.assertIsNot(r1, m)
 
+    def test_success_output_joined(self):
+        r0 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o1", stderr="e1")
+        r1 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o2", stderr="e2")
+        m = merge_execution_stats(r0, r1)
+        self.assertStats(
+            m, get_stats(0, 0, 0, Sandbox.EXIT_OK,
+                         stdout="o1\n===\no2", stderr="e1\n===\ne2"))
+
+    def test_success_output_missing_one(self):
+        r0 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o1")
+        r1 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stderr="e2")
+        m = merge_execution_stats(r0, r1)
+        self.assertStats(
+            m, get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o1", stderr="e2"))
+
     def test_failure_second_none(self):
         with self.assertRaises(ValueError):
             merge_execution_stats(None, None)
@@ -165,6 +213,21 @@ class TestMergeExecutionStats(unittest.TestCase):
         r0 = get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_OK)
         with self.assertRaises(ValueError):
             merge_execution_stats(r0, None)
+
+    def test_empty_outputs_are_preserved(self):
+        r0 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o1", stderr="")
+        r1 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="", stderr="e2")
+        m = merge_execution_stats(r0, r1)
+        self.assertStats(
+            m, get_stats(0, 0, 0, Sandbox.EXIT_OK,
+                         stdout="o1\n===\n", stderr="\n===\ne2"))
+
+    def test_missing_outputs_are_not_preserved(self):
+        r0 = get_stats(0, 0, 0, Sandbox.EXIT_OK)
+        r1 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o2", stderr="e2")
+        m = merge_execution_stats(r0, r1)
+        self.assertStats(
+            m, get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o2", stderr="e2"))
 
 
 if __name__ == "__main__":
