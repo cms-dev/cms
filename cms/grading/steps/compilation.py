@@ -137,11 +137,8 @@ def compilation_step(sandbox, commands):
         if len(stderr) > 0:
             stderrs.append(stderr)
 
-        this_stats = execution_stats(sandbox)
-        if stats is None:
-            stats = this_stats
-        else:
-            stats = merge_execution_stats(stats, this_stats, concurrent=False)
+        stats = merge_execution_stats(
+            stats, execution_stats(sandbox), concurrent=False)
 
         # If some command in the sequence has failed, we terminate early.
         if stats["exit_status"] != Sandbox.EXIT_OK:

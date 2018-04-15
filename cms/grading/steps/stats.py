@@ -58,21 +58,32 @@ def execution_stats(sandbox):
 def merge_execution_stats(first_stats, second_stats, concurrent=True):
     """Merge two execution statistics dictionary.
 
-    first_stats (dict): statistics about the first execution; contains
+    The first input stats can be None, in which case the second stats is copied
+    to the output (useful to treat the first merge of a sequence in the same
+    way as the others).
+
+    first_stats (dict|None): statistics about the first execution; contains
         execution_time, execution_wall_clock_time, execution_memory,
         exit_status, and possibly signal.
     second_stats (dict): same for the second execution.
     concurrent (bool): whether to merge using assuming the executions were
         concurrent or not (see return value).
 
-    return (dict): the merged statistics:
+    return (dict): the merged statistics, using the following algorithm:
         * execution times are added;
         * memory usages are added (if concurrent) or max'd (if not);
         * wall clock times are max'd (if concurrent) or added (if not);
         * exit_status and related values (signal) are from the first non-OK,
             if present, or OK.
 
+    raise (ValueError): if second_stats is None.
+
     """
+    if second_stats is None:
+        raise ValueError("The second input stats cannot be None.")
+    if first_stats is None:
+        return second_stats.copy()
+
     ret = first_stats.copy()
     ret["execution_time"] += second_stats["execution_time"]
 
