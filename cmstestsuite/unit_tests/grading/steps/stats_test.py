@@ -29,25 +29,56 @@ from future.builtins import *  # noqa
 import unittest
 
 from cms.grading.Sandbox import Sandbox
-from cms.grading.steps import merge_execution_stats
+from cms.grading.steps import execution_stats, merge_execution_stats
+from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
+    import FakeIsolateSandbox
+
+
+def get_stats(execution_time, execution_wall_clock_time, execution_memory,
+              exit_status, signal=None):
+    stats = {
+        "execution_time": execution_time,
+        "execution_wall_clock_time": execution_wall_clock_time,
+        "execution_memory": execution_memory,
+        "exit_status": exit_status,
+    }
+    if signal is not None:
+        stats["signal"] = signal
+    return stats
+
+
+class TestExecutionStats(unittest.TestCase):
+
+    def setUp(self):
+        super(TestExecutionStats, self).setUp()
+        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox.stdout_file = "stdout.txt"
+        self.sandbox.stderr_file = "stderr.txt"
+
+    def test_success(self):
+        # Tell the fake sandbox the command data to fake, and execute it.
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "OK")
+        self.sandbox.execute_without_std(["command"], wait=True)
+
+        stats = execution_stats(self.sandbox)
+        self.assertEqual(stats,
+                         get_stats(0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK))
+
+    def test_success_signal_exit(self):
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "SG", signal=11)
+        self.sandbox.execute_without_std(["command"], wait=True)
+
+        stats = execution_stats(self.sandbox)
+        self.assertEqual(stats,
+                         get_stats(0.1, 0.5, 1000 * 1024, Sandbox.EXIT_SIGNAL,
+                                   signal=11))
 
 
 class TestMergeExecutionStats(unittest.TestCase):
 
-    @staticmethod
-    def _res(execution_time, execution_wall_clock_time, execution_memory,
-             exit_status, signal=None):
-        r = {
-            "execution_time": execution_time,
-            "execution_wall_clock_time": execution_wall_clock_time,
-            "execution_memory": execution_memory,
-            "exit_status": exit_status,
-        }
-        if signal is not None:
-            r["signal"] = signal
-        return r
-
-    def assertRes(self, r0, r1):
+    def assertStats(self, r0, r1):
         """Assert that r0 and r1 are the same result."""
         self.assertAlmostEqual(r0["execution_time"], r1["execution_time"])
         self.assertAlmostEqual(r0["execution_wall_clock_time"],
@@ -55,70 +86,71 @@ class TestMergeExecutionStats(unittest.TestCase):
         self.assertAlmostEqual(r0["execution_memory"], r1["execution_memory"])
         self.assertEqual(r0["exit_status"], r1["exit_status"])
 
-        key = "signal"
-        self.assertEqual(key in r0, key in r1)
-        self.assertEqual(r0.get(key), r1.get(key))
+        # Optional keys.
+        for key in ["signal", "stdout", "stderr"]:
+            self.assertEqual(key in r0, key in r1, key)
+            self.assertEqual(r0.get(key), r1.get(key))
 
     def test_success_status_ok(self):
-        self.assertRes(
+        self.assertStats(
             merge_execution_stats(
-                self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
-                self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK)),
-            self._res(1.1, 2.0, 300.3, Sandbox.EXIT_OK))
+                get_stats(1.0, 2.0, 300, Sandbox.EXIT_OK),
+                get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_OK)),
+            get_stats(1.1, 2.0, 300.3, Sandbox.EXIT_OK))
 
     def test_success_sequential(self):
         # In non-concurrent mode memory is max'd and wall clock is added.
-        self.assertRes(
+        self.assertStats(
             merge_execution_stats(
-                self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
-                self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK),
+                get_stats(1.0, 2.0, 300, Sandbox.EXIT_OK),
+                get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_OK),
                 concurrent=False),
-            self._res(1.1, 2.2, 300.0, Sandbox.EXIT_OK))
+            get_stats(1.1, 2.2, 300.0, Sandbox.EXIT_OK))
 
     def test_success_first_status_ok(self):
-        self.assertRes(
+        self.assertStats(
             merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT)),
-            self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertRes(
+                get_stats(0, 0, 0, Sandbox.EXIT_OK),
+                get_stats(0, 0, 0, Sandbox.EXIT_TIMEOUT)),
+            get_stats(0, 0, 0, Sandbox.EXIT_TIMEOUT))
+        self.assertStats(
             merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
-        self.assertRes(
+                get_stats(0, 0, 0, Sandbox.EXIT_OK),
+                get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
+        self.assertStats(
             merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
+                get_stats(0, 0, 0, Sandbox.EXIT_OK),
+                get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
 
     def test_success_first_status_not_ok(self):
-        self.assertRes(
+        self.assertStats(
             merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertRes(
+                get_stats(0, 0, 0, Sandbox.EXIT_TIMEOUT),
+                get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            get_stats(0, 0, 0, Sandbox.EXIT_TIMEOUT))
+        self.assertStats(
             merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
-        self.assertRes(
+                get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
+                get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
+            get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
+        self.assertStats(
             merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
-                self._res(0, 0, 0, Sandbox.EXIT_OK)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
+                get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
+                get_stats(0, 0, 0, Sandbox.EXIT_OK)),
+            get_stats(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
 
-    def test_success_results_are_not_modified(self):
-        r0 = self._res(1.0, 2.0, 300, Sandbox.EXIT_OK)
-        r1 = self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11)
+    def test_success_stats_are_not_modified(self):
+        r0 = get_stats(1.0, 2.0, 300, Sandbox.EXIT_OK)
+        r1 = get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11)
         m = merge_execution_stats(r0, r1)
-        self.assertRes(
-            m, self._res(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal=11))
-        self.assertRes(
-            r0, self._res(1.0, 2.0, 300, Sandbox.EXIT_OK))
-        self.assertRes(
-            r1, self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11))
+        self.assertStats(
+            m, get_stats(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal=11))
+        self.assertStats(
+            r0, get_stats(1.0, 2.0, 300, Sandbox.EXIT_OK))
+        self.assertStats(
+            r1, get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11))
 
 
 if __name__ == "__main__":
