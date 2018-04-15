@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Petar Veličković <pv273@cam.ac.uk>
@@ -36,7 +36,7 @@ import tempfile
 from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading import compilation_step, \
+from cms.grading.steps import compilation_step, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, \
     extract_outcome_and_text, white_diff_step

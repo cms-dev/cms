@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -36,7 +36,7 @@ import logging
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading import white_diff_step, evaluation_step, \
+from cms.grading.steps import white_diff_step, evaluation_step, \
     extract_outcome_and_text
 
 

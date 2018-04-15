@@ -33,7 +33,7 @@ import logging
 import os
 import shutil
 
-from cms.grading import compilation_step, evaluation_step, \
+from cms.grading.steps import compilation_step, evaluation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     white_diff_step
 from cms.grading.languagemanager import LANGUAGES, get_language
