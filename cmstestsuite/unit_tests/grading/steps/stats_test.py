@@ -152,6 +152,20 @@ class TestMergeExecutionStats(unittest.TestCase):
         self.assertStats(
             r1, get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11))
 
+    def test_success_first_none(self):
+        r1 = get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11)
+        m = merge_execution_stats(None, r1)
+        self.assertStats(m, r1)
+        self.assertIsNot(r1, m)
+
+    def test_failure_second_none(self):
+        with self.assertRaises(ValueError):
+            merge_execution_stats(None, None)
+
+        r0 = get_stats(0.1, 0.2, 0.3, Sandbox.EXIT_OK)
+        with self.assertRaises(ValueError):
+            merge_execution_stats(r0, None)
+
 
 if __name__ == "__main__":
     unittest.main()
