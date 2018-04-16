@@ -45,9 +45,9 @@ logger = logging.getLogger(__name__)
 def _filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
 
-    string (string): string to process.
+    string (str): string to process.
 
-    return (string): string with ANSI commands stripped.
+    return (str): string with ANSI commands stripped.
 
     """
     ansi_mode = False
@@ -68,7 +68,7 @@ def extract_outcome_and_text(sandbox):
 
     stdout (Sandbox): the sandbox whose last execution was a comparator.
 
-    return (float, [string]): outcome and text.
+    return (float, [str]): outcome and text.
 
     raise (ValueError): if cannot decode the data.
 

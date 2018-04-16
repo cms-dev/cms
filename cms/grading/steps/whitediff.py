@@ -41,9 +41,9 @@ from .evaluation import EVALUATION_MESSAGES
 logger = logging.getLogger(__name__)
 
 
-# We take as definition of whitespaces the intersection between ASCII
-# and Unicode White_Space characters (see
-# http://www.unicode.org/Public/6.3.0/ucd/PropList.txt)
+# We take as definition of whitespaces the list of Unicode White_Space
+# characters (see http://www.unicode.org/Public/6.3.0/ucd/PropList.txt) that
+# are in the ASCII range.
 _WHITES = [b' ', b'\t', b'\n', b'\x0b', b'\x0c', b'\r']
 
 
@@ -59,8 +59,8 @@ def _white_diff_canonicalize(string):
     consecutive whitespaces into just one copy of one specific
     whitespace.
 
-    string (string): the string to canonicalize.
-    return (string): the canonicalized string.
+    string (str): the string to canonicalize.
+    return (str): the canonicalized string.
 
     """
     # Replace all the whitespaces with copies of " ", making the rest
@@ -127,9 +127,9 @@ def white_diff_step(sandbox, output_filename,
     exist).
 
     sandbox (Sandbox): the sandbox we consider.
-    output_filename (string): the filename of user's output in the
+    output_filename (str): the filename of user's output in the
         sandbox.
-    correct_output_filename (string): the same with reference output.
+    correct_output_filename (str): the same with reference output.
 
     return ((float, [unicode])): the outcome as above and a
         description text.
