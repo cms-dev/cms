@@ -154,7 +154,7 @@ class TpsTaskLoader(TaskLoader):
                 for statement in statements:
                     language = statement[:-4]
                     if language == "en_US":
-                        args["primary_statements"] = '["en_US"]'
+                        args["primary_statements"] = ["en_US"]
                     digest = self.file_cacher.put_file_from_path(
                         os.path.join(statements_dir, statement),
                         "Statement for task %s (lang: %s)" %
@@ -360,7 +360,7 @@ class TpsTaskLoader(TaskLoader):
                         parsed_data.append([score, testcases, optional_name])
                     else:
                         parsed_data.append([score, testcases])
-            args["score_type_parameters"] = json.dumps(parsed_data)
+            args["score_type_parameters"] = parsed_data
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
