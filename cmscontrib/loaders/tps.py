@@ -99,21 +99,22 @@ class TpsTaskLoader(TaskLoader):
                 if not os.path.exists(pas_grader):
                     user_managers = '[\\"grader.%l\\"]'
                 task_type_parameters[par_user_managers] = user_managers
-            return '["%s", ["%s", "%s"], "%s", "%s"]' % \
-                   (task_type_parameters[par_compilation],
-                    task_type_parameters[par_input],
-                    task_type_parameters[par_output],
-                    evaluation_param,
-                    task_type_parameters[par_user_managers])
+            return [
+                task_type_parameters[par_compilation],
+                [task_type_parameters[par_input],
+                 task_type_parameters[par_output]],
+                evaluation_param,
+                task_type_parameters[par_user_managers]
+            ]
 
         if task_type == 'Communication':
             par_processes = '%s_num_processes' % par_prefix
             if par_processes not in task_type_parameters:
                 task_type_parameters[par_processes] = 1
-            return '[%s]' % task_type_parameters[par_processes]
+            return [task_type_parameters[par_processes]]
 
         if task_type == 'TwoSteps' or task_type == 'OutputOnly':
-            return '["%s"]' % evaluation_param
+            return [evaluation_param]
 
         return ""
 
