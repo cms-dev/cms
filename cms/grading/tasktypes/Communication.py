@@ -36,7 +36,7 @@ from functools import reduce
 
 from cms import config, rmtree
 from cms.grading.Sandbox import wait_without_std, Sandbox
-from cms.grading import compilation_step, \
+from cms.grading.steps import compilation_step, \
     human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
     evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
     merge_execution_stats

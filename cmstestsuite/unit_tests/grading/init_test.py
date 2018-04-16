@@ -29,10 +29,8 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import unittest
-from io import BytesIO
 
-from cms.grading import Sandbox, WHITES, \
-    format_status_text, merge_execution_stats, white_diff
+from cms.grading import format_status_text
 
 
 class DummyTranslation(object):
@@ -75,139 +73,6 @@ class TestFormatStatusText(unittest.TestCase):
         # No elements at all.
         self.assertEqual(format_status_text([]), "N/A")
         self.assertEqual(format_status_text([], self._tr), "N/E")
-
-
-class TestMergeEvaluationResults(unittest.TestCase):
-
-    @staticmethod
-    def _res(execution_time, execution_wall_clock_time, execution_memory,
-             exit_status, signal=None):
-        r = {
-            "execution_time": execution_time,
-            "execution_wall_clock_time": execution_wall_clock_time,
-            "execution_memory": execution_memory,
-            "exit_status": exit_status,
-        }
-        if signal is not None:
-            r["signal"] = signal
-        return r
-
-    def assertRes(self, r0, r1):
-        """Assert that r0 and r1 are the same result."""
-        self.assertAlmostEqual(r0["execution_time"], r1["execution_time"])
-        self.assertAlmostEqual(r0["execution_wall_clock_time"],
-                               r1["execution_wall_clock_time"])
-        self.assertAlmostEqual(r0["execution_memory"], r1["execution_memory"])
-        self.assertEqual(r0["exit_status"], r1["exit_status"])
-
-        key = "signal"
-        self.assertEqual(key in r0, key in r1)
-        self.assertEqual(r0.get(key), r1.get(key))
-
-    def test_success_status_ok(self):
-        self.assertRes(
-            merge_execution_stats(
-                self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
-                self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK)),
-            self._res(1.1, 2.0, 300.3, Sandbox.EXIT_OK))
-
-    def test_success_sequential(self):
-        # In non-concurrent mode memory is max'd and wall clock is added.
-        self.assertRes(
-            merge_execution_stats(
-                self._res(1.0, 2.0, 300, Sandbox.EXIT_OK),
-                self._res(0.1, 0.2, 0.3, Sandbox.EXIT_OK),
-                concurrent=False),
-            self._res(1.1, 2.2, 300.0, Sandbox.EXIT_OK))
-
-    def test_success_first_status_ok(self):
-        self.assertRes(
-            merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT)),
-            self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertRes(
-            merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
-        self.assertRes(
-            merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_OK),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11))
-
-    def test_success_first_status_not_ok(self):
-        self.assertRes(
-            merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_TIMEOUT))
-        self.assertRes(
-            merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=11)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
-        self.assertRes(
-            merge_execution_stats(
-                self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9),
-                self._res(0, 0, 0, Sandbox.EXIT_OK)),
-            self._res(0, 0, 0, Sandbox.EXIT_SIGNAL, signal=9))
-
-    def test_success_results_are_not_modified(self):
-        r0 = self._res(1.0, 2.0, 300, Sandbox.EXIT_OK)
-        r1 = self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11)
-        m = merge_execution_stats(r0, r1)
-        self.assertRes(
-            m, self._res(1.1, 2.0, 300.3, Sandbox.EXIT_SIGNAL, signal=11))
-        self.assertRes(
-            r0, self._res(1.0, 2.0, 300, Sandbox.EXIT_OK))
-        self.assertRes(
-            r1, self._res(0.1, 0.2, 0.3, Sandbox.EXIT_SIGNAL, signal=11))
-
-
-class TestWhiteDiff(unittest.TestCase):
-
-    WHITES_STR = "".join(c.decode('utf-8') for c in WHITES)
-
-    @staticmethod
-    def _diff(s1, s2):
-        return white_diff(
-            BytesIO(s1.encode("utf-8")), BytesIO(s2.encode("utf-8")))
-
-    def test_no_diff_one_token(self):
-        self.assertTrue(self._diff("", ""))
-        self.assertTrue(self._diff("1", "1"))
-        self.assertTrue(self._diff("a", "a"))
-        self.assertTrue(self._diff("你好", "你好"))
-
-    def test_no_diff_one_token_and_whites(self):
-        self.assertTrue(self._diff("1   ", "1"))
-        self.assertTrue(self._diff("   1", "1"))
-        self.assertTrue(self._diff("1" + TestWhiteDiff.WHITES_STR, "1"))
-
-    def test_no_diff_one_token_and_trailing_blank_lines(self):
-        self.assertTrue(self._diff("1\n", "1"))
-        self.assertTrue(self._diff("1\n\n\n\n", "1"))
-        self.assertTrue(self._diff("1\n\n\n\n", "1\n"))
-        self.assertTrue(self._diff("1\n\r\r \n  \n\n", "1   \n\r  "))
-
-    def test_no_diff_multiple_tokens(self):
-        self.assertTrue(self._diff("1 asd\n\n\n", "   1\tasd  \n"))
-        self.assertTrue(self._diff("1 2\n\n\n", "1 2\n"))
-        self.assertTrue(self._diff("1\t\r2", "1 2"))
-        self.assertTrue(self._diff("1 2", "1 2" + TestWhiteDiff.WHITES_STR))
-
-    def test_diff_wrong_tokens(self):
-        self.assertFalse(self._diff("1 2", "12"))
-        self.assertFalse(self._diff("1 23", "12 3"))
-        self.assertFalse(self._diff("1", "01"))
-        self.assertFalse(self._diff("1.0", "1"))
-
-    def test_diff_wrong_line(self):
-        self.assertFalse(self._diff("\n1", "1"))
-        self.assertFalse(self._diff("1 2", "1\n2"))
-        self.assertFalse(self._diff("1\n\n2", "1\n2"))
 
 
 if __name__ == "__main__":
