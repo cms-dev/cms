@@ -63,8 +63,8 @@ def remove_task(task_name):
                 .all()
             for task in following_tasks:
                 task.num -= 1
-            session.commit()
-            print("Task `%s' removed." % task_name)
+        session.commit()
+        print("Task `%s' removed." % task_name)
 
     return True
 
