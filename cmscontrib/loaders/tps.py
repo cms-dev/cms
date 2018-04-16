@@ -125,6 +125,7 @@ class TpsTaskLoader(TaskLoader):
         json_src = os.path.join(self.path, 'problem.json')
         if not os.path.exists(json_src):
             logger.error('No task found.')
+            raise IOError('No task found at path %s' % json_src)
         with io.open(json_src, 'rt', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
