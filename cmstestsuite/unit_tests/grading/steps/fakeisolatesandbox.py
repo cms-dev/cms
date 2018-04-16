@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+from collections import deque
 from io import BytesIO
 
 from cms.grading.Sandbox import IsolateSandbox
@@ -34,7 +35,7 @@ from cms.grading.Sandbox import IsolateSandbox
 class FakeIsolateSandbox(IsolateSandbox):
     """Isolate, with some fakeness sprinkled on top.
 
-    This fake redefine execute_without_std to skip running the command and
+    This fake redefines execute_without_std to skip running the command and
     just create a fake log file; it also allows to generate fake files to
     answer get_file or get_file_to_string.
 
@@ -44,25 +45,40 @@ class FakeIsolateSandbox(IsolateSandbox):
             multithreaded, file_cacher, name, temp_dir)
         self._fake_files = {}
 
-        self._fake_execute_data = []
+        self._fake_execute_data = deque()
 
     def fake_file(self, path, content):
         self._fake_files[path] = content
 
     def fake_execute_data(self, success, stdout, stderr,
                           time, wall_time, memory, exit_status, signal=None):
+        """Set the fake data for the corresponding execution.
+
+        Can be called multiple times, and this allows the system under test
+        to call execute_without_std multiple times.
+
+        success (bool): return value for execute_without_std.
+        stdout (bytes): content of the sandbox stdout_file.
+        stderr (bytes): content of the sandbox stderr_file.
+        time (float): CPU time in seconds.
+        memory (int): memory used in KiB.
+        exit_status (string): isolate's two-letter exit status.
+        signal (int|None): terminating signal if not None
+
+        """
         data = {}
         data["success"] = success
-
         data["stdout"] = stdout
         data["stderr"] = stderr
 
+        # Prepare run.log file...
         logs = []
         if time is not None:
             logs.append("time:%f" % time)
         if wall_time is not None:
             logs.append("time-wall:%f" % wall_time)
         if memory is not None:
+            # isolate reports in KiB
             logs.append("max-rss:%d" % memory)
             logs.append("cg-mem:%d" % memory)
         if exit_status is not None and exit_status != "OK":
@@ -70,6 +86,7 @@ class FakeIsolateSandbox(IsolateSandbox):
         if signal is not None:
             logs.append("exitsig:%s" % signal)
         data["log"] = "\n".join(logs).encode("utf-8")
+
         self._fake_execute_data.append(data)
 
     def get_file(self, path, maxlen=1024):
@@ -92,7 +109,7 @@ class FakeIsolateSandbox(IsolateSandbox):
         self.log = None
         self.exec_num += 1
 
-        data = self._fake_execute_data.pop(0)
+        data = self._fake_execute_data.popleft()
         self.fake_file("run.log.%d" % self.exec_num, data["log"])
         if data["stdout"] is not None:
             assert self.stdout_file is not None
