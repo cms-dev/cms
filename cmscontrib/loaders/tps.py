@@ -259,10 +259,9 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Checker not found, using diff if necessary")
             evaluation_param = "diff"
 
+        # Note that the original TPS worked with custom task type Batch2017
+        # and Communication2017 instead of Batch and Communication.
         args["task_type"] = data['task_type']
-        if data['task_type'] != 'OutputOnly' \
-                and data['task_type'] != 'Notice':
-            args["task_type"] += '2017'
         args["task_type_parameters"] = \
             self._get_task_type_parameters(
                 data, data['task_type'], evaluation_param)
