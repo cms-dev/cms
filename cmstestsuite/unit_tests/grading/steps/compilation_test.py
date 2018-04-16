@@ -25,12 +25,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import assertRegex, iteritems
+from six import assertRegex
 
 import unittest
 
 from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
+from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import compilation_step
@@ -54,34 +55,58 @@ class TestCompilationStep(unittest.TestCase):
 
         self.assertTrue(success)
         self.assertTrue(compilation_success)
-        self.assertEqual(stats["execution_time"], 0.1)
-        self.assertEqual(stats["execution_wall_clock_time"], 0.5)
-        self.assertEqual(stats["execution_memory"], 1000 * 1024)
-        self.assertEqual(stats["exit_status"], Sandbox.EXIT_OK)
         # Stdout and stderr are encoded in UTF-8.
-        self.assertEqual(stats["stdout"], "o")
-        self.assertEqual(stats["stderr"], "你好")
+        self.assertEqual(
+            stats, get_stats(0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK,
+                             stdout="o", stderr="你好"))
 
-    def test_single_commands_compilation_failed(self):
-        # All these cases are considered a "success" for the sandbox (it's the
-        # user's fault), but compilation is unsuccessful (no executable).
-        for code, exit_status in iteritems({
-            "RE": Sandbox.EXIT_NONZERO_RETURN,
-            "TO": Sandbox.EXIT_TIMEOUT,
-            "SG": Sandbox.EXIT_SIGNAL,
-        }):
-            # A clean sandbox every time.
-            self.sandbox = FakeIsolateSandbox(True, None)
+    def test_single_commands_compilation_failed_nonzero_return(self):
+        # This case is a "success" for the sandbox (it's the user's fault),
+        # but compilation is unsuccessful (no executable).
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "RE")
 
-            self.sandbox.fake_execute_data(
-                True, b"o", b"e", 0.1, 0.5, 1000, code)
+        success, compilation_success, text, stats = compilation_step(
+            self.sandbox, [["test", "command"]])
 
-            success, compilation_success, text, stats = compilation_step(
-                self.sandbox, [["test", "command"]])
+        self.assertTrue(success)
+        self.assertFalse(compilation_success)
+        self.assertEqual(stats,
+                         get_stats(0.1, 0.5, 1000 * 1024,
+                                   Sandbox.EXIT_NONZERO_RETURN,
+                                   stdout="o", stderr="e"))
 
-            self.assertTrue(success)
-            self.assertFalse(compilation_success)
-            self.assertEqual(stats["exit_status"], exit_status)
+    def test_single_commands_compilation_failed_timeout(self):
+        # This case is a "success" for the sandbox (it's the user's fault),
+        # but compilation is unsuccessful (no executable).
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "TO")
+
+        success, compilation_success, text, stats = compilation_step(
+            self.sandbox, [["test", "command"]])
+
+        self.assertTrue(success)
+        self.assertFalse(compilation_success)
+        self.assertEqual(stats,
+                         get_stats(0.1, 0.5, 1000 * 1024,
+                                   Sandbox.EXIT_TIMEOUT,
+                                   stdout="o", stderr="e"))
+
+    def test_single_commands_compilation_failed_signal(self):
+        # This case is a "success" for the sandbox (it's the user's fault),
+        # but compilation is unsuccessful (no executable).
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "SG", signal=11)
+
+        success, compilation_success, text, stats = compilation_step(
+            self.sandbox, [["test", "command"]])
+
+        self.assertTrue(success)
+        self.assertFalse(compilation_success)
+        self.assertEqual(stats,
+                         get_stats(0.1, 0.5, 1000 * 1024,
+                                   Sandbox.EXIT_SIGNAL, signal=11,
+                                   stdout="o", stderr="e"))
 
     def test_single_commands_sandbox_failed(self):
         self.sandbox.fake_execute_data(
@@ -110,15 +135,12 @@ class TestCompilationStep(unittest.TestCase):
         self.assertTrue(success)
         self.assertTrue(compilation_success)
         # Stats are the combination of the two.
-        self.assertEqual(stats["execution_time"], 1.1)  # sum
-        self.assertEqual(stats["execution_wall_clock_time"], 5.5)  # sum
-        self.assertEqual(stats["execution_memory"], 10000 * 1024)  # max
-        self.assertEqual(stats["exit_status"], Sandbox.EXIT_OK)
-        # Standard outputs and errors are concatenated with some delimiters.
-        self.assertEqual(stats["stdout"].split("\n")[0], "o1")
-        self.assertEqual(stats["stdout"].split("\n")[-1], "o2")
-        self.assertEqual(stats["stderr"].split("\n")[0], "e1")
-        self.assertEqual(stats["stderr"].split("\n")[-1], "e2")
+        self.assertEqual(stats, get_stats(1.1,  # sum
+                                          5.5,  # sum
+                                          10000 * 1024,  # max
+                                          Sandbox.EXIT_OK,
+                                          stdout="o1\n===\no2",
+                                          stderr="e1\n===\ne2"))
 
     def test_multiple_commands_compilation_failure_terminates_early(self):
         self.sandbox.fake_execute_data(
@@ -127,7 +149,7 @@ class TestCompilationStep(unittest.TestCase):
             True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
 
         success, compilation_success, text, stats = compilation_step(
-            self.sandbox, [["test", "command" "1"], ["command2"]])
+            self.sandbox, [["test", "command", "1"], ["command2"]])
 
         # 1 command executed (compilation terminates early), with exec_num 0.
         self.assertEquals(self.sandbox.exec_num, 0)
@@ -135,10 +157,9 @@ class TestCompilationStep(unittest.TestCase):
         self.assertTrue(success)
         self.assertFalse(compilation_success)
         # Stats are only for the first command.
-        self.assertEqual(stats["execution_time"], 0.1)
-        self.assertEqual(stats["execution_wall_clock_time"], 0.5)
-        self.assertEqual(stats["execution_memory"], 1000 * 1024)
-        self.assertEqual(stats["exit_status"], Sandbox.EXIT_NONZERO_RETURN)
+        self.assertEqual(stats, get_stats(
+            0.1, 0.5, 1000 * 1024, Sandbox.EXIT_NONZERO_RETURN,
+            stdout="o1", stderr="e1"))
 
     def test_multiple_commands_sandbox_failure_terminates_early(self):
         self.sandbox.fake_execute_data(
@@ -147,7 +168,7 @@ class TestCompilationStep(unittest.TestCase):
             True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
 
         success, compilation_success, text, stats = compilation_step(
-            self.sandbox, [["test", "command" "1"], ["command2"]])
+            self.sandbox, [["test", "command", "1"], ["command2"]])
 
         # 1 command executed (compilation terminates early), with exec_num 0.
         self.assertEquals(self.sandbox.exec_num, 0)
@@ -169,7 +190,7 @@ class TestCompilationStep(unittest.TestCase):
 
         self.assertTrue(success)
         self.assertTrue(compilation_success)
-        # UTF-8 invalid parts are replaced with funny question marks.
+        # UTF-8 invalid parts are replaced with funny question marks (\uFFFD).
         assertRegex(self, stats["stdout"], "^o.*1$")
         assertRegex(self, stats["stderr"], "^e.*2$")
 
