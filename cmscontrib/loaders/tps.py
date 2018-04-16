@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
@@ -20,8 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from future.builtins.disabled import *  # noqa
+from future.builtins import *  # noqa
 
 import json
 import logging
@@ -31,7 +34,9 @@ import re
 from datetime import timedelta
 
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
+
 from cmscontrib import touch
+
 from .base_loader import TaskLoader
 
 
@@ -65,8 +70,7 @@ class TpsTaskLoader(TaskLoader):
 
     def _get_task_type_parameters(self, data, task_type, evaluation_param):
         parameters_str = data['task_type_params']
-        if parameters_str is None or \
-                parameters_str == '':
+        if parameters_str is None or parameters_str == '':
             parameters_str = '{}'
         task_type_parameters = json.loads(parameters_str)
         par_prefix = 'task_type_parameters_%s' % task_type
@@ -193,11 +197,6 @@ class TpsTaskLoader(TaskLoader):
         # These options cannot be configured in the TPS format.
         # Uncomment the following to set specific values for them.
 
-        # args['max_submission_number'] = 100
-        # args['max_user_test_number'] = 100
-        # args['min_submission_interval'] = make_timedelta(60)
-        # args['min_user_test_interval'] = make_timedelta(60)
-
         # args['max_user_test_number'] = 10
         # args['min_user_test_interval'] = make_timedelta(60)
 
@@ -208,6 +207,7 @@ class TpsTaskLoader(TaskLoader):
         # args['token_gen_number'] = 1
         # args['token_gen_interval'] = make_timedelta(1800)
         # args['token_gen_max'] = 2
+
         if "score_precision" in data:
             args['score_precision'] = int(data["score_precision"])
         else:
@@ -251,7 +251,7 @@ class TpsTaskLoader(TaskLoader):
             args["managers"]['checker'] = Manager("checker", digest)
             evaluation_param = "comparator"
         else:
-            logger.info("Checker not found, using diff if neccessary")
+            logger.info("Checker not found, using diff if necessary")
             evaluation_param = "diff"
 
         args["task_type"] = data['task_type']
@@ -310,8 +310,7 @@ class TpsTaskLoader(TaskLoader):
             outfile = os.path.join(testcases_dir, "%s.out" % codename)
             if not os.path.exists(outfile):
                 logger.critical(
-                    'Could not file the output file for testcase %s'
-                    % codename)
+                    'Could not find the output file for testcase %s', codename)
                 logger.critical('Aborting...')
                 return
 
