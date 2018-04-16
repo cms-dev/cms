@@ -105,7 +105,7 @@ class TestExecutionStats(unittest.TestCase):
 
         stats = execution_stats(self.sandbox, collect_output=True)
 
-        # UTF-8 invalid parts are replaced with funny question marks.
+        # UTF-8 invalid parts are replaced with funny question marks (\uFFFD).
         assertRegex(self, stats["stdout"], "^o.*1$")
         assertRegex(self, stats["stderr"], "^e.*2$")
 
