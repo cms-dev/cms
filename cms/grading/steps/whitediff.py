@@ -118,8 +118,7 @@ def _white_diff(output, res):
                 return False
 
 
-def white_diff_step(sandbox, output_filename,
-                    correct_output_filename):
+def white_diff_step(sandbox, output_filename, correct_output_filename):
     """Assess the correctedness of a solution by doing a simple white
     diff against the reference solution. It gives an outcome 1.0 if
     the output and the reference output are identical (or differ just
@@ -127,12 +126,10 @@ def white_diff_step(sandbox, output_filename,
     exist).
 
     sandbox (Sandbox): the sandbox we consider.
-    output_filename (str): the filename of user's output in the
-        sandbox.
+    output_filename (str): the filename of user's output in the sandbox.
     correct_output_filename (str): the same with reference output.
 
-    return ((float, [unicode])): the outcome as above and a
-        description text.
+    return ((float, [str])): the outcome as above and a description text.
 
     """
     if sandbox.file_exists(output_filename):
