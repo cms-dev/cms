@@ -45,7 +45,7 @@ from cms.grading.Sandbox import Sandbox
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
+# Dummy function to mark translatable strings.
 def N_(message):
     return message
 

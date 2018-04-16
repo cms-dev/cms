@@ -48,9 +48,9 @@ class HumanMessage(object):
     def __init__(self, shorthand, message, help_text):
         """Initialization.
 
-        shorthand (unicode): what to call this message in the code.
-        message (unicode): the message itself.
-        help_text (unicode): a longer explanation for the help page.
+        shorthand (str): what to call this message in the code.
+        message (str): the message itself.
+        help_text (str): a longer explanation for the help page.
 
         """
         self.shorthand = shorthand
