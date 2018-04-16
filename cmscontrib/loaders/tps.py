@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+import io
 import json
 import logging
 import os
@@ -123,7 +124,7 @@ class TpsTaskLoader(TaskLoader):
         json_src = os.path.join(self.path, 'problem.json')
         if not os.path.exists(json_src):
             logger.error('No task found.')
-        with open(json_src) as json_file:
+        with io.open(json_src, 'rt', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
         name = data['code']
@@ -343,8 +344,8 @@ class TpsTaskLoader(TaskLoader):
             add_optional_name = False
             for subtask in subtasks:
                 subtask_no += 1
-                with open(os.path.join(subtasks_dir, subtask)) \
-                        as subtask_json:
+                with io.open(os.path.join(subtasks_dir, subtask), 'rt',
+                             encoding='utf-8') as subtask_json:
                     subtask_data = json.load(subtask_json)
                     score = int(subtask_data["score"])
                     testcases = "|".join(
