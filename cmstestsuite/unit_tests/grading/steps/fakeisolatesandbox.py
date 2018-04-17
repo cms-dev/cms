@@ -62,7 +62,7 @@ class FakeIsolateSandbox(IsolateSandbox):
         stderr (bytes): content of the sandbox stderr_file.
         time (float): CPU time in seconds.
         memory (int): memory used in KiB.
-        exit_status (string): isolate's two-letter exit status.
+        exit_status (str): isolate's two-letter exit status.
         signal (int|None): terminating signal if not None
 
         """
