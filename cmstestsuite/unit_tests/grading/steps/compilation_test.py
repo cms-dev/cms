@@ -29,12 +29,11 @@ from six import assertRegex
 
 import unittest
 
+from cms.grading.Sandbox import Sandbox
+from cms.grading.steps import compilation_step
 from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
-
-from cms.grading.Sandbox import Sandbox
-from cms.grading.steps import compilation_step
 
 
 INVALID_UTF8 = b"\xc3\x28"
