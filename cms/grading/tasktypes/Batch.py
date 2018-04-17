@@ -354,6 +354,7 @@ class Batch(TaskType):
                         file_cacher,
                         multithreaded=True,
                         name="check")
+                    job.sandboxes.append(checkbox.path)
 
                     checker_success, outcome, text = self._eval_output(
                         checkbox, job, sandbox.get_root_path())
