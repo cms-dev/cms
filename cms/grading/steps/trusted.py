@@ -24,7 +24,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""High level functions to perform standardized trusted executions."""
+"""High level functions to perform standardized trusted executions.
+
+Some of these function refer to a "standard manager output". This is defined as
+having a single line on stdout containing a floating point number (the outcome)
+and a single line on stderr containing the text to show to contestants.
+
+In addition, texts only indicating success, partial success or wrong solution
+can be translated by writing "translate:x" where x is "success", "partial" or
+"wrong".
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -63,10 +73,10 @@ def _filter_ansi_escape(string):
 
 
 def extract_outcome_and_text(sandbox):
-    """Extract the outcome and the text from the two outputs of a trusted
-    manager (stdout contains the outcome, and stderr the text).
+    """Extract the outcome and the text from the a standard manager output.
 
-    stdout (Sandbox): the sandbox whose last execution was a comparator.
+    sandbox (Sandbox): the sandbox whose last execution was a manager writing
+        a standard manager output.
 
     return (float, [str]): outcome and text.
 
