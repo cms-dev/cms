@@ -116,7 +116,7 @@ class TpsTaskLoader(TaskLoader):
         if task_type == 'TwoSteps' or task_type == 'OutputOnly':
             return [evaluation_param]
 
-        return ""
+        return []
 
     def get_task(self, get_statement=True):
         """See docstring in class Loader.
@@ -341,7 +341,7 @@ class TpsTaskLoader(TaskLoader):
         if len(subtasks) == 0:
             number_tests = max(len(testcase_codenames), 1)
             args["score_type"] = "Sum"
-            args["score_type_parameters"] = str(100 / number_tests)
+            args["score_type_parameters"] = 100 / number_tests
         else:
             args["score_type"] = "GroupMin"
             parsed_data = []
