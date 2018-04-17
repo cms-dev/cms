@@ -39,6 +39,7 @@ import os
 from .messages import HumanMessage, MessageCollection
 from .utils import generic_step
 
+from cms import config
 from cms.grading.Sandbox import Sandbox
 
 
@@ -107,10 +108,10 @@ def compilation_step(sandbox, commands):
     if os.path.exists(ghc_dir):
         sandbox.dirs += [("/var/lib/ghc", None, None)]
     sandbox.preserve_env = True
-    sandbox.max_processes = None
-    sandbox.timeout = 10
-    sandbox.wallclock_timeout = 20
-    sandbox.address_space = 512 * 1024
+    sandbox.max_processes = config.compilation_sandbox_max_processes
+    sandbox.timeout = config.compilation_sandbox_max_time
+    sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
+    sandbox.address_space = config.compilation_sandbox_max_memory
 
     # Actually run the compilation commands, logging stdout and stderr.
     stats = generic_step(sandbox, commands, "compilation", collect_output=True)
