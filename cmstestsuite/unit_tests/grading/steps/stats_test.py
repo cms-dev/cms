@@ -222,6 +222,13 @@ class TestMergeExecutionStats(unittest.TestCase):
             m, get_stats(0, 0, 0, Sandbox.EXIT_OK,
                          stdout="o1\n===\n", stderr="\n===\ne2"))
 
+    def test_missing_outputs_are_not_preserved(self):
+        r0 = get_stats(0, 0, 0, Sandbox.EXIT_OK)
+        r1 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o2", stderr="e2")
+        m = merge_execution_stats(r0, r1)
+        self.assertStats(
+            m, get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o2", stderr="e2"))
+
 
 if __name__ == "__main__":
     unittest.main()
