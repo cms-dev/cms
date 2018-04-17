@@ -37,7 +37,7 @@ import logging
 import os
 
 from .messages import HumanMessage, MessageCollection
-from .stats import execution_stats, merge_execution_stats
+from .utils import generic_step
 
 from cms.grading.Sandbox import Sandbox
 
@@ -113,26 +113,9 @@ def compilation_step(sandbox, commands):
     sandbox.address_space = 512 * 1024
 
     # Actually run the compilation commands, logging stdout and stderr.
-    logger.debug("Starting compilation step.")
-    stats = None
-    for step, command in enumerate(commands):
-        # Keep stdout and stderr of each compilation step
-        sandbox.stdout_file = "compiler_stdout_%d.txt" % step
-        sandbox.stderr_file = "compiler_stderr_%d.txt" % step
-
-        box_success = sandbox.execute_without_std(command, wait=True)
-        if not box_success:
-            logger.error("Compilation aborted because of "
-                         "sandbox error in `%s'.", sandbox.path)
-            return False, None, None, None
-
-        stats = merge_execution_stats(
-            stats, execution_stats(sandbox, collect_output=True),
-            concurrent=False)
-
-        # If some command in the sequence has failed, we terminate early.
-        if stats["exit_status"] != Sandbox.EXIT_OK:
-            break
+    stats = generic_step(sandbox, commands, "compilation", collect_output=True)
+    if stats is None:
+        return False, None, None, None
 
     # For each possible exit status we return an appropriate result.
     exit_status = stats["exit_status"]

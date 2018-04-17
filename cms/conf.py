@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
@@ -117,7 +117,12 @@ class Config(object):
         self.sandbox_implementation = 'isolate'
 
         # Sandbox.
+        # Max size of each writable file during an evaluation step, in kiB.
         self.max_file_size = 1048576
+        # Max processes, CPU time (s), memory (KiB) for trusted runs.
+        self.trusted_sandbox_max_processes = 1000
+        self.trusted_sandbox_max_time = 10.0
+        self.trusted_sandbox_max_memory = 4 * 1024 * 1024  # 4 GiB
 
         # WebServers.
         self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
