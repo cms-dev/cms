@@ -36,6 +36,9 @@ from future.builtins import *  # noqa
 from cms.grading.Sandbox import Sandbox
 
 
+# TODO: stats grew enough to justify having a proper object representing them.
+
+
 def execution_stats(sandbox, collect_output=False):
     """Extract statistics from a sandbox about the last ran command.
 

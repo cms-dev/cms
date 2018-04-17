@@ -127,7 +127,7 @@ class TestCompilationStep(unittest.TestCase):
             True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
 
         success, compilation_success, text, stats = compilation_step(
-            self.sandbox, [["test", "command" "1"], ["command2"]])
+            self.sandbox, [["test", "command", "1"], ["command2"]])
 
         # 2 commands executed, with exec_num 0 and 1
         self.assertEquals(self.sandbox.exec_num, 1)
