@@ -37,8 +37,6 @@ from datetime import timedelta
 
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
 
-from cmscontrib import touch
-
 from .base_loader import TaskLoader
 
 
@@ -134,11 +132,6 @@ class TpsTaskLoader(TaskLoader):
         logger.info("Loading parameters for task %s.", name)
 
         args = {}
-
-        # Here we update the time of the last import.
-        touch(os.path.join(self.path, ".itime"))
-        # If this file is not deleted, then the import failed.
-        touch(os.path.join(self.path, ".import_error"))
 
         args["name"] = name
         args["title"] = data['name']
@@ -369,8 +362,6 @@ class TpsTaskLoader(TaskLoader):
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
-
-        os.remove(os.path.join(self.path, ".import_error"))
 
         logger.info("Task parameters loaded.")
 
