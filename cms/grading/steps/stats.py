@@ -117,8 +117,9 @@ def merge_execution_stats(first_stats, second_stats, concurrent=True):
             ret["signal"] = second_stats["signal"]
 
     for f in ["stdout", "stderr"]:
-        ret[f] = "\n===\n".join(d[f] for d in [ret, second_stats] if f in d)
-        if ret[f] == "":
-            del ret[f]
+        if f in ret or f in second_stats:
+            ret[f] = "\n===\n".join(d[f]
+                                    for d in [ret, second_stats]
+                                    if f in d)
 
     return ret

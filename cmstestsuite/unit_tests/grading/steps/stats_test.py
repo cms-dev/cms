@@ -214,6 +214,14 @@ class TestMergeExecutionStats(unittest.TestCase):
         with self.assertRaises(ValueError):
             merge_execution_stats(r0, None)
 
+    def test_empty_outputs_are_preserved(self):
+        r0 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="o1", stderr="")
+        r1 = get_stats(0, 0, 0, Sandbox.EXIT_OK, stdout="", stderr="e2")
+        m = merge_execution_stats(r0, r1)
+        self.assertStats(
+            m, get_stats(0, 0, 0, Sandbox.EXIT_OK,
+                         stdout="o1\n===\n", stderr="\n===\ne2"))
+
 
 if __name__ == "__main__":
     unittest.main()
