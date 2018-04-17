@@ -36,8 +36,8 @@ import logging
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading.steps import white_diff_step, evaluation_step, \
-    extract_outcome_and_text
+from cms.grading.steps import extract_outcome_and_text, trusted_step,\
+    white_diff_step
 
 
 logger = logging.getLogger(__name__)
@@ -205,8 +205,8 @@ class OutputOnly(TaskType):
             OutputOnly.INPUT_FILENAME,
             OutputOnly.CORRECT_OUTPUT_FILENAME,
             OutputOnly.OUTPUT_FILENAME]
-        success, _ = evaluation_step(sandbox, [command])
-        if not success:
+        box_success, success, unused_stats = trusted_step(sandbox, [command])
+        if not box_success or not success:
             return False, None, []
 
         try:

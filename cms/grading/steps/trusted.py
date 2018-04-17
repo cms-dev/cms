@@ -46,7 +46,10 @@ from future.builtins import *  # noqa
 import io
 import logging
 
+from cms import config
+from cms.grading.Sandbox import Sandbox
 from .evaluation import EVALUATION_MESSAGES
+from .utils import generic_step
 
 
 logger = logging.getLogger(__name__)
@@ -118,3 +121,62 @@ def extract_outcome_and_text(sandbox):
                            "'%s' is not recognized." % remaining)
 
     return outcome, [text]
+
+
+def trusted_step(sandbox, commands):
+    """Execute some trusted commands in the sandbox.
+
+    Even if the commands are trusted, we use the sandbox to limit the resources
+    they use to avoid crashing a worker due to some configuration or
+    programming error.
+
+    sandbox (Sandbox): the sandbox we consider, already created.
+    commands ([[str]]): trusted commands to execute.
+
+    return ((bool, bool|None, dict|None)): a tuple with three items:
+        * success: True if the sandbox did not fail, in any command;
+        * execution_success: True if all commands terminated correctly,
+            without timeouts or other errors; None if success is False;
+        * stats: a dictionary with statistics about the execution, or None
+            if success is False.
+
+    """
+    # Set sandbox parameters suitable for trusted commands.
+    sandbox.preserve_env = True
+    sandbox.max_processes = config.trusted_sandbox_max_processes
+    sandbox.timeout = config.trusted_sandbox_max_time_s
+    sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
+    sandbox.address_space = config.trusted_sandbox_max_memory_kib
+
+    # Run the trusted commands.
+    stats = generic_step(sandbox, commands, "trusted")
+    if stats is None:
+        logger.error("Sandbox failed during trusted step. "
+                     "See previous logs for the reason.")
+        return False, None, None
+
+    exit_status = stats["exit_status"]
+
+    if exit_status == Sandbox.EXIT_OK:
+        # Sandbox ok, commands ok.
+        logger.debug("Trusted step ended successfully.")
+        return True, True, stats
+    elif exit_status in [
+            Sandbox.EXIT_NONZERO_RETURN,
+            Sandbox.EXIT_TIMEOUT,
+            Sandbox.EXIT_TIMEOUT_WALL,
+            Sandbox.EXIT_SIGNAL]:
+        # Sandbox ok, commands not ok.
+        logger.error("Trusted step ended with status '%s' (usually due to "
+                     "programming errors in a manager or configuration "
+                     "issues).", exit_status)
+        return True, False, stats
+    elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+        # Sandbox not ok.
+        logger.error("Unexpected SANDBOX_ERROR exit status in trusted step.")
+        return False, None, None
+    else:
+        # Sandbox interface not ok, something really wrong happened.
+        logger.error("Unrecognized sandbox exit status '%s' in trusted step.",
+                     exit_status)
+        return False, None, None

@@ -117,11 +117,16 @@ class Config(object):
         self.sandbox_implementation = 'isolate'
 
         # Sandbox.
+        # Max size of each writable file during an evaluation step, in KiB.
         self.max_file_size = 1048576
         # Max processes, CPU time (s), memory (KiB) for compilation runs.
         self.compilation_sandbox_max_processes = 1000
         self.compilation_sandbox_max_time_s = 10.0
         self.compilation_sandbox_max_memory_kib = 512 * 1024  # 512 MiB
+        # Max processes, CPU time (s), memory (KiB) for trusted runs.
+        self.trusted_sandbox_max_processes = 1000
+        self.trusted_sandbox_max_time_s = 10.0
+        self.trusted_sandbox_max_memory_kib = 4 * 1024 * 1024  # 4 GiB
 
         # WebServers.
         self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"

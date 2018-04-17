@@ -34,8 +34,8 @@ import os
 import shutil
 
 from cms.grading.steps import compilation_step, evaluation_step, \
-    human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
-    white_diff_step
+    extract_outcome_and_text, human_evaluation_message, is_evaluation_passed,\
+    trusted_step, white_diff_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
@@ -355,7 +355,6 @@ class Batch(TaskType):
                         multithreaded=True,
                         name="check")
                     job.sandboxes.append(checkbox.path)
-                    checkbox.max_processes = 1000
 
                     checker_success, outcome, text = self._eval_output(
                         checkbox, job, sandbox.get_root_path())
@@ -431,8 +430,8 @@ class Batch(TaskType):
             self._actual_input,
             Batch.CORRECT_OUTPUT_FILENAME,
             self._actual_output]
-        success, _ = evaluation_step(sandbox, [command])
-        if not success:
+        box_success, success, unused_stats = trusted_step(sandbox, [command])
+        if not box_success or not success:
             return False, None, []
 
         try:
