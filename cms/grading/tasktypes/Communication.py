@@ -177,7 +177,8 @@ class Communication(TaskType):
         else:
             num_processes = self.parameters[0]
         indices = range(num_processes)
-        # Create sandboxes and FIFOs
+
+        # Create sandboxes.
         sandbox_mgr = create_sandbox(
             file_cacher,
             multithreaded=job.multithreaded_sandbox,
@@ -188,6 +189,10 @@ class Communication(TaskType):
                 multithreaded=job.multithreaded_sandbox,
                 name="user_evaluate")
             for i in indices]
+        job.sandboxes.extend(s.path for s in sandbox_user)
+        job.sandboxes.append(sandbox_mgr.path)
+
+        # Create FIFOs.
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
         fifo_in = [os.path.join(fifo_dir[i], "in%d" % i) for i in indices]
         fifo_out = [os.path.join(fifo_dir[i], "out%d" % i) for i in indices]
@@ -282,7 +287,6 @@ class Communication(TaskType):
             plus_user['exit_status'] = Sandbox.EXIT_TIMEOUT
 
         # Merge results.
-        job.sandboxes = [s.path for s in sandbox_user] + [sandbox_mgr.path]
         job.plus = plus_user
 
         # If at least one evaluation had problems, we report the

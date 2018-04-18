@@ -258,6 +258,7 @@ class Batch(TaskType):
             file_cacher,
             multithreaded=job.multithreaded_sandbox,
             name="evaluate")
+        job.sandboxes.append(sandbox.path)
 
         # Prepare the execution
         executable_filename = next(iterkeys(job.executables))
@@ -303,7 +304,6 @@ class Batch(TaskType):
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
-        job.sandboxes = [sandbox.path]
         job.plus = plus
 
         outcome = None

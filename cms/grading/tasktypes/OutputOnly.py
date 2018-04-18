@@ -134,7 +134,6 @@ class OutputOnly(TaskType):
         job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return
-        job.sandboxes = [sandbox.path]
         job.plus = {}
 
         outcome = None

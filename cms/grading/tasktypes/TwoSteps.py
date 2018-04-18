@@ -206,7 +206,6 @@ class TwoSteps(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        # f stand for first, s for second.
         first_sandbox = create_sandbox(
             file_cacher,
             multithreaded=job.multithreaded_sandbox,
@@ -215,6 +214,9 @@ class TwoSteps(TaskType):
             file_cacher,
             multithreaded=job.multithreaded_sandbox,
             name="second_evaluate")
+        job.sandboxes.append(first_sandbox.path)
+        job.sandboxes.append(second_sandbox.path)
+
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
@@ -286,8 +288,6 @@ class TwoSteps(TaskType):
         success_second, second_plus = \
             evaluation_step_after_run(second_sandbox)
 
-        job.sandboxes = [first_sandbox.path,
-                         second_sandbox.path]
         job.plus = second_plus
 
         success = True
