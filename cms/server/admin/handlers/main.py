@@ -38,7 +38,6 @@ import logging
 
 from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Admin, Contest, Question
-from cms.server import filter_ascii
 from cmscommon.crypto import validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 
@@ -79,23 +78,23 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
         try:
             allowed = validate_password(admin.authentication, password)
         except ValueError:
-            logger.warning("Unable to validate password for admin %s",
-                           filter_ascii(username), exc_info=True)
+            logger.warning("Unable to validate password for admin %r", username,
+                           exc_info=True)
             allowed = False
 
         if not allowed or not admin.enabled:
             if not allowed:
-                logger.info("Login error for admin %s from IP %s.",
-                            filter_ascii(username), self.request.remote_ip)
+                logger.info("Login error for admin %r from IP %s.", username,
+                            self.request.remote_ip)
             elif not admin.enabled:
-                logger.info("Login successful for admin %s from IP %s, "
-                            "but account is disabled.",
-                            filter_ascii(username), self.request.remote_ip)
+                logger.info("Login successful for admin %r from IP %s, but "
+                            "account is disabled.", username,
+                            self.request.remote_ip)
             self.redirect(error_page)
             return
 
-        logger.info("Admin logged in: %s from IP %s.",
-                    filter_ascii(username), self.request.remote_ip)
+        logger.info("Admin logged in: %r from IP %s.", username,
+                    self.request.remote_ip)
         self.service.auth_handler.set(admin.id)
         self.redirect(next_page)
 

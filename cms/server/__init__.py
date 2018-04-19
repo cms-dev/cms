@@ -25,12 +25,10 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from .util import \
-    CommonRequestHandler, file_handler_gen, filter_ascii, Url, \
-    multi_contest
+    CommonRequestHandler, file_handler_gen, Url, multi_contest
 
 
 __all__ = [
     # util
-    "CommonRequestHandler", "file_handler_gen", "filter_ascii", "Url",
-    "multi_contest",
+    "CommonRequestHandler", "file_handler_gen", "Url", "multi_contest",
 ]

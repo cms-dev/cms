@@ -42,7 +42,6 @@ from sqlalchemy.orm import contains_eager
 
 from cms import config
 from cms.db import Participation, User
-from cms.server import filter_ascii
 from cmscommon.crypto import validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 
@@ -113,12 +112,10 @@ def validate_login(
         has to be set return it as well, otherwise return None.
 
     """
-    filtered_user = filter_ascii(username)
-
     def log_failed_attempt(msg, *args):
         logger.info("Unsuccessful login attempt from IP address %s, as user "
-                    "%s, on contest %s, at %s: " + msg, ip_address,
-                    filtered_user, contest.name, timestamp, *args)
+                    "%r, on contest %s, at %s: " + msg, ip_address,
+                    username, contest.name, timestamp, *args)
 
     if not contest.allow_password_authentication:
         log_failed_attempt("password authentication not allowed")
@@ -148,8 +145,8 @@ def validate_login(
         log_failed_attempt("participation is hidden and unauthorized")
         return None, None
 
-    logger.info("Successful login attempt from IP address %s, as user %s, on "
-                "contest %s, at %s", ip_address, filtered_user, contest.name,
+    logger.info("Successful login attempt from IP address %s, as user %r, on "
+                "contest %s, at %s", ip_address, username, contest.name,
                 timestamp)
 
     return (participation,
@@ -329,11 +326,9 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
         logger.warning("Invalid cookie (%s): %s", e, cookie)
         return None, None
 
-    filtered_user = filter_ascii(username)
-
     def log_failed_attempt(msg, *args):
-        logger.info("Unsuccessful cookie authentication as %s, returning from "
-                    "%s, at %s: " + msg, filtered_user, last_update, timestamp,
+        logger.info("Unsuccessful cookie authentication as %r, returning from "
+                    "%s, at %s: " + msg, username, last_update, timestamp,
                     *args)
 
     # Check if the cookie is expired.
@@ -357,9 +352,9 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
         log_failed_attempt("wrong password")
         return None, None
 
-    logger.info("Successful cookie authentication as user %s, on contest %s, "
-                "returning from %s, at %s", filtered_user, contest.name,
-                last_update, timestamp)
+    logger.info("Successful cookie authentication as user %r, on contest %s, "
+                "returning from %s, at %s", username, contest.name, last_update,
+                timestamp)
 
     return (participation,
             pickle.dumps((username, password, make_timestamp(timestamp))))

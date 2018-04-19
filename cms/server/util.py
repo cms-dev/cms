@@ -68,27 +68,6 @@ def multi_contest(f):
     return wrapped_f
 
 
-def filter_ascii(string):
-    """Return the printable ascii character in string.
-
-    This to avoid problem printing a string privided by a malicious
-    entity.
-
-    string (unicode): the input string.
-
-    return (unicode): string with non-printable chars substituted by *.
-
-    """
-    def filter_ascii_char(c):
-        """Return * if c is non-printable."""
-        if 32 <= ord(c) <= 127:
-            return c
-        else:
-            return '*'
-
-    return "".join(filter_ascii_char(c) for c in string)
-
-
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
     to send files to the user. This *Gen is needed because the code in
