@@ -31,7 +31,6 @@ import datetime
 import io
 import logging
 import os
-import random
 import subprocess
 
 from cmstestsuite import CONFIG
@@ -58,8 +57,10 @@ class TestRunner(object):
         # Map from task name to (task id, task_module).
         self.task_id_map = {}
 
-        # Random bit to append to object's names to avoid collisions.
-        self.rand = random.randint(0, 999999999)
+        # String to append to objects' names to avoid collisions. Will be the
+        # first integer i for which admin<i> is not already registered, and we
+        # will hope that if the admin name doesn't clash, no other name will.
+        self.suffix = None
 
         self.num_users = 0
         self.workers = workers
@@ -70,7 +71,7 @@ class TestRunner(object):
             os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
         self.start_generic_services()
-        self.framework.initialize_aws(self.rand)
+        self.suffix = self.framework.initialize_aws()
 
         if contest_id is None:
             self.contest_id = self.create_contest()
@@ -133,8 +134,8 @@ class TestRunner(object):
         start_time = datetime.datetime.utcnow()
         stop_time = start_time + datetime.timedelta(1, 0, 0)
         self.contest_id = self.framework.add_contest(
-            name="testcontest" + str(self.rand),
-            description="A test contest #%s." % self.rand,
+            name="testcontest" + self.suffix,
+            description="A test contest #%s." % (self.suffix or "1"),
             languages=list(ALL_LANGUAGES),
             allow_password_authentication="checked",
             start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
@@ -165,7 +166,7 @@ class TestRunner(object):
                 return 'th'
             return {1: 'st', 2: 'nd', 3: 'rd'}.get(x % 10, 'th')
 
-        username = "testrabbit_%d_%d" % (self.rand, self.num_users)
+        username = "testrabbit_%s_%d" % (self.suffix or "1", self.num_users)
 
         # Find a user that may already exist (from a previous contest).
         users = self.framework.get_users(self.contest_id)
@@ -177,6 +178,7 @@ class TestRunner(object):
             "last_name": "Wabbit the %d%s" % (self.num_users,
                                               enumerify(self.num_users))
         }
+
         if username in users:
             self.user_id = users[username]['id']
             self.framework.add_existing_user(self.user_id, **user_create_args)
@@ -195,7 +197,7 @@ class TestRunner(object):
         return (int): task id of the new (or existing) task.
 
         """
-        name = task_module.task_info['name'] + str(self.rand)
+        name = task_module.task_info['name'] + self.suffix
 
         # Have we done this before? Pull it out of our cache if so.
         if name in self.task_id_map:
