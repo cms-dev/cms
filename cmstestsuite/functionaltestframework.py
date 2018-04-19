@@ -126,7 +126,7 @@ class FunctionalTestFramework(object):
 
         The username will be admin, unless already used. In that case it will
         be admin<suffix>, where <suffix> will be the first integer (from 0)
-        for which an admin with that name doesn't yet exists.
+        for which an admin with that name doesn't yet exist.
 
         return (str): the suffix.
 
@@ -144,10 +144,7 @@ class FunctionalTestFramework(object):
                     "-p", "%(password)s" % self.admin_info],
                    ignore_failure=False)
             except TestException:
-                if suffix == "":
-                    suffix = "0"
-                else:
-                    suffix = str(int(suffix) + 1)
+                suffix = str(int(suffix or "1") + 1)
             else:
                 break
 
