@@ -45,7 +45,7 @@ msgstr "N/A"
 msgid "Compilation succeeded"
 msgstr "Úspěšně zkompilováno"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "Odevzdané řešení bylo úspěšně zkompilováno do spustitelného souboru."
 
 msgid "Compilation failed"

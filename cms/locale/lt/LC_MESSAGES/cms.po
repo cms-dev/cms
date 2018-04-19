@@ -23,7 +23,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "Kompiliavimas sėkmingas"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "Tavo sprendimas sėkmingai sukompiliuotas į vykdomąjį failą."
 
 msgid "Compilation failed"

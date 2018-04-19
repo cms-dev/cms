@@ -21,7 +21,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "Prevajanje uspešno zaključeno"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "Tvoja oddaja se je uspešno prevedla v izvršno datoteko."
 
 msgid "Compilation failed"

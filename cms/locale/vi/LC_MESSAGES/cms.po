@@ -22,7 +22,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "Biên dịch thành công"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "Bài nộp của bạn đã được biên dịch thành một file có thể chạy."
 
 msgid "Compilation failed"

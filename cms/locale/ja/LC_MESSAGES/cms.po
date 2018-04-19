@@ -22,7 +22,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "コンパイル成功"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "提出されたファイルのコンパイルに成功しました。"
 
 msgid "Compilation failed"

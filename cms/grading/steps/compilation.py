@@ -54,7 +54,8 @@ def N_(message):
 COMPILATION_MESSAGES = MessageCollection([
     HumanMessage("success",
                  N_("Compilation succeeded"),
-                 N_("Your submission successfully compiled to an excutable.")),
+                 N_("Your submission successfully compiled to an "
+                    "executable.")),
     HumanMessage("fail",
                  N_("Compilation failed"),
                  N_("Your submission did not compile correctly.")),

@@ -19,7 +19,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "编译成功"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "您的提交"
 
 msgid "Compilation failed"

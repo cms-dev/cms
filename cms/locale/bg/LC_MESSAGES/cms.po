@@ -20,7 +20,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "Успешно компилиране"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "Вашето решение успешно се компилира до програма."
 
 msgid "Compilation failed"

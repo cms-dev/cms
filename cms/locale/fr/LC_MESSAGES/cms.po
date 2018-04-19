@@ -21,7 +21,7 @@ msgstr ""
 msgid "Compilation succeeded"
 msgstr "Compilation réussie"
 
-msgid "Your submission successfully compiled to an excutable."
+msgid "Your submission successfully compiled to an executable."
 msgstr "Votre soumission a été compilée avec succès vers un exécutable."
 
 msgid "Compilation failed"
