@@ -25,13 +25,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import PY2
 
 import unittest
 
 from mock import patch
 
 from cms.grading.Sandbox import Sandbox
-from cms.grading.steps import trusted_step
+from cms.grading.steps import extract_outcome_and_text, trusted_step
 from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
@@ -42,6 +43,68 @@ INVALID_UTF8 = b"\xc3\x28"
 
 ONE_COMMAND = [["test", "command"]]
 TWO_COMMANDS = [["test", "command", "1"], ["command", "2"]]
+
+
+class TestExtractOutcomeAndText(unittest.TestCase):
+
+    def setUp(self):
+        super(TestExtractOutcomeAndText, self).setUp()
+        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox.stdout_file = "o"
+        self.sandbox.stderr_file = "e"
+
+    def test_success(self):
+        self.sandbox.fake_file("o", b"0.45\n")
+        self.sandbox.fake_file("e", "你好.\n".encode("utf-8"))
+        outcome, text = extract_outcome_and_text(self.sandbox)
+        self.assertEqual(outcome, 0.45)
+        self.assertEqual(text, ["你好."])
+
+    def test_following_lines_ignored(self):
+        self.sandbox.fake_file("o", b"0.45\nNothing\n")
+        self.sandbox.fake_file("e", b"Text to return.\nto see here")
+        outcome, text = extract_outcome_and_text(self.sandbox)
+        self.assertEqual(outcome, 0.45)
+        self.assertEqual(text, ["Text to return."])
+
+    def test_works_without_newlines(self):
+        self.sandbox.fake_file("o", b"0.45")
+        self.sandbox.fake_file("e", b"Text to return.")
+        outcome, text = extract_outcome_and_text(self.sandbox)
+        self.assertEqual(outcome, 0.45)
+        self.assertEqual(text, ["Text to return."])
+
+    def test_text_is_stripped(self):
+        self.sandbox.fake_file("o", b"   0.45\t \nignored")
+        self.sandbox.fake_file("e", b"\t  Text to return.\r\n")
+        outcome, text = extract_outcome_and_text(self.sandbox)
+        self.assertEqual(outcome, 0.45)
+        self.assertEqual(text, ["Text to return."])
+
+    def test_text_is_translated(self):
+        self.sandbox.fake_file("o", b"0.45\n")
+        self.sandbox.fake_file("e", b"translate:success\n")
+        outcome, text = extract_outcome_and_text(self.sandbox)
+        self.assertEqual(outcome, 0.45)
+        self.assertEqual(text, ["Output is correct"])
+
+    def test_failure_not_a_float(self):
+        self.sandbox.fake_file("o", b"not a float\n")
+        self.sandbox.fake_file("e", b"Text to return.\n")
+        with self.assertRaises(ValueError):
+            extract_outcome_and_text(self.sandbox)
+
+    def test_failure_invalid_utf8(self):
+        self.sandbox.fake_file("o", b"0.45")
+        self.sandbox.fake_file("e", INVALID_UTF8)
+        with self.assertRaises(ValueError):
+            extract_outcome_and_text(self.sandbox)
+
+    @unittest.skipIf(PY2, "Python 2 does not have FileNotFoundError.")
+    def test_failure_missing_file(self):
+        self.sandbox.fake_file("o", b"0.45\n")
+        with self.assertRaises(FileNotFoundError):
+            extract_outcome_and_text(self.sandbox)
 
 
 class TestTrustedStep(unittest.TestCase):

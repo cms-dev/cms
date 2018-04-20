@@ -387,7 +387,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
     def get_file(self, path, trunc_len=None):
         """Open a file in the sandbox given its relative path.
 
-        path (string): relative path of the file inside the sandbox.
+        path (str): relative path of the file inside the sandbox.
         trunc_len (int|None): if None, does nothing; otherwise, before
             returning truncate it at the specified length.
 
@@ -401,11 +401,30 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
             file_ = Truncator(file_, trunc_len)
         return file_
 
+    def get_file_text(self, path, trunc_len=None):
+        """Open a file in the sandbox given its relative path, in text mode.
+
+        Assumes encoding is UTF-8. The caller must handle decoding errors.
+
+        path (str): relative path of the file inside the sandbox.
+        trunc_len (int|None): if None, does nothing; otherwise, before
+            returning truncate it at the specified length.
+
+        return (file): the file opened in read binary mode.
+
+        """
+        logger.debug("Retrieving text file %s from sandbox.", path)
+        real_path = self.relative_path(path)
+        file_ = io.open(real_path, "rt", encoding="utf-8")
+        if trunc_len is not None:
+            file_ = Truncator(file_, trunc_len)
+        return file_
+
     def get_file_to_string(self, path, maxlen=1024):
         """Return the content of a file in the sandbox given its
         relative path.
 
-        path (string): relative path of the file inside the sandbox.
+        path (str): relative path of the file inside the sandbox.
         maxlen (int): maximum number of bytes to read, or None if no
             limit.
 
@@ -423,12 +442,12 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
     def get_file_to_storage(self, path, description="", trunc_len=None):
         """Put a sandbox file in FS and return its digest.
 
-        path (string): relative path of the file inside the sandbox.
-        description (string): the description for FS.
+        path (str): relative path of the file inside the sandbox.
+        description (str): the description for FS.
         trunc_len (int|None): if None, does nothing; otherwise, before
             returning truncate it at the specified length.
 
-        return (string): the digest of the file.
+        return (str): the digest of the file.
 
         """
         file_ = self.get_file(path, trunc_len=trunc_len)
@@ -1271,8 +1290,10 @@ class IsolateSandbox(SandboxBase):
                 # is not forwarded to the contestants. Secure commands
                 # are "setup" commands, which should not fail or
                 # provide information for the contestants.
-                io.open(os.path.join(self.path, self.stdout_file), "wb").close()
-                io.open(os.path.join(self.path, self.stderr_file), "wb").close()
+                io.open(
+                    os.path.join(self.path, self.stdout_file), "wb").close()
+                io.open(
+                    os.path.join(self.path, self.stderr_file), "wb").close()
                 self._write_empty_run_log(self.exec_num)
             except OSError:
                 logger.critical(

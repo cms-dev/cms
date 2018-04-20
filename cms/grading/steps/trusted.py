@@ -43,7 +43,6 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-import io
 import logging
 
 from cms import config
@@ -86,22 +85,23 @@ def extract_outcome_and_text(sandbox):
     raise (ValueError): if cannot decode the data.
 
     """
-    stdout = sandbox.relative_path(sandbox.stdout_file)
-    stderr = sandbox.relative_path(sandbox.stderr_file)
-    with io.open(stdout, "r", encoding="utf-8") as stdout_file:
-        with io.open(stderr, "r", encoding="utf-8") as stderr_file:
-            try:
-                outcome = stdout_file.readline().strip()
-            except UnicodeDecodeError as error:
-                logger.error("Unable to interpret manager stdout "
-                             "(outcome) as unicode. %r", error)
-                raise ValueError("Cannot decode the outcome.")
-            try:
-                text = _filter_ansi_escape(stderr_file.readline())
-            except UnicodeDecodeError as error:
-                logger.error("Unable to interpret manager stderr "
-                             "(text) as unicode. %r", error)
-                raise ValueError("Cannot decode the text.")
+    stdout_file = sandbox.get_file_text(sandbox.stdout_file)
+    try:
+        outcome = stdout_file.readline().strip()
+    except UnicodeDecodeError as error:
+        logger.error("Manager stdout (outcome) is not valid UTF-8. %r", error)
+        raise ValueError("Cannot decode the outcome.")
+    finally:
+        stdout_file.close()
+
+    stderr_file = sandbox.get_file_text(sandbox.stderr_file)
+    try:
+        text = _filter_ansi_escape(stderr_file.readline().strip())
+    except UnicodeDecodeError as error:
+        logger.error("Manager stderr (text) is not valid UTF-8. %r", error)
+        raise ValueError("Cannot decode the text.")
+    finally:
+        stderr_file.close()
 
     try:
         outcome = float(outcome)

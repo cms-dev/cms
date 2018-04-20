@@ -27,7 +27,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from collections import deque
-from io import BytesIO
+from io import BytesIO, StringIO
 
 from cms.grading.Sandbox import IsolateSandbox
 
@@ -48,6 +48,7 @@ class FakeIsolateSandbox(IsolateSandbox):
         self._fake_execute_data = deque()
 
     def fake_file(self, path, content):
+        assert isinstance(content, bytes)
         self._fake_files[path] = content
 
     def fake_execute_data(self, success, stdout, stderr,
@@ -93,9 +94,16 @@ class FakeIsolateSandbox(IsolateSandbox):
 
         self._fake_execute_data.append(data)
 
-    def get_file(self, path, maxlen=1024):
+    def get_file(self, path, trunc_len=None):
+        assert trunc_len is None  # other case not handled by fake
         if path in self._fake_files:
             return BytesIO(self._fake_files[path])
+        raise FileNotFoundError(path)
+
+    def get_file_text(self, path, trunc_len=None):
+        assert trunc_len is None  # other case not handled by fake
+        if path in self._fake_files:
+            return StringIO(self._fake_files[path].decode("utf-8"))
         raise FileNotFoundError(path)
 
     def get_file_to_string(self, path, maxlen=1024):
