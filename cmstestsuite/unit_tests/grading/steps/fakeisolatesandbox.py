@@ -51,7 +51,8 @@ class FakeIsolateSandbox(IsolateSandbox):
         self._fake_files[path] = content
 
     def fake_execute_data(self, success, stdout, stderr,
-                          time, wall_time, memory, exit_status, signal=None):
+                          time, wall_time, memory, exit_status,
+                          signal=None, message=None):
         """Set the fake data for the corresponding execution.
 
         Can be called multiple times, and this allows the system under test
@@ -64,6 +65,7 @@ class FakeIsolateSandbox(IsolateSandbox):
         memory (int): memory used in KiB.
         exit_status (str): isolate's two-letter exit status.
         signal (int|None): terminating signal if not None
+        message (str|None): message from isolate
 
         """
         data = {}
@@ -85,6 +87,8 @@ class FakeIsolateSandbox(IsolateSandbox):
             logs.append("status:%s" % exit_status)
         if signal is not None:
             logs.append("exitsig:%s" % signal)
+        if message is not None:
+            logs.append("message:%s" % message)
         data["log"] = "\n".join(logs).encode("utf-8")
 
         self._fake_execute_data.append(data)
