@@ -126,7 +126,7 @@ def extract_outcome_and_text(sandbox):
 def trusted_step(sandbox, commands):
     """Execute some trusted commands in the sandbox.
 
-    Even if the commands are trusted, we use the sandbox to limit the resource
+    Even if the commands are trusted, we use the sandbox to limit the resources
     they use to avoid crashing a worker due to some configuration or
     programming error.
 
@@ -148,7 +148,7 @@ def trusted_step(sandbox, commands):
     sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
     sandbox.address_space = config.trusted_sandbox_max_memory_kib
 
-    # Actually run the commands, logging stdout and stderr.
+    # Run the trusted commands.
     stats = generic_step(sandbox, commands, "trusted")
     if stats is None:
         logger.error("Sandbox failed during trusted step. "

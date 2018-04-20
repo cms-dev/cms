@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""High level functions to perform standardized compilations."""
+"""Utilities for standardized runs (steps)."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -66,7 +66,7 @@ def _generic_execution(sandbox, command, exec_num, step_name,
     box_success = sandbox.execute_without_std(command, wait=True)
     if not box_success:
         logger.error("Step '%s' aborted because of sandbox error in '%s' on "
-                     "the %s-th command ('%s').",
+                     "the %d-th command ('%r').",
                      step_name, sandbox.path, exec_num + 1, command)
         return None
 
@@ -92,7 +92,7 @@ def generic_step(sandbox, commands, step_name, collect_output=False):
         error, or None in case of an unexpected sandbox error.
 
     """
-    logger.debug("Starting step '%s' in sandbox '%s' (%s commands).",
+    logger.debug("Starting step '%s' in sandbox '%s' (%d commands).",
                  step_name, sandbox.path, len(commands))
     stats = None
     for exec_num, command in enumerate(commands):

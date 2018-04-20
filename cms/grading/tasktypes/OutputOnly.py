@@ -205,7 +205,7 @@ class OutputOnly(TaskType):
             OutputOnly.INPUT_FILENAME,
             OutputOnly.CORRECT_OUTPUT_FILENAME,
             OutputOnly.OUTPUT_FILENAME]
-        box_success, success, stats = trusted_step(sandbox, [command])
+        box_success, success, unused_stats = trusted_step(sandbox, [command])
         if not box_success or not success:
             return False, None, []
 

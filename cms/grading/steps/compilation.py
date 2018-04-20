@@ -113,9 +113,8 @@ def compilation_step(sandbox, commands):
     sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
     sandbox.address_space = config.compilation_sandbox_max_memory_kib
 
-    # Actually run the compilation commands, logging stdout and stderr.
+    # Run the compilation commands, copying stdout and stderr to stats.
     stats = generic_step(sandbox, commands, "compilation", collect_output=True)
-    print(stats)
     if stats is None:
         logger.error("Sandbox failed during compilation. "
                      "See previous logs for the reason.")

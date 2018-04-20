@@ -117,7 +117,7 @@ class Config(object):
         self.sandbox_implementation = 'isolate'
 
         # Sandbox.
-        # Max size of each writable file during an evaluation step, in kiB.
+        # Max size of each writable file during an evaluation step, in KiB.
         self.max_file_size = 1048576
         # Max processes, CPU time (s), memory (KiB) for compilation runs.
         self.compilation_sandbox_max_processes = 1000

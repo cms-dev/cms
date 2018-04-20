@@ -64,11 +64,11 @@ class TestTrustedStep(unittest.TestCase):
         expected_stats = get_stats(
             0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK, stdout="o", stderr="你好")
         with patch("cms.grading.steps.trusted.generic_step",
-                   return_value=expected_stats) as m:
+                   return_value=expected_stats) as mock_generic_step:
             success, trusted_success, stats = trusted_step(
                 self.sandbox, ONE_COMMAND)
 
-        m.assert_called_once_with(
+        mock_generic_step.assert_called_once_with(
             self.sandbox, ONE_COMMAND, "trusted")
         self.assertLoggedError(False)
         self.assertTrue(success)
@@ -157,12 +157,12 @@ class TestTrustedStep(unittest.TestCase):
         expected_stats = get_stats(
             0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK, stdout="o", stderr="你好")
         with patch("cms.grading.steps.trusted.generic_step",
-                   return_value=expected_stats) as m:
+                   return_value=expected_stats) as mock_generic_step:
             success, trusted_success, stats = trusted_step(
                 self.sandbox, TWO_COMMANDS)
 
         self.assertLoggedError(False)
-        m.assert_called_once_with(
+        mock_generic_step.assert_called_once_with(
             self.sandbox, TWO_COMMANDS, "trusted")
         self.assertTrue(success)
         self.assertTrue(trusted_success)

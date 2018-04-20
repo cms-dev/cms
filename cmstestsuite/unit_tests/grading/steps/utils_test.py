@@ -39,6 +39,10 @@ from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 INVALID_UTF8 = b"\xc3\x28"
 
 
+ONE_COMMAND = [["test", "command"]]
+TWO_COMMANDS = [["test", "command", "1"], ["command", "2"]]
+
+
 class TestGenericStep(unittest.TestCase):
 
     def setUp(self):
@@ -49,7 +53,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o", "你好".encode("utf-8"), 0.1, 0.5, 1000, "OK")
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name",
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name",
                              collect_output=True)
 
         # Stdout and stderr are encoded in UTF-8.
@@ -64,7 +68,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o", "你好".encode("utf-8"), 0.1, 0.5, 1000, "OK")
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name",
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name",
                              collect_output=False)
 
         # No output collected on stats.
@@ -77,7 +81,7 @@ class TestGenericStep(unittest.TestCase):
     def test_single_command_nonzero_return(self):
         self.sandbox.fake_execute_data(True, b"o", b"e", 0.1, 0.5, 1000, "RE")
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name")
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name")
 
         self.assertEqual(stats, get_stats(0.1, 0.5, 1000 * 1024,
                                           Sandbox.EXIT_NONZERO_RETURN))
@@ -85,7 +89,7 @@ class TestGenericStep(unittest.TestCase):
     def test_single_command_failed_timeout(self):
         self.sandbox.fake_execute_data(True, b"o", b"e", 0.1, 0.5, 1000, "TO")
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name")
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name")
 
         self.assertEqual(stats, get_stats(0.1, 0.5, 1000 * 1024,
                                           Sandbox.EXIT_TIMEOUT))
@@ -94,7 +98,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o", b"e", 0.1, 0.5, 1000, "SG", signal=11)
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name")
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name")
 
         self.assertEqual(stats, get_stats(0.1, 0.5, 1000 * 1024,
                                           Sandbox.EXIT_SIGNAL, signal=11))
@@ -103,7 +107,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             False, b"o", b"e", 0.1, 0.5, 1000, "XX")
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name")
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name")
 
         self.assertIsNone(stats)
 
@@ -113,7 +117,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
 
-        stats = generic_step(self.sandbox, [["c1"], ["c2"]], "name",
+        stats = generic_step(self.sandbox, TWO_COMMANDS, "name",
                              collect_output=True)
 
         # 2 commands executed, with exec_num 0 and 1
@@ -132,7 +136,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
 
-        stats = generic_step(self.sandbox, [["c1"], ["c2"]], "name",
+        stats = generic_step(self.sandbox, TWO_COMMANDS, "name",
                              collect_output=True)
 
         # 1 command executed (generic terminates early), with exec_num 0.
@@ -148,7 +152,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
 
-        stats = generic_step(self.sandbox, [["c1"], ["c2"]], "name")
+        stats = generic_step(self.sandbox, TWO_COMMANDS, "name")
 
         # 1 command executed (generic terminates early), with exec_num 0.
         self.assertEquals(self.sandbox.exec_num, 0)
@@ -161,7 +165,7 @@ class TestGenericStep(unittest.TestCase):
             b"e" + INVALID_UTF8 + b"2",
             0.1, 0.5, 1000, "OK")
 
-        stats = generic_step(self.sandbox, [["test", "command"]], "name",
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name",
                              collect_output=True)
 
         # UTF-8 invalid parts are replaced with funny question marks (\uFFFD).

@@ -430,7 +430,7 @@ class Batch(TaskType):
             self._actual_input,
             Batch.CORRECT_OUTPUT_FILENAME,
             self._actual_output]
-        box_success, success, stats = trusted_step(sandbox, [command])
+        box_success, success, unused_stats = trusted_step(sandbox, [command])
         if not box_success or not success:
             return False, None, []
 

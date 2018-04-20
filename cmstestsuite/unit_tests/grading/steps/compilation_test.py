@@ -37,9 +37,6 @@ from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 
 
-INVALID_UTF8 = b"\xc3\x28"
-
-
 ONE_COMMAND = [["test", "command"]]
 TWO_COMMANDS = [["test", "command", "1"], ["command", "2"]]
 
@@ -64,11 +61,11 @@ class TestCompilationStep(unittest.TestCase):
         expected_stats = get_stats(
             0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK, stdout="o", stderr="你好")
         with patch("cms.grading.steps.compilation.generic_step",
-                   return_value=expected_stats) as m:
+                   return_value=expected_stats) as mock_generic_step:
             success, compilation_success, text, stats = compilation_step(
                 self.sandbox, ONE_COMMAND)
 
-        m.assert_called_once_with(
+        mock_generic_step.assert_called_once_with(
             self.sandbox, ONE_COMMAND, "compilation", collect_output=True)
         self.assertLoggedError(False)
         self.assertTrue(success)
@@ -166,11 +163,11 @@ class TestCompilationStep(unittest.TestCase):
         expected_stats = get_stats(
             0.1, 0.5, 1000 * 1024, Sandbox.EXIT_OK, stdout="o", stderr="你好")
         with patch("cms.grading.steps.compilation.generic_step",
-                   return_value=expected_stats) as m:
+                   return_value=expected_stats) as mock_generic_step:
             success, compilation_success, text, stats = compilation_step(
                 self.sandbox, TWO_COMMANDS)
 
-        m.assert_called_once_with(
+        mock_generic_step.assert_called_once_with(
             self.sandbox, TWO_COMMANDS, "compilation", collect_output=True)
         self.assertLoggedError(False)
         self.assertTrue(success)
