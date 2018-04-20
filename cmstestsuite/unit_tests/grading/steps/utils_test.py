@@ -94,6 +94,16 @@ class TestGenericStep(unittest.TestCase):
         self.assertEqual(stats, get_stats(0.1, 0.5, 1000 * 1024,
                                           Sandbox.EXIT_TIMEOUT))
 
+    def test_single_command_failed_timeout_wall(self):
+        self.sandbox.fake_execute_data(
+            True, b"o", b"e", 0.1, 0.5, 1000, "TO",
+            message="Time limit exceeded (wall clock)")
+
+        stats = generic_step(self.sandbox, ONE_COMMAND, "name")
+
+        self.assertEqual(stats, get_stats(0.1, 0.5, 1000 * 1024,
+                                          Sandbox.EXIT_TIMEOUT_WALL))
+
     def test_single_command_failed_signal(self):
         self.sandbox.fake_execute_data(
             True, b"o", b"e", 0.1, 0.5, 1000, "SG", signal=11)
