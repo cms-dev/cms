@@ -38,7 +38,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
-import io
 import logging
 import os.path
 from collections import namedtuple
