@@ -228,12 +228,13 @@ def extract_files_from_archive(data):
     result = list()
 
     try:
-        unpacked_dir = archive.unpack()
+        archive.unpack()
         for name in archive.namelist():
-            with io.open(os.path.join(unpacked_dir, name), "rb") as f:
+            with archive.read(name) as f:
                 result.append(
                     ReceivedFile(None, os.path.basename(name), f.read()))
 
+    # When dropping py2, replace EnvironmentError by OSError.
     except (PatoolError, EnvironmentError):
         raise InvalidArchive()
 
