@@ -1,4 +1,4 @@
-{% set status = tr.get_status() if ts is defined else UserTestResult.COMPILING %}
+{% set status = tr.get_status() if tr is defined else UserTestResult.COMPILING %}
 <tr data-user-test="{{ t_idx }}" data-status="{{ status }}">
 {% if show_date %}
     <td class="datetime">{{ t.timestamp|format_datetime }}</td>
