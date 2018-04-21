@@ -255,7 +255,7 @@ class ContestHandler(BaseHandler):
             .filter(Submission.task == task) \
             .order_by(Submission.timestamp) \
             .offset(int(submission_num) - 1) \
-            .one_or_none()
+            .first()
 
     def get_user_test(self, task, user_test_num):
         """Return the num-th contestant's test on the given task.
@@ -273,7 +273,7 @@ class ContestHandler(BaseHandler):
             .filter(UserTest.task == task) \
             .order_by(UserTest.timestamp) \
             .offset(int(user_test_num) - 1) \
-            .one_or_none()
+            .first()
 
     def add_notification(self, subject, text, level):
         self.service.add_notification(
