@@ -953,13 +953,7 @@ class IsolateSandbox(SandboxBase):
         # cleanup after ourselves, but we might have missed something
         # if the worker was interrupted in the middle of an execution.
         self.cleanup()
-        init_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
-            + ["--box-id=%d" % self.box_id] + ["--init"]
-        ret = subprocess.call(init_cmd)
-        if ret != 0:
-            raise SandboxInterfaceException(
-                "Failed to initialize sandbox with command: %s "
-                "(error %d)" % (pretty_print_cmdline(init_cmd), ret))
+        self.initialize_isolate()
 
     def add_mapped_directories(self, dirs):
         """Add dirs to the external dirs visible to the sandboxed command.
@@ -1382,6 +1376,18 @@ class IsolateSandbox(SandboxBase):
         else:
             raise SandboxInterfaceException("Sandbox exit status (%d) unknown"
                                             % exitcode)
+
+    def initialize_isolate(self):
+        """Initialize isolate's box."""
+        init_cmd = (
+            [self.box_exec]
+            + (["--cg"] if self.cgroup else [])
+            + ["--box-id=%d" % self.box_id, "--init"])
+        ret = subprocess.call(init_cmd)
+        if ret != 0:
+            raise SandboxInterfaceException(
+                "Failed to initialize sandbox with command: %s "
+                "(error %d)" % (pretty_print_cmdline(init_cmd), ret))
 
     def cleanup(self):
         """Cleanup the sandbox.

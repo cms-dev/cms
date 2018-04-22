@@ -131,3 +131,9 @@ class FakeIsolateSandbox(IsolateSandbox):
             self.fake_file(self.stderr_file, data["stderr"])
 
         return data["success"]
+
+    def initialize_isolate(self):
+        pass
+
+    def cleanup(self):
+        pass
