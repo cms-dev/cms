@@ -378,7 +378,7 @@ class InvalidFilesOrLanguages(Exception):
     pass
 
 
-def match_files_and_languages(given_files, given_language_names,
+def match_files_and_languages(given_files, given_language_name,
                               submission_format, allowed_language_names):
     """Figure out what the given files are and which language they're in.
 
@@ -403,10 +403,9 @@ def match_files_and_languages(given_files, given_language_names,
     Matching a language is done using the match_files function.
 
     given_files ([ReceivedFile]): the submitted files.
-    given_language_names ({str}|None): a set of languages, for example
-        provided by the contestant, which contains the language the
-        submitted files are in; ideally this would be a singleton (None
-        means this information isn't available and we should guess it).
+    given_language_name (str|None): the language, usually provided by
+        the contestant, which the submitted files are in (None means
+        this information isn't available and we should guess it).
     submission_format ({str}): the codenames that the submitted files
         should be matched to.
     allowed_language_names ([str]|None): the languages that the result
@@ -422,7 +421,34 @@ def match_files_and_languages(given_files, given_language_names,
     if len(given_files) == 0:
         raise InvalidFilesOrLanguages("no files given")
 
-    if given_language_names is None:
+    # If the submission format is language-agnostic the only "language"
+    # that makes sense is None, and if the caller thought differently we
+    # let them know.
+    if not any(element.endswith(".%l") for element in submission_format):
+        if given_language_name is not None:
+            raise InvalidFilesOrLanguages(
+                "a language %r is given when not needed" % given_language_name)
+        candidate_languages = {None}
+
+    # If a language is required and the caller told us which one to use
+    # we follow their indication, provided it exists and is allowed.
+    elif given_language_name is not None:
+        try:
+            language = get_language(given_language_name)
+        except KeyError:
+            raise InvalidFilesOrLanguages(
+                "the given language %r isn't a language" % given_language_name)
+
+        if allowed_language_names is not None \
+                and language.name not in allowed_language_names:
+            raise InvalidFilesOrLanguages(
+                "the given language %r isn't allowed" % given_language_name)
+
+        candidate_languages = {language}
+
+    # If a language is needed but the caller didn't provide any we try
+    # to auto-detect it by guessing among all allowed languages.
+    else:
         if allowed_language_names is not None:
             candidate_languages = set()
             for language_name in allowed_language_names:
@@ -434,29 +460,6 @@ def match_files_and_languages(given_files, given_language_names,
                     candidate_languages.add(language)
         else:
             candidate_languages = set(LANGUAGES)
-    elif len(given_language_names) == 0:
-        raise InvalidFilesOrLanguages("no language given")
-    else:
-        candidate_languages = set()
-        for language_name in given_language_names:
-            try:
-                language = get_language(language_name)
-            except KeyError:
-                raise InvalidFilesOrLanguages(
-                    "the given language %r isn't a language" % language_name)
-            else:
-                candidate_languages.add(language)
-        if allowed_language_names is not None:
-            forbidden_language_names = \
-                {language.name for language in candidate_languages} \
-                .difference(allowed_language_names)
-            if len(forbidden_language_names) > 0:
-                raise InvalidFilesOrLanguages(
-                    "some given languages %r aren't allowed"
-                    % forbidden_language_names)
-
-    if not any(element.endswith(".%l") for element in submission_format):
-        candidate_languages = {None}
 
     matched_files_by_language = dict()
     invalidity_reasons = list()

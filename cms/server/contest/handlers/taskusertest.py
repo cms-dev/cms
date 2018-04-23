@@ -214,14 +214,9 @@ class UserTestHandler(ContestHandler):
             return
 
         try:
-            given_languages = {self.get_argument("language")}
-        except tornado.web.MissingArgumentError:
-            given_languages = None
-
-        try:
             files, language = match_files_and_languages(
-                given_files, given_languages, required_codenames,
-                contest.languages)
+                given_files, self.get_argument("language", None),
+                required_codenames, contest.languages)
         except InvalidFilesOrLanguages:
             self._send_error(
                 self._("Invalid test format!"),
