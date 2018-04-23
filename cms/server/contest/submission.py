@@ -449,7 +449,9 @@ def match_files_and_languages(given_files, given_language_name,
     # If a language is needed but the caller didn't provide any we try
     # to auto-detect it by guessing among all allowed languages.
     else:
-        if allowed_language_names is not None:
+        if allowed_language_names is None:
+            candidate_languages = set(LANGUAGES)
+        else:
             candidate_languages = set()
             for language_name in allowed_language_names:
                 try:
@@ -458,8 +460,6 @@ def match_files_and_languages(given_files, given_language_name,
                     pass
                 else:
                     candidate_languages.add(language)
-        else:
-            candidate_languages = set(LANGUAGES)
 
     matched_files_by_language = dict()
     invalidity_reasons = list()
