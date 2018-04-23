@@ -320,7 +320,7 @@ def match_file(codename, filename, language, submission_format):
                         candidate_elements.add(element)
             elif filename == element:
                 candidate_elements.add(element)
-    elif any(element == codename for element in submission_format):
+    elif codename in submission_format:
         if filename is None or not codename.endswith(".%l"):
             candidate_elements.add(codename)
         elif language is None:
