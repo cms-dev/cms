@@ -612,7 +612,7 @@ C_LANG = make_language("C", [".c"])
 # Has many extensions.
 CPP_LANG = make_language("C++", [".cpp", ".cxx", ".cc"])
 # Has an extension that doesn't begin with a period.
-PASCAL_LANG = make_language("Pascal", [".pas", "lib.pas"])
+PASCAL_LANG = make_language("Pascal", ["lib.pas"])
 # Have the same extensions.
 PY2_LANG = make_language("Py2", [".py"])
 PY3_LANG = make_language("Py3", [".py"])
@@ -774,11 +774,14 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         self.assertEqual(files, {"foo.%l": FOO_CONTENT})
         self.assertIs(language, PASCAL_LANG)
 
-        # This must of course hold also when it would cause ambiguities.
-        with self.assertRaises(InvalidFilesOrLanguages):
-            match_files_and_languages(
-                [ReceivedFile(None, "foolib.pas", FOO_CONTENT)],
-                None, {"foo.%l", "foolib.%l"}, None)
+        # This must also hold when the filename isn't matched against
+        # the submission format (because the codename is used for that)
+        # but just its extension is checked.
+        files, language = match_files_and_languages(
+            [ReceivedFile("foo.%l", "foolib.pas", FOO_CONTENT)],
+            None, {"foo.%l"}, None)
+        self.assertEqual(files, {"foo.%l": FOO_CONTENT})
+        self.assertIs(language, PASCAL_LANG)
 
     def test_duplicate_files(self):
         self.languages.update({C_LANG})
