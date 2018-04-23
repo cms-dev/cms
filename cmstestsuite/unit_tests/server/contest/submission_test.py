@@ -611,6 +611,8 @@ def make_language(name, source_extensions):
 C_LANG = make_language("C", [".c"])
 # Has many extensions.
 CPP_LANG = make_language("C++", [".cpp", ".cxx", ".cc"])
+# Has an extension that doesn't begin with a period.
+PASCAL_LANG = make_language("Pascal", [".pas", "lib.pas"])
 # Have the same extensions.
 PY2_LANG = make_language("Py2", [".py"])
 PY3_LANG = make_language("Py3", [".py"])
@@ -759,6 +761,24 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.cpp", FOO_CONTENT)],
                 {"C"}, {"foo.%l"}, None)
+
+    def test_extension_without_leading_period(self):
+        self.languages.update({PASCAL_LANG})
+
+        # Check that the *whole* trailing `.%l` string is replaced with
+        # the extension, not just the `%l` part, and also check that the
+        # function doesn't split the extension on the filename.
+        files, language = match_files_and_languages(
+            [ReceivedFile(None, "foolib.pas", FOO_CONTENT)],
+            None, {"foo.%l"}, None)
+        self.assertEqual(files, {"foo.%l": FOO_CONTENT})
+        self.assertIs(language, PASCAL_LANG)
+
+        # This must of course hold also when it would cause ambiguities.
+        with self.assertRaises(InvalidFilesOrLanguages):
+            match_files_and_languages(
+                [ReceivedFile(None, "foolib.pas", FOO_CONTENT)],
+                None, {"foo.%l", "foolib.%l"}, None)
 
     def test_duplicate_files(self):
         self.languages.update({C_LANG})

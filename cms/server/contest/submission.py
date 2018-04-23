@@ -314,7 +314,7 @@ def match_file(codename, filename, language, submission_format):
                 if language is None:
                     raise ValueError(
                         "language not given when submission format requires it")
-                base = element.rpartition(".")[0]
+                base = os.path.splitext(element)[0]
                 for ext in language.source_extensions:
                     if filename == base + ext:
                         candidate_elements.add(element)
