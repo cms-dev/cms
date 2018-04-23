@@ -338,7 +338,7 @@ def match_file(codename, filename, language, submission_format):
             "file %r/%r matches more than one element of the submission format"
             % (codename, filename))
 
-    return next(iter(candidate_elements))
+    return candidate_elements.pop()
 
 
 def match_files(given_files, language, submission_format):
