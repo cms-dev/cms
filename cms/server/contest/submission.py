@@ -365,7 +365,7 @@ def match_files(given_files, language, submission_format):
         codename = match_file(codename, filename, language, submission_format)
         if codename in files:
             raise InvalidFiles(
-                "fwo files match the same element %r of the submission format"
+                "two files match the same element %r of the submission format"
                 % codename)
         files[codename] = content
 
