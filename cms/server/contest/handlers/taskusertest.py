@@ -201,9 +201,9 @@ class UserTestHandler(ContestHandler):
             return
 
         # Required files from the user.
-        required = set(task.submission_format +
-                       task_type.get_user_managers() +
-                       ["input"])
+        required_codenames = set(task.submission_format +
+                                 task_type.get_user_managers() +
+                                 ["input"])
 
         try:
             given_files = extract_files_from_tornado(self.request.files)
@@ -220,7 +220,8 @@ class UserTestHandler(ContestHandler):
 
         try:
             files, language = match_files_and_languages(
-                given_files, given_languages, required, contest.languages)
+                given_files, given_languages, required_codenames,
+                contest.languages)
         except InvalidFilesOrLanguages:
             self._send_error(
                 self._("Invalid test format!"),
@@ -228,12 +229,12 @@ class UserTestHandler(ContestHandler):
             return
 
         file_digests = dict()
-        missing = required.difference(iterkeys(files))
-        if len(missing) > 0:
+        missing_codenames = required_codenames.difference(iterkeys(files))
+        if len(missing_codenames) > 0:
             if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
                 file_digests = fetch_file_digests_from_previous_submission(
-                    self.sql_session, participation, task, language, missing,
-                    cls=UserTest)
+                    self.sql_session, participation, task, language,
+                    missing_codenames, cls=UserTest)
             else:
                 self._send_error(
                     self._("Invalid test format!"),
