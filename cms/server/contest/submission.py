@@ -267,12 +267,10 @@ def extract_files_from_tornado(tornado_files):
             and len(tornado_files["submission"]) == 1:
         return extract_files_from_archive(tornado_files["submission"][0].body)
 
-    else:
-        result = list()
-        for codename, files in iteritems(tornado_files):
-            for f in files:
-                result.append(ReceivedFile(codename, f.filename, f.body))
-
+    result = list()
+    for codename, files in iteritems(tornado_files):
+        for f in files:
+            result.append(ReceivedFile(codename, f.filename, f.body))
     return result
 
 
