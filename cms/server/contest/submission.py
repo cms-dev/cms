@@ -190,9 +190,11 @@ def check_min_interval(
             or timestamp - submission.timestamp >= min_interval)
 
 
-# Represents a file received through HTTP from an HTML form: codename
-# is the name of the form field (in our case it's the filename-with-%l)
-# and filename is the name of the file had on the user's system.
+# Represents a file received through HTTP from an HTML form.
+# codename (str|None): the name of the form field (in our case it's the
+#   filename-with-%l).
+# filename (str|None): the name the file had on the user's system.
+# content (bytes): the data of the file.
 ReceivedFile = namedtuple("ReceivedFile", ["codename", "filename", "content"])
 
 
@@ -211,9 +213,10 @@ def extract_files_from_archive(data):
     contents cannot have conflicting/duplicated paths) but the structure
     will be ignored and the files will be returned with their basename.
 
-    data (bytes): the encoded contents of the archive.
+    data (bytes): the raw contents of the archive.
 
-    return ([ReceivedFile]): the files contained in the archive.
+    return ([ReceivedFile]): the files contained in the archive, with
+        their filename filled in but their codename set to None.
 
     raise (InvalidArchive): if the data doesn't seem to encode an
         archive, its contents are invalid, or other issues.
@@ -284,11 +287,11 @@ def match_file(codename, filename, language, submission_format):
 
     Return our best guess for which element of the submission format
     the submitted file was meant for. A match occurs when:
+    - the codename isn't given and the filename matches an element of
+      the submission format when we replace the latter's trailing ".%l"
+      (if any) with one of the source extensions of the language;
     - the codename matches exactly and if it ends in ".%l" the filename
-      (if given) ends in any of the extensions of the language;
-    - the codename isn't given and the filename matches element of the
-      submission format when we replace its trailing ".%l" (if any) with
-      one of the source extensions of the language.
+      (if given) ends in any of the extensions of the language.
 
     codename (str|None): the filename-with-%l, if provided.
     filename (str|None): the name the contestant gave to the file, if
