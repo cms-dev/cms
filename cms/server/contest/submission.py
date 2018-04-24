@@ -280,7 +280,7 @@ class InvalidFiles(Exception):
     pass
 
 
-def match_file(codename, filename, language, submission_format):
+def _match_file(codename, filename, language, submission_format):
     """Figure out what element of the submission format a file is for.
 
     Return our best guess for which element of the submission format
@@ -341,7 +341,7 @@ def match_file(codename, filename, language, submission_format):
     return candidate_elements.pop()
 
 
-def match_files(given_files, language, submission_format):
+def _match_files(given_files, language, submission_format):
     """Fit the given files into the given submission format.
 
     Figure out, for all of the given files, which element of the
@@ -362,7 +362,7 @@ def match_files(given_files, language, submission_format):
     files = dict()
 
     for codename, filename, content in given_files:
-        codename = match_file(codename, filename, language, submission_format)
+        codename = _match_file(codename, filename, language, submission_format)
         if codename in files:
             raise InvalidFiles(
                 "two files match the same element %r of the submission format"
@@ -467,7 +467,7 @@ def match_files_and_languages(given_files, given_language_name,
     for language in candidate_languages:
         try:
             matched_files_by_language[language] = \
-                match_files(given_files, language, submission_format)
+                _match_files(given_files, language, submission_format)
         except InvalidFiles as err:
             invalidity_reasons.append("%r: %s" % (
                 language.name if language is not None else None, err))
