@@ -1232,39 +1232,61 @@ class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
         self.timestamp = make_datetime()
 
-        # We use a content that is unique enough to ensure that if we
-        # find it in a file it won't be a false positive.
-        self.content = unique_unicode_id().encode('utf-8')
+    @staticmethod
+    def generate_content():
+        return unique_unicode_id().encode('utf-8')
 
-    def assertContentIsInSomeFile(self, search_directory):
+    def assertSomeFileContains(self, content, in_):
         # The function uses pickle, which has the nice property of
         # serializing bytes objects verbatim and byte-aligned, meaning
         # we can find them unchanged when we look at the encoded data.
-        for directory, _, filenames in os.walk(search_directory):
+        for directory, _, filenames in os.walk(in_):
             for filename in filenames:
                 with io.open(os.path.join(directory, filename), "rb") as f:
-                    if self.content in f.read():
+                    if content in f.read():
                         return
         self.fail("store_local_copy didn't create any file")
 
     def test_success(self):
+        # We use a content that is unique enough to ensure that if we
+        # find it in a file it won't be a false positive.
+        content = self.generate_content()
         directory = os.path.join(self.base_dir, "foo")
         store_local_copy(directory, self.participation, self.task,
-                         self.timestamp, {"foo.%l": self.content})
-        self.assertContentIsInSomeFile(directory)
+                         self.timestamp, {"foo.%l": content})
+        self.assertSomeFileContains(content, in_=directory)
+
+    def test_success_many_times(self):
+        # Test that multiple files are allowed in a single call and that
+        # successive calls don't overwrite preceding ones.
+        content_a = self.generate_content()
+        content_b = self.generate_content()
+        content_c = self.generate_content()
+        store_local_copy(self.base_dir, self.participation, self.task,
+                         self.timestamp,
+                         {"foo.%l": content_a, "bar.txt": content_b})
+        # Giving the same user and timestamp would actually overwrite.
+        store_local_copy(self.base_dir, self.participation, self.task,
+                         self.timestamp + timedelta(seconds=1),
+                         {"baz.%l": content_c})
+        self.assertSomeFileContains(content_a, in_=self.base_dir)
+        self.assertSomeFileContains(content_b, in_=self.base_dir)
+        self.assertSomeFileContains(content_c, in_=self.base_dir)
 
     def test_success_with_data_dir(self):
+        content = self.generate_content()
         with patch.object(config, "data_dir", self.base_dir):
             store_local_copy("%s/bar", self.participation, self.task,
-                             self.timestamp, {"foo.%l": self.content})
-        self.assertContentIsInSomeFile(os.path.join(self.base_dir, "bar"))
+                             self.timestamp, {"foo.%l": content})
+        self.assertSomeFileContains(content,
+                                    in_=os.path.join(self.base_dir, "bar"))
 
     def test_failure(self):
         # Make read-only.
         os.chmod(self.base_dir, stat.S_IRUSR)
         with self.assertRaises(StorageFailed):
             store_local_copy(self.base_dir, self.participation, self.task,
-                             self.timestamp, {"foo.%l": self.content})
+                             self.timestamp, {"foo.%l": b"some content"})
 
 
 if __name__ == "__main__":
