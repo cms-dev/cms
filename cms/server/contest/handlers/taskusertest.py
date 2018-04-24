@@ -37,10 +37,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
-import io
 import logging
-import os
-import pickle
 import re
 
 import tornado.web
@@ -52,7 +49,8 @@ from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     check_max_number, check_min_interval, InvalidArchive, \
     extract_files_from_tornado, InvalidFilesOrLanguage, \
-    match_files_and_languages, fetch_file_digests_from_previous_submission
+    match_files_and_languages, fetch_file_digests_from_previous_submission, \
+    store_local_copy, StorageFailed
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -237,14 +235,15 @@ class UserTestHandler(ContestHandler):
                 return
 
         # Check if submitted files are small enough.
-        if any([len(f) > config.max_submission_length
-                for n, f in iteritems(files) if n != "input"]):
+        if any(len(content) > config.max_submission_length
+               for codename, content in iteritems(files)
+               if codename != "input"):
             self._send_error(
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length)
             return
-        if len(files["input"]) > config.max_input_length:
+        if "input" in files and len(files["input"]) > config.max_input_length:
             self._send_error(
                 self._("Input too big!"),
                 self._("The input file must be at most %d bytes long.") %
@@ -255,25 +254,12 @@ class UserTestHandler(ContestHandler):
 
         # Attempt to store the submission locally to be able to
         # recover a failure.
+
         if config.tests_local_copy:
             try:
-                path = os.path.join(
-                    config.tests_local_copy_path.replace("%s",
-                                                         config.data_dir),
-                    participation.user.username)
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                # Pickle in ASCII format produces str, not unicode,
-                # therefore we open the file in binary mode.
-                with io.open(
-                        os.path.join(path,
-                                     "%d" % make_timestamp(self.timestamp)),
-                        "wb") as file_:
-                    pickle.dump((self.contest.id,
-                                 participation.user.id,
-                                 task.id,
-                                 files), file_)
-            except Exception as error:
+                store_local_copy(config.tests_local_copy_path, participation,
+                                 task, self.timestamp, files)
+            except StorageFailed:
                 logger.error("Test local copy failed.", exc_info=True)
 
         # We now have to send all the files to the destination...

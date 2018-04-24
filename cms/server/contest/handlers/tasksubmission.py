@@ -38,10 +38,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, itervalues, iteritems
 
-import io
 import logging
-import os
-import pickle
 import re
 
 import tornado.web
@@ -55,7 +52,8 @@ from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     check_max_number, check_min_interval, InvalidArchive, \
     extract_files_from_tornado, InvalidFilesOrLanguage, \
-    match_files_and_languages, fetch_file_digests_from_previous_submission
+    match_files_and_languages, fetch_file_digests_from_previous_submission, \
+    store_local_copy, StorageFailed
 from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
     accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
@@ -170,8 +168,8 @@ class SubmitHandler(ContestHandler):
                 return
 
         # Check if submitted files are small enough.
-        if any([len(f) > config.max_submission_length
-                for f in itervalues(files)]):
+        if any(len(content) > config.max_submission_length
+               for content in itervalues(files)):
             self._send_error(
                 self._("Submission too big!"),
                 self._("Each source file must be at most %d bytes long.") %
@@ -184,23 +182,9 @@ class SubmitHandler(ContestHandler):
         # recover a failure.
         if config.submit_local_copy:
             try:
-                path = os.path.join(
-                    config.submit_local_copy_path.replace("%s",
-                                                          config.data_dir),
-                    participation.user.username)
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                # Pickle in ASCII format produces str, not unicode,
-                # therefore we open the file in binary mode.
-                with io.open(
-                        os.path.join(path,
-                                     "%d" % make_timestamp(self.timestamp)),
-                        "wb") as file_:
-                    pickle.dump((self.contest.id,
-                                 participation.user.id,
-                                 task.id,
-                                 files), file_)
-            except Exception as error:
+                store_local_copy(config.submit_local_copy_path, participation,
+                                 task, self.timestamp, files)
+            except StorageFailed:
                 logger.warning("Submission local copy failed.", exc_info=True)
 
         # We now have to send all the files to the destination...
