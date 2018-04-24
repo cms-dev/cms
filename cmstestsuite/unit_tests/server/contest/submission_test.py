@@ -46,7 +46,7 @@ from cms.db import Submission, UserTest
 from cms.server.contest.submission import get_submission_count, \
     check_max_number, get_latest_submission, check_min_interval, \
     ReceivedFile, InvalidArchive, extract_files_from_archive, \
-    extract_files_from_tornado, InvalidFilesOrLanguages, \
+    extract_files_from_tornado, InvalidFilesOrLanguage, \
     match_files_and_languages, fetch_file_digests_from_previous_submission
 from cmscommon.datetime import make_datetime
 from cmstestsuite.unit_tests.testidgenerator import unique_digest
@@ -712,7 +712,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # In language-agnostic settings, passing a (non-None) language
         # is an error.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.txt", None, FOO_CONTENT)],
                 "C", {"foo.txt", "bar.zip"}, None)
@@ -731,24 +731,24 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         self.languages.update({C_LANG})
 
         # Different codename.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", None, FOO_CONTENT)],
                 "C", {"bar.%l"}, None)
 
         # Incompatible filename.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.c", FOO_CONTENT)],
                 "C", {"bar.%l"}, None)
 
         # The same in a language-agnostic setting.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.txt", None, FOO_CONTENT)],
                 None, {"bar.txt"}, None)
 
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.txt", FOO_CONTENT)],
                 None, {"bar.txt"}, None)
@@ -759,7 +759,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         # Even when the codename (and, here, but not necessarily, the
         # extensionless filename) match, the filename's extension needs
         # to be compatible with the language.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.cpp", FOO_CONTENT)],
                 "C", {"foo.%l"}, None)
@@ -777,7 +777,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         self.assertIs(language, PASCAL_LANG)
 
         # The same check, in the negative form.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.lib.pas", FOO_CONTENT)],
                 None, {"foo.%l"}, None)
@@ -796,7 +796,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # If two files match the same codename (even if through
         # different means) then the match is invalid.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "bar.c", FOO_CONTENT),
                  ReceivedFile(None, "foo.c", BAR_CONTENT)],
@@ -807,7 +807,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # For an admittedly weird submission format, a single file could
         # successfully match multiple elements.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.c", FOO_CONTENT)],
                 "C", {"foo.%l", "foo.c"}, None)
@@ -828,7 +828,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # And although in theory it could be disambiguated in some cases
         # if one were smart enough, we aren't.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "bar.c", FOO_CONTENT),
                  ReceivedFile(None, "foo.c", FOO_CONTENT)],
@@ -841,19 +841,19 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         # For an even weirder language and submission format, a single
         # file could successfully match two language-specific elements
         # of the submission format.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.suf.fix", FOO_CONTENT)],
                 "SelfOverlap", {"foo.%l", "foo.suf.%l"}, None)
 
         # Wow, much overlap, very ambiguous.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.suf.fix", FOO_CONTENT)],
                 None, {"foo.%l", "foo.suf.%l"}, None)
 
         # I'm doing this just for the fun.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, "foo.suf.fix", FOO_CONTENT)],
                 None, {"foo.%l"}, None)
@@ -864,13 +864,13 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         self.languages.update({C_LANG, CPP_LANG})
 
         # The (autoguessed) language that would match is forbidden.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 None, {"foo.%l"}, ["C++", "Py2"])
 
         # The same if the language is given.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 "C", {"foo.%l"}, ["C++", "Py2"])
@@ -882,7 +882,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # The situation is ambiguous: it matches for every language, as
         # there is no extension to clarify and no language is given.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 given_files, None, submission_format, None)
 
@@ -905,7 +905,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # The situation is ambiguous: both languages match the
         # extension.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 given_files, None, submission_format, None)
 
@@ -928,7 +928,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # The situation is ambiguous: both languages match, although
         # each does so to a different element of the submission format.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 given_files, None, submission_format, None)
 
@@ -951,13 +951,13 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # Without neither codename nor filename, there's nothing to base
         # a match on.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, None, FOO_CONTENT)],
                 "C", {"foo.%l"}, None)
 
         # The same holds in a language-agnostic setting.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile(None, None, FOO_CONTENT)],
                 None, {"foo.txt"}, None)
@@ -967,7 +967,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # Passing a language that doesn't exist means the contestant
         # doesn't know what they are doing: we're not following through.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 "BadLang", {"foo.%l"}, None)
@@ -998,7 +998,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # No files vacuously match every submission format for every
         # language, hence this is ambiguous.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 list(), None, {"foo.%l"}, None)
 
@@ -1007,14 +1007,14 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         # some (all) files are missing and in the worst case the files
         # from the previous submission would be fetched: no reasonable
         # user could have meant this on purpose, we reject.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 list(), "C", {"foo.%l"}, None)
 
         # The same holds for a language-agnostic submission format:
         # moreover, in that case there wouldn't be any ambiguity from
         # the start as only one "language" is allowed (i.e., None).
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 list(), None, {"foo.txt"}, None)
 
@@ -1022,13 +1022,13 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         self.languages.update({C_LANG, CPP_LANG})
 
         # If no files are wanted, any file will cause an invalid match.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 "C", set(), None)
 
         # Even in language-agnostic settings.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.txt", "foo.txt", FOO_CONTENT)],
                 None, set(), None)
@@ -1036,7 +1036,7 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         # If there are no files this could be made to work. However we
         # decided that this means that the whole thing is very messed up
         # and thus abort instead.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 list(), None, set(), None)
 
@@ -1045,14 +1045,14 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
 
         # An empty list of allowed languages means no language allowed:
         # any attempt at matching must necessarily fail.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 "C", {"foo.%l"}, list())
 
         # If all allowed languages are invalid, it's as if there weren't
         # any.
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 "C", {"foo.%l"}, ["BadLang"])
@@ -1060,12 +1060,12 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         # The same holds if no candidates are given (this difference is
         # relevant because now the allowed ones are used as candidates,
         # instead of acting only as a filter).
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 None, {"foo.%l"}, list())
 
-        with self.assertRaises(InvalidFilesOrLanguages):
+        with self.assertRaises(InvalidFilesOrLanguage):
             match_files_and_languages(
                 [ReceivedFile("foo.%l", "foo.c", FOO_CONTENT)],
                 None, {"foo.%l"}, ["BadLang"])

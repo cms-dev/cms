@@ -54,7 +54,7 @@ from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     check_max_number, check_min_interval, InvalidArchive, \
-    extract_files_from_tornado, InvalidFilesOrLanguages, \
+    extract_files_from_tornado, InvalidFilesOrLanguage, \
     match_files_and_languages, fetch_file_digests_from_previous_submission
 from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
     accept_token, tokens_available
@@ -150,7 +150,7 @@ class SubmitHandler(ContestHandler):
             files, language = match_files_and_languages(
                 given_files, self.get_argument("language", None),
                 required_codenames, contest.languages)
-        except InvalidFilesOrLanguages:
+        except InvalidFilesOrLanguage:
             self._send_error(
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))

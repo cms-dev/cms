@@ -372,7 +372,7 @@ def match_files(given_files, language, submission_format):
     return files
 
 
-class InvalidFilesOrLanguages(Exception):
+class InvalidFilesOrLanguage(Exception):
     """Raised when the submitted files or given languages don't make sense."""
 
     pass
@@ -420,14 +420,14 @@ def match_files_and_languages(given_files, given_language_name,
 
     """
     if len(given_files) == 0:
-        raise InvalidFilesOrLanguages("no files given")
+        raise InvalidFilesOrLanguage("no files given")
 
     # If the submission format is language-agnostic the only "language"
     # that makes sense is None, and if the caller thought differently we
     # let them know.
     if not any(element.endswith(".%l") for element in submission_format):
         if given_language_name is not None:
-            raise InvalidFilesOrLanguages(
+            raise InvalidFilesOrLanguage(
                 "a language %r is given when not needed" % given_language_name)
         candidate_languages = {None}
 
@@ -437,12 +437,12 @@ def match_files_and_languages(given_files, given_language_name,
         try:
             language = get_language(given_language_name)
         except KeyError:
-            raise InvalidFilesOrLanguages(
+            raise InvalidFilesOrLanguage(
                 "the given language %r isn't a language" % given_language_name)
 
         if allowed_language_names is not None \
                 and language.name not in allowed_language_names:
-            raise InvalidFilesOrLanguages(
+            raise InvalidFilesOrLanguage(
                 "the given language %r isn't allowed" % given_language_name)
 
         candidate_languages = {language}
@@ -473,11 +473,11 @@ def match_files_and_languages(given_files, given_language_name,
                 language.name if language is not None else None, err))
 
     if len(matched_files_by_language) == 0:
-        raise InvalidFilesOrLanguages(
+        raise InvalidFilesOrLanguage(
             "there isn't any language that matches all the files:\n%s"
             % (";\n".join(invalidity_reasons)))
     elif len(matched_files_by_language) > 1:
-        raise InvalidFilesOrLanguages(
+        raise InvalidFilesOrLanguage(
             "there is more than one language that matches all the files: %r"
             % set(iterkeys(matched_files_by_language)))
 
