@@ -280,6 +280,48 @@ class InvalidFiles(Exception):
     pass
 
 
+def _match_filename(filename, language, element):
+    """Ensure the filename is entirely compatible with the element.
+
+    Return whether the filename matches the element, including having an
+    appropriate value for the language-specific extension (if present)
+    for the given language.
+
+    filename (str): the filename.
+    language (Language|None): the language.
+    element (str): the element of the submission format.
+
+    return (bool): whether there's a match.
+
+    """
+    if not element.endswith(".%l"):
+        return filename == element
+    if language is None:
+        raise ValueError("language not given but submission format requires it")
+    base = os.path.splitext(element)[0]
+    return any(filename == base + ext for ext in language.source_extensions)
+
+
+def _match_extension(filename, language, element):
+    """Ensure filename is compatible with element w.r.t. the extension.
+
+    Return whether the filename (if given) matches the language-specific
+    extension of the element (if present) for the given language.
+
+    filename (str|None): the filename.
+    language (Language|None): the language.
+    element (str): the element of the submission format.
+
+    return (bool): whether there's a match.
+
+    """
+    if filename is None or not element.endswith(".%l"):
+        return True
+    if language is None:
+        raise ValueError("language not given but submission format requires it")
+    return any(filename.endswith(ext) for ext in language.source_extensions)
+
+
 def _match_file(codename, filename, language, submission_format):
     """Figure out what element of the submission format a file is for.
 
@@ -307,38 +349,26 @@ def _match_file(codename, filename, language, submission_format):
     if codename is None and filename is None:
         raise InvalidFiles("need at least one of codename and filename")
 
-    candidate_elements = set()
+    # If no codename is given we guess it, by attempting a match of the
+    # filename against all codenames. We claim victory if there is only
+    # one hit.
     if codename is None:
-        for element in submission_format:
-            if element.endswith(".%l"):
-                if language is None:
-                    raise ValueError(
-                        "language not given when submission format requires it")
-                base = os.path.splitext(element)[0]
-                for ext in language.source_extensions:
-                    if filename == base + ext:
-                        candidate_elements.add(element)
-            elif filename == element:
-                candidate_elements.add(element)
-    elif codename in submission_format:
-        if filename is None or not codename.endswith(".%l"):
-            candidate_elements.add(codename)
-        elif language is None:
-            raise ValueError(
-                "language not given when submission format requires it")
-        elif any(filename.endswith(ext) for ext in language.source_extensions):
-            candidate_elements.add(codename)
+        candidate_elements = {element for element in submission_format
+                              if _match_filename(filename, language, element)}
+        if len(candidate_elements) == 1:
+            return candidate_elements.pop()
 
-    if len(candidate_elements) == 0:
-        raise InvalidFiles(
-            "file %r/%r doesn't match any of elements of the submission format"
-            % (codename, filename))
-    elif len(candidate_elements) > 1:
-        raise InvalidFiles(
-            "file %r/%r matches more than one element of the submission format"
-            % (codename, filename))
+    # If, on the other hand, the codename is given then it needs to
+    # exactly match an element of the format and, as a safety measure,
+    # the filename needs to match too at least with respect to the
+    # extension.
+    elif codename in submission_format \
+            and _match_extension(filename, language, codename):
+        return codename
 
-    return candidate_elements.pop()
+    raise InvalidFiles(
+        "file %r/%r doesn't unambiguously match the submission format"
+        % (codename, filename))
 
 
 def _match_files(given_files, language, submission_format):
