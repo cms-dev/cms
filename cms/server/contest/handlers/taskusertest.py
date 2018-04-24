@@ -35,7 +35,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, itervalues, iteritems
+from six import iterkeys, iteritems
 
 import io
 import logging
@@ -50,8 +50,9 @@ from cms.db import UserTest, UserTestFile, UserTestManager, UserTestResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
-    check_max_number, get_latest_submission, check_min_interval
-from cmscommon.archive import Archive
+    check_max_number, check_min_interval, InvalidArchive, \
+    extract_files_from_tornado, InvalidFilesOrLanguage, \
+    match_files_and_languages, fetch_file_digests_from_previous_submission
 from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
@@ -200,121 +201,50 @@ class UserTestHandler(ContestHandler):
             return
 
         # Required files from the user.
-        required = set(task.submission_format +
-                       task_type.get_user_managers() +
-                       ["input"])
+        required_codenames = set(task.submission_format +
+                                 task_type.get_user_managers() +
+                                 ["input"])
 
-        # Ensure that the user did not submit multiple files with the
-        # same name.
-        if any(len(filename) != 1
-               for filename in itervalues(self.request.files)):
+        try:
+            given_files = extract_files_from_tornado(self.request.files)
+        except InvalidArchive:
+            self._send_error(
+                self._("Invalid archive format!"),
+                self._("The submitted archive could not be opened."))
+            return
+
+        try:
+            files, language = match_files_and_languages(
+                given_files, self.get_argument("language", None),
+                required_codenames, contest.languages)
+        except InvalidFilesOrLanguage:
             self._send_error(
                 self._("Invalid test format!"),
                 self._("Please select the correct files."))
             return
 
-        # If the user submitted an archive, extract it and use content
-        # as request.files. But only valid for "output only" (i.e.,
-        # not for submissions requiring a programming language
-        # identification).
-        if len(self.request.files) == 1 and \
-                next(iterkeys(self.request.files)) == "submission":
-            if any(filename.endswith(".%l") for filename in required):
+        file_digests = dict()
+        missing_codenames = required_codenames.difference(iterkeys(files))
+        if len(missing_codenames) > 0:
+            if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
+                file_digests = fetch_file_digests_from_previous_submission(
+                    self.sql_session, participation, task, language,
+                    missing_codenames, cls=UserTest)
+            else:
                 self._send_error(
                     self._("Invalid test format!"),
-                    self._("Please select the correct files."),
-                    task)
+                    self._("Please select the correct files."))
                 return
-            archive_data = self.request.files["submission"][0]
-            del self.request.files["submission"]
-
-            # Create the archive.
-            archive = Archive.from_raw_data(archive_data["body"])
-
-            if archive is None:
-                self._send_error(
-                    self._("Invalid archive format!"),
-                    self._("The submitted archive could not be opened."))
-                return
-
-            # Extract the archive.
-            unpacked_dir = archive.unpack()
-            for name in archive.namelist():
-                filename = os.path.basename(name)
-                with io.open(os.path.join(unpacked_dir, filename), "rb") as f:
-                    body = f.read()
-                self.request.files[filename] = [{
-                    'filename': filename,
-                    'body': body
-                }]
-
-            archive.cleanup()
-
-        # This ensure that the user sent one file for every name in
-        # submission format and no more. Less is acceptable if task
-        # type says so.
-        provided = set(iterkeys(self.request.files))
-        if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
-                                         and required.issuperset(provided))):
-            self._send_error(
-                self._("Invalid test format!"),
-                self._("Please select the correct files."))
-            return
-
-        # Add submitted files. After this, files is a dictionary indexed
-        # by *our* filenames (something like "output01.txt" or
-        # "taskname.%l", and whose value is a couple
-        # (user_assigned_filename, content).
-        files = {}
-        for uploaded, data in iteritems(self.request.files):
-            files[uploaded] = (data[0]["filename"], data[0]["body"])
-
-        # Read the submission language provided in the request; we
-        # integrate it with the language fetched from the previous
-        # submission (if we use it) and later make sure it is
-        # recognized and allowed.
-        submission_lang = self.get_argument("language", None)
-        need_lang = any(our_filename.find(".%l") != -1
-                        for our_filename in files)
-
-        # If we allow partial submissions, implicitly we recover the
-        # non-submitted files from the previous user test. And put them
-        # in file_digests (i.e. like they have already been sent to FS).
-        file_digests = {}
-        if task_type.ALLOW_PARTIAL_SUBMISSION:
-            last_user_test_t = get_latest_submission(
-                self.sql_session, participation, task=task, cls=UserTest)
-            if last_user_test_t is not None \
-                    and (submission_lang is None
-                         or submission_lang == last_user_test_t.language):
-                submission_lang = last_user_test_t.language
-                for filename in required.difference(provided):
-                    if filename in last_user_test_t.files:
-                        file_digests[filename] = \
-                            last_user_test_t.files[filename].digest
-
-        # Throw an error if task needs a language, but we don't have
-        # it or it is not allowed / recognized.
-        if need_lang:
-            error = None
-            if submission_lang is None:
-                error = self._("Cannot recognize the user test language.")
-            elif submission_lang not in contest.languages:
-                error = self._("Language %s not allowed in this contest.") \
-                    % submission_lang
-        if error is not None:
-            self._send_error(self._("Invalid test!"), error)
-            return
 
         # Check if submitted files are small enough.
-        if any([len(f[1]) > config.max_submission_length
+        if any([len(f) > config.max_submission_length
                 for n, f in iteritems(files) if n != "input"]):
             self._send_error(
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %
                 config.max_submission_length)
             return
-        if len(files["input"][1]) > config.max_input_length:
+        if len(files["input"]) > config.max_input_length:
             self._send_error(
                 self._("Input too big!"),
                 self._("The input file must be at most %d bytes long.") %
@@ -350,7 +280,7 @@ class UserTestHandler(ContestHandler):
         try:
             for filename in files:
                 digest = self.service.file_cacher.put_file_content(
-                    files[filename][1],
+                    files[filename],
                     "Test file %s sent by %s at %d." % (
                         filename, participation.user.username,
                         make_timestamp(self.timestamp)))
@@ -368,7 +298,7 @@ class UserTestHandler(ContestHandler):
         logger.info("All files stored for test sent by %s",
                     participation.user.username)
         user_test = UserTest(self.timestamp,
-                             submission_lang,
+                             language.name if language is not None else None,
                              file_digests["input"],
                              participation=participation,
                              task=task)
@@ -379,8 +309,8 @@ class UserTestHandler(ContestHandler):
                 UserTestFile(filename, digest, user_test=user_test))
         for filename in task_type.get_user_managers():
             digest = file_digests[filename]
-            if submission_lang is not None:
-                extension = get_language(submission_lang).source_extension
+            if language is not None:
+                extension = language.source_extension
                 filename = filename.replace(".%l", extension)
             self.sql_session.add(
                 UserTestManager(filename, digest, user_test=user_test))

@@ -53,8 +53,9 @@ from cms.db import File, Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
-    check_max_number, get_latest_submission, check_min_interval
-from cmscommon.archive import Archive
+    check_max_number, check_min_interval, InvalidArchive, \
+    extract_files_from_tornado, InvalidFilesOrLanguage, \
+    match_files_and_languages, fetch_file_digests_from_previous_submission
 from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
     accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
@@ -135,114 +136,41 @@ class SubmitHandler(ContestHandler):
             return
 
         # Required files from the user.
-        required = set(task.submission_format)
+        required_codenames = set(task.submission_format)
 
-        # Ensure that the user did not submit multiple files with the
-        # same name.
-        if any(len(filename) != 1
-               for filename in itervalues(self.request.files)):
+        try:
+            given_files = extract_files_from_tornado(self.request.files)
+        except InvalidArchive:
+            self._send_error(
+                self._("Invalid archive format!"),
+                self._("The submitted archive could not be opened."))
+            return
+
+        try:
+            files, language = match_files_and_languages(
+                given_files, self.get_argument("language", None),
+                required_codenames, contest.languages)
+        except InvalidFilesOrLanguage:
             self._send_error(
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             return
 
-        # If the user submitted an archive, extract it and use content
-        # as request.files. But only valid for "output only" (i.e.,
-        # not for submissions requiring a programming language
-        # identification).
-        if len(self.request.files) == 1 and \
-                next(iterkeys(self.request.files)) == "submission":
-            if any(filename.endswith(".%l") for filename in required):
+        file_digests = dict()
+        missing_codenames = required_codenames.difference(iterkeys(files))
+        if len(missing_codenames) > 0:
+            if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
+                file_digests = fetch_file_digests_from_previous_submission(
+                    self.sql_session, participation, task, language,
+                    missing_codenames)
+            else:
                 self._send_error(
                     self._("Invalid submission format!"),
-                    self._("Please select the correct files."),
-                    task)
-                return
-            archive_data = self.request.files["submission"][0]
-            del self.request.files["submission"]
-
-            # Create the archive.
-            archive = Archive.from_raw_data(archive_data["body"])
-
-            if archive is None:
-                self._send_error(
-                    self._("Invalid archive format!"),
-                    self._("The submitted archive could not be opened."))
-                return
-
-            # Extract the archive.
-            unpacked_dir = archive.unpack()
-            for name in archive.namelist():
-                filename = os.path.basename(name)
-                with io.open(os.path.join(unpacked_dir, filename), "rb") as f:
-                    body = f.read()
-                self.request.files[filename] = [{
-                    'filename': filename,
-                    'body': body
-                }]
-
-            archive.cleanup()
-
-        # This ensure that the user sent one file for every name in
-        # submission format and no more. Less is acceptable if task
-        # type says so.
-        task_type = task.active_dataset.task_type_object
-        provided = set(iterkeys(self.request.files))
-        if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
-                                         and required.issuperset(provided))):
-            self._send_error(
-                self._("Invalid submission format!"),
-                self._("Please select the correct files."))
-            return
-
-        # Add submitted files. After this, files is a dictionary indexed
-        # by *our* filenames (something like "output01.txt" or
-        # "taskname.%l", and whose value is a couple
-        # (user_assigned_filename, content).
-        files = {}
-        for uploaded, data in iteritems(self.request.files):
-            files[uploaded] = (data[0]["filename"], data[0]["body"])
-
-        # Read the submission language provided in the request; we
-        # integrate it with the language fetched from the previous
-        # submission (if we use it) and later make sure it is
-        # recognized and allowed.
-        submission_lang = self.get_argument("language", None)
-        need_lang = any(our_filename.find(".%l") != -1
-                        for our_filename in files)
-
-        # If we allow partial submissions, we implicitly recover the
-        # non-submitted files from the previous submission (if it has
-        # the same programming language of the current one), and put
-        # them in file_digests (since they are already in FS).
-        file_digests = {}
-        if task_type.ALLOW_PARTIAL_SUBMISSION:
-            last_submission_t = get_latest_submission(
-                self.sql_session, participation, task=task)
-            if last_submission_t is not None \
-                    and (submission_lang is None
-                         or submission_lang == last_submission_t.language):
-                submission_lang = last_submission_t.language
-                for filename in required.difference(provided):
-                    if filename in last_submission_t.files:
-                        file_digests[filename] = \
-                            last_submission_t.files[filename].digest
-
-        # Throw an error if task needs a language, but we don't have
-        # it or it is not allowed / recognized.
-        if need_lang:
-            error = None
-            if submission_lang is None:
-                error = self._("Cannot recognize the submission language.")
-            elif submission_lang not in contest.languages:
-                error = self._("Language %s not allowed in this contest.") \
-                    % submission_lang
-            if error is not None:
-                self._send_error(self._("Invalid submission!"), error)
+                    self._("Please select the correct files."))
                 return
 
         # Check if submitted files are small enough.
-        if any([len(f[1]) > config.max_submission_length
+        if any([len(f) > config.max_submission_length
                 for f in itervalues(files)]):
             self._send_error(
                 self._("Submission too big!"),
@@ -279,7 +207,7 @@ class SubmitHandler(ContestHandler):
         try:
             for filename in files:
                 digest = self.service.file_cacher.put_file_content(
-                    files[filename][1],
+                    files[filename],
                     "Submission file %s sent by %s at %d." % (
                         filename, participation.user.username,
                         make_timestamp(self.timestamp)))
@@ -302,7 +230,7 @@ class SubmitHandler(ContestHandler):
         official = self.r_params["actual_phase"] == 0
 
         submission = Submission(self.timestamp,
-                                submission_lang,
+                                language.name if language is not None else None,
                                 task=task,
                                 participation=participation,
                                 official=official)
