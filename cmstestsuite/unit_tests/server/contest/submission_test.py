@@ -454,10 +454,10 @@ class TestExtractFilesFromArchive(unittest.TestCase):
         with self.assertRaises(InvalidArchive):
             extract_files_from_archive(b"this is not a valid archive")
 
-    # Make sure we ignore the directory structure and only use the
-    # trailing component (i.e., the basename) in the return value, even
-    # if it leads to duplicated filenames.
     def test_directories(self):
+        # Make sure we ignore the directory structure and only use the
+        # trailing component of the path (i.e., the basename) in the
+        # return value, even if it leads to duplicated filenames.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w",
                              compression=zipfile.ZIP_DEFLATED) as f:
@@ -472,8 +472,8 @@ class TestExtractFilesFromArchive(unittest.TestCase):
              ReceivedFile(None, "deep", b"more content"),
              ReceivedFile(None, "deep", b"moar content")])
 
-    # This is an expected and most likely unproblematic behavior.
     def test_filename_with_null(self):
+        # This is an expected and most likely unproblematic behavior.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
             f.writestr("foo\0bar", b"some content")
@@ -481,15 +481,17 @@ class TestExtractFilesFromArchive(unittest.TestCase):
             self, extract_files_from_archive(archive_data.getvalue()),
             [ReceivedFile(None, "foo", b"some content")])
 
-    # This is a quite unexpected behavior: luckily in practice it should
-    # have no effect as the elements of the submission format aren't
-    # allowed to be empty and thus the submission would be rejected
-    # anyways. It also shouldn't leak any private information.
-    # This actually only happens when patool uses 7z (which happens if
-    # it is found installed). Otherwise it falls back on Python's
-    # zipfile module which outright fails.
+    # The behavior documented in this test actually only happens when
+    # patool uses 7z (which happens if it is found installed). Otherwise
+    # it falls back on Python's zipfile module which outright fails.
+    # Due to this difference we tolerate failures in this test.
     @unittest.expectedFailure
     def test_empty_filename(self):
+        # This is a quite unexpected behavior: luckily in practice it
+        # should have no effect as the elements of the submission format
+        # aren't allowed to be empty and thus the submission would be
+        # rejected later on anyways. It also shouldn't leak any private
+        # information.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
             # Need ZipInfo because of "bug" in writestr.
@@ -503,8 +505,8 @@ class TestExtractFilesFromArchive(unittest.TestCase):
         six.assertRegex(self, f.filename, "tmp[a-z0-9_]+~")
         self.assertEqual(f.content, b"some content")
 
-    # This is a (probably expected and) desirable behavior.
     def test_multiple_slashes_are_compressed(self):
+        # This is a (probably expected and) desirable behavior.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
             f.writestr("foo//bar", b"some content")
@@ -512,9 +514,9 @@ class TestExtractFilesFromArchive(unittest.TestCase):
             self, extract_files_from_archive(archive_data.getvalue()),
             [ReceivedFile(None, "bar", b"some content")])
 
-    # This should check that the extracted files cannot "escape" from
-    # the temporary directory where they are being extracted to.
     def test_weird_filenames(self):
+        # This should check that the extracted files cannot "escape"
+        # from the temporary directory where they're being extracted to.
         filenames = ["../foo/bar", "/foo/bar"]
         for filename in filenames:
             archive_data = io.BytesIO()
@@ -524,11 +526,12 @@ class TestExtractFilesFromArchive(unittest.TestCase):
                 self, extract_files_from_archive(archive_data.getvalue()),
                 [ReceivedFile(None, "bar", b"some content")])
 
-    # This is an unnecessary limitation due to the fact that patool does
-    # extract files to the actual filesystem. We could avoid it by using
-    # zipfile, tarfile, etc. directly but it would be too burdensome to
-    # support the same amount of archive types as patool does.
     def test_conflicting_filenames(self):
+        # This is an unnecessary limitation due to the fact that patool
+        # does extract files to the actual filesystem. We could avoid it
+        # by using zipfile, tarfile, etc. directly but it would be too
+        # burdensome to support the same amount of archive types as
+        # patool does.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
             f.writestr("foo", b"some content")
@@ -773,6 +776,12 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
         self.assertEqual(files, {"foo.%l": FOO_CONTENT})
         self.assertIs(language, PASCAL_LANG)
 
+        # The same check, in the negative form.
+        with self.assertRaises(InvalidFilesOrLanguages):
+            match_files_and_languages(
+                [ReceivedFile(None, "foo.lib.pas", FOO_CONTENT)],
+                None, {"foo.%l"}, None)
+
         # This must also hold when the filename isn't matched against
         # the submission format (because the codename is used for that)
         # but just its extension is checked.
@@ -803,8 +812,14 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
                 [ReceivedFile(None, "foo.c", FOO_CONTENT)],
                 "C", {"foo.%l", "foo.c"}, None)
 
-        # This brings in some weird side-effects, for example matching
-        # an unexpected language as it's the only one left.
+        # This brings in some weird side-effects: for example, in the
+        # following, our attempt at matching the files as C fails (since
+        # foo.c is ambiguous) whereas matching them as C++ doesn't (as
+        # foo.c isn't compatible with foo.%l anymore); thus we guess
+        # that the correct language must be C++. If there were other
+        # languages allowed it would become ambiguous and fail (as then
+        # all languages would be compatible, except C). Remember that
+        # these sort of problems arise only when codenames aren't given.
         files, language = match_files_and_languages(
             [ReceivedFile(None, "foo.c", FOO_CONTENT)],
             None, {"foo.%l", "foo.c"}, None)
@@ -941,6 +956,12 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
                 [ReceivedFile(None, None, FOO_CONTENT)],
                 "C", {"foo.%l"}, None)
 
+        # The same holds in a language-agnostic setting.
+        with self.assertRaises(InvalidFilesOrLanguages):
+            match_files_and_languages(
+                [ReceivedFile(None, None, FOO_CONTENT)],
+                None, {"foo.txt"}, None)
+
     def test_nonexisting_given_languages(self):
         self.languages.update({C_LANG, CPP_LANG})
 
@@ -1013,8 +1034,8 @@ class TestMatchFilesAndLanguages(unittest.TestCase):
                 None, set(), None)
 
         # If there are no files this could be made to work. However we
-        # decided that this means the contestant is very confused and
-        # thus abort instead.
+        # decided that this means that the whole thing is very messed up
+        # and thus abort instead.
         with self.assertRaises(InvalidFilesOrLanguages):
             match_files_and_languages(
                 list(), None, set(), None)

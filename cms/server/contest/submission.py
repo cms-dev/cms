@@ -412,7 +412,8 @@ def match_files_and_languages(given_files, given_language_name,
         is allowed to have (None means no limitation).
 
     return ({str: bytes}, Language|None): the mapping from codenames to
-        content, and the language of the submission.
+        content, and the language of the submission (with None meaning
+        that no language is needed as the format was language-agnostic).
 
     raise (InvalidFilesOrLanguages): if issues arise when finding a
         match.
@@ -480,7 +481,7 @@ def match_files_and_languages(given_files, given_language_name,
             "there is more than one language that matches all the files: %r"
             % set(iterkeys(matched_files_by_language)))
 
-    language, files = next(iteritems(matched_files_by_language))
+    language, files = matched_files_by_language.popitem()
 
     return files, language
 
@@ -522,6 +523,10 @@ def fetch_file_digests_from_previous_submission(
 
     digests = dict()
     for codename in codenames:
+        # The expected behavior of this code is undefined when a task's
+        # submission format, its task type's user_managers and {"input"}
+        # are not pairwise disjoint sets. That is not supposed to happen
+        # and it would probably already create issues upon submission.
         if codename in latest_submission.files:
             digests[codename] = latest_submission.files[codename].digest
         elif cls is UserTest:
@@ -532,8 +537,8 @@ def fetch_file_digests_from_previous_submission(
                     if language is None:
                         raise ValueError("language not given when submission "
                                          "format requires it")
-                    filename = \
-                        codename.rpartition(".")[0] + language.source_extension
+                    filename = (os.path.splitext(codename)[0]
+                                + language.source_extension)
                 else:
                     filename = codename
                 if filename in latest_submission.managers:
