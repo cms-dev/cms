@@ -420,21 +420,19 @@ class TestCheckMinInterval(DatabaseMixin, unittest.TestCase):
         self.get_latest_submission.assert_not_called()
 
 
-# These tests are, to some extent, tests for the Archive class as well.
 class TestExtractFilesFromArchive(unittest.TestCase):
 
     def test_zip(self):
+        files = [ReceivedFile(None, "foo.c", b"some content"),
+                 ReceivedFile(None, "foo", b"some other content"),
+                 ReceivedFile(None, "foo.%l", b"more content")]
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w",
                              compression=zipfile.ZIP_DEFLATED) as f:
-            f.writestr("foo.c", b"some content")
-            f.writestr("foo", b"some other content")
-            f.writestr("foo.%l", b"more content")
+            for _, filename, content in files:
+                f.writestr(filename, content)
         six.assertCountEqual(
-            self, extract_files_from_archive(archive_data.getvalue()), [
-                ReceivedFile(None, "foo.c", b"some content"),
-                ReceivedFile(None, "foo", b"some other content"),
-                ReceivedFile(None, "foo.%l", b"more content")])
+            self, extract_files_from_archive(archive_data.getvalue()), files)
 
     def test_tar_gz(self):
         files = [ReceivedFile(None, "foo.c", b"some content"),
@@ -471,6 +469,11 @@ class TestExtractFilesFromArchive(unittest.TestCase):
              ReceivedFile(None, "once", b"some other content"),
              ReceivedFile(None, "deep", b"more content"),
              ReceivedFile(None, "deep", b"moar content")])
+
+    # The remaining tests trigger some corner cases of the Archive class
+    # and demonstrate what we have observed happens in those situations.
+    # They are here to show that we're fine (even if not always outright
+    # happy) with the behaviors in those scenarios.
 
     def test_filename_with_null(self):
         # This is an expected and most likely unproblematic behavior.
@@ -514,7 +517,7 @@ class TestExtractFilesFromArchive(unittest.TestCase):
             self, extract_files_from_archive(archive_data.getvalue()),
             [ReceivedFile(None, "bar", b"some content")])
 
-    def test_weird_filenames(self):
+    def test_paths_that_might_escape(self):
         # This should check that the extracted files cannot "escape"
         # from the temporary directory where they're being extracted to.
         filenames = ["../foo/bar", "/foo/bar"]
