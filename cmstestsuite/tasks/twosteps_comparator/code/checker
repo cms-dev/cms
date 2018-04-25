@@ -1,0 +1,19 @@
+#!/usr/bin/python2 -sS
+
+from __future__ import print_function
+
+import io
+import sys
+
+input_file, solution_file, output_file = sys.argv[1:]
+
+# We just check if the first number in the output and solution are the same.
+output_number = int(io.open(output_file, 'rb').readline())
+solution_number = int(io.open(solution_file, 'rb').readline())
+
+if output_number == solution_number:
+    print("1.0")
+    print("Correcto", file=sys.stderr)
+else:
+    print("0.0")
+    print("Plain wrong", file=sys.stderr)
