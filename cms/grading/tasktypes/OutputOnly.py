@@ -127,19 +127,10 @@ class OutputOnly(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="evaluate")
-        job.sandboxes.append(sandbox.path)
-
-        # Immediately prepare the skeleton to return
-        job.plus = {}
-
-        outcome = None
-        text = []
-
         user_output_filename = self._get_user_output_filename(job)
+
+        # There is no actual evaluation, so no statistics.
+        job.plus = {}
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
@@ -150,6 +141,9 @@ class OutputOnly(TaskType):
             return
 
         # First and only one step: diffing (manual or with manager).
+
+        sandbox = create_sandbox(file_cacher, name="check")
+        job.sandboxes.append(sandbox.path)
 
         # Put user output and reference solution into the sandbox.
         sandbox.create_file_from_storage(
