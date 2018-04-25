@@ -415,7 +415,8 @@ class TwoSteps(TaskType):
         delete_sandbox(sandbox, success)
         return success, outcome, text
 
-    def _run_checker(selfself, sandbox, job):
+    @staticmethod
+    def _run_checker(sandbox, job):
         """Run the explicit checker given by the admins
 
         sandbox (Sandbox): the sandbox to run the checker in; should already
