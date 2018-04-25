@@ -1268,7 +1268,7 @@ class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         # Giving the same user and timestamp would actually overwrite.
         store_local_copy(self.base_dir, self.participation, self.task,
                          self.timestamp + timedelta(seconds=1),
-                         {"baz.%l": content_c})
+                         {"foo.%l": content_c})
         self.assertSomeFileContains(content_a, in_=self.base_dir)
         self.assertSomeFileContains(content_b, in_=self.base_dir)
         self.assertSomeFileContains(content_c, in_=self.base_dir)
