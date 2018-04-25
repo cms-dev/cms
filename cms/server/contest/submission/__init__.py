@@ -41,6 +41,8 @@ from .file_retrieval import ReceivedFile, InvalidArchive, \
 from .file_matching import InvalidFilesOrLanguage, match_files_and_language
 from .utils import fetch_file_digests_from_previous_submission, StorageFailed, \
     store_local_copy
+from .workflow import UnacceptableSubmission, accept_submission, \
+    TestingNotAllowed, UnacceptableUserTest, accept_user_test
 
 
 __all__ = [
@@ -55,4 +57,7 @@ __all__ = [
     # utils.py
     "fetch_file_digests_from_previous_submission", "StorageFailed",
     "store_local_copy",
+    # workflow.py
+    "UnacceptableSubmission", "accept_submission", "TestingNotAllowed",
+    "UnacceptableUserTest", "accept_user_test",
 ]
