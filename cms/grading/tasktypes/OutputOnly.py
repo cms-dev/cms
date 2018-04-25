@@ -36,8 +36,7 @@ import logging
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading.steps import extract_outcome_and_text, trusted_step,\
-    white_diff_step
+from cms.grading.steps import checker_step, white_diff_step
 
 
 logger = logging.getLogger(__name__)
@@ -60,8 +59,6 @@ class OutputOnly(TaskType):
     """
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
-    # Filename of the admin-provided comparator.
-    CHECKER_FILENAME = "checker"
     # Name of input and user output files.
     INPUT_FILENAME = "input.txt"
     OUTPUT_FILENAME = "output.txt"
@@ -155,7 +152,9 @@ class OutputOnly(TaskType):
             # Checker also requires the input file.
             sandbox.create_file_from_storage(
                 OutputOnly.INPUT_FILENAME, job.input)
-            success, outcome, text = OutputOnly._run_checker(sandbox, job)
+            success, outcome, text = checker_step(
+                sandbox, job.managers, OutputOnly.INPUT_FILENAME,
+                OutputOnly.CORRECT_OUTPUT_FILENAME, OutputOnly.OUTPUT_FILENAME)
         else:
             success = True
             outcome, text = white_diff_step(
@@ -169,45 +168,3 @@ class OutputOnly(TaskType):
         job.text = text
 
         delete_sandbox(sandbox, job.success)
-
-    @staticmethod
-    def _run_checker(sandbox, job):
-        """Run the explicit checker given by the admins
-
-        sandbox (Sandbox): the sandbox to run the checker in; should already
-            contain input, correct output, and user output.
-        job (Job): the job triggering this checker run.
-
-        return (bool, float|None, [str]): success (true if the checker was able
-            to check the solution successfully), outcome and text.
-
-        """
-        # Copy the checker in the sandbox, after making sure it was provided.
-        if OutputOnly.CHECKER_FILENAME not in job.managers:
-            logger.error("Configuration error: missing or invalid comparator "
-                         "(it must be named `%s')",
-                         OutputOnly.CHECKER_FILENAME,
-                         extra={"operation": job.info})
-            return False, None, []
-        sandbox.create_file_from_storage(
-            OutputOnly.CHECKER_FILENAME,
-            job.managers[OutputOnly.CHECKER_FILENAME].digest,
-            executable=True)
-
-        command = [
-            "./%s" % OutputOnly.CHECKER_FILENAME,
-            OutputOnly.INPUT_FILENAME,
-            OutputOnly.CORRECT_OUTPUT_FILENAME,
-            OutputOnly.OUTPUT_FILENAME]
-        box_success, success, unused_stats = trusted_step(sandbox, [command])
-        if not box_success or not success:
-            return False, None, []
-
-        try:
-            outcome, text = extract_outcome_and_text(sandbox)
-        except ValueError as e:
-            logger.error("Invalid output from comparator: %s", e,
-                         extra={"operation": job.info})
-            return False, None, []
-
-        return True, outcome, text

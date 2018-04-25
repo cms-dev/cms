@@ -33,9 +33,9 @@ import logging
 import os
 import shutil
 
-from cms.grading.steps import compilation_step, evaluation_step, \
-    extract_outcome_and_text, human_evaluation_message, is_evaluation_passed,\
-    trusted_step, white_diff_step
+from cms.grading.steps import checker_step, compilation_step, \
+    evaluation_step, human_evaluation_message, is_evaluation_passed,\
+    white_diff_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
@@ -80,8 +80,6 @@ class Batch(TaskType):
     """
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
-    # Filename of the admin-provided comparator.
-    CHECKER_FILENAME = "checker"
     # Basename of the grader, used in the manager filename and as the main
     # class in languages that require us to specify it.
     GRADER_BASENAME = "grader"
@@ -386,7 +384,9 @@ class Batch(TaskType):
             shutil.copyfile(output_src, output_dst)
 
         if self._uses_checker():
-            success, outcome, text = self._run_checker(sandbox, job)
+            success, outcome, text = checker_step(
+                sandbox, job.managers, self._actual_input,
+                Batch.CORRECT_OUTPUT_FILENAME, self._actual_output)
         else:
             success = True
             outcome, text = white_diff_step(
@@ -394,43 +394,3 @@ class Batch(TaskType):
 
         delete_sandbox(sandbox, success)
         return success, outcome, text
-
-    def _run_checker(self, sandbox, job):
-        """Run the explicit checker given by the admins
-
-        sandbox (Sandbox): the sandbox to run the checker in; should already
-            contain input, correct output, and user output.
-        job (Job): the job triggering this checker run.
-
-        return (bool, float|None, [str]): success (true if the checker was able
-            to check the solution successfully), outcome and text.
-
-        """
-        # Copy the checker in the sandbox, after making sure it was provided.
-        if Batch.CHECKER_FILENAME not in job.managers:
-            logger.error("Configuration error: missing or invalid comparator "
-                         "(it must be named '%s')", Batch.CHECKER_FILENAME,
-                         extra={"operation": job.info})
-            return False, None, []
-        sandbox.create_file_from_storage(
-            Batch.CHECKER_FILENAME,
-            job.managers[Batch.CHECKER_FILENAME].digest,
-            executable=True)
-
-        command = [
-            "./%s" % Batch.CHECKER_FILENAME,
-            self._actual_input,
-            Batch.CORRECT_OUTPUT_FILENAME,
-            self._actual_output]
-        box_success, success, unused_stats = trusted_step(sandbox, [command])
-        if not box_success or not success:
-            return False, None, []
-
-        try:
-            outcome, text = extract_outcome_and_text(sandbox)
-        except ValueError as e:
-            logger.error("Invalid output from comparator: %s", e,
-                         extra={"operation": job.info})
-            return False, None, []
-
-        return True, outcome, text

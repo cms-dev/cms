@@ -37,10 +37,9 @@ import tempfile
 from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading.steps import compilation_step, \
+from cms.grading.steps import checker_step, compilation_step, \
     evaluation_step_before_run, evaluation_step_after_run, \
-    is_evaluation_passed, human_evaluation_message, \
-    extract_outcome_and_text, trusted_step, white_diff_step
+    is_evaluation_passed, human_evaluation_message, white_diff_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
@@ -75,8 +74,6 @@ class TwoSteps(TaskType):
     comparator.
 
     """
-    # Filename of the admin-provided comparator.
-    CHECKER_FILENAME = "checker"
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
     # Filename of the input and of the contestant's solution.
@@ -402,7 +399,9 @@ class TwoSteps(TaskType):
             shutil.copyfile(output_src, output_dst)
 
         if self._uses_checker():
-            success, outcome, text = self._run_checker(sandbox, job)
+            success, outcome, text = checker_step(
+                sandbox, job.managers, TwoSteps.INPUT_FILENAME,
+                TwoSteps.CORRECT_OUTPUT_FILENAME, TwoSteps.OUTPUT_FILENAME)
         else:
             success = True
             outcome, text = white_diff_step(sandbox,
@@ -411,46 +410,3 @@ class TwoSteps(TaskType):
 
         delete_sandbox(sandbox, success)
         return success, outcome, text
-
-    @staticmethod
-    def _run_checker(sandbox, job):
-        """Run the explicit checker given by the admins
-
-        sandbox (Sandbox): the sandbox to run the checker in; should already
-            contain input, correct output, and user output.
-        job (Job): the job triggering this checker run.
-
-        return (bool, float|None, [str]): success (true if the checker was able
-            to check the solution successfully), outcome and text.
-
-        """
-        # Copy the checker in the sandbox, after making sure it was provided.
-        if TwoSteps.CHECKER_FILENAME not in job.managers:
-            logger.error("Configuration error: missing or "
-                         "invalid comparator (it must be "
-                         "named `%s')",
-                         TwoSteps.CHECKER_FILENAME,
-                         extra={"operation": job.info})
-            return False, None, []
-        sandbox.create_file_from_storage(
-            TwoSteps.CHECKER_FILENAME,
-            job.managers[TwoSteps.CHECKER_FILENAME].digest,
-            executable=True)
-
-        command = [
-            "./%s" % TwoSteps.CHECKER_FILENAME,
-            TwoSteps.INPUT_FILENAME,
-            TwoSteps.CORRECT_OUTPUT_FILENAME,
-            TwoSteps.OUTPUT_FILENAME]
-        box_success, success, unused_stats = trusted_step(sandbox, [command])
-        if not box_success or not success:
-            return False, None, []
-
-        try:
-            outcome, text = extract_outcome_and_text(sandbox)
-        except ValueError as e:
-            logger.error("Invalid output from comparator: %s", e,
-                         extra={"operation": job.info})
-            return False, None, []
-
-        return True, outcome, text

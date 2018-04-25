@@ -54,6 +54,10 @@ from .utils import generic_step
 logger = logging.getLogger(__name__)
 
 
+# Filename of the manager used to compare output (must be an executable).
+CHECKER_FILENAME = "checker"
+
+
 def _filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
 
@@ -83,6 +87,8 @@ def extract_outcome_and_text(sandbox):
     return (float, [str]): outcome and text.
 
     raise (ValueError): if cannot decode the data.
+    raise (FileNotFoundError): if any of the sandbox stdout or stderr file
+        is missing.
 
     """
     stdout_file = sandbox.get_file_text(sandbox.stdout_file)
@@ -180,3 +186,47 @@ def trusted_step(sandbox, commands):
         logger.error("Unrecognized sandbox exit status '%s' in trusted step.",
                      exit_status)
         return False, None, None
+
+
+def checker_step(sandbox, managers, input_, correct_output, output_):
+    """Run the explicit checker given by the admins
+
+    sandbox (Sandbox): the sandbox to run the checker in; should already
+        contain input, correct output, and user output; the checker is instead
+        copied from the managers.
+    managers ({str: Manager}): map filenames to the dataset's managers.
+    input_ (str): inner filename of the input (already in the sandbox).
+    correct_output (str): inner filename of the correct output (already in
+        the sandbox).
+    output_ (str): inner filename of the user output (already in the sandbox).
+
+    return (bool, float|None, [str]): success (true if the checker was able
+        to check the solution successfully), outcome and text.
+
+    """
+    # Copy the checker in the sandbox, after making sure it was provided.
+    if CHECKER_FILENAME not in managers:
+        logger.error("Configuration error: missing or invalid checker "
+                     "(it must be named '%s')", CHECKER_FILENAME)
+        return False, None, []
+    sandbox.create_file_from_storage(
+        CHECKER_FILENAME, managers[CHECKER_FILENAME].digest, executable=True)
+
+    command = ["./%s" % CHECKER_FILENAME, input_, correct_output, output_]
+    box_success, success, unused_stats = trusted_step(sandbox, [command])
+    if not box_success or not success:
+        logger.error("Sandbox failed during checker step. "
+                     "See previous logs for the reason.")
+        return False, None, []
+
+    try:
+        outcome, text = extract_outcome_and_text(sandbox)
+    except ValueError as e:
+        logger.error("Invalid output from checker: %s", e)
+        return False, None, []
+    except OSError as e:  # Change to FileNotFoundError when dropping Python 2.
+        # This should not happen, as the redirect is handled by the sandbox.
+        logger.error("Missing stdout or stderr file from checker: %s", e)
+        return False, None, []
+
+    return True, outcome, text
