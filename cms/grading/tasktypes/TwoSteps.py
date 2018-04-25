@@ -123,6 +123,14 @@ class TwoSteps(TaskType):
             res[language.name] = commands
         return res
 
+    def get_user_managers(self):
+        """See TaskType.get_user_managers."""
+        return ["manager.%l"]
+
+    def get_auto_managers(self):
+        """See TaskType.get_auto_managers."""
+        return []
+
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
@@ -381,7 +389,3 @@ class TwoSteps(TaskType):
 
         delete_sandbox(first_sandbox, job.success)
         delete_sandbox(second_sandbox, job.success)
-
-    def get_user_managers(self):
-        """See TaskType.get_user_managers."""
-        return ["manager.%l"]
