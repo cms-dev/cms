@@ -198,10 +198,7 @@ class Batch(TaskType):
             return
 
         # Create the sandbox.
-        sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="compile")
+        sandbox = create_sandbox(file_cacher, name="compile")
         job.sandboxes.append(sandbox.path)
 
         user_file_format = next(iterkeys(job.files))
@@ -348,12 +345,8 @@ class Batch(TaskType):
                 else:
 
                     # Create a brand-new sandbox just for checking. Only admin
-                    # code runs in it, so we allow multithreading and many
-                    # processes (still with a limit to avoid fork-bombs).
-                    checkbox = create_sandbox(
-                        file_cacher,
-                        multithreaded=True,
-                        name="check")
+                    # code runs in it, so we allow multithreading.
+                    checkbox = create_sandbox(file_cacher, name="check")
                     job.sandboxes.append(checkbox.path)
 
                     checker_success, outcome, text = self._eval_output(

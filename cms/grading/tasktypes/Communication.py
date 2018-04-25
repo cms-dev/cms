@@ -115,10 +115,7 @@ class Communication(TaskType):
         source_ext = language.source_extension
 
         # Create the sandbox
-        sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="compile")
+        sandbox = create_sandbox(file_cacher, name="compile")
         job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox

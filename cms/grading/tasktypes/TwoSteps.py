@@ -145,10 +145,7 @@ class TwoSteps(TaskType):
             return
 
         # First and only one compilation.
-        sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="compile")
+        sandbox = create_sandbox(file_cacher, name="compile")
         job.sandboxes.append(sandbox.path)
         files_to_get = {}
 
