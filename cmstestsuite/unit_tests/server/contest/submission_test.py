@@ -1229,6 +1229,8 @@ class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.contest = self.add_contest()
         self.participation = self.add_participation(contest=self.contest)
         self.task = self.add_task(contest=self.contest)
+        # Flush needed so that the objects are given IDs by the DB.
+        self.session.flush()
 
         self.timestamp = make_datetime()
 
