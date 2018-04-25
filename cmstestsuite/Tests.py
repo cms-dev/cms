@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014-2015 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
@@ -34,6 +34,8 @@ import cmstestsuite.tasks.communication as communication
 import cmstestsuite.tasks.communication2 as communication2
 import cmstestsuite.tasks.outputonly as outputonly
 import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
+import cmstestsuite.tasks.twosteps as twosteps
+import cmstestsuite.tasks.twosteps_comparator as twosteps_comparator
 
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
@@ -270,6 +272,44 @@ ALL_TESTS = [
          task=communication2, filenames=['communication2-incorrect-user1.%l',
                                          'communication2-incorrect-user2.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(0, 100)]),
+
+    # TwoSteps
+
+    Test('twosteps-correct',
+         task=twosteps, filenames=["twosteps-correct-first.%l",
+                                   "twosteps-correct-second.%l"],
+         languages=(LANG_C, ),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('twosteps-half-correct',
+         task=twosteps, filenames=["twosteps-half-correct-first.%l",
+                                   "twosteps-correct-second.%l"],
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(50, 100)]),
+
+    Test('twosteps-incorrect',
+         task=twosteps, filenames=["twosteps-incorrect-first.%l",
+                                   "twosteps-correct-second.%l"],
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('twosteps-comparator-correct',
+         task=twosteps_comparator, filenames=["twosteps-correct-first.%l",
+                                              "twosteps-correct-second.%l"],
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('twosteps-comparator-half-correct',
+         task=twosteps_comparator, filenames=["twosteps-half-correct-first.%l",
+                                              "twosteps-correct-second.%l"],
+         languages=(LANG_C,),
+         checks=[CheckOverallScore(50, 100)]),
+
+    Test('twosteps-comparator-incorrect',
+         task=twosteps_comparator, filenames=["twosteps-incorrect-first.%l",
+                                              "twosteps-correct-second.%l"],
+         languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
     # Writing to files not allowed.
