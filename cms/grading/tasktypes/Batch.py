@@ -33,9 +33,9 @@ import logging
 import os
 import shutil
 
-from cms.grading.steps import compilation_step, evaluation_step, \
-    extract_outcome_and_text, human_evaluation_message, is_evaluation_passed,\
-    trusted_step, white_diff_step
+from cms.grading.steps import checker_step, compilation_step, \
+    evaluation_step, human_evaluation_message, is_evaluation_passed,\
+    white_diff_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
@@ -78,10 +78,10 @@ class Batch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
+    # Codename of the checker, if it is used.
+    CHECKER_CODENAME = "checker"
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
-    # Filename of the admin-provided comparator.
-    CHECKER_FILENAME = "checker"
     # Basename of the grader, used in the manager filename and as the main
     # class in languages that require us to specify it.
     GRADER_BASENAME = "grader"
@@ -372,11 +372,6 @@ class Batch(TaskType):
             to check the solution successfully), outcome and text.
 
         """
-        # Put the reference solution and input into the checkbox.
-        sandbox.create_file_from_storage(
-            Batch.CORRECT_OUTPUT_FILENAME, job.output)
-        sandbox.create_file_from_storage(self._actual_input, job.input)
-
         # Put the user-produced output file into the checkbox. We treat links
         # as potential attacks, and not use them.
         output_src = os.path.join(eval_sandbox_path, self._actual_output)
@@ -386,51 +381,17 @@ class Batch(TaskType):
             shutil.copyfile(output_src, output_dst)
 
         if self._uses_checker():
-            success, outcome, text = self._run_checker(sandbox, job)
+            checker_digest = job.managers[Batch.CHECKER_CODENAME].digest \
+                if Batch.CHECKER_CODENAME in job.managers else None
+            success, outcome, text = checker_step(
+                sandbox, checker_digest, job.input, job.output,
+                self._actual_output)
         else:
+            sandbox.create_file_from_storage(
+                Batch.CORRECT_OUTPUT_FILENAME, job.output)
             success = True
             outcome, text = white_diff_step(
                 sandbox, self._actual_output, Batch.CORRECT_OUTPUT_FILENAME)
 
         delete_sandbox(sandbox, success)
         return success, outcome, text
-
-    def _run_checker(self, sandbox, job):
-        """Run the explicit checker given by the admins
-
-        sandbox (Sandbox): the sandbox to run the checker in; should already
-            contain input, correct output, and user output.
-        job (Job): the job triggering this checker run.
-
-        return (bool, float|None, [str]): success (true if the checker was able
-            to check the solution successfully), outcome and text.
-
-        """
-        # Copy the checker in the sandbox, after making sure it was provided.
-        if Batch.CHECKER_FILENAME not in job.managers:
-            logger.error("Configuration error: missing or invalid comparator "
-                         "(it must be named '%s')", Batch.CHECKER_FILENAME,
-                         extra={"operation": job.info})
-            return False, None, []
-        sandbox.create_file_from_storage(
-            Batch.CHECKER_FILENAME,
-            job.managers[Batch.CHECKER_FILENAME].digest,
-            executable=True)
-
-        command = [
-            "./%s" % Batch.CHECKER_FILENAME,
-            self._actual_input,
-            Batch.CORRECT_OUTPUT_FILENAME,
-            self._actual_output]
-        box_success, success, unused_stats = trusted_step(sandbox, [command])
-        if not box_success or not success:
-            return False, None, []
-
-        try:
-            outcome, text = extract_outcome_and_text(sandbox)
-        except ValueError as e:
-            logger.error("Invalid output from comparator: %s", e,
-                         extra={"operation": job.info})
-            return False, None, []
-
-        return True, outcome, text

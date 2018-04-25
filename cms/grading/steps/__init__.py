@@ -32,7 +32,7 @@ from .evaluation import EVALUATION_MESSAGES, evaluation_step, \
     human_evaluation_message, is_evaluation_passed
 from .messages import HumanMessage, MessageCollection
 from .stats import execution_stats, merge_execution_stats
-from .trusted import extract_outcome_and_text, trusted_step
+from .trusted import checker_step, extract_outcome_and_text, trusted_step
 from .whitediff import _WHITES, _white_diff, white_diff_step
 
 
@@ -48,7 +48,7 @@ __all__ = [
     # stats_test.py
     "execution_stats", "merge_execution_stats",
     # trusted.py
-    "extract_outcome_and_text", "trusted_step",
+    "checker_step", "extract_outcome_and_text", "trusted_step",
     # whitediff.py
     "_WHITES", "_white_diff", "white_diff_step",
 ]

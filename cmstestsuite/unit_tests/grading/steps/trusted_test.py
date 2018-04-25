@@ -29,10 +29,11 @@ from six import PY2
 
 import unittest
 
-from mock import patch
+from mock import ANY, MagicMock, call, patch
 
 from cms.grading.Sandbox import Sandbox
-from cms.grading.steps import extract_outcome_and_text, trusted_step
+from cms.grading.steps import extract_outcome_and_text, trusted_step, \
+    checker_step, trusted
 from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
@@ -113,9 +114,10 @@ class TestTrustedStep(unittest.TestCase):
         super(TestTrustedStep, self).setUp()
         self.sandbox = FakeIsolateSandbox(True, None)
 
-        patcher = patch("cms.grading.steps.trusted.logger.error")
-        self.mock_logger_error = patcher.start()
+        patcher = patch("cms.grading.steps.trusted.logger.error",
+                        wraps=trusted.logger.error)
         self.addCleanup(patcher.stop)
+        self.mock_logger_error = patcher.start()
 
     def assertLoggedError(self, logged=True):
         if logged:
@@ -230,6 +232,140 @@ class TestTrustedStep(unittest.TestCase):
         self.assertTrue(success)
         self.assertTrue(trusted_success)
         self.assertEqual(stats, expected_stats)
+
+
+class TestCheckerStep(unittest.TestCase):
+
+    def setUp(self):
+        super(TestCheckerStep, self).setUp()
+        # By default, any file request succeeds.
+        self.file_cacher = MagicMock()
+        self.sandbox = FakeIsolateSandbox(True, self.file_cacher)
+
+        patcher = patch("cms.grading.steps.trusted.trusted_step")
+        self.addCleanup(patcher.stop)
+        self.mock_trusted_step = patcher.start()
+
+        patcher = patch("cms.grading.steps.trusted.logger.error",
+                        wraps=trusted.logger.error)
+        self.addCleanup(patcher.stop)
+        self.mock_logger_error = patcher.start()
+
+    def assertLoggedError(self, logged=True):
+        if logged:
+            self.mock_logger_error.assert_called()
+        else:
+            self.mock_logger_error.assert_not_called()
+
+    def set_checker_output(self, outcome, text):
+        self.sandbox.stdout_file = "stdout_file"
+        self.sandbox.stderr_file = "stderr_file"
+        if outcome is not None:
+            self.sandbox.fake_file(self.sandbox.stdout_file, outcome)
+        if text is not None:
+            self.sandbox.fake_file(self.sandbox.stderr_file, text)
+
+    def test_success(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (True, 0.123, ["Text."]))
+        self.file_cacher.get_file_to_fobj.assert_has_calls([
+            call("c_dig", ANY),
+            call("i_dig", ANY),
+            call("co_dig", ANY),
+        ], any_order=True)
+        self.mock_trusted_step.assert_called_once_with(
+            self.sandbox, [["./checker", trusted.CHECKER_INPUT_FILENAME,
+                            trusted.CHECKER_CORRECT_OUTPUT_FILENAME, "o"]])
+        self.assertLoggedError(False)
+
+    def test_sandbox_failure(self):
+        self.mock_trusted_step.return_value = (False, None, None)
+        # Output files are ignored.
+        self.set_checker_output(b"0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_checker_failure(self):
+        self.mock_trusted_step.return_value = (True, False, {})
+        # Output files are ignored.
+        self.set_checker_output(b"0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_missing_checker(self):
+        ret = checker_step(self.sandbox, None, "i_dig", "co_dig", "o")
+
+        self.mock_trusted_step.assert_not_called()
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_checker_already_in_sandbox(self):
+        self.sandbox.fake_file(trusted.CHECKER_FILENAME, b"something")
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_input_already_in_sandbox(self):
+        self.sandbox.fake_file(trusted.CHECKER_INPUT_FILENAME, b"something")
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_correct_output_already_in_sandbox(self):
+        self.sandbox.fake_file(trusted.CHECKER_CORRECT_OUTPUT_FILENAME,
+                               b"something")
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_invalid_checker_outcome(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"A0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_invalid_checker_text(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"0.123\n", INVALID_UTF8)
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_missing_checker_outcome(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(None, b"Text.\n")
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_missing_checker_text(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"0.123\n", None)
+
+        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
 
 
 if __name__ == "__main__":
