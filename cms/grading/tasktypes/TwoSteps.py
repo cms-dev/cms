@@ -74,24 +74,38 @@ class TwoSteps(TaskType):
     comparator.
 
     """
+    # Filename of the admin-provided comparator.
+    CHECKER_FILENAME = "checker"
+    # Filename of the reference solution in the sandbox evaluating the output.
+    CORRECT_OUTPUT_FILENAME = "res.txt"
+    # Filename of the input and of the contestant's solution.
+    INPUT_FILENAME = "input.txt"
+    OUTPUT_FILENAME = "output.txt"
+
+    # Constants used in the parameter definition.
+    OUTPUT_EVAL_DIFF = "diff"
+    OUTPUT_EVAL_CHECKER = "comparator"
+
     ALLOW_PARTIAL_SUBMISSION = False
 
     _EVALUATION = ParameterTypeChoice(
         "Output evaluation",
         "output_eval",
         "",
-        {"diff": "Outputs compared with white diff",
-         "comparator": "Outputs are compared by a comparator"})
+        {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
-
-    CHECKER_FILENAME = "checker"
 
     @property
     def name(self):
         """See TaskType.name."""
         # TODO add some details if a comparator is used, etc...
         return "Two steps"
+
+    def __init__(self, parameters):
+        super(TwoSteps, self).__init__(parameters)
+        self.output_eval = self.parameters[0]
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -130,6 +144,9 @@ class TwoSteps(TaskType):
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
         return []
+
+    def _uses_checker(self):
+        return self.output_eval == TwoSteps.OUTPUT_EVAL_CHECKER
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -236,7 +253,7 @@ class TwoSteps(TaskType):
             job.executables[first_filename].digest
             }
         first_files_to_get = {
-            "input.txt": job.input
+            TwoSteps.INPUT_FILENAME: job.input
             }
         first_allow_path = [fifo_dir]
 
@@ -254,7 +271,7 @@ class TwoSteps(TaskType):
             job.time_limit,
             job.memory_limit,
             first_allow_path,
-            stdin_redirect="input.txt",
+            stdin_redirect=TwoSteps.INPUT_FILENAME,
             wait=False)
 
         # Second step: we start the second manager.
@@ -281,7 +298,7 @@ class TwoSteps(TaskType):
             job.time_limit,
             job.memory_limit,
             second_allow_path,
-            stdout_redirect="output.txt",
+            stdout_redirect=TwoSteps.OUTPUT_FILENAME,
             wait=False)
 
         # Consume output.
@@ -318,9 +335,10 @@ class TwoSteps(TaskType):
         else:
 
             # Check that the output file was created
-            if not second_sandbox.file_exists('output.txt'):
+            if not second_sandbox.file_exists(TwoSteps.OUTPUT_FILENAME):
                 outcome = 0.0
-                text = [N_("Evaluation didn't produce file %s"), "output.txt"]
+                text = [N_("Evaluation didn't produce file %s"),
+                        TwoSteps.OUTPUT_FILENAME]
                 if job.get_output:
                     job.user_output = None
 
@@ -328,26 +346,27 @@ class TwoSteps(TaskType):
                 # If asked so, put the output file into the storage
                 if job.get_output:
                     job.user_output = second_sandbox.get_file_to_storage(
-                        "output.txt",
+                        TwoSteps.OUTPUT_FILENAME,
                         "Output file in job %s" % job.info)
 
                 # If not asked otherwise, evaluate the output file
                 if not job.only_execution:
                     # Put the reference solution into the sandbox
                     second_sandbox.create_file_from_storage(
-                        "res.txt",
-                        job.output)
+                        TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
 
                     # If a checker is not provided, use white-diff
-                    if self.parameters[0] == "diff":
+                    if not self._uses_checker():
                         outcome, text = white_diff_step(
-                            second_sandbox, "output.txt", "res.txt")
+                            second_sandbox, TwoSteps.OUTPUT_FILENAME,
+                            TwoSteps.CORRECT_OUTPUT_FILENAME)
 
-                    elif self.parameters[0] == "comparator":
+                    else:
                         if TwoSteps.CHECKER_FILENAME not in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
-                                         "named `checker')",
+                                         "named `%s')",
+                                         TwoSteps.CHECKER_FILENAME,
                                          extra={"operation": job.info})
                             success = False
                         else:
@@ -357,17 +376,19 @@ class TwoSteps(TaskType):
                                 executable=True)
                             # Rewrite input file, as in Batch.py
                             try:
-                                second_sandbox.remove_file("input.txt")
+                                second_sandbox.remove_file(
+                                    TwoSteps.INPUT_FILENAME)
                             except OSError as e:
                                 assert not second_sandbox.file_exists(
-                                    "input.txt")
+                                    TwoSteps.INPUT_FILENAME)
                             second_sandbox.create_file_from_storage(
-                                "input.txt",
-                                job.input)
+                                TwoSteps.INPUT_FILENAME, job.input)
                             success, _ = evaluation_step(
                                 second_sandbox,
                                 [["./%s" % TwoSteps.CHECKER_FILENAME,
-                                  "input.txt", "res.txt", "output.txt"]])
+                                  TwoSteps.INPUT_FILENAME,
+                                  TwoSteps.CORRECT_OUTPUT_FILENAME,
+                                  TwoSteps.OUTPUT_FILENAME]])
                             if success:
                                 try:
                                     outcome, text = extract_outcome_and_text(
@@ -377,10 +398,6 @@ class TwoSteps(TaskType):
                                                  "comparator: %s", e,
                                                  extra={"operation": job.info})
                                     success = False
-                    else:
-                        raise ValueError("Uncrecognized first parameter"
-                                         " `%s' for TwoSteps tasktype." %
-                                         self.parameters[0])
 
         # Whatever happened, we conclude.
         job.success = success
