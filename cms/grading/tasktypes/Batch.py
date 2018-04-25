@@ -365,6 +365,8 @@ class Batch(TaskType):
 
         sandbox (Sandbox): the sandbox to use to eval the output.
         job (Job): the job triggering this checker run.
+        eval_sandbox_path (str): full path of the sandbox where the user output
+            was generated.
 
         return (bool, float|None, [str]): success (true if the checker was able
             to check the solution successfully), outcome and text.
