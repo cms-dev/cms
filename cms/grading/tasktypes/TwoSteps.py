@@ -31,15 +31,16 @@ from six import iteritems
 
 import logging
 import os
+import shutil
 import tempfile
 
 from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.steps import compilation_step, \
-    evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
+    evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, \
-    extract_outcome_and_text, white_diff_step
+    extract_outcome_and_text, trusted_step, white_diff_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
@@ -358,53 +359,14 @@ class TwoSteps(TaskType):
                 # Otherwise evaluate the output file.
                 else:
 
-                    # Put the reference solution into the sandbox
-                    second_sandbox.create_file_from_storage(
-                        TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
+                    # Create a brand-new sandbox just for checking. Only admin
+                    # code runs in it, so we allow multithreading.
+                    checkbox = create_sandbox(file_cacher, name="check")
+                    job.sandboxes.append(checkbox.path)
 
-                    # If a checker is not provided, use white-diff
-                    if not self._uses_checker():
-                        outcome, text = white_diff_step(
-                            second_sandbox, TwoSteps.OUTPUT_FILENAME,
-                            TwoSteps.CORRECT_OUTPUT_FILENAME)
-
-                    else:
-                        if TwoSteps.CHECKER_FILENAME not in job.managers:
-                            logger.error("Configuration error: missing or "
-                                         "invalid comparator (it must be "
-                                         "named `%s')",
-                                         TwoSteps.CHECKER_FILENAME,
-                                         extra={"operation": job.info})
-                            success = False
-                        else:
-                            second_sandbox.create_file_from_storage(
-                                TwoSteps.CHECKER_FILENAME,
-                                job.managers[TwoSteps.CHECKER_FILENAME].digest,
-                                executable=True)
-                            # Rewrite input file, as in Batch.py
-                            try:
-                                second_sandbox.remove_file(
-                                    TwoSteps.INPUT_FILENAME)
-                            except OSError as e:
-                                assert not second_sandbox.file_exists(
-                                    TwoSteps.INPUT_FILENAME)
-                            second_sandbox.create_file_from_storage(
-                                TwoSteps.INPUT_FILENAME, job.input)
-                            success, _ = evaluation_step(
-                                second_sandbox,
-                                [["./%s" % TwoSteps.CHECKER_FILENAME,
-                                  TwoSteps.INPUT_FILENAME,
-                                  TwoSteps.CORRECT_OUTPUT_FILENAME,
-                                  TwoSteps.OUTPUT_FILENAME]])
-                            if success:
-                                try:
-                                    outcome, text = extract_outcome_and_text(
-                                        second_sandbox)
-                                except ValueError as e:
-                                    logger.error("Invalid output from "
-                                                 "comparator: %s", e,
-                                                 extra={"operation": job.info})
-                                    success = False
+                    checker_success, outcome, text = self._eval_output(
+                        checkbox, job, second_sandbox.get_root_path())
+                    success = success and checker_success
 
         # Whatever happened, we conclude.
         job.success = success
@@ -413,3 +375,85 @@ class TwoSteps(TaskType):
 
         delete_sandbox(first_sandbox, job.success)
         delete_sandbox(second_sandbox, job.success)
+
+    def _eval_output(self, sandbox, job, eval_sandbox_path):
+        """Evaluate ("check") the output using a white diff or a checker.
+
+        sandbox (Sandbox): the sandbox to use to eval the output.
+        job (Job): the job triggering this checker run.
+        eval_sandbox_path (str): full path of the sandbox where the user output
+            was generated.
+
+        return (bool, float|None, [str]): success (true if the checker was able
+            to check the solution successfully), outcome and text.
+
+        """
+        # Put the reference solution and input into the sandbox.
+        sandbox.create_file_from_storage(
+            TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
+        sandbox.create_file_from_storage(TwoSteps.INPUT_FILENAME, job.input)
+
+        # Put the user-produced output file into the checkbox
+        output_src = os.path.join(eval_sandbox_path, TwoSteps.OUTPUT_FILENAME)
+        output_dst = os.path.join(
+            sandbox.get_root_path(), TwoSteps.OUTPUT_FILENAME)
+        try:
+            if os.path.islink(output_src):
+                raise FileNotFoundError
+            shutil.copyfile(output_src, output_dst)
+        except FileNotFoundError:
+            pass
+
+        if self._uses_checker():
+            success, outcome, text = self._run_checker(sandbox, job)
+        else:
+            success = True
+            outcome, text = white_diff_step(sandbox,
+                                            TwoSteps.OUTPUT_FILENAME,
+                                            TwoSteps.CORRECT_OUTPUT_FILENAME)
+
+        delete_sandbox(sandbox, success)
+        return success, outcome, text
+
+    @staticmethod
+    def _run_checker(sandbox, job):
+        """Run the explicit checker given by the admins
+
+        sandbox (Sandbox): the sandbox to run the checker in; should already
+            contain input, correct output, and user output.
+        job (Job): the job triggering this checker run.
+
+        return (bool, float|None, [str]): success (true if the checker was able
+            to check the solution successfully), outcome and text.
+
+        """
+        # Copy the checker in the sandbox, after making sure it was provided.
+        if TwoSteps.CHECKER_FILENAME not in job.managers:
+            logger.error("Configuration error: missing or "
+                         "invalid comparator (it must be "
+                         "named `%s')",
+                         TwoSteps.CHECKER_FILENAME,
+                         extra={"operation": job.info})
+            return False, None, []
+        sandbox.create_file_from_storage(
+            TwoSteps.CHECKER_FILENAME,
+            job.managers[TwoSteps.CHECKER_FILENAME].digest,
+            executable=True)
+
+        command = [
+            "./%s" % TwoSteps.CHECKER_FILENAME,
+            TwoSteps.INPUT_FILENAME,
+            TwoSteps.CORRECT_OUTPUT_FILENAME,
+            TwoSteps.OUTPUT_FILENAME]
+        box_success, success, unused_stats = trusted_step(sandbox, [command])
+        if not box_success or not success:
+            return False, None, []
+
+        try:
+            outcome, text = extract_outcome_and_text(sandbox)
+        except ValueError as e:
+            logger.error("Invalid output from comparator: %s", e,
+                         extra={"operation": job.info})
+            return False, None, []
+
+        return True, outcome, text
