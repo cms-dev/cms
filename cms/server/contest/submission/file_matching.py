@@ -28,8 +28,8 @@
 
 """Functions to match files with partial information to a given format.
 
-Provides functions that take a set of files in CWS's own format, in all
-generality (there could be duplicate of missing files, omitted fiels,
+Provide functions that take a set of files in CWS's own format, in all
+generality (there could be duplicate of missing files, omitted fields,
 etc.) and try to match them against the desired format for a submission.
 
 """

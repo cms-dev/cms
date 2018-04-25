@@ -28,8 +28,8 @@
 
 """Functions to collect and put files in the format needed for matching.
 
-Provides functions that allow to fetch files from various sources,
-taking care of the processing necessary to transform them into CWS's own
+Provide functions that allow to fetch files from various sources, taking
+care of the processing necessary to transform them into CWS's own
 format.
 
 """

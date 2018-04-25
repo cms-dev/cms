@@ -17,7 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Package containing utilities for accepting submissions in CWS."""
+"""Package containing utilities for accepting submissions in CWS.
+
+Some of the functions use a common "format" to represent the files sent
+by the contestants as part of a submission or user test: it is a list of
+ReceivedFile objects, each with an optional codename, optional filename
+and content. The list is intended to represent a multiset, hence order
+is irrelevant and duplicates are allowed.
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division

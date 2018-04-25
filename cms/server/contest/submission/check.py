@@ -28,7 +28,7 @@
 
 """Functions to check whether submissions are allowed.
 
-Provides functions to verify whether a given contestant is allowed to
+Provide functions to verify whether a given contestant is allowed to
 send a submission or a user test on a given task and contest, based on
 the current situation. Also include some support functions, which are
 exported as they may be of general interest.
