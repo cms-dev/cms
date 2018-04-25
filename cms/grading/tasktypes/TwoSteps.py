@@ -347,10 +347,17 @@ class TwoSteps(TaskType):
                 if job.get_output:
                     job.user_output = second_sandbox.get_file_to_storage(
                         TwoSteps.OUTPUT_FILENAME,
-                        "Output file in job %s" % job.info)
+                        "Output file in job %s" % job.info,
+                        trunc_len=100 * 1024)
 
-                # If not asked otherwise, evaluate the output file
-                if not job.only_execution:
+                # If just asked to execute, fill text and set dummy outcome.
+                if job.only_execution:
+                    outcome = 0.0
+                    text = [N_("Execution completed successfully")]
+
+                # Otherwise evaluate the output file.
+                else:
+
                     # Put the reference solution into the sandbox
                     second_sandbox.create_file_from_storage(
                         TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
