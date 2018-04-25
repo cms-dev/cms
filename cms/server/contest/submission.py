@@ -38,13 +38,16 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
+import io
 import logging
 import os.path
+import pickle
 from collections import namedtuple
 
 from patoolib.util import PatoolError
 from sqlalchemy import func, desc
 
+from cms import config
 from cms.db import Submission, Task, UserTest
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cmscommon.archive import Archive
@@ -576,3 +579,43 @@ def fetch_file_digests_from_previous_submission(
                         latest_submission.managers[filename].digest
 
     return digests
+
+
+class StorageFailed(Exception):
+    pass
+
+
+def store_local_copy(path, participation, task, timestamp, files):
+    """Write the files plus some metadata to a local backup
+
+    Add a new file to the local backup storage (rooted in the given
+    directory), containing the data of the given files and some details
+    about the user, the task and the contest of the submission. The
+    files are organized in directories (one for each contestant, named
+    as their usernames) and their names are the dates and times of the
+    submissions. The files' contents are pickle-encoded tuples whose
+    first three elements are the contest ID, the user ID and the task ID
+    and whose fourth element is a dict describing the files.
+
+    path (str): the directory in which to build the archive; it will be
+        created if it doesn't exist; if it contains `%s` it will be
+        replaced with the data_dir specified in the config.
+    participation (Participation): the participation that submitted.
+    task (Task): the task on which they submitted.
+    timestamp (datetime): when the submission happened.
+    files ({str: bytes}): the files that were sent in: the keys are the
+        codenames (filenames-with-%l), the values are the contents.
+
+    raise (StorageFailed): in case of problems.
+
+    """
+    try:
+        path = os.path.join(path.replace("%s", config.data_dir),
+                            participation.user.username)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with io.open(os.path.join(path, "%s" % timestamp), "wb") as f:
+            pickle.dump((participation.contest.id, participation.user.id,
+                         task.id, files), f)
+    except EnvironmentError as e:
+        raise StorageFailed("Failed to store local copy of submission: %s", e)

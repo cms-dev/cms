@@ -31,6 +31,8 @@ import six
 from six import iteritems
 
 import io
+import os
+import stat
 import tarfile
 import unittest
 import zipfile
@@ -42,14 +44,18 @@ from mock import call, patch, MagicMock
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
+from cms import config
 from cms.db import Submission, UserTest
 from cms.server.contest.submission import get_submission_count, \
     check_max_number, get_latest_submission, check_min_interval, \
     ReceivedFile, InvalidArchive, extract_files_from_archive, \
     extract_files_from_tornado, InvalidFilesOrLanguage, \
-    match_files_and_languages, fetch_file_digests_from_previous_submission
+    match_files_and_languages, fetch_file_digests_from_previous_submission, \
+    StorageFailed, store_local_copy
 from cmscommon.datetime import make_datetime
-from cmstestsuite.unit_tests.testidgenerator import unique_digest
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
+from cmstestsuite.unit_tests.testidgenerator import unique_digest, \
+    unique_unicode_id
 
 
 class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
@@ -1213,6 +1219,76 @@ class TestFetchFileDigestsFromPreviousSubmission(DatabaseMixin,
         self.assertEqual(self.call(CPP_LANG, {"foo.%l", "bar.%l"},
                                    cls=UserTest),
                          {"foo.%l": foo_digest})
+
+
+class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(TestStoreLocalCopy, self).setUp()
+
+        self.contest = self.add_contest()
+        self.participation = self.add_participation(contest=self.contest)
+        self.task = self.add_task(contest=self.contest)
+        # Flush needed so that the objects are given IDs by the DB.
+        self.session.flush()
+
+        self.timestamp = make_datetime()
+
+    @staticmethod
+    def generate_content():
+        return unique_unicode_id().encode('utf-8')
+
+    def assertSomeFileContains(self, content, in_):
+        # The function uses pickle, which has the nice property of
+        # serializing bytes objects verbatim and byte-aligned, meaning
+        # we can find them unchanged when we look at the encoded data.
+        for directory, _, filenames in os.walk(in_):
+            for filename in filenames:
+                with io.open(os.path.join(directory, filename), "rb") as f:
+                    if content in f.read():
+                        return
+        self.fail("store_local_copy didn't create any file")
+
+    def test_success(self):
+        # We use a content that is unique enough to ensure that if we
+        # find it in a file it won't be a false positive.
+        content = self.generate_content()
+        directory = os.path.join(self.base_dir, "foo")
+        store_local_copy(directory, self.participation, self.task,
+                         self.timestamp, {"foo.%l": content})
+        self.assertSomeFileContains(content, in_=directory)
+
+    def test_success_many_times(self):
+        # Test that multiple files are allowed in a single call and that
+        # successive calls don't overwrite preceding ones.
+        content_a = self.generate_content()
+        content_b = self.generate_content()
+        content_c = self.generate_content()
+        store_local_copy(self.base_dir, self.participation, self.task,
+                         self.timestamp,
+                         {"foo.%l": content_a, "bar.txt": content_b})
+        # Giving the same user and timestamp would actually overwrite.
+        store_local_copy(self.base_dir, self.participation, self.task,
+                         self.timestamp + timedelta(seconds=1),
+                         {"foo.%l": content_c})
+        self.assertSomeFileContains(content_a, in_=self.base_dir)
+        self.assertSomeFileContains(content_b, in_=self.base_dir)
+        self.assertSomeFileContains(content_c, in_=self.base_dir)
+
+    def test_success_with_data_dir(self):
+        content = self.generate_content()
+        with patch.object(config, "data_dir", self.base_dir):
+            store_local_copy("%s/bar", self.participation, self.task,
+                             self.timestamp, {"foo.%l": content})
+        self.assertSomeFileContains(content,
+                                    in_=os.path.join(self.base_dir, "bar"))
+
+    def test_failure(self):
+        # Make read-only.
+        os.chmod(self.base_dir, stat.S_IRUSR)
+        with self.assertRaises(StorageFailed):
+            store_local_copy(self.base_dir, self.participation, self.task,
+                             self.timestamp, {"foo.%l": b"some content"})
 
 
 if __name__ == "__main__":
