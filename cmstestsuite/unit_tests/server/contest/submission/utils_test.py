@@ -169,6 +169,22 @@ class TestFetchFileDigestsFromPreviousSubmission(DatabaseMixin,
                                    cls=UserTest),
                          {"foo.%l": foo_digest})
 
+    def test_managers_extension_replacement(self):
+        input_digest = unique_digest()
+        foo_digest = unique_digest()
+        bad_digest = unique_digest()
+        # The *full* `.%l` of the codename has to be replaced with the
+        # language's primary extension, including the `.`, even when the
+        # extension doesn't begin with `.`. This also means that
+        # splitting the filename to get the extension out of is most
+        # likely a bad approach.
+        self.insert_user_test("Pascal", input_digest, dict(),
+                              {"foolib.pas": foo_digest,
+                               "foo.lib.pas": bad_digest,
+                               "foo.pas": bad_digest})
+        self.assertEqual(self.call(PASCAL_LANG, {"foo.%l"}, cls=UserTest),
+                         {"foo.%l": foo_digest})
+
 
 class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
