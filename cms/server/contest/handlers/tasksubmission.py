@@ -36,7 +36,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, itervalues, iteritems
 
 import logging
 import re
@@ -46,18 +45,14 @@ import tornado.web
 from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import File, Submission, SubmissionResult
+from cms.db import Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
-    check_max_number, check_min_interval, InvalidArchive, \
-    extract_files_from_tornado, InvalidFilesOrLanguage, \
-    match_files_and_languages, fetch_file_digests_from_previous_submission, \
-    store_local_copy, StorageFailed
+    UnacceptableSubmission, accept_submission
 from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
     accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
-from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
 from ..phase_management import actual_phase_required
@@ -78,164 +73,43 @@ class SubmitHandler(ContestHandler):
 
     """
 
-    def _send_error(self, subject, text):
-        """Shorthand for sending a notification and redirecting."""
-        logger.warning("Sent error: `%s' - `%s'", subject, text)
-        self.notify_error(subject, text)
-        self.redirect(self.contest_url(*self.fallback_page))
-
     @tornado.web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
     def post(self, task_name):
-        participation = self.current_user
-
         task = self.get_task(task_name)
         if task is None:
             raise tornado.web.HTTPError(404)
-
-        self.fallback_page = ["tasks", task.name, "submissions"]
-
-        # Alias for easy access
-        contest = self.contest
-
-        # Enforce maximum number of submissions
-        if not check_max_number(self.sql_session, contest.max_submission_number,
-                                participation, contest=contest):
-            self._send_error(self._("Too many submissions!"),
-                             self._("You have reached the maximum limit of "
-                                    "at most %d submissions among all tasks.")
-                             % contest.max_submission_number)
-            return
-        if not check_max_number(self.sql_session, task.max_submission_number,
-                                participation, task=task):
-            self._send_error(self._("Too many submissions!"),
-                             self._("You have reached the maximum limit of "
-                                    "at most %d submissions on this task.")
-                             % task.max_submission_number)
-            return
-
-        # Enforce minimum time between submissions
-        if not check_min_interval(
-                self.sql_session, contest.min_submission_interval,
-                self.timestamp, participation, contest=contest):
-            self._send_error(self._("Too many submissions!"),
-                             self._("Among all tasks, you can submit again "
-                                    "after %d seconds from last submission.")
-                             % contest.min_submission_interval.total_seconds())
-            return
-        if not check_min_interval(
-                self.sql_session, task.min_submission_interval, self.timestamp,
-                participation, task=task):
-            self._send_error(self._("Too many submissions!"),
-                             self._("For this task, you can submit again "
-                                    "after %d seconds from last submission.")
-                             % task.min_submission_interval.total_seconds())
-            return
-
-        # Required files from the user.
-        required_codenames = set(task.submission_format)
-
-        try:
-            given_files = extract_files_from_tornado(self.request.files)
-        except InvalidArchive:
-            self._send_error(
-                self._("Invalid archive format!"),
-                self._("The submitted archive could not be opened."))
-            return
-
-        try:
-            files, language = match_files_and_languages(
-                given_files, self.get_argument("language", None),
-                required_codenames, contest.languages)
-        except InvalidFilesOrLanguage:
-            self._send_error(
-                self._("Invalid submission format!"),
-                self._("Please select the correct files."))
-            return
-
-        file_digests = dict()
-        missing_codenames = required_codenames.difference(iterkeys(files))
-        if len(missing_codenames) > 0:
-            if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
-                file_digests = fetch_file_digests_from_previous_submission(
-                    self.sql_session, participation, task, language,
-                    missing_codenames)
-            else:
-                self._send_error(
-                    self._("Invalid submission format!"),
-                    self._("Please select the correct files."))
-                return
-
-        # Check if submitted files are small enough.
-        if any(len(content) > config.max_submission_length
-               for content in itervalues(files)):
-            self._send_error(
-                self._("Submission too big!"),
-                self._("Each source file must be at most %d bytes long.") %
-                config.max_submission_length)
-            return
-
-        # All checks done, submission accepted.
-
-        # Attempt to store the submission locally to be able to
-        # recover a failure.
-        if config.submit_local_copy:
-            try:
-                store_local_copy(config.submit_local_copy_path, participation,
-                                 task, self.timestamp, files)
-            except StorageFailed:
-                logger.warning("Submission local copy failed.", exc_info=True)
-
-        # We now have to send all the files to the destination...
-        try:
-            for filename in files:
-                digest = self.service.file_cacher.put_file_content(
-                    files[filename],
-                    "Submission file %s sent by %s at %d." % (
-                        filename, participation.user.username,
-                        make_timestamp(self.timestamp)))
-                file_digests[filename] = digest
-
-        # In case of error, the server aborts the submission
-        except Exception as error:
-            logger.error("Storage failed! %s", error)
-            self._send_error(
-                self._("Submission storage failed!"),
-                self._("Please try again."))
-            return
-
-        # All the files are stored, ready to submit!
-        logger.info("All files stored for submission sent by %s",
-                    participation.user.username)
 
         # Only set the official bit when the user can compete and we are not in
         # analysis mode.
         official = self.r_params["actual_phase"] == 0
 
-        submission = Submission(self.timestamp,
-                                language.name if language is not None else None,
-                                task=task,
-                                participation=participation,
-                                official=official)
+        query_args = dict()
 
-        for filename, digest in iteritems(file_digests):
-            self.sql_session.add(File(filename, digest, submission=submission))
-        self.sql_session.add(submission)
-        self.sql_session.commit()
-        self.service.evaluation_service.new_submission(
-            submission_id=submission.id)
-        self.notify_success(
-            N_("Submission received"),
-            N_("Your submission has been received "
-               "and is currently being evaluated."))
+        try:
+            submission = accept_submission(
+                self.sql_session, self.service.file_cacher, self.current_user,
+                task, self.timestamp, self.request.files,
+                self.get_argument("language", None), official)
+            self.sql_session.commit()
+        except UnacceptableSubmission as e:
+            logger.info("Sent error: `%s' - `%s'", e.subject, e.text)
+            self.notify_error(e.subject, e.text)
+        else:
+            self.service.evaluation_service.new_submission(
+                submission_id=submission.id)
+            self.notify_success(N_("Submission received"),
+                                N_("Your submission has been received "
+                                   "and is currently being evaluated."))
+            # The argument (encrypted submission id) is not used by CWS
+            # (nor it discloses information to the user), but it is
+            # useful for automatic testing to obtain the submission id).
+            query_args["submission_id"] = \
+                encrypt_number(submission.id, config.secret_key)
 
-        # The argument (encripted submission id) is not used by CWS
-        # (nor it discloses information to the user), but it is useful
-        # for automatic testing to obtain the submission id).
-        self.redirect(self.contest_url(
-            *self.fallback_page,
-            submission_id=encrypt_number(submission.id, config.secret_key)))
+        self.redirect(self.contest_url("tasks", task.name, "submissions",
+                                       **query_args))
 
 
 class TaskSubmissionsHandler(ContestHandler):

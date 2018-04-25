@@ -35,7 +35,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, iteritems
 
 import logging
 import re
@@ -43,16 +42,12 @@ import re
 import tornado.web
 
 from cms import config
-from cms.db import UserTest, UserTestFile, UserTestManager, UserTestResult
+from cms.db import UserTest, UserTestResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
-    check_max_number, check_min_interval, InvalidArchive, \
-    extract_files_from_tornado, InvalidFilesOrLanguage, \
-    match_files_and_languages, fetch_file_digests_from_previous_submission, \
-    store_local_copy, StorageFailed
+    TestingNotAllowed, UnacceptableUserTest, accept_user_test
 from cmscommon.crypto import encrypt_number
-from cmscommon.datetime import make_timestamp
 from cmscommon.mimetypes import get_type_for_file_name
 
 from ..phase_management import actual_phase_required
@@ -128,22 +123,10 @@ class UserTestHandler(ContestHandler):
 
     refresh_cookie = False
 
-    # The following code has been taken from SubmitHandler and adapted
-    # for UserTests.
-
-    def _send_error(self, subject, text):
-        """Shorthand for sending a notification and redirecting."""
-        logger.warning("Sent error: `%s' - `%s'", subject, text)
-        self.notify_error(subject, text)
-        self.redirect(self.contest_url(*self.fallback_page,
-                                       **self.fallback_args))
-
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def post(self, task_name):
-        participation = self.current_user
-
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
@@ -151,172 +134,35 @@ class UserTestHandler(ContestHandler):
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        self.fallback_page = ["testing"]
-        self.fallback_args = {"task_name": task.name}
+        query_args = dict()
 
-        # Check that the task is testable
-        task_type = task.active_dataset.task_type_object
-        if not task_type.testable:
+        try:
+            user_test = accept_user_test(
+                self.sql_session, self.service.file_cacher, self.current_user,
+                task, self.timestamp, self.request.files,
+                self.get_argument("language", None))
+            self.sql_session.commit()
+        except TestingNotAllowed:
             logger.warning("User %s tried to make test on task %s.",
-                           participation.user.username, task_name)
+                           self.current_user.user.username, task_name)
             raise tornado.web.HTTPError(404)
+        except UnacceptableUserTest as e:
+            logger.info("Sent error: `%s' - `%s'", e.subject, e.text)
+            self.notify_error(e.subject, e.text)
+        else:
+            self.service.evaluation_service.new_user_test(
+                user_test_id=user_test.id)
+            self.notify_success(N_("Test received"),
+                                N_("Your test has been received "
+                                   "and is currently being executed."))
+            # The argument (encrypted user test id) is not used by CWS
+            # (nor it discloses information to the user), but it is
+            # useful for automatic testing to obtain the user test id).
+            query_args["user_test_id"] = \
+                encrypt_number(user_test.id, config.secret_key)
 
-        # Alias for easy access
-        contest = self.contest
-
-        # Enforce maximum number of user_tests
-        if not check_max_number(self.sql_session, contest.max_user_test_number,
-                                participation, contest=contest, cls=UserTest):
-            self._send_error(self._("Too many submissions!"),
-                             self._("You have reached the maximum limit of "
-                                    "at most %d tests among all tasks.")
-                             % contest.max_user_test_number)
-            return
-        if not check_max_number(self.sql_session, task.max_user_test_number,
-                                participation, task=task, cls=UserTest):
-            self._send_error(self._("Too many submissions!"),
-                             self._("You have reached the maximum limit of "
-                                    "at most %d tests on this task.")
-                             % task.max_user_test_number)
-            return
-
-        # Enforce minimum time between user_tests
-        if not check_min_interval(
-                self.sql_session, contest.min_user_test_interval,
-                self.timestamp, participation, contest=contest, cls=UserTest):
-            self._send_error(self._("Too many submissions!"),
-                             self._("Among all tasks, you can test again "
-                                    "after %d seconds from last test.")
-                             % contest.min_user_test_interval.total_seconds())
-            return
-        if not check_min_interval(
-                self.sql_session, task.min_user_test_interval, self.timestamp,
-                participation, task=task, cls=UserTest):
-            self._send_error(self._("Too many submissions!"),
-                             self._("For this task, you can test again "
-                                    "after %d seconds from last test.")
-                             % task.min_user_test_interval.total_seconds())
-            return
-
-        # Required files from the user.
-        required_codenames = set(task.submission_format +
-                                 task_type.get_user_managers() +
-                                 ["input"])
-
-        try:
-            given_files = extract_files_from_tornado(self.request.files)
-        except InvalidArchive:
-            self._send_error(
-                self._("Invalid archive format!"),
-                self._("The submitted archive could not be opened."))
-            return
-
-        try:
-            files, language = match_files_and_languages(
-                given_files, self.get_argument("language", None),
-                required_codenames, contest.languages)
-        except InvalidFilesOrLanguage:
-            self._send_error(
-                self._("Invalid test format!"),
-                self._("Please select the correct files."))
-            return
-
-        file_digests = dict()
-        missing_codenames = required_codenames.difference(iterkeys(files))
-        if len(missing_codenames) > 0:
-            if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
-                file_digests = fetch_file_digests_from_previous_submission(
-                    self.sql_session, participation, task, language,
-                    missing_codenames, cls=UserTest)
-            else:
-                self._send_error(
-                    self._("Invalid test format!"),
-                    self._("Please select the correct files."))
-                return
-
-        # Check if submitted files are small enough.
-        if any(len(content) > config.max_submission_length
-               for codename, content in iteritems(files)
-               if codename != "input"):
-            self._send_error(
-                self._("Test too big!"),
-                self._("Each source file must be at most %d bytes long.") %
-                config.max_submission_length)
-            return
-        if "input" in files and len(files["input"]) > config.max_input_length:
-            self._send_error(
-                self._("Input too big!"),
-                self._("The input file must be at most %d bytes long.") %
-                config.max_input_length)
-            return
-
-        # All checks done, submission accepted.
-
-        # Attempt to store the submission locally to be able to
-        # recover a failure.
-
-        if config.tests_local_copy:
-            try:
-                store_local_copy(config.tests_local_copy_path, participation,
-                                 task, self.timestamp, files)
-            except StorageFailed:
-                logger.error("Test local copy failed.", exc_info=True)
-
-        # We now have to send all the files to the destination...
-        try:
-            for filename in files:
-                digest = self.service.file_cacher.put_file_content(
-                    files[filename],
-                    "Test file %s sent by %s at %d." % (
-                        filename, participation.user.username,
-                        make_timestamp(self.timestamp)))
-                file_digests[filename] = digest
-
-        # In case of error, the server aborts the submission
-        except Exception as error:
-            logger.error("Storage failed! %s", error)
-            self._send_error(
-                self._("Test storage failed!"),
-                self._("Please try again."))
-            return
-
-        # All the files are stored, ready to submit!
-        logger.info("All files stored for test sent by %s",
-                    participation.user.username)
-        user_test = UserTest(self.timestamp,
-                             language.name if language is not None else None,
-                             file_digests["input"],
-                             participation=participation,
-                             task=task)
-
-        for filename in task.submission_format:
-            digest = file_digests[filename]
-            self.sql_session.add(
-                UserTestFile(filename, digest, user_test=user_test))
-        for filename in task_type.get_user_managers():
-            digest = file_digests[filename]
-            if language is not None:
-                extension = language.source_extension
-                filename = filename.replace(".%l", extension)
-            self.sql_session.add(
-                UserTestManager(filename, digest, user_test=user_test))
-
-        self.sql_session.add(user_test)
-        self.sql_session.commit()
-        self.service.evaluation_service.new_user_test(
-            user_test_id=user_test.id)
-        self.notify_success(
-            N_("Test received"),
-            N_("Your test has been received "
-               "and is currently being executed."))
-
-        # The argument (encripted user test id) is not used by CWS
-        # (nor it discloses information to the user), but it is useful
-        # for automatic testing to obtain the user test id).
-        self.redirect(self.contest_url(
-            *self.fallback_page,
-            user_test_id=encrypt_number(user_test.id, config.secret_key),
-            **self.fallback_args))
+        self.redirect(self.contest_url("testing", task_name=task.name,
+                                       **query_args))
 
 
 class UserTestStatusHandler(ContestHandler):
