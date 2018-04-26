@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -623,10 +623,10 @@ class DownloadTestcasesHandler(BaseHandler):
         with zipfile.ZipFile(temp_file, "w") as zip_file:
             for testcase in itervalues(dataset.testcases):
                 # Get input, output file path
-                input_path = self.service.file_cacher.\
-                    get_file(testcase.input).name
-                output_path = self.service.file_cacher.\
-                    get_file(testcase.output).name
+                with self.service.file_cacher.get_file(testcase.input) as f:
+                    input_path = f.name
+                with self.service.file_cacher.get_file(testcase.output) as f:
+                    output_path = f.name
                 zip_file.write(
                     input_path, input_template % testcase.codename)
                 zip_file.write(

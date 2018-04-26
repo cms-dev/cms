@@ -431,13 +431,11 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         return (string): the content of the file up to maxlen bytes.
 
         """
-        file_ = self.get_file(path)
-        if maxlen is None:
-            content = file_.read()
-        else:
-            content = file_.read(maxlen)
-        file_.close()
-        return content
+        with self.get_file(path) as file_:
+            if maxlen is None:
+                return file_.read()
+            else:
+                return file_.read(maxlen)
 
     def get_file_to_storage(self, path, description="", trunc_len=None):
         """Put a sandbox file in FS and return its digest.
@@ -450,10 +448,8 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         return (str): the digest of the file.
 
         """
-        file_ = self.get_file(path, trunc_len=trunc_len)
-        digest = self.file_cacher.put_file_from_fobj(file_, description)
-        file_.close()
-        return digest
+        with self.get_file(path, trunc_len=trunc_len) as file_:
+            return self.file_cacher.put_file_from_fobj(file_, description)
 
     def stat_file(self, path):
         """Return the stats of a file in the sandbox.

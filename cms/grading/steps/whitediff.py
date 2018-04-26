@@ -133,14 +133,14 @@ def white_diff_step(sandbox, output_filename, correct_output_filename):
 
     """
     if sandbox.file_exists(output_filename):
-        out_file = sandbox.get_file(output_filename)
-        res_file = sandbox.get_file(correct_output_filename)
-        if _white_diff(out_file, res_file):
-            outcome = 1.0
-            text = [EVALUATION_MESSAGES.get("success").message]
-        else:
-            outcome = 0.0
-            text = [EVALUATION_MESSAGES.get("wrong").message]
+        with sandbox.get_file(output_filename) as out_file, \
+                sandbox.get_file(correct_output_filename) as res_file:
+            if _white_diff(out_file, res_file):
+                outcome = 1.0
+                text = [EVALUATION_MESSAGES.get("success").message]
+            else:
+                outcome = 0.0
+                text = [EVALUATION_MESSAGES.get("wrong").message]
     else:
         outcome = 0.0
         text = [EVALUATION_MESSAGES.get("nooutput").message, output_filename]
