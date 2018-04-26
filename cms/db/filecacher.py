@@ -557,16 +557,9 @@ class FileCacher(object):
 
         ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
                                                        text=False)
-        ftmp = io.open(ftmp_handle, 'wb')
-
-        fobj = self.backend.get_file(digest)
-
-        # Copy the file to a temporary position
-        try:
+        with io.open(ftmp_handle, 'wb') as ftmp, \
+                self.backend.get_file(digest) as fobj:
             copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
-        finally:
-            ftmp.close()
-            fobj.close()
 
         # Then move it to its real location (this operation is atomic
         # by POSIX requirement)
@@ -885,15 +878,12 @@ class FileCacher(object):
         """
         clean = True
         for digest, _ in self.list():
-            fobj = self.backend.get_file(digest)
             d = Digester()
-            try:
+            with self.backend.get_file(digest) as fobj:
                 buf = fobj.read(self.CHUNK_SIZE)
                 while len(buf) > 0:
                     d.update(buf)
                     buf = fobj.read(self.CHUNK_SIZE)
-            finally:
-                fobj.close()
             computed_digest = d.digest()
             if digest != computed_digest:
                 logger.error("File with hash %s actually has hash %s",

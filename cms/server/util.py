@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
@@ -90,25 +90,23 @@ def file_handler_gen(BaseClass):
                 self.finish()
                 return
             try:
-                self.temp_file = \
-                    self.service.file_cacher.get_file(digest)
+                with self.service.file_cacher.get_file(digest) \
+                        as self.temp_file:
+                    self._fetch_temp_file(content_type, filename)
             except Exception:
                 logger.error("Exception while retrieving file `%s'.", digest,
                              exc_info=True)
                 self.finish()
-                return
-            self._fetch_temp_file(content_type, filename)
 
         def fetch_from_filesystem(self, filepath, content_type, filename):
             """Send a file from filesystem by filepath."""
             try:
-                self.temp_file = io.open(filepath, 'rb')
+                with io.open(filepath, 'rb') as self.temp_file:
+                    self._fetch_temp_file(content_type, filename)
             except Exception:
-                logger.error("Exception while retrieving file `%s'.", filepath,
-                             exc_info=True)
+                logger.error("Exception while retrieving file `%s'.",
+                             filepath, exc_info=True)
                 self.finish()
-                return
-            self._fetch_temp_file(content_type, filename)
 
         def _fetch_temp_file(self, content_type, filename):
             """When calling this method, self.temp_file must be a fileobj
@@ -139,7 +137,6 @@ def file_handler_gen(BaseClass):
             self.size += length / (1024 * 1024)
             self.write(data)
             if length < FileCacher.CHUNK_SIZE:
-                self.temp_file.close()
                 duration = time.time() - self.start_time
                 logger.info("%.3lf seconds for %.3lf MB",
                             duration, self.size)
