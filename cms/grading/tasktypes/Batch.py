@@ -30,17 +30,14 @@ from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
 import logging
-import os
-import shutil
 
-from cms.grading.steps import checker_step, compilation_step, \
-    evaluation_step, human_evaluation_message, is_evaluation_passed,\
-    white_diff_step
+from cms.grading.steps import compilation_step, \
+    evaluation_step, human_evaluation_message, is_evaluation_passed
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, is_manager_for_compilation
+    create_sandbox, delete_sandbox, is_manager_for_compilation, eval_output
 from cms.db import Executable
 
 
@@ -80,8 +77,6 @@ class Batch(TaskType):
     """
     # Codename of the checker, if it is used.
     CHECKER_CODENAME = "checker"
-    # Filename of the reference solution in the sandbox evaluating the output.
-    CORRECT_OUTPUT_FILENAME = "res.txt"
     # Basename of the grader, used in the manager filename and as the main
     # class in languages that require us to specify it.
     GRADER_BASENAME = "grader"
@@ -343,55 +338,18 @@ class Batch(TaskType):
 
                 # Otherwise evaluate the output file.
                 else:
-
-                    # Create a brand-new sandbox just for checking. Only admin
-                    # code runs in it, so we allow multithreading.
-                    checkbox = create_sandbox(file_cacher, name="check")
-                    job.sandboxes.append(checkbox.path)
-
-                    checker_success, outcome, text = self._eval_output(
-                        checkbox, job, sandbox.get_root_path())
+                    checker_success, outcome, text = eval_output(
+                        file_cacher, job,
+                        Batch.CHECKER_CODENAME
+                        if self._uses_checker() else None,
+                        user_output_path=sandbox.relative_path(
+                            self._actual_output),
+                        user_output_filename=self.output_filename)
                     success = success and checker_success
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = "%s" % outcome if outcome is not None else None
+        job.outcome = str(outcome) if outcome is not None else None
         job.text = text
 
         delete_sandbox(sandbox, job.success)
-
-    def _eval_output(self, sandbox, job, eval_sandbox_path):
-        """Evaluate ("check") the output using a white diff or a checker.
-
-        sandbox (Sandbox): the sandbox to use to eval the output.
-        job (Job): the job triggering this checker run.
-        eval_sandbox_path (str): full path of the sandbox where the user output
-            was generated.
-
-        return (bool, float|None, [str]): success (true if the checker was able
-            to check the solution successfully), outcome and text.
-
-        """
-        # Put the user-produced output file into the checkbox. We treat links
-        # as potential attacks, and not use them.
-        output_src = os.path.join(eval_sandbox_path, self._actual_output)
-        output_dst = os.path.join(
-            sandbox.get_root_path(), self._actual_output)
-        if os.path.exists(output_src) and not os.path.islink(output_src):
-            shutil.copyfile(output_src, output_dst)
-
-        if self._uses_checker():
-            checker_digest = job.managers[Batch.CHECKER_CODENAME].digest \
-                if Batch.CHECKER_CODENAME in job.managers else None
-            success, outcome, text = checker_step(
-                sandbox, checker_digest, job.input, job.output,
-                self._actual_output)
-        else:
-            sandbox.create_file_from_storage(
-                Batch.CORRECT_OUTPUT_FILENAME, job.output)
-            success = True
-            outcome, text = white_diff_step(
-                sandbox, self._actual_output, Batch.CORRECT_OUTPUT_FILENAME)
-
-        delete_sandbox(sandbox, success)
-        return success, outcome, text
