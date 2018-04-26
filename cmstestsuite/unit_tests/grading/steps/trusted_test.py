@@ -29,10 +29,12 @@ from six import PY2
 
 import unittest
 
-from mock import patch
+from mock import MagicMock, patch
 
+from cms.db import Manager
 from cms.grading.Sandbox import Sandbox
-from cms.grading.steps import extract_outcome_and_text, trusted_step
+from cms.grading.steps import extract_outcome_and_text, trusted_step, \
+    checker_step, trusted
 from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
@@ -113,9 +115,10 @@ class TestTrustedStep(unittest.TestCase):
         super(TestTrustedStep, self).setUp()
         self.sandbox = FakeIsolateSandbox(True, None)
 
-        patcher = patch("cms.grading.steps.trusted.logger.error")
-        self.mock_logger_error = patcher.start()
+        patcher = patch("cms.grading.steps.trusted.logger.error",
+                        wraps=trusted.logger.error)
         self.addCleanup(patcher.stop)
+        self.mock_logger_error = patcher.start()
 
     def assertLoggedError(self, logged=True):
         if logged:
@@ -230,6 +233,120 @@ class TestTrustedStep(unittest.TestCase):
         self.assertTrue(success)
         self.assertTrue(trusted_success)
         self.assertEqual(stats, expected_stats)
+
+
+CHECKER = Manager(filename="checker", digest="checker digest")
+NOT_CHECKER = Manager(filename="notchecker", digest="notchecker digest")
+MANAGERS = {
+    "checker": CHECKER,
+    "notchecker": NOT_CHECKER,
+}
+
+
+class TestCheckerStep(unittest.TestCase):
+
+    def setUp(self):
+        super(TestCheckerStep, self).setUp()
+        self.file_cacher = MagicMock()
+        self.sandbox = FakeIsolateSandbox(True, self.file_cacher)
+
+        patcher = patch("cms.grading.steps.trusted.trusted_step")
+        self.addCleanup(patcher.stop)
+        self.mock_trusted_step = patcher.start()
+
+        patcher = patch("cms.grading.steps.trusted.logger.error",
+                        wraps=trusted.logger.error)
+        self.addCleanup(patcher.stop)
+        self.mock_logger_error = patcher.start()
+
+    def assertLoggedError(self, logged=True):
+        if logged:
+            self.mock_logger_error.assert_called()
+        else:
+            self.mock_logger_error.assert_not_called()
+
+    def set_checker_output(self, outcome, text):
+        self.sandbox.stdout_file = "stdout_file"
+        self.sandbox.stderr_file = "stderr_file"
+        if outcome is not None:
+            self.sandbox.fake_file(self.sandbox.stdout_file, outcome)
+        if text is not None:
+            self.sandbox.fake_file(self.sandbox.stderr_file, text)
+
+    def test_success(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (True, 0.123, ["Text."]))
+        self.mock_trusted_step.assert_called_once_with(
+            self.sandbox, [["./checker", "i", "co", "o"]])
+        self.assertLoggedError(False)
+
+    def test_sandbox_failure(self):
+        self.mock_trusted_step.return_value = (False, None, None)
+        # Output files are ignored.
+        self.set_checker_output(b"0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_checker_failure(self):
+        self.mock_trusted_step.return_value = (True, False, {})
+        # Output files are ignored.
+        self.set_checker_output(b"0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_missing_checker(self):
+        ret = checker_step(
+            self.sandbox, {"notchecker": NOT_CHECKER}, "i", "co", "o")
+
+        self.mock_trusted_step.assert_not_called()
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_invalid_checker_outcome(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"A0.123\n", b"Text.\n")
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_invalid_checker_text(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"0.123\n", INVALID_UTF8)
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_missing_checker_outcome(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(None, b"Text.\n")
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
+
+    def test_missing_checker_text(self):
+        self.mock_trusted_step.return_value = (True, True, {})
+        self.set_checker_output(b"0.123\n", None)
+
+        ret = checker_step(self.sandbox, MANAGERS, "i", "co", "o")
+
+        self.assertEqual(ret, (False, None, []))
+        self.assertLoggedError()
 
 
 if __name__ == "__main__":
