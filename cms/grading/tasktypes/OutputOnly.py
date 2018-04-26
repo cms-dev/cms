@@ -33,10 +33,8 @@ from future.builtins import *  # noqa
 
 import logging
 
-from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox
+from cms.grading.TaskType import TaskType, eval_output
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading.steps import checker_step, white_diff_step
 
 
 logger = logging.getLogger(__name__)
@@ -137,34 +135,12 @@ class OutputOnly(TaskType):
             job.text = [N_("File not submitted")]
             return
 
-        # First and only one step: diffing (manual or with manager).
-
-        sandbox = create_sandbox(file_cacher, name="check")
-        job.sandboxes.append(sandbox.path)
-
-        # Put user output and reference solution into the sandbox.
-        sandbox.create_file_from_storage(
-            OutputOnly.OUTPUT_FILENAME, job.files[user_output_filename].digest)
-        sandbox.create_file_from_storage(
-            OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
-
-        if self._uses_checker():
-            # Checker also requires the input file.
-            sandbox.create_file_from_storage(
-                OutputOnly.INPUT_FILENAME, job.input)
-            success, outcome, text = checker_step(
-                sandbox, job.managers, OutputOnly.INPUT_FILENAME,
-                OutputOnly.CORRECT_OUTPUT_FILENAME, OutputOnly.OUTPUT_FILENAME)
-        else:
-            success = True
-            outcome, text = white_diff_step(
-                sandbox,
-                OutputOnly.OUTPUT_FILENAME,
-                OutputOnly.CORRECT_OUTPUT_FILENAME)
+        # First and only step: eval the user output.
+        success, outcome, text = eval_output(
+            file_cacher, job, self._uses_checker(),
+            user_output_digest=job.files[user_output_filename].digest)
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = "%s" % outcome if outcome is not None else None
+        job.outcome = str(outcome) if outcome is not None else None
         job.text = text
-
-        delete_sandbox(sandbox, job.success)
