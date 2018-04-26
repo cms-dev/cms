@@ -31,18 +31,16 @@ from six import iteritems
 
 import logging
 import os
-import shutil
 import tempfile
 
 from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading.steps import checker_step, compilation_step, \
-    evaluation_step_before_run, evaluation_step_after_run, \
-    is_evaluation_passed, human_evaluation_message, white_diff_step
+from cms.grading.steps import compilation_step, evaluation_step_before_run, \
+    evaluation_step_after_run, is_evaluation_passed, human_evaluation_message
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox
+    create_sandbox, delete_sandbox, eval_output
 from cms.db import Executable
 
 
@@ -76,8 +74,6 @@ class TwoSteps(TaskType):
     """
     # Codename of the checker, if it is used.
     CHECKER_CODENAME = "checker"
-    # Filename of the reference solution in the sandbox evaluating the output.
-    CORRECT_OUTPUT_FILENAME = "res.txt"
     # Filename of the input and of the contestant's solution.
     INPUT_FILENAME = "input.txt"
     OUTPUT_FILENAME = "output.txt"
@@ -357,14 +353,12 @@ class TwoSteps(TaskType):
 
                 # Otherwise evaluate the output file.
                 else:
-
-                    # Create a brand-new sandbox just for checking. Only admin
-                    # code runs in it, so we allow multithreading.
-                    checkbox = create_sandbox(file_cacher, name="check")
-                    job.sandboxes.append(checkbox.path)
-
-                    checker_success, outcome, text = self._eval_output(
-                        checkbox, job, second_sandbox.get_root_path())
+                    checker_success, outcome, text = eval_output(
+                        file_cacher, job,
+                        TwoSteps.CHECKER_CODENAME
+                        if self._uses_checker() else None,
+                        user_output_path=second_sandbox.relative_path(
+                            TwoSteps.OUTPUT_FILENAME))
                     success = success and checker_success
 
         # Whatever happened, we conclude.
@@ -374,41 +368,3 @@ class TwoSteps(TaskType):
 
         delete_sandbox(first_sandbox, job.success)
         delete_sandbox(second_sandbox, job.success)
-
-    def _eval_output(self, sandbox, job, eval_sandbox_path):
-        """Evaluate ("check") the output using a white diff or a checker.
-
-        sandbox (Sandbox): the sandbox to use to eval the output.
-        job (Job): the job triggering this checker run.
-        eval_sandbox_path (str): full path of the sandbox where the user output
-            was generated.
-
-        return (bool, float|None, [str]): success (true if the checker was able
-            to check the solution successfully), outcome and text.
-
-        """
-        # Put the user-produced output file into the checkbox. We treat links
-        # as potential attacks, and not use them.
-        output_src = os.path.join(eval_sandbox_path, TwoSteps.OUTPUT_FILENAME)
-        output_dst = os.path.join(
-            sandbox.get_root_path(), TwoSteps.OUTPUT_FILENAME)
-        if os.path.exists(output_src) and not os.path.islink(output_src):
-            shutil.copyfile(output_src, output_dst)
-
-        if self._uses_checker():
-            checker_digest = job.managers[TwoSteps.CHECKER_CODENAME].digest \
-                if TwoSteps.CHECKER_CODENAME in job.managers else None
-            success, outcome, text = checker_step(
-                sandbox, checker_digest, job.input, job.output,
-                TwoSteps.OUTPUT_FILENAME)
-        else:
-            # Put the reference solution and input into the sandbox.
-            sandbox.create_file_from_storage(
-                TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
-            success = True
-            outcome, text = white_diff_step(sandbox,
-                                            TwoSteps.OUTPUT_FILENAME,
-                                            TwoSteps.CORRECT_OUTPUT_FILENAME)
-
-        delete_sandbox(sandbox, success)
-        return success, outcome, text

@@ -55,7 +55,7 @@ from .utils import generic_step
 logger = logging.getLogger(__name__)
 
 
-# Filename used for input and correct output in the checker sandbox.
+# Filenames used for input and correct output in the checker sandbox.
 CHECKER_INPUT_FILENAME = "input.txt"
 CHECKER_CORRECT_OUTPUT_FILENAME = "correct_output.txt"
 # Codename of the manager used to compare output (must be an executable), and

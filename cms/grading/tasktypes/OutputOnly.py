@@ -33,10 +33,8 @@ from future.builtins import *  # noqa
 
 import logging
 
-from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox
+from cms.grading.TaskType import TaskType, eval_output
 from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.grading.steps import checker_step, white_diff_step
 
 
 logger = logging.getLogger(__name__)
@@ -59,11 +57,6 @@ class OutputOnly(TaskType):
     """
     # Codename of the checker, if it is used.
     CHECKER_CODENAME = "checker"
-    # Filename of the reference solution in the sandbox evaluating the output.
-    CORRECT_OUTPUT_FILENAME = "res.txt"
-    # Name of input and user output files.
-    INPUT_FILENAME = "input.txt"
-    OUTPUT_FILENAME = "output.txt"
     # Template for the filename of the output files provided by the user; %s
     # represent the testcase codename.
     USER_OUTPUT_FILENAME_TEMPLATE = "output_%s.txt"
@@ -139,33 +132,13 @@ class OutputOnly(TaskType):
             job.text = [N_("File not submitted")]
             return
 
-        # First and only one step: diffing (manual or with manager).
-
-        sandbox = create_sandbox(file_cacher, name="check")
-        job.sandboxes.append(sandbox.path)
-
-        # Put user output into the sandbox.
-        sandbox.create_file_from_storage(
-            OutputOnly.OUTPUT_FILENAME, job.files[user_output_filename].digest)
-
-        if self._uses_checker():
-            checker_digest = job.managers[OutputOnly.CHECKER_CODENAME].digest \
-                if OutputOnly.CHECKER_CODENAME in job.managers else None
-            success, outcome, text = checker_step(
-                sandbox, checker_digest, job.input, job.output,
-                OutputOnly.OUTPUT_FILENAME)
-        else:
-            sandbox.create_file_from_storage(
-                OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
-            success = True
-            outcome, text = white_diff_step(
-                sandbox,
-                OutputOnly.OUTPUT_FILENAME,
-                OutputOnly.CORRECT_OUTPUT_FILENAME)
+        # First and only step: eval the user output.
+        success, outcome, text = eval_output(
+            file_cacher, job,
+            OutputOnly.CHECKER_CODENAME if self._uses_checker() else None,
+            user_output_digest=job.files[user_output_filename].digest)
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = "%s" % outcome if outcome is not None else None
+        job.outcome = str(outcome) if outcome is not None else None
         job.text = text
-
-        delete_sandbox(sandbox, job.success)

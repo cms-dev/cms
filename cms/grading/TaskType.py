@@ -38,17 +38,25 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import with_metaclass
 
+import io
 import logging
+import os
 import re
+import shutil
 from abc import ABCMeta, abstractmethod
 
 from cms import config
 from cms.grading import JobException
 from cms.grading.Sandbox import Sandbox
 from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.steps import EVALUATION_MESSAGES, checker_step, \
+    white_diff_fobj_step
 
 
 logger = logging.getLogger(__name__)
+
+
+EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
 
 
 def create_sandbox(file_cacher, multithreaded=False, name=None):
@@ -109,6 +117,73 @@ def is_manager_for_compilation(filename, language):
                for header in language.header_extensions)
         or any(filename.endswith(obj)
                for obj in language.object_extensions))
+
+
+def eval_output(file_cacher, job, checker_codename,
+                user_output_path=None, user_output_digest=None,
+                user_output_filename=""):
+    """Evaluate ("check") a user output using a white diff or a checker.
+
+    file_cacher (FileCacher): file cacher to use to get files.
+    job (Job): the job triggering this checker run.
+    checker_codename (str|None): codename of the checker amongst the manager,
+        or None to use white diff.
+    user_output_path (str|None): full path of the user output file, None if
+        using the digest (exactly one must be non-None).
+    user_output_digest (str|None): digest of the user output file, None if
+        using the path (exactly one must be non-None).
+    user_output_filename (str): the filename the user was expected to write to,
+        or empty if stdout (used to return an error to the user).
+
+    return (bool, float|None, [str]): success (true if the checker was able
+        to check the solution successfully), outcome and text.
+
+    """
+    if (user_output_path is None) == (user_output_digest is None):
+        raise ValueError(
+            "Exactly one of user_output_{path,digest} should be None.")
+
+    if user_output_path is not None:
+        # If a path was passed, it might not exist. First, check it does. We
+        # also assume links are potential attacks, and therefore treat them
+        # as if the file did not exist.
+        if not os.path.exists(user_output_path) \
+                or os.path.islink(user_output_path):
+            return True, 0.0, [EVALUATION_MESSAGES.get("nooutput").message,
+                               user_output_filename]
+
+    if checker_codename is not None:
+        # Create a brand-new sandbox just for checking.
+        sandbox = create_sandbox(file_cacher, name="check")
+        job.sandboxes.append(sandbox.path)
+
+        # Put user output in the sandbox.
+        if user_output_path is not None:
+            shutil.copyfile(user_output_path,
+                            sandbox.relative_path(EVAL_USER_OUTPUT_FILENAME))
+        else:
+            sandbox.create_file_from_storage(EVAL_USER_OUTPUT_FILENAME,
+                                             user_output_digest)
+
+        checker_digest = job.managers[checker_codename].digest \
+            if checker_codename in job.managers else None
+        success, outcome, text = checker_step(
+            sandbox, checker_digest, job.input, job.output,
+            EVAL_USER_OUTPUT_FILENAME)
+
+        delete_sandbox(sandbox, success)
+        return success, outcome, text
+
+    else:
+        if user_output_path is not None:
+            user_output_fobj = io.open(user_output_path, "rb")
+        else:
+            user_output_fobj = file_cacher.get_file(user_output_digest)
+        with user_output_fobj:
+            with file_cacher.get_file(job.output) as correct_output_fobj:
+                outcome, text = white_diff_fobj_step(
+                    user_output_fobj, correct_output_fobj)
+        return True, outcome, text
 
 
 class TaskType(with_metaclass(ABCMeta, object)):

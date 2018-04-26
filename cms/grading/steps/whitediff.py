@@ -118,12 +118,32 @@ def _white_diff(output, res):
                 return False
 
 
+def white_diff_fobj_step(output_fobj, correct_output_fobj):
+    """Compare user output and correct output with a simple diff.
+
+    It gives an outcome 1.0 if the output and the reference output are
+    identical (or differ just by white spaces) and 0.0 if they don't. Calling
+    this function means that the output file exists.
+
+    output_fobj (fileobj): file for the user output, opened in binary mode.
+    correct_output_fobj (fileobj): file for the correct output, opened in
+        binary mode.
+
+    return ((float, [str])): the outcome as above and a description text.
+
+    """
+    if _white_diff(output_fobj, correct_output_fobj):
+        return 1.0, [EVALUATION_MESSAGES.get("success").message]
+    else:
+        return 0.0, [EVALUATION_MESSAGES.get("wrong").message]
+
+
 def white_diff_step(sandbox, output_filename, correct_output_filename):
-    """Assess the correctedness of a solution by doing a simple white
-    diff against the reference solution. It gives an outcome 1.0 if
-    the output and the reference output are identical (or differ just
-    by white spaces) and 0.0 if they don't (or if the output doesn't
-    exist).
+    """Compare user output and correct output with a simple diff.
+
+    It gives an outcome 1.0 if the output and the reference output are
+    identical (or differ just by white spaces) and 0.0 if they don't (or if
+    the output doesn't exist).
 
     sandbox (Sandbox): the sandbox we consider.
     output_filename (str): the filename of user's output in the sandbox.
@@ -135,13 +155,7 @@ def white_diff_step(sandbox, output_filename, correct_output_filename):
     if sandbox.file_exists(output_filename):
         with sandbox.get_file(output_filename) as out_file, \
                 sandbox.get_file(correct_output_filename) as res_file:
-            if _white_diff(out_file, res_file):
-                outcome = 1.0
-                text = [EVALUATION_MESSAGES.get("success").message]
-            else:
-                outcome = 0.0
-                text = [EVALUATION_MESSAGES.get("wrong").message]
+            return white_diff_fobj_step(out_file, res_file)
     else:
-        outcome = 0.0
-        text = [EVALUATION_MESSAGES.get("nooutput").message, output_filename]
-    return outcome, text
+        return 0.0, [
+            EVALUATION_MESSAGES.get("nooutput").message, output_filename]
