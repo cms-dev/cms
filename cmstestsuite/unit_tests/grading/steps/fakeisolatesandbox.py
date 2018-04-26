@@ -26,6 +26,8 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+import errno
+
 from collections import deque
 from io import BytesIO, StringIO
 
@@ -98,18 +100,21 @@ class FakeIsolateSandbox(IsolateSandbox):
         assert trunc_len is None  # other case not handled by fake
         if path in self._fake_files:
             return BytesIO(self._fake_files[path])
-        raise FileNotFoundError(path)
+        # Change to FileNotFoundError when dropping Python 2.
+        raise OSError(errno.ENOENT, "File not found", path)
 
     def get_file_text(self, path, trunc_len=None):
         assert trunc_len is None  # other case not handled by fake
         if path in self._fake_files:
             return StringIO(self._fake_files[path].decode("utf-8"))
-        raise FileNotFoundError(path)
+        # Change to FileNotFoundError when dropping Python 2.
+        raise OSError(errno.ENOENT, "File not found", path)
 
     def get_file_to_string(self, path, maxlen=1024):
         if path in self._fake_files:
             return self._fake_files[path]
-        raise FileNotFoundError(path)
+        # Change to FileNotFoundError when dropping Python 2.
+        raise OSError(errno.ENOENT, "File not found", path)
 
     def execute_without_std(self, command, wait=False):
         # This is only able to simulate blocking calls.
