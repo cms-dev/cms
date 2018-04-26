@@ -377,16 +377,13 @@ class Batch(TaskType):
             Batch.CORRECT_OUTPUT_FILENAME, job.output)
         sandbox.create_file_from_storage(self._actual_input, job.input)
 
-        # Put the user-produced output file into the checkbox
+        # Put the user-produced output file into the checkbox. We treat links
+        # as potential attacks, and not use them.
         output_src = os.path.join(eval_sandbox_path, self._actual_output)
         output_dst = os.path.join(
             sandbox.get_root_path(), self._actual_output)
-        try:
-            if os.path.islink(output_src):
-                raise FileNotFoundError
+        if os.path.exists(output_src) and not os.path.islink(output_src):
             shutil.copyfile(output_src, output_dst)
-        except FileNotFoundError:
-            pass
 
         if self._uses_checker():
             success, outcome, text = self._run_checker(sandbox, job)
