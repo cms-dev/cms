@@ -72,8 +72,6 @@ class TwoSteps(TaskType):
     comparator.
 
     """
-    # Filename of the reference solution in the sandbox evaluating the output.
-    CORRECT_OUTPUT_FILENAME = "res.txt"
     # Filename of the input and of the contestant's solution.
     INPUT_FILENAME = "input.txt"
     OUTPUT_FILENAME = "output.txt"

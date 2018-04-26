@@ -75,8 +75,6 @@ class Batch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
-    # Filename of the reference solution in the sandbox evaluating the output.
-    CORRECT_OUTPUT_FILENAME = "res.txt"
     # Basename of the grader, used in the manager filename and as the main
     # class in languages that require us to specify it.
     GRADER_BASENAME = "grader"

@@ -55,11 +55,6 @@ class OutputOnly(TaskType):
     the evaluation is done via white diff or via a comparator.
 
     """
-    # Filename of the reference solution in the sandbox evaluating the output.
-    CORRECT_OUTPUT_FILENAME = "res.txt"
-    # Name of input and user output files.
-    INPUT_FILENAME = "input.txt"
-    OUTPUT_FILENAME = "output.txt"
     # Template for the filename of the output files provided by the user; %s
     # represent the testcase codename.
     USER_OUTPUT_FILENAME_TEMPLATE = "output_%s.txt"
