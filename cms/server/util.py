@@ -42,7 +42,6 @@ from functools import wraps
 from tornado.web import RequestHandler
 
 import gevent
-import io
 
 from cms.db import Session
 from cms.db.filecacher import FileCacher
@@ -96,16 +95,6 @@ def file_handler_gen(BaseClass):
             except Exception:
                 logger.error("Exception while retrieving file `%s'.", digest,
                              exc_info=True)
-                self.finish()
-
-        def fetch_from_filesystem(self, filepath, content_type, filename):
-            """Send a file from filesystem by filepath."""
-            try:
-                with io.open(filepath, 'rb') as self.temp_file:
-                    self._fetch_temp_file(content_type, filename)
-            except Exception:
-                logger.error("Exception while retrieving file `%s'.",
-                             filepath, exc_info=True)
                 self.finish()
 
         def _fetch_temp_file(self, content_type, filename):
