@@ -878,8 +878,8 @@ class FileCacher(object):
         """
         clean = True
         for digest, _ in self.list():
+            d = Digester()
             with self.backend.get_file(digest) as fobj:
-                d = Digester()
                 buf = fobj.read(self.CHUNK_SIZE)
                 while len(buf) > 0:
                     d.update(buf)
