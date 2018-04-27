@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 
 
 # Filename of the manager used to compare output (must be an executable).
-CHECKER_FILENAME = "checker"
+CHECKER_CODENAME = "checker"
 
 
 def _filter_ansi_escape(string):
@@ -188,7 +188,8 @@ def trusted_step(sandbox, commands):
         return False, None, None
 
 
-def checker_step(sandbox, managers, input_, correct_output, output_):
+def checker_step(sandbox, managers, input_, correct_output, output_,
+                 checker_codename=CHECKER_CODENAME):
     """Run the explicit checker given by the admins
 
     sandbox (Sandbox): the sandbox to run the checker in; should already
@@ -205,14 +206,14 @@ def checker_step(sandbox, managers, input_, correct_output, output_):
 
     """
     # Copy the checker in the sandbox, after making sure it was provided.
-    if CHECKER_FILENAME not in managers:
+    if checker_codename not in managers:
         logger.error("Configuration error: missing or invalid checker "
-                     "(it must be named '%s')", CHECKER_FILENAME)
+                     "(it must be named '%s')", checker_codename)
         return False, None, []
     sandbox.create_file_from_storage(
-        CHECKER_FILENAME, managers[CHECKER_FILENAME].digest, executable=True)
+        checker_codename, managers[checker_codename].digest, executable=True)
 
-    command = ["./%s" % CHECKER_FILENAME, input_, correct_output, output_]
+    command = ["./%s" % checker_codename, input_, correct_output, output_]
     box_success, success, unused_stats = trusted_step(sandbox, [command])
     if not box_success or not success:
         logger.error("Sandbox failed during checker step. "
