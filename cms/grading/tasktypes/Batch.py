@@ -370,11 +370,6 @@ class Batch(TaskType):
             to check the solution successfully), outcome and text.
 
         """
-        # Put the reference solution and input into the checkbox.
-        sandbox.create_file_from_storage(
-            Batch.CORRECT_OUTPUT_FILENAME, job.output)
-        sandbox.create_file_from_storage(self._actual_input, job.input)
-
         # Put the user-produced output file into the checkbox. We treat links
         # as potential attacks, and not use them.
         output_src = os.path.join(eval_sandbox_path, self._actual_output)
@@ -385,9 +380,11 @@ class Batch(TaskType):
 
         if self._uses_checker():
             success, outcome, text = checker_step(
-                sandbox, job.managers, self._actual_input,
-                Batch.CORRECT_OUTPUT_FILENAME, self._actual_output)
+                sandbox, job.managers, job.input, job.output,
+                self._actual_output)
         else:
+            sandbox.create_file_from_storage(
+                Batch.CORRECT_OUTPUT_FILENAME, job.output)
             success = True
             outcome, text = white_diff_step(
                 sandbox, self._actual_output, Batch.CORRECT_OUTPUT_FILENAME)

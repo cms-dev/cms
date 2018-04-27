@@ -54,8 +54,12 @@ from .utils import generic_step
 logger = logging.getLogger(__name__)
 
 
-# Filename of the manager used to compare output (must be an executable).
-CHECKER_CODENAME = "checker"
+# Filename used for input and correct output in the checker sandbox.
+CHECKER_INPUT_FILENAME = "input.txt"
+CHECKER_CORRECT_OUTPUT_FILENAME = "correct_output.txt"
+# Codename of the manager used to compare output (must be an executable), and
+# also the filename used in the sandbox.
+CHECKER_FILENAME = "checker"
 
 
 def _filter_ansi_escape(string):
@@ -188,38 +192,59 @@ def trusted_step(sandbox, commands):
         return False, None, None
 
 
-def checker_step(sandbox, managers, input_, correct_output, output_,
-                 checker_codename=CHECKER_CODENAME):
+def checker_step(sandbox, managers, input_digest, correct_output_digest,
+                 output_filename, checker_codename=CHECKER_FILENAME):
     """Run the explicit checker given by the admins
 
     sandbox (Sandbox): the sandbox to run the checker in; should already
         contain input, correct output, and user output; the checker is instead
         copied from the managers.
     managers ({str: Manager}): map filenames to the dataset's managers.
-    input_ (str): inner filename of the input (already in the sandbox).
-    correct_output (str): inner filename of the correct output (already in
-        the sandbox).
-    output_ (str): inner filename of the user output (already in the sandbox).
+    input_digest (str): digest of the input, will be fetched as "input.txt".
+    correct_output_digest (str): digest of the correct output, will be fetched
+        as "correct_output.txt".
+    output_filename (str): inner filename of the user output (already in the
+        sandbox).
 
     return (bool, float|None, [str]): success (true if the checker was able
         to check the solution successfully), outcome and text.
 
     """
+    # Check that the file we are going to inject in the sandbox are not already
+    # present (if so, it is due to a programming error in the task type).
+    for filename in [CHECKER_INPUT_FILENAME,
+                     CHECKER_CORRECT_OUTPUT_FILENAME,
+                     CHECKER_FILENAME]:
+        if sandbox.file_exists(filename):
+            logger.error("File %s already in the sandbox for the checker.",
+                         filename)
+            return False, None, []
+
     # Copy the checker in the sandbox, after making sure it was provided.
     if checker_codename not in managers:
         logger.error("Configuration error: missing or invalid checker "
                      "(it must be named '%s')", checker_codename)
         return False, None, []
     sandbox.create_file_from_storage(
-        checker_codename, managers[checker_codename].digest, executable=True)
+        CHECKER_FILENAME, managers[checker_codename].digest, executable=True)
 
-    command = ["./%s" % checker_codename, input_, correct_output, output_]
+    # Copy input and correct output in the sandbox.
+    sandbox.create_file_from_storage(CHECKER_INPUT_FILENAME, input_digest)
+    sandbox.create_file_from_storage(CHECKER_CORRECT_OUTPUT_FILENAME,
+                                     correct_output_digest)
+
+    # Execute the checker and ensure success, or log an error.
+    command = ["./%s" % CHECKER_FILENAME,
+               CHECKER_INPUT_FILENAME,
+               CHECKER_CORRECT_OUTPUT_FILENAME,
+               output_filename]
     box_success, success, unused_stats = trusted_step(sandbox, [command])
     if not box_success or not success:
         logger.error("Sandbox failed during checker step. "
                      "See previous logs for the reason.")
         return False, None, []
 
+    # Extract outcome and text assuming a standard manager output.
     try:
         outcome, text = extract_outcome_and_text(sandbox)
     except ValueError as e:

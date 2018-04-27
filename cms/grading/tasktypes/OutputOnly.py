@@ -142,20 +142,17 @@ class OutputOnly(TaskType):
         sandbox = create_sandbox(file_cacher, name="check")
         job.sandboxes.append(sandbox.path)
 
-        # Put user output and reference solution into the sandbox.
+        # Put user output into the sandbox.
         sandbox.create_file_from_storage(
             OutputOnly.OUTPUT_FILENAME, job.files[user_output_filename].digest)
-        sandbox.create_file_from_storage(
-            OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
 
         if self._uses_checker():
-            # Checker also requires the input file.
-            sandbox.create_file_from_storage(
-                OutputOnly.INPUT_FILENAME, job.input)
             success, outcome, text = checker_step(
-                sandbox, job.managers, OutputOnly.INPUT_FILENAME,
-                OutputOnly.CORRECT_OUTPUT_FILENAME, OutputOnly.OUTPUT_FILENAME)
+                sandbox, job.managers, job.input, job.output,
+                OutputOnly.OUTPUT_FILENAME)
         else:
+            sandbox.create_file_from_storage(
+                OutputOnly.CORRECT_OUTPUT_FILENAME, job.output)
             success = True
             outcome, text = white_diff_step(
                 sandbox,

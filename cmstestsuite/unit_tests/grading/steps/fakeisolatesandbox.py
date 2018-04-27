@@ -96,6 +96,9 @@ class FakeIsolateSandbox(IsolateSandbox):
 
         self._fake_execute_data.append(data)
 
+    def file_exists(self, path):
+        return path in self._fake_files
+
     def get_file(self, path, trunc_len=None):
         assert trunc_len is None  # other case not handled by fake
         if path in self._fake_files:

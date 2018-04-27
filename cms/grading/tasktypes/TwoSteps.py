@@ -385,11 +385,6 @@ class TwoSteps(TaskType):
             to check the solution successfully), outcome and text.
 
         """
-        # Put the reference solution and input into the sandbox.
-        sandbox.create_file_from_storage(
-            TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
-        sandbox.create_file_from_storage(TwoSteps.INPUT_FILENAME, job.input)
-
         # Put the user-produced output file into the checkbox. We treat links
         # as potential attacks, and not use them.
         output_src = os.path.join(eval_sandbox_path, TwoSteps.OUTPUT_FILENAME)
@@ -400,9 +395,12 @@ class TwoSteps(TaskType):
 
         if self._uses_checker():
             success, outcome, text = checker_step(
-                sandbox, job.managers, TwoSteps.INPUT_FILENAME,
-                TwoSteps.CORRECT_OUTPUT_FILENAME, TwoSteps.OUTPUT_FILENAME)
+                sandbox, job.managers, job.input, job.output,
+                TwoSteps.OUTPUT_FILENAME)
         else:
+            # Put the reference solution and input into the sandbox.
+            sandbox.create_file_from_storage(
+                TwoSteps.CORRECT_OUTPUT_FILENAME, job.output)
             success = True
             outcome, text = white_diff_step(sandbox,
                                             TwoSteps.OUTPUT_FILENAME,
