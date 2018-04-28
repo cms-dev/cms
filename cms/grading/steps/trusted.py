@@ -40,6 +40,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
+import errno
+
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
@@ -251,7 +254,11 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
     except ValueError as e:
         logger.error("Invalid output from checker: %s", e)
         return False, None, []
-    except OSError as e:  # Change to FileNotFoundError when dropping Python 2.
+    except OSError as e:
+        # Change OSError to FileNotFoundError and drop the check for being a
+        # file not found errno when dropping Python 2.
+        if e.errno != errno.ENOENT:
+            raise
         # This should not happen, as the redirect is handled by the sandbox.
         logger.error("Missing stdout or stderr file from checker: %s", e)
         return False, None, []

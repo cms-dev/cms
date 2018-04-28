@@ -238,7 +238,7 @@ class TestCheckerStep(unittest.TestCase):
 
     def setUp(self):
         super(TestCheckerStep, self).setUp()
-        # By default, this
+        # By default, any file request succeeds.
         self.file_cacher = MagicMock()
         self.sandbox = FakeIsolateSandbox(True, self.file_cacher)
 
