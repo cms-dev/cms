@@ -56,6 +56,9 @@ from cms.grading.steps import EVALUATION_MESSAGES, checker_step, \
 logger = logging.getLogger(__name__)
 
 
+EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
+
+
 def create_sandbox(file_cacher, multithreaded=False, name=None):
     """Create a sandbox, and return it.
 
@@ -156,15 +159,17 @@ def eval_output(file_cacher, job, checker_codename,
 
         # Put user output in the sandbox.
         if user_output_path is not None:
-            shutil.copyfile(
-                user_output_path, sandbox.relative_path("output.txt"))
+            shutil.copyfile(user_output_path,
+                            sandbox.relative_path(EVAL_USER_OUTPUT_FILENAME))
         else:
-            sandbox.create_file_from_storage("output.txt", user_output_digest)
+            sandbox.create_file_from_storage(EVAL_USER_OUTPUT_FILENAME,
+                                             user_output_digest)
 
         checker_digest = job.managers[checker_codename].digest \
             if checker_codename in job.managers else None
         success, outcome, text = checker_step(
-            sandbox, checker_digest, job.input, job.output, "output.txt")
+            sandbox, checker_digest, job.input, job.output,
+            EVAL_USER_OUTPUT_FILENAME)
 
         delete_sandbox(sandbox, success)
         return success, outcome, text

@@ -125,9 +125,9 @@ def white_diff_fobj_step(output_fobj, correct_output_fobj):
     identical (or differ just by white spaces) and 0.0 if they don't. Calling
     this function means that the output file exists.
 
-    output_fobj (File): file for the user output, opened in binary mode.
-    correct_output_fobj (File): file for the correct output, opened in binary
-        mode.
+    output_fobj (fileobj): file for the user output, opened in binary mode.
+    correct_output_fobj (fileobj): file for the correct output, opened in
+        binary mode.
 
     return ((float, [str])): the outcome as above and a description text.
 
