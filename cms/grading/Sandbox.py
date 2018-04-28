@@ -368,9 +368,8 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         executable (bool): to set permissions.
 
         """
-        file_ = self.create_file(path, executable)
-        self.file_cacher.get_file_to_fobj(digest, file_)
-        file_.close()
+        with self.create_file(path, executable) as dest_fobj:
+            self.file_cacher.get_file_to_fobj(digest, dest_fobj)
 
     def create_file_from_string(self, path, content, executable=False):
         """Write some data to a file in the sandbox.
@@ -380,9 +379,8 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         executable (bool): to set permissions.
 
         """
-        file_ = self.create_file(path, executable)
-        file_.write(content)
-        file_.close()
+        with self.create_file(path, executable) as dest_fobj:
+            dest_fobj.write(content)
 
     def get_file(self, path, trunc_len=None):
         """Open a file in the sandbox given its relative path.
