@@ -102,7 +102,6 @@ class TpsTaskLoader(TaskLoader):
                 [task_type_parameters[par_input],
                  task_type_parameters[par_output]],
                 evaluation_param,
-                task_type_parameters[par_user_managers]
             ]
 
         if task_type == 'Communication':
