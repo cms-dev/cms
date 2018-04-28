@@ -102,7 +102,6 @@ class TpsTaskLoader(TaskLoader):
                 [task_type_parameters[par_input],
                  task_type_parameters[par_output]],
                 evaluation_param,
-                task_type_parameters[par_user_managers]
             ]
 
         if task_type == 'Communication':
@@ -253,10 +252,9 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Checker not found, using diff if necessary")
             evaluation_param = "diff"
 
+        # Note that the original TPS worked with custom task type Batch2017
+        # and Communication2017 instead of Batch and Communication.
         args["task_type"] = data['task_type']
-        if data['task_type'] != 'OutputOnly' \
-                and data['task_type'] != 'Notice':
-            args["task_type"] += '2017'
         args["task_type_parameters"] = \
             self._get_task_type_parameters(
                 data, data['task_type'], evaluation_param)
@@ -285,6 +283,9 @@ class TpsTaskLoader(TaskLoader):
             digest = self.file_cacher.put_file_from_path(
                 grader_src,
                 "Manager for task %s" % name)
+            if data['task_type'] == 'Communication' \
+                    and os.path.splitext(grader_name)[0] == 'grader':
+                grader_name = 'stub' + os.path.splitext(grader_name)[1]
             args["managers"][grader_name] = Manager(grader_name, digest)
 
         # Manager
