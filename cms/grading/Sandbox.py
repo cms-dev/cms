@@ -1397,7 +1397,10 @@ class IsolateSandbox(SandboxBase):
             [self.box_exec]
             + (["--cg"] if self.cgroup else [])
             + ["--box-id=%d" % self.box_id]
-            + ["--cleanup"])
+            + ["--cleanup"],
+            # Use subprocess.DEVNULL when dropping Python 2.
+            stdout=io.open(os.devnull, "r+b"),
+            stderr=subprocess.STDOUT)
 
     def delete(self):
         """Delete the directory where the sandbox operated.

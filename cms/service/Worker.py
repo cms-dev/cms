@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Luca Versari <veluca93@gmail.com>
@@ -150,8 +150,8 @@ class Worker(Service):
                 logger.info("Finished job group.")
                 return job_group.export_to_dict()
 
-            except:
-                err_msg = "Worker failed."
+            except Exception as e:
+                err_msg = "Worker failed: %s." % e
                 logger.error(err_msg, exc_info=True)
                 raise JobException(err_msg)
 
