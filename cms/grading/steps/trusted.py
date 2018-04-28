@@ -43,6 +43,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+import errno
 import logging
 
 from cms import config
@@ -52,6 +53,14 @@ from .utils import generic_step
 
 
 logger = logging.getLogger(__name__)
+
+
+# Filename used for input and correct output in the checker sandbox.
+CHECKER_INPUT_FILENAME = "input.txt"
+CHECKER_CORRECT_OUTPUT_FILENAME = "correct_output.txt"
+# Codename of the manager used to compare output (must be an executable), and
+# also the filename used in the sandbox.
+CHECKER_FILENAME = "checker"
 
 
 def _filter_ansi_escape(string):
@@ -83,6 +92,8 @@ def extract_outcome_and_text(sandbox):
     return (float, [str]): outcome and text.
 
     raise (ValueError): if cannot decode the data.
+    raise (FileNotFoundError): if any of the sandbox stdout or stderr file
+        is missing.
 
     """
     with sandbox.get_file_text(sandbox.stdout_file) as stdout_file:
@@ -177,3 +188,74 @@ def trusted_step(sandbox, commands):
         logger.error("Unrecognized sandbox exit status '%s' in trusted step.",
                      exit_status)
         return False, None, None
+
+
+def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
+                 output_filename):
+    """Run the explicit checker given by the admins
+
+    sandbox (Sandbox): the sandbox to run the checker in; should already
+        contain input, correct output, and user output; the checker is instead
+        copied from the managers.
+    checker_digest (str|None): digest of the checker, will be fetched as
+        "checker"; if None, an appropriate error for bad configuration of the
+        task will be generated.
+    input_digest (str): digest of the input, will be fetched as "input.txt".
+    correct_output_digest (str): digest of the correct output, will be fetched
+        as "correct_output.txt".
+    output_filename (str): inner filename of the user output (already in the
+        sandbox).
+
+    return (bool, float|None, [str]): success (true if the checker was able
+        to check the solution successfully), outcome and text.
+
+    """
+    # Check that the file we are going to inject in the sandbox are not already
+    # present (if so, it is due to a programming error in the task type).
+    for filename in [CHECKER_INPUT_FILENAME,
+                     CHECKER_CORRECT_OUTPUT_FILENAME,
+                     CHECKER_FILENAME]:
+        if sandbox.file_exists(filename):
+            logger.error("File %s already in the sandbox for the checker.",
+                         filename)
+            return False, None, []
+
+    # Copy the checker in the sandbox, after making sure it was provided.
+    if checker_digest is None:
+        logger.error("Configuration error: missing checker in task managers.")
+        return False, None, []
+    sandbox.create_file_from_storage(CHECKER_FILENAME, checker_digest,
+                                     executable=True)
+
+    # Copy input and correct output in the sandbox.
+    sandbox.create_file_from_storage(CHECKER_INPUT_FILENAME, input_digest)
+    sandbox.create_file_from_storage(CHECKER_CORRECT_OUTPUT_FILENAME,
+                                     correct_output_digest)
+
+    # Execute the checker and ensure success, or log an error.
+    command = ["./%s" % CHECKER_FILENAME,
+               CHECKER_INPUT_FILENAME,
+               CHECKER_CORRECT_OUTPUT_FILENAME,
+               output_filename]
+    box_success, success, unused_stats = trusted_step(sandbox, [command])
+    if not box_success or not success:
+        logger.error("Sandbox failed during checker step. "
+                     "See previous logs for the reason.")
+        return False, None, []
+
+    # Extract outcome and text assuming a standard manager output.
+    try:
+        outcome, text = extract_outcome_and_text(sandbox)
+    except ValueError as e:
+        logger.error("Invalid output from checker: %s", e)
+        return False, None, []
+    except OSError as e:
+        # Change OSError to FileNotFoundError and drop the check for being a
+        # file not found errno when dropping Python 2.
+        if e.errno != errno.ENOENT:
+            raise
+        # This should not happen, as the redirect is handled by the sandbox.
+        logger.error("Missing stdout or stderr file from checker: %s", e)
+        return False, None, []
+
+    return True, outcome, text
