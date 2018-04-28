@@ -74,6 +74,8 @@ class TwoSteps(TaskType):
     comparator.
 
     """
+    # Codename of the checker, if it is used.
+    CHECKER_CODENAME = "checker"
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
     # Filename of the input and of the contestant's solution.
@@ -394,8 +396,10 @@ class TwoSteps(TaskType):
             shutil.copyfile(output_src, output_dst)
 
         if self._uses_checker():
+            checker_digest = job.managers[TwoSteps.CHECKER_CODENAME].digest \
+                if TwoSteps.CHECKER_CODENAME in job.managers else None
             success, outcome, text = checker_step(
-                sandbox, job.managers, job.input, job.output,
+                sandbox, checker_digest, job.input, job.output,
                 TwoSteps.OUTPUT_FILENAME)
         else:
             # Put the reference solution and input into the sandbox.

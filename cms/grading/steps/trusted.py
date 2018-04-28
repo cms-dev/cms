@@ -192,14 +192,16 @@ def trusted_step(sandbox, commands):
         return False, None, None
 
 
-def checker_step(sandbox, managers, input_digest, correct_output_digest,
-                 output_filename, checker_codename=CHECKER_FILENAME):
+def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
+                 output_filename):
     """Run the explicit checker given by the admins
 
     sandbox (Sandbox): the sandbox to run the checker in; should already
         contain input, correct output, and user output; the checker is instead
         copied from the managers.
-    managers ({str: Manager}): map filenames to the dataset's managers.
+    checker_digest (str|None): digest of the checker, will be fetched as
+        "checker"; if None, an appropriate error for bad configuration of the
+        task will be generated.
     input_digest (str): digest of the input, will be fetched as "input.txt".
     correct_output_digest (str): digest of the correct output, will be fetched
         as "correct_output.txt".
@@ -221,12 +223,11 @@ def checker_step(sandbox, managers, input_digest, correct_output_digest,
             return False, None, []
 
     # Copy the checker in the sandbox, after making sure it was provided.
-    if checker_codename not in managers:
-        logger.error("Configuration error: missing or invalid checker "
-                     "(it must be named '%s')", checker_codename)
+    if checker_digest is None:
+        logger.error("Configuration error: missing checker in task managers.")
         return False, None, []
-    sandbox.create_file_from_storage(
-        CHECKER_FILENAME, managers[checker_codename].digest, executable=True)
+    sandbox.create_file_from_storage(CHECKER_FILENAME, checker_digest,
+                                     executable=True)
 
     # Copy input and correct output in the sandbox.
     sandbox.create_file_from_storage(CHECKER_INPUT_FILENAME, input_digest)

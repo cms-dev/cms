@@ -78,6 +78,8 @@ class Batch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
+    # Codename of the checker, if it is used.
+    CHECKER_CODENAME = "checker"
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
     # Basename of the grader, used in the manager filename and as the main
@@ -379,8 +381,10 @@ class Batch(TaskType):
             shutil.copyfile(output_src, output_dst)
 
         if self._uses_checker():
+            checker_digest = job.managers[Batch.CHECKER_CODENAME].digest \
+                if Batch.CHECKER_CODENAME in job.managers else None
             success, outcome, text = checker_step(
-                sandbox, job.managers, job.input, job.output,
+                sandbox, checker_digest, job.input, job.output,
                 self._actual_output)
         else:
             sandbox.create_file_from_storage(

@@ -57,6 +57,8 @@ class OutputOnly(TaskType):
     the evaluation is done via white diff or via a comparator.
 
     """
+    # Codename of the checker, if it is used.
+    CHECKER_CODENAME = "checker"
     # Filename of the reference solution in the sandbox evaluating the output.
     CORRECT_OUTPUT_FILENAME = "res.txt"
     # Name of input and user output files.
@@ -147,8 +149,10 @@ class OutputOnly(TaskType):
             OutputOnly.OUTPUT_FILENAME, job.files[user_output_filename].digest)
 
         if self._uses_checker():
+            checker_digest = job.managers[OutputOnly.CHECKER_CODENAME].digest \
+                if OutputOnly.CHECKER_CODENAME in job.managers else None
             success, outcome, text = checker_step(
-                sandbox, job.managers, job.input, job.output,
+                sandbox, checker_digest, job.input, job.output,
                 OutputOnly.OUTPUT_FILENAME)
         else:
             sandbox.create_file_from_storage(
