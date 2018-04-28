@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -434,13 +434,14 @@ class EvaluationService(TriggeredService):
         job_group = None
         job_group_success = True
         if error is not None:
-            logger.error("Received error from Worker: `%s'.", error)
+            logger.error(
+                "Received error from Worker (see above), job group lost.")
             job_group_success = False
 
         else:
             try:
                 job_group = JobGroup.import_from_dict(data)
-            except:
+            except Exception:
                 logger.error("Couldn't build JobGroup for data %s.", data,
                              exc_info=True)
                 job_group_success = False
@@ -448,8 +449,11 @@ class EvaluationService(TriggeredService):
         if job_group_success:
             for job in job_group.jobs:
                 operation = ESOperation.from_dict(job.operation)
-                logger.info("`%s' completed. Success: %s.",
-                            operation, job.success)
+                if job.success:
+                    logger.info("`%s' succeeded.", operation)
+                else:
+                    logger.error("`%s' failed, see worker logs and sandbox "
+                                 "as %s.", operation, " ".join(job.sandboxes))
                 if isinstance(to_ignore, list) and operation in to_ignore:
                     logger.info("`%s' result ignored as requested", operation)
                 else:
@@ -900,8 +904,9 @@ class EvaluationService(TriggeredService):
             contest_id = self.contest_id
 
         with SessionGen() as session:
-            # When invalidating a dataset we need to know the task_id, otherwise
-            # get_submissions will return all the submissions of the contest.
+            # When invalidating a dataset we need to know the task_id,
+            # otherwise get_submissions will return all the submissions of
+            # the contest.
             if dataset_id is not None and task_id is None \
                     and submission_id is None:
                 task_id = Dataset.get_from_id(dataset_id, session).task_id
