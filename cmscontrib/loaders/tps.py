@@ -283,6 +283,9 @@ class TpsTaskLoader(TaskLoader):
             digest = self.file_cacher.put_file_from_path(
                 grader_src,
                 "Manager for task %s" % name)
+            if data['task_type'] == 'Communication' \
+                    and os.path.splitext(grader_name)[0] == 'grader':
+                grader_name = 'stub' + os.path.splitext(grader_name)[1]
             args["managers"][grader_name] = Manager(grader_name, digest)
 
         # Manager
