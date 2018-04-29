@@ -129,20 +129,7 @@ class Worker(Service):
                             job.success = False
                             job.plus = {"tombstone": True}
                     else:
-                        time.sleep(self._fake_worker_time)
-                        job.success = True
-                        job.text = ["ok"]
-                        job.plus = {
-                            "execution_time": self._fake_worker_time,
-                            "execution_wall_clock_time":
-                            self._fake_worker_time,
-                            "execution_memory": 1000,
-                        }
-
-                        if isinstance(job, CompilationJob):
-                            job.compilation_success = True
-                        elif isinstance(job, EvaluationJob):
-                            job.outcome = "1.0"
+                        self._fake_work(job)
 
                     logger.info("Finished job.",
                                 extra={"operation": job.info})
@@ -167,6 +154,21 @@ class Worker(Service):
             logger.warning(err_msg)
             self._finalize(start_time)
             raise JobException(err_msg)
+
+    def _fake_work(self, job):
+        """Fill the job with fake success data after waiting for some time."""
+        time.sleep(self._fake_worker_time)
+        job.success = True
+        job.text = ["ok"]
+        job.plus = {
+            "execution_time": self._fake_worker_time,
+            "execution_wall_clock_time": self._fake_worker_time,
+            "execution_memory": 1000,
+        }
+        if isinstance(job, CompilationJob):
+            job.compilation_success = True
+        elif isinstance(job, EvaluationJob):
+            job.outcome = "1.0"
 
     def _finalize(self, start_time):
         end_time = time.time()
