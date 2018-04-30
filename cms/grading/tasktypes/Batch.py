@@ -246,10 +246,7 @@ class Batch(TaskType):
                              len(job.executables))
 
         # Create the sandbox
-        sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="evaluate")
+        sandbox = create_sandbox(file_cacher, name="evaluate")
         job.sandboxes.append(sandbox.path)
 
         # Prepare the execution
@@ -294,7 +291,8 @@ class Batch(TaskType):
             job.memory_limit,
             writable_files=files_allowing_write,
             stdin_redirect=stdin_redirect,
-            stdout_redirect=stdout_redirect)
+            stdout_redirect=stdout_redirect,
+            multiprocess=job.multithreaded_sandbox)
 
         job.plus = plus
 

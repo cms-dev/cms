@@ -47,7 +47,7 @@ class TestGenericStep(unittest.TestCase):
 
     def setUp(self):
         super(TestGenericStep, self).setUp()
-        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox = FakeIsolateSandbox(None)
 
     def test_single_command_success(self):
         self.sandbox.fake_execute_data(

@@ -45,7 +45,7 @@ class TestCompilationStep(unittest.TestCase):
 
     def setUp(self):
         super(TestCompilationStep, self).setUp()
-        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox = FakeIsolateSandbox(None)
 
         patcher = patch("cms.grading.steps.compilation.logger.error")
         self.mock_logger_error = patcher.start()

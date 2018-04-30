@@ -94,7 +94,8 @@ EVALUATION_MESSAGES = MessageCollection([
 def evaluation_step(sandbox, commands,
                     time_limit=None, memory_limit=None,
                     allow_dirs=None, writable_files=None,
-                    stdin_redirect=None, stdout_redirect=None):
+                    stdin_redirect=None, stdout_redirect=None,
+                    multiprocess=False):
     """Execute some evaluation commands in the sandbox.
 
     Execute the commands sequentially in the (already created) sandbox, after
@@ -122,6 +123,7 @@ def evaluation_step(sandbox, commands,
     stdout_redirect (str|None): the name of the file that the standard output
         of each command will be redirected to; if None, "stdout.txt" will be
         used.
+    multiprocess (bool): whether to allow multiple thread/processes or not.
 
     return ((bool, dict|None)): a tuple with two items:
         * success: True if the sandbox did not fail, in any command;
@@ -134,8 +136,8 @@ def evaluation_step(sandbox, commands,
     for command in commands:
         success = evaluation_step_before_run(
             sandbox, command, time_limit, memory_limit,
-            allow_dirs, writable_files,
-            stdin_redirect, stdout_redirect, wait=True)
+            allow_dirs, writable_files, stdin_redirect, stdout_redirect,
+            multiprocess, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
             return False, None
@@ -151,7 +153,7 @@ def evaluation_step_before_run(sandbox, command,
                                time_limit=None, memory_limit=None,
                                allow_dirs=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
-                               wait=False):
+                               multiprocess=False, wait=False):
     """First part of an evaluation step, up to the execution, included.
 
     See evaluation_step for the meaning of the common arguments. This version
@@ -202,6 +204,8 @@ def evaluation_step_before_run(sandbox, command,
         if name is not None:
             writable_files.append(name)
     sandbox.allow_writing_only(writable_files)
+
+    sandbox.set_multiprocess(multiprocess)
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")

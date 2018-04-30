@@ -59,11 +59,11 @@ logger = logging.getLogger(__name__)
 EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
 
 
-def create_sandbox(file_cacher, multithreaded=False, name=None):
+def create_sandbox(file_cacher, name=None):
     """Create a sandbox, and return it.
 
     file_cacher (FileCacher): a file cacher instance.
-    multithreaded (boolean): whether the sandbox should allow multithreading.
+    name (str): name to include in the path of the sandbox.
 
     return (Sandbox): a sandbox.
 
@@ -71,7 +71,7 @@ def create_sandbox(file_cacher, multithreaded=False, name=None):
 
     """
     try:
-        sandbox = Sandbox(multithreaded, file_cacher, name=name)
+        sandbox = Sandbox(file_cacher, name=name)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)

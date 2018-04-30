@@ -224,14 +224,8 @@ class TwoSteps(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        first_sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="first_evaluate")
-        second_sandbox = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="second_evaluate")
+        first_sandbox = create_sandbox(file_cacher, name="first_evaluate")
+        second_sandbox = create_sandbox(file_cacher, name="second_evaluate")
         job.sandboxes.append(first_sandbox.path)
         job.sandboxes.append(second_sandbox.path)
 
@@ -268,6 +262,7 @@ class TwoSteps(TaskType):
             job.memory_limit,
             first_allow_path,
             stdin_redirect=TwoSteps.INPUT_FILENAME,
+            multiprocess=job.multithreaded_sandbox,
             wait=False)
 
         # Second step: we start the second manager.
@@ -295,6 +290,7 @@ class TwoSteps(TaskType):
             job.memory_limit,
             second_allow_path,
             stdout_redirect=TwoSteps.OUTPUT_FILENAME,
+            multiprocess=job.multithreaded_sandbox,
             wait=False)
 
         # Consume output.

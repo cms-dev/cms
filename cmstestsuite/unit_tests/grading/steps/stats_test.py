@@ -59,7 +59,7 @@ class TestExecutionStats(unittest.TestCase):
 
     def setUp(self):
         super(TestExecutionStats, self).setUp()
-        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox = FakeIsolateSandbox(None)
         self.sandbox.stdout_file = "stdout.txt"
         self.sandbox.stderr_file = "stderr.txt"
 

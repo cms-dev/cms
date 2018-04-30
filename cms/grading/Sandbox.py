@@ -195,11 +195,9 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
     EXIT_TIMEOUT_WALL = 'wall timeout'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
+    def __init__(self, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
-        multithreaded (boolean): whether the sandbox should allow
-            multithreading.
         file_cacher (FileCacher): an instance of the FileCacher class
             (to interact with FS), if the sandbox needs it.
         name (string|None): name of the sandbox, which might appear in the
@@ -208,7 +206,6 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
             default temporary directory specified in the configuration.
 
         """
-        self.multithreaded = multithreaded
         self.file_cacher = file_cacher
         self.name = name if name is not None else "unnamed"
         self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
@@ -227,14 +224,23 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         self.verbosity = 0
 
         self.max_processes = 1
-        if multithreaded:
-            # Max processes is set to 1000 to limit the effect of fork bombs.
-            self.max_processes = 1000
 
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
         # packages.
         self.set_env["HOME"] = "./"
+
+    def set_multiprocess(self, multiprocess):
+        """Set the sandbox to (dis-)allow multiple threads and processes.
+
+        multiprocess (bool): whether to allow multiple thread/processes or not.
+
+        """
+        if multiprocess:
+            # Max processes is set to 1000 to limit the effect of fork bombs.
+            self.max_processes = 1000
+        else:
+            self.max_processes = 1
 
     def get_stats(self):
         """Return a human-readable string representing execution time
@@ -538,13 +544,13 @@ class StupidSandbox(SandboxBase):
 
     """
 
-    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
+    def __init__(self, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, multithreaded, file_cacher, name, temp_dir)
+        SandboxBase.__init__(self, file_cacher, name, temp_dir)
 
         # Make box directory
         self.path = tempfile.mkdtemp(
@@ -866,13 +872,13 @@ class IsolateSandbox(SandboxBase):
     # on the current directory.
     SECURE_COMMANDS = ["/bin/cp", "/bin/mv", "/usr/bin/zip", "/usr/bin/unzip"]
 
-    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
+    def __init__(self, file_cacher, name=None, temp_dir=None):
         """Initialization.
 
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, multithreaded, file_cacher, name, temp_dir)
+        SandboxBase.__init__(self, file_cacher, name, temp_dir)
 
         # Isolate only accepts ids between 0 and 99. We assign the
         # range [(shard+1)*10, (shard+2)*10) to each Worker and keep

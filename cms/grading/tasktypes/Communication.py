@@ -176,15 +176,9 @@ class Communication(TaskType):
         indices = range(num_processes)
 
         # Create sandboxes.
-        sandbox_mgr = create_sandbox(
-            file_cacher,
-            multithreaded=job.multithreaded_sandbox,
-            name="manager_evaluate")
+        sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
         sandbox_user = [
-            create_sandbox(
-                file_cacher,
-                multithreaded=job.multithreaded_sandbox,
-                name="user_evaluate")
+            create_sandbox(file_cacher, name="user_evaluate")
             for i in indices]
         job.sandboxes.extend(s.path for s in sandbox_user)
         job.sandboxes.append(sandbox_mgr.path)
@@ -242,7 +236,8 @@ class Communication(TaskType):
             None,
             allow_dirs=manager_allow_dirs,
             writable_files=["output.txt"],
-            stdin_redirect="input.txt")
+            stdin_redirect="input.txt",
+            multiprocess=job.multithreaded_sandbox)
 
         # Fourth step: start the user submissions compiled with the stub.
         language = get_language(job.language)
@@ -266,7 +261,8 @@ class Communication(TaskType):
                 commands[-1],
                 job.time_limit,
                 job.memory_limit,
-                allow_dirs=user_allow_dirs)
+                allow_dirs=user_allow_dirs,
+                multiprocess=job.multithreaded_sandbox)
 
         # Consume output.
         wait_without_std(processes + [manager])

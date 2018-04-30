@@ -50,7 +50,7 @@ class TestExtractOutcomeAndText(unittest.TestCase):
 
     def setUp(self):
         super(TestExtractOutcomeAndText, self).setUp()
-        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox = FakeIsolateSandbox(None)
         self.sandbox.stdout_file = "o"
         self.sandbox.stderr_file = "e"
 
@@ -112,7 +112,7 @@ class TestTrustedStep(unittest.TestCase):
 
     def setUp(self):
         super(TestTrustedStep, self).setUp()
-        self.sandbox = FakeIsolateSandbox(True, None)
+        self.sandbox = FakeIsolateSandbox(None)
 
         patcher = patch("cms.grading.steps.trusted.logger.error",
                         wraps=trusted.logger.error)
@@ -240,7 +240,7 @@ class TestCheckerStep(unittest.TestCase):
         super(TestCheckerStep, self).setUp()
         # By default, any file request succeeds.
         self.file_cacher = MagicMock()
-        self.sandbox = FakeIsolateSandbox(True, self.file_cacher)
+        self.sandbox = FakeIsolateSandbox(self.file_cacher)
 
         patcher = patch("cms.grading.steps.trusted.trusted_step")
         self.addCleanup(patcher.stop)

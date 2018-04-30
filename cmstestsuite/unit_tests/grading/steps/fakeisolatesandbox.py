@@ -42,9 +42,8 @@ class FakeIsolateSandbox(IsolateSandbox):
     answer get_file or get_file_to_string.
 
     """
-    def __init__(self, multithreaded, file_cacher, name=None, temp_dir=None):
-        super(FakeIsolateSandbox, self).__init__(
-            multithreaded, file_cacher, name, temp_dir)
+    def __init__(self, file_cacher, name=None, temp_dir=None):
+        super(FakeIsolateSandbox, self).__init__(file_cacher, name, temp_dir)
         self._fake_files = {}
 
         self._fake_execute_data = deque()
