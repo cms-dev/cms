@@ -31,8 +31,8 @@ from six import iterkeys, iteritems
 
 import logging
 
-from cms.grading.steps import compilation_step, \
-    evaluation_step, human_evaluation_message, is_evaluation_passed
+from cms.grading.steps import compilation_step, evaluation_step,\
+    human_evaluation_message
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
@@ -284,7 +284,7 @@ class Batch(TaskType):
             sandbox.create_file_from_storage(filename, digest)
 
         # Actually performs the execution
-        success, plus = evaluation_step(
+        success, evaluation_success, plus = evaluation_step(
             sandbox,
             commands,
             job.time_limit,
@@ -304,7 +304,7 @@ class Batch(TaskType):
             pass
 
         # Contestant's error: the marks won't be good
-        elif not is_evaluation_passed(plus):
+        elif not evaluation_success:
             outcome = 0.0
             text = human_evaluation_message(plus)
             if job.get_output:

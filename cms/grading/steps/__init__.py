@@ -29,7 +29,7 @@ from future.builtins import *  # noqa
 from .compilation import COMPILATION_MESSAGES, compilation_step
 from .evaluation import EVALUATION_MESSAGES, evaluation_step, \
     evaluation_step_after_run, evaluation_step_before_run, \
-    human_evaluation_message, is_evaluation_passed
+    human_evaluation_message
 from .messages import HumanMessage, MessageCollection
 from .stats import execution_stats, merge_execution_stats
 from .trusted import checker_step, extract_outcome_and_text, trusted_step
@@ -43,7 +43,7 @@ __all__ = [
     # evaluation.py
     "EVALUATION_MESSAGES", "evaluation_step",
     "evaluation_step_after_run", "evaluation_step_before_run",
-    "human_evaluation_message", "is_evaluation_passed",
+    "human_evaluation_message",
     # messages.py
     "HumanMessage", "MessageCollection",
     # stats_test.py
