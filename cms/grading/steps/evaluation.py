@@ -125,8 +125,11 @@ def evaluation_step(sandbox, commands,
         used.
     multiprocess (bool): whether to allow multiple thread/processes or not.
 
-    return ((bool, dict|None)): a tuple with two items:
+    return ((bool, bool|None, dict|None)): a tuple with three items:
         * success: True if the sandbox did not fail, in any command;
+        * evaluation_success: True if the solution ran correctly and the output
+            can be evaluated, False if it terminated with an error or was
+            terminated due to resource limitation; None if success is False;
         * stats: a dictionary with statistics about the evaluation, or None
             if success is False.
 
@@ -140,13 +143,13 @@ def evaluation_step(sandbox, commands,
             multiprocess, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
-            return False, None
+            return False, None, None
 
-    success, stats = evaluation_step_after_run(sandbox)
+    success, evaluation_success, stats = evaluation_step_after_run(sandbox)
     if not success:
         logger.debug("Job failed in evaluation_step_after_run: %r", stats)
 
-    return success, stats
+    return success, evaluation_success, stats
 
 
 def evaluation_step_before_run(sandbox, command,
@@ -221,27 +224,31 @@ def evaluation_step_after_run(sandbox):
     stats = execution_stats(sandbox)
     exit_status = stats["exit_status"]
 
-    if exit_status in [
-            Sandbox.EXIT_OK,
+    if exit_status == Sandbox.EXIT_OK:
+        # Evaluation succeeded, and user program terminated correctly.
+        logger.debug("Evaluation terminated correctly.")
+        return True, True, stats
+
+    elif exit_status in [
             Sandbox.EXIT_TIMEOUT,
             Sandbox.EXIT_TIMEOUT_WALL,
             Sandbox.EXIT_NONZERO_RETURN,
             Sandbox.EXIT_SIGNAL]:
-        # Evaluation succeeded, and user program either succeeded or was
-        # interrupted for some error condition. We report the success, the
-        # task type will decide how to grade this evaluation.
+        # Evaluation succeeded, and user program was interrupted for some error
+        # condition. We report the success, the task type should decide how to
+        # grade this evaluation.
         logger.debug("Evaluation ended with exit status '%s'", exit_status)
-        return True, stats
+        return True, False, stats
 
     # Unexpected errors of various degrees; we report the failure.
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         logger.error("Evaluation aborted because of sandbox error "
                      "(status '%s').", exit_status)
-        return False, stats
+        return False, None, stats
 
     else:
         logger.error("Unrecognized evaluation exit status '%s'.", exit_status)
-        return False, stats
+        return False, None, stats
 
 
 def human_evaluation_message(stats):
@@ -280,7 +287,3 @@ def human_evaluation_message(stats):
         logger.error("Unrecognized exit status for an evaluation: %s",
                      exit_status)
         return []
-
-
-def is_evaluation_passed(stats):
-    return stats['exit_status'] == Sandbox.EXIT_OK

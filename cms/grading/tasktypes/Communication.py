@@ -36,10 +36,9 @@ from functools import reduce
 
 from cms import config, rmtree
 from cms.grading.Sandbox import wait_without_std, Sandbox
-from cms.grading.steps import compilation_step, \
-    human_evaluation_message, is_evaluation_passed, extract_outcome_and_text, \
-    evaluation_step, evaluation_step_before_run, evaluation_step_after_run, \
-    merge_execution_stats
+from cms.grading.steps import compilation_step, evaluation_step, \
+    evaluation_step_before_run, evaluation_step_after_run, \
+    extract_outcome_and_text, human_evaluation_message,  merge_execution_stats
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
@@ -270,9 +269,10 @@ class Communication(TaskType):
 
         user_results = [evaluation_step_after_run(s) for s in sandbox_user]
         success_user = all(r[0] for r in user_results)
+        evaluation_success_user = all(r[1] for r in user_results)
         plus_user = reduce(merge_execution_stats,
-                           [r[1] for r in user_results])
-        success_mgr, unused_plus_mgr = \
+                           [r[2] for r in user_results])
+        success_mgr, evaluation_success_mgr, unused_plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
         if plus_user['exit_status'] == Sandbox.EXIT_OK and \
@@ -282,13 +282,13 @@ class Communication(TaskType):
         # Merge results.
         job.plus = plus_user
 
-        # If at least one evaluation had problems, we report the
-        # problems.
-        if not success_user or not success_mgr:
+        # If at least one sandbox had problems, or the manager did not
+        # terminate correctly, we report an error.
+        if not success_user or not success_mgr or not evaluation_success_mgr:
             success, outcome, text = False, None, None
         # If the user sandbox detected some problem (timeout, ...),
         # the outcome is 0.0 and the text describes that problem.
-        elif not is_evaluation_passed(plus_user):
+        elif not evaluation_success_user:
             success = True
             outcome, text = 0.0, human_evaluation_message(plus_user)
         # Otherwise, we use the manager to obtain the outcome.

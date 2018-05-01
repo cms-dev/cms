@@ -37,7 +37,7 @@ from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.steps import compilation_step, evaluation_step_before_run, \
-    evaluation_step_after_run, is_evaluation_passed, human_evaluation_message
+    evaluation_step_after_run, human_evaluation_message
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox, eval_output
@@ -297,9 +297,9 @@ class TwoSteps(TaskType):
         wait_without_std([second, first])
         # TODO: check exit codes with translate_box_exitcode.
 
-        success_first, first_plus = \
+        success_first, evaluation_success_first, first_plus = \
             evaluation_step_after_run(first_sandbox)
-        success_second, second_plus = \
+        success_second, evaluation_success_second, second_plus = \
             evaluation_step_after_run(second_sandbox)
 
         job.plus = second_plus
@@ -313,10 +313,9 @@ class TwoSteps(TaskType):
             success = False
 
         # Contestant's error: the marks won't be good
-        elif not is_evaluation_passed(first_plus) or \
-                not is_evaluation_passed(second_plus):
+        elif not evaluation_success_first or not evaluation_success_second:
             outcome = 0.0
-            if not is_evaluation_passed(first_plus):
+            if not evaluation_success_first:
                 text = human_evaluation_message(first_plus)
             else:
                 text = human_evaluation_message(second_plus)
