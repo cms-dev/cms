@@ -206,8 +206,9 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
     output_filename (str): inner filename of the user output (already in the
         sandbox).
 
-    return (bool, float|None, [str]): success (true if the checker was able
-        to check the solution successfully), outcome and text.
+    return (bool, float|None, [str]|None): success (true if the checker was
+        able to check the solution successfully), outcome and text (both None
+        if success is False).
 
     """
     # Check that the file we are going to inject in the sandbox are not already
@@ -218,12 +219,12 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
         if sandbox.file_exists(filename):
             logger.error("File %s already in the sandbox for the checker.",
                          filename)
-            return False, None, []
+            return False, None, None
 
     # Copy the checker in the sandbox, after making sure it was provided.
     if checker_digest is None:
         logger.error("Configuration error: missing checker in task managers.")
-        return False, None, []
+        return False, None, None
     sandbox.create_file_from_storage(CHECKER_FILENAME, checker_digest,
                                      executable=True)
 
@@ -241,14 +242,14 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
     if not box_success or not success:
         logger.error("Sandbox failed during checker step. "
                      "See previous logs for the reason.")
-        return False, None, []
+        return False, None, None
 
     # Extract outcome and text assuming a standard manager output.
     try:
         outcome, text = extract_outcome_and_text(sandbox)
     except ValueError as e:
         logger.error("Invalid output from checker: %s", e)
-        return False, None, []
+        return False, None, None
     except OSError as e:
         # Change OSError to FileNotFoundError and drop the check for being a
         # file not found errno when dropping Python 2.
@@ -256,6 +257,6 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
             raise
         # This should not happen, as the redirect is handled by the sandbox.
         logger.error("Missing stdout or stderr file from checker: %s", e)
-        return False, None, []
+        return False, None, None
 
     return True, outcome, text

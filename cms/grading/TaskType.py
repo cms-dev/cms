@@ -135,8 +135,9 @@ def eval_output(file_cacher, job, checker_codename,
     user_output_filename (str): the filename the user was expected to write to,
         or empty if stdout (used to return an error to the user).
 
-    return (bool, float|None, [str]): success (true if the checker was able
-        to check the solution successfully), outcome and text.
+    return (bool, float|None, [str]|None): success (true if the checker was
+        able to check the solution successfully), outcome and text (both None
+        if success is False).
 
     """
     if (user_output_path is None) == (user_output_digest is None):
