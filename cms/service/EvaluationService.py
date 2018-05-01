@@ -452,8 +452,9 @@ class EvaluationService(TriggeredService):
                 if job.success:
                     logger.info("`%s' succeeded.", operation)
                 else:
-                    logger.error("`%s' failed, see worker logs and sandbox "
-                                 "as %s.", operation, " ".join(job.sandboxes))
+                    logger.error("`%s' failed, see worker logs and (possibly) "
+                                 "sandboxes at '%s'.",
+                                 operation, " ".join(job.sandboxes))
                 if isinstance(to_ignore, list) and operation in to_ignore:
                     logger.info("`%s' result ignored as requested", operation)
                 else:
