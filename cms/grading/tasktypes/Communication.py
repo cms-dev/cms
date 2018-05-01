@@ -285,7 +285,7 @@ class Communication(TaskType):
         # If at least one evaluation had problems, we report the
         # problems.
         if not success_user or not success_mgr:
-            success, outcome, text = False, None, []
+            success, outcome, text = False, None, None
         # If the user sandbox detected some problem (timeout, ...),
         # the outcome is 0.0 and the text describes that problem.
         elif not is_evaluation_passed(plus_user):
