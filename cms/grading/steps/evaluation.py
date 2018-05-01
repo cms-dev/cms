@@ -244,11 +244,11 @@ def evaluation_step_after_run(sandbox):
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         logger.error("Evaluation aborted because of sandbox error "
                      "(status '%s').", exit_status)
-        return False, None, stats
+        return False, None, None
 
     else:
         logger.error("Unrecognized evaluation exit status '%s'.", exit_status)
-        return False, None, stats
+        return False, None, None
 
 
 def human_evaluation_message(stats):
