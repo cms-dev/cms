@@ -534,7 +534,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
     def test_input_not_provided(self):
         del self.files["input"]
 
-        with self.assertRaisesRegex(UnacceptableUserTest, "file"):
+        with six.assertRaisesRegex(self, UnacceptableUserTest, "file"):
             self.call()
 
     def test_non_testable(self):
