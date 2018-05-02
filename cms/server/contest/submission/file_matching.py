@@ -181,8 +181,8 @@ class InvalidFilesOrLanguage(Exception):
     pass
 
 
-def match_files_and_languages(given_files, given_language_name,
-                              submission_format, allowed_language_names):
+def match_files_and_language(given_files, given_language_name,
+                             submission_format, allowed_language_names):
     """Figure out what the given files are and which language they're in.
 
     Take a set of files and a set of languages that these files are
