@@ -73,10 +73,14 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
 
         # Set up patches and mocks for a successful run. These are all
         # controlled by the following values, which can be changed to
-        # make some steps fail.
+        # make some steps fail. The task will require a language-aware
+        # submission with three files: foo.%l, bar.%l and baz.%l; the
+        # first will be provided by the contestant, the second will be
+        # fetched from the previous submission (as partial submissions
+        # will be allowed), the third will be missing.
 
         self.contest = self.add_contest(
-            languages=["MockLanguage"])
+            languages=["MockLanguage", "AnotherMockLanguage"])
         self.participation = self.add_participation(
             contest=self.contest)
         self.task = self.add_task(
@@ -92,6 +96,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         self.official = True
         self.received_files = sentinel.received_files
         self.files = {"foo.%l": FOO_CONTENT}
+        # Multiple extensions, primary one doesn't start with a period.
         self.language = make_language("MockLanguage", ["mock.1", ".mock2"])
         self.digests = {"bar.%l": bytes_digest(BAR_CONTENT)}
         self.submit_local_copy_path = unique_unicode_id()
@@ -124,7 +129,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
             "cms.server.contest.submission.workflow.match_files_and_language")
         self.match_files_and_language = patcher.start()
         self.addCleanup(patcher.stop)
-        # Use side_effect to keep it working if we reassign them.
+        # Use side_effect to keep it working if we reassign the values.
         self.match_files_and_language.side_effect = \
             lambda *args, **kwargs: (self.files, self.language)
 
@@ -133,6 +138,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
             ".fetch_file_digests_from_previous_submission")
         self.fetch_file_digests_from_previous_submission = patcher.start()
         self.addCleanup(patcher.stop)
+        # Use side_effect to keep it working if we reassign the value.
         self.fetch_file_digests_from_previous_submission.side_effect = \
             lambda *args, **kwargs: self.digests
 
@@ -290,7 +296,8 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
 
         self.match_files_and_language.assert_called_with(
             self.received_files, self.language_name,
-            {"foo.%l", "bar.%l", "baz.%l"}, ["MockLanguage"])
+            {"foo.%l", "bar.%l", "baz.%l"},
+            ["MockLanguage", "AnotherMockLanguage"])
 
     def test_failure_due_to_missing_files(self):
         self.task_type.ALLOW_PARTIAL_SUBMISSION = False
@@ -366,10 +373,16 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
 
         # Set up patches and mocks for a successful run. These are all
         # controlled by the following values, which can be changed to
-        # make some steps fail.
+        # make some steps fail. The task will require a language-aware
+        # submission with three files (foo.%l, bar.%l and baz.%l), three
+        # managers (spam.%l, ham.%l, eggs.%l) and an input. For both the
+        # files and the managers, the first will be provided by the
+        # contestant, the second will be fetched from the previous
+        # submission (as partial submissions will be allowed), the third
+        # will be missing. The input will be provided by the contestant.
 
         self.contest = self.add_contest(
-            languages=["MockLanguage"])
+            languages=["MockLanguage", "AnotherMockLanguage"])
         self.participation = self.add_participation(
             contest=self.contest)
         self.task = self.add_task(
@@ -386,6 +399,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.files = {"foo.%l": FOO_CONTENT,
                       "spam.%l": SPAM_CONTENT,
                       "input": INPUT_CONTENT}
+        # Multiple extensions, primary one doesn't start with a period.
         self.language = make_language("MockLanguage", ["mock.1", ".mock2"])
         self.digests = {"bar.%l": bytes_digest(BAR_CONTENT),
                         "ham.%l": bytes_digest(HAM_CONTENT)}
@@ -422,7 +436,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
             "cms.server.contest.submission.workflow.match_files_and_language")
         self.match_files_and_language = patcher.start()
         self.addCleanup(patcher.stop)
-        # Use side_effect to keep it working if we reassign them.
+        # Use side_effect to keep it working if we reassign the values.
         self.match_files_and_language.side_effect = \
             lambda *args, **kwargs: (self.files, self.language)
 
@@ -431,6 +445,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
             ".fetch_file_digests_from_previous_submission")
         self.fetch_file_digests_from_previous_submission = patcher.start()
         self.addCleanup(patcher.stop)
+        # Use side_effect to keep it working if we reassign the value.
         self.fetch_file_digests_from_previous_submission.side_effect = \
             lambda *args, **kwargs: self.digests
 
@@ -621,7 +636,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
             self.received_files, self.language_name,
             {"foo.%l", "bar.%l", "baz.%l", "spam.%l", "ham.%l", "eggs.%l",
              "input"},
-            ["MockLanguage"])
+            ["MockLanguage", "AnotherMockLanguage"])
 
     def test_success_without_missing_files(self):
         self.task_type.ALLOW_PARTIAL_SUBMISSION = False

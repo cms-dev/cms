@@ -59,25 +59,37 @@ def N_(msgid):
 
 class UnacceptableSubmission(Exception):
     def __init__(self, subject, text):
-        super(UnacceptableSubmission, self).__init__(subject, text)
+        super(UnacceptableSubmission, self).__init__("%s: %s" % (subject, text))
         self.subject = subject
         self.text = text
 
 
 def accept_submission(sql_session, file_cacher, participation, task, timestamp,
                       tornado_files, language_name, official):
-    """
+    """Process a contestant's request to submit a submission.
 
-    sql_session (Session):
-    file_cacher (FileCacher):
-    participation (Participation):
-    task (Task):
-    timestamp (datetime):
-    tornado_files ({str: [tornado.httputil.HTTPFile]}):
-    language_name (str|None):
-    official (bool):
+    Parse and validate the data that a contestant sent for a submission
+    and, if all checks and operations succeed, add the result to the
+    database and return it.
 
-    return (Submission):
+    sql_session (Session): the DB session to use to fetch and add data.
+    file_cacher (FileCacher): the file cacher to use to store the files.
+    participation (Participation): the contestant who is submitting.
+    task (Task): the task on which they are submitting.
+    timestamp (datetime): the moment in time they submitted at.
+    tornado_files ({str: [tornado.httputil.HTTPFile]}): the files they
+        sent in.
+    language_name (str|None): the language they declared their files are
+        in (None means unknown and thus auto-detect).
+    official (bool): whether the submission was sent in during a regular
+        contest phase (and should be counted towards the score/rank) or
+        during the analysis mode.
+
+    return (Submission): the resulting submission, if all went well.
+
+    raise (UnacceptableSubmission): if the contestant wasn't allowed to
+        hand in a submission, if the provided data was invalid, if there
+        were critical failures in the process.
 
     """
     contest = participation.contest
@@ -163,7 +175,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
             store_local_copy(config.submit_local_copy_path, participation,
                              task, timestamp, files)
         except StorageFailed:
-            logger.warning("Submission local copy failed.", exc_info=True)
+            logger.error("Submission local copy failed.", exc_info=True)
 
     # We now have to send all the files to the destination...
     try:
@@ -207,24 +219,31 @@ class TestingNotAllowed(Exception):
 
 class UnacceptableUserTest(Exception):
     def __init__(self, subject, text):
-        super(UnacceptableUserTest, self).__init__(subject, text)
+        super(UnacceptableUserTest, self).__init__("%s: %s" % (subject, text))
         self.subject = subject
         self.text = text
 
 
 def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
                      tornado_files, language_name):
-    """
+    """Process a contestant's request to submit a user test.
 
-    sql_session (Session):
-    file_cacher (FileCacher):
-    participation (Participation):
-    task (Task):
-    timestamp (datetime):
-    tornado_files ({str: [tornado.httputil.HTTPFile]}):
-    language_name (str|None):
+    sql_session (Session): the DB session to use to fetch and add data.
+    file_cacher (FileCacher): the file cacher to use to store the files.
+    participation (Participation): the contestant who is submitting.
+    task (Task): the task on which they are submitting.
+    timestamp (datetime): the moment in time they submitted at.
+    tornado_files ({str: [tornado.httputil.HTTPFile]}): the files they
+        sent in.
+    language_name (str|None): the language they declared their files are
+        in (None means unknown and thus auto-detect).
 
-    return (UserTest):
+    return (UserTest): the resulting user test, if all went well.
+
+    raise (TestingNotAllowed): if the task doesn't allow for any tests.
+    raise (UnacceptableUserTest): if the contestant wasn't allowed to
+        hand in a user test, if the provided data was invalid, if there
+        were critical failures in the process.
 
     """
     contest = participation.contest
@@ -335,13 +354,13 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
 
     # We now have to send all the files to the destination...
     try:
-        for filename in files:
+        for codename, content in iteritems(files):
             digest = file_cacher.put_file_content(
-                files[filename],
+                content,
                 "Test file %s sent by %s at %d." % (
-                    filename, participation.user.username,
+                    codename, participation.user.username,
                     make_timestamp(timestamp)))
-            digests[filename] = digest
+            digests[codename] = digest
 
     # In case of error, the server aborts the submission
     except Exception as error:

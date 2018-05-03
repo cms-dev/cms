@@ -147,7 +147,7 @@ class UserTestHandler(ContestHandler):
                            self.current_user.user.username, task_name)
             raise tornado.web.HTTPError(404)
         except UnacceptableUserTest as e:
-            logger.warning("Sent error: `%s' - `%s'", e.subject, e.text)
+            logger.info("Sent error: `%s' - `%s'", e.subject, e.text)
             self.notify_error(e.subject, e.text)
         else:
             self.service.evaluation_service.new_user_test(
