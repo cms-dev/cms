@@ -40,7 +40,7 @@ from cms.grading.steps import compilation_step, evaluation_step_before_run, \
     evaluation_step_after_run, human_evaluation_message
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, eval_output
+    create_sandbox, delete_sandbox, eval_output, set_configuration_error
 from cms.db import Executable
 
 
@@ -158,11 +158,9 @@ class TwoSteps(TaskType):
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
         if len(job.files) != 2:
-            job.success = True
-            job.compilation_success = False
-            job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 2",
-                         len(job.files), extra={"operation": job.info})
+            msg = "submission contains %d files, TwoSteps requires exactly " \
+                "2; ensure the submission format contains 2 element."
+            set_configuration_error(job, msg, len(job.files))
             return
 
         # First and only one compilation.

@@ -37,7 +37,8 @@ from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, is_manager_for_compilation, eval_output
+    create_sandbox, delete_sandbox, eval_output, is_manager_for_compilation, \
+    set_configuration_error
 from cms.db import Executable
 
 
@@ -174,22 +175,17 @@ class Batch(TaskType):
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
-        # Detect the submission's language. The checks about the
-        # formal correctedness of the submission are done in CWS,
-        # before accepting it.
         language = get_language(job.language)
         source_ext = language.source_extension
 
-        # TODO: here we are sure that submission.files are the same as
-        # task.submission_format. The following check shouldn't be
-        # here, but in the definition of the task, since this actually
-        # checks that task's task type and submission format agree.
+        # If the submission was accepted and has 0 or more than 1 files, it
+        # means that either the submission format is wrong for a Batch task, or
+        # it was at the time of submission. Either case, it's a configuration
+        # error that an admin must solve.
         if len(job.files) != 1:
-            job.success = True
-            job.compilation_success = False
-            job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 1",
-                         len(job.files), extra={"operation": job.info})
+            msg = "submission contains %d files, Batch requires exactly 1; " \
+                "ensure the submission format contains 1 element."
+            set_configuration_error(job, msg, len(job.files))
             return
 
         # Create the sandbox.
@@ -242,8 +238,10 @@ class Batch(TaskType):
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         if len(job.executables) != 1:
-            raise ValueError("Unexpected number of executables (%s)" %
-                             len(job.executables))
+            msg = "submission contains %d executables, Batch expects 1; " \
+                "consider invalidating compilations."
+            set_configuration_error(job, msg, len(job.executables))
+            return
 
         # Create the sandbox
         sandbox = create_sandbox(file_cacher, name="evaluate")

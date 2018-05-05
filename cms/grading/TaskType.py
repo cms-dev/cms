@@ -119,6 +119,27 @@ def is_manager_for_compilation(filename, language):
                for obj in language.object_extensions))
 
 
+def set_configuration_error(job, msg, *args):
+    """Log a configuration error and set the correct results in the job.
+
+    job (CompilationJob|EvaluationJob): the job currently executing
+    msg (str): the message to log.
+    args ([object]): formatting parameters for msg.
+
+    """
+    logger.error("Configuration error: " + msg, *args,
+                 extra={"operation": job.info})
+
+    job.success = False
+    job.text = None
+    if isinstance(job, CompilationJob):
+        job.compilation_success = None
+    elif isinstance(job, EvaluationJob):
+        job.outcome = None
+    else:
+        raise ValueError("Unexpected type of job: %s.", job.__class__)
+
+
 def eval_output(file_cacher, job, checker_codename,
                 user_output_path=None, user_output_digest=None,
                 user_output_filename=""):
@@ -154,6 +175,11 @@ def eval_output(file_cacher, job, checker_codename,
                                user_output_filename]
 
     if checker_codename is not None:
+        if checker_codename not in job.managers:
+            msg = "dataset is missing manager '%s'."
+            set_configuration_error(job, msg, checker_codename)
+            return False, None, None
+
         # Create a brand-new sandbox just for checking.
         sandbox = create_sandbox(file_cacher, name="check")
         job.sandboxes.append(sandbox.path)
