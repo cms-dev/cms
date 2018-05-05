@@ -381,3 +381,23 @@ class TaskType(with_metaclass(ABCMeta, object)):
         else:
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")
+
+    def set_configuration_error(self, job, msg, *args):
+        """Log a configuration error and set the correct results in the job.
+
+        job (CompilationJob|EvaluationJob): the job currently executing
+        msg (str): the message to log.
+        args ([object]): formatting parameters for msg.
+
+        """
+        logger.error("Configuration error: " + msg, *args,
+                     extra={"operation": job.info})
+
+        job.success = False
+        job.text = None
+        if isinstance(job, CompilationJob):
+            job.compilation_success = None
+        elif isinstance(job, EvaluationJob):
+            job.outcome = None
+        else:
+            raise ValueError("Unexpected type of job: %s.", job.__class__)

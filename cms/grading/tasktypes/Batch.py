@@ -185,11 +185,9 @@ class Batch(TaskType):
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
         if len(job.files) != 1:
-            job.success = True
-            job.compilation_success = False
-            job.text = [N_("Invalid files in submission")]
-            logger.error("Submission contains %d files, expecting 1",
-                         len(job.files), extra={"operation": job.info})
+            msg = "submission contains %d files, Batch requires exactly 1; " \
+                "ensure the submission format contains 1 element."
+            self.set_configuration_error(job, msg, len(job.files))
             return
 
         # Create the sandbox.
@@ -242,8 +240,9 @@ class Batch(TaskType):
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         if len(job.executables) != 1:
-            raise ValueError("Unexpected number of executables (%s)" %
-                             len(job.executables))
+            msg = "submission contains %d executables, expected 1."
+            self.set_configuration_error(job, msg, len(job.executables))
+            return
 
         # Create the sandbox
         sandbox = create_sandbox(file_cacher, name="evaluate")
