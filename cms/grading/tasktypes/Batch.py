@@ -188,13 +188,29 @@ class Batch(TaskType):
             set_configuration_error(job, msg, len(job.files))
             return
 
-        # Create the sandbox.
-        sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
-
         user_file_format = next(iterkeys(job.files))
         user_source_filename = user_file_format.replace(".%l", source_ext)
         executable_filename = user_file_format.replace(".%l", "")
+
+        # Create the list of filenames to be passed to the compiler. If we use
+        # a grader, it needs to be in first position in the command line, and
+        # we check that it exists.
+        source_filenames = [user_source_filename]
+        if self._uses_grader():
+            grader_source_filename = Batch.GRADER_BASENAME + source_ext
+            if grader_source_filename not in job.managers:
+                msg = "dataset is missing manager '%s'."
+                set_configuration_error(job, msg, grader_source_filename)
+                return
+            source_filenames.insert(0, grader_source_filename)
+
+        # Prepare the compilation command.
+        commands = language.get_compilation_commands(
+            source_filenames, executable_filename)
+
+        # Create the sandbox.
+        sandbox = create_sandbox(file_cacher, name="compile")
+        job.sandboxes.append(sandbox.path)
 
         # Copy required files in the sandbox (includes the grader if present).
         sandbox.create_file_from_storage(
@@ -203,17 +219,6 @@ class Batch(TaskType):
             if is_manager_for_compilation(filename, language):
                 sandbox.create_file_from_storage(
                     filename, job.managers[filename].digest)
-
-        # Create the list of filenames to be passed to the compiler. If we use
-        # a grader, it needs to be in first position in the command line.
-        source_filenames = [user_source_filename]
-        if self._uses_grader():
-            grader_source_filename = Batch.GRADER_BASENAME + source_ext
-            source_filenames.insert(0, grader_source_filename)
-
-        # Prepare the compilation command.
-        commands = language.get_compilation_commands(
-            source_filenames, executable_filename)
 
         # Run the compilation
         operation_success, compilation_success, text, plus = \
@@ -243,10 +248,6 @@ class Batch(TaskType):
             set_configuration_error(job, msg, len(job.executables))
             return
 
-        # Create the sandbox
-        sandbox = create_sandbox(file_cacher, name="evaluate")
-        job.sandboxes.append(sandbox.path)
-
         # Prepare the execution
         executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
@@ -274,6 +275,10 @@ class Batch(TaskType):
             stdout_redirect = self._actual_output
         else:
             files_allowing_write.append(self._actual_output)
+
+        # Create the sandbox
+        sandbox = create_sandbox(file_cacher, name="evaluate")
+        job.sandboxes.append(sandbox.path)
 
         # Put the required files into the sandbox
         for filename, digest in iteritems(executables_to_get):
