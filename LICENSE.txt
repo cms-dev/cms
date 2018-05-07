@@ -2,11 +2,11 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: cms
 Upstream-Contact: CMS Mailing List <contestms@googlegroups.com>
 Source: http://github.com/cms-dev/cms
-Copyright: 2010-2013 The CMS development team <contestms@googlegroups.com>
+Copyright: 2010-2018 The CMS development team <contestms@googlegroups.com>
 License: AGPL-3+
 
 Files: *
-Copyright: 2010-2013 The CMS development team <contestms@googlegroups.com>
+Copyright: 2010-2018 The CMS development team <contestms@googlegroups.com>
 License: AGPL-3+
 
 Files: cmsranking/images/*
