@@ -72,7 +72,13 @@ utils.show_page("questions", 1);
       </div>
       {% endif %}
       <div class="reply_question_toggle">
-        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">Reply</a>
+        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">
+      {% if msg.reply_timestamp is none %}
+          Reply
+      {% else %}
+          Edit reply
+      {% endif %}
+        </a>
       </div>
       <div class="reply_question" >
         <hr/>
