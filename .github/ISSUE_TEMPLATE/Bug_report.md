@@ -1,3 +1,9 @@
+---
+name: Bug report
+about: Create a report to help us improve
+
+---
+
 ## Is this an issue or you just need help?
 
 Sorry to hear you have trouble with CMS!
