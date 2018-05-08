@@ -244,7 +244,8 @@ class Batch(TaskType):
         """See TaskType.evaluate."""
         # This really should not happen.
         if len(job.executables) != 1:
-            msg = "submission contains %d executables, expected 1."
+            msg = "submission contains %d executables, expected 1; consider " \
+                "invalidating compilations."
             self.set_configuration_error(job, msg, len(job.executables))
             return
 
