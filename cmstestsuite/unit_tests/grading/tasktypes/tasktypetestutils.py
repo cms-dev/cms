@@ -26,8 +26,12 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+import functools
+
 from collections import deque
 from mock import patch, MagicMock
+
+from cms import config
 
 
 def fake_compilation_commands(base, srcs, exe):
@@ -53,11 +57,9 @@ def make_language(name, source_extensions, header_extensions,
                             header_extensions=header_extensions,
                             header_extension=header_extensions[0])
     language.get_compilation_commands.side_effect = \
-        lambda srcs, exe: fake_compilation_commands(
-            compilation_command, srcs, exe)
+        functools.partial(fake_compilation_commands, compilation_command)
     language.get_evaluation_commands.side_effect = \
-        lambda exe, main=None, args=None: fake_evaluation_commands(
-            evaluation_command, exe, main, args)
+        functools.partial(fake_evaluation_commands, evaluation_command)
     return language
 
 
@@ -82,14 +84,17 @@ STATS_RE = {"exit_status": "RE"}
 class TaskTypeTestMixin(object):
     """A test mixin to make it easier to test task types."""
 
-    def setUp(self, tasktype):
-        super(TaskTypeTestMixin, self).setUp()
+    def setUpMocks(self, tasktype):
+        """To be called on the test's setUp.
 
+        tasktype (str): the name of the task type we are testing.
+
+        """
         self.tasktype = tasktype
         tasktype_pkg = "cms.grading.tasktypes.%s" % tasktype
 
         # Ensure we don't retain all sandboxes so we can verify delete().
-        patcher = patch("cms.grading.TaskType.config.keep_sandbox", False)
+        patcher = patch.object(config, "keep_sandbox", False)
         self.addCleanup(patcher.stop)
         patcher.start()
 
@@ -100,9 +105,9 @@ class TaskTypeTestMixin(object):
         self.addCleanup(patcher.stop)
         patcher.start()
         patcher = patch("%s.get_language" % tasktype_pkg,
-                        self._mock_get_language)
+                        MagicMock(side_effect=self._mock_get_language))
         self.addCleanup(patcher.stop)
-        patcher.start()
+        self.get_language = patcher.start()
 
         # Mock the sandboxes, assuming that all are created via create_sandbox.
         # Child classes can append to this deque to add sandboxes (probably
@@ -135,8 +140,9 @@ class TaskTypeTestMixin(object):
     def expect_sandbox(self):
         """Declare that the SUT will use a new sandbox, and return its mock."""
         sandbox = MagicMock()
+        sandbox_idx = len(self.sandboxes)
         sandbox.relative_path.side_effect = \
-            lambda p: "/path/%d/%s" % (len(self.sandboxes), p)
+            lambda p: "/path/%d/%s" % (sandbox_idx, p)
         self.sandboxes.append(sandbox)
         return self.sandboxes[-1]
 
