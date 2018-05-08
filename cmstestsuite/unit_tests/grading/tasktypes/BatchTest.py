@@ -89,7 +89,8 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.languages.update({LANG_1})
         self.file_cacher = MagicMock()
 
-    def job(self, files=None, managers=None):
+    @staticmethod
+    def job(files=None, managers=None):
         files = files if files is not None else {}
         managers = managers if managers is not None else {}
         return CompilationJob(language="L1", files=files, managers=managers)
@@ -255,7 +256,8 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.languages.update({LANG_1})
         self.file_cacher = MagicMock()
 
-    def job(self, executables):
+    @staticmethod
+    def job(executables):
         return EvaluationJob(language="L1",
                              input="digest of input",
                              output="digest of correct output",
