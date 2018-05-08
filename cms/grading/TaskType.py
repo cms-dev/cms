@@ -382,7 +382,8 @@ class TaskType(with_metaclass(ABCMeta, object)):
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")
 
-    def set_configuration_error(self, job, msg, *args):
+    @staticmethod
+    def set_configuration_error(job, msg, *args):
         """Log a configuration error and set the correct results in the job.
 
         job (CompilationJob|EvaluationJob): the job currently executing
