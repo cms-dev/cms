@@ -282,7 +282,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
                 or not self.evaluation_step.return_value[0]:
             # evaluation_step not called or its sandbox gave an error.
             success, outcome, text, stats = False, None, None, None
-        elif not self.evaluation_step.return_value[1]:  # submission success
+        elif not self.evaluation_step.return_value[1]:
             # User submission terminated incorrectly.
             success, _, stats = self.evaluation_step.return_value
             outcome = str(0.0)
@@ -381,7 +381,6 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
 
     def test_stdio_diff_eval_output_failure_(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})
-        self.evaluation_step.return_value = (True, True, STATS_OK)
         self.eval_output.return_value = (False, None, None)
         sandbox = self.expect_sandbox()
 
