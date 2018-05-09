@@ -243,10 +243,10 @@ class Batch(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        # This really should not happen.
+        # Make sure we have the correct number of executables.
         if len(job.executables) != 1:
-            msg = "submission contains %d executables, expected 1; consider " \
-                "invalidating compilations."
+            msg = "submission contains %d executables, Batch expects 1; " \
+                "consider invalidating compilations."
             set_configuration_error(job, msg, len(job.executables))
             return
 
