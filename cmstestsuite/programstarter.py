@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
@@ -35,6 +35,7 @@ import io
 import json
 import logging
 import os
+import psutil
 import signal
 import socket
 import subprocess
@@ -216,11 +217,23 @@ class Program(object):
         sock.connect((url.hostname, url.port))
         sock.close()
 
-    @staticmethod
-    def _spawn(cmdline):
+    def _spawn(self, cmdline):
         """Execute a python application."""
 
         def kill(job):
+            try:
+                p = psutil.Process(job.pid)
+                times = p.cpu_times()
+                total_time_ratio = (times.user + times.system) \
+                    / (time.time() - p.create_time())
+                logger.info(
+                    "Killing %s/%s, total CPU time used: "
+                    "%.2lf (user), %.2lf (sys) = %.2lf%%",
+                    self.service_name, self.shard,
+                    times.user, times.system, 100 * total_time_ratio)
+            except psutil.NoSuchProcess:
+                logger.info("Killing %s/%s", self.service_name, self.shard)
+
             try:
                 job.kill()
             except OSError:
