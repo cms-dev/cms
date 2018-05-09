@@ -42,7 +42,8 @@ from cms.grading.steps import compilation_step, evaluation_step, \
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, is_manager_for_compilation
+    create_sandbox, delete_sandbox, is_manager_for_compilation, \
+    set_configuration_error
 from cms.db import Executable
 
 
@@ -113,15 +114,15 @@ class Communication(TaskType):
         language = get_language(job.language)
         source_ext = language.source_extension
 
-        # Create the sandbox
-        sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
-
         # Prepare the source files in the sandbox
         files_to_get = {}
         source_filenames = []
         # Stub.
         stub_filename = "stub%s" % source_ext
+        if stub_filename not in job.managers:
+            msg = "dataset is missing manager '%s'."
+            set_configuration_error(job, msg, stub_filename)
+            return
         source_filenames.append(stub_filename)
         files_to_get[stub_filename] = job.managers[stub_filename].digest
         # User's submission.
@@ -136,15 +137,19 @@ class Communication(TaskType):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
-        for filename, digest in iteritems(files_to_get):
-            sandbox.create_file_from_storage(filename, digest)
-
         # Prepare the compilation command
         executable_filename = \
             "_".join(pattern.replace(".%l", "")
                      for pattern in iterkeys(job.files))
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
+
+        # Create the sandbox and put the required files in it.
+        sandbox = create_sandbox(file_cacher, name="compile")
+        job.sandboxes.append(sandbox.path)
+
+        for filename, digest in iteritems(files_to_get):
+            sandbox.create_file_from_storage(filename, digest)
 
         # Run the compilation
         operation_success, compilation_success, text, plus = \
@@ -168,6 +173,13 @@ class Communication(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
+        # Make sure the required manager is among the job managers.
+        manager_filename = "manager"
+        if manager_filename not in job.managers:
+            msg = "dataset is missing manager '%s'."
+            set_configuration_error(job, msg, manager_filename)
+            return
+
         if len(self.parameters) <= 0:
             num_processes = 1
         else:
@@ -194,7 +206,6 @@ class Communication(TaskType):
             os.chmod(fifo_out[i], 0o666)
 
         # First step: prepare the manager.
-        manager_filename = "manager"
         manager_command = ["./%s" % manager_filename]
         for i in indices:
             manager_command.append(fifo_in[i])
