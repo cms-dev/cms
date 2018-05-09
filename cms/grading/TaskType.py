@@ -140,6 +140,72 @@ def set_configuration_error(job, msg, *args):
         raise ValueError("Unexpected type of job: %s.", job.__class__)
 
 
+def check_executables_number(job, n_executables):
+    """Check that the required number of executables were generated.
+
+    Since it depends only on the task type being correct, a mismatch here
+    should not happen. It might be caused (with a lot of effort) by compiling
+    under one task type and evaluating under another.
+
+    If there is a mismatch, log and store a configuration error in the job. In
+    this case, callers should terminate immediately the current operation.
+
+    job (Job): the job currently running.
+    n_executables (int): the required number of executables.
+
+    return (bool): whether there is the right number of executables in the job.
+
+    """
+    if len(job.executables) != n_executables:
+        msg = "submission contains %d executables, exactly %d are expected; " \
+              "consider invalidating compilations."
+        set_configuration_error(job, msg, len(job.executables), n_executables)
+        return False
+    return True
+
+
+def check_files_number(job, n_files):
+    """Check that the required number of files were provided by the user.
+
+    A mismatch here is likely caused by having had, at submission time, a wrong
+    submission format for the task type.
+
+    If there is a mismatch, log and store a configuration error in the job. In
+    this case, callers should terminate immediately the current operation.
+
+    job (Job): the job currently running.
+    n_files (int): the required number of files.
+
+    return (bool): whether there is the right number of files in the job.
+
+    """
+    if len(job.files) != n_files:
+        msg = "submission contains %d files, exactly %d are required; " \
+              "ensure the submission format is correct."
+        set_configuration_error(job, msg, len(job.files), n_files)
+        return False
+    return True
+
+
+def check_manager_present(job, codename):
+    """Check that the required manager was provided in the dataset.
+
+    If not provided, log and store a configuration error in the job. In this
+    case, callers should terminate immediately the current operation.
+
+    job (Job): the job currently running.
+    codename (str): the codename of the required manager.
+
+    return (bool): whether the required manager is in the job's managers.
+
+    """
+    if codename not in job.managers:
+        msg = "dataset is missing manager '%s'."
+        set_configuration_error(job, msg, codename)
+        return False
+    return True
+
+
 def eval_output(file_cacher, job, checker_codename,
                 user_output_path=None, user_output_digest=None,
                 user_output_filename=""):
@@ -175,9 +241,7 @@ def eval_output(file_cacher, job, checker_codename,
                                user_output_filename]
 
     if checker_codename is not None:
-        if checker_codename not in job.managers:
-            msg = "dataset is missing manager '%s'."
-            set_configuration_error(job, msg, checker_codename)
+        if not check_manager_present(job, checker_codename):
             return False, None, None
 
         # Create a brand-new sandbox just for checking.

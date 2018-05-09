@@ -36,9 +36,9 @@ from cms.grading.steps import compilation_step, evaluation_step,\
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
-from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, eval_output, is_manager_for_compilation, \
-    set_configuration_error
+from cms.grading.TaskType import TaskType, check_executables_number, \
+    check_files_number, check_manager_present, create_sandbox, \
+    delete_sandbox, eval_output, is_manager_for_compilation
 from cms.db import Executable
 
 
@@ -178,14 +178,7 @@ class Batch(TaskType):
         language = get_language(job.language)
         source_ext = language.source_extension
 
-        # If the submission was accepted and has 0 or more than 1 files, it
-        # means that either the submission format is wrong for a Batch task, or
-        # it was at the time of submission. Either case, it's a configuration
-        # error that an admin must solve.
-        if len(job.files) != 1:
-            msg = "submission contains %d files, Batch requires exactly 1; " \
-                "ensure the submission format contains 1 element."
-            set_configuration_error(job, msg, len(job.files))
+        if not check_files_number(job, 1):
             return
 
         user_file_format = next(iterkeys(job.files))
@@ -198,9 +191,7 @@ class Batch(TaskType):
         source_filenames = [user_source_filename]
         if self._uses_grader():
             grader_source_filename = Batch.GRADER_BASENAME + source_ext
-            if grader_source_filename not in job.managers:
-                msg = "dataset is missing manager '%s'."
-                set_configuration_error(job, msg, grader_source_filename)
+            if not check_manager_present(job, grader_source_filename):
                 return
             source_filenames.insert(0, grader_source_filename)
 
@@ -242,10 +233,7 @@ class Batch(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        if len(job.executables) != 1:
-            msg = "submission contains %d executables, Batch expects 1; " \
-                "consider invalidating compilations."
-            set_configuration_error(job, msg, len(job.executables))
+        if not check_executables_number(job, 1):
             return
 
         # Prepare the execution
@@ -256,8 +244,7 @@ class Batch(TaskType):
         commands = language.get_evaluation_commands(
             executable_filename, main=main)
         executables_to_get = {
-            executable_filename:
-                job.executables[executable_filename].digest
+            executable_filename: job.executables[executable_filename].digest
         }
         files_to_get = {
             self._actual_input: job.input
