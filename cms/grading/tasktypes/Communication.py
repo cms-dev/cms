@@ -41,9 +41,9 @@ from cms.grading.steps import compilation_step, evaluation_step, \
     extract_outcome_and_text, human_evaluation_message,  merge_execution_stats
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
-from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, is_manager_for_compilation, \
-    set_configuration_error
+from cms.grading.TaskType import TaskType, check_executables_number, \
+    check_manager_present, create_sandbox, delete_sandbox, \
+    is_manager_for_compilation
 from cms.db import Executable
 
 
@@ -119,9 +119,7 @@ class Communication(TaskType):
         source_filenames = []
         # Stub.
         stub_filename = "stub%s" % source_ext
-        if stub_filename not in job.managers:
-            msg = "dataset is missing manager '%s'."
-            set_configuration_error(job, msg, stub_filename)
+        if not check_manager_present(job, stub_filename):
             return
         source_filenames.append(stub_filename)
         files_to_get[stub_filename] = job.managers[stub_filename].digest
@@ -173,18 +171,12 @@ class Communication(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        # Make sure we have the correct number of executables.
-        if len(job.executables) != 1:
-            msg = "submission contains %d executables, Communication " \
-                "expects 1; consider invalidating compilations."
-            set_configuration_error(job, msg, len(job.executables))
+        if not check_executables_number(job, 1):
             return
 
         # Make sure the required manager is among the job managers.
         manager_filename = "manager"
-        if manager_filename not in job.managers:
-            msg = "dataset is missing manager '%s'."
-            set_configuration_error(job, msg, manager_filename)
+        if not check_manager_present(job, manager_filename):
             return
 
         if len(self.parameters) <= 0:

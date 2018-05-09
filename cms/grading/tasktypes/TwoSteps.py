@@ -39,8 +39,9 @@ from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.steps import compilation_step, evaluation_step_before_run, \
     evaluation_step_after_run, human_evaluation_message
 from cms.grading.languagemanager import LANGUAGES, get_language
-from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, eval_output, set_configuration_error
+from cms.grading.TaskType import TaskType, check_executables_number, \
+    check_files_number, check_manager_present, create_sandbox, \
+    delete_sandbox, eval_output
 from cms.db import Executable
 
 
@@ -146,21 +147,11 @@ class TwoSteps(TaskType):
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
-        # Detect the submission's language. The checks about the
-        # formal correctedness of the submission are done in CWS,
-        # before accepting it.
         language = get_language(job.language)
         source_ext = language.source_extension
         header_ext = language.header_extension
 
-        # TODO: here we are sure that submission.files are the same as
-        # task.submission_format. The following check shouldn't be
-        # here, but in the definition of the task, since this actually
-        # checks that task's task type and submission format agree.
-        if len(job.files) != 2:
-            msg = "submission contains %d files, TwoSteps requires exactly " \
-                "2; ensure the submission format contains 2 element."
-            set_configuration_error(job, msg, len(job.files))
+        if not check_files_number(job, 2):
             return
 
         files_to_get = {}
@@ -168,9 +159,7 @@ class TwoSteps(TaskType):
 
         # Manager.
         manager_filename = "manager%s" % source_ext
-        if manager_filename not in job.managers:
-            msg = "dataset is missing manager '%s'."
-            set_configuration_error(job, msg, manager_filename)
+        if not check_manager_present(job, manager_filename):
             return
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
@@ -178,9 +167,7 @@ class TwoSteps(TaskType):
         # Manager's header.
         if header_ext is not None:
             manager_filename = "manager%s" % header_ext
-            if manager_filename not in job.managers:
-                msg = "dataset is missing manager '%s'."
-                set_configuration_error(job, msg, manager_filename)
+            if not check_manager_present(job, manager_filename):
                 return
             source_filenames.append(manager_filename)
             files_to_get[manager_filename] = \
@@ -194,9 +181,7 @@ class TwoSteps(TaskType):
             # Headers (fixing compile error again here).
             if header_ext is not None:
                 header_filename = filename.replace(".%l", header_ext)
-                if header_filename not in job.managers:
-                    msg = "dataset is missing manager '%s'."
-                    set_configuration_error(job, msg, header_filename)
+                if not check_manager_present(job, header_filename):
                     return
                 source_filenames.append(header_filename)
                 files_to_get[header_filename] = \
@@ -236,11 +221,7 @@ class TwoSteps(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
-        # Make sure we have the correct number of executables.
-        if len(job.executables) != 1:
-            msg = "submission contains %d executables, Batch expects 1; " \
-                "consider invalidating compilations."
-            set_configuration_error(job, msg, len(job.executables))
+        if not check_executables_number(job, 1):
             return
 
         executable_filename = next(iterkeys(job.executables))
