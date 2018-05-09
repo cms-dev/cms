@@ -111,6 +111,8 @@ Of course, the number of servers one needs to run a contest depends on many fact
 
 As for the distribution of services, usually there is one ResourceService for each machine, one instance for each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more instances of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different machines.
 
+The developers of isolate (the sandbox CMS uses) provide a script, :file:`isolate-check-environment` that verifies your system is able to produce evaluations as fair and reproducible as possible. We recommend to run it and follow its suggestions on all machines where a Worker is running. You can download it `here <https://github.com/ioi/isolate/blob/master/isolate-check-environment>`_.
+
 We suggest using CMS over Ubuntu. Yet, CMS can be successfully run on different Linux distributions. Non-Linux operating systems are not supported.
 
 We recommend using nginx in front of the (one or more) :file:`cmsContestWebServer` instances serving the contestant interface. Using a load balancer is required when having multiple instances of :file:`cmsContestWebServer`, but even in case of a single instance, we suggest using nginx to secure the connection, providing an HTTPS endpoint and redirecting it to :file:`cmsContestWebServer`'s HTTP interface.
