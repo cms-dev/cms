@@ -45,14 +45,14 @@ logger = logging.getLogger(__name__)
 
 
 class TestRunner(object):
-    def __init__(self, test_list, contest_id=None, workers=1):
+    def __init__(self, test_list, contest_id=None, workers=1, cpu_limits=None):
         self.start_time = datetime.datetime.now()
         self.last_end_time = self.start_time
 
         self.framework = FunctionalTestFramework()
         self.load_cms_conf()
 
-        self.ps = ProgramStarter()
+        self.ps = ProgramStarter(cpu_limits)
 
         # Map from task name to (task id, task_module).
         self.task_id_map = {}
