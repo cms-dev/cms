@@ -135,7 +135,7 @@ class TaskTypeTestMixin(object):
     def tearDown(self):
         super(TaskTypeTestMixin, self).tearDown()
         # Make sure the test used all declared sandboxes.
-        assert len(self.sandboxes) == 0
+        self.assertEqual(len(self.sandboxes), 0)
 
     def expect_sandbox(self):
         """Declare that the SUT will use a new sandbox, and return its mock."""
@@ -153,7 +153,5 @@ class TaskTypeTestMixin(object):
         raise KeyError()
 
     def _mock_sandbox(self, *args, **kwargs):
-        try:
-            return self.sandboxes.popleft()
-        except IndexError:
-            raise AssertionError("More calls to Sandbox() than expected.")
+        self.assertGreater(len(self.sandboxes), 0)
+        return self.sandboxes.popleft()
