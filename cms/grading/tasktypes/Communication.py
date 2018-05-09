@@ -173,6 +173,13 @@ class Communication(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
+        # Make sure we have the correct number of executables.
+        if len(job.executables) != 1:
+            msg = "submission contains %d executables, Communication " \
+                "expects 1; consider invalidating compilations."
+            set_configuration_error(job, msg, len(job.executables))
+            return
+
         # Make sure the required manager is among the job managers.
         manager_filename = "manager"
         if manager_filename not in job.managers:
@@ -227,7 +234,6 @@ class Communication(TaskType):
         # Second step: load the executables for the user processes
         # (done before launching the manager so that it does not
         # impact its wall clock time).
-        assert len(job.executables) == 1
         executable_filename = next(iterkeys(job.executables))
         executables_to_get = {
             executable_filename:
