@@ -204,10 +204,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% for st in details %}
-    {% if "score" in st and "max_score" in st %}
-        {% if st["score"] >= st["max_score"] %}
+    {% if "score_fraction" in st %}
+        {% if st["score_fraction"] >= 1.0 %}
 <div class="subtask correct">
-        {% elif st["score"] <= 0.0 %}
+        {% elif st["score_fraction"] <= 0.0 %}
 <div class="subtask notcorrect">
         {% else %}
 <div class="subtask partiallycorrect">
@@ -219,9 +219,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
         <span class="title">
             {% trans index=st["idx"] %}Subtask {{ index }}{% endtrans %}
         </span>
-    {% if "score" in st and "max_score" in st %}
+    {% if "score_fraction" in st and "max_score" in st %}
+        {% set score = st["score_fraction"] * st["max_score"] %}
         <span class="score">
-            ({{ st["score"]|round(2)|format_decimal }}
+            ({{ score|round(2)|format_decimal }}
              / {{ st["max_score"]|format_decimal }})
         </span>
     {% else %}
@@ -350,12 +351,12 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         targets = self.retrieve_target_testcases()
 
-        for i, parameter in enumerate(self.parameters):
-            target = targets[i]
+        for st_idx, parameter in enumerate(self.parameters):
+            target = targets[st_idx]
             score += parameter[0]
-            if all(self.public_testcases[idx] for idx in target):
+            if all(self.public_testcases[tc_idx] for tc_idx in target):
                 public_score += parameter[0]
-            headers += ["Subtask %d (%g)" % (i + 1, parameter[0])]
+            headers += ["Subtask %d (%g)" % (st_idx + 1, parameter[0])]
 
         return score, public_score, headers
 
@@ -365,59 +366,56 @@ class ScoreTypeGroup(ScoreTypeAlone):
         if not submission_result.evaluated():
             return 0.0, [], 0.0, [], ["%lg" % 0.0 for _ in self.parameters]
 
-        targets = self.retrieve_target_testcases()
-        evaluations = dict((ev.codename, ev)
-                           for ev in submission_result.evaluations)
+        score = 0
         subtasks = []
+        public_score = 0
         public_subtasks = []
         ranking_details = []
 
+        targets = self.retrieve_target_testcases()
+        evaluations = {ev.codename: ev for ev in submission_result.evaluations}
+
         for st_idx, parameter in enumerate(self.parameters):
             target = targets[st_idx]
-            st_score = self.reduce([float(evaluations[idx].outcome)
-                                    for idx in target],
-                                   parameter) * parameter[0]
-            st_public = all(self.public_testcases[idx] for idx in target)
-            tc_outcomes = dict((
-                idx,
-                self.get_public_outcome(
-                    float(evaluations[idx].outcome), parameter)
-                ) for idx in target)
 
             testcases = []
             public_testcases = []
-            for idx in target:
+            for tc_idx in target:
+                tc_outcome = self.get_public_outcome(
+                    float(evaluations[tc_idx].outcome), parameter)
+
                 testcases.append({
-                    "idx": idx,
-                    "outcome": tc_outcomes[idx],
-                    "text": evaluations[idx].text,
-                    "time": evaluations[idx].execution_time,
-                    "memory": evaluations[idx].execution_memory,
-                    })
-                if self.public_testcases[idx]:
+                    "idx": tc_idx,
+                    "outcome": tc_outcome,
+                    "text": evaluations[tc_idx].text,
+                    "time": evaluations[tc_idx].execution_time,
+                    "memory": evaluations[tc_idx].execution_memory})
+                if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
                 else:
-                    public_testcases.append({"idx": idx})
+                    public_testcases.append({"idx": tc_idx})
+
+            st_score_fraction = self.reduce(
+                [float(evaluations[tc_idx].outcome) for tc_idx in target],
+                parameter)
+            st_score = st_score_fraction * parameter[0]
+
+            score += st_score
             subtasks.append({
                 "idx": st_idx + 1,
-                "score": st_score,
+                # We store the fraction so that an "example" testcase
+                # with a max score of zero is still properly rendered as
+                # correct or incorrect.
+                "score_fraction": st_score_fraction,
                 "max_score": parameter[0],
-                "testcases": testcases,
-                })
-            if st_public:
+                "testcases": testcases})
+            if all(self.public_testcases[tc_idx] for tc_idx in target):
+                public_score += st_score
                 public_subtasks.append(subtasks[-1])
             else:
-                public_subtasks.append({
-                    "idx": st_idx + 1,
-                    "testcases": public_testcases,
-                    })
-
+                public_subtasks.append({"idx": st_idx + 1,
+                                        "testcases": public_testcases})
             ranking_details.append("%g" % round(st_score, 2))
-
-        score = sum(st["score"] for st in subtasks)
-        public_score = sum(st["score"]
-                           for st in public_subtasks
-                           if "score" in st)
 
         return score, subtasks, public_score, public_subtasks, ranking_details
 
@@ -434,7 +432,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             testcase.
         unused_parameter (list): the parameters of the current group.
 
-        return (float): the public output.
+        return (str): the public output.
 
         """
         pass
