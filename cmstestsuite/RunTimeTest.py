@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -89,6 +89,11 @@ def main():
         "-w", "--workers", action="store", type=int, default=4,
         help="set the number of workers to use (default 4)")
     parser.add_argument(
+        "-l", "--cpu_limits", action="append",
+        help="set maximum CPU percentage for a set of services, for example: "
+             "'-l .*Server:40' limits servers to use 40%% of a CPU or less; "
+             "can be specified multiple times (requires cputool)")
+    parser.add_argument(
         "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
     args = parser.parse_args()
@@ -101,7 +106,19 @@ def main():
                       languages=(LANG_C, ), checks=[])
                  for _ in range(args.submissions)]
 
-    runner = TestRunner(test_list, workers=args.workers)
+    cpu_limits = []
+    for l in args.cpu_limits:
+        if ":" not in l:
+            parser.error("CPU limit must be in the form <regex>:<limit>.")
+        regex, _, limit = l.rpartition(":")
+        try:
+            limit = int(limit)
+        except ValueError:
+            parser.error("CPU limit must be an integer.")
+        cpu_limits.append((regex, limit))
+
+    runner = TestRunner(test_list, workers=args.workers,
+                        cpu_limits=cpu_limits)
     runner.submit_tests(concurrent_submit_and_eval=False)
     runner.log_elapsed_time()
 

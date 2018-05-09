@@ -36,6 +36,7 @@ import json
 import logging
 import os
 import psutil
+import re
 import signal
 import socket
 import subprocess
@@ -100,11 +101,13 @@ class RemoteService(object):
 class Program(object):
     """An instance of a program, which might be running or not."""
 
-    def __init__(self, cms_config, service_name, shard=0, contest=None):
+    def __init__(self, cms_config, service_name, shard=0, contest=None,
+                 cpu_limit=None):
         self.cms_config = cms_config
         self.service_name = service_name
         self.shard = shard
         self.contest = contest
+        self.cpu_limit = cpu_limit
         self.instance = None
         self.healthy = False
 
@@ -253,13 +256,21 @@ class Program(object):
             stderr = stdout
         job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
         atexit.register(lambda: kill(job))
+        if self.cpu_limit is not None:
+            logger.info("Limiting %s/%s to %d%% CPU time",
+                        self.service_name, self.shard, self.cpu_limit)
+            # cputool terminates on its own when the main program terminates.
+            subprocess.Popen(["cputool", "-c", str(self.cpu_limit),
+                              "-p", str(job.pid)])
         return job
 
 
 class ProgramStarter(object):
     """Utility to keep track of all programs started."""
 
-    def __init__(self):
+    def __init__(self, cpu_limits=None):
+        self.cpu_limits = cpu_limits if cpu_limits is not None else []
+
         self.framework = FunctionalTestFramework()
         self.cms_config = self.framework.get_cms_config()
 
@@ -269,9 +280,20 @@ class ProgramStarter(object):
         # Map Program: check_function
         self._check_to_perform = {}
 
+    def _cpu_limit_for_service(self, service_name):
+        limit = None
+        for regex, l in self.cpu_limits:
+            if re.match(regex, service_name):
+                if limit is None:
+                    limit = l
+                limit = min(limit, l)
+        return limit
+
     def start(self, service_name, shard=0, contest=None):
         """Start a CMS service."""
-        p = Program(self.cms_config, service_name, shard, contest)
+        cpu_limit = self._cpu_limit_for_service(service_name)
+        p = Program(self.cms_config, service_name, shard, contest,
+                    cpu_limit=cpu_limit)
         p.start()
         self._programs[(service_name, shard, contest)] = p
 
