@@ -27,7 +27,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iteritems
+from six import iterkeys, iteritems
 
 import logging
 import os
@@ -236,6 +236,16 @@ class TwoSteps(TaskType):
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
+        # Make sure we have the correct number of executables.
+        if len(job.executables) != 1:
+            msg = "submission contains %d executables, Batch expects 1; " \
+                "consider invalidating compilations."
+            set_configuration_error(job, msg, len(job.executables))
+            return
+
+        executable_filename = next(iterkeys(job.executables))
+        executable_digest = job.executables[executable_filename].digest
+
         first_sandbox = create_sandbox(file_cacher, name="first_evaluate")
         second_sandbox = create_sandbox(file_cacher, name="second_evaluate")
         job.sandboxes.append(first_sandbox.path)
@@ -248,12 +258,8 @@ class TwoSteps(TaskType):
         os.chmod(fifo, 0o666)
 
         # First step: we start the first manager.
-        first_filename = "manager"
-        first_command = ["./%s" % first_filename, "0", fifo]
-        first_executables_to_get = {
-            first_filename:
-            job.executables[first_filename].digest
-            }
+        first_command = ["./%s" % executable_filename, "0", fifo]
+        first_executables_to_get = {executable_filename: executable_digest}
         first_files_to_get = {
             TwoSteps.INPUT_FILENAME: job.input
             }
@@ -278,12 +284,8 @@ class TwoSteps(TaskType):
             wait=False)
 
         # Second step: we start the second manager.
-        second_filename = "manager"
-        second_command = ["./%s" % second_filename, "1", fifo]
-        second_executables_to_get = {
-            second_filename:
-            job.executables[second_filename].digest
-            }
+        second_command = ["./%s" % executable_filename, "1", fifo]
+        second_executables_to_get = {executable_filename: executable_digest}
         second_files_to_get = {}
         second_allow_path = [fifo_dir]
 
