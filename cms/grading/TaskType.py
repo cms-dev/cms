@@ -147,13 +147,13 @@ def check_executables_number(job, n_executables):
     should not happen. It might be caused (with a lot of effort) by compiling
     under one task type and evaluating under another.
 
-    If there is a mismatch, logs and store a configuration error in the job. In
+    If there is a mismatch, log and store a configuration error in the job. In
     this case, callers should terminate immediately the current operation.
 
     job (Job): the job currently running.
     n_executables (int): the required number of executables.
 
-    return (bool): whether the required manager is in the job's managers.
+    return (bool): whether there is the right number of executables in the job.
 
     """
     if len(job.executables) != n_executables:
@@ -170,13 +170,13 @@ def check_files_number(job, n_files):
     A mismatch here is likely caused by having had, at submission time, a wrong
     submission format for the task type.
 
-    If there is a mismatch, logs and store a configuration error in the job. In
+    If there is a mismatch, log and store a configuration error in the job. In
     this case, callers should terminate immediately the current operation.
 
     job (Job): the job currently running.
     n_files (int): the required number of files.
 
-    return (bool): whether the required manager is in the job's managers.
+    return (bool): whether there is the right number of files in the job.
 
     """
     if len(job.files) != n_files:
@@ -190,7 +190,7 @@ def check_files_number(job, n_files):
 def check_manager_present(job, codename):
     """Check that the required manager was provided in the dataset.
 
-    If not provided, logs and store a configuration error in the job. In this
+    If not provided, log and store a configuration error in the job. In this
     case, callers should terminate immediately the current operation.
 
     job (Job): the job currently running.
