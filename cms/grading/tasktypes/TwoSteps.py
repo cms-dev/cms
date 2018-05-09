@@ -163,21 +163,25 @@ class TwoSteps(TaskType):
             set_configuration_error(job, msg, len(job.files))
             return
 
-        # First and only one compilation.
-        sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
         files_to_get = {}
-
         source_filenames = []
 
         # Manager.
         manager_filename = "manager%s" % source_ext
+        if manager_filename not in job.managers:
+            msg = "dataset is missing manager '%s'."
+            set_configuration_error(job, msg, manager_filename)
+            return
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
             job.managers[manager_filename].digest
         # Manager's header.
         if header_ext is not None:
             manager_filename = "manager%s" % header_ext
+            if manager_filename not in job.managers:
+                msg = "dataset is missing manager '%s'."
+                set_configuration_error(job, msg, manager_filename)
+                return
             source_filenames.append(manager_filename)
             files_to_get[manager_filename] = \
                 job.managers[manager_filename].digest
@@ -190,17 +194,27 @@ class TwoSteps(TaskType):
             # Headers (fixing compile error again here).
             if header_ext is not None:
                 header_filename = filename.replace(".%l", header_ext)
+                if header_filename not in job.managers:
+                    msg = "dataset is missing manager '%s'."
+                    set_configuration_error(job, msg, header_filename)
+                    return
                 source_filenames.append(header_filename)
                 files_to_get[header_filename] = \
                     job.managers[header_filename].digest
 
-        for filename, digest in iteritems(files_to_get):
-            sandbox.create_file_from_storage(filename, digest)
-
-        # Get compilation command and compile.
+        # Get compilation command.
         executable_filename = "manager"
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
+
+        # Create the sandbox and put the required files in it.
+        sandbox = create_sandbox(file_cacher, name="compile")
+        job.sandboxes.append(sandbox.path)
+
+        for filename, digest in iteritems(files_to_get):
+            sandbox.create_file_from_storage(filename, digest)
+
+        # Run the compilation.
         operation_success, compilation_success, text, plus = \
             compilation_step(sandbox, commands)
 
