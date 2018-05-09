@@ -37,7 +37,8 @@ from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
-    create_sandbox, delete_sandbox, is_manager_for_compilation, eval_output
+    create_sandbox, delete_sandbox, eval_output, is_manager_for_compilation, \
+    set_configuration_error
 from cms.db import Executable
 
 
@@ -184,7 +185,7 @@ class Batch(TaskType):
         if len(job.files) != 1:
             msg = "submission contains %d files, Batch requires exactly 1; " \
                 "ensure the submission format contains 1 element."
-            self.set_configuration_error(job, msg, len(job.files))
+            set_configuration_error(job, msg, len(job.files))
             return
 
         user_file_format = next(iterkeys(job.files))
@@ -199,7 +200,7 @@ class Batch(TaskType):
             grader_source_filename = Batch.GRADER_BASENAME + source_ext
             if grader_source_filename not in job.managers:
                 msg = "dataset is missing manager '%s'."
-                self.set_configuration_error(job, msg, grader_source_filename)
+                set_configuration_error(job, msg, grader_source_filename)
                 return
 
             source_filenames.insert(0, grader_source_filename)
@@ -246,7 +247,7 @@ class Batch(TaskType):
         if len(job.executables) != 1:
             msg = "submission contains %d executables, expected 1; consider " \
                 "invalidating compilations."
-            self.set_configuration_error(job, msg, len(job.executables))
+            set_configuration_error(job, msg, len(job.executables))
             return
 
         # Prepare the execution

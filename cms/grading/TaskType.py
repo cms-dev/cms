@@ -119,6 +119,27 @@ def is_manager_for_compilation(filename, language):
                for obj in language.object_extensions))
 
 
+def set_configuration_error(job, msg, *args):
+    """Log a configuration error and set the correct results in the job.
+
+    job (CompilationJob|EvaluationJob): the job currently executing
+    msg (str): the message to log.
+    args ([object]): formatting parameters for msg.
+
+    """
+    logger.error("Configuration error: " + msg, *args,
+                 extra={"operation": job.info})
+
+    job.success = False
+    job.text = None
+    if isinstance(job, CompilationJob):
+        job.compilation_success = None
+    elif isinstance(job, EvaluationJob):
+        job.outcome = None
+    else:
+        raise ValueError("Unexpected type of job: %s.", job.__class__)
+
+
 def eval_output(file_cacher, job, checker_codename,
                 user_output_path=None, user_output_digest=None,
                 user_output_filename=""):
@@ -381,24 +402,3 @@ class TaskType(with_metaclass(ABCMeta, object)):
         else:
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")
-
-    @staticmethod
-    def set_configuration_error(job, msg, *args):
-        """Log a configuration error and set the correct results in the job.
-
-        job (CompilationJob|EvaluationJob): the job currently executing
-        msg (str): the message to log.
-        args ([object]): formatting parameters for msg.
-
-        """
-        logger.error("Configuration error: " + msg, *args,
-                     extra={"operation": job.info})
-
-        job.success = False
-        job.text = None
-        if isinstance(job, CompilationJob):
-            job.compilation_success = None
-        elif isinstance(job, EvaluationJob):
-            job.outcome = None
-        else:
-            raise ValueError("Unexpected type of job: %s.", job.__class__)
