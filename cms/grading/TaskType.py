@@ -175,6 +175,11 @@ def eval_output(file_cacher, job, checker_codename,
                                user_output_filename]
 
     if checker_codename is not None:
+        if checker_codename not in job.managers:
+            msg = "dataset is missing manager '%s'."
+            set_configuration_error(job, msg, checker_codename)
+            return False, None, None
+
         # Create a brand-new sandbox just for checking.
         sandbox = create_sandbox(file_cacher, name="check")
         job.sandboxes.append(sandbox.path)
