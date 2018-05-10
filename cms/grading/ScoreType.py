@@ -127,9 +127,14 @@ class ScoreType(with_metaclass(ABCMeta, object)):
         else:
             # FIXME we should provide to the template all the variables
             # of a typical CWS context as it's entitled to expect them.
-            return self.template.render(details=score_details,
-                                        translation=translation,
-                                        gettext=_, ngettext=n_)
+            try:
+                return self.template.render(details=score_details,
+                                            translation=translation,
+                                            gettext=_, ngettext=n_)
+            except Exception:
+                logger.error("Found an invalid score details string. "
+                             "Try invalidating scores.")
+                return _("Score details temporarily unavailable.")
 
     @abstractmethod
     def max_scores(self):
