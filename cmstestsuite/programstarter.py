@@ -227,15 +227,13 @@ class Program(object):
             try:
                 p = psutil.Process(job.pid)
                 times = p.cpu_times()
-                usr_time = times[0]
-                sys_time = times[1]
-                total_time_ratio = (usr_time + sys_time) * 1.0 \
+                total_time_ratio = (times.user + times.system) \
                     / (time.time() - p.create_time())
                 logger.info(
                     "Killing %s/%s, total CPU time used: "
                     "%.2lf (user), %.2lf (sys) = %.2lf%%",
                     self.service_name, self.shard,
-                    usr_time, sys_time, 100 * total_time_ratio)
+                    times.user, times.system, 100 * total_time_ratio)
             except psutil.NoSuchProcess:
                 logger.info("Killing %s/%s", self.service_name, self.shard)
 
