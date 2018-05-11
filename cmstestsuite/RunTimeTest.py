@@ -89,7 +89,7 @@ def main():
         "-w", "--workers", action="store", type=int, default=4,
         help="set the number of workers to use (default 4)")
     parser.add_argument(
-        "-l", "--cpu_limits", action="append",
+        "-l", "--cpu_limits", action="append", default=[],
         help="set maximum CPU percentage for a set of services, for example: "
              "'-l .*Server:40' limits servers to use 40%% of a CPU or less; "
              "can be specified multiple times (requires cputool)")
