@@ -124,9 +124,8 @@ class FunctionalTestFramework(object):
     def initialize_aws(self):
         """Create an admin.
 
-        The username will be admin, unless already used. In that case it will
-        be admin<suffix>, where <suffix> will be the first integer (from 0)
-        for which an admin with that name doesn't yet exist.
+        The username will be admin_<suffix>, where <suffix> will be the first
+        integer (from 1) for which an admin with that name doesn't yet exist.
 
         return (str): the suffix.
 
@@ -134,9 +133,9 @@ class FunctionalTestFramework(object):
         logger.info("Creating admin...")
         self.admin_info["password"] = "adminpwd"
 
-        suffix = ""
+        suffix = "1"
         while True:
-            self.admin_info["username"] = "admin%s" % suffix
+            self.admin_info["username"] = "admin_%s" % suffix
             logger.info("Trying %(username)s" % self.admin_info)
             try:
                 sh([sys.executable, "cmscontrib/AddAdmin.py",
@@ -144,7 +143,7 @@ class FunctionalTestFramework(object):
                     "-p", "%(password)s" % self.admin_info],
                    ignore_failure=False)
             except TestException:
-                suffix = str(int(suffix or "1") + 1)
+                suffix = str(int(suffix) + 1)
             else:
                 break
 

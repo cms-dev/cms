@@ -58,8 +58,9 @@ class TestRunner(object):
         self.task_id_map = {}
 
         # String to append to objects' names to avoid collisions. Will be the
-        # first integer i for which admin<i> is not already registered, and we
-        # will hope that if the admin name doesn't clash, no other name will.
+        # first positive integer i for which admin_<i> is not already
+        # registered, and we will hope that if the admin name doesn't clash, no
+        # other name will.
         self.suffix = None
 
         self.num_users = 0
@@ -134,8 +135,8 @@ class TestRunner(object):
         start_time = datetime.datetime.utcnow()
         stop_time = start_time + datetime.timedelta(1, 0, 0)
         self.contest_id = self.framework.add_contest(
-            name="testcontest" + self.suffix,
-            description="A test contest #%s." % (self.suffix or "1"),
+            name="testcontest_%s" % self.suffix,
+            description="A test contest #%s." % self.suffix,
             languages=list(ALL_LANGUAGES),
             allow_password_authentication="checked",
             start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
@@ -166,7 +167,7 @@ class TestRunner(object):
                 return 'th'
             return {1: 'st', 2: 'nd', 3: 'rd'}.get(x % 10, 'th')
 
-        username = "testrabbit_%s_%d" % (self.suffix or "1", self.num_users)
+        username = "testrabbit_%s_%d" % (self.suffix, self.num_users)
 
         # Find a user that may already exist (from a previous contest).
         users = self.framework.get_users(self.contest_id)
@@ -197,7 +198,7 @@ class TestRunner(object):
         return (int): task id of the new (or existing) task.
 
         """
-        name = task_module.task_info['name'] + self.suffix
+        name = "%s_%s" % (task_module.task_info['name'], self.suffix)
 
         # Have we done this before? Pull it out of our cache if so.
         if name in self.task_id_map:
