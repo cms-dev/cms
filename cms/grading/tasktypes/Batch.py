@@ -206,29 +206,27 @@ class Batch(TaskType):
         # Copy required files in the sandbox (includes the grader if present).
         sandbox.create_file_from_storage(
             user_source_filename, job.files[user_file_format].digest)
-        for filename in iterkeys(job.managers):
+        for filename, manager in iteritems(job.managers):
             if is_manager_for_compilation(filename, language):
-                sandbox.create_file_from_storage(
-                    filename, job.managers[filename].digest)
+                sandbox.create_file_from_storage(filename, manager.digest)
 
-        # Run the compilation
-        operation_success, compilation_success, text, plus = \
+        # Run the compilation.
+        box_success, compilation_success, text, stats = \
             compilation_step(sandbox, commands)
 
-        # Retrieve the compiled executables
-        job.success = operation_success
+        # Retrieve the compiled executables.
+        job.success = box_success
         job.compilation_success = compilation_success
-        job.plus = plus
         job.text = text
-        if operation_success and compilation_success:
+        job.plus = stats
+        if box_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
-                "Executable %s for %s" %
-                (executable_filename, job.info))
+                "Executable %s for %s" % (executable_filename, job.info))
             job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
 
-        # Cleanup
+        # Cleanup.
         delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
@@ -274,7 +272,7 @@ class Batch(TaskType):
             sandbox.create_file_from_storage(filename, digest)
 
         # Actually performs the execution
-        success, evaluation_success, plus = evaluation_step(
+        box_success, evaluation_success, stats = evaluation_step(
             sandbox,
             commands,
             job.time_limit,
@@ -284,19 +282,17 @@ class Batch(TaskType):
             stdout_redirect=stdout_redirect,
             multiprocess=job.multithreaded_sandbox)
 
-        job.plus = plus
-
         outcome = None
         text = None
 
         # Error in the sandbox: nothing to do!
-        if not success:
+        if not box_success:
             pass
 
         # Contestant's error: the marks won't be good
         elif not evaluation_success:
             outcome = 0.0
-            text = human_evaluation_message(plus)
+            text = human_evaluation_message(stats)
             if job.get_output:
                 job.user_output = None
 
@@ -326,18 +322,18 @@ class Batch(TaskType):
 
                 # Otherwise evaluate the output file.
                 else:
-                    checker_success, outcome, text = eval_output(
+                    box_success, outcome, text = eval_output(
                         file_cacher, job,
                         Batch.CHECKER_CODENAME
                         if self._uses_checker() else None,
                         user_output_path=sandbox.relative_path(
                             self._actual_output),
                         user_output_filename=self.output_filename)
-                    success = success and checker_success
 
-        # Whatever happened, we conclude.
-        job.success = success
+        # Fill in the job with the results.
+        job.success = box_success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+        job.plus = stats
 
         delete_sandbox(sandbox, job.success)
