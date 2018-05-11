@@ -125,7 +125,7 @@ def is_group_score_details(details):
 
 
 def convert_score_details(details):
-    """Convert the details' subtask from scores to score_fractions.
+    """Convert the details' subtasks from scores to score_fractions.
 
     If the given (possibly public) score details came from a Group*
     score type, modify them in-place so that the subtasks, which used
