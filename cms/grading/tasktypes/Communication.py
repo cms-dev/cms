@@ -56,22 +56,35 @@ def N_(message):
 
 
 class Communication(TaskType):
-    """Task type class for tasks that requires:
+    """Task type class for tasks with a fully admin-controlled process.
 
-    - a *manager* that reads the input file, work out the perfect
-      solution on its own, and communicate the input (maybe with some
-      modifications) on its standard output; it then reads the
-      response of the user's solution from the standard input and
-      write the outcome;
+    The task type will run *manager*, an admin-provided executable, and one or
+    more instances of the user solution, compiled together with a
+    language-specific stub.
 
-    - a *stub* that compiles with the user's source, reads from
-      standard input what the manager says, and write back the user's
-      solution to stdout.
+    During the evaluation, the manager and each of the user processes
+    communicate via FIFOs. The manager will read the input, send it (possibly
+    with some modifications) to the user process(es). The user processes, via
+    functions provided by the stub, will communicate with the manager. Finally,
+    the manager will decide outcome and text, and print them on stdout and
+    stderr.
+
+    The manager reads the input from a file named input.txt and writes the
+    output to output.txt. It receives as argument the names of the fifos:
+    first from and to the first user process, then from and to the second user
+    process, and so on.
+
+    The stub receives as argument the fifos (from and to the manager) and if
+    there are more than one user processes, the 0-based index of the process.
 
     """
-    ALLOW_PARTIAL_SUBMISSION = False
+    # Filename of the manager (the stand-alone, admin-provided program).
+    MANAGER_FILENAME = "manager"
+    # Input and output filenames used by the manager.
+    INPUT_FILENAME = "input.txt"
+    OUTPUT_FILENAME = "output.txt"
 
-    name = "Communication"
+    ALLOW_PARTIAL_SUBMISSION = False
 
     _NUM_PROCESSES = ParameterTypeInt(
         "Number of Processes",
@@ -80,19 +93,31 @@ class Communication(TaskType):
 
     ACCEPTED_PARAMETERS = [_NUM_PROCESSES]
 
+    @property
+    def name(self):
+        """See TaskType.name."""
+        return "Communication"
+
+    def __init__(self, parameters):
+        super(Communication, self).__init__(parameters)
+
+        self.num_processes = 1
+        if len(self.parameters) > 0:
+            self.num_processes = self.parameters[0]
+
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
         for language in LANGUAGES:
+            # Collect source filenames.
             source_ext = language.source_extension
-            source_filenames = []
-            source_filenames.append("stub%s" % source_ext)
-            executable_filename = \
-                "_".join(pattern.replace(".%l", "")
-                         for pattern in submission_format)
-            for filename in submission_format:
-                source_filename = filename.replace(".%l", source_ext)
-                source_filenames.append(source_filename)
+            source_filenames = ["stub%s" % source_ext]
+            for codename in submission_format:
+                source_filenames.append(codename.replace(".%l", source_ext))
+            # Compute executable name.
+            executable_filename = "_".join(
+                codename.replace(".%l", "") for codename in submission_format)
+            # Build the compilation commands.
             commands = language.get_compilation_commands(
                 source_filenames, executable_filename)
             res[language.name] = commands
@@ -108,90 +133,76 @@ class Communication(TaskType):
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
-        # Detect the submission's language. The checks about the
-        # formal correctedness of the submission are done in CWS,
-        # before accepting it.
         language = get_language(job.language)
         source_ext = language.source_extension
 
-        # Prepare the source files in the sandbox
+        # Prepare the files to copy in the sandbox and to add to the
+        # compilation command.
         files_to_get = {}
         source_filenames = []
-        # Stub.
+        # The stub, that must have been provided (copy and add to compilation).
         stub_filename = "stub%s" % source_ext
         if not check_manager_present(job, stub_filename):
             return
         source_filenames.append(stub_filename)
         files_to_get[stub_filename] = job.managers[stub_filename].digest
-        # User's submission.
-        for filename, fileinfo in iteritems(job.files):
-            source_filename = filename.replace(".%l", source_ext)
+        # User's submitted file(s) (copy and add to compilation).
+        for codename, file_ in iteritems(job.files):
+            source_filename = codename.replace(".%l", source_ext)
             source_filenames.append(source_filename)
-            files_to_get[source_filename] = fileinfo.digest
-
-        # Also copy all managers that might be useful during compilation.
-        for filename in iterkeys(job.managers):
+            files_to_get[source_filename] = file_.digest
+        # Any other useful manager (just copy).
+        for filename, manager in iteritems(job.managers):
             if is_manager_for_compilation(filename, language):
-                files_to_get[filename] = \
-                    job.managers[filename].digest
+                files_to_get[filename] = manager.digest
 
         # Prepare the compilation command
-        executable_filename = \
-            "_".join(pattern.replace(".%l", "")
-                     for pattern in iterkeys(job.files))
+        executable_filename = "_".join(pattern.replace(".%l", "")
+                                       for pattern in iterkeys(job.files))
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
 
-        # Create the sandbox and put the required files in it.
+        # Create the sandbox.
         sandbox = create_sandbox(file_cacher, name="compile")
         job.sandboxes.append(sandbox.path)
 
+        # Copy all required files in the sandbox.
         for filename, digest in iteritems(files_to_get):
             sandbox.create_file_from_storage(filename, digest)
 
-        # Run the compilation
-        operation_success, compilation_success, text, plus = \
+        # Run the compilation.
+        box_success, compilation_success, text, stats = \
             compilation_step(sandbox, commands)
 
-        # Retrieve the compiled executables
-        job.success = operation_success
+        # Retrieve the compiled executables.
+        job.success = box_success
         job.compilation_success = compilation_success
-        job.plus = plus
         job.text = text
-        if operation_success and compilation_success:
+        job.plus = stats
+        if box_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
-                "Executable %s for %s" %
-                (executable_filename, job.info))
+                "Executable %s for %s" % (executable_filename, job.info))
             job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
 
-        # Cleanup
+        # Cleanup.
         delete_sandbox(sandbox, job.success)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
         if not check_executables_number(job, 1):
             return
+        executable_filename = next(iterkeys(job.executables))
+        executable_digest = job.executables[executable_filename].digest
 
         # Make sure the required manager is among the job managers.
-        manager_filename = "manager"
-        if not check_manager_present(job, manager_filename):
+        if not check_manager_present(job, Communication.MANAGER_FILENAME):
             return
+        manager_digest = job.managers[Communication.MANAGER_FILENAME].digest
 
-        if len(self.parameters) <= 0:
-            num_processes = 1
-        else:
-            num_processes = self.parameters[0]
-        indices = range(num_processes)
-
-        # Create sandboxes.
-        sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
-        sandbox_user = [
-            create_sandbox(file_cacher, name="user_evaluate")
-            for i in indices]
-        job.sandboxes.extend(s.path for s in sandbox_user)
-        job.sandboxes.append(sandbox_mgr.path)
+        # Indices for the objects related to each user process.
+        indices = range(self.num_processes)
 
         # Create FIFOs.
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
@@ -204,64 +215,52 @@ class Communication(TaskType):
             os.chmod(fifo_in[i], 0o666)
             os.chmod(fifo_out[i], 0o666)
 
-        # First step: prepare the manager.
-        manager_command = ["./%s" % manager_filename]
-        for i in indices:
-            manager_command.append(fifo_in[i])
-            manager_command.append(fifo_out[i])
-        manager_executables_to_get = {
-            manager_filename:
-            job.managers[manager_filename].digest
-            }
-        manager_files_to_get = {
-            "input.txt": job.input
-            }
-        manager_allow_dirs = fifo_dir
-        for filename, digest in iteritems(manager_executables_to_get):
-            sandbox_mgr.create_file_from_storage(
-                filename, digest, executable=True)
-        for filename, digest in iteritems(manager_files_to_get):
-            sandbox_mgr.create_file_from_storage(filename, digest)
+        # Create the manager sandbox and copy manager and input.
+        sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
+        job.sandboxes.append(sandbox_mgr.path)
+        sandbox_mgr.create_file_from_storage(
+            Communication.MANAGER_FILENAME, manager_digest, executable=True)
+        sandbox_mgr.create_file_from_storage(
+            Communication.INPUT_FILENAME, job.input)
 
-        # Second step: load the executables for the user processes
-        # (done before launching the manager so that it does not
-        # impact its wall clock time).
-        executable_filename = next(iterkeys(job.executables))
-        executables_to_get = {
-            executable_filename:
-            job.executables[executable_filename].digest
-            }
+        # Create the user sandbox(es) and copy the executable.
+        sandbox_user = [create_sandbox(file_cacher, name="user_evaluate")
+                        for i in indices]
+        job.sandboxes.extend(s.path for s in sandbox_user)
         for i in indices:
-            for filename, digest in iteritems(executables_to_get):
-                sandbox_user[i].create_file_from_storage(
-                    filename, digest, executable=True)
+            sandbox_user[i].create_file_from_storage(
+                executable_filename, executable_digest, executable=True)
 
-        # Third step: start the manager.
+        # Start the manager. Redirecting to stdin is unnecessary, but for
+        # historical reasons the manager can choose to read from there
+        # instead than from INPUT_FILENAME.
+        manager_command = ["./%s" % Communication.MANAGER_FILENAME]
+        for i in indices:
+            manager_command += [fifo_in[i], fifo_out[i]]
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            num_processes * job.time_limit,
+            self.num_processes * job.time_limit,
             None,
-            allow_dirs=manager_allow_dirs,
-            writable_files=["output.txt"],
-            stdin_redirect="input.txt",
+            allow_dirs=fifo_dir,
+            writable_files=[Communication.OUTPUT_FILENAME],
+            stdin_redirect=Communication.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox)
 
-        # Fourth step: start the user submissions compiled with the stub.
+        # Start the user submissions compiled with the stub.
         language = get_language(job.language)
         processes = [None for i in indices]
         for i in indices:
             args = [fifo_out[i], fifo_in[i]]
-            if num_processes != 1:
+            if self.num_processes != 1:
                 args.append(str(i))
             commands = language.get_evaluation_commands(
                 executable_filename,
                 main="stub",
                 args=args)
-            user_allow_dirs = [fifo_dir[i]]
-            # Assumes that the actual execution of the user solution
-            # is the last command in commands, and that the previous
-            # are "setup" that doesn't need tight control.
+            # Assumes that the actual execution of the user solution is the
+            # last command in commands, and that the previous are "setup"
+            # that don't need tight control.
             if len(commands) > 1:
                 evaluation_step(sandbox_user[i], commands[:-1], 10, 256)
             processes[i] = evaluation_step_before_run(
@@ -269,55 +268,64 @@ class Communication(TaskType):
                 commands[-1],
                 job.time_limit,
                 job.memory_limit,
-                allow_dirs=user_allow_dirs,
+                allow_dirs=[fifo_dir[i]],
                 multiprocess=job.multithreaded_sandbox)
 
-        # Consume output.
+        # Wait for the processes to conclude, without blocking them on I/O.
         wait_without_std(processes + [manager])
-        # TODO: check exit codes with translate_box_exitcode.
 
-        user_results = [evaluation_step_after_run(s) for s in sandbox_user]
-        success_user = all(r[0] for r in user_results)
-        evaluation_success_user = all(r[1] for r in user_results)
-        plus_user = reduce(merge_execution_stats,
-                           [r[2] for r in user_results])
-        success_mgr, evaluation_success_mgr, unused_plus_mgr = \
+        # Get the results of the manager sandbox.
+        box_success_mgr, evaluation_success_mgr, unused_stats_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
-        if plus_user['exit_status'] == Sandbox.EXIT_OK and \
-                plus_user["execution_time"] >= job.time_limit:
-            plus_user['exit_status'] = Sandbox.EXIT_TIMEOUT
+        # Coalesce the results of the user sandboxes.
+        user_results = [evaluation_step_after_run(s) for s in sandbox_user]
+        box_success_user = all(r[0] for r in user_results)
+        evaluation_success_user = all(r[1] for r in user_results)
+        stats_user = reduce(merge_execution_stats,
+                            [r[2] for r in user_results])
+        # The actual running time is the sum of every user process, but each
+        # sandbox can only check its own; if the sum is greater than the time
+        # limit we adjust the result.
+        if box_success_user and evaluation_success_user and \
+                stats_user["execution_time"] >= job.time_limit:
+            evaluation_success_user = False
+            stats_user['exit_status'] = Sandbox.EXIT_TIMEOUT
 
-        # Merge results.
-        job.plus = plus_user
+        success = box_success_user \
+            and box_success_mgr and evaluation_success_mgr
+        outcome = None
+        text = None
 
         # If at least one sandbox had problems, or the manager did not
         # terminate correctly, we report an error.
-        if not success_user or not success_mgr or not evaluation_success_mgr:
-            success, outcome, text = False, None, None
+        if not success:
+            pass
+
         # If the user sandbox detected some problem (timeout, ...),
         # the outcome is 0.0 and the text describes that problem.
         elif not evaluation_success_user:
-            success = True
-            outcome, text = 0.0, human_evaluation_message(plus_user)
+            outcome = 0.0
+            text = human_evaluation_message(stats_user)
+
         # Otherwise, we use the manager to obtain the outcome.
         else:
-            success = True
             outcome, text = extract_outcome_and_text(sandbox_mgr)
 
         # If asked so, save the output file, provided that it exists
         if job.get_output:
-            if sandbox_mgr.file_exists("output.txt"):
+            if sandbox_mgr.file_exists(Communication.OUTPUT_FILENAME):
                 job.user_output = sandbox_mgr.get_file_to_storage(
-                    "output.txt",
+                    Communication.OUTPUT_FILENAME,
                     "Output file in job %s" % job.info)
             else:
                 job.user_output = None
 
-        # Whatever happened, we conclude.
+        # Fill in the job with the results.
         job.success = success
         job.outcome = "%s" % outcome if outcome is not None else None
         job.text = text
+        job.plus = stats_user
 
         delete_sandbox(sandbox_mgr, job.success)
         for s in sandbox_user:
