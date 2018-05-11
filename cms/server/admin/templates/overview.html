@@ -153,6 +153,11 @@ function link_submissions(s)
                      });
 }
 
+function escape_html(s)
+{
+    return $("<div>").text(s).html();
+}
+
 function update_logs(response)
 {
     var table = $("#logs_table > tbody");
@@ -174,9 +179,9 @@ function update_logs(response)
     response['data'] = response['data'].reverse();
     for (i in response['data'])
     {
-        var message = link_submissions(response['data'][i]['message']);
+        var message = link_submissions(escape_html(response['data'][i]['message']));
         var coord = response['data'][i]['coord'];
-        var operation = link_submissions(response['data'][i]['operation']);
+        var operation = link_submissions(escape_html(response['data'][i]['operation']));
         var severity = response['data'][i]['severity'];
         var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
 
@@ -184,8 +189,10 @@ function update_logs(response)
         row.append($('<td>').text(timestamp));
         row.append($('<td>').text(severity));
         row.append($('<td>').text(coord));
-        row.append($('<td>').text(operation));
-        row.append($('<td>').append($('<pre>').text(message)));
+        // We inject it as HTML rather than text because we escaped it before
+        // and because we need to preserve the links to the submission pages.
+        row.append($('<td>').html(operation));
+        row.append($('<td>').append($('<pre>').html(message)));
         new_table.append(row);
     }
     table.replaceWith(new_table);
