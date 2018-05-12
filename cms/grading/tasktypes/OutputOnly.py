@@ -121,9 +121,6 @@ class OutputOnly(TaskType):
         """See TaskType.evaluate."""
         user_output_filename = self._get_user_output_filename(job)
 
-        # There is no actual evaluation, so no statistics.
-        job.plus = {}
-
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
         if user_output_filename not in job.files:
@@ -133,12 +130,14 @@ class OutputOnly(TaskType):
             return
 
         # First and only step: eval the user output.
-        success, outcome, text = eval_output(
+        box_success, outcome, text = eval_output(
             file_cacher, job,
             OutputOnly.CHECKER_CODENAME if self._uses_checker() else None,
             user_output_digest=job.files[user_output_filename].digest)
 
-        # Whatever happened, we conclude.
-        job.success = success
+        # Fill in the job with the results.
+        job.success = box_success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+        # There is no actual evaluation, so no statistics.
+        job.plus = {}
