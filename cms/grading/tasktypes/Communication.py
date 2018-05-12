@@ -36,9 +36,9 @@ from functools import reduce
 
 from cms import config, rmtree
 from cms.grading.Sandbox import wait_without_std, Sandbox
-from cms.grading.steps import compilation_step, evaluation_step, \
-    evaluation_step_before_run, evaluation_step_after_run, \
-    extract_outcome_and_text, human_evaluation_message,  merge_execution_stats
+from cms.grading.steps import compilation_step,  evaluation_step_before_run, \
+    evaluation_step_after_run, extract_outcome_and_text, \
+    human_evaluation_message, merge_execution_stats, trusted_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.grading.TaskType import TaskType, check_executables_number, \
@@ -262,7 +262,7 @@ class Communication(TaskType):
             # last command in commands, and that the previous are "setup"
             # that don't need tight control.
             if len(commands) > 1:
-                evaluation_step(sandbox_user[i], commands[:-1], 10, 256)
+                trusted_step(sandbox_user[i], commands[:-1])
             processes[i] = evaluation_step_before_run(
                 sandbox_user[i],
                 commands[-1],
