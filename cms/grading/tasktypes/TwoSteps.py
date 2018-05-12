@@ -37,7 +37,7 @@ from cms import config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.steps import compilation_step, evaluation_step_before_run, \
-    evaluation_step_after_run, human_evaluation_message
+    evaluation_step_after_run, human_evaluation_message, merge_execution_stats
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.TaskType import TaskType, check_executables_number, \
     check_files_number, check_manager_present, create_sandbox, \
@@ -200,15 +200,15 @@ class TwoSteps(TaskType):
             sandbox.create_file_from_storage(filename, digest)
 
         # Run the compilation.
-        operation_success, compilation_success, text, plus = \
+        box_success, compilation_success, text, stats = \
             compilation_step(sandbox, commands)
 
         # Retrieve the compiled executables
-        job.success = operation_success
+        job.success = box_success
         job.compilation_success = compilation_success
-        job.plus = plus
         job.text = text
-        if operation_success and compilation_success:
+        job.plus = stats
+        if box_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
                 "Executable %s for %s" %
@@ -290,30 +290,28 @@ class TwoSteps(TaskType):
 
         # Consume output.
         wait_without_std([second, first])
-        # TODO: check exit codes with translate_box_exitcode.
 
-        success_first, evaluation_success_first, first_plus = \
+        box_success_first, evaluation_success_first, first_stats = \
             evaluation_step_after_run(first_sandbox)
-        success_second, evaluation_success_second, second_plus = \
+        box_success_second, evaluation_success_second, second_stats = \
             evaluation_step_after_run(second_sandbox)
 
-        job.plus = second_plus
+        box_success = box_success_first and box_success_second
+        evaluation_success = \
+            evaluation_success_first and evaluation_success_second
+        stats = merge_execution_stats(first_stats, second_stats)
 
-        success = True
         outcome = None
         text = None
 
-        # Error in the sandbox: report failure!
-        if not success_first or not success_second:
-            success = False
+        # Error in the sandbox: nothing to do!
+        if not box_success:
+            pass
 
         # Contestant's error: the marks won't be good
-        elif not evaluation_success_first or not evaluation_success_second:
+        elif not evaluation_success:
             outcome = 0.0
-            if not evaluation_success_first:
-                text = human_evaluation_message(first_plus)
-            else:
-                text = human_evaluation_message(second_plus)
+            text = human_evaluation_message(stats)
             if job.get_output:
                 job.user_output = None
 
@@ -343,18 +341,18 @@ class TwoSteps(TaskType):
 
                 # Otherwise evaluate the output file.
                 else:
-                    checker_success, outcome, text = eval_output(
+                    box_success, outcome, text = eval_output(
                         file_cacher, job,
                         TwoSteps.CHECKER_CODENAME
                         if self._uses_checker() else None,
                         user_output_path=second_sandbox.relative_path(
                             TwoSteps.OUTPUT_FILENAME))
-                    success = success and checker_success
 
-        # Whatever happened, we conclude.
-        job.success = success
+        # Fill in the job with the results.
+        job.success = box_success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+        job.plus = stats
 
         delete_sandbox(first_sandbox, job.success)
         delete_sandbox(second_sandbox, job.success)
