@@ -98,16 +98,23 @@ class TaskTypeTestMixin(object):
         self.addCleanup(patcher.stop)
         patcher.start()
 
-        # Mock the set of languages. Child classes can update this dict before
-        # the test to change the set of languages CMS understands.
-        self.languages = set()
-        patcher = patch("%s.LANGUAGES" % tasktype_pkg, self.languages)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-        patcher = patch("%s.get_language" % tasktype_pkg,
-                        MagicMock(side_effect=self._mock_get_language))
-        self.addCleanup(patcher.stop)
-        self.get_language = patcher.start()
+        # Mock the set of languages (if the task type uses it). Child classes
+        # can update this dict before the test to change the set of languages
+        # CMS understands.
+        try:
+            self.languages = set()
+            patcher = patch("%s.LANGUAGES" % tasktype_pkg, self.languages)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        except Exception:
+            pass
+        try:
+            patcher = patch("%s.get_language" % tasktype_pkg,
+                            MagicMock(side_effect=self._mock_get_language))
+            self.get_language = patcher.start()
+            self.addCleanup(patcher.stop)
+        except Exception:
+            pass
 
         # Mock the sandboxes, assuming that all are created via create_sandbox.
         # Child classes can append to this deque to add sandboxes (probably
@@ -118,19 +125,31 @@ class TaskTypeTestMixin(object):
         self.addCleanup(patcher.stop)
         self.Sandbox = patcher.start()
 
-        # Mock various steps
-        patcher = patch("%s.compilation_step" % tasktype_pkg)
-        self.addCleanup(patcher.stop)
-        self.compilation_step = patcher.start()
-        patcher = patch("%s.evaluation_step" % tasktype_pkg)
-        self.addCleanup(patcher.stop)
-        self.evaluation_step = patcher.start()
-        patcher = patch("%s.human_evaluation_message" % tasktype_pkg)
-        self.addCleanup(patcher.stop)
-        self.human_evaluation_message = patcher.start()
-        patcher = patch("%s.eval_output" % tasktype_pkg)
-        self.addCleanup(patcher.stop)
-        self.eval_output = patcher.start()
+        # Mock various steps, if the task type uses them.
+        try:
+            patcher = patch("%s.compilation_step" % tasktype_pkg)
+            self.compilation_step = patcher.start()
+            self.addCleanup(patcher.stop)
+        except Exception:
+            pass
+        try:
+            patcher = patch("%s.evaluation_step" % tasktype_pkg)
+            self.evaluation_step = patcher.start()
+            self.addCleanup(patcher.stop)
+        except Exception:
+            pass
+        try:
+            patcher = patch("%s.human_evaluation_message" % tasktype_pkg)
+            self.human_evaluation_message = patcher.start()
+            self.addCleanup(patcher.stop)
+        except Exception:
+            pass
+        try:
+            patcher = patch("%s.eval_output" % tasktype_pkg)
+            self.eval_output = patcher.start()
+            self.addCleanup(patcher.stop)
+        except Exception:
+            pass
 
     def tearDown(self):
         super(TaskTypeTestMixin, self).tearDown()

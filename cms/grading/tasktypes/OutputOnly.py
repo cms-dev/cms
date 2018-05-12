@@ -127,6 +127,7 @@ class OutputOnly(TaskType):
             job.success = True
             job.outcome = "0.0"
             job.text = [N_("File not submitted")]
+            job.plus = {}
             return
 
         # First and only step: eval the user output.
@@ -140,4 +141,4 @@ class OutputOnly(TaskType):
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
         # There is no actual evaluation, so no statistics.
-        job.plus = {}
+        job.plus = {} if box_success else None
