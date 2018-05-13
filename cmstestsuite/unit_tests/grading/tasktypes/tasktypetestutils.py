@@ -44,7 +44,7 @@ def fake_evaluation_commands(base, exe, main=None, args=None):
         cmd += [main]
     if args is not None:
         cmd += args
-    return cmd
+    return [cmd]
 
 
 def make_language(name, source_extensions, header_extensions,
@@ -77,8 +77,18 @@ LANG_2 = make_language("L2", [".l2"], [".hl2"],
 # Some other sample data.
 OUTCOME = 0.75
 TEXT = ["text %s", "A"]
-STATS_OK = {"exit_status": "OK"}
-STATS_RE = {"exit_status": "RE"}
+STATS_OK = {
+    "exit_status": "OK",
+    "execution_time": 0.01,
+    "execution_wall_clock_time": 0.10,
+    "execution_memory": 10,
+}
+STATS_RE = {
+    "exit_status": "RE",
+    "execution_time": 0.02,
+    "execution_wall_clock_time": 0.20,
+    "execution_memory": 20,
+}
 
 
 class TaskTypeTestMixin(object):
@@ -117,9 +127,15 @@ class TaskTypeTestMixin(object):
         # Mock various steps, if the task type uses them.
         self.compilation_step = self._maybe_patch("compilation_step")
         self.evaluation_step = self._maybe_patch("evaluation_step")
+        self.evaluation_step_before_run = self._maybe_patch(
+            "evaluation_step_before_run")
+        self.evaluation_step_after_run = self._maybe_patch(
+            "evaluation_step_after_run")
         self.human_evaluation_message = self._maybe_patch(
             "human_evaluation_message")
         self.eval_output = self._maybe_patch("eval_output")
+        self.extract_outcome_and_text = self._maybe_patch(
+            "extract_outcome_and_text")
 
     def _maybe_patch(self, name, *args, **kwargs):
         """Patch name inside the task type if it exists.
