@@ -248,11 +248,18 @@ class Communication(TaskType):
         manager_command = ["./%s" % Communication.MANAGER_FILENAME]
         for i in indices:
             manager_command += [fifo_in[i], fifo_out[i]]
+        # We could use trusted_step for the manager, since it's fully
+        # admin-controlled. But trusted_step is only synchronous at the moment.
+        # Thus we use evaluation_step, and we set a generous time_limit, that
+        # should be strictly greater than the sum of all user's processes time
+        # limit (so that the user cannot make the manager timeout).
+        manager_time_limit = self.num_processes \
+            * max(job.time_limit + 1.0, config.trusted_sandbox_max_time_s)
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            self.num_processes * job.time_limit,
-            None,
+            manager_time_limit,
+            config.trusted_sandbox_max_memory_kib // 1024,
             allow_dirs=fifo_dir,
             writable_files=[Communication.OUTPUT_FILENAME],
             stdin_redirect=Communication.INPUT_FILENAME,
