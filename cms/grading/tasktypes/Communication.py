@@ -302,6 +302,11 @@ class Communication(TaskType):
         if not success:
             pass
 
+        # If just asked to execute, fill text and set dummy outcome.
+        elif job.only_execution:
+            outcome = 0.0
+            text = [N_("Execution completed successfully")]
+
         # If the user sandbox detected some problem (timeout, ...),
         # the outcome is 0.0 and the text describes that problem.
         elif not evaluation_success_user:
