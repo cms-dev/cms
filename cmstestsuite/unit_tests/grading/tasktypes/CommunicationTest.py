@@ -31,6 +31,7 @@ import unittest
 
 from mock import MagicMock, call, ANY, patch
 
+from cms import config
 from cms.db import File, Manager, Executable
 from cms.grading.Job import CompilationJob, EvaluationJob
 from cms.grading.steps import merge_execution_stats
@@ -278,6 +279,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.evaluation_step_after_run.side_effect = \
             lambda sandbox, *args, **kwargs: sandbox_to_return_value[sandbox]
 
+    @patch.object(config, "trusted_sandbox_max_time_s", 4321)
+    @patch.object(config, "trusted_sandbox_max_memory_kib", 1024 * 1234)
     def test_single_process_success(self):
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
         sandbox_mgr = self.expect_sandbox()
@@ -312,7 +315,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                        "%s/0/out0" % self.base_dir,
                        "%s/0/in0" % self.base_dir]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, cmdline_mgr, 2.5, None,
+            call(sandbox_mgr, cmdline_mgr, 4321, 1234,
                  allow_dirs=[os.path.join(self.base_dir, "0")],
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
@@ -326,6 +329,20 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT, STATS_OK)
         sandbox_mgr.delete.assert_called_once()
         sandbox_usr.delete.assert_called_once()
+
+    @patch.object(config, "trusted_sandbox_max_time_s", 1)
+    def test_single_process_success_long_time_limit(self):
+        # If the time limit is longer than trusted step default time limit,
+        # the manager run should use the task time limit.
+        tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
+        sandbox_mgr = self.expect_sandbox()
+        self.expect_sandbox()
+
+        tt.evaluate(job, self.file_cacher)
+
+        self.evaluation_step_before_run.assert_has_calls([
+            call(sandbox_mgr, ANY, 2.5 + 1, ANY, allow_dirs=ANY,
+                 writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_single_process_missing_manager(self):
         # Manager is missing, should terminate without creating sandboxes.
@@ -468,6 +485,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.extract_outcome_and_text.assert_not_called()
         self.assertEqual(job.success, True)
 
+    @patch.object(config, "trusted_sandbox_max_time_s", 4321)
+    @patch.object(config, "trusted_sandbox_max_memory_kib", 1024 * 1234)
     def test_many_processes_success(self):
         tt, job = self.prepare([2], {"foo": EXE_FOO}, {"manager": MANAGER})
         sandbox_mgr = self.expect_sandbox()
@@ -513,7 +532,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                         "%s/1/in1" % self.base_dir,
                         "1"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, cmdline_mgr, 2.5 * 2, None,
+            call(sandbox_mgr, cmdline_mgr, 4321, 1234,
                  allow_dirs=[os.path.join(self.base_dir, "0"),
                              os.path.join(self.base_dir, "1")],
                  writable_files=["output.txt"],
@@ -533,6 +552,21 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         sandbox_mgr.delete.assert_called_once()
         sandbox_usr0.delete.assert_called_once()
         sandbox_usr1.delete.assert_called_once()
+
+    @patch.object(config, "trusted_sandbox_max_time_s", 3)
+    def test_many_processes_success_long_time_limit(self):
+        # If the time limit is longer than trusted step default time limit,
+        # the manager run should use the task time limit.
+        tt, job = self.prepare([2], {"foo": EXE_FOO}, {"manager": MANAGER})
+        sandbox_mgr = self.expect_sandbox()
+        self.expect_sandbox()
+        self.expect_sandbox()
+
+        tt.evaluate(job, self.file_cacher)
+
+        self.evaluation_step_before_run.assert_has_calls([
+            call(sandbox_mgr, ANY, 2 * (2.5 + 1), ANY, allow_dirs=ANY,
+                 writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_many_processes_first_user_failure(self):
         # One of the user programs had problems, it's the user's fault.
