@@ -91,7 +91,6 @@ class TaskTypeTestMixin(object):
 
         """
         self.tasktype = tasktype
-        tasktype_pkg = "cms.grading.tasktypes.%s" % tasktype
 
         # Ensure we don't retain all sandboxes so we can verify delete().
         patcher = patch.object(config, "keep_sandbox", False)
@@ -101,20 +100,10 @@ class TaskTypeTestMixin(object):
         # Mock the set of languages (if the task type uses it). Child classes
         # can update this dict before the test to change the set of languages
         # CMS understands.
-        try:
-            self.languages = set()
-            patcher = patch("%s.LANGUAGES" % tasktype_pkg, self.languages)
-            patcher.start()
-            self.addCleanup(patcher.stop)
-        except Exception:
-            pass
-        try:
-            patcher = patch("%s.get_language" % tasktype_pkg,
-                            MagicMock(side_effect=self._mock_get_language))
-            self.get_language = patcher.start()
-            self.addCleanup(patcher.stop)
-        except Exception:
-            pass
+        self.languages = set()
+        self._maybe_patch("LANGUAGES", new=self.languages)
+        self.get_language = self._maybe_patch(
+            "get_language", new=MagicMock(side_effect=self._mock_get_language))
 
         # Mock the sandboxes, assuming that all are created via create_sandbox.
         # Child classes can append to this deque to add sandboxes (probably
@@ -126,30 +115,30 @@ class TaskTypeTestMixin(object):
         self.Sandbox = patcher.start()
 
         # Mock various steps, if the task type uses them.
+        self.compilation_step = self._maybe_patch("compilation_step")
+        self.evaluation_step = self._maybe_patch("evaluation_step")
+        self.human_evaluation_message = self._maybe_patch(
+            "human_evaluation_message")
+        self.eval_output = self._maybe_patch("eval_output")
+
+    def _maybe_patch(self, name, **kwargs):
+        """Patch name inside the task type if it exists.
+
+        name (str): name of the symbol to patch.
+        kwargs (dict): additional arguments passed to patch.
+
+        return (MagicMock|None): the mock that replaced the symbol, or None if
+            the symbol did not exist in the task type.
+
+        """
+        patcher = patch("cms.grading.tasktypes.%s.%s" % (self.tasktype, name),
+                        **kwargs)
         try:
-            patcher = patch("%s.compilation_step" % tasktype_pkg)
-            self.compilation_step = patcher.start()
-            self.addCleanup(patcher.stop)
-        except Exception:
-            pass
-        try:
-            patcher = patch("%s.evaluation_step" % tasktype_pkg)
-            self.evaluation_step = patcher.start()
-            self.addCleanup(patcher.stop)
-        except Exception:
-            pass
-        try:
-            patcher = patch("%s.human_evaluation_message" % tasktype_pkg)
-            self.human_evaluation_message = patcher.start()
-            self.addCleanup(patcher.stop)
-        except Exception:
-            pass
-        try:
-            patcher = patch("%s.eval_output" % tasktype_pkg)
-            self.eval_output = patcher.start()
-            self.addCleanup(patcher.stop)
-        except Exception:
-            pass
+            patched = patcher.start()
+        except AttributeError:
+            return None
+        self.addCleanup(patcher.stop)
+        return patched
 
     def tearDown(self):
         super(TaskTypeTestMixin, self).tearDown()

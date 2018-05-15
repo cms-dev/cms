@@ -46,7 +46,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
     """Tests for evaluate().
 
     prepare() creates a task type and a job with the given arguments, and in
-    addition set up successful return values for eval_output.
+    addition sets up successful return values for eval_output.
 
     """
 
