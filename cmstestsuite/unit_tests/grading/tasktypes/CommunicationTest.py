@@ -267,6 +267,17 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.assertEqual(job.text, text)
         self.assertEqual(job.plus, stats)
 
+    def _set_evaluation_step_return_values(self, sandbox_to_return_value):
+        """Set the return value of evaluation_step_after_run for each sandbox.
+
+        sandbox_to_return_value ({Sandbox|MagicMock: object}): map from the
+            sandbox to the return value of evaluation_step_after_run when
+            called with that sandbox as first argument.
+
+        """
+        self.evaluation_step_after_run.side_effect = \
+            lambda sandbox, *args, **kwargs: sandbox_to_return_value[sandbox]
+
     def test_single_process_success(self):
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
         sandbox_mgr = self.expect_sandbox()
@@ -344,12 +355,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     def test_single_process_manager_failure(self):
         # Manager had problems, it's not the user's fault.
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (True, False, STATS_RE),  # Manager
-            (True, True, STATS_OK),  # User
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, False, STATS_RE),
+            sandbox_usr: (True, True, STATS_OK),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -360,12 +371,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     def test_single_process_manager_sandbox_failure(self):
         # Manager sandbox had problems, it's not the user's fault.
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (False, None, None),  # Manager
-            (True, True, STATS_OK),  # User
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (False, None, None),
+            sandbox_usr: (True, True, STATS_OK),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -377,12 +388,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # Manager had problems, it's not the user's fault even if also their
         # submission had problems.
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (True, False, STATS_RE),  # Manager
-            (True, False, STATS_RE),  # User
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, False, STATS_RE),
+            sandbox_usr: (True, False, STATS_RE),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -393,12 +404,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     def test_single_process_user_sandbox_failure(self):
         # User sandbox had problems, it's not the user's fault.
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (True, True, STATS_OK),  # Manager
-            (False, None, None),  # User
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, True, STATS_OK),
+            sandbox_usr: (False, None, None),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -409,12 +420,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     def test_single_process_user_failure(self):
         # User program had problems, it's the user's fault.
         tt, job = self.prepare([1], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (True, True, STATS_OK),  # Manager
-            (True, False, STATS_RE),  # User
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, True, STATS_OK),
+            sandbox_usr: (True, False, STATS_RE),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -522,14 +533,14 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     def test_many_processes_first_user_failure(self):
         # One of the user programs had problems, it's the user's fault.
         tt, job = self.prepare([2], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (True, True, STATS_OK),  # Manager
-            (True, False, STATS_RE),  # User0
-            (True, True, STATS_OK),  # User1
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr0 = self.expect_sandbox()
         sandbox_usr1 = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, True, STATS_OK),
+            sandbox_usr0: (True, False, STATS_RE),
+            sandbox_usr1: (True, True, STATS_OK),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -543,14 +554,14 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     def test_many_processes_last_user_failure(self):
         # One of the user programs had problems, it's the user's fault.
         tt, job = self.prepare([2], {"foo": EXE_FOO}, {"manager": MANAGER})
-        self.evaluation_step_after_run.side_effect = [
-            (True, True, STATS_OK),  # Manager
-            (True, True, STATS_OK),  # User0
-            (True, False, STATS_RE),  # User1
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr0 = self.expect_sandbox()
         sandbox_usr1 = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, True, STATS_OK),
+            sandbox_usr0: (True, True, STATS_OK),
+            sandbox_usr1: (True, False, STATS_RE),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
@@ -569,14 +580,14 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         stats0["execution_time"] = 1.0
         stats1 = dict(STATS_OK)
         stats1["execution_time"] = 2.0
-        self.evaluation_step_after_run.side_effect = [
-            (True, True, STATS_OK),  # Manager
-            (True, True, stats0),  # User0
-            (True, True, stats1),  # User1
-        ]
         sandbox_mgr = self.expect_sandbox()
         sandbox_usr0 = self.expect_sandbox()
         sandbox_usr1 = self.expect_sandbox()
+        self._set_evaluation_step_return_values({
+            sandbox_mgr: (True, True, STATS_OK),
+            sandbox_usr0: (True, True, stats0),
+            sandbox_usr1: (True, True, stats1),
+        })
 
         tt.evaluate(job, self.file_cacher)
 
