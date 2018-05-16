@@ -99,8 +99,10 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
     prepare() creates a task type and a job with the given arguments, including
     the return value of compilation_step(), which is by default a success.
 
-    compile() depends only on the first parameter (grader or alone). We test
-    failure modes only for alone, apart from one grader-specific failure.
+    compile() doesn't depend on any parameter, but depends on the number of
+    source files passed by the user (that is, declared in the submission
+    format), since Communication doesn't enforce a particular submission
+    format.
 
     """
 
@@ -141,7 +143,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
 
         # Sandbox created with the correct file cacher and name.
         self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
-        # For alone, we only need the user source file.
+        # We need all user source files, and the stub for the same language.
         sandbox.create_file_from_storage.assert_has_calls(
             [call("foo.l1", "digest of foo.l1"),
              call("stub.l1", "digest of stub.l1")], any_order=True)
@@ -196,7 +198,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         # Sandbox created with the correct file cacher and name.
         self.Sandbox.assert_called_once_with(self.file_cacher,
                                              name="compile")
-        # For alone, we only need the user source file.
+        # We need all user source files in addition to the stub.
         sandbox.create_file_from_storage.assert_has_calls(
             [call("foo.l1", "digest of foo.l1"),
              call("bar.l1", "digest of bar.l1"),
@@ -217,12 +219,11 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
     """Tests for evaluate().
 
     prepare() creates a task type and a job with the given arguments, and in
-    addition set up successful return values for the two steps
-    (evaluation_step and eval_output).
+    addition sets up successful return values for the two steps
+    (evaluation_step(_after_run) and extract_outcome_and_text).
 
-    evaluate() depends on 2 parameters (I/O and checker/whitediff); we test
-    success for all combinations, but failures and special cases only for one
-    of the four.
+    evaluate() depends on the only parameter (number of user processes). We
+    test both, but shared failure cases only in the single process case.
 
     """
 
