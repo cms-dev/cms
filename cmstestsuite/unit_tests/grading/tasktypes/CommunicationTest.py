@@ -122,8 +122,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
                 compilation_step_return_value=(True, True, TEXT, STATS_OK)):
         tt = Communication(parameters)
         job = self.job(files, managers)
-        if compilation_step_return_value is not None:
-            self.compilation_step.return_value = compilation_step_return_value
+        self.compilation_step.return_value = compilation_step_return_value
         return tt, job
 
     def assertResultsInJob(
