@@ -766,7 +766,7 @@ class EvaluationService(TriggeredService):
         elif not user_test_result.compiled():
             logger.warning("Worker failed when compiling user test "
                            "%d(%d).",
-                           user_test_result.submission_id,
+                           user_test_result.user_test_id,
                            user_test_result.dataset_id)
             if user_test_result.compilation_tries >= \
                     EvaluationService.MAX_USER_TEST_COMPILATION_TRIES:
