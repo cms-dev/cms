@@ -161,7 +161,12 @@ class Batch(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        return []
+        # In case the task uses a grader, we let the user provide their own
+        # grader (which is usually a simplified grader provided by the admins).
+        if self._uses_grader():
+            return ["grader.%l"]
+        else:
+            return []
 
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
