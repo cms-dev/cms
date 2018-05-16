@@ -320,6 +320,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                  allow_dirs=[os.path.join(self.base_dir, "0")],
                  multiprocess=True),
         ], any_order=True)
+        self.assertEqual(self.evaluation_step_before_run.call_count, 2)
+        self.assertEqual(self.evaluation_step_after_run.call_count, 2)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT, STATS_OK)
         sandbox_mgr.delete.assert_called_once()
@@ -523,6 +525,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                  allow_dirs=[os.path.join(self.base_dir, "1")],
                  multiprocess=True),
         ], any_order=True)
+        self.assertEqual(self.evaluation_step_before_run.call_count, 3)
+        self.assertEqual(self.evaluation_step_after_run.call_count, 3)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT,
                                 merge_execution_stats(STATS_OK, STATS_OK))
