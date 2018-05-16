@@ -86,10 +86,10 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
         self.assertEqual(cc, {
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1", "bar.l1"],
-                "foo_bar"),
+                "bar_foo"),
             "L2": fake_compilation_commands(
                 COMPILATION_COMMAND_2, ["stub.l2", "foo.l2", "bar.l2"],
-                "foo_bar"),
+                "bar_foo"),
         })
 
 
@@ -207,10 +207,10 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.compilation_step.assert_called_once_with(
             sandbox, fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1", "bar.l1"],
-                "foo_bar"))
+                "bar_foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
-        sandbox.get_file_to_storage.assert_called_once_with("foo_bar", ANY)
+        sandbox.get_file_to_storage.assert_called_once_with("bar_foo", ANY)
         sandbox.delete.assert_called_once()
 
 

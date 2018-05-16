@@ -115,8 +115,7 @@ class Communication(TaskType):
             for codename in submission_format:
                 source_filenames.append(codename.replace(".%l", source_ext))
             # Compute executable name.
-            executable_filename = "_".join(
-                codename.replace(".%l", "") for codename in submission_format)
+            executable_filename = self._executable_filename(submission_format)
             # Build the compilation commands.
             commands = language.get_compilation_commands(
                 source_filenames, executable_filename)
@@ -130,6 +129,19 @@ class Communication(TaskType):
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
         return ["manager"]
+
+    @staticmethod
+    def _executable_filename(codenames):
+        """Return the chosen executable name computed from the codenames.
+
+        codenames ([str]): submission format or codename of submitted files,
+            may contain %l.
+
+        return (str): a deterministic executable name.
+
+        """
+        return "_".join(sorted(codename.replace(".%l", "")
+                               for codename in codenames))
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -157,8 +169,7 @@ class Communication(TaskType):
                 files_to_get[filename] = manager.digest
 
         # Prepare the compilation command
-        executable_filename = "_".join(pattern.replace(".%l", "")
-                                       for pattern in iterkeys(job.files))
+        executable_filename = self._executable_filename(iterkeys(job.files))
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
 
