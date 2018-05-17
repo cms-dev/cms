@@ -132,7 +132,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if not task.submission_format|any("endswith", ".%l") %}
+{% if not (task.submission_format + task_type.get_user_managers())|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "test") }}" method="POST">
             {{ xsrf_form_html|safe }}
@@ -141,15 +141,6 @@ $(document).ready(function () {
                     <label class="control-label" for="input_zip">{% trans %}submission.zip{% endtrans %}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <select id="zip_language" name="language">
-{% for lang in contest.languages %}
-                            <option value="{{ lang }}">{{ lang }}</option>
-{% endfor %}
-                        </select>
                     </div>
                 </div>
                 <div class="control-group">
