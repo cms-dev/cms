@@ -104,7 +104,8 @@ $(document).ready(function () {
                     <div class="controls">
                         <input type="file" class="input-xlarge"
                                id="input{{ loop.index0 }}" name="{{ filename }}"
-                               onchange="CMS.CWSUtils.filter_languages($('#language option'), $(this).parents('fieldset').find('input[type=file]').not('#input_file'))"/>
+                               onchange="CMS.CWSUtils.filter_languages($(this).parents('form').find('select[name=language] option'),
+                                                                       $(this).parents('form').find('input[type=file]').not('#input_file'))"/>
                     </div>
                 </div>
 {% endfor %}
@@ -116,7 +117,7 @@ $(document).ready(function () {
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <select id="language" name="language">
+                        <select name="language">
 {% for lang in contest.languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
 {% endfor %}
