@@ -69,10 +69,13 @@ class Communication(TaskType):
     the manager will decide outcome and text, and print them on stdout and
     stderr.
 
-    The manager reads the input from a file named input.txt and writes the
-    output to output.txt. It receives as argument the names of the fifos:
-    first from and to the first user process, then from and to the second user
-    process, and so on.
+    The manager reads the input from stdin and writes to stdout and stderr the
+    standard manager output (that is, the outcome on stdout and the text on
+    stderr, see trusted.py for more information). It receives as argument the
+    names of the fifos: first from and to the first user process, then from and
+    to the second user process, and so on. It can also print some information
+    to a file named "output.txt"; the content of this file will be shown to
+    users submitting a user test.
 
     The stub receives as argument the fifos (from and to the manager) and if
     there are more than one user processes, the 0-based index of the process.
@@ -80,8 +83,11 @@ class Communication(TaskType):
     """
     # Filename of the manager (the stand-alone, admin-provided program).
     MANAGER_FILENAME = "manager"
-    # Input and output filenames used by the manager.
+    # Filename of the input in the manager sandbox. The content will be
+    # redirected to stdin, and managers should read from there.
     INPUT_FILENAME = "input.txt"
+    # Filename where the manager can write additional output to show to users
+    # in case of a user test.
     OUTPUT_FILENAME = "output.txt"
 
     ALLOW_PARTIAL_SUBMISSION = False
@@ -345,7 +351,8 @@ class Communication(TaskType):
         else:
             outcome, text = extract_outcome_and_text(sandbox_mgr)
 
-        # If asked so, save the output file, provided that it exists
+        # If asked so, save the output file with additional information,
+        # provided that it exists.
         if job.get_output:
             if sandbox_mgr.file_exists(Communication.OUTPUT_FILENAME):
                 job.user_output = sandbox_mgr.get_file_to_storage(
