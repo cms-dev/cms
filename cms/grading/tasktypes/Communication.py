@@ -253,8 +253,8 @@ class Communication(TaskType):
         # Thus we use evaluation_step, and we set a generous time_limit, that
         # should be strictly greater than the sum of all user's processes time
         # limit (so that the user cannot make the manager timeout).
-        manager_time_limit = self.num_processes \
-            * max(job.time_limit + 1.0, config.trusted_sandbox_max_time_s)
+        manager_time_limit = max(self.num_processes * (job.time_limit + 1.0),
+                                 config.trusted_sandbox_max_time_s)
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
