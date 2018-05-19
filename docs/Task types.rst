@@ -8,17 +8,19 @@ In the CMS terminology, the task type of a task describes how to compile and eva
 
 A submission goes through two steps involving the task type: the compilation, that usually creates an executable from the submitted files, and the evaluation, that runs this executable against the set of testcases and produces an outcome for each of them.
 
-Note that the outcome doesn't need to be obviously tied to the score for the submission: typically, the outcome is computed by a grader (which is an executable or a program stub passed to CMS) or a comparator (a program that decides if the output of the contestant's program is correct) and not by the task type. Hence, the task type doesn't need to know the meaning of the outcome, which is instead known by the grader and by the :doc:`score type <Score types>`.
+Note that the outcome doesn't need to be obviously tied to the score for the submission: typically, the outcome is computed by a grader (which is an executable or a program stub passed to CMS) or a comparator (a program that decides if the output of the contestant's program is correct) and not directly by the task type. Hence, the task type doesn't need to know the meaning of the outcome, which is instead known by the grader and by the :doc:`score type <Score types>`.
+
+An exception to this is when the contestant's source fails (for example, exceeding the time limit); in this case the task type will assign directly an outcome, usually 0.0; admins must consider that when planning the outcomes for a task.
 
 
 Standard task types
 ===================
 
-CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first two are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. Communication should be usable but it is less tested than the first two. The last one, TwoSteps, is probably not ready for usage in a public competition. The first two task types cover all but three of the IOI tasks up to IOI 2012.
+CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first three are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. TwoSteps is a somewhat simpler way to implement a special case of a Communication task, but it is substantially less secure with respect to cheating. We suggest avoiding TwoSteps for new tasks, and migrating old tasks to Communication.
 
-OutputOnly does not involve programming languages. Batch works with all supported languages (C, C++, Pascal, Java, Python, PHP), but only the first four if you are using a grader. Communication has been tested with C, C++, Pascal and Java. TwoSteps works only with C, C++ and Pascal.
+OutputOnly does not involve programming languages. Batch is tested with all languages CMS supports out of the box, (C, C++, Pascal, Java, C#, Python, PHP, Haskell, Rust), but only with the first five when using a grader. Communication is tested with C, C++, Pascal and Java. TwoSteps only with C. Regardless, with some work all task types should work with all languages.
 
-You can configure, for each task, the behavior of these task types on the task's page in AdminWebServer.
+Task types may have parameters to configure their behaviour (for example, a parameter for Batch defines whether to use a simple diff or a checker to evaluate the output). You can set these parameters, for each task, on the task's page in AdminWebServer.
 
 
 .. _tasktypes_batch:
@@ -26,26 +28,25 @@ You can configure, for each task, the behavior of these task types on the task's
 Batch
 -----
 
-In a Batch task, the contestant submits a single source file, in one of the :ref:`allowed programming languages <configuringacontest_programming-languages>`.
+In a Batch task, each testcase has an input (usually kept secret from the contestants), and the contestant's solution must produce a correct output for that input.
 
-The source file is either standalone or to be compiled with a grader provided by the contest admins. The resulting executable does I/O either on standard input and output or on two files with a specified name. The output produced by the contestant's program is then compared to the correct output either using white-diff, a simple diff algorithm that ignores whitespaces (see :ref:`details <_tasktypes_white_diff>), or using a comparator, provided by the admins.
+.. warning:: If the input, or part thereof, is supposed to be a secret from the contestant's code at least for part of the evaluation, then Batch is insecure and Communication should be used.
 
-The three choices (standalone or with a grader, standard input and output or files, white-diff or comparator) are specified through parameters.
+The contestant must submit a single source file; thus the submission format should contain one element with a ``.%l`` placeholder for the language extension.
 
-If the admins want to provide a grader that takes care of reading the input and writing the output (so that the contestants only need to write one or more functions), they must provide a manager for each allowed language, called :file:`grader.%l`, where ``.%l`` is the standard extension of a source file in that language. If header files for C/C++ or Pascal are needed, they can be provided with names :file:`{task_name}.h` or :file:`{task_name}lib.pas`. See the end of the section for specific issues of Java.
+Batch has three parameters:
 
-If the output is compared with white-diff, the outcome will be a float, 0.0 if the output is not correct, 1.0 if it is. If the output is validated by a comparator, you need to provide a manager called :file:`checker`. It must be an executable that:
+- the first specifies whether the source submitted by the contestant is compiled on its own, or together with a grader provided by the admins;
+- the second specifies the filenames of input and output (for reading and writing by the contestant source or by the grader), or whether to redirect them to standard input and standard output (if left blank);
+- the third whether to compare correct output and contestant-produced output with a simple diff, or with an admin-provided comparator.
 
-- is compiled statically (e.g., with ``-static`` using ``gcc`` or ``g++``);
-- takes three filenames as arguments (input, correct output and contestant's output);
-- writes on standard output the outcome (that is going to be used by the score type, and is usually a float between 0.0 and 1.0);
-- writes on standard error a message to forward to the contestant.
+A grader is a source file that is compiled with the contestant's source, and usually performs I/O for the contestants, so that they only have to implement one or more functions. If the task uses a grader, the admins must provide a manager called :file:`grader.{ext}` for each allowed language, where :file:`{ext}` is the standard extension of a source file in that language. If header files are needed, they can be provided as additional managers with an appropriate extension (for example, ``.h`` for C/C++ and ``lib.pas`` for Pascal).
 
-.. note:: The checker can also print to standard error the special strings "translate:success", "translate:wrong" or "translate:partial", which will be respectively shown to the contestants as the localized messages for "Output is correct", "Output isn't correct", and "Output is partially correct".
+The output produced by the contestant (possibly through the grader) is then evaluated against the correct output. This can be done with :ref:`white-diff<tasktypes_white_diff>`, or using a :ref:`comparator<tasktypes_checker>`. In the latter case, the admins must provide an executable manager called :file:`checker`. If the contestant's code fails, this step is omitted, and the outcome will be 0.0 and the message will explain the reason.
 
-The submission format must contain one filename ending with ``.%l``. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
+Batch supports user tests; if a grader is used, the contestants must provide their own grader (a common practice is to provide a simple grader to contestants, that can be used for local testing and for server-side user tests). The output produced by the contestant's solution, possibly through the grader, is sent back to the contestant; it is not evaluated against a correct output.
 
-Batch tasks are supported also for Java, with some requirements. The solutions of the contestants must contain a class named like the short name of the task. A grader must have a class named ``grader`` that in turns contains the main method; whether in this case the contestants should write a static method or a class is up to the admins.
+.. note:: Batch tasks are supported also for Java, with some requirements. The top-level class in the contestant's source must be named like the short name of the task. The one in the grader (containing the main method) must be  named ``grader``.
 
 
 .. _tasktypes_outputonly:
@@ -53,13 +54,19 @@ Batch tasks are supported also for Java, with some requirements. The solutions o
 OutputOnly
 ----------
 
-In an OutputOnly task, the contestant submits a file for each testcase. Usually, the semantics is that the task specifies a task to be performed on an input file, and the admins provide a set of testcases composed of an input and an output file (as it is for a Batch task). The difference is that, instead of requiring a program that solves the task without knowing the input files, the contestant are required, given the input files, to provide the output files.
+In an OutputOnly task, contestants can see the input of each testcase, and have to compute offline a correct output.
 
-There is only one parameter for OutputOnly tasks, namely how correctness of the contestants' outputs is checked. Similarly to the Batch task type, these can be checked using white-diff or using a comparator, that is an executable manager named :file:`checker`, with the same properties of the one for Batch tasks.
+In any submission, contestants may submit outputs for any subset of testcases. The submission format therefore must contain one element for each testcase, and the elements must be of the form :file:`output_{codename}.txt` where :samp:`{codename}` is the codename for the testcase.
 
-OutputOnly tasks usually have many uncorrelated files to be submitted. Contestants may submit the first output in a submission, and the second in another submission, but it is easy to forget  the first output in the other submission; it is also tedious to add every output every time. Hence, OutputOnly tasks have a feature that, if a submission lacks the output for a certain testcase, the current submission is completed with the most recently submitted output for that testcase (if it exists). This has the effect that contestants can work on a testcase at a time, submitting only what they did from the last submission.
+Moreover, CMS will automatically fill the missing files in the current submission with those in the previous one, as if the contestant had submitted them. For example, if there were 4 testcases, and the following submissions:
 
-The submission format must contain all the filenames (one for each testcase) of the form :file:`output_{codename}.txt` where :samp:`{codename}` is the codename for the testcase. Again, you can add other files that are stored but ignored. For example, a valid submission format for an OutputOnly task with three testcases having codenames ``abc``, ``000`` and ``cms`` is ``["output_abc.txt", "output_000.txt", "output_cms.txt"]``.
+- submission s1 with files f1 and f2,
+- submission s2 with files f2' and f3,
+- submission s3 with file f4,
+
+then s1 will be judged using f1 and f2; s2 will be judged using f1, f2' and f3; and finally s3 will be judged using f1, f2', f3 and f4.
+
+OutputOnly has one parameter, that specifies whether to compare correct output and contestant-produced output with :ref:`white-diff<tasktypes_white_diff>`, or using a :ref:`comparator<tasktypes_checker>` (exactly the same as the third parameter for Batch). In the latter case, the admins must provide an executable manager called :file:`checker`.
 
 
 .. _tasktypes_communication:
@@ -67,31 +74,51 @@ The submission format must contain all the filenames (one for each testcase) of 
 Communication
 -------------
 
-In a Communication task, a contestant must submit a source file implementing a function, similarly to what happens for a Batch task. The difference is that the admins must provide both a stub, that is a source file that is compiled together with the contestant's source, and a manager, that is an executable.
+Communication tasks are similar to Batch tasks, but should be used when the input, or part of it, must remain secret, at least for some time, to the contestant's code. This is the case, for example, in tasks where the contestant's code must ask questions about the input; or when it must compute the solution incrementally after seeing partial views of the input.
 
-For usual reactive tasks, ``num_processes`` is set to ``1``. In that case, the two programs communicate through two fifo files. The manager receives the name of the two fifos as its arguments. It is supposed to read from standard input the input of the testcase, and to start communicating some data to the other program through the fifo. The two programs exchange data through the fifo, until the manager is able to assign an outcome to the evaluation. The manager then writes to standard output the outcome and to standard error the message to the user, similarly to the what the checker does for a Batch task.
+In practice, Communication tasks have two processes, running in two different sandboxes:
 
-When ``num_processes`` is greater than ``1``, multiple instances of the submitted program are executed. ``2 * num_processes`` fifos are given to the manager, and two of them are given to each instance of the submitted program. An additional number is given to the submitted program to distinguish the processes. Two instances of the submitted program can't communicate directly. Time and memory consumed are calculated by summation.
+- the first (manager) is entirely controlled by the admins; it reads input, communicates with the other one, and writes a :ref:`standard manager output<tasktypes_standard_manager_output>`;
+- the second is where the contestant's code runs, after being compiled together with an admin-provided stub that helps with the communication with the first process; it doesn't have access to the input, just to what the manager communicates.
 
-If the program linked to the user-provided file fails (for a timeout, or for a non-allowed syscall), the outcome is 0.0 and the message describes the problem to the user.
+This setup ensures that the contestant's code cannot access forbidden data, even in the case they have full knowledge of the admin code.
+
+The admins must provide an executable manager called ``manager``. It can read the testcase input from stdin, and will also receive as argument the filename of two FIFOs, from and to the contestant process (in this order). It must write to stdout the outcome and to stderr the message for the contestant (see :ref:`details about the format`<tasktypes_standard_manager_output>`). If the contestant's process fails, the output of the manager is ignored, and the outcome will be 0.0 and the message will explain the reason.
+
+Admins must also provide a manager called :file:`stub.{ext}` for each allowed language, where :file:`{ext}` is the standard extension of a source file in that language. This will be compiled with the contestant's source. Usually, it takes care of communication with manager, so that the contestants have to implement only a function. The stub will receive as argument the filename of the FIFOs, from and to manager (in this order). As for Batch, admins can also add header file that will be used when compiling the stub and the contestant's source.
+
+Communication has one (optional) parameter, the number of user processes. If not specified, it is equal to 1 (and the behavior will be as explained above). If it is an integer N, there are a few differences:
+
+- there will be N processes with the contestant's code and the stub running;
+- there will be N pairs of FIFOs, one for each stub running; manager will receive as argument all pairs in order, and each stub will receive its own;
+- the stub will receive as a third paramenter the 0-based index within the running stubs;
+- the time limit is checked against the total user time of all the contestant's processes.
 
 The submission format must contain one or more filenames ending with ``.%l``. Multiple source files are simply linked together. Usually the number of files to submit is equal to ``num_processes``.
+
+Communication supports user tests. In addition to the input file, contestant must provide the stub and their source file. The admin-provided manager will be used; the output returned to the contestant will be what the manager writes to the file :file:`output.txt`.
+
+.. note:: Particular care must be taken for tasks where the communication through the FIFOs is particularly large or frequent. In these cases, the time to send the data may dominate the actual algorithm runtime, thus making it hard to distinguish between different complexities.
 
 
 TwoSteps
 --------
 
-Warning: use this task type only if you know what are you doing.
+.. warning:: This task type is not secure; the user source could intercept the main function and take control of input reading and communication between the processes, which is not monitored. Admins should use Communication instead.
 
 In a TwoSteps task, contestants submit two source files implementing a function each (the idea is that the first function gets the input and compute some data from it with some restriction, and the second tries to retrieve the original data).
 
-The admins must provide a manager, which is compiled together with both of the contestant-submitted files. The manager needs to be named :file:`manager.%l`, where ``.%l`` is the standard extension of a source file in that language. Furthermore, for C/C++ and Pascal, appropriate header files for the two source files given by the contestants need to be provided, as well as manager header files (:file:`manager.h`, :file:`managerlib.pas`)---**even if they are empty**.
+The admins must provide a manager, which is compiled together with both of the contestant-submitted files. The manager needs to be named :file:`manager.{ext}`, where ``{ext}`` is the standard extension of a source file in that language. Furthermore, the admins must provide appropriate header files for the two source files and for the manager, even if they are empty.
 
 The resulting executable is run twice (one acting as the computer, one acting as the retriever). The manager in the computer executable must take care of reading the input from standard input; the one in the retriever executable of writing the retrieved data to standard output. Both must take responsibility of the communication between them through a pipe.
 
 More precisely, the executable is called with two arguments: the first is an integer which is 0 if the executable is the computer, and 1 if it is the retriever; the second is the name of the pipe to be used for communication between the processes.
 
-Normally, the standard output of the second invocation of the manager is compared to a provided reference output file using the white-diff comparator. However, the admins may provide a :file:`checker` executable, with the same properties as for Batch. If a file with such a name is found in the uploaded manager files, it will be run instead of the white-diff comparator.
+TwoSteps has one parameter, similar to Batch's third, that specifies whether to compare the second process output with the correct output using white-diff or a checker. In the latter case, an executable manager named :file:`checker` must be provided.
+
+TwoSteps supports user tests; contestants must provide the manager in addition to the input and their sources.
+
+**How to migrate from TwoSteps to Communication.** Any TwoSteps task can be implemented as a Communication task with two processes. The functionalities in the stub should be migrated to Communication's manager, which also must enforce any restriction in the computed data.
 
 
 .. _tasktypes_white_diff:
@@ -99,9 +126,9 @@ Normally, the standard output of the second invocation of the manager is compare
 White-diff comparator
 =====================
 
-White-diff is the only built-in comparator, and is used in most task types. It can be used when each testcase has a unique correct output file, up to whitespaces.
+White-diff is the only built-in comparator. It can be used when each testcase has a unique correct output file, up to whitespaces. White-diff will report an outcome of 1.0 if the correct output and the contestant's output match up to whitespaces, or 0.0 if they don't.
 
-More precisely, white-diff will return that a pair of files are equal if all of these conditions are satisfied:
+More precisely, white-diff will return that a pair of files match if all of these conditions are satisfied:
 
 - they have the same number of lines (apart from trailing lines composed only of whitespaces, which are ignored);
 - for each corresponding line in the two files, the list of non-empty, whitespace-separated tokens is the same (in particular, tokens appear in the same order).
@@ -109,3 +136,27 @@ More precisely, white-diff will return that a pair of files are equal if all of 
 It treats as whitespace any repetition of these characters: space, newline, carriage return, tab, vertical tab, form feed.
 
 Note that spurious empty lines in the middle of an output will make white-diff report a no-match, even if all tokens are correct.
+
+
+.. _tasktypes_checker:
+
+Checker
+=======
+
+When there are multiple correct outputs, or when there is partial scoring, white-diff is not powerful enough. In this cases, a checker can be used to perform a complex validation. It is an executable manager, usually named :file:`checker`.
+
+It will receive as argument three filenames, in order: input, correct output, and contestant's output. It will then write a :ref:`standard manager output<tasktypes_standard_manager_output>` to stdout and stderr.
+
+It is preferred to compile the checker statically (e.g., with ``-static`` using ``gcc`` or ``g++``) to avoid potential problems with the sandbox.
+
+
+.. _tasktypes_standard_manager_output:
+
+Standard manager output
+=======================
+
+A standard manager output is a format that managers can follow to write an outcome and a message for the contestant.
+
+To follow the standard manager output, a manager must write on stdout a single line, containing a floating point number, the outcome; it must write to stderr a single line containing the message for the contestant. Following lines to stdout or stderr will be ignored.
+
+.. note:: If the manager writes to standard error the special strings "translate:success", "translate:wrong" or "translate:partial", these will be respectively shown to the contestants as the localized messages for "Output is correct", "Output isn't correct", and "Output is partially correct".
