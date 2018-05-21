@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -198,6 +198,16 @@ class TaskHandler(BaseHandler):
             for testcase in itervalues(dataset.testcases):
                 testcase.public = bool(self.get_argument(
                     "testcase_%s_public" % testcase.id, False))
+
+            # Test that the score type parameters are valid.
+            try:
+                dataset.score_type_object
+            except (AssertionError, ValueError) as error:
+                self.application.service.add_notification(
+                    make_datetime(), "Invalid score type parameters",
+                    str(error))
+                self.redirect(self.url("task", task_id))
+                return
 
         if self.try_commit():
             # Update the task and score on RWS.
