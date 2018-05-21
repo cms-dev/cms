@@ -60,7 +60,7 @@ class TestGroupScoreTypes(ScoreTypeTestMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             GroupMul([[1]], self._public_testcases)
 
-    @unittest.skip
+    @unittest.skip("Not yet detected.")
     def test_paramaters_invalid_wrong_item_len_not_caught(self):
         with self.assertRaises(ValueError):
             GroupMul([[1, 2, 3]], self._public_testcases)

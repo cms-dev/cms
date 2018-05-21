@@ -59,7 +59,7 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             GroupThreshold([[1]], self._public_testcases)
 
-    @unittest.skip
+    @unittest.skip("Not yet detected.")
     def test_paramaters_invalid_wrong_item_len_not_caught(self):
         with self.assertRaises(ValueError):
             GroupThreshold([[1, 2]], self._public_testcases)
@@ -81,7 +81,7 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             GroupThreshold([[100, "9_*", 1000]], self._public_testcases)
 
-    @unittest.skip
+    @unittest.skip("Not yet detected.")
     def test_parameter_invalid_wrong_threshold_type_not_caught(self):
         with self.assertRaises(ValueError):
             GroupThreshold([[100, 1, 1000j]], self._public_testcases)
