@@ -203,7 +203,6 @@ class TaskHandler(BaseHandler):
             try:
                 dataset.score_type_object
             except (AssertionError, ValueError) as error:
-                print(error)
                 self.application.service.add_notification(
                     make_datetime(), "Invalid score type parameters",
                     str(error))
