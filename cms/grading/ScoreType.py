@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 wafrelka <wafrelka@gmail.com>
@@ -76,8 +76,13 @@ class ScoreType(with_metaclass(ABCMeta, object)):
         self.public_testcases = public_testcases
 
         # Preload the maximum possible scores.
-        self.max_score, self.max_public_score, self.ranking_headers = \
-            self.max_scores()
+        try:
+            self.max_score, self.max_public_score, self.ranking_headers = \
+                self.max_scores()
+        except Exception as e:
+            raise ValueError(
+                "Unable to instantiate score type (probably due to invalid "
+                "values for the score type parameters): %s." % e)
 
         self.template = GLOBAL_ENVIRONMENT.from_string(self.TEMPLATE)
 
