@@ -56,7 +56,7 @@ OutputOnly
 
 In an OutputOnly task, contestants can see the input of each testcase, and have to compute offline a correct output.
 
-In any submission, contestants may submit any subset of testcases. The submission format therefore must contain one element for each testcase, and the elements must be of the form :file:`output_{codename}.txt` where :samp:`{codename}` is the codename for the testcase.
+In any submission, contestants may submit outputs for any subset of testcases. The submission format therefore must contain one element for each testcase, and the elements must be of the form :file:`output_{codename}.txt` where :samp:`{codename}` is the codename for the testcase.
 
 Moreover, CMS will automatically fill the missing files in the current submission with those in the previous one, as if the contestant had submitted them. For example, if there were 4 testcases, and the following submissions:
 
@@ -81,7 +81,7 @@ In practice, Communication tasks have two processes, running in two different sa
 - the first (manager) is entirely controlled by the admins; it reads input, communicates with the other one, and writes a :ref:`standard manager output<tasktypes_standard_manager_output>`;
 - the second is where the contestant's code runs, after being compiled together with an admin-provided stub that helps with the communication with the first process; it doesn't have access to the input, just to what the manager communicates.
 
-This setup ensure that the contestant's code cannot access forbidden data, even in the case they have full knowledge of the admin code.
+This setup ensures that the contestant's code cannot access forbidden data, even in the case they have full knowledge of the admin code.
 
 The admins must provide an executable manager called ``manager``. It can read the testcase input from stdin, and will also receive as argument the filename of two FIFOs, from and to the contestant process (in this order). It must write to stdout the outcome and to stderr the message for the contestant (see :ref:`details about the format`<tasktypes_standard_manager_output>`). If the contestant's process fails, the output of the manager is ignored, and the outcome will be 0.0 and the message will explain the reason.
 
@@ -112,9 +112,9 @@ The resulting executable is run twice (one acting as the computer, one acting as
 
 More precisely, the executable is called with two arguments: the first is an integer which is 0 if the executable is the computer, and 1 if it is the retriever; the second is the name of the pipe to be used for communication between the processes.
 
-TwoSteps has one parameter, similar to Batch's third, that specify whether to compare the second process output with the correct output using white-diff or a checker. In the latter case, an executable manager named :file:`checker` must be provided.
+TwoSteps has one parameter, similar to Batch's third, that specifies whether to compare the second process output with the correct output using white-diff or a checker. In the latter case, an executable manager named :file:`checker` must be provided.
 
-TwoSteps supports user tests; contestant must provide the manager in addition to input and their sources.
+TwoSteps supports user tests; contestants must provide the manager in addition to the input and their sources.
 
 
 .. _tasktypes_white_diff:
