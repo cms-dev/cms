@@ -54,6 +54,12 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
         GroupMin([[40, 10], [60.0, 15]], self._public_testcases)
         GroupMin([[40, "1_*"], [60.0, "2_*"]], self._public_testcases)
 
+    def test_paramaters_invalid_types(self):
+        with self.assertRaises(ValueError):
+            GroupMin([1], self._public_testcases)
+        with self.assertRaises(ValueError):
+            GroupMin(1, self._public_testcases)
+
     def test_paramaters_invalid_wrong_item_len(self):
         with self.assertRaises(ValueError):
             GroupMin([[]], self._public_testcases)

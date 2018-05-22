@@ -34,9 +34,9 @@ class ScoreTypeTestMixin(object):
     """A test mixin to make it easier to test score types."""
 
     def assertComputeScore(self, scores, total, public, rws_scores):
-        self.assertEqual(scores[0], total)
-        self.assertEqual(scores[2], public)
-        self.assertEqual(scores[4], [str(score) for score in rws_scores])
+        self.assertAlmostEqual(scores[0], total)
+        self.assertAlmostEqual(scores[2], public)
+        self.assertAlmostEqual(scores[4], [str(score) for score in rws_scores])
 
     @staticmethod
     def get_submission_result(testcases):

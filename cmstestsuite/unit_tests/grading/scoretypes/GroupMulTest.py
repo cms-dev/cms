@@ -54,6 +54,12 @@ class TestGroupMul(ScoreTypeTestMixin, unittest.TestCase):
         GroupMul([[40, 10], [60.0, 15]], self._public_testcases)
         GroupMul([[40, "1_*"], [60.0, "2_*"]], self._public_testcases)
 
+    def test_paramaters_invalid_types(self):
+        with self.assertRaises(ValueError):
+            GroupMul([1], self._public_testcases)
+        with self.assertRaises(ValueError):
+            GroupMul(1, self._public_testcases)
+
     def test_paramaters_invalid_wrong_item_len(self):
         with self.assertRaises(ValueError):
             GroupMul([[]], self._public_testcases)
