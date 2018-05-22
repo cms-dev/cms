@@ -16,7 +16,7 @@ An exception to this is when the contestant's source fails (for example, exceedi
 Standard task types
 ===================
 
-CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first three are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. TwoSteps is less secure with respect to cheating; it can be used in situations where cheating attempts are unlikely, or at least with strong security-by-obfuscation (that is, with encrypted inputs, outputs, and communication protocols). This doesn't prevent all types of attacks, but provides safety against the easier ones.
+CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first three are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. TwoSteps is a somewhat simpler way to implement a special case of a Communication task, but it is substantially less secure with respect to cheating. We suggest avoiding TwoSteps for new tasks, and migrating old tasks to Communication.
 
 OutputOnly does not involve programming languages. Batch is tested with all languages CMS supports out of the box, (C, C++, Pascal, Java, C#, Python, PHP, Haskell, Rust), but only with the first five when using a grader. Communication is tested with C, C++, Pascal and Java. TwoSteps only with C. Regardless, with some work all task types should work with all languages.
 
@@ -102,7 +102,7 @@ Communication supports user tests. In addition to the input file, contestant mus
 TwoSteps
 --------
 
-.. warning:: This task type is not secure in most cases; the user source could intercept the main function and take control of input reading and communication between the processes, which is not monitored.
+.. warning:: This task type is not secure; the user source could intercept the main function and take control of input reading and communication between the processes, which is not monitored. Admins should use Communication instead.
 
 In a TwoSteps task, contestants submit two source files implementing a function each (the idea is that the first function gets the input and compute some data from it with some restriction, and the second tries to retrieve the original data).
 
@@ -115,6 +115,8 @@ More precisely, the executable is called with two arguments: the first is an int
 TwoSteps has one parameter, similar to Batch's third, that specifies whether to compare the second process output with the correct output using white-diff or a checker. In the latter case, an executable manager named :file:`checker` must be provided.
 
 TwoSteps supports user tests; contestants must provide the manager in addition to the input and their sources.
+
+**How to migrate from TwoSteps to Communication.** Any TwoSteps task can be implemented as a Communication task with two processes. The functionalities in the stub should be migrated to Communication's manager, which also must enforce any restriction in the computed data.
 
 
 .. _tasktypes_white_diff:
