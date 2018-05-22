@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for the GroupMin and GroupMul score types."""
+"""Tests for the GroupMul score type."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,11 +34,11 @@ from cmstestsuite.unit_tests.grading.scoretypes.scoretypetestutils \
     import ScoreTypeTestMixin
 
 
-class TestGroupScoreTypes(ScoreTypeTestMixin, unittest.TestCase):
-    """Test the GroupMin and GroupMul score type."""
+class TestGroupMul(ScoreTypeTestMixin, unittest.TestCase):
+    """Test the GroupMul score type."""
 
     def setUp(self):
-        super(TestGroupScoreTypes, self).setUp()
+        super(TestGroupMul, self).setUp()
         self._public_testcases = {
             "1_0": True,
             "1_1": True,
