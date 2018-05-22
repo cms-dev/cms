@@ -141,19 +141,20 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
                                 100, 10.5, [10.5, 30.5, 59])
 
         # Some non-public subtask is incorrect.
-        sr.evaluations[-1].outcome = 0.0
+        self.set_outcome(sr, "3_1", 0.0)
         self.assertComputeScore(gmin.compute_score(sr),
                                 10.5 + 30.5, 10.5, [10.5, 30.5, 0])
 
         # Also the public subtask is incorrect.
-        sr.evaluations[0].outcome = 0.0
+        self.set_outcome(sr, "1_0", 0.0)
+        self.set_outcome(sr, "1_1", 0.0)
         sr.evaluations[1].outcome = 0.0
         self.assertComputeScore(gmin.compute_score(sr),
                                 30.5, 0.0, [0, 30.5, 0])
 
         # Some partial results.
-        sr.evaluations[-2].outcome = 0.5
-        sr.evaluations[-1].outcome = 0.1
+        self.set_outcome(sr, "3_0", 0.5)
+        self.set_outcome(sr, "3_1", 0.1)
         self.assertComputeScore(gmin.compute_score(sr),
                                 30.5 + 59 * 0.1, 0.0, [0, 30.5, 59 * 0.1])
 

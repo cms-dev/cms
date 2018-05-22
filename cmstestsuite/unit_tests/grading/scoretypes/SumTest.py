@@ -74,11 +74,11 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
         self.assertComputeScore(st.compute_score(sr), 42, 10.5, [])
 
         # Some non-public subtask is incorrect.
-        sr.evaluations[-1].outcome = 0
+        self.set_outcome(sr, "3", 0.0)
         self.assertComputeScore(st.compute_score(sr), 42 - 10.5, 10.5, [])
 
         # Also the public subtask is incorrect.
-        sr.evaluations[1].outcome = 0.0
+        self.set_outcome(sr, "1", 0.0)
         self.assertComputeScore(st.compute_score(sr), 21, 0.0, [])
 
 

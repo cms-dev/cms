@@ -42,8 +42,10 @@ class ScoreTypeTestMixin(object):
     def get_submission_result(testcases):
         sr = Mock()
         sr.evaluated.return_value = True
-        sr.evaluations = [ScoreTypeTestMixin.get_evaluation(codename, 1.0)
-                          for codename in sorted(iterkeys(testcases))]
+        # Reversed to make sure the score type does not depend on the order.
+        sr.evaluations = [
+            ScoreTypeTestMixin.get_evaluation(codename, 1.0)
+            for codename in reversed(sorted(iterkeys(testcases)))]
         return sr
 
     @staticmethod
@@ -55,3 +57,12 @@ class ScoreTypeTestMixin(object):
         evaluation.execution_time = 0.5
         evaluation.text = "Nothing to report"
         return evaluation
+
+    @staticmethod
+    def set_outcome(sr, codename, outcome):
+        for evaluation in sr.evaluations:
+            if evaluation.codename == codename:
+                evaluation.outcome = outcome
+                return
+        raise ValueError("set_outcome called for non-existing codename %s."
+                         % codename)

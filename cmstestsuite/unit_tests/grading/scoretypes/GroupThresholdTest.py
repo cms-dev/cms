@@ -121,19 +121,19 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         sr = self.get_submission_result(self._public_testcases)
 
         # All correct (below threshold).
-        for i in range(len(sr.evaluations)):
-            sr.evaluations[i].outcome = 5.5
+        for evaluation in sr.evaluations:
+            evaluation.outcome = 5.5
         self.assertComputeScore(st.compute_score(sr),
                                 100, 10.5, [10.5, 30.5, 59])
 
         # Some non-public subtask is incorrect.
-        sr.evaluations[-1].outcome = 100.5
+        self.set_outcome(sr, "3_1", 100.5)
         self.assertComputeScore(st.compute_score(sr),
                                 10.5 + 30.5, 10.5, [10.5, 30.5, 0])
 
         # Also the public subtask is incorrect.
-        sr.evaluations[0].outcome = 12.5
-        sr.evaluations[1].outcome = 12.5
+        self.set_outcome(sr, "1_0", 12.5)
+        self.set_outcome(sr, "1_1", 12.5)
         self.assertComputeScore(st.compute_score(sr),
                                 30.5, 0.0, [0, 30.5, 0])
 
