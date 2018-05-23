@@ -107,9 +107,24 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         header = ["Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
 
         # Only group 1_* is public.
+        public_testcases = dict(self._public_testcases)
         self.assertEqual(
-            GroupThreshold(parameters, self._public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases).max_scores(),
             (s1 + s2 + s3, s1, header))
+
+        # All groups are public
+        for testcase in self._public_testcases:
+            public_testcases[testcase] = True
+        self.assertEqual(
+            GroupThreshold(parameters, public_testcases).max_scores(),
+            (s1 + s2 + s3, s1 + s2 + s3, header))
+
+        # No groups are public
+        for testcase in public_testcases:
+            public_testcases[testcase] = False
+        self.assertEqual(
+            GroupThreshold(parameters, public_testcases).max_scores(),
+            (s1 + s2 + s3, 0, header))
 
     def test_max_scores_number(self):
         """Test max score is correct when groups are number-defined."""
@@ -118,9 +133,24 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         header = ["Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
 
         # Only group 1_* is public.
+        public_testcases = dict(self._public_testcases)
         self.assertEqual(
-            GroupThreshold(parameters, self._public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases).max_scores(),
             (s1 + s2 + s3, s1, header))
+
+        # All groups are public
+        for testcase in self._public_testcases:
+            public_testcases[testcase] = True
+        self.assertEqual(
+            GroupThreshold(parameters, public_testcases).max_scores(),
+            (s1 + s2 + s3, s1 + s2 + s3, header))
+
+        # No groups are public
+        for testcase in public_testcases:
+            public_testcases[testcase] = False
+        self.assertEqual(
+            GroupThreshold(parameters, public_testcases).max_scores(),
+            (s1 + s2 + s3, 0, header))
 
     def test_compute_score(self):
         s1, s2, s3 = 10.5, 30.5, 59
