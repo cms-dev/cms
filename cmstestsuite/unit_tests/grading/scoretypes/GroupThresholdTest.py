@@ -145,6 +145,13 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         self.assertComputeScore(st.compute_score(sr),
                                 s2, 0.0, [0, s2, 0])
 
+        # Outcome equal to 0 is special and treated as error even if it is
+        # below the threshold.
+        self.set_outcome(sr, "1_0", 0.0)
+        self.set_outcome(sr, "1_1", 0.0)
+        self.assertComputeScore(st.compute_score(sr),
+                                s2, 0.0, [0, s2, 0])
+
 
 if __name__ == "__main__":
     unittest.main()
