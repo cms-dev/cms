@@ -63,23 +63,29 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
             Sum(1j, self._public_testcases)
 
     def test_max_scores(self):
-        self.assertEqual(Sum(10.5, self._public_testcases).max_scores(),
-                         (42, 10.5, []))
+        testcase_score = 10.5
+        self.assertEqual(Sum(testcase_score,
+                             self._public_testcases).max_scores(),
+                         (testcase_score * 4, testcase_score, []))
 
     def test_compute_score(self):
-        st = Sum(10.5, self._public_testcases)
+        testcase_score = 10.5
+        st = Sum(testcase_score, self._public_testcases)
         sr = self.get_submission_result(self._public_testcases)
 
         # All correct.
-        self.assertComputeScore(st.compute_score(sr), 42, 10.5, [])
+        self.assertComputeScore(st.compute_score(sr),
+                                testcase_score * 4, testcase_score, [])
 
         # Some non-public subtask is incorrect.
         self.set_outcome(sr, "3", 0.0)
-        self.assertComputeScore(st.compute_score(sr), 42 - 10.5, 10.5, [])
+        self.assertComputeScore(st.compute_score(sr),
+                                testcase_score * 3, testcase_score, [])
 
         # Also the public subtask is incorrect.
         self.set_outcome(sr, "1", 0.0)
-        self.assertComputeScore(st.compute_score(sr), 21, 0.0, [])
+        self.assertComputeScore(st.compute_score(sr),
+                                testcase_score * 2, 0.0, [])
 
 
 if __name__ == "__main__":

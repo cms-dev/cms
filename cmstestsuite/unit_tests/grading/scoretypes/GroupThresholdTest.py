@@ -97,26 +97,29 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
 
     def test_max_scores_regexp(self):
         """Test max score is correct when groups are regexp-defined."""
-        parameters = [[10.5, "1_*", 10], [30.5, "2_*", 20], [59, "3_*", 30]]
+        s1, s2, s3 = 10.5, 30.5, 59
+        parameters = [[s1, "1_*", 10], [s2, "2_*", 20], [s3, "3_*", 30]]
         header = ["Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
 
         # Only group 1_* is public.
         self.assertEqual(
             GroupThreshold(parameters, self._public_testcases).max_scores(),
-            (100, 10.5, header))
+            (s1 + s2 + s3, s1, header))
 
     def test_max_scores_number(self):
         """Test max score is correct when groups are number-defined."""
-        parameters = [[10.5, 2, 10], [30.5, 2, 20], [59, 2, 30]]
+        s1, s2, s3 = 10.5, 30.5, 59
+        parameters = [[s1, 2, 10], [s2, 2, 20], [s3, 2, 30]]
         header = ["Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
 
         # Only group 1_* is public.
         self.assertEqual(
             GroupThreshold(parameters, self._public_testcases).max_scores(),
-            (100, 10.5, header))
+            (s1 + s2 + s3, s1, header))
 
     def test_compute_score(self):
-        parameters = [[10.5, "1_*", 10], [30.5, "2_*", 20], [59, "3_*", 30]]
+        s1, s2, s3 = 10.5, 30.5, 59
+        parameters = [[s1, "1_*", 10], [s2, "2_*", 20], [s3, "3_*", 30]]
         st = GroupThreshold(parameters, self._public_testcases)
         sr = self.get_submission_result(self._public_testcases)
 
@@ -124,18 +127,18 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         for evaluation in sr.evaluations:
             evaluation.outcome = 5.5
         self.assertComputeScore(st.compute_score(sr),
-                                100, 10.5, [10.5, 30.5, 59])
+                                s1 + s2 + s3, s1, [s1, s2, s3])
 
         # Some non-public subtask is incorrect.
         self.set_outcome(sr, "3_1", 100.5)
         self.assertComputeScore(st.compute_score(sr),
-                                10.5 + 30.5, 10.5, [10.5, 30.5, 0])
+                                s1 + s2, s1, [s1, s2, 0])
 
         # Also the public subtask is incorrect.
         self.set_outcome(sr, "1_0", 12.5)
         self.set_outcome(sr, "1_1", 12.5)
         self.assertComputeScore(st.compute_score(sr),
-                                30.5, 0.0, [0, 30.5, 0])
+                                s2, 0.0, [0, s2, 0])
 
 
 if __name__ == "__main__":
