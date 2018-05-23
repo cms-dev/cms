@@ -51,7 +51,7 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
     def test_paramaters_correct(self):
         """Test that correct parameters do not throw."""
         GroupMin([], self._public_testcases)
-        GroupMin([[40, 10], [60.0, 15]], self._public_testcases)
+        GroupMin([[40, 2], [60.0, 2]], self._public_testcases)
         GroupMin([[40, "1_*"], [60.0, "2_*"]], self._public_testcases)
 
     def test_paramaters_invalid_types(self):
@@ -82,6 +82,11 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
     def test_parameter_invalid_inconsistent_testcases_type(self):
         with self.assertRaises(ValueError):
             GroupMin([[40, 10], [40, "1_*"]], self._public_testcases)
+
+    @unittest.skip("Not yet detected.")
+    def test_paramaters_invalid_testcases_too_many(self):
+        with self.assertRaises(ValueError):
+            GroupMin([[100, 20]], self._public_testcases)
 
     def test_parameter_invalid_testcases_regex_no_match_type(self):
         with self.assertRaises(ValueError):

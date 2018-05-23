@@ -51,7 +51,7 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
     def test_paramaters_correct(self):
         """Test that correct parameters do not throw."""
         GroupThreshold([], self._public_testcases)
-        GroupThreshold([[40, 10, 500], [60.0, 15, 1000]],
+        GroupThreshold([[40, 2, 500], [60.0, 2, 1000]],
                        self._public_testcases)
         GroupThreshold([[40, "1_*", 500.5], [60.0, "2_*", 1000]],
                        self._public_testcases)
@@ -85,6 +85,11 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             GroupThreshold([[40, 10, 500], [40, "1_*", 1000]],
                            self._public_testcases)
+
+    @unittest.skip("Not yet detected.")
+    def test_paramaters_invalid_testcases_too_many(self):
+        with self.assertRaises(ValueError):
+            GroupThreshold([[100, 20, 1000]], self._public_testcases)
 
     def test_parameter_invalid_testcases_regex_no_match_type(self):
         with self.assertRaises(ValueError):
