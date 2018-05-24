@@ -132,10 +132,12 @@ def _update_object(old_object, new_object, spec=None, parent=None):
     _update_columns(old_object, new_object, spec)
 
     for prp in old_object._rel_props:
-        # Don't update the parent relationship.
-        if prp.backref is not None and parent is not None \
-                and prp.backref[0] == parent:
-            continue
+        # Don't update the parent relationship (works both for backref and
+        # back_populates relationships).
+        if parent is not None:
+            if (prp.backref is not None and prp.backref[0] == parent) \
+                    or prp.back_populates == parent:
+                continue
 
         # To avoid bugs when new relationships are introduced, we force the
         # caller to describe how to update all other relationships.

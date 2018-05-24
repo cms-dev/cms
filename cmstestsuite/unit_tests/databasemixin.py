@@ -58,9 +58,10 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
 from cms.db import Announcement, Base, Contest, Dataset, Evaluation, \
-    Executable, File, Message, Participation, Question, Session, Statement, \
-    Submission, SubmissionResult, Task, Team, Testcase, User, UserTest, \
-    UserTestResult, drop_db, init_db, Token, UserTestFile, UserTestManager
+    Executable, File, Manager, Message, Participation, Question, Session, \
+    Statement, Submission, SubmissionResult, Task, Team, Testcase, User, \
+    UserTest, UserTestResult, drop_db, init_db, Token, UserTestFile, \
+    UserTestManager
 from cms.db.filecacher import DBBackend
 
 
@@ -286,6 +287,26 @@ class DatabaseMixin(object):
         dataset = self.get_dataset(**kwargs)
         self.session.add(dataset)
         return dataset
+
+    @staticmethod
+    def get_manager(dataset=None, **kwargs):
+        """Create a manager."""
+        if dataset is None:
+            dataset = DatabaseMixin.get_dataset()
+        args = {
+            "dataset": dataset,
+            "filename": unique_unicode_id(),
+            "digest": unique_digest(),
+        }
+        args.update(kwargs)
+        manager = Manager(**args)
+        return manager
+
+    def add_manager(self, dataset=None, **kwargs):
+        """Create a manager and add it to the session."""
+        manager = self.get_manager(dataset=dataset, **kwargs)
+        self.session.add(manager)
+        return manager
 
     def add_testcase(self, dataset=None, **kwargs):
         """Add a testcase."""

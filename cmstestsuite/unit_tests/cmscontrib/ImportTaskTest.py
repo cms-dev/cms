@@ -64,6 +64,8 @@ class TestImportTask(DatabaseMixin, unittest.TestCase):
         self.participation = self.add_participation(contest=self.contest)
         self.task = self.add_task(contest=self.contest)
         self.dataset = self.add_dataset(task=self.task)
+        self.manager = self.add_manager(dataset=self.dataset,
+                                        filename="checker")
         self.task.active_dataset = self.task.datasets[0]
         self.submission = self.add_submission(self.task, self.participation)
 
@@ -90,7 +92,8 @@ class TestImportTask(DatabaseMixin, unittest.TestCase):
 
     def assertTaskInDb(self, task_name, title, contest_id,
                        task_id=None, active_dataset_id=None, dataset_ids=None,
-                       dataset_descriptions=None, dataset_task_types=None):
+                       dataset_descriptions=None, dataset_task_types=None,
+                       dataset_manager_digests=None):
         """Assert that the task with the given data is in the DB
 
         The query is done by task name, and to avoid caching, we query from a
@@ -120,6 +123,11 @@ class TestImportTask(DatabaseMixin, unittest.TestCase):
             if dataset_task_types is not None:
                 six.assertCountEqual(self, dataset_task_types,
                                      (d.task_type for d in t.datasets))
+            if dataset_manager_digests is not None:
+                six.assertCountEqual(self, dataset_manager_digests,
+                                     (m.digest
+                                      for d in t.datasets
+                                      for m in six.itervalues(d.managers)))
 
     def test_clean_import(self):
         # Completely new task, import and attach it to the contest.
@@ -206,6 +214,25 @@ class TestImportTask(DatabaseMixin, unittest.TestCase):
                             task_id=self.task_id,
                             dataset_descriptions=[self.dataset_description],
                             dataset_task_types=["Batch"])
+
+    def test_task_exists_update_new_manager(self):
+        # Task exists, and we update it, attaching it to the same contest.
+        # The existing dataset should be overwritten by the new one, in
+        # particular the new manager should be included.
+        new_task = self.get_task(name=self.task_name, title=self.task_title)
+        # New version of checker
+        new_dataset = self.get_dataset(
+            task=new_task, description=self.dataset.description)
+        new_checker = self.get_manager(dataset=new_dataset, filename="checker")
+        ret = self.do_import(new_task, self.contest_id, update=True,
+                             task_has_changed=True)
+
+        self.assertTrue(ret)
+        self.assertTaskInDb(self.task_name, self.task_title, self.contest_id,
+                            task_id=self.task_id,
+                            dataset_descriptions=[self.dataset_description],
+                            dataset_manager_digests=[new_checker.digest],
+                            active_dataset_id=self.dataset_id)
 
     def test_task_exists_update_keep_contest(self):
         # Task exists, and we update it, not specifying which contest (should
