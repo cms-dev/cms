@@ -82,6 +82,11 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
         self.assertComputeScore(st.compute_score(sr),
                                 testcase_score * 2, 0.0, [])
 
+        # Now the public subtask has some partial scores.
+        self.set_outcome(sr, "1", 0.2)
+        self.assertComputeScore(st.compute_score(sr),
+                                testcase_score * 2.2, testcase_score * 0.2, [])
+
 
 if __name__ == "__main__":
     unittest.main()
