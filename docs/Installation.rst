@@ -49,7 +49,7 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 16.04, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 18.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
@@ -60,7 +60,7 @@ On Ubuntu 16.04, one will need to run the following script to satisfy all depend
 
     # Only if you are going to use pip/venv to install python dependencies
     sudo apt-get install python3.6-dev libpq-dev libcups2-dev libyaml-dev \
-        libffi-dev python-pip
+        libffi-dev python3-pip
 
     # Optional
     sudo apt-get install nginx-full python2.7 php7.2-cli php7.2-fpm \
