@@ -57,11 +57,6 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
         with self.assertRaises(ValueError):
             Sum("1", self._public_testcases)
 
-    @unittest.skip("Not yet detected.")
-    def test_parameters_invalid_not_caught(self):
-        with self.assertRaises(ValueError):
-            Sum(1j, self._public_testcases)
-
     def test_max_scores(self):
         testcase_score = 10.5
         self.assertEqual(Sum(testcase_score,
