@@ -48,6 +48,7 @@ from cmscommon.datetime import monotonic_time
 from cmstestsuite import CONFIG, TestException
 from cmstestsuite.coverage import coverage_cmdline
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
+from cmstestsuite.profiling import profiling_cmdline
 
 
 logger = logging.getLogger(__name__)
@@ -238,10 +239,12 @@ class Program(object):
             except psutil.NoSuchProcess:
                 logger.info("Killing %s/%s", self.service_name, self.shard)
 
+        cmdline = coverage_cmdline(cmdline)
+        cmdline = profiling_cmdline(
+            cmdline, "%s-%d" % (self.service_name, self.shard or 0))
+
         if CONFIG["VERBOSITY"] >= 1:
             logger.info("$ %s", " ".join(cmdline))
-
-        cmdline = coverage_cmdline(cmdline)
 
         if CONFIG["VERBOSITY"] >= 3:
             stdout = None
