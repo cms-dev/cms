@@ -34,6 +34,8 @@ import cmstestsuite.tasks.batch_50 as batch_50
 
 from cmstestsuite import CONFIG
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
+from cmstestsuite.profiling import \
+    PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI
 from cmstestsuite.testrunner import TestRunner
 from cmstestsuite.Test import Test
 from cmstestsuite.Tests import LANG_C
@@ -95,10 +97,14 @@ def main():
     parser.add_argument(
         "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
+    parser.add_argument(
+        "--profiler", choices=[PROFILER_YAPPI, PROFILER_KERNPROF],
+        default=PROFILER_NONE, help="set profiler")
     args = parser.parse_args()
 
     CONFIG["VERBOSITY"] = args.verbose
     CONFIG["COVERAGE"] = False
+    CONFIG["PROFILER"] = args.profiler
 
     test_list = [Test('batch',
                       task=batch_50, filenames=['correct-stdio.%l'],

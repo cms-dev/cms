@@ -38,6 +38,8 @@ from cms import utf8_decoder
 from cmstestsuite import CONFIG
 from cmstestsuite.coverage import clear_coverage, combine_coverage, \
     send_coverage_to_codecov
+from cmstestsuite.profiling import \
+    PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI
 from cmstestsuite.testrunner import TestRunner
 from cmstestsuite.Tests import ALL_TESTS
 
@@ -176,17 +178,22 @@ def main():
         "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
     parser.add_argument(
-        "--coverage", action="store_true",
-        help="compute line coverage information")
-    parser.add_argument(
         "--codecov", action="store_true",
         help="send coverage results to Codecov (requires --coverage)")
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument(
+        "--coverage", action="store_true",
+        help="compute line coverage information")
+    g.add_argument(
+        "--profiler", choices=[PROFILER_YAPPI, PROFILER_KERNPROF],
+        default=PROFILER_NONE, help="set profiler")
     args = parser.parse_args()
     if args.codecov and not args.coverage:
         parser.error("--codecov requires --coverage")
 
     CONFIG["VERBOSITY"] = args.verbose
     CONFIG["COVERAGE"] = args.coverage
+    CONFIG["PROFILER"] = args.profiler
 
     # Pre-process our command-line arguments to figure out which tests to run.
     regexes = [re.compile(s) for s in args.regex]

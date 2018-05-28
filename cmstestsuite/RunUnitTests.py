@@ -38,6 +38,8 @@ from cms import utf8_decoder
 from cmstestsuite import CONFIG, TestException, sh
 from cmstestsuite.coverage import clear_coverage, combine_coverage, \
     coverage_cmdline, send_coverage_to_codecov
+from cmstestsuite.profiling import \
+    PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI, profiling_cmdline
 
 
 logger = logging.getLogger(__name__)
@@ -62,8 +64,12 @@ def run_unittests(test_list):
     for i, (path, filename) in enumerate(test_list):
         logger.info("Running test %d/%d: %s.%s",
                     i + 1, num_tests_to_execute, path, filename)
+        cmdline = [os.path.join(path, filename)]
+        cmdline = coverage_cmdline(cmdline)
+        cmdline = profiling_cmdline(
+            cmdline, os.path.join(path, filename).replace("/", "_"))
         try:
-            sh(coverage_cmdline([os.path.join(path, filename)]))
+            sh(cmdline)
         except TestException:
             logger.info("  (FAILED: %s)", filename)
 
@@ -148,11 +154,15 @@ def main():
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_UNITTEST_FILENAME)
     parser.add_argument(
-        "--coverage", action="store_true",
-        help="compute line coverage information")
-    parser.add_argument(
         "--codecov", action="store_true",
         help="send coverage results to Codecov (requires --coverage)")
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument(
+        "--coverage", action="store_true",
+        help="compute line coverage information")
+    g.add_argument(
+        "--profiler", choices=[PROFILER_YAPPI, PROFILER_KERNPROF],
+        default=PROFILER_NONE, help="set profiler")
 
     # Unused parameters.
     parser.add_argument(
@@ -168,6 +178,7 @@ def main():
 
     CONFIG["VERBOSITY"] = args.verbose
     CONFIG["COVERAGE"] = args.coverage
+    CONFIG["PROFILER"] = args.profiler
 
     start_time = datetime.datetime.now()
 
