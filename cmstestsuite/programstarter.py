@@ -223,7 +223,7 @@ class Program(object):
     def _spawn(self, cmdline):
         """Execute a python application."""
 
-        def kill(job):
+        def log_cpu_time(job):
             try:
                 p = psutil.Process(job.pid)
                 times = p.cpu_times()
@@ -236,11 +236,6 @@ class Program(object):
                     times.user, times.system, 100 * total_time_ratio)
             except psutil.NoSuchProcess:
                 logger.info("Killing %s/%s", self.service_name, self.shard)
-
-            try:
-                job.kill()
-            except OSError:
-                pass
 
         if CONFIG["VERBOSITY"] >= 1:
             logger.info("$ %s", " ".join(cmdline))
@@ -255,7 +250,7 @@ class Program(object):
             stdout = io.open(os.devnull, "wb")
             stderr = stdout
         job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
-        atexit.register(lambda: kill(job))
+        atexit.register(lambda: log_cpu_time(job))
         if self.cpu_limit is not None:
             logger.info("Limiting %s/%s to %d%% CPU time",
                         self.service_name, self.shard, self.cpu_limit)

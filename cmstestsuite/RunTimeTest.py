@@ -123,6 +123,7 @@ def main():
 
     failures = runner.wait_for_evaluation()
     runner.log_elapsed_time()
+    runner.shutdown()
 
     if failures == []:
         logger.info("All tests passed!")
