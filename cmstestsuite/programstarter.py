@@ -45,7 +45,8 @@ import time
 from future.moves.urllib.parse import urlsplit
 
 from cmscommon.datetime import monotonic_time
-from cmstestsuite import CONFIG, TestException, coverage_cmdline
+from cmstestsuite import CONFIG, TestException
+from cmstestsuite.coverage import coverage_cmdline
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
 
 
@@ -263,8 +264,7 @@ class Program(object):
         if CONFIG["VERBOSITY"] >= 1:
             logger.info("$ %s", " ".join(cmdline))
 
-        if CONFIG["TEST_DIR"] is not None:
-            cmdline = coverage_cmdline(cmdline)
+        cmdline = coverage_cmdline(cmdline)
 
         if CONFIG["VERBOSITY"] >= 3:
             stdout = None

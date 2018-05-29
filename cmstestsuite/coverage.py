@@ -30,44 +30,54 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-import io
 import logging
-import os
 import subprocess
+import sys
+
+from cmstestsuite import CONFIG, sh
 
 
 logger = logging.getLogger(__name__)
 
 
-# CONFIG is populated by our test script.
-CONFIG = {
-    'VERBOSITY': 0,
-}
+_COVERAGE_DIRECTORIES = [
+    "cms",
+    "cmscommon",
+    "cmscontrib",
+    "cmsranking",
+    "cmstaskenv",
+]
+_COVERAGE_CMDLINE = [
+    sys.executable, "-m", "coverage", "run", "-p",
+    "--source=%s" % ",".join(_COVERAGE_DIRECTORIES)]
 
 
-class TestException(Exception):
-    pass
+def coverage_cmdline(cmdline):
+    """Return a cmdline possibly decorated to record coverage."""
+    if CONFIG.get('COVERAGE', False):
+        return _COVERAGE_CMDLINE + cmdline
+    else:
+        return cmdline
 
 
-def sh(cmdline, ignore_failure=False):
-    """Execute a simple shell command.
+def clear_coverage():
+    """Clear existing coverage reports."""
+    if CONFIG.get('COVERAGE', False):
+        logging.info("Clearing old coverage data.")
+        sh([sys.executable, "-m", "coverage", "erase"])
 
-    If cmdline is a string, it is passed to sh -c verbatim.  All escaping must
-    be performed by the user. If cmdline is an array, then no escaping is
-    required.
 
-    """
-    if CONFIG["VERBOSITY"] >= 1:
-        # TODO Use shlex.quote in Python 3.3.
-        logger.info('$ %s', ' '.join(cmdline))
-    kwargs = dict()
-    if CONFIG["VERBOSITY"] >= 3:
-        # TODO Use subprocess.DEVNULL in Python 3.3.
-        kwargs["stdout"] = io.open(os.devnull, "wb")
-        kwargs["stderr"] = subprocess.STDOUT
-    ret = subprocess.call(cmdline, **kwargs)
-    if not ignore_failure and ret != 0:
-        raise TestException(
-            # TODO Use shlex.quote in Python 3.3.
-            "Execution failed with %d/%d. Tried to execute:\n%s\n" %
-            (ret & 0xff, ret >> 8, ' '.join(cmdline)))
+def combine_coverage():
+    """Combine coverage reports from different programs."""
+    if CONFIG.get('COVERAGE', False):
+        logger.info("Combining coverage results.")
+        sh([sys.executable, "-m", "coverage", "combine"])
+
+
+def send_coverage_to_codecov(flag):
+    """Send the coverage report to Codecov with the given flag."""
+    if CONFIG.get('COVERAGE', False):
+        logger.info("Sending coverage results to codecov for flag %s." % flag)
+        subprocess.call(
+            "bash -c 'bash <(curl -s https://codecov.io/bash) -c -F %s'" %
+            flag, shell=True)

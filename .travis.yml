@@ -60,7 +60,7 @@ before_script:
   - cmsInitDB
 
 script:
-  - cmsRunTests -v --codecov
+  - cmsRunTests -v --coverage --codecov
 
 notifications:
   email: no

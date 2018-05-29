@@ -35,8 +35,9 @@ import subprocess
 import datetime
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG, TestException, clear_coverage, \
-    combine_coverage, coverage_cmdline, send_coverage_to_codecov, sh
+from cmstestsuite import CONFIG, TestException, sh
+from cmstestsuite.coverage import clear_coverage, combine_coverage, \
+    coverage_cmdline, send_coverage_to_codecov
 
 
 logger = logging.getLogger(__name__)
@@ -147,8 +148,11 @@ def main():
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_UNITTEST_FILENAME)
     parser.add_argument(
+        "--coverage", action="store_true",
+        help="compute line coverage information")
+    parser.add_argument(
         "--codecov", action="store_true",
-        help="send coverage results to Codecov")
+        help="send coverage results to Codecov (requires --coverage)")
 
     # Unused parameters.
     parser.add_argument(
@@ -159,9 +163,11 @@ def main():
         help="unused")
 
     args = parser.parse_args()
+    if args.codecov and not args.coverage:
+        parser.error("--codecov requires --coverage")
 
     CONFIG["VERBOSITY"] = args.verbose
-    CONFIG["COVERAGE"] = True
+    CONFIG["COVERAGE"] = args.coverage
 
     start_time = datetime.datetime.now()
 
