@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -35,10 +35,13 @@ import re
 import sys
 
 from cms import utf8_decoder
-from cmstestsuite import CONFIG,\
-    clear_coverage, combine_coverage, send_coverage_to_codecov
+from cmstestsuite import CONFIG
+from cmstestsuite.coverage import clear_coverage, combine_coverage, \
+    send_coverage_to_codecov
+from cmstestsuite.profiling import \
+    PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI
+from cmstestsuite.testrunner import TestRunner
 from cmstestsuite.Tests import ALL_TESTS
-from testrunner import TestRunner
 
 
 logger = logging.getLogger(__name__)
@@ -176,11 +179,22 @@ def main():
         help="print debug information (use multiple times for more)")
     parser.add_argument(
         "--codecov", action="store_true",
-        help="send coverage results to Codecov")
+        help="send coverage results to Codecov (requires --coverage")
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument(
+        "--coverage", action="store_true",
+        help="compute line coverage information")
+    g.add_argument(
+        "--profiler", choices=[
+            PROFILER_NONE, PROFILER_YAPPI, PROFILER_KERNPROF],
+        default=PROFILER_NONE, help="set profiler")
     args = parser.parse_args()
+    if args.codecov and not args.coverage:
+        parser.error("--codecov requires --coverage")
 
     CONFIG["VERBOSITY"] = args.verbose
-    CONFIG["COVERAGE"] = True
+    CONFIG["COVERAGE"] = args.coverage
+    CONFIG["PROFILER"] = args.profiler
 
     # Pre-process our command-line arguments to figure out which tests to run.
     regexes = [re.compile(s) for s in args.regex]

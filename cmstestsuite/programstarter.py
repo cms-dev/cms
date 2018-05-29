@@ -45,8 +45,10 @@ import time
 from future.moves.urllib.parse import urlsplit
 
 from cmscommon.datetime import monotonic_time
-from cmstestsuite import CONFIG, TestException, coverage_cmdline
+from cmstestsuite import CONFIG, TestException
+from cmstestsuite.coverage import coverage_cmdline
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
+from cmstestsuite.profiling import profiling_cmdline
 
 
 logger = logging.getLogger(__name__)
@@ -223,7 +225,7 @@ class Program(object):
     def _spawn(self, cmdline):
         """Execute a python application."""
 
-        def kill(job):
+        def log_cpu_time(job):
             try:
                 p = psutil.Process(job.pid)
                 times = p.cpu_times()
@@ -237,16 +239,12 @@ class Program(object):
             except psutil.NoSuchProcess:
                 logger.info("Killing %s/%s", self.service_name, self.shard)
 
-            try:
-                job.kill()
-            except OSError:
-                pass
+        cmdline = coverage_cmdline(cmdline)
+        cmdline = profiling_cmdline(
+            cmdline, "%s-%d" % (self.service_name, self.shard or 0))
 
         if CONFIG["VERBOSITY"] >= 1:
             logger.info("$ %s", " ".join(cmdline))
-
-        if CONFIG["TEST_DIR"] is not None:
-            cmdline = coverage_cmdline(cmdline)
 
         if CONFIG["VERBOSITY"] >= 3:
             stdout = None
@@ -255,7 +253,7 @@ class Program(object):
             stdout = io.open(os.devnull, "wb")
             stderr = stdout
         job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
-        atexit.register(lambda: kill(job))
+        atexit.register(lambda: log_cpu_time(job))
         if self.cpu_limit is not None:
             logger.info("Limiting %s/%s to %d%% CPU time",
                         self.service_name, self.shard, self.cpu_limit)
