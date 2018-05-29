@@ -34,10 +34,9 @@ import cmstestsuite.tasks.batch_50 as batch_50
 
 from cmstestsuite import CONFIG
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
+from cmstestsuite.testrunner import TestRunner
 from cmstestsuite.Test import Test
 from cmstestsuite.Tests import LANG_C
-
-from testrunner import TestRunner
 
 
 logger = logging.getLogger(__name__)
