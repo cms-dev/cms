@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -37,8 +37,8 @@ import sys
 from cms import utf8_decoder
 from cmstestsuite import CONFIG,\
     clear_coverage, combine_coverage, send_coverage_to_codecov
+from cmstestsuite.testrunner import TestRunner
 from cmstestsuite.Tests import ALL_TESTS
-from testrunner import TestRunner
 
 
 logger = logging.getLogger(__name__)
