@@ -90,8 +90,8 @@
     "_help": "numbers. It should be changed for each",
     "_help": "contest. Particularly, you should not use this example",
     "_help": "for other than testing. It must be a 16 bytes long",
-    "_help": "hexadecimal number. You can easily create a key",
-    "_help": "calling cmscommon.crypto.get_hex_random_key().",
+    "_help": "hexadecimal number. You can easily create a key calling:",
+    "_help": "python -c 'from cmscommon import crypto; print(crypto.get_hex_random_key())'",
     "secret_key":             "8e045a51e4b102ea803c06f92841a1fb",
 
     "_help": "Whether Tornado prints debug information on stdout.",
