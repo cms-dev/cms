@@ -37,7 +37,8 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, Enum, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, Enum, DateTime, Interval, \
+    BigInteger
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import six
@@ -56,6 +57,7 @@ from . import engine, CastingArray
 _TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
+    BigInteger: six.integer_types,
     Float: float,
     Enum: six.text_type,
     Unicode: six.text_type,
