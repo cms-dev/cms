@@ -316,16 +316,6 @@ class ProgramStarter(object):
             "Failed to bring up services: %s" % ", ".join(
                 p.coord for p in itervalues(self._programs) if not p.healthy))
 
-    def restart(self, service_name, shard=0, contest=None):
-        p = self._programs[(service_name, shard, contest)]
-        p.stop()
-        p.start()
-
-    def stop(self, service_name, shard=0, contest=None):
-        p = self._programs[(service_name, shard, contest)]
-        p.stop()
-        del self._programs[(service_name, shard, contest)]
-
     def stop_all(self):
         for p in itervalues(self._programs):
             p.stop()

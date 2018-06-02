@@ -289,9 +289,9 @@ class TestRunner(object):
             having a clearer view of the time each step takes.
 
         """
-        # Pre-install all tasks in the contest. After this, we restart
-        # ProxyService to ensure it reinitializes, picking up the new
-        # tasks and sending them to RWS.
+        # Pre-install all tasks in the contest. We start the other services
+        # after this to ensure they pick up the new tasks before receiving
+        # data for them.
         for test in self.test_list:
             self.create_or_get_task(test.task_module)
 
