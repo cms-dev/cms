@@ -131,6 +131,10 @@ class Program(object):
         t.start()
 
     @property
+    def coord(self):
+        return "%s/%s" % (self.service_name, self.shard)
+
+    @property
     def running(self):
         """Return whether the program is live."""
         self._check()
@@ -140,15 +144,14 @@ class Program(object):
         """Quit gracefully. Or not: if the quit RPC does not work, kill."""
         if self.service_name != "RankingWebServer":
             # Try to terminate gracefully (RWS does not have a way to do it).
-            logger.info("Asking %s/%s to terminate...",
-                        self.service_name, self.shard)
+            logger.info("Asking %s to terminate...", self.coord)
             rs = RemoteService(self.cms_config, self.service_name, self.shard)
             rs.call("quit", {"reason": "from test harness"})
 
         # If it didn't understand, use bad manners.
         self._check()
         if self.healthy:
-            logger.info("Interrupting %s/%s.", self.service_name, self.shard)
+            logger.info("Interrupting %s.", self.coord)
             self.instance.send_signal(signal.SIGINT)
             # FIXME on py3 this becomes self.instance.wait(timeout=5)
             t = monotonic_time()
@@ -157,7 +160,7 @@ class Program(object):
                     break
                 time.sleep(0.1)
             else:
-                logger.info("Killing %s/%s.", self.service_name, self.shard)
+                logger.info("Killing %s.", self.coord)
                 self.instance.kill()
 
     def _check_with_backoff(self):
@@ -173,8 +176,7 @@ class Program(object):
                 return
 
         # Service did not start.
-        raise TestException("Failed to bring up service %s/%s" %
-                            (self.service_name, self.shard))
+        raise TestException("Failed to bring up service %s" % self.coord)
 
     def _check(self):
         """Check that the program is healthy and set the healthy bit.
@@ -230,12 +232,12 @@ class Program(object):
                 total_time_ratio = (times.user + times.system) \
                     / (time.time() - p.create_time())
                 logger.info(
-                    "Killing %s/%s, total CPU time used: "
+                    "Killing %s, total CPU time used: "
                     "%.2lf (user), %.2lf (sys) = %.2lf%%",
-                    self.service_name, self.shard,
+                    self.coord,
                     times.user, times.system, 100 * total_time_ratio)
             except psutil.NoSuchProcess:
-                logger.info("Killing %s/%s", self.service_name, self.shard)
+                logger.info("Killing %s", self.coord)
 
             try:
                 job.kill()
@@ -257,8 +259,8 @@ class Program(object):
         job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
         atexit.register(lambda: kill(job))
         if self.cpu_limit is not None:
-            logger.info("Limiting %s/%s to %d%% CPU time",
-                        self.service_name, self.shard, self.cpu_limit)
+            logger.info("Limiting %s to %d%% CPU time",
+                        self.coord, self.cpu_limit)
             # cputool terminates on its own when the main program terminates.
             subprocess.Popen(["cputool", "-c", str(self.cpu_limit),
                               "-p", str(job.pid)])
@@ -311,9 +313,8 @@ class ProgramStarter(object):
             logger.info("Still %s unhealthy.", unhealthy)
             time.sleep(0.2 * (1.2 ** attempts))
         raise TestException(
-            "Failed to bring up services: %s" %
-            ", ".join("%s/%s" % (p.service_name, p.shard)
-                      for p in itervalues(self._programs) if not p.healthy))
+            "Failed to bring up services: %s" % ", ".join(
+                p.coord for p in itervalues(self._programs) if not p.healthy))
 
     def restart(self, service_name, shard=0, contest=None):
         p = self._programs[(service_name, shard, contest)]
