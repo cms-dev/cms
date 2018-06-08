@@ -94,6 +94,7 @@
     "_help": "python -c 'from cmscommon import crypto; print(crypto.get_hex_random_key())'",
     "secret_key":             "8e045a51e4b102ea803c06f92841a1fb",
 
+
     "_help": "Whether Tornado prints debug information on stdout.",
     "tornado_debug": false,
 
