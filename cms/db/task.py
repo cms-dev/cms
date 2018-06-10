@@ -39,7 +39,7 @@ from datetime import timedelta
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
-    Interval, Enum
+    Interval, Enum, BigInteger
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -391,7 +391,7 @@ class Dataset(Base):
         CheckConstraint("time_limit > 0"),
         nullable=True)
     memory_limit = Column(
-        Integer,
+        BigInteger,
         CheckConstraint("memory_limit > 0"),
         nullable=True)
 
