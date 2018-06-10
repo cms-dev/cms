@@ -318,7 +318,7 @@ class UserTestResult(Base):
         Float,
         nullable=True)
     compilation_memory = Column(
-        Integer,
+        BigInteger,
         nullable=True)
 
     # Worker shard and sandbox where the compilation was performed.
