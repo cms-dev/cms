@@ -171,21 +171,20 @@ class Program(object):
 
     def wait_or_kill(self):
         """Wait for the program to terminate, or kill it after 5s."""
-        if self.instance.poll():
+        if self.instance.poll() is None:
             # We try one more time to kill gracefully using Ctrl-C.
+            logger.info("Interrupting %s and waiting...", self.coord)
             self.instance.send_signal(signal.SIGINT)
-            logger.info("Waiting for %s...", self.coord)
             # FIXME on py3 this becomes self.instance.wait(timeout=5)
             t = monotonic_time()
             while monotonic_time() - t < 5:
-                logger.info("... waiting...")
                 if self.instance.poll() is not None:
                     break
                 time.sleep(0.1)
             else:
                 logger.info("Killing %s.", self.coord)
                 self.instance.kill()
-            logger.info("... terminated.")
+            logger.info("Terminated %s.", self.coord)
 
     def _check_with_backoff(self):
         """Check and wait that the service is healthy."""
@@ -264,7 +263,7 @@ class Program(object):
         # In case the test ends prematurely due to errors and stop() is not
         # called, this child process would continue running, so we register an
         # exit handler to kill it.
-        atexit.register(lambda: self.wait_or_kill())
+        atexit.register(self.wait_or_kill)
         if self.cpu_limit is not None:
             logger.info("Limiting %s to %d%% CPU time",
                         self.coord, self.cpu_limit)
