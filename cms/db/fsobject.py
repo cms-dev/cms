@@ -34,7 +34,8 @@ from future.builtins import *  # noqa
 import io
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String, Unicode
+from sqlalchemy.types import String, Unicode
+from sqlalchemy.dialects.postgresql import OID
 
 import psycopg2
 import psycopg2.extensions
@@ -371,7 +372,7 @@ class FSObject(Base):
 
     # OID of the large object in the database
     loid = Column(
-        Integer,
+        OID,
         nullable=False,
         default=0)
 
