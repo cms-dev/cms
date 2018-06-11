@@ -319,9 +319,8 @@ class ProgramStarter(object):
             logger.info("Still %s unhealthy.", unhealthy)
             time.sleep(0.2 * (1.2 ** attempts))
         raise TestException(
-            "Failed to bring up services: %s" %
-            ", ".join("%s" % p.coord
-                      for p in itervalues(self._programs) if not p.healthy))
+            "Failed to bring up services: %s" % ", ".join(
+                p.coord for p in itervalues(self._programs) if not p.healthy))
 
     def stop_all(self):
         for p in itervalues(self._programs):
