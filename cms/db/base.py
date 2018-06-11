@@ -51,7 +51,7 @@ else:
     import __builtin__
     raw_object = __builtin__.object
 
-from . import engine, CastingArray
+from . import engine, metadata, CastingArray
 
 
 _TYPE_MAP = {
@@ -331,7 +331,4 @@ class Base(object):
                 attrs.popitem()[0])
 
 
-Base = declarative_base(engine, cls=Base, constructor=None)
-
-
-metadata = Base.metadata
+Base = declarative_base(engine, metadata=metadata, cls=Base, constructor=None)
