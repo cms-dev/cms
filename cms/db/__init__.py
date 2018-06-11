@@ -37,7 +37,7 @@ from future.builtins import *  # noqa
 
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import configure_mappers, joinedload, subqueryload
 
 from cms import config
@@ -94,12 +94,13 @@ version = 35
 engine = create_engine(config.database, echo=config.database_debug,
                        pool_timeout=60, pool_recycle=120)
 
+metadata = MetaData(engine)
 
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
 from .types import CastingArray
-from .base import metadata, Base
+from .base import Base
 from .fsobject import FSObject, LargeObject
 from .validation import CodenameConstraint, FilenameConstraint, \
     DigestConstraint
