@@ -38,7 +38,7 @@ from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, Enum, DateTime, Interval
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB, OID
 
 import six
 # In both Python 2 and 3, everything is an object. But in py2 we alias
@@ -56,6 +56,7 @@ from . import engine, CastingArray
 _TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
+    OID: six.integer_types,
     Float: float,
     Enum: six.text_type,
     Unicode: six.text_type,
