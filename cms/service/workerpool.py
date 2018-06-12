@@ -229,7 +229,6 @@ class WorkerPool(object):
                 if operation.dataset_id not in datasets:
                     datasets[operation.dataset_id] = Dataset.get_from_id(
                         operation.dataset_id, session)
-                object_ = None
                 if operation.for_submission():
                     if operation.object_id not in submissions:
                         submissions[operation.object_id] = \

@@ -92,10 +92,6 @@ class EvaluationExecutor(Executor):
         # Lock used to guard the currently executing operations
         self._current_execution_lock = gevent.lock.RLock()
 
-        # Whether execute need to drop the currently executing
-        # operation.
-        self._drop_current = False
-
         for i in range(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
@@ -149,7 +145,6 @@ class EvaluationExecutor(Executor):
                 # re-enqueue it.
                 operation.side_data = (entry.priority, entry.timestamp)
                 self._currently_executing.append(operation)
-        res = None
         while len(self._currently_executing) > 0:
             self.pool.wait_for_workers()
             with self._current_execution_lock:
@@ -157,7 +152,6 @@ class EvaluationExecutor(Executor):
                     break
                 res = self.pool.acquire_worker(self._currently_executing)
                 if res is not None:
-                    self._drop_current = False
                     self._currently_executing = []
                     break
 
