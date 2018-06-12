@@ -161,8 +161,8 @@ def get_submissions(session, contest_id=None, participation_id=None,
     submission_id (int|None): id of the submission to filter with, or
         None.
 
-    return ([Submission]): the list of submission that match the given
-        criteria
+    return (Query): a query for the list of submission that match the
+        given criteria
 
     """
     if task_id is not None and contest_id is not None:
@@ -190,7 +190,7 @@ def get_submissions(session, contest_id=None, participation_id=None,
         query = query.join(Participation) \
             .filter(Participation.contest_id == contest_id) \
             .join(Task).filter(Task.contest_id == contest_id)
-    return query.all()
+    return query
 
 
 def get_submission_results(session, contest_id=None, participation_id=None,
@@ -215,7 +215,7 @@ def get_submission_results(session, contest_id=None, participation_id=None,
         None.
     dataset_id (int|None): id of the dataset to filter with, or None.
 
-    return ([SubmissionResult]): the list of submission results that
+    return (Query): a query for the list of submission results that
         match the given criteria
 
     """
@@ -250,7 +250,7 @@ def get_submission_results(session, contest_id=None, participation_id=None,
         query = query.join(Participation) \
             .filter(Participation.contest_id == contest_id)\
             .join(Task).filter(Task.contest_id == contest_id)
-    return query.all()
+    return query
 
 
 def get_datasets_to_judge(task):

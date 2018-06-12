@@ -217,7 +217,7 @@ class ScoringService(TriggeredService):
             submission_results = \
                 get_submission_results(session, contest_id,
                                        participation_id, task_id,
-                                       submission_id, dataset_id)
+                                       submission_id, dataset_id).all()
 
             for sr in submission_results:
                 if sr.scored():

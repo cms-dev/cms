@@ -286,13 +286,6 @@ class Contest(Base):
         passive_deletes=True,
         back_populates="contest")
 
-    # Moreover, we have the following methods.
-    # get_submissions (defined in __init__.py)
-    # get_submission_results (defined in __init__.py)
-    # get_user_tests (defined in __init__.py)
-    # get_user_test_results (defined in __init__.py)
-    # get_print_jobs (defined in __init__.py)
-
     def phase(self, timestamp):
         """Return: -1 if contest isn't started yet at time timestamp,
                     0 if the contest is active at time timestamp,
