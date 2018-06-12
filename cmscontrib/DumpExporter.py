@@ -55,7 +55,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 from cms import rmtree, utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
-    SubmissionResult, UserTestResult, PrintJob
+    SubmissionResult, UserTestResult, PrintJob, enumerate_files
 from cms.db.filecacher import FileCacher
 
 from cmscommon.datetime import make_timestamp
@@ -213,7 +213,8 @@ class DumpExporter(object):
             if self.dump_files:
                 for contest_id in self.contests_ids:
                     contest = Contest.get_from_id(contest_id, session)
-                    files = contest.enumerate_files(
+                    files = enumerate_files(
+                        session, contest,
                         skip_submissions=self.skip_submissions,
                         skip_user_tests=self.skip_user_tests,
                         skip_print_jobs=self.skip_print_jobs,

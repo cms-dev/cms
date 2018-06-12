@@ -61,7 +61,7 @@ import cms.db as class_hook
 from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
-    UserTest, UserTestResult, PrintJob, init_db, drop_db
+    UserTest, UserTestResult, PrintJob, init_db, drop_db, enumerate_files
 from cms.db.filecacher import FileCacher
 
 from cmscommon.archive import Archive
@@ -283,7 +283,8 @@ class DumpImporter(object):
 
                     if isinstance(obj, Contest):
                         contest_id += [obj.id]
-                        contest_files |= obj.enumerate_files(
+                        contest_files |= enumerate_files(
+                            session, obj,
                             skip_submissions=self.skip_submissions,
                             skip_user_tests=self.skip_user_tests,
                             skip_print_jobs=self.skip_print_jobs,

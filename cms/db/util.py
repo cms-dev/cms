@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,11 +33,15 @@ from future.builtins import *  # noqa
 
 import sys
 
+from sqlalchemy import union
 from sqlalchemy.exc import OperationalError
 
 from cms import ConfigError
-from . import SessionGen, Contest, Participation, Task, Submission, \
-    SubmissionResult
+from cms.db.filecacher import FileCacher
+from . import SessionGen, Contest, Participation, Statement, Attachment, Task, \
+    Manager, Dataset, Testcase, Submission, File, SubmissionResult, \
+    Executable, UserTest, UserTestFile, UserTestManager, UserTestResult, \
+    UserTestExecutable, PrintJob
 
 
 def test_db_connection():
@@ -270,3 +274,69 @@ def get_datasets_to_judge(task):
             judge.append(dataset)
 
     return judge
+
+
+def enumerate_files(
+        session, contest=None,
+        skip_submissions=False, skip_user_tests=False, skip_print_jobs=False,
+        skip_generated=False):
+    """Enumerate all the files (by digest) referenced by the
+    contest.
+
+    return (set): a set of strings, the digests of the file
+                  referenced in the contest.
+
+    """
+    contest_q = session.query(Contest)
+    if contest is not None:
+        contest_q = contest_q.filter(Contest.id == contest.id)
+
+    queries = list()
+
+    task_q = contest_q.join(Contest.tasks)
+    queries.append(task_q.join(Task.statements).with_entities(Statement.digest))
+    queries.append(task_q.join(Task.attachments)
+                   .with_entities(Attachment.digest))
+
+    dataset_q = task_q.join(Task.datasets)
+    queries.append(dataset_q.join(Dataset.managers)
+                   .with_entities(Manager.digest))
+    queries.append(dataset_q.join(Dataset.testcases)
+                   .with_entities(Testcase.input))
+    queries.append(dataset_q.join(Dataset.testcases)
+                   .with_entities(Testcase.input))
+
+    if not skip_submissions:
+        submission_q = task_q.join(Task.submissions)
+        queries.append(submission_q.join(Submission.files)
+                       .with_entities(File.digest))
+
+        if not skip_generated:
+            queries.append(submission_q.join(Submission.results)
+                           .join(SubmissionResult.executables)
+                           .with_entities(Executable.digest))
+
+    if not skip_user_tests:
+        user_test_q = task_q.join(Task.user_tests)
+        queries.append(user_test_q.with_entities(UserTest.input))
+        queries.append(user_test_q.join(UserTest.files)
+                       .with_entities(UserTestFile.digest))
+        queries.append(user_test_q.join(UserTest.managers)
+                       .with_entities(UserTestManager.digest))
+
+        if not skip_generated:
+            user_test_result_q = user_test_q.join(UserTest.results)
+            queries.append(user_test_result_q.join(UserTestResult.executables)
+                           .with_entities(UserTestExecutable.digest))
+            queries.append(user_test_result_q
+                           .with_entities(UserTestResult.output))
+
+    if not skip_print_jobs:
+        queries.append(contest_q.join(Contest.participations)
+                       .join(Participation.printjobs)
+                       .with_entities(PrintJob.digest))
+
+    # union(...).execute() would be executed outside of the session.
+    digests = set(r[0] for r in session.execute(union(*queries)))
+    digests.discard(FileCacher.TOMBSTONE_DIGEST)
+    return digests

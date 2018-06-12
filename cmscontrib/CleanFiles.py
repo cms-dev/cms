@@ -37,7 +37,7 @@ import argparse
 import logging
 import sys
 
-from cms.db import SessionGen, Contest, Executable
+from cms.db import SessionGen, Executable, enumerate_files
 from cms.db.filecacher import FileCacher
 
 
@@ -58,12 +58,10 @@ def clean_files(session, dry_run):
     files = set(file[0] for file in filecacher.list())
     logger.info("A total number of %d files are present in the file store",
                 len(files))
-    for contest in session.query(Contest).all():
-        found_digests = contest.enumerate_files()
-        found_digests.discard(FileCacher.TOMBSTONE_DIGEST)
-        logger.info("Found %d digests while scanning contest %s",
-                    len(found_digests), contest.name)
-        files -= found_digests
+    found_digests = enumerate_files(session)
+    found_digests.discard(FileCacher.TOMBSTONE_DIGEST)
+    logger.info("Found %d digests while scanning", len(found_digests))
+    files -= found_digests
     logger.info("%d digests are orphan.", len(files))
     total_size = 0
     for orphan in files:

@@ -38,7 +38,7 @@ import time
 import gevent.lock
 
 from cms.io import Service, rpc_method
-from cms.db import SessionGen, Contest
+from cms.db import SessionGen, Contest, enumerate_files
 from cms.db.filecacher import FileCacher, TombstoneError
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
@@ -85,9 +85,8 @@ class Worker(Service):
         logger.info("Precaching files for contest %d.", contest_id)
         with SessionGen() as session:
             contest = Contest.get_from_id(contest_id, session)
-            files = contest.enumerate_files(skip_submissions=True,
-                                            skip_user_tests=True,
-                                            skip_print_jobs=True)
+            files = enumerate_files(session, contest, skip_submissions=True,
+                                    skip_user_tests=True, skip_print_jobs=True)
         for digest in files:
             try:
                 self.file_cacher.load(digest, if_needed=True)
