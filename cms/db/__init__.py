@@ -82,7 +82,8 @@ __all__ = [
     "drop_db",
     # util
     "test_db_connection", "get_contest_list", "is_contest_id",
-    "ask_for_contest"
+    "ask_for_contest", "get_submissions", "get_submission_results",
+    "get_datasets_to_judge"
 ]
 
 
@@ -116,7 +117,8 @@ from .init import init_db
 from .drop import drop_db
 
 from .util import test_db_connection, get_contest_list, is_contest_id, \
-    ask_for_contest
+    ask_for_contest, get_submissions, get_submission_results, \
+    get_datasets_to_judge
 
 
 configure_mappers()
@@ -125,7 +127,7 @@ configure_mappers()
 # The following are methods of Contest that cannot be put in the right
 # file because of circular dependencies.
 
-def get_submissions(self):
+def get_submissions_for_contest(self):
     """Return a list of submissions (with the information about the
     corresponding task) referring to the contest.
 
@@ -138,7 +140,7 @@ def get_submissions(self):
                .options(joinedload(Submission.results)).all()
 
 
-def get_submission_results(self):
+def get_submission_results_for_contest(self):
     """Return a list of submission results for all submissions in
     the current contest, as evaluated against the active dataset
     for each task.
@@ -152,7 +154,7 @@ def get_submission_results(self):
                .all()
 
 
-def get_user_tests(self):
+def get_user_tests_for_contest(self):
     """Return a list of user tests (with the information about the
     corresponding user) referring to the contest.
 
@@ -164,7 +166,7 @@ def get_user_tests(self):
                .options(joinedload(UserTest.results)).all()
 
 
-def get_user_test_results(self):
+def get_user_test_results_for_contest(self):
     """Returns a list of user_test results for all user_tests in
     the current contest, as evaluated against the active dataset
     for each task.
@@ -178,7 +180,7 @@ def get_user_test_results(self):
                .all()
 
 
-def get_print_jobs(self):
+def get_print_jobs_for_contest(self):
     """Return a list of print jobs of the contest.
 
     return ([PrintJob]): list of print jobs.
@@ -189,11 +191,11 @@ def get_print_jobs(self):
                .all()
 
 
-Contest.get_submissions = get_submissions
-Contest.get_submission_results = get_submission_results
-Contest.get_user_tests = get_user_tests
-Contest.get_user_test_results = get_user_test_results
-Contest.get_print_jobs = get_print_jobs
+Contest.get_submissions = get_submissions_for_contest
+Contest.get_submission_results = get_submission_results_for_contest
+Contest.get_user_tests = get_user_tests_for_contest
+Contest.get_user_test_results = get_user_test_results_for_contest
+Contest.get_print_jobs = get_print_jobs_for_contest
 
 
 # The following is a method of Dataset that cannot be put in the right

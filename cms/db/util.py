@@ -36,7 +36,8 @@ import sys
 from sqlalchemy.exc import OperationalError
 
 from cms import ConfigError
-from . import SessionGen, Contest
+from . import SessionGen, Contest, Participation, Task, Submission, \
+    SubmissionResult
 
 
 def test_db_connection():
@@ -133,3 +134,139 @@ def ask_for_contest(skip=None):
             sys.exit(1)
 
     return contest_id
+
+
+def get_submissions(session, contest_id=None, participation_id=None,
+                    task_id=None, submission_id=None):
+    """Search for submissions that match the given criteria
+
+    The submissions will be returned as a list, and the last four
+    parameters determine the filters used to decide which submissions
+    to include. Some of them are incompatible, that is they cannot be
+    non-None at the same time. When this happens it means that one of
+    the parameters "implies" the other (for example, giving the
+    participation already gives the contest it belongs to). Trying to
+    give them both is useless and could only lead to inconsistencies
+    and errors.
+
+    session (Session): the database session to use.
+    contest_id (int|None): id of the contest to filter with, or None.
+    participation_id (int|None): id of the participation to filter
+        with, or None.
+    task_id (int|None): id of the task to filter with, or None.
+    submission_id (int|None): id of the submission to filter with, or
+        None.
+
+    return ([Submission]): the list of submission that match the given
+        criteria
+
+    """
+    if task_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if task_id is given")
+    if participation_id is not None and contest_id is not None:
+        raise ValueError(
+            "contest_id is superfluous if participation_id is given")
+    if submission_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if submission_id is given")
+    if submission_id is not None and task_id is not None:
+        raise ValueError("task_id is superfluous if submission_id is given")
+    if submission_id is not None and participation_id is not None:
+        raise ValueError(
+            "participation_id is superfluous if submission_id is given")
+
+    query = session.query(Submission)
+    if submission_id is not None:
+        query = query.filter(Submission.id == submission_id)
+    if participation_id is not None:
+        query = query.join(Participation) \
+            .filter(Participation.id == participation_id)
+    if task_id is not None:
+        query = query.filter(Submission.task_id == task_id)
+    if contest_id is not None:
+        query = query.join(Participation) \
+            .filter(Participation.contest_id == contest_id) \
+            .join(Task).filter(Task.contest_id == contest_id)
+    return query.all()
+
+
+def get_submission_results(session, contest_id=None, participation_id=None,
+                           task_id=None, submission_id=None, dataset_id=None):
+    """Search for submission results that match the given criteria
+
+    The submission results will be returned as a list, and the last
+    five parameters determine the filters used to decide which
+    submission results to include. Some of them are incompatible, that
+    is they cannot be non-None at the same time. When this happens it
+    means that one of the parameters "implies" the other (for example,
+    giving the participation already gives the contest it belongs
+    to). Trying to give them both is useless and could only lead to
+    inconsistencies and errors.
+
+    session (Session): the database session to use.
+    contest_id (int|None): id of the contest to filter with, or None.
+    participation_id (int|None): id of the participation to filter with,
+        or None.
+    task_id (int|None): id of the task to filter with, or None.
+    submission_id (int|None): id of the submission to filter with, or
+        None.
+    dataset_id (int|None): id of the dataset to filter with, or None.
+
+    return ([SubmissionResult]): the list of submission results that
+        match the given criteria
+
+    """
+    if task_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if task_id is given")
+    if participation_id is not None and contest_id is not None:
+        raise ValueError(
+            "contest_id is superfluous if participation_id is given")
+    if submission_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if submission_id is given")
+    if submission_id is not None and task_id is not None:
+        raise ValueError("task_id is superfluous if submission_id is given")
+    if submission_id is not None and participation_id is not None:
+        raise ValueError(
+            "participation_id is superfluous if submission_id is given")
+    if dataset_id is not None and task_id is not None:
+        raise ValueError("task_id is superfluous if dataset_id is given")
+    if dataset_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if dataset_id is given")
+
+    query = session.query(SubmissionResult).join(Submission)
+    if submission_id is not None:
+        query = query.filter(SubmissionResult.submission_id == submission_id)
+    if dataset_id is not None:
+        query = query.filter(SubmissionResult.dataset_id == dataset_id)
+    if participation_id is not None:
+        query = query.join(Participation) \
+            .filter(Participation.id == participation_id)
+    if task_id is not None:
+        query = query.filter(Submission.task_id == task_id)
+    if contest_id is not None:
+        query = query.join(Participation) \
+            .filter(Participation.contest_id == contest_id)\
+            .join(Task).filter(Task.contest_id == contest_id)
+    return query.all()
+
+
+def get_datasets_to_judge(task):
+    """Determine the datasets that ES and SS have to judge.
+
+    Return a list of all Dataset objects that are either the
+    active_dataset of their Task or have the autojudge flag set.
+    These are the ones on which submissions are automatically judged by
+    by ES and SS, whereas the results on any other dataset has to be
+    explicitly requested by the contest admin (by invalidating it).
+
+    task (Task): the task to query.
+
+    return ([Dataset]): list of datasets to judge.
+
+    """
+    judge = []
+
+    for dataset in task.datasets:
+        if dataset.active or dataset.autojudge:
+            judge.append(dataset)
+
+    return judge
