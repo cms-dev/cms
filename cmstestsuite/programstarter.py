@@ -126,6 +126,14 @@ class Program(object):
             args += ["-c", "%s" % self.contest]
 
         self.instance = self._spawn(args)
+        # In case the test ends prematurely due to errors and stop() is not
+        # called, this child process would continue running, so we register an
+        # exit handler to kill it. atexit handlers are LIFO, so the first
+        # handler tries to terminate gracefully, the second kills immediately.
+        # This is useful in case the user hits Ctrl-C twice to avoid zombies.
+        atexit.register(self.kill)
+        atexit.register(self.wait_or_kill)
+
         t = threading.Thread(target=self._check_with_backoff)
         t.daemon = True
         t.start()
@@ -179,12 +187,17 @@ class Program(object):
             t = monotonic_time()
             while monotonic_time() - t < 5:
                 if self.instance.poll() is not None:
+                    logger.info("Terminated %s.", self.coord)
                     break
                 time.sleep(0.1)
             else:
-                logger.info("Killing %s.", self.coord)
-                self.instance.kill()
-            logger.info("Terminated %s.", self.coord)
+                self.kill()
+
+    def kill(self):
+        """Kill the program."""
+        if self.instance.poll() is None:
+            logger.info("Killing %s.", self.coord)
+            self.instance.kill()
 
     def _check_with_backoff(self):
         """Check and wait that the service is healthy."""
@@ -260,10 +273,6 @@ class Program(object):
             stdout = io.open(os.devnull, "wb")
             stderr = stdout
         instance = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
-        # In case the test ends prematurely due to errors and stop() is not
-        # called, this child process would continue running, so we register an
-        # exit handler to kill it.
-        atexit.register(self.wait_or_kill)
         if self.cpu_limit is not None:
             logger.info("Limiting %s to %d%% CPU time",
                         self.coord, self.cpu_limit)
