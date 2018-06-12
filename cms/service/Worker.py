@@ -86,7 +86,8 @@ class Worker(Service):
         with SessionGen() as session:
             contest = Contest.get_from_id(contest_id, session)
             files = contest.enumerate_files(skip_submissions=True,
-                                            skip_user_tests=True)
+                                            skip_user_tests=True,
+                                            skip_print_jobs=True)
         for digest in files:
             try:
                 self.file_cacher.load(digest, if_needed=True)

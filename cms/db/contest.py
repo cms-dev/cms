@@ -291,9 +291,10 @@ class Contest(Base):
     # get_submission_results (defined in __init__.py)
     # get_user_tests (defined in __init__.py)
     # get_user_test_results (defined in __init__.py)
+    # get_print_jobs (defined in __init__.py)
 
     def enumerate_files(self, skip_submissions=False, skip_user_tests=False,
-                        skip_generated=False):
+                        skip_print_jobs=False, skip_generated=False):
         """Enumerate all the files (by digest) referenced by the
         contest.
 
@@ -362,6 +363,10 @@ class Contest(Base):
                     for ur in user_test.results:
                         for file_ in itervalues(ur.executables):
                             files.add(file_.digest)
+
+        if not skip_print_jobs:
+            for print_job in self.get_print_jobs():
+                files.add(print_job.digest)
 
         return files
 

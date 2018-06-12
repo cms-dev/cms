@@ -55,7 +55,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 from cms import rmtree, utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
-    SubmissionResult, UserTestResult
+    SubmissionResult, UserTestResult, PrintJob
 from cms.db.filecacher import FileCacher
 
 from cmscommon.datetime import make_timestamp
@@ -145,7 +145,7 @@ class DumpExporter(object):
 
     def __init__(self, contest_ids, export_target,
                  dump_files, dump_model, skip_generated,
-                 skip_submissions, skip_user_tests):
+                 skip_submissions, skip_user_tests, skip_print_jobs):
         if contest_ids is None:
             with SessionGen() as session:
                 contests = session.query(Contest).all()
@@ -167,6 +167,7 @@ class DumpExporter(object):
         self.skip_generated = skip_generated
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
+        self.skip_print_jobs = skip_print_jobs
         self.export_target = export_target
 
         # If target is not provided, we use the contest's name.
@@ -212,9 +213,11 @@ class DumpExporter(object):
             if self.dump_files:
                 for contest_id in self.contests_ids:
                     contest = Contest.get_from_id(contest_id, session)
-                    files = contest.enumerate_files(self.skip_submissions,
-                                                    self.skip_user_tests,
-                                                    self.skip_generated)
+                    files = contest.enumerate_files(
+                        skip_submissions=self.skip_submissions,
+                        skip_user_tests=self.skip_user_tests,
+                        skip_print_jobs=self.skip_print_jobs,
+                        skip_generated=self.skip_generated)
                     for file_ in files:
                         if not self.safe_get_file(file_,
                                                   os.path.join(files_dir,
@@ -299,7 +302,7 @@ class DumpExporter(object):
         an ID we generate a new ID, assign it to the object and append
         the object to the queue of objects to export.
 
-        The self.skip_submissions flag controls wheter we export
+        The self.skip_submissions flag controls whether we export
         submissions (and all other objects that can be reached only by
         passing through a submission) or not.
 
@@ -324,6 +327,10 @@ class DumpExporter(object):
 
             # Skip user_tests if requested
             if self.skip_user_tests and other_cls is UserTest:
+                continue
+
+            # Skip print jobs if requested
+            if self.skip_print_jobs and other_cls is PrintJob:
                 continue
 
             # Skip generated data if requested
@@ -402,6 +409,8 @@ def main():
                         help="don't export submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
                         help="don't export user tests")
+    parser.add_argument("-P", "--no-print-jobs", action="store_true",
+                        help="don't export print jobs")
     parser.add_argument("export_target", action="store",
                         type=utf8_decoder, nargs='?', default="",
                         help="target directory or archive for export")
@@ -414,7 +423,8 @@ def main():
                             dump_model=not args.files,
                             skip_generated=args.no_generated,
                             skip_submissions=args.no_submissions,
-                            skip_user_tests=args.no_user_tests)
+                            skip_user_tests=args.no_user_tests,
+                            skip_print_jobs=args.no_print_jobs)
     success = exporter.do_export()
     return 0 if success is True else 1
 

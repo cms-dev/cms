@@ -150,7 +150,8 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             load_model=True,
             skip_generated=skip_generated,
             skip_submissions=skip_submissions,
-            skip_user_tests=False).do_import()
+            skip_user_tests=False,
+            skip_print_jobs=False).do_import()
 
     def write_dump(self, dump):
         destination = self.get_path("contest.json")

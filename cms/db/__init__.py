@@ -177,10 +177,23 @@ def get_user_test_results(self):
                .filter(Task.active_dataset_id == UserTestResult.dataset_id)\
                .all()
 
+
+def get_print_jobs(self):
+    """Return a list of print jobs of the contest.
+
+    return ([PrintJob]): list of print jobs.
+
+    """
+    return self.sa_session.query(PrintJob)\
+               .join(Participation).filter(Participation.contest == self)\
+               .all()
+
+
 Contest.get_submissions = get_submissions
 Contest.get_submission_results = get_submission_results
 Contest.get_user_tests = get_user_tests
 Contest.get_user_test_results = get_user_test_results
+Contest.get_print_jobs = get_print_jobs
 
 
 # The following is a method of Dataset that cannot be put in the right

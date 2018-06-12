@@ -106,7 +106,8 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             dump_model=True,
             skip_generated=skip_generated,
             skip_submissions=skip_submissions,
-            skip_user_tests=False).do_export()
+            skip_user_tests=False,
+            skip_print_jobs=False).do_export()
         dump_path = os.path.join(self.target, "contest.json")
         try:
             with io.open(dump_path, "rt", encoding="utf-8") as f:
