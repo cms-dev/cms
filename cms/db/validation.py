@@ -35,7 +35,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-from sqlalchemy import all_, and_, func, literal_column
+from sqlalchemy import literal_column
 from sqlalchemy.schema import CheckConstraint
 from sqlalchemy.sql.expression import ColumnClause
 
@@ -45,39 +45,6 @@ from cms.db.filecacher import FileCacher
 # TODO In SQLAlchemy 1.2 we can get rid of literal_column. See:
 # https://bitbucket.org/zzzeek/sqlalchemy/issues/3957/incorrect-rendering-of-sqltext-for-column
 # https://groups.google.com/d/topic/sqlalchemy/J6VPG_1Fj2U/discussion
-
-class FilenameConstraint(CheckConstraint):
-    """Check that the column is a filename using a simple alphabet."""
-
-    def __init__(self, column_name):
-        column = ColumnClause(column_name)
-        super(FilenameConstraint, self).__init__(and_(
-            column.op("~")(literal_column("'^[A-Za-z0-9_.%-]+$'")),
-            column != literal_column("'.'"),
-            column != literal_column("'..'")))
-
-
-class FilenameListConstraint(CheckConstraint):
-    """Check that the column is a list of filenames (as above)."""
-
-    def __init__(self, column_name):
-        column = ColumnClause(column_name)
-        # Postgres allows the condition "<sth> <op> ALL (<array>)" that
-        # is true iff for all elements of array "<sth> <op> <element>".
-        # This works for (in)equality but, as the order of the operands
-        # is preserved, it doesn't work for regexp matching, where the
-        # syntax is "<text> ~ <pattern>". Our regexp operates on a per
-        # character basis so we can work around it by concatenating the
-        # items of the array (using array_to_string) and match the
-        # regexp on the result.
-        empty = literal_column("''")
-        super(FilenameListConstraint, self).__init__(and_(
-            func.array_to_string(column, empty).op("~")(
-                literal_column("'^[A-Za-z0-9_.%-]*$'")),
-            empty != all_(column),
-            literal_column("'.'") != all_(column),
-            literal_column("'..'") != all_(column)))
-
 
 class DigestConstraint(CheckConstraint):
     """Check that the column is a valid SHA1 hex digest."""

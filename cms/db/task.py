@@ -46,9 +46,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
-from cms.db.validation import FilenameListConstraint
 
-from . import Codename, Base, Contest, FilenameConstraint, DigestConstraint
+from . import Codename, Filename, FilenameArray, Base, Contest, DigestConstraint
 
 
 class Task(Base):
@@ -108,8 +107,7 @@ class Task(Base):
     # The names of the files that the contestant needs to submit (with
     # language-specific extensions replaced by "%l").
     submission_format = Column(
-        ARRAY(String),
-        FilenameListConstraint("submission_format"),
+        FilenameArray,
         nullable=False,
         default=[])
 
@@ -334,8 +332,7 @@ class Attachment(Base):
 
     # Filename and digest of the provided attachment.
     filename = Column(
-        Unicode,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,
@@ -558,8 +555,7 @@ class Manager(Base):
 
     # Filename and digest of the provided manager.
     filename = Column(
-        Unicode,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,
