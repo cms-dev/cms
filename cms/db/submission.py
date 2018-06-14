@@ -43,8 +43,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
-from . import Base, Participation, Task, Dataset, Testcase, \
-    FilenameConstraint, DigestConstraint
+from . import Filename, Base, Participation, Task, Dataset, Testcase, \
+    DigestConstraint
 
 from cmscommon.datetime import make_datetime
 
@@ -214,8 +214,7 @@ class File(Base):
 
     # Filename and digest of the submitted file.
     filename = Column(
-        Unicode,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,
@@ -657,8 +656,7 @@ class Executable(Base):
 
     # Filename and digest of the generated executable.
     filename = Column(
-        Unicode,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,

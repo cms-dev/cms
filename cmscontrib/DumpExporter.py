@@ -53,7 +53,7 @@ from sqlalchemy.types import \
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 from cms import rmtree, utf8_decoder
-from cms.db import version as model_version, Codename
+from cms.db import version as model_version, Codename, Filename, FilenameArray
 from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
     SubmissionResult, UserTestResult, PrintJob, enumerate_files
 from cms.db.filecacher import FileCacher
@@ -122,7 +122,8 @@ def encode_value(type_, value):
     if value is None:
         return None
     elif isinstance(type_, (
-            Boolean, Integer, Float, String, Unicode, Enum, JSONB, Codename)):
+            Boolean, Integer, Float, String, Unicode, Enum, JSONB, Codename,
+            Filename, FilenameArray)):
         return value
     elif isinstance(type_, DateTime):
         return make_timestamp(value)

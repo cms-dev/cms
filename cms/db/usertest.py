@@ -38,8 +38,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Base, Participation, Task, Dataset, FilenameConstraint, \
-    DigestConstraint
+from . import Filename, Base, Participation, Task, Dataset, DigestConstraint
 
 
 class UserTest(Base):
@@ -187,8 +186,7 @@ class UserTestFile(Base):
 
     # Filename and digest of the submitted file.
     filename = Column(
-        String,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,
@@ -224,8 +222,7 @@ class UserTestManager(Base):
 
     # Filename and digest of the submitted manager.
     filename = Column(
-        String,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,
@@ -550,8 +547,7 @@ class UserTestExecutable(Base):
 
     # Filename and digest of the generated executable.
     filename = Column(
-        String,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
         String,

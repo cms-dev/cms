@@ -79,3 +79,67 @@ class Codename(TypeDecorator):
 
 event.listen(metadata, "before_create", Codename.get_create_command())
 event.listen(metadata, "after_drop", Codename.get_drop_command())
+
+
+class Filename(TypeDecorator):
+    """Check that the column is a filename using a simple alphabet."""
+
+    domain_name = "FILENAME"
+    impl = Unicode
+
+    @classmethod
+    def compile(cls, dialect=None):
+        return cls.domain_name
+
+    @classmethod
+    def get_create_command(cls):
+        return DDL("CREATE DOMAIN %(domain)s VARCHAR "
+                   "CHECK (VALUE ~ '^[A-Za-z0-9_.%%-]+$') "
+                   "CHECK (VALUE != '.') "
+                   "CHECK (VALUE != '..')",
+                   context={"domain": cls.domain_name})
+
+    @classmethod
+    def get_drop_command(cls):
+        return DDL("DROP DOMAIN %(domain)s",
+                   context={"domain": cls.domain_name})
+
+
+event.listen(metadata, "before_create", Filename.get_create_command())
+event.listen(metadata, "after_drop", Filename.get_drop_command())
+
+
+class FilenameArray(TypeDecorator):
+    """Check that the column is an array of filenames (as above)."""
+
+    domain_name = "FILENAME_ARRAY"
+    impl = CastingArray(Unicode)
+
+    @classmethod
+    def compile(cls, dialect=None):
+        return cls.domain_name
+
+    @classmethod
+    def get_create_command(cls):
+        # Postgres allows the condition "<sth> <op> ALL (<array>)" that
+        # is true iff for all elements of array "<sth> <op> <element>".
+        # This works for (in)equality but, as the order of the operands
+        # is preserved, it doesn't work for regexp matching, where the
+        # syntax is "<text> ~ <pattern>". Our regexp operates on a per
+        # character basis so we can work around it by concatenating the
+        # items of the array (using array_to_string) and match the
+        # regexp on the result.
+        return DDL("CREATE DOMAIN %(domain)s VARCHAR[] "
+                   "CHECK (array_to_string(VALUE, '') ~ '^[A-Za-z0-9_.%%-]*$') "
+                   "CHECK ('.' != ALL(VALUE)) "
+                   "CHECK ('..' != ALL(VALUE))",
+                   context={"domain": cls.domain_name})
+
+    @classmethod
+    def get_drop_command(cls):
+        return DDL("DROP DOMAIN %(domain)s",
+                   context={"domain": cls.domain_name})
+
+
+event.listen(metadata, "before_create", FilenameArray.get_create_command())
+event.listen(metadata, "after_drop", FilenameArray.get_drop_command())
