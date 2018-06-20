@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
@@ -32,13 +32,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iteritems
+from six import PY3, iteritems
 
-from collections import defaultdict, deque
 import logging
 import os
 import re
 import time
+from collections import defaultdict, deque
+if PY3:
+    from shlex import quote as shell_quote
+else:
+    from pipes import quote as shell_quote
 
 import psutil
 
@@ -265,10 +269,15 @@ class ResourceService(Service):
                     args += ["-c", str(self.contest_id)]
                 else:
                     args += ["-c", "ALL"]
-                process = subprocess.Popen(args,
-                                           stdout=DEVNULL,
-                                           stderr=subprocess.STDOUT
-                                           )
+                try:
+                    process = subprocess.Popen(args,
+                                               stdout=DEVNULL,
+                                               stderr=subprocess.STDOUT
+                                               )
+                except Exception:
+                    logger.error("Error for command line %s",
+                                 shell_quote(" ".join(args)))
+                    raise
                 self._launched_processes.add(process)
 
         # Run forever.
