@@ -130,6 +130,18 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <input type="text" name="submission_format" value="{{ task.submission_format|join(", ") }}"/>
         </td>
       </tr>
+      <tr>
+        <td>
+          <span class="info" title="With 'restricted' contestants only see limited technical information about each testcase; with 'full' they see more details, but malicious contestants might use this data to get some information about the test data."></span>
+          Feedback level
+        </td>
+        <td>
+          <select name="feedback_level">
+            <option value={{ FEEDBACK_LEVEL_RESTRICTED }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_RESTRICTED else "" }}>Restricted</option>
+            <option value={{ FEEDBACK_LEVEL_FULL }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_FULL else "" }}>Full</option>
+          </select>
+        </td>
+      </tr>
       <tr><td colspan=2><h2>Tokens parameters (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">documentation</a>)</h2></td></tr>
       <tr>
         <td>
