@@ -45,7 +45,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
-    TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
+    TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
+    FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_SAFE
 from cms.db.validation import FilenameListConstraint
 
 from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
@@ -199,6 +200,15 @@ class Task(Base):
         Interval,
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
+
+    # What information users can see about the compilation and evaluations of
+    # their submissions. Offering full information might help some users to
+    # reverse engineer task data.
+    feedback_details = Column(
+        Enum(FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_SAFE,
+             name="feedback_details"),
+        nullable=False,
+        default=FEEDBACK_DETAILS_SAFE)
 
     # The scores for this task will be rounded to this number of
     # decimal places.

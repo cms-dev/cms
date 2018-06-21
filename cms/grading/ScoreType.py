@@ -43,6 +43,7 @@ import logging
 import re
 from abc import ABCMeta, abstractmethod
 
+from cms import FEEDBACK_DETAILS_SAFE
 from cms.locale import DEFAULT_TRANSLATION
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
@@ -112,12 +113,15 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             translation.format_decimal(round(score, score_precision)),
             translation.format_decimal(round(max_score, score_precision)))
 
-    def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
+    def get_html_details(self, score_details,
+                         feedback_details=FEEDBACK_DETAILS_SAFE,
+                         translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (object): the data saved by the score type
             itself in the database; can be public or private.
+        feedback_details (str): the level of details to show to users.
         translation (Translation): the translation to use.
 
         return (string): an HTML string representing score_details.
@@ -134,6 +138,7 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             # of a typical CWS context as it's entitled to expect them.
             try:
                 return self.template.render(details=score_details,
+                                            feedback_details=feedback_details,
                                             translation=translation,
                                             gettext=_, ngettext=n_)
             except Exception:
@@ -249,17 +254,20 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <th class="details">
                         {% trans %}Details{% endtrans %}
                     </th>
+    {% if feedback_details == "full" %}
                     <th class="execution-time">
                         {% trans %}Execution time{% endtrans %}
                     </th>
                     <th class="memory-used">
                         {% trans %}Memory used{% endtrans %}
                     </th>
+    {% endif %}
                 </tr>
             </thead>
             <tbody>
+    {% set ns = namespace(continue_feedback=true) %}
     {% for tc in st["testcases"] %}
-        {% if "outcome" in tc and "text" in tc %}
+        {% if ns.continue_feedback and "outcome" in tc and "text" in tc %}
             {% if tc["outcome"] == "Correct" %}
                 <tr class="correct">
             {% elif tc["outcome"] == "Not correct" %}
@@ -272,24 +280,33 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="details">
                       {{ tc["text"]|format_status_text }}
                     </td>
+            {% if feedback_details == "full" %}
                     <td class="execution-time">
-            {% if "time" in tc and tc["time"] is not none %}
+                {% if "time" in tc and tc["time"] is not none %}
                         {{ tc["time"]|format_duration }}
-            {% else %}
+                {% else %}
                         {% trans %}N/A{% endtrans %}
-            {% endif %}
+                {% endif %}
                     </td>
                     <td class="memory-used">
-            {% if "memory" in tc and tc["memory"] is not none %}
+                {% if "memory" in tc and tc["memory"] is not none %}
                         {{ tc["memory"]|format_size }}
-            {% else %}
+                {% else %}
                         {% trans %}N/A{% endtrans %}
-            {% endif %}
+                {% endif %}
                     </td>
+            {% endif %}
                 </tr>
+            {% if tc["outcome"] != "Correct" and feedback_details != "full" %}
+                {% set ns.continue_feedback = false %}
+            {% endif %}
         {% else %}
                 <tr class="undefined">
+            {% if feedback_details == "full" %}
                     <td colspan="5">
+                {% else %}
+                    <td colspan="3">
+                {% endif %}
                         {% trans %}N/A{% endtrans %}
                     </td>
                 </tr>

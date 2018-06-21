@@ -50,8 +50,8 @@ from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     UnacceptableSubmission, accept_submission
-from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
-    accept_token, tokens_available
+from cms.server.contest.tokening import \
+    UnacceptableToken, TokenAlreadyPlayed, accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -257,7 +257,8 @@ class SubmissionDetailsHandler(ContestHandler):
 
             if sr.scored():
                 details = score_type.get_html_details(
-                    details, translation=self.translation)
+                    details, task.feedback_details,
+                    translation=self.translation)
             else:
                 details = None
 

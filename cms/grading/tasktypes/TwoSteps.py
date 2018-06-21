@@ -201,7 +201,7 @@ class TwoSteps(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands)
+            compilation_step(sandbox, commands, job.feedback_details)
 
         # Retrieve the compiled executables
         job.success = box_success
@@ -311,7 +311,7 @@ class TwoSteps(TaskType):
         # Contestant's error: the marks won't be good
         elif not evaluation_success:
             outcome = 0.0
-            text = human_evaluation_message(stats)
+            text = human_evaluation_message(stats, job.feedback_details)
             if job.get_output:
                 job.user_output = None
 

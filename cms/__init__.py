@@ -40,6 +40,7 @@ __all__ = [
     "__version__",
     "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST", "TOKEN_MODE_DISABLED",
     "TOKEN_MODE_FINITE", "TOKEN_MODE_INFINITE", "TOKEN_MODE_MIXED",
+    "FEEDBACK_DETAILS_FULL", "FEEDBACK_DETAILS_SAFE",
     # log
     # Nothing intended for external use, no need to advertise anything.
     # conf
@@ -73,6 +74,15 @@ TOKEN_MODE_INFINITE = "infinite"
 # Only used when aggregating modes (e.g., for all tasks of a contest).
 # Acts as a "none of the above".
 TOKEN_MODE_MIXED = "mixed"
+
+# Feedback details.
+
+# Full information (killing signals, time and memory, success for all
+# testcases).
+FEEDBACK_DETAILS_FULL = "full"
+# Safe set of information (no killing signal, time or memory, testcases can be
+# omitted when not relevant to the score).
+FEEDBACK_DETAILS_SAFE = "safe"
 
 
 from .conf import Address, ServiceCoord, ConfigError, async_config, config

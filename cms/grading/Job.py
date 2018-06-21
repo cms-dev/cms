@@ -44,6 +44,7 @@ from six import itervalues, iteritems
 
 import logging
 
+from cms import FEEDBACK_DETAILS_SAFE
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
@@ -76,6 +77,7 @@ class Job(object):
 
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
+                 feedback_details=FEEDBACK_DETAILS_SAFE,
                  language=None, multithreaded_sandbox=False,
                  shard=None, sandboxes=None, info=None,
                  success=None, text=None,
@@ -87,6 +89,7 @@ class Job(object):
         task_type (string|None): the name of the task type.
         task_type_parameters (object|None): the parameters for the
             creation of the correct task type.
+        feedback_details (str): the level of details to show to users.
         language (string|None): the language of the submission / user
             test.
         multithreaded_sandbox (boolean): whether the sandbox should
@@ -125,6 +128,7 @@ class Job(object):
         self.operation = operation
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
+        self.feedback_details = feedback_details
         self.language = language
         self.multithreaded_sandbox = multithreaded_sandbox
         self.shard = shard
@@ -144,6 +148,7 @@ class Job(object):
             'operation': self.operation,
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
+            'feedback_details': self.feedback_details,
             'language': self.language,
             'multithreaded_sandbox': self.multithreaded_sandbox,
             'shard': self.shard,
@@ -242,6 +247,7 @@ class CompilationJob(Job):
 
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
+                 feedback_details=FEEDBACK_DETAILS_SAFE,
                  shard=None, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None,
@@ -258,7 +264,7 @@ class CompilationJob(Job):
         """
 
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     language, multithreaded_sandbox,
+                     feedback_details, language, multithreaded_sandbox,
                      shard, sandboxes, info, success, text,
                      files, managers, executables)
         self.compilation_success = compilation_success
@@ -309,6 +315,7 @@ class CompilationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
+            feedback_details=dataset.task.feedback_details,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
             files=dict(submission.files),
@@ -388,6 +395,7 @@ class CompilationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
+            feedback_details=dataset.task.feedback_details,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
             files=dict(user_test.files),
@@ -437,7 +445,8 @@ class EvaluationJob(Job):
 
     """
     def __init__(self, operation=None, task_type=None,
-                 task_type_parameters=None, shard=None,
+                 task_type_parameters=None,
+                 feedback_details=FEEDBACK_DETAILS_SAFE, shard=None,
                  sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
@@ -469,7 +478,7 @@ class EvaluationJob(Job):
 
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     language, multithreaded_sandbox,
+                     feedback_details, language, multithreaded_sandbox,
                      shard, sandboxes, info, success, text,
                      files, managers, executables)
         self.input = input
@@ -543,6 +552,7 @@ class EvaluationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
+            feedback_details=dataset.task.feedback_details,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
             files=dict(submission.files),
@@ -624,6 +634,7 @@ class EvaluationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
+            feedback_details=dataset.task.feedback_details,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
             files=dict(user_test.files),

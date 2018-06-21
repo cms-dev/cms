@@ -189,7 +189,7 @@ class Communication(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands)
+            compilation_step(sandbox, commands, job.feedback_details)
 
         # Retrieve the compiled executables.
         job.success = box_success
@@ -345,7 +345,7 @@ class Communication(TaskType):
         # the outcome is 0.0 and the text describes that problem.
         elif not evaluation_success_user:
             outcome = 0.0
-            text = human_evaluation_message(stats_user)
+            text = human_evaluation_message(stats_user, job.feedback_details)
 
         # Otherwise, we use the manager to obtain the outcome.
         else:
