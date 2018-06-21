@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -60,12 +60,14 @@ class Sum(ScoreTypeAlone):
             <th class="details">
                 {% trans %}Details{% endtrans %}
             </th>
+    {% if feedback_level == FEEDBACK_LEVEL_FULL %}
             <th class="execution-time">
                 {% trans %}Execution time{% endtrans %}
             </th>
             <th class="memory-used">
                 {% trans %}Memory used{% endtrans %}
             </th>
+    {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -81,20 +83,22 @@ class Sum(ScoreTypeAlone):
             <td class="idx">{{ loop.index }}</td>
             <td class="outcome">{{ _(tc["outcome"]) }}</td>
             <td class="details">{{ tc["text"]|format_status_text }}</td>
+            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
             <td class="execution-time">
-            {% if tc["time"] is not none %}
+                {% if tc["time"] is not none %}
                 {{ tc["time"]|format_duration }}
-            {% else %}
+                {% else %}
                 {% trans %}N/A{% endtrans %}
-            {% endif %}
+                {% endif %}
             </td>
             <td class="memory-used">
-            {% if tc["memory"] is not none %}
+                {% if tc["memory"] is not none %}
                 {{ tc["memory"]|format_size }}
-            {% else %}
+                {% else %}
                 {% trans %}N/A{% endtrans %}
-            {% endif %}
+                {% endif %}
             </td>
+            {% endif %}
         {% else %}
         <tr class="undefined">
             <td colspan="5">

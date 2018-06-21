@@ -311,7 +311,7 @@ class TwoSteps(TaskType):
         # Contestant's error: the marks won't be good
         elif not evaluation_success:
             outcome = 0.0
-            text = human_evaluation_message(stats)
+            text = human_evaluation_message(stats, job.feedback_level)
             if job.get_output:
                 job.user_output = None
 

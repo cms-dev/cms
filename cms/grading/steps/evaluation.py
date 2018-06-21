@@ -38,7 +38,7 @@ import logging
 from .messages import HumanMessage, MessageCollection
 from .stats import execution_stats
 
-from cms import config
+from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, config
 from cms.grading.Sandbox import Sandbox
 
 
@@ -81,6 +81,15 @@ EVALUATION_MESSAGES = MessageCollection([
                  N_("Your submission was killed with the specified signal. "
                     "Among other things, this might be caused by exceeding "
                     "the memory limit. Note that if this is the reason, "
+                    "the memory usage visible in the submission details is "
+                    "the usage before the allocation that caused the "
+                    "signal.")),
+    HumanMessage("signal_restricted",
+                 N_("Execution killed (could be triggered by violating memory "
+                    "limits)"),
+                 N_("The evaluation was killed by a signal."
+                    "Among other things, this might be caused by exceeding "
+                    "the memory limit Note that if this is the reason, "
                     "the memory usage visible in the submission details is "
                     "the usage before the allocation that caused the "
                     "signal.")),
@@ -251,7 +260,8 @@ def evaluation_step_after_run(sandbox):
         return False, None, None
 
 
-def human_evaluation_message(stats):
+def human_evaluation_message(
+        stats, feedback_level=FEEDBACK_LEVEL_RESTRICTED):
     """Return a human-readable message from the given execution stats.
 
     Return a message for errors in the command ran in the evaluation, that can
@@ -260,6 +270,7 @@ def human_evaluation_message(stats):
     submission will still be "evaluating..." for contestants).
 
     stats (dict): execution statistics for an evaluation step.
+    feedback_level (str): the level of details to show to users.
 
     return ([str]): a list of strings composing the message (where
         strings from the second to the last are formatting arguments for the
@@ -273,8 +284,14 @@ def human_evaluation_message(stats):
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [EVALUATION_MESSAGES.get("signal").message,
-                str(stats['signal'])]
+        if feedback_level == FEEDBACK_LEVEL_RESTRICTED:
+            return [EVALUATION_MESSAGES.get("signal_restricted").message]
+        elif feedback_level == FEEDBACK_LEVEL_FULL:
+            return [EVALUATION_MESSAGES.get("signal").message,
+                    str(stats['signal'])]
+        else:
+            raise ValueError("Unexpected value '%s' for feedback level."
+                             % feedback_level)
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         # Contestants won't see this, the submission will still be evaluating.
         return []

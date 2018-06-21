@@ -45,7 +45,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
-    TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
+    TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
 
 from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
 
@@ -195,6 +196,15 @@ class Task(Base):
         Interval,
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
+
+    # What information users can see about the evaluations of their
+    # submissions. Offering full information might help some users to
+    # reverse engineer task data.
+    feedback_level = Column(
+        Enum(FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED,
+             name="feedback_level"),
+        nullable=False,
+        default=FEEDBACK_LEVEL_RESTRICTED)
 
     # The scores for this task will be rounded to this number of
     # decimal places.

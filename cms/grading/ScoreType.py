@@ -43,6 +43,7 @@ import logging
 import re
 from abc import ABCMeta, abstractmethod
 
+from cms import FEEDBACK_LEVEL_RESTRICTED
 from cms.locale import DEFAULT_TRANSLATION
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
@@ -112,12 +113,15 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             translation.format_decimal(round(score, score_precision)),
             translation.format_decimal(round(max_score, score_precision)))
 
-    def get_html_details(self, score_details, translation=DEFAULT_TRANSLATION):
+    def get_html_details(self, score_details,
+                         feedback_level=FEEDBACK_LEVEL_RESTRICTED,
+                         translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (object): the data saved by the score type
             itself in the database; can be public or private.
+        feedback_level (str): the level of details to show to users.
         translation (Translation): the translation to use.
 
         return (string): an HTML string representing score_details.
@@ -134,6 +138,7 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             # of a typical CWS context as it's entitled to expect them.
             try:
                 return self.template.render(details=score_details,
+                                            feedback_level=feedback_level,
                                             translation=translation,
                                             gettext=_, ngettext=n_)
             except Exception:
@@ -249,17 +254,21 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <th class="details">
                         {% trans %}Details{% endtrans %}
                     </th>
+    {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <th class="execution-time">
                         {% trans %}Execution time{% endtrans %}
                     </th>
                     <th class="memory-used">
                         {% trans %}Memory used{% endtrans %}
                     </th>
+    {% endif %}
                 </tr>
             </thead>
             <tbody>
     {% for tc in st["testcases"] %}
-        {% if "outcome" in tc and "text" in tc %}
+        {% if "outcome" in tc
+               and (feedback_level == FEEDBACK_LEVEL_FULL
+                    or tc["show_in_restricted_feedback"]) %}
             {% if tc["outcome"] == "Correct" %}
                 <tr class="correct">
             {% elif tc["outcome"] == "Not correct" %}
@@ -272,24 +281,31 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="details">
                       {{ tc["text"]|format_status_text }}
                     </td>
+            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <td class="execution-time">
-            {% if "time" in tc and tc["time"] is not none %}
+                {% if "time" in tc and tc["time"] is not none %}
                         {{ tc["time"]|format_duration }}
-            {% else %}
+                {% else %}
                         {% trans %}N/A{% endtrans %}
-            {% endif %}
+                {% endif %}
                     </td>
                     <td class="memory-used">
-            {% if "memory" in tc and tc["memory"] is not none %}
+                {% if "memory" in tc and tc["memory"] is not none %}
                         {{ tc["memory"]|format_size }}
-            {% else %}
+                {% else %}
                         {% trans %}N/A{% endtrans %}
-            {% endif %}
+                {% endif %}
                     </td>
+            {% endif %}
                 </tr>
         {% else %}
                 <tr class="undefined">
-                    <td colspan="5">
+                    <td class="idx">{{ loop.index }}</td>
+            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
+                    <td colspan="4">
+            {% else %}
+                    <td colspan="2">
+            {% endif %}
                         {% trans %}N/A{% endtrans %}
                     </td>
                 </tr>
@@ -385,6 +401,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             testcases = []
             public_testcases = []
+            previous_tc_all_correct = True
             for tc_idx in target:
                 tc_outcome = self.get_public_outcome(
                     float(evaluations[tc_idx].outcome), parameter)
@@ -394,9 +411,15 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "outcome": tc_outcome,
                     "text": evaluations[tc_idx].text,
                     "time": evaluations[tc_idx].execution_time,
-                    "memory": evaluations[tc_idx].execution_memory})
+                    "memory": evaluations[tc_idx].execution_memory,
+                    "show_in_restricted_feedback": previous_tc_all_correct})
                 if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
+                    # Only block restricted feedback if this is the first
+                    # *public* non-correct testcase, otherwise we might be
+                    # leaking info on private testcases.
+                    if tc_outcome != "Correct":
+                        previous_tc_all_correct = False
                 else:
                     public_testcases.append({"idx": tc_idx})
 
