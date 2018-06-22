@@ -31,7 +31,10 @@ from future.builtins import *  # noqa
 
 import psycopg2.extras
 import sqlalchemy
+from sqlalchemy import DDL, event, TypeDecorator, Unicode
 from sqlalchemy.dialects.postgresql import ARRAY
+
+from . import metadata
 
 
 # Have psycopg2 use the Python types in ipaddress to represent the INET
@@ -50,3 +53,34 @@ psycopg2.extras.register_ipaddress()
 class CastingArray(ARRAY):
     def bind_expression(self, bindvalue):
         return sqlalchemy.cast(bindvalue, self)
+
+
+class Codename(TypeDecorator):
+    """Check that the column uses a limited alphabet.
+
+    Namely: latin letters (upper and lowercase), arabic digits, the
+    underscore and the dash. It must also be non-empty.
+
+    """
+
+    domain_name = "CODENAME"
+    impl = Unicode
+
+    @classmethod
+    def compile(cls, dialect=None):
+        return cls.domain_name
+
+    @classmethod
+    def get_create_command(cls):
+        return DDL("CREATE DOMAIN %(domain)s VARCHAR "
+                   "CHECK (VALUE ~ '^[A-Za-z0-9_-]+$')",
+                   context={"domain": cls.domain_name})
+
+    @classmethod
+    def get_drop_command(cls):
+        return DDL("DROP DOMAIN %(domain)s",
+                   context={"domain": cls.domain_name})
+
+
+event.listen(metadata, "before_create", Codename.get_create_command())
+event.listen(metadata, "after_drop", Codename.get_drop_command())

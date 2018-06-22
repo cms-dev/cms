@@ -46,7 +46,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import Base, CodenameConstraint
+from . import Codename, Base
 
 
 class Contest(Base):
@@ -69,8 +69,7 @@ class Contest(Base):
 
     # Short name of the contest.
     name = Column(
-        Unicode,
-        CodenameConstraint("name"),
+        Codename,
         nullable=False,
         unique=True)
     # Description of the contest (human readable).

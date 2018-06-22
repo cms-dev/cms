@@ -51,7 +51,7 @@ else:
     import __builtin__
     raw_object = __builtin__.object
 
-from . import engine, metadata, CastingArray
+from . import engine, metadata, CastingArray, Codename
 
 
 _TYPE_MAP = {
@@ -63,6 +63,7 @@ _TYPE_MAP = {
     Enum: six.text_type,
     Unicode: six.text_type,
     String: six.string_types,  # TODO Use six.binary_type.
+    Codename: six.text_type,
     DateTime: datetime,
     Interval: timedelta,
     ARRAY: list,
