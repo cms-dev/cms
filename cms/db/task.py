@@ -48,8 +48,7 @@ from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.db.validation import FilenameListConstraint
 
-from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
-    DigestConstraint
+from . import Codename, Base, Contest, FilenameConstraint, DigestConstraint
 
 
 class Task(Base):
@@ -99,8 +98,7 @@ class Task(Base):
 
     # Short name and long human readable title of the task.
     name = Column(
-        Unicode,
-        CodenameConstraint("name"),
+        Codename,
         nullable=False,
         unique=True)
     title = Column(
@@ -596,8 +594,7 @@ class Testcase(Base):
 
     # Codename identifying the testcase.
     codename = Column(
-        Unicode,
-        CodenameConstraint("codename"),
+        Codename,
         nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even

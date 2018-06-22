@@ -46,15 +46,6 @@ from cms.db.filecacher import FileCacher
 # https://bitbucket.org/zzzeek/sqlalchemy/issues/3957/incorrect-rendering-of-sqltext-for-column
 # https://groups.google.com/d/topic/sqlalchemy/J6VPG_1Fj2U/discussion
 
-class CodenameConstraint(CheckConstraint):
-    """Check that the column uses a limited alphabet."""
-
-    def __init__(self, column_name):
-        column = ColumnClause(column_name)
-        super(CodenameConstraint, self).__init__(
-            column.op("~")(literal_column("'^[A-Za-z0-9_-]+$'")))
-
-
 class FilenameConstraint(CheckConstraint):
     """Check that the column is a filename using a simple alphabet."""
 

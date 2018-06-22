@@ -53,13 +53,13 @@ __all__ = [
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # types
-    "CastingArray",
+    "CastingArray", "Codename",
     # base
     "metadata", "Base",
     # fsobject
     "FSObject", "LargeObject",
     # validation
-    "CodenameConstraint", "FilenameConstraint", "DigestConstraint",
+    "FilenameConstraint", "DigestConstraint",
     # contest
     "Contest", "Announcement",
     # user
@@ -99,11 +99,10 @@ metadata = MetaData(engine)
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
-from .types import CastingArray
+from .types import CastingArray, Codename
 from .base import Base
 from .fsobject import FSObject, LargeObject
-from .validation import CodenameConstraint, FilenameConstraint, \
-    DigestConstraint
+from .validation import FilenameConstraint, DigestConstraint
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .admin import Admin
