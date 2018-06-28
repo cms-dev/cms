@@ -127,7 +127,7 @@ class TestCompilationStep(unittest.TestCase):
         self.assertEqual(text, [COMPILATION_MESSAGES.get("timeout").message])
         self.assertEqual(stats, expected_stats)
 
-    def test_single_command_compilation_failed_signal_full_feedback(self):
+    def test_single_command_compilation_failed_signal(self):
         # This case is a "success" for the sandbox (it's the user's fault),
         # but compilation is unsuccessful (no executable).
         expected_stats = get_stats(
@@ -136,7 +136,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats):
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND, "full")
+                self.sandbox, ONE_COMMAND)
 
         # User's fault, no error needs to be logged.
         self.assertLoggedError(False)
@@ -144,25 +144,6 @@ class TestCompilationStep(unittest.TestCase):
         self.assertFalse(compilation_success)
         self.assertEqual(text,
                          [COMPILATION_MESSAGES.get("signal").message, "11"])
-        self.assertEqual(stats, expected_stats)
-
-    def test_single_command_compilation_failed_signal_safe_feedback(self):
-        # This case is a "success" for the sandbox (it's the user's fault),
-        # but compilation is unsuccessful (no executable).
-        expected_stats = get_stats(
-            0.1, 0.5, 1000 * 1024, Sandbox.EXIT_SIGNAL, signal=11,
-            stdout="o", stderr="e")
-        with patch("cms.grading.steps.compilation.generic_step",
-                   return_value=expected_stats):
-            success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND, "safe")
-
-        # User's fault, no error needs to be logged.
-        self.assertLoggedError(False)
-        self.assertTrue(success)
-        self.assertFalse(compilation_success)
-        self.assertEqual(text,
-                         [COMPILATION_MESSAGES.get("signal_safe").message])
         self.assertEqual(stats, expected_stats)
 
     def test_single_command_sandbox_failed(self):

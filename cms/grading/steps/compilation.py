@@ -39,7 +39,7 @@ import os
 from .messages import HumanMessage, MessageCollection
 from .utils import generic_step
 
-from cms import FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_SAFE, config
+from cms import config
 from cms.grading.Sandbox import Sandbox
 
 
@@ -71,18 +71,10 @@ COMPILATION_MESSAGES = MessageCollection([
                     "Among other things, this might be caused by exceeding "
                     "the memory limit for the compilation, and in turn by an "
                     "excessive use of C++ templates, for example.")),
-    HumanMessage("signal_safe",
-                 N_("Compilation killed (could be triggered by violating "
-                    "memory limits)"),
-                 N_("The compilation was killed by a signal."
-                    "Among other things, this might be caused by exceeding "
-                    "the memory limit for the compilation, and in turn by an "
-                    "excessive use of C++ templates, for example.")),
 ])
 
 
-def compilation_step(
-        sandbox, commands, feedback_details=FEEDBACK_DETAILS_SAFE):
+def compilation_step(sandbox, commands):
     """Execute some compilation commands in the sandbox.
 
     Execute the commands sequentially in the (already created) sandbox, after
@@ -94,7 +86,6 @@ def compilation_step(
 
     sandbox (Sandbox): the sandbox we consider, already created.
     commands ([[str]]): compilation commands to execute.
-    feedback_details (str): the level of details to show to users.
 
     return ((bool, bool|None, [str]|None, dict|None)): a tuple with four items:
         * success: True if the sandbox did not fail, in any command;
@@ -159,10 +150,7 @@ def compilation_step(
         # we return the error to them.
         signal = stats["signal"]
         logger.debug("Compilation killed with signal %s.", signal)
-        if feedback_details == FEEDBACK_DETAILS_SAFE:
-            text = [COMPILATION_MESSAGES.get("signal_safe").message]
-        elif feedback_details == FEEDBACK_DETAILS_FULL:
-            text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
+        text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
         return True, False, text, stats
 
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:

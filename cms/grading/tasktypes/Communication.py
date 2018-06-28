@@ -189,7 +189,7 @@ class Communication(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands, job.feedback_details)
+            compilation_step(sandbox, commands)
 
         # Retrieve the compiled executables.
         job.success = box_success

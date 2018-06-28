@@ -151,7 +151,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         # Compilation step called correctly.
         self.compilation_step.assert_called_once_with(
             sandbox, fake_compilation_commands(
-                COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"), "safe")
+                COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
         sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
@@ -208,7 +208,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.compilation_step.assert_called_once_with(
             sandbox, fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1", "bar.l1"],
-                "bar_foo"), "safe")
+                "bar_foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
         sandbox.get_file_to_storage.assert_called_once_with("bar_foo", ANY)
