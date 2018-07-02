@@ -37,7 +37,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import SCORE_MODE_MAX
+from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cms.db import Submission
 from cms.locale import DEFAULT_TRANSLATION
 
@@ -191,13 +191,11 @@ def task_score(participation, task):
                    if s.task is task and s.official]
     submissions.sort(key=lambda s: s.timestamp)
 
-    if submissions == []:
+    if len(submissions) == 0:
         return 0.0, False
 
-    score = 0.0
-
     if task.score_mode == SCORE_MODE_MAX:
-        # Like in IOI 2013-: maximum score amongst all submissions.
+        # Like in IOI 2013-2016: maximum score amongst all submissions.
 
         # The maximum score amongst all submissions (not yet computed
         # scores count as 0.0).
@@ -211,7 +209,8 @@ def task_score(participation, task):
                 partial = True
 
         score = max_score
-    else:
+
+    elif task.score_mode == SCORE_MODE_MAX_TOKENED_LAST:
         # Like in IOI 2010-2012: maximum score among all tokened
         # submissions and the last submission.
 
@@ -233,13 +232,16 @@ def task_score(participation, task):
             partial = True
 
         for s in submissions:
-            sr = s.get_result(task.active_dataset)
             if s.tokened():
+                sr = s.get_result(task.active_dataset)
                 if sr is not None and sr.scored():
                     max_tokened_score = max(max_tokened_score, sr.score)
                 else:
                     partial = True
 
         score = max(last_score, max_tokened_score)
+
+    else:
+        raise ValueError("Unknown score mode '%s'" % task.score_mode)
 
     return score, partial
