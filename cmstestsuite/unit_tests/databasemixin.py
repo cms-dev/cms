@@ -423,6 +423,7 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
         """Add a submission result."""
         submission_result = self.get_submission_result(
             submission, dataset, **kwargs)
+        self.session.add(submission_result)
         return submission_result
 
     def add_executable(self, submission_result=None, **kwargs):
