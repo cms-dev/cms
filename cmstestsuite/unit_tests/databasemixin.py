@@ -71,13 +71,14 @@ class DatabaseObjectGeneratorMixin(object):
     This is to be preferred to DatabaseMixin when a session is not required, in
     order to save some initialization and cleanup time.
 
-    The methods in this mixin are (mostly) static; we use a mixin to keep them
-    together and avoid the need to import a lot of names.
+    The methods in this mixin are static (actually, class methods to allow
+    overriding); we use a mixin to keep them together and avoid the need to
+    import a lot of names.
 
     """
 
-    @staticmethod
-    def get_contest(**kwargs):
+    @classmethod
+    def get_contest(cls, **kwargs):
         """Create a contest"""
         args = {
             "name": unique_unicode_id(),
@@ -87,11 +88,10 @@ class DatabaseObjectGeneratorMixin(object):
         contest = Contest(**args)
         return contest
 
-    @staticmethod
-    def get_announcement(contest=None, **kwargs):
+    @classmethod
+    def get_announcement(cls, contest=None, **kwargs):
         """Create an announcement"""
-        contest = contest if contest is not None \
-            else DatabaseObjectGeneratorMixin.get_contest()
+        contest = contest if contest is not None else cls.get_contest()
         args = {
             "contest": contest,
             "subject": unique_unicode_id(),
@@ -102,8 +102,8 @@ class DatabaseObjectGeneratorMixin(object):
         announcement = Announcement(**args)
         return announcement
 
-    @staticmethod
-    def get_user(**kwargs):
+    @classmethod
+    def get_user(cls, **kwargs):
         """Create a user"""
         args = {
             "username": unique_unicode_id(),
@@ -115,13 +115,11 @@ class DatabaseObjectGeneratorMixin(object):
         user = User(**args)
         return user
 
-    @staticmethod
-    def get_participation(user=None, contest=None, **kwargs):
+    @classmethod
+    def get_participation(cls, user=None, contest=None, **kwargs):
         """Create a participation"""
-        user = user if user is not None \
-            else DatabaseObjectGeneratorMixin.get_user()
-        contest = contest if contest is not None \
-            else DatabaseObjectGeneratorMixin.get_contest()
+        user = user if user is not None else cls.get_user()
+        contest = contest if contest is not None else cls.get_contest()
         args = {
             "user": user,
             "contest": contest,
@@ -130,11 +128,11 @@ class DatabaseObjectGeneratorMixin(object):
         participation = Participation(**args)
         return participation
 
-    @staticmethod
-    def get_message(participation=None, **kwargs):
+    @classmethod
+    def get_message(cls, participation=None, **kwargs):
         """Create a message."""
         participation = participation if participation is not None \
-            else DatabaseObjectGeneratorMixin.get_participation()
+            else cls.get_participation()
         args = {
             "participation": participation,
             "subject": unique_unicode_id(),
@@ -146,11 +144,11 @@ class DatabaseObjectGeneratorMixin(object):
         message = Message(**args)
         return message
 
-    @staticmethod
-    def get_question(participation=None, **kwargs):
+    @classmethod
+    def get_question(cls, participation=None, **kwargs):
         """Create a question."""
         participation = participation if participation is not None \
-            else DatabaseObjectGeneratorMixin.get_participation()
+            else cls.get_participation()
         args = {
             "participation": participation,
             "subject": unique_unicode_id(),
@@ -162,8 +160,8 @@ class DatabaseObjectGeneratorMixin(object):
         question = Question(**args)
         return question
 
-    @staticmethod
-    def get_task(**kwargs):
+    @classmethod
+    def get_task(cls, **kwargs):
         """Create a task"""
         args = {
             "name": unique_unicode_id(),
@@ -173,11 +171,10 @@ class DatabaseObjectGeneratorMixin(object):
         task = Task(**args)
         return task
 
-    @staticmethod
-    def get_dataset(task=None, **kwargs):
+    @classmethod
+    def get_dataset(cls, task=None, **kwargs):
         """Create a dataset"""
-        task = task if task is not None \
-            else DatabaseObjectGeneratorMixin.get_task()
+        task = task if task is not None else cls.get_task()
         args = {
             "task": task,
             "description": unique_unicode_id(),
@@ -194,11 +191,10 @@ class DatabaseObjectGeneratorMixin(object):
         dataset = Dataset(**args)
         return dataset
 
-    @staticmethod
-    def get_manager(dataset=None, **kwargs):
+    @classmethod
+    def get_manager(cls, dataset=None, **kwargs):
         """Create a manager."""
-        if dataset is None:
-            dataset = DatabaseObjectGeneratorMixin.get_dataset()
+        dataset = dataset if dataset is not None else cls.get_dataset()
         args = {
             "dataset": dataset,
             "filename": unique_unicode_id(),
@@ -208,15 +204,13 @@ class DatabaseObjectGeneratorMixin(object):
         manager = Manager(**args)
         return manager
 
-    @staticmethod
-    def get_submission(task=None, participation=None, **kwargs):
+    @classmethod
+    def get_submission(cls, task=None, participation=None, **kwargs):
         """Create a submission."""
-        if task is None:
-            task = DatabaseObjectGeneratorMixin.get_task(
-                contest=DatabaseObjectGeneratorMixin.get_contest())
+        task = task if task is not None \
+            else cls.get_task(contest=cls.get_contest())
         participation = participation if participation is not None \
-            else DatabaseObjectGeneratorMixin.get_participation(
-                contest=task.contest)
+            else cls.get_participation(contest=task.contest)
         assert task.contest == participation.contest
         args = {
             "task": task,
@@ -227,11 +221,11 @@ class DatabaseObjectGeneratorMixin(object):
         submission = Submission(**args)
         return submission
 
-    @staticmethod
-    def get_token(submission=None, **kwargs):
+    @classmethod
+    def get_token(cls, submission=None, **kwargs):
         """Create a token."""
-        if submission is None:
-            submission = DatabaseObjectGeneratorMixin.get_submission()
+        submission = submission if submission is not None \
+            else cls.get_submission()
         args = {
             "submission": submission,
             "timestamp": (submission.task.contest.start
@@ -241,16 +235,16 @@ class DatabaseObjectGeneratorMixin(object):
         token = Token(**args)
         return token
 
-    @staticmethod
-    def get_submission_result(submission=None, dataset=None, **kwargs):
+    @classmethod
+    def get_submission_result(cls, submission=None, dataset=None, **kwargs):
         """Create a submission result."""
         task = None
         task = submission.task if submission is not None else task
         task = dataset.task if dataset is not None else task
         submission = submission if submission is not None \
-            else DatabaseObjectGeneratorMixin.get_submission(task=task)
+            else cls.get_submission(task=task)
         dataset = dataset if dataset is not None \
-            else DatabaseObjectGeneratorMixin.get_dataset(task=task)
+            else cls.get_dataset(task=task)
         assert submission.task == dataset.task
         args = {
             "submission": submission,
@@ -260,8 +254,8 @@ class DatabaseObjectGeneratorMixin(object):
         submission_result = SubmissionResult(**args)
         return submission_result
 
-    @staticmethod
-    def get_team(**kwargs):
+    @classmethod
+    def get_team(cls, **kwargs):
         """Create a team"""
         args = {
             "code": unique_unicode_id(),
