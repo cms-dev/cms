@@ -65,7 +65,214 @@ from cms.db import Announcement, Base, Contest, Dataset, Evaluation, \
 from cms.db.filecacher import DBBackend
 
 
-class DatabaseMixin(object):
+class DatabaseObjectGeneratorMixin(object):
+    """Mixin to create database objects without a session.
+
+    This is to be preferred to DatabaseMixin when a session is not required, in
+    order to save some initialization and cleanup time.
+
+    The methods in this mixin are (mostly) static; we use a mixin to keep them
+    together and avoid the need to import a lot of names.
+
+    """
+
+    @staticmethod
+    def get_contest(**kwargs):
+        """Create a contest"""
+        args = {
+            "name": unique_unicode_id(),
+            "description": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        contest = Contest(**args)
+        return contest
+
+    @staticmethod
+    def get_announcement(contest=None, **kwargs):
+        """Create an announcement"""
+        contest = contest if contest is not None \
+            else DatabaseObjectGeneratorMixin.get_contest()
+        args = {
+            "contest": contest,
+            "subject": unique_unicode_id(),
+            "text": unique_unicode_id(),
+            "timestamp": (contest.start + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        announcement = Announcement(**args)
+        return announcement
+
+    @staticmethod
+    def get_user(**kwargs):
+        """Create a user"""
+        args = {
+            "username": unique_unicode_id(),
+            "password": "",
+            "first_name": unique_unicode_id(),
+            "last_name": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        user = User(**args)
+        return user
+
+    @staticmethod
+    def get_participation(user=None, contest=None, **kwargs):
+        """Create a participation"""
+        user = user if user is not None \
+            else DatabaseObjectGeneratorMixin.get_user()
+        contest = contest if contest is not None \
+            else DatabaseObjectGeneratorMixin.get_contest()
+        args = {
+            "user": user,
+            "contest": contest,
+        }
+        args.update(kwargs)
+        participation = Participation(**args)
+        return participation
+
+    @staticmethod
+    def get_message(participation=None, **kwargs):
+        """Create a message."""
+        participation = participation if participation is not None \
+            else DatabaseObjectGeneratorMixin.get_participation()
+        args = {
+            "participation": participation,
+            "subject": unique_unicode_id(),
+            "text": unique_unicode_id(),
+            "timestamp": (participation.contest.start
+                          + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        message = Message(**args)
+        return message
+
+    @staticmethod
+    def get_question(participation=None, **kwargs):
+        """Create a question."""
+        participation = participation if participation is not None \
+            else DatabaseObjectGeneratorMixin.get_participation()
+        args = {
+            "participation": participation,
+            "subject": unique_unicode_id(),
+            "text": unique_unicode_id(),
+            "question_timestamp": (participation.contest.start
+                                   + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        question = Question(**args)
+        return question
+
+    @staticmethod
+    def get_task(**kwargs):
+        """Create a task"""
+        args = {
+            "name": unique_unicode_id(),
+            "title": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        task = Task(**args)
+        return task
+
+    @staticmethod
+    def get_dataset(task=None, **kwargs):
+        """Create a dataset"""
+        task = task if task is not None \
+            else DatabaseObjectGeneratorMixin.get_task()
+        args = {
+            "task": task,
+            "description": unique_unicode_id(),
+            "task_type": "",
+            # "None" won't work here as the column is defined as non
+            # nullable. As soon as we'll depend on SQLAlchemy 1.1 we
+            # will be able to put JSON.NULL here instead.
+            "task_type_parameters": {},
+            "score_type": "",
+            # Same here.
+            "score_type_parameters": {},
+        }
+        args.update(kwargs)
+        dataset = Dataset(**args)
+        return dataset
+
+    @staticmethod
+    def get_manager(dataset=None, **kwargs):
+        """Create a manager."""
+        if dataset is None:
+            dataset = DatabaseObjectGeneratorMixin.get_dataset()
+        args = {
+            "dataset": dataset,
+            "filename": unique_unicode_id(),
+            "digest": unique_digest(),
+        }
+        args.update(kwargs)
+        manager = Manager(**args)
+        return manager
+
+    @staticmethod
+    def get_submission(task=None, participation=None, **kwargs):
+        """Create a submission."""
+        if task is None:
+            task = DatabaseObjectGeneratorMixin.get_task(
+                contest=DatabaseObjectGeneratorMixin.get_contest())
+        participation = participation if participation is not None \
+            else DatabaseObjectGeneratorMixin.get_participation(
+                contest=task.contest)
+        assert task.contest == participation.contest
+        args = {
+            "task": task,
+            "participation": participation,
+            "timestamp": (task.contest.start + timedelta(0, unique_long_id())),
+        }
+        args.update(kwargs)
+        submission = Submission(**args)
+        return submission
+
+    @staticmethod
+    def get_token(submission=None, **kwargs):
+        """Create a token."""
+        if submission is None:
+            submission = DatabaseObjectGeneratorMixin.get_submission()
+        args = {
+            "submission": submission,
+            "timestamp": (submission.task.contest.start
+                          + timedelta(seconds=unique_long_id())),
+        }
+        args.update(kwargs)
+        token = Token(**args)
+        return token
+
+    @staticmethod
+    def get_submission_result(submission=None, dataset=None, **kwargs):
+        """Create a submission result."""
+        task = None
+        task = submission.task if submission is not None else task
+        task = dataset.task if dataset is not None else task
+        submission = submission if submission is not None \
+            else DatabaseObjectGeneratorMixin.get_submission(task=task)
+        dataset = dataset if dataset is not None \
+            else DatabaseObjectGeneratorMixin.get_dataset(task=task)
+        assert submission.task == dataset.task
+        args = {
+            "submission": submission,
+            "dataset": dataset,
+        }
+        args.update(kwargs)
+        submission_result = SubmissionResult(**args)
+        return submission_result
+
+    @staticmethod
+    def get_team(**kwargs):
+        """Create a team"""
+        args = {
+            "code": unique_unicode_id(),
+            "name": unique_unicode_id(),
+        }
+        args.update(kwargs)
+        team = Team(**args)
+        return team
+
+
+class DatabaseMixin(DatabaseObjectGeneratorMixin):
     """Mixin for tests with database access."""
 
     @classmethod
@@ -111,37 +318,11 @@ class DatabaseMixin(object):
         fobj.write(content)
         dbbackend.commit_file(fobj, digest)
 
-    @staticmethod
-    def get_contest(**kwargs):
-        """Create a contest"""
-        args = {
-            "name": unique_unicode_id(),
-            "description": unique_unicode_id(),
-        }
-        args.update(kwargs)
-        contest = Contest(**args)
-        return contest
-
     def add_contest(self, **kwargs):
         """Create a contest and add it to the session"""
         contest = self.get_contest(**kwargs)
         self.session.add(contest)
         return contest
-
-    @staticmethod
-    def get_announcement(contest=None, **kwargs):
-        """Create an announcement"""
-        contest = contest \
-            if contest is not None else DatabaseMixin.get_contest()
-        args = {
-            "contest": contest,
-            "subject": unique_unicode_id(),
-            "text": unique_unicode_id(),
-            "timestamp": (contest.start + timedelta(0, unique_long_id())),
-        }
-        args.update(kwargs)
-        announcement = Announcement(**args)
-        return announcement
 
     def add_announcement(self, **kwargs):
         """Create an announcement and add it to the session"""
@@ -149,38 +330,11 @@ class DatabaseMixin(object):
         self.session.add(announcement)
         return announcement
 
-    @staticmethod
-    def get_user(**kwargs):
-        """Create a user"""
-        args = {
-            "username": unique_unicode_id(),
-            "password": "",
-            "first_name": unique_unicode_id(),
-            "last_name": unique_unicode_id(),
-        }
-        args.update(kwargs)
-        user = User(**args)
-        return user
-
     def add_user(self, **kwargs):
         """Create a user and add it to the session"""
         user = self.get_user(**kwargs)
         self.session.add(user)
         return user
-
-    @staticmethod
-    def get_participation(user=None, contest=None, **kwargs):
-        """Create a participation"""
-        user = user if user is not None else DatabaseMixin.get_user()
-        contest = contest \
-            if contest is not None else DatabaseMixin.get_contest()
-        args = {
-            "user": user,
-            "contest": contest,
-        }
-        args.update(kwargs)
-        participation = Participation(**args)
-        return participation
 
     def add_participation(self, **kwargs):
         """Create a participation and add it to the session"""
@@ -188,60 +342,17 @@ class DatabaseMixin(object):
         self.session.add(participation)
         return participation
 
-    @staticmethod
-    def get_message(participation=None, **kwargs):
-        """Create a message."""
-        participation = participation \
-            if participation is not None else DatabaseMixin.get_participation()
-        args = {
-            "participation": participation,
-            "subject": unique_unicode_id(),
-            "text": unique_unicode_id(),
-            "timestamp": (participation.contest.start
-                          + timedelta(0, unique_long_id())),
-        }
-        args.update(kwargs)
-        message = Message(**args)
-        return message
-
     def add_message(self, **kwargs):
         """Create a message and add it to the session"""
         message = self.get_message(**kwargs)
         self.session.add(message)
         return message
 
-    @staticmethod
-    def get_question(participation=None, **kwargs):
-        """Create a question."""
-        participation = participation \
-            if participation is not None else DatabaseMixin.get_participation()
-        args = {
-            "participation": participation,
-            "subject": unique_unicode_id(),
-            "text": unique_unicode_id(),
-            "question_timestamp": (participation.contest.start
-                                   + timedelta(0, unique_long_id())),
-        }
-        args.update(kwargs)
-        question = Question(**args)
-        return question
-
     def add_question(self, **kwargs):
         """Create a question and add it to the session"""
         question = self.get_question(**kwargs)
         self.session.add(question)
         return question
-
-    @staticmethod
-    def get_task(**kwargs):
-        """Create a task"""
-        args = {
-            "name": unique_unicode_id(),
-            "title": unique_unicode_id(),
-        }
-        args.update(kwargs)
-        task = Task(**args)
-        return task
 
     def add_task(self, **kwargs):
         """Create a task and add it to the session"""
@@ -262,45 +373,11 @@ class DatabaseMixin(object):
         self.session.add(statement)
         return statement
 
-    @staticmethod
-    def get_dataset(task=None, **kwargs):
-        """Create a dataset"""
-        task = task if task is not None else DatabaseMixin.get_task()
-        args = {
-            "task": task,
-            "description": unique_unicode_id(),
-            "task_type": "",
-            # "None" won't work here as the column is defined as non
-            # nullable. As soon as we'll depend on SQLAlchemy 1.1 we
-            # will be able to put JSON.NULL here instead.
-            "task_type_parameters": {},
-            "score_type": "",
-            # Same here.
-            "score_type_parameters": {},
-        }
-        args.update(kwargs)
-        dataset = Dataset(**args)
-        return dataset
-
     def add_dataset(self, **kwargs):
         """Create a dataset and add it to the session"""
         dataset = self.get_dataset(**kwargs)
         self.session.add(dataset)
         return dataset
-
-    @staticmethod
-    def get_manager(dataset=None, **kwargs):
-        """Create a manager."""
-        if dataset is None:
-            dataset = DatabaseMixin.get_dataset()
-        args = {
-            "dataset": dataset,
-            "filename": unique_unicode_id(),
-            "digest": unique_digest(),
-        }
-        args.update(kwargs)
-        manager = Manager(**args)
-        return manager
 
     def add_manager(self, dataset=None, **kwargs):
         """Create a manager and add it to the session."""
@@ -324,19 +401,7 @@ class DatabaseMixin(object):
 
     def add_submission(self, task=None, participation=None, **kwargs):
         """Add a submission."""
-        if task is None:
-            task = self.add_task(contest=self.add_contest())
-        participation = participation \
-            if participation is not None \
-            else self.add_participation(contest=task.contest)
-        assert task.contest == participation.contest
-        args = {
-            "task": task,
-            "participation": participation,
-            "timestamp": (task.contest.start + timedelta(0, unique_long_id())),
-        }
-        args.update(kwargs)
-        submission = Submission(**args)
+        submission = self.get_submission(task, participation, **kwargs)
         self.session.add(submission)
         return submission
 
@@ -356,34 +421,14 @@ class DatabaseMixin(object):
 
     def add_token(self, submission=None, **kwargs):
         """Create a token and add it to the session"""
-        if submission is None:
-            submission = self.add_submission()
-        args = {
-            "submission": submission,
-            "timestamp": (submission.task.contest.start
-                          + timedelta(seconds=unique_long_id())),
-        }
-        args.update(kwargs)
-        token = Token(**args)
+        token = self.get_token(submission, **kwargs)
         self.session.add(token)
         return token
 
     def add_submission_result(self, submission=None, dataset=None, **kwargs):
         """Add a submission result."""
-        task = None
-        task = submission.task if submission is not None else task
-        task = dataset.task if dataset is not None else task
-        submission = submission \
-            if submission is not None else self.add_submission(task=task)
-        dataset = dataset \
-            if dataset is not None else self.add_dataset(task=task)
-        assert submission.task == dataset.task
-        args = {
-            "submission": submission,
-            "dataset": dataset,
-        }
-        args.update(kwargs)
-        submission_result = SubmissionResult(**args)
+        submission_result = self.get_submission_result(
+            submission, dataset, **kwargs)
         self.session.add(submission_result)
         return submission_result
 
@@ -516,17 +561,6 @@ class DatabaseMixin(object):
             for result in results:
                 result.set_compilation_outcome(compilation_outcome)
         return user_test, results
-
-    @staticmethod
-    def get_team(**kwargs):
-        """Create a team"""
-        args = {
-            "code": unique_unicode_id(),
-            "name": unique_unicode_id(),
-        }
-        args.update(kwargs)
-        team = Team(**args)
-        return team
 
     def add_team(self, **kwargs):
         """Create a team and add it to the session"""
