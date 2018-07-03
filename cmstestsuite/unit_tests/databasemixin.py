@@ -71,14 +71,14 @@ class DatabaseObjectGeneratorMixin(object):
     This is to be preferred to DatabaseMixin when a session is not required, in
     order to save some initialization and cleanup time.
 
-    The methods in this mixin are static (actually, class methods to allow
-    overriding); we use a mixin to keep them together and avoid the need to
-    import a lot of names.
+    The methods in this mixin are all static methods (or class methods, to
+    allow overriding correctly); we use a mixin to keep them together and
+    avoid the need to import a lot of names.
 
     """
 
-    @classmethod
-    def get_contest(cls, **kwargs):
+    @staticmethod
+    def get_contest(**kwargs):
         """Create a contest"""
         args = {
             "name": unique_unicode_id(),
@@ -102,8 +102,8 @@ class DatabaseObjectGeneratorMixin(object):
         announcement = Announcement(**args)
         return announcement
 
-    @classmethod
-    def get_user(cls, **kwargs):
+    @staticmethod
+    def get_user(**kwargs):
         """Create a user"""
         args = {
             "username": unique_unicode_id(),
@@ -160,8 +160,8 @@ class DatabaseObjectGeneratorMixin(object):
         question = Question(**args)
         return question
 
-    @classmethod
-    def get_task(cls, **kwargs):
+    @staticmethod
+    def get_task(**kwargs):
         """Create a task"""
         args = {
             "name": unique_unicode_id(),
@@ -254,8 +254,8 @@ class DatabaseObjectGeneratorMixin(object):
         submission_result = SubmissionResult(**args)
         return submission_result
 
-    @classmethod
-    def get_team(cls, **kwargs):
+    @staticmethod
+    def get_team(**kwargs):
         """Create a team"""
         args = {
             "code": unique_unicode_id(),
