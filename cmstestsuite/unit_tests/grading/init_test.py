@@ -92,10 +92,6 @@ class TaskScoreMixin(DatabaseMixin):
         self.task.active_dataset = dataset
         self.timestamp = make_datetime()
 
-    def tearDown(self):
-        self.delete_data()
-        super(TaskScoreMixin, self).tearDown()
-
     def at(self, timestamp):
         return self.timestamp + timedelta(seconds=timestamp)
 
@@ -132,52 +128,52 @@ class TestTaskScoreMaxTokenedLast(TaskScoreMixin, unittest.TestCase):
     def test_all_submissions_scored_tokened(self):
         self.add_result(self.at(1), 44.4, tokened=True)
         self.add_result(self.at(2), 66.6, tokened=True)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_all_submissions_scored_tokened_best_first(self):
         self.add_result(self.at(1), 66.6, tokened=True)
         self.add_result(self.at(2), 44.4, tokened=True)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_best_untokened_return_next_best(self):
         self.add_result(self.at(1), 44.4, tokened=True)
         self.add_result(self.at(2), 66.6, tokened=False)
         self.add_result(self.at(3), 11.1, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (44.4, False))
 
     def test_best_untokened_return_last(self):
         self.add_result(self.at(1), 44.4, tokened=True)
         self.add_result(self.at(2), 66.6, tokened=False)
         self.add_result(self.at(3), 55.5, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (55.5, False))
 
     def test_no_tokened(self):
         self.add_result(self.at(1), 66.6, tokened=False)
         self.add_result(self.at(2), 44.4, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (44.4, False))
 
     def test_best_last_unordered(self):
         self.add_result(self.at(2), 66.6, tokened=False)
         self.add_result(self.at(1), 44.4, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_partial(self):
         self.add_result(self.at(1), None, tokened=True)
         self.add_result(self.at(2), 66.6, tokened=False)
         self.add_result(self.at(3), 55.5, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (55.5, True))
 
     def test_partial_last_unscored(self):
         self.add_result(self.at(1), 66.6, tokened=True)
         self.add_result(self.at(2), None, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, True))
 
     def test_not_partial_when_irrelevant_is_unscored(self):
@@ -185,14 +181,14 @@ class TestTaskScoreMaxTokenedLast(TaskScoreMixin, unittest.TestCase):
         # task score, so partial is False.
         self.add_result(self.at(1), None, tokened=False)
         self.add_result(self.at(2), 66.6, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_all_unscored(self):
         self.add_result(self.at(1), None, tokened=True)
         self.add_result(self.at(2), None, tokened=False)
         self.add_result(self.at(3), None, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (0.0, True))
 
 
@@ -209,33 +205,33 @@ class TestTaskScoreMax(TaskScoreMixin, unittest.TestCase):
     def test_all_submissions_scored(self):
         self.add_result(self.at(1), 44.4, tokened=False)
         self.add_result(self.at(2), 66.6, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_all_submissions_scored_best_first(self):
         self.add_result(self.at(1), 66.6, tokened=False)
         self.add_result(self.at(2), 44.4, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_best_untokened(self):
         self.add_result(self.at(1), 44.4, tokened=True)
         self.add_result(self.at(2), 66.6, tokened=False)
         self.add_result(self.at(3), 11.1, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, False))
 
     def test_partial(self):
         self.add_result(self.at(1), None, tokened=False)
         self.add_result(self.at(2), 66.6, tokened=False)
         self.add_result(self.at(3), 55.5, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (66.6, True))
 
     def test_all_unscored(self):
         self.add_result(self.at(1), None, tokened=False)
         self.add_result(self.at(2), None, tokened=False)
-        self.session.commit()
+        self.session.flush()
         self.assertEqual(self.call(), (0.0, True))
 
 
