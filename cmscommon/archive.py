@@ -190,12 +190,10 @@ class Archive(object):
             raise NotImplementedError("Cannot list before unpacking.")
         else:
             names = []
-            cwd = os.getcwd()
-            os.chdir(self.temp_dir)
-            for level in os.walk("."):
-                for filename in level[2]:
-                    names.append(os.path.join(level[0], filename))
-            os.chdir(cwd)
+            for path, _, filenames in os.walk(self.temp_dir):
+                for filename in filenames:
+                    names.append(os.path.relpath(os.path.join(path, filename),
+                                                 self.temp_dir))
             return names
 
     def read(self, file_path):
