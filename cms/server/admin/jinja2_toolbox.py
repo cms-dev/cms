@@ -33,8 +33,9 @@ from future.builtins import *  # noqa
 
 from jinja2 import PackageLoader
 
-from cms import plugin_list
 from cms.grading.languagemanager import LANGUAGES
+from cms.grading.scoretypes import SCORE_TYPES
+from cms.grading.tasktypes import TASK_TYPES
 from cms.server.admin.formatting import format_dataset_attrs
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from cmscommon.crypto import get_hex_random_key, parse_authentication
@@ -49,8 +50,9 @@ def safe_parse_authentication(auth):
 
 
 def instrument_cms_toolbox(env):
+    env.globals["TASK_TYPES"] = TASK_TYPES
+    env.globals["SCORE_TYPES"] = SCORE_TYPES
     env.globals["LANGUAGES"] = LANGUAGES
-    env.globals["plugin_list"] = plugin_list
     env.globals["get_hex_random_key"] = get_hex_random_key
     env.globals["parse_authentication"] = safe_parse_authentication
 

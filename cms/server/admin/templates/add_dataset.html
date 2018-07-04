@@ -14,8 +14,6 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% endblock js_init %}
 
 {% block core %}
-{% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
-{% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
 
 <div class="core_title">
   <h1><a href="{{ url("task", task.id) }}">{{ task.title }} ({{ task.name }})</a> - Create dataset</h1>
@@ -76,14 +74,14 @@ You are cloning the dataset "{{ original_dataset.description }}".
       <td>
 
         <select name="task_type">
-          {% for task_type in task_type_list %}
-          <option value="{{ task_type.__name__ }}"{% if original_dataset is not none and task_type.__name__ == original_dataset.task_type %} selected{% endif %}>{{ task_type.__name__ }}</option>
+          {% for task_type_name, task_type in iteritems(TASK_TYPES) %}
+          <option value="{{ task_type_name }}"{% if original_dataset is not none and task_type_name == original_dataset.task_type %} selected{% endif %}>{{ task_type_name }}</option>
           {% endfor %}
         </select>
 
-        {% for task_type in task_type_list %}
-        <table class="TaskTypeOptions bordered" id="TaskType{{ task_type.__name__ }}Options" style="display: none;">
-          {% if original_dataset is not none and task_type.__name__ == original_dataset.task_type %}
+        {% for task_type_name, task_type in iteritems(TASK_TYPES) %}
+        <table class="TaskTypeOptions bordered" id="TaskType{{ task_type_name }}Options" style="display: none;">
+          {% if original_dataset is not none and task_type_name == original_dataset.task_type %}
             {% set values = original_dataset_task_type_parameters %}
           {% else %}
             {% set values = none %}
@@ -94,7 +92,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
           <tr>
             <td>{{ param_def.name }}</td>
             <td>
-              {{ param_def.render("TaskTypeOptions_%s_"|format(task_type.__name__), previous_value=val)|safe }}
+              {{ param_def.render("TaskTypeOptions_%s_"|format(task_type_name), previous_value=val)|safe }}
             </td>
           </tr>
           {% endfor %}
@@ -123,8 +121,8 @@ You are cloning the dataset "{{ original_dataset.description }}".
       </td>
       <td>
         <select name="score_type">
-          {% for score_type in score_type_list %}
-          <option value="{{ score_type.__name__}}"{% if original_dataset is not none and score_type.__name__ == original_dataset.score_type %} selected{% endif %}>{{ score_type.__name__ }}</option>
+          {% for score_type_name, score_type in iteritems(SCORE_TYPES) %}
+          <option value="{{ score_type_name }}"{% if original_dataset is not none and score_type_name == original_dataset.score_type %} selected{% endif %}>{{ score_type_name }}</option>
           {% endfor %}
         </select>
 
