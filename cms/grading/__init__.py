@@ -171,8 +171,8 @@ def task_score(participation, task):
         compute the score.
     task (Task): the task for which to compute the score.
 
-    return ((float, bool)): the score of user on task, and True if the
-        score could change because of a submission yet to score.
+    return ((float, bool)): the score of user on task, and True if not
+        all submissions of the participation in the task have been scored.
 
     """
     # As this function is primarily used when generating a rankings table
@@ -183,8 +183,7 @@ def task_score(participation, task):
     # submission_results table.  Doing so means that this function should incur
     # no exta database queries.
 
-    # If the score could change due to submission still being compiled
-    # / evaluated / scored.
+    # If some submission is yet to be scored.
     partial = False
 
     submissions = [s for s in participation.submissions
@@ -228,16 +227,14 @@ def task_score(participation, task):
 
         if last_sr is not None and last_sr.scored():
             last_score = last_sr.score
-        else:
-            partial = True
 
         for s in submissions:
-            if s.tokened():
-                sr = s.get_result(task.active_dataset)
-                if sr is not None and sr.scored():
+            sr = s.get_result(task.active_dataset)
+            if sr is not None and sr.scored():
+                if s.tokened():
                     max_tokened_score = max(max_tokened_score, sr.score)
-                else:
-                    partial = True
+            else:
+                partial = True
 
         score = max(last_score, max_tokened_score)
 
