@@ -177,12 +177,10 @@ class TestTaskScoreMaxTokenedLast(TaskScoreMixin, unittest.TestCase):
         self.assertEqual(self.call(), (66.6, True))
 
     def test_not_partial_when_irrelevant_is_unscored(self):
-        # This submission is not scored, but its score does not affect the
-        # task score, so partial is False.
         self.add_result(self.at(1), None, tokened=False)
         self.add_result(self.at(2), 66.6, tokened=False)
         self.session.flush()
-        self.assertEqual(self.call(), (66.6, False))
+        self.assertEqual(self.call(), (66.6, True))
 
     def test_all_unscored(self):
         self.add_result(self.at(1), None, tokened=True)
