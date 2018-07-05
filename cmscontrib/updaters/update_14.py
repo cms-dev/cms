@@ -19,7 +19,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 This updater is no-op as the new field (score mode) has a proper
 default value.

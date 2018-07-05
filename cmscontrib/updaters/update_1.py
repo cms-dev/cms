@@ -19,7 +19,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 This converts the dump to the new format introduced in commit
 db4adada08d66b4797d0569d95e8f0c028a4e5e0.

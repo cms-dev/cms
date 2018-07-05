@@ -19,7 +19,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 This updater adds the default value for the new ip_autologin.
 

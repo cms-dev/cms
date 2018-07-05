@@ -7,12 +7,12 @@ There are two different sets of needs that external contest formats strive to sa
 
 - The second is that of contest creators, that want an environment that helps them design tasks, testcases, and insert the contest data (contestant names and so on). The format needs to be easy to write, understand and modify, and should provide tools to help developing and testing the tasks (automatic generation of testcases, testing of solutions, ...). CMS must be able to import it as a new contest, but also to import it over an already created contest (after updating some data).
 
-CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsContestImporter` working with a format suitable for the first set of needs. This format comprises a dump of all serializable data regarding the contest in a JSON file, together with the files needed by the contest (testcases, statements, submissions, user tests, ...). The exporter and importer understand also compressed versions of this format (i.e., in a zip or tar file). For more information run
+CMS provides an exporter :file:`cmsDumpExporter` and an importer :file:`cmsDumpImporter` working with a format suitable for the first set of needs. This format comprises a dump of all serializable data regarding the contest in a JSON file, together with the files needed by the contest (testcases, statements, submissions, user tests, ...). The exporter and importer understand also compressed versions of this format (i.e., in a zip or tar file). For more information run
 
 .. sourcecode:: bash
 
-    cmsContestExporter -h
-    cmsContestImporter -h
+    cmsDumpExporter -h
+    cmsDumpImporter -h
 
 As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, CMS provides general-purpose commands, :file:`cmsAddUser`, :file:`cmsAddTask` and :file:`cmsAddContest`. These programs have no knowledge of any specific on-disk format, so they must be complemented with a set of "loaders", which actually interpret your files and directories. You can tell the importer or the reimported wich loader to use with the ``-L`` flag, or just rely and their autodetection capabilities. Running with ``-h`` flag will list the available loaders.
 

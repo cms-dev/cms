@@ -308,7 +308,7 @@ class DumpImporter(object):
         """Import objects from the given data (without relationships).
 
         The given data is assumed to be a dict in the format produced by
-        ContestExporter. This method reads the "_class" item and tries
+        DumpExporter. This method reads the "_class" item and tries
         to find the corresponding class. Then it loads all column
         properties of that class (those that are present in the data)
         and uses them as keyword arguments in a call to the class

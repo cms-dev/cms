@@ -19,7 +19,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 This is a fake updater that warns about a change in the way Java
 submissions are compiled. This applies only to batch tasks with no
