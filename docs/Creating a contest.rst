@@ -31,4 +31,4 @@ CMS also has several convenience scripts to add data to the database specifying 
 Creating a contest from an exported contest
 ===========================================
 
-This option is not really suited for creating new contests but to store and move contest already used in CMS. If you have the dump of a contest exported from CMS, you can import it with ``cmsContestImporter <source>``, where ``<source>`` is the archive filename or directory of the contest.
+This option is not really suited for creating new contests but to store and move contest already used in CMS. If you have the dump of a contest exported from CMS, you can import it with ``cmsDumpImporter <source>``, where ``<source>`` is the archive filename or directory of the contest.

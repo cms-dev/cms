@@ -19,7 +19,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 This updater changes the score details so that they provide the score as
 a fraction of the max score rather than in absolute terms.

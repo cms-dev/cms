@@ -23,7 +23,7 @@
 """A script to update a dump created by CMS.
 
 This script updates a dump (i.e. a set of exported contest data, as
-created by ContestExporter) of the Contest Management System from any
+created by DumpExporter) of the Contest Management System from any
 of the old supported versions to the current one.
 
 """

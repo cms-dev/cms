@@ -20,7 +20,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 This converts the dump to the new schema introduced to support user
 and contest separation.
