@@ -57,3 +57,9 @@ The parameter string is of the form :samp:`[[{m1}, {t1}, {T1}], [{m2}, {t2}, {T2
 The task needs to be crafted in such a way that the meaning of the outcome is appropriate for this score type.
 
 For Batch tasks, this means that the tasks creates the outcome through a comparator program. Using diff does not make sense given that its outcomes can only be 0.0 or 1.0.
+
+
+Custom score types
+==================
+
+Additional score types can be defined if necessary. This works in the same way :ref:`as with task types <tasktypes_custom>`: the classes need to extend :py:class:`cms.grading.ScoreType.ScoreType` and the entry point group is called `cms.grading.scoretypes`.

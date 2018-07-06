@@ -160,3 +160,40 @@ A standard manager output is a format that managers can follow to write an outco
 To follow the standard manager output, a manager must write on stdout a single line, containing a floating point number, the outcome; it must write to stderr a single line containing the message for the contestant. Following lines to stdout or stderr will be ignored.
 
 .. note:: If the manager writes to standard error the special strings "translate:success", "translate:wrong" or "translate:partial", these will be respectively shown to the contestants as the localized messages for "Output is correct", "Output isn't correct", and "Output is partially correct".
+
+
+.. _tasktypes_custom:
+
+Custom task types
+=================
+
+If the set of default task types doesn't suit a particular need, a custom task type can be provided. For that, a new Python class needs to be written that extends the :py:class:`cms.grading.TaskType.TaskType` class and implements its abstract methods. The docstrings of those methods explain what they need to do, and the default task types can provide examples.
+
+Then a :file:`setup.py` file needs to be prepared for this class: this file defines a so-called "distribution" and it is part of the standard Python packaging system (see the `distutils <https://docs.python.org/3/distutils/setupscript.html>`_ and the `setuptools documentation <https://setuptools.readthedocs.io/en/latest/setuptools.html>`_ for more information).
+
+Then a reference to the task type's class needs to be added to :file:`setup.py` as an `entry point <https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins>`_: the ``entry_points`` keyword argument of the ``setup`` function, which is a dictionary, needs to contain a key named ``cms.grading.tasktypes`` whose value is a list of strings; each string represents an entry point in the format ``{name}={package.module}:{Class}`` where ``{name}`` is the name of the entry point (it plays no role for CMS, it is just needed to identify it within your distribution) and ``{package.module}`` and ``{Class}`` are the full module name and the name of the class for the task type.
+
+A full example of :file:`setup.py` is as follows:
+
+.. sourcecode:: python
+
+    from setuptools import setup, find_packages
+
+    setup(
+        name="my_task_type",
+        version="1.0",
+        packages=find_packages(),
+        entry_points={
+            "cms.grading.tasktypes": [
+                "MyTaskType=my_package.my_module:MyTaskType"
+            ]
+        }
+    )
+
+Once that is done, install the distribution by executing
+
+.. sourcecode:: bash
+
+    python3 setup.py install
+
+CMS needs to be restarted for it to pick up the new task type.

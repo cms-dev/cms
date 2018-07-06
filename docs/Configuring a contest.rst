@@ -206,8 +206,6 @@ PHP and Python have only been tested with Batch task types, and have not thoroug
 
 Java with JDK works with Batch and Communication task types. Under usual conditions (default submission format) contestants must name their class as the short name of the task.
 
-Other programming languages, or even other versions of the same languages, can be added by creating new specification files in :file:`cms/grading/languages`.
-
 .. warning::
 
    Java with JDK uses multithreading even for simple programs. Therefore, if this language is allowed in the contest, multithreading and multiprocessing will be allowed in the sandbox for *all* evaluations (even with other languages).
@@ -235,3 +233,9 @@ Language details
 * Rust support is provided by ``rustc``, and submissions are optimized with ``-O``.
 
 * C# uses the system version of the Mono compiler ``mcs`` and the runtime ``mono``. Submissions are optimized with ``-optimize+``.
+
+
+Custom languages
+----------------
+
+Additional languages can be defined if necessary. This works in the same way :ref:`as with task types <tasktypes_custom>`: the classes need to extend :py:class:`cms.grading.language.Language` and the entry point group is called `cms.grading.languages`.
