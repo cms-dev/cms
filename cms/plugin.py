@@ -37,15 +37,16 @@ logger = logging.getLogger(__name__)
 def plugin_list(entry_point_group):
     """Return the list of plugin classes of the given group.
 
-    Some behaviors of CMS (task and score types, languages, ...) are
-    defined as collections of classes from which the users choose the
-    one they want. CMS ships with some basic common options for these,
-    but users can provide their own custom ones using a plugin system.
-    This is based on setuptools' entry points: distributions (e.g.,
-    PyPI packages) can list some of their classes in the entry_points
-    section of their setup.py inside some CMS-specific groups and, once
-    they are installed, CMS will be able to automatically discover and
-    use those classes.
+    The aspects of CMS that require the largest flexibility in behavior
+    are controlled by arbitrary Python code, encapsulated in classes
+    (e.g., task and score types, languages, ...). CMS ships with
+    collections of common options for these, but users can provide
+    their own custom ones using a plugin system. This is based on
+    setuptools' entry points: distributions (e.g., PyPI packages) can
+    list some of their classes in the entry_points section of their
+    setup.py inside some CMS-specific groups and, once they are
+    installed, CMS will be able to automatically discover and use those
+    classes.
 
     entry_point_group (str): the name of the group of entry points that
         should be returned, typically one of cms.grading.tasktypes,

@@ -167,11 +167,9 @@ To follow the standard manager output, a manager must write on stdout a single l
 Custom task types
 =================
 
-If the set of default task types doesn't suit a particular need, a custom task type can be provided. For that, a new Python class needs to be written that extends the :py:class:`cms.grading.TaskType.TaskType` class and implements its abstract methods. The docstrings of those methods explain what they need to do, and the default task types can provide examples.
+If the set of default task types doesn't suit a particular need, a custom task type can be provided. For that, in a separate "workspace" (i.e., a directory disjoint from CMS's tree), write a new Python class that extends :py:class:`cms.grading.TaskType.TaskType` and implements its abstract methods. The docstrings of those methods explain what they need to do, and the default task types can provide examples.
 
-Then a :file:`setup.py` file needs to be prepared for this class: this file defines a so-called "distribution" and it is part of the standard Python packaging system (see the `distutils <https://docs.python.org/3/distutils/setupscript.html>`_ and the `setuptools documentation <https://setuptools.readthedocs.io/en/latest/setuptools.html>`_ for more information).
-
-Then a reference to the task type's class needs to be added to :file:`setup.py` as an `entry point <https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins>`_: the ``entry_points`` keyword argument of the ``setup`` function, which is a dictionary, needs to contain a key named ``cms.grading.tasktypes`` whose value is a list of strings; each string represents an entry point in the format ``{name}={package.module}:{Class}`` where ``{name}`` is the name of the entry point (it plays no role for CMS, it is just needed to identify it within your distribution) and ``{package.module}`` and ``{Class}`` are the full module name and the name of the class for the task type.
+An accompanying :file:`setup.py` file must also be prepared, which must reference the task type's class as an "entry point": the ``entry_points`` keyword argument of the ``setup`` function, which is a dictionary, needs to contain a key named ``cms.grading.tasktypes`` whose value is a list of strings; each string represents an entry point in the format ``{name}={package.module}:{Class}``, where ``{name}`` is the name of the entry point (at the moment it plays no role for CMS, but please name it in the same way as the class) and ``{package.module}`` and ``{Class}`` are the full module name and the name of the class for the task type.
 
 A full example of :file:`setup.py` is as follows:
 
@@ -197,3 +195,5 @@ Once that is done, install the distribution by executing
     python3 setup.py install
 
 CMS needs to be restarted for it to pick up the new task type.
+
+For additional information see the `general distutils documentation <https://docs.python.org/3/distutils/setupscript.html>`_ and the `section of the setuptools documentation about entry points <https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins>`_.
