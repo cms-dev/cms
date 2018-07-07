@@ -27,114 +27,43 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
-import imp
 import logging
-import os.path
-import pkgutil
-
-from .conf import config
+import pkg_resources
 
 
 logger = logging.getLogger(__name__)
 
 
-def _try_import(plugin_name, dir_name):
-    """Try to import a module called plugin_name from a directory
-    called dir_name.
+def plugin_list(entry_point_group):
+    """Return the list of plugin classes of the given group.
 
-    plugin_name (string): name of the module (without extensions).
-    dir_name (string): name of the directory where to look.
+    The aspects of CMS that require the largest flexibility in behavior
+    are controlled by arbitrary Python code, encapsulated in classes
+    (e.g., task and score types, languages, ...). CMS ships with
+    collections of common options for these, but users can provide
+    their own custom ones using a plugin system. This is based on
+    setuptools' entry points: distributions (e.g., PyPI packages) can
+    list some of their classes in the entry_points section of their
+    setup.py inside some CMS-specific groups and, once they are
+    installed, CMS will be able to automatically discover and use those
+    classes.
 
-    return (module): the module if found, None if not found.
+    entry_point_group (str): the name of the group of entry points that
+        should be returned, typically one of cms.grading.tasktypes,
+        scoretypes or languages.
 
-    """
-    try:
-        file_, file_name, description = imp.find_module(plugin_name,
-                                                        [dir_name])
-    except ImportError:
-        return None
-
-    try:
-        module = imp.load_module(plugin_name,
-                                 file_, file_name, description)
-    except ImportError as error:
-        logger.warning("Unable to use task type %s from plugin in "
-                       "directory %s.\n%r", plugin_name, dir_name, error)
-        return None
-    else:
-        return module
-    finally:
-        file_.close()
-
-
-def plugin_lookup(plugin_name, plugin_dir, plugin_family):
-    """Try to lookup a plugin in the standard positions.
-
-    plugin_name (string): the name of the plugin: it is both the name
-                          of the module and of a class inside that
-                          module.
-    plugin_dir (string): the place inside cms hierarchy where
-                         plugin_name is usually found (e.g.:
-                         cms.grading.tasktypes).
-    plugin_family (string): the name of the plugin type, as used in
-                            <system_plugins_directory>/<plugin_family>.
-
-    return (type): the correct plugin class.
-
-    raise (KeyError): if either the module or the class is not found.
+    return ([type]): the requested plugin classes.
 
     """
-    module = None
-
-    # Try first if the plugin is provided by CMS by default.
-    try:
-        module = __import__("%s.%s" % (plugin_dir, plugin_name),
-                            fromlist=plugin_name)
-    except ImportError:
-        pass
-
-    # If not found, try in all possible plugin directories.
-    if module is None:
-        module = _try_import(plugin_name,
-                             os.path.join(config.data_dir,
-                                          "plugins", plugin_family))
-
-    if module is None:
-        raise KeyError("Module %s not found." % plugin_name)
-
-    if plugin_name not in module.__dict__:
-        logger.warning("Unable to find class %s in the plugin.", plugin_name)
-        raise KeyError("Class %s not found." % plugin_name)
-
-    return module.__dict__[plugin_name]
-
-
-def plugin_list(plugin_dir, plugin_family):
-    """Return the list of plugins classes of the given family.
-
-    plugin_dir (string): the place inside cms hierarchy where
-                         plugin_name is usually found (e.g.:
-                         cms.grading.tasktypes).
-    plugin_family (string): the name of the plugin type, as used in
-                            <system_plugins_directory>/<plugin_family>.
-
-    return ([type]): the correct plugin class.
-
-    raise (KeyError): if either the module or the class is not found.
-
-    """
-    cms_root_path = os.path.dirname(os.path.dirname(__file__))
-    rets = pkgutil.iter_modules([
-        os.path.join(cms_root_path, plugin_dir.replace(".", "/")),
-        os.path.join(config.data_dir, "plugins", plugin_family),
-    ])
-    modules = [ret[0].find_module(ret[1]).load_module(ret[1]) for ret in rets]
     classes = []
-    for module in modules:
-        if hasattr(module, module.__name__):
-            classes.append(getattr(module, module.__name__))
-        else:
-            all = getattr(module, "__all__", [])
-            if len(all) == 1:
-                classes.append(getattr(module, all[0]))
+    for entry_point in pkg_resources.iter_entry_points(entry_point_group):
+        try:
+            classes.append(entry_point.load())
+        except (pkg_resources.UnknownExtra, ImportError):
+            logger.warning(
+                "Failed to load entry point %s for group %s from %s:%s, "
+                "provided by distribution %s, requiring extras %s.",
+                entry_point.name, entry_point_group, entry_point.module_name,
+                ".".join(entry_point.attrs), entry_point.dist,
+                ", ".join(entry_point.extras), exc_info=True)
     return classes

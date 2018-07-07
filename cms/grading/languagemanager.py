@@ -36,7 +36,7 @@ __all__ = [
 ]
 
 
-LANGUAGES = []
+LANGUAGES = list()
 _BY_NAME = dict()
 HEADER_EXTS = set()
 OBJECT_EXTS = set()
@@ -82,13 +82,13 @@ def _load_languages():
     if len(LANGUAGES) > 0:
         return
 
-    LANGUAGES.extend(language() for language in plugin_list(
-        "cms.grading.languages", "languages"))
-    _BY_NAME.update((language.name, language) for language in LANGUAGES)
-    for lang in LANGUAGES:
-        HEADER_EXTS.update(lang.header_extensions)
-        OBJECT_EXTS.update(lang.object_extensions)
-        SOURCE_EXTS.update(lang.source_extensions)
+    for cls in plugin_list("cms.grading.languages"):
+        language = cls()
+        LANGUAGES.append(language)
+        _BY_NAME[language.name] = language
+        HEADER_EXTS.update(language.header_extensions)
+        OBJECT_EXTS.update(language.object_extensions)
+        SOURCE_EXTS.update(language.source_extensions)
 
 
 # Initialize!

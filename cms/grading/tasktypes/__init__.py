@@ -30,16 +30,19 @@ from future.builtins import *  # noqa
 
 import logging
 
-from cms import plugin_lookup
+from cms import plugin_list
 
 
 logger = logging.getLogger(__name__)
 
 
+TASK_TYPES = dict((cls.__name__, cls)
+                  for cls in plugin_list("cms.grading.tasktypes"))
+
+
 def get_task_type_class(name):
     """Load the TaskType class given as parameter."""
-    return plugin_lookup(name,
-                         "cms.grading.tasktypes", "tasktypes")
+    return TASK_TYPES[name]
 
 
 def get_task_type(name, parameters):

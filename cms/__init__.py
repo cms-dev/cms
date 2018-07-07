@@ -48,7 +48,7 @@ __all__ = [
     "mkdir", "rmtree", "utf8_decoder", "get_safe_shard", "get_service_address",
     "get_service_shards", "contest_id_from_args", "default_argument_parser",
     # plugin
-    "plugin_list", "plugin_lookup",
+    "plugin_list",
 ]
 
 
@@ -79,4 +79,4 @@ from .conf import Address, ServiceCoord, ConfigError, async_config, config
 from .util import mkdir, rmtree, utf8_decoder, get_safe_shard, \
     get_service_address, get_service_shards, contest_id_from_args, \
     default_argument_parser
-from .plugin import plugin_list, plugin_lookup
+from .plugin import plugin_list

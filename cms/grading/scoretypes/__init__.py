@@ -27,20 +27,22 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iteritems
 
 import logging
 
-from cms import plugin_lookup
+from cms import plugin_list
 
 
 logger = logging.getLogger(__name__)
 
 
+SCORE_TYPES = dict((cls.__name__, cls)
+                   for cls in plugin_list("cms.grading.scoretypes"))
+
+
 def get_score_type_class(name):
     """Load the ScoreType class given as parameter."""
-    return plugin_lookup(name,
-                         "cms.grading.scoretypes", "scoretypes")
+    return SCORE_TYPES[name]
 
 
 def get_score_type(name, parameters, public_testcases):
