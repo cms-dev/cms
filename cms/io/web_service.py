@@ -38,6 +38,9 @@ from gevent.pywsgi import WSGIServer
 from werkzeug.wsgi import DispatcherMiddleware, SharedDataMiddleware
 from werkzeug.contrib.fixers import ProxyFix
 
+from cms.db.filecacher import FileCacher
+from cms.server.file_middleware import FileServerMiddleware
+
 from .service import Service
 from .web_rpc import RPCMiddleware
 
@@ -74,6 +77,9 @@ class WebService(Service):
                 self.wsgi_app, {"/static": entry},
                 cache=True, cache_timeout=SECONDS_IN_A_YEAR,
                 fallback_mimetype="application/octet-stream")
+
+        self.file_cacher = FileCacher(self)
+        self.wsgi_app = FileServerMiddleware(self.file_cacher, self.wsgi_app)
 
         if rpc_enabled:
             self.wsgi_app = DispatcherMiddleware(
