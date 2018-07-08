@@ -58,7 +58,8 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.serve_file = True
         self.provide_filename = True
 
-        self.wsgi_app = FileServerMiddleware(self.file_cacher, self.wrapped_wsgi_app)
+        self.wsgi_app = \
+            FileServerMiddleware(self.file_cacher,self.wrapped_wsgi_app)
         self.environ_builder = EnvironBuilder("/some/url")
         self.client = Client(self.wsgi_app, Response)
 
