@@ -69,9 +69,9 @@ class TestFileByDigestMiddleware(unittest.TestCase):
     def wrapped_wsgi_app(self, environ, start_response):
         self.assertEqual(environ, self.environ)
         if self.serve_file:
-            headers = {"X-CMS-File-Digest": self.digest}
+            headers = {FileServerMiddleware.DIGEST_HEADER: self.digest}
             if self.provide_filename:
-                headers["X-CMS-File-Filename"] = self.filename
+                headers[FileServerMiddleware.FILENAME_HEADER] = self.filename
             return Response(headers=headers, mimetype=self.mimetype)
         else:
             return Response(b"some other content", mimetype="text/plain")
