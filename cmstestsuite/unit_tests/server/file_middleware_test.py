@@ -44,7 +44,9 @@ class TestFileByDigestMiddleware(unittest.TestCase):
     def setUp(self):
         # We need to wrap the generator in a list because of a
         # shortcoming of future's bytes implementation.
-        self.content = bytes([random.getrandbits(8) for _ in range(1024)])
+        # Choose a size that is larger than FileCacher.CHUNK_SIZE.
+        self.content = \
+            bytes([random.getrandbits(8) for _ in range(2 ** 14 + 1024)])
         self.digest = bytes_digest(self.content)
 
         self.filename = "foobar.pdf"
@@ -120,7 +122,6 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         response = self.request()
 
         self.assertEqual(response.status_code, 404)
-
         self.file_cacher.get_file.assert_called_once_with(self.digest)
 
     def test_tombstone(self):
@@ -129,7 +130,6 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         response = self.request()
 
         self.assertEqual(response.status_code, 503)
-
         self.file_cacher.get_file.assert_called_once_with(self.digest)
 
     def test_conditional_request(self):
@@ -138,6 +138,7 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.assertEqual(response.status_code, 304)
         self.assertEqual(len(response.get_data()), 0)
 
+    def test_conditional_request_no_match(self):
         # Test an etag that doesn't match.
         response = self.request(headers=[("If-None-Match", "not the etag")])
         self.assertEqual(response.status_code, 200)
@@ -153,6 +154,7 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.assertEqual(response.content_range.length, 1024)
         self.assertEqual(response.get_data(), self.content[256:768])
 
+    def test_range_request_end_overflows(self):
         # Test a range that ends after the end of the file.
         response = self.request(headers=[("Range", "bytes=256-2047")])
         self.assertEqual(response.status_code, 206)
@@ -162,6 +164,7 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.assertEqual(response.content_range.length, 1024)
         self.assertEqual(response.get_data(), self.content[256:])
 
+    def test_range_request_start_overflows(self):
         # Test a range that starts after the end of the file.
         response = self.request(headers=[("Range", "bytes=1536-")])
         self.assertEqual(response.status_code, 416)

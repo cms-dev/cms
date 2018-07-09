@@ -35,7 +35,6 @@ SECONDS_IN_A_YEAR = 365 * 24 * 60 * 60
 
 
 class FileServerMiddleware(object):
-
     """Intercept requests wanting to serve files and serve those files.
 
     Tornado's WSGI adapter contravenes the specification by buffering
@@ -53,6 +52,9 @@ class FileServerMiddleware(object):
     way.
 
     """
+
+    DIGEST_HEADER = "X-CMS-File-Digest"
+    FILENAME_HEADER = "X-CMS-File-Filename"
 
     def __init__(self, file_cacher, app):
         """Create an instance.
@@ -83,11 +85,11 @@ class FileServerMiddleware(object):
         """
         original_response = Response.from_app(self.wrapped_app, environ)
 
-        if "X-CMS-File-Digest" not in original_response.headers:
+        if self.DIGEST_HEADER not in original_response.headers:
             return original_response
 
-        digest = original_response.headers.pop("X-CMS-File-Digest")
-        filename = original_response.headers.pop("X-CMS-File-Filename", None)
+        digest = original_response.headers.pop(self.DIGEST_HEADER)
+        filename = original_response.headers.pop(self.FILENAME_HEADER, None)
         mimetype = original_response.mimetype
 
         try:

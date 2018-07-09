@@ -41,6 +41,7 @@ from future.moves.urllib.parse import quote, urlencode
 from tornado.web import RequestHandler
 
 from cms.db import Session
+from cms.server.file_middleware import FileServerMiddleware
 from cmscommon.datetime import make_datetime
 
 
@@ -84,8 +85,8 @@ class FileHandlerMixin(RequestHandler):
         filename (str): the name the file should be served as.
 
         """
-        self.set_header("X-CMS-File-Digest", digest)
-        self.set_header("X-CMS-File-Filename", filename)
+        self.set_header(FileServerMiddleware.DIGEST_HEADER, digest)
+        self.set_header(FileServerMiddleware.FILENAME_HEADER, filename)
         self.set_header("Content-Type", content_type)
         self.finish()
 
