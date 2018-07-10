@@ -53,7 +53,7 @@ from cms.db import Admin, Contest, Participation, Question, Submission, \
     SubmissionResult, Task, Team, User, UserTest
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
-from cms.server import CommonRequestHandler, file_handler_gen
+from cms.server import CommonRequestHandler, FileHandlerMixin
 from cmscommon.datetime import make_datetime
 from cmscommon.crypto import hash_password, parse_authentication
 
@@ -636,7 +636,8 @@ class BaseHandler(CommonRequestHandler):
         return self.url("login")
 
 
-FileHandler = file_handler_gen(BaseHandler)
+class FileHandler(BaseHandler, FileHandlerMixin):
+    pass
 
 
 class FileFromDigestHandler(FileHandler):

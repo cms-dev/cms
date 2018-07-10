@@ -45,7 +45,7 @@ import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest
-from cms.server import file_handler_gen
+from cms.server import FileHandlerMixin
 from cms.locale import filter_language_codes
 from cms.server.contest.authentication import authenticate_request
 from cmscommon.datetime import get_timezone
@@ -290,4 +290,5 @@ class ContestHandler(BaseHandler):
         self.add_notification(subject, text, NOTIFICATION_ERROR)
 
 
-FileHandler = file_handler_gen(ContestHandler)
+class FileHandler(ContestHandler, FileHandlerMixin):
+    pass
