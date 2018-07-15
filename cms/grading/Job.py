@@ -77,7 +77,6 @@ class Job(object):
 
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
-                 feedback_details=FEEDBACK_DETAILS_RESTRICTED,
                  language=None, multithreaded_sandbox=False,
                  shard=None, sandboxes=None, info=None,
                  success=None, text=None,
@@ -89,7 +88,6 @@ class Job(object):
         task_type (string|None): the name of the task type.
         task_type_parameters (object|None): the parameters for the
             creation of the correct task type.
-        feedback_details (str): the level of details to show to users.
         language (string|None): the language of the submission / user
             test.
         multithreaded_sandbox (boolean): whether the sandbox should
@@ -128,7 +126,6 @@ class Job(object):
         self.operation = operation
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
-        self.feedback_details = feedback_details
         self.language = language
         self.multithreaded_sandbox = multithreaded_sandbox
         self.shard = shard
@@ -148,7 +145,6 @@ class Job(object):
             'operation': self.operation,
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
-            'feedback_details': self.feedback_details,
             'language': self.language,
             'multithreaded_sandbox': self.multithreaded_sandbox,
             'shard': self.shard,
@@ -247,7 +243,6 @@ class CompilationJob(Job):
 
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
-                 feedback_details=FEEDBACK_DETAILS_RESTRICTED,
                  shard=None, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None,
@@ -264,7 +259,7 @@ class CompilationJob(Job):
         """
 
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     feedback_details, language, multithreaded_sandbox,
+                     language, multithreaded_sandbox,
                      shard, sandboxes, info, success, text,
                      files, managers, executables)
         self.compilation_success = compilation_success
@@ -315,7 +310,6 @@ class CompilationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
-            feedback_details=dataset.task.feedback_details,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
             files=dict(submission.files),
@@ -395,7 +389,6 @@ class CompilationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
-            feedback_details=dataset.task.feedback_details,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
             files=dict(user_test.files),
@@ -445,11 +438,11 @@ class EvaluationJob(Job):
 
     """
     def __init__(self, operation=None, task_type=None,
-                 task_type_parameters=None,
-                 feedback_details=FEEDBACK_DETAILS_RESTRICTED, shard=None,
+                 task_type_parameters=None, shard=None,
                  sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
+                 feedback_details=FEEDBACK_DETAILS_RESTRICTED,
                  input=None, output=None,
                  time_limit=None, memory_limit=None,
                  success=None, outcome=None, text=None,
@@ -459,6 +452,7 @@ class EvaluationJob(Job):
 
         See base class for the remaining arguments.
 
+        feedback_details (str): the level of details to show to users.
         input (string|None): digest of the input file.
         output (string|None): digest of the output file.
         time_limit (float|None): user time limit in seconds.
@@ -478,9 +472,10 @@ class EvaluationJob(Job):
 
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     feedback_details, language, multithreaded_sandbox,
+                     language, multithreaded_sandbox,
                      shard, sandboxes, info, success, text,
                      files, managers, executables)
+        self.feedback_details = feedback_details
         self.input = input
         self.output = output
         self.time_limit = time_limit
@@ -495,6 +490,7 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
             'type': 'evaluation',
+            'feedback_details': self.feedback_details,
             'input': self.input,
             'output': self.output,
             'time_limit': self.time_limit,
@@ -552,16 +548,16 @@ class EvaluationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
-            feedback_details=dataset.task.feedback_details,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
             files=dict(submission.files),
             managers=dict(dataset.managers),
             executables=dict(submission_result.executables),
-            time_limit=dataset.time_limit,
-            memory_limit=dataset.memory_limit,
+            feedback_details=dataset.task.feedback_details,
             input=testcase.input,
             output=testcase.output,
+            time_limit=dataset.time_limit,
+            memory_limit=dataset.memory_limit,
             info=info
         )
 
@@ -634,12 +630,12 @@ class EvaluationJob(Job):
             operation=operation.to_dict(),
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
-            feedback_details=dataset.task.feedback_details,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
             files=dict(user_test.files),
             managers=managers,
             executables=dict(user_test_result.executables),
+            feedback_details=dataset.task.feedback_details,
             input=user_test.input,
             time_limit=dataset.time_limit,
             memory_limit=dataset.memory_limit,
