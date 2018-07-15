@@ -329,7 +329,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
                 "contest": "contest_key",
                 "managers": {},
                 "testcases": {},
-                "submissions": ["sub_key"],
+                "submissions": ["sub1_key", "sub2_key"],
                 "user_tests": [],
             },
             "user_key": {
@@ -342,9 +342,9 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
                 "ip": "0.0.0.0",
                 "preferred_languages": "[\"en\", \"it_IT\"]",
                 "contest": "contest_key",
-                "submissions": ["sub_key"],
+                "submissions": ["sub1_key", "sub2_key"],
             },
-            "sub_key": {
+            "sub1_key": {
                 "_class": "Submission",
                 "timestamp": 1234567890.123,
                 "language": "c",
@@ -354,9 +354,19 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
                 "executables": {"exe": "exe_key"},
                 "evaluations": [],
             },
+            "sub2_key": {
+                "_class": "Submission",
+                "timestamp": 1234567900.123,
+                "language": "c",
+                "user": "user_key",
+                "task": "task_key",
+                "compilation_text": "Killed with signal 11 [0.123 - 10]\n",
+                "executables": {},
+                "evaluations": [],
+            },
             "exe_key": {
                 "_class": "Executable",
-                "submission": "sub_key",
+                "submission": "sub1_key",
                 "filename": "exe",
                 "digest": TestDumpImporter.GENERATED_FILE_DIGEST,
             },

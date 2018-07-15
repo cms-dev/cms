@@ -48,7 +48,8 @@ def fix_text(t):
     except ValueError:
         t = [t]
     t[0] = t[0].replace("%d", "%s")
-    return t
+    # Some items were stored as numbers instead of strings.
+    return [str(x) for x in t]
 
 
 class Updater(object):
