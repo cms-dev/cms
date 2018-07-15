@@ -90,8 +90,7 @@ class Filename(TypeDecorator):
     """Check that the column is a filename using a simple alphabet.
 
     Namely: latin letters (upper and lowercase), arabic digits, the
-    underscore, the dash, the dot (for extensions) and the percent sign
-    (for a language-specific extension placeholder). However, `.` and
+    underscore, the dash and the dot (for extensions). However, `.` and
     `..` are forbidden since they have a special meaning in UNIX. It
     must also be non-empty.
 
@@ -107,7 +106,7 @@ class Filename(TypeDecorator):
     @classmethod
     def get_create_command(cls):
         return DDL("CREATE DOMAIN %(domain)s VARCHAR "
-                   "CHECK (VALUE ~ '^[A-Za-z0-9_.%%-]+$') "
+                   "CHECK (VALUE ~ '^[A-Za-z0-9_.-]+$') "
                    "CHECK (VALUE != '.') "
                    "CHECK (VALUE != '..')",
                    context={"domain": cls.domain_name})
@@ -122,19 +121,61 @@ event.listen(metadata, "before_create", Filename.get_create_command())
 event.listen(metadata, "after_drop", Filename.get_drop_command())
 
 
-class FilenameArray(TypeDecorator):
-    """Check that the column is an array of filenames (as above).
+class FilenameSchema(TypeDecorator):
+    """Check that the column is a filename schema using a simple alphabet.
 
-    All elements of the array must satisfy the constraints of
-    filenames. Their alphabet is restricted to latin letters (upper and
-    lowercase), arabic digits, the underscore, the dash, the dot (for
-    extensions) and the percent sign (for a language-specific extension
-    placeholder). However, `.` and `..` are forbidden since they have a
-    special meaning in UNIX. They must also be non-empty.
+    Namely: latin letters (upper and lowercase), arabic digits, the
+    underscore, the dash and the dot (for extensions). It is optionally
+    allowed to end in `.%l` which denotes a language-specific extension
+    placeholder. However, `.` and `..` are forbidden since they have a
+    special meaning in UNIX. It must also be non-empty (excluding the
+    extension placeholder).
+
+    A filename schema is used when specifying the format of submissions
+    in order to give a generic format that abstracts away the actual
+    language that will be used by the contestant.
 
     """
 
-    domain_name = "FILENAME_ARRAY"
+    domain_name = "FILENAME_SCHEMA"
+    impl = Unicode
+
+    @classmethod
+    def compile(cls, dialect=None):
+        return cls.domain_name
+
+    @classmethod
+    def get_create_command(cls):
+        return DDL("CREATE DOMAIN %(domain)s VARCHAR "
+                   "CHECK (VALUE ~ '^[A-Za-z0-9_.-]+(\.%%l)?$') "
+                   "CHECK (VALUE != '.') "
+                   "CHECK (VALUE != '..')",
+                   context={"domain": cls.domain_name})
+
+    @classmethod
+    def get_drop_command(cls):
+        return DDL("DROP DOMAIN %(domain)s",
+                   context={"domain": cls.domain_name})
+
+
+event.listen(metadata, "before_create", FilenameSchema.get_create_command())
+event.listen(metadata, "after_drop", FilenameSchema.get_drop_command())
+
+
+class FilenameSchemaArray(TypeDecorator):
+    """Check that the column is an array of filename schemas (as above).
+
+    All elements of the array must satisfy the constraints of filename
+    schemas. Their alphabet is restricted to latin letters (upper and
+    lowercase), arabic digits, the underscore, the dash and the dot
+    (for extensions). They are optionally allowed to end in `.%l` which
+    denotes a language-specific extension placeholder. However, `.` and
+    `..` are forbidden since they have a special meaning in UNIX. They
+    must also be non-empty (excluding the extension placeholder).
+
+    """
+
+    domain_name = "FILENAME_SCHEMA_ARRAY"
     impl = CastingArray(Unicode)
 
     @classmethod
@@ -153,6 +194,8 @@ class FilenameArray(TypeDecorator):
         # regexp on the result.
         return DDL("CREATE DOMAIN %(domain)s VARCHAR[] "
                    "CHECK (array_to_string(VALUE, '') ~ '^[A-Za-z0-9_.%%-]*$') "
+                   "CHECK (array_to_string(VALUE, ',') "
+                   "       ~ '^([A-Za-z0-9_.-]+(\.%%l)?(,|$))*$') "
                    "CHECK ('.' != ALL(VALUE)) "
                    "CHECK ('..' != ALL(VALUE))",
                    context={"domain": cls.domain_name})
@@ -163,8 +206,9 @@ class FilenameArray(TypeDecorator):
                    context={"domain": cls.domain_name})
 
 
-event.listen(metadata, "before_create", FilenameArray.get_create_command())
-event.listen(metadata, "after_drop", FilenameArray.get_drop_command())
+event.listen(metadata, "before_create",
+             FilenameSchemaArray.get_create_command())
+event.listen(metadata, "after_drop", FilenameSchemaArray.get_drop_command())
 
 
 class Digest(TypeDecorator):

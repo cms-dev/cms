@@ -52,7 +52,7 @@ else:
     raw_object = __builtin__.object
 
 from . import engine, metadata, CastingArray, Codename, Filename, \
-    FilenameArray, Digest
+    FilenameSchema, FilenameSchemaArray, Digest
 
 
 _TYPE_MAP = {
@@ -66,12 +66,13 @@ _TYPE_MAP = {
     String: six.string_types,  # TODO Use six.binary_type.
     Codename: six.text_type,
     Filename: six.text_type,
+    FilenameSchema: six.text_type,
     Digest: six.text_type,
     DateTime: datetime,
     Interval: timedelta,
     ARRAY: list,
     CastingArray: list,
-    FilenameArray: list,
+    FilenameSchemaArray: list,
     CIDR: (ipaddress.IPv4Network, ipaddress.IPv6Network),
     JSONB: raw_object,
 }

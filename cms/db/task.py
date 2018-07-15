@@ -47,7 +47,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import Codename, Filename, FilenameArray, Digest, Base, Contest
+from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
 
 
 class Task(Base):
@@ -107,7 +107,7 @@ class Task(Base):
     # The names of the files that the contestant needs to submit (with
     # language-specific extensions replaced by "%l").
     submission_format = Column(
-        FilenameArray,
+        FilenameSchemaArray,
         nullable=False,
         default=[])
 
