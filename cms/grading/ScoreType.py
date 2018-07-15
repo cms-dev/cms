@@ -43,7 +43,7 @@ import logging
 import re
 from abc import ABCMeta, abstractmethod
 
-from cms import FEEDBACK_DETAILS_SAFE
+from cms import FEEDBACK_DETAILS_RESTRICTED
 from cms.locale import DEFAULT_TRANSLATION
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
@@ -114,7 +114,7 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             translation.format_decimal(round(max_score, score_precision)))
 
     def get_html_details(self, score_details,
-                         feedback_details=FEEDBACK_DETAILS_SAFE,
+                         feedback_details=FEEDBACK_DETAILS_RESTRICTED,
                          translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
         submission.

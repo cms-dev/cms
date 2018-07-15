@@ -46,7 +46,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_SAFE
+    FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_RESTRICTED
 from cms.db.validation import FilenameListConstraint
 
 from . import Base, Contest, CodenameConstraint, FilenameConstraint, \
@@ -205,10 +205,10 @@ class Task(Base):
     # their submissions. Offering full information might help some users to
     # reverse engineer task data.
     feedback_details = Column(
-        Enum(FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_SAFE,
+        Enum(FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_RESTRICTED,
              name="feedback_details"),
         nullable=False,
-        default=FEEDBACK_DETAILS_SAFE)
+        default=FEEDBACK_DETAILS_RESTRICTED)
 
     # The scores for this task will be rounded to this number of
     # decimal places.

@@ -38,7 +38,7 @@ import logging
 from .messages import HumanMessage, MessageCollection
 from .stats import execution_stats
 
-from cms import FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_SAFE, config
+from cms import FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_RESTRICTED, config
 from cms.grading.Sandbox import Sandbox
 
 
@@ -84,7 +84,7 @@ EVALUATION_MESSAGES = MessageCollection([
                     "the memory usage visible in the submission details is "
                     "the usage before the allocation that caused the "
                     "signal.")),
-    HumanMessage("signal_safe",
+    HumanMessage("signal_restricted",
                  N_("Execution killed (could be triggered by violating memory "
                     "limits)"),
                  N_("The evaluation was killed by a signal."
@@ -261,7 +261,7 @@ def evaluation_step_after_run(sandbox):
 
 
 def human_evaluation_message(
-        stats, feedback_details=FEEDBACK_DETAILS_SAFE):
+        stats, feedback_details=FEEDBACK_DETAILS_RESTRICTED):
     """Return a human-readable message from the given execution stats.
 
     Return a message for errors in the command ran in the evaluation, that can
@@ -284,8 +284,8 @@ def human_evaluation_message(
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        if feedback_details == FEEDBACK_DETAILS_SAFE:
-            return [EVALUATION_MESSAGES.get("signal_safe").message]
+        if feedback_details == FEEDBACK_DETAILS_RESTRICTED:
+            return [EVALUATION_MESSAGES.get("signal_restricted").message]
         elif feedback_details == FEEDBACK_DETAILS_FULL:
             return [EVALUATION_MESSAGES.get("signal").message,
                     str(stats['signal'])]

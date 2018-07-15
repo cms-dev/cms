@@ -22,7 +22,7 @@
 Used by ContestImporter and DumpUpdater.
 
 Add the feedback_details field for tasks. The default for new tasks is
-"safe", but the old behavior is "full", so when updating we use "full".
+"restricted", but the old behavior is "full", so when updating we use "full".
 
 """
 

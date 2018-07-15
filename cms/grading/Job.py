@@ -44,7 +44,7 @@ from six import itervalues, iteritems
 
 import logging
 
-from cms import FEEDBACK_DETAILS_SAFE
+from cms import FEEDBACK_DETAILS_RESTRICTED
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
@@ -77,7 +77,7 @@ class Job(object):
 
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
-                 feedback_details=FEEDBACK_DETAILS_SAFE,
+                 feedback_details=FEEDBACK_DETAILS_RESTRICTED,
                  language=None, multithreaded_sandbox=False,
                  shard=None, sandboxes=None, info=None,
                  success=None, text=None,
@@ -247,7 +247,7 @@ class CompilationJob(Job):
 
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
-                 feedback_details=FEEDBACK_DETAILS_SAFE,
+                 feedback_details=FEEDBACK_DETAILS_RESTRICTED,
                  shard=None, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None,
@@ -446,7 +446,7 @@ class EvaluationJob(Job):
     """
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
-                 feedback_details=FEEDBACK_DETAILS_SAFE, shard=None,
+                 feedback_details=FEEDBACK_DETAILS_RESTRICTED, shard=None,
                  sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,

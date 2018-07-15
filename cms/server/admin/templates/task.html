@@ -134,12 +134,12 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       </tr>
       <tr>
         <td>
-          <span class="info" title="With 'safe' contestants only see limited technical information about each testcase; with 'full' they see more details, but malicious contestants might use this data to get some information about the test data."></span>
+          <span class="info" title="With 'restricted' contestants only see limited technical information about each testcase; with 'full' they see more details, but malicious contestants might use this data to get some information about the test data."></span>
           Feedback details
         </td>
         <td>
           <select name="feedback_details">
-            <option value="safe" {{ "selected" if task.feedback_details == "safe" else "" }}>Safe</option>
+            <option value="restricted" {{ "selected" if task.feedback_details == "restricted" else "" }}>Restricted</option>
             <option value="full" {{ "selected" if task.feedback_details == "full" else "" }}>Full</option>
           </select>
         </td>
