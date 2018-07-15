@@ -165,3 +165,42 @@ class FilenameArray(TypeDecorator):
 
 event.listen(metadata, "before_create", FilenameArray.get_create_command())
 event.listen(metadata, "after_drop", FilenameArray.get_drop_command())
+
+
+class Digest(TypeDecorator):
+    """Check that the column is a valid SHA1 hex digest.
+
+    The digest must consist of 40 hexadecimal digits (arabic decimal
+    digits + lowercase latin letters from a to f).
+
+    Alternatively, the value could be a tombstone, which denotes that
+    the file existed but was deleted in order to recover space (this is
+    only done with files that can be regenerated, like executables).
+
+    """
+
+    domain_name = "DIGEST"
+    impl = Unicode
+
+    # The fake digest used to mark a file as deleted in the backend.
+    TOMBSTONE = "x"
+
+    @classmethod
+    def compile(cls, dialect=None):
+        return cls.domain_name
+
+    @classmethod
+    def get_create_command(cls):
+        return DDL("CREATE DOMAIN %(domain)s VARCHAR "
+                   "CHECK (VALUE ~ '^([0-9a-f]{40}|%(tombstone)s)$')",
+                   context={"domain": cls.domain_name,
+                            "tombstone": cls.TOMBSTONE})
+
+    @classmethod
+    def get_drop_command(cls):
+        return DDL("DROP DOMAIN %(domain)s",
+                   context={"domain": cls.domain_name})
+
+
+event.listen(metadata, "before_create", Digest.get_create_command())
+event.listen(metadata, "after_drop", Digest.get_drop_command())

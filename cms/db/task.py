@@ -47,7 +47,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import Codename, Filename, FilenameArray, Base, Contest, DigestConstraint
+from . import Codename, Filename, FilenameArray, Digest, Base, Contest
 
 
 class Task(Base):
@@ -299,8 +299,7 @@ class Statement(Base):
 
     # Digest of the file.
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -335,8 +334,7 @@ class Attachment(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -558,8 +556,7 @@ class Manager(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -602,10 +599,8 @@ class Testcase(Base):
 
     # Digests of the input and output files.
     input = Column(
-        String,
-        DigestConstraint("input"),
+        Digest,
         nullable=False)
     output = Column(
-        String,
-        DigestConstraint("output"),
+        Digest,
         nullable=False)

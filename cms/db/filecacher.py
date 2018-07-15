@@ -44,7 +44,7 @@ from sqlalchemy.exc import IntegrityError
 
 from cmscommon.digest import Digester
 from cms import config, mkdir, rmtree
-from cms.db import SessionGen, FSObject, LargeObject
+from cms.db import SessionGen, Digest, FSObject, LargeObject
 
 
 logger = logging.getLogger(__name__)
@@ -485,9 +485,6 @@ class FileCacher(object):
     # CHUNK_SIZE should be a multiple of these values.
     CHUNK_SIZE = 2 ** 14  # 16348
 
-    # The fake digest used to mark a file as deleted in the backend.
-    TOMBSTONE_DIGEST = "x"
-
     def __init__(self, service=None, path=None, null=False):
         """Initialize.
 
@@ -549,7 +546,7 @@ class FileCacher(object):
         raise (TombstoneError): if the digest is the tombstone
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         cache_file_path = os.path.join(self.file_dir, digest)
         if if_needed and os.path.exists(cache_file_path):
@@ -585,7 +582,7 @@ class FileCacher(object):
         raise (TombstoneError): if the digest is the tombstone
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         cache_file_path = os.path.join(self.file_dir, digest)
 
@@ -615,7 +612,7 @@ class FileCacher(object):
         raise (TombstoneError): if the digest is the tombstone
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         with self.get_file(digest) as src:
             return src.read()
@@ -634,7 +631,7 @@ class FileCacher(object):
         raise (TombstoneError): if the digest is the tombstone
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         with self.get_file(digest) as src:
             copyfileobj(src, dst, self.CHUNK_SIZE)
@@ -652,7 +649,7 @@ class FileCacher(object):
         raise (KeyError): if the file cannot be found.
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         with self.get_file(digest) as src:
             with io.open(dst_path, 'wb') as dst:
@@ -671,7 +668,7 @@ class FileCacher(object):
         raise (TombstoneError): if the digest is the tombstone
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         cache_file_path = os.path.join(self.file_dir, digest)
 
@@ -789,7 +786,7 @@ class FileCacher(object):
         raise (KeyError): if the file cannot be found.
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         return self.backend.describe(digest)
 
@@ -805,7 +802,7 @@ class FileCacher(object):
         raise (TombstoneError): if the digest is the tombstone
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         return self.backend.get_size(digest)
 
@@ -815,7 +812,7 @@ class FileCacher(object):
         digest (unicode): the digest of the file to delete.
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             return
         self.drop(digest)
         self.backend.delete(digest)
@@ -826,7 +823,7 @@ class FileCacher(object):
         digest (unicode): the file to delete.
 
         """
-        if digest == FileCacher.TOMBSTONE_DIGEST:
+        if digest == Digest.TOMBSTONE:
             return
         cache_file_path = os.path.join(self.file_dir, digest)
 
