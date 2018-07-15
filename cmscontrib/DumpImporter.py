@@ -60,7 +60,7 @@ import cms.db as class_hook
 
 from cms import utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
-    FilenameArray, Digest
+    FilenameSchema, FilenameSchemaArray, Digest
 from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
     UserTest, UserTestResult, PrintJob, init_db, drop_db, enumerate_files
 from cms.db.filecacher import FileCacher
@@ -111,7 +111,7 @@ def decode_value(type_, value):
         return None
     elif isinstance(type_, (
             Boolean, Integer, Float, String, Unicode, Enum, JSONB, Codename,
-            Filename, FilenameArray, Digest)):
+            Filename, FilenameSchema, FilenameSchemaArray, Digest)):
         return value
     elif isinstance(type_, DateTime):
         try:

@@ -53,7 +53,8 @@ __all__ = [
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # types
-    "CastingArray", "Codename", "Filename", "FilenameArray", "Digest",
+    "CastingArray", "Codename", "Filename", "FilenameSchema",
+    "FilenameSchemaArray", "Digest",
     # base
     "metadata", "Base",
     # fsobject
@@ -97,7 +98,8 @@ metadata = MetaData(engine)
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
-from .types import CastingArray, Codename, Filename, FilenameArray, Digest
+from .types import CastingArray, Codename, Filename, FilenameSchema, \
+    FilenameSchemaArray, Digest
 from .base import Base
 from .fsobject import FSObject, LargeObject
 from .contest import Contest, Announcement

@@ -94,7 +94,7 @@ class Filename(TypeDecorator):
     @classmethod
     def get_create_command(cls):
         return DDL("CREATE DOMAIN %(domain)s VARCHAR "
-                   "CHECK (VALUE ~ '^[A-Za-z0-9_.%%-]+$') "
+                   "CHECK (VALUE ~ '^[A-Za-z0-9_.-]+$') "
                    "CHECK (VALUE != '.') "
                    "CHECK (VALUE != '..')",
                    context={"domain": cls.domain_name})
@@ -109,10 +109,38 @@ event.listen(metadata, "before_create", Filename.get_create_command())
 event.listen(metadata, "after_drop", Filename.get_drop_command())
 
 
-class FilenameArray(TypeDecorator):
-    """Check that the column is an array of filenames (as above)."""
+class FilenameSchema(TypeDecorator):
+    """Check that the column is a filename schema using a simple alphabet."""
 
-    domain_name = "FILENAME_ARRAY"
+    domain_name = "FILENAME_SCHEMA"
+    impl = Unicode
+
+    @classmethod
+    def compile(cls, dialect=None):
+        return cls.domain_name
+
+    @classmethod
+    def get_create_command(cls):
+        return DDL("CREATE DOMAIN %(domain)s VARCHAR "
+                   "CHECK (VALUE ~ '^[A-Za-z0-9_.-]+(\.%%l)?$') "
+                   "CHECK (VALUE != '.') "
+                   "CHECK (VALUE != '..')",
+                   context={"domain": cls.domain_name})
+
+    @classmethod
+    def get_drop_command(cls):
+        return DDL("DROP DOMAIN %(domain)s",
+                   context={"domain": cls.domain_name})
+
+
+event.listen(metadata, "before_create", FilenameSchema.get_create_command())
+event.listen(metadata, "after_drop", FilenameSchema.get_drop_command())
+
+
+class FilenameSchemaArray(TypeDecorator):
+    """Check that the column is an array of filename schemas (as above)."""
+
+    domain_name = "FILENAME_SCHEMA_ARRAY"
     impl = CastingArray(Unicode)
 
     @classmethod
@@ -131,6 +159,8 @@ class FilenameArray(TypeDecorator):
         # regexp on the result.
         return DDL("CREATE DOMAIN %(domain)s VARCHAR[] "
                    "CHECK (array_to_string(VALUE, '') ~ '^[A-Za-z0-9_.%%-]*$') "
+                   "CHECK (array_to_string(VALUE, ',') "
+                   "       ~ '^([A-Za-z0-9_.-]+(\.%%l)?(,|$))*$') "
                    "CHECK ('.' != ALL(VALUE)) "
                    "CHECK ('..' != ALL(VALUE))",
                    context={"domain": cls.domain_name})
@@ -141,8 +171,9 @@ class FilenameArray(TypeDecorator):
                    context={"domain": cls.domain_name})
 
 
-event.listen(metadata, "before_create", FilenameArray.get_create_command())
-event.listen(metadata, "after_drop", FilenameArray.get_drop_command())
+event.listen(metadata, "before_create",
+             FilenameSchemaArray.get_create_command())
+event.listen(metadata, "after_drop", FilenameSchemaArray.get_drop_command())
 
 
 class Digest(TypeDecorator):

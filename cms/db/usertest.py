@@ -38,7 +38,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Filename, Digest, Base, Participation, Task, Dataset
+from . import Filename, FilenameSchema, Digest, Base, Participation, Task, \
+    Dataset
 
 
 class UserTest(Base):
@@ -185,7 +186,7 @@ class UserTestFile(Base):
 
     # Filename and digest of the submitted file.
     filename = Column(
-        Filename,
+        FilenameSchema,
         nullable=False)
     digest = Column(
         Digest,
