@@ -304,9 +304,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 <tr class="undefined">
             {% if feedback_details == "full" %}
                     <td colspan="5">
-                {% else %}
+            {% else %}
                     <td colspan="3">
-                {% endif %}
+            {% endif %}
                         {% trans %}N/A{% endtrans %}
                     </td>
                 </tr>

@@ -201,8 +201,8 @@ class Task(Base):
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
 
-    # What information users can see about the compilation and evaluations of
-    # their submissions. Offering full information might help some users to
+    # What information users can see about the evaluations of their
+    # submissions. Offering full information might help some users to
     # reverse engineer task data.
     feedback_details = Column(
         Enum(FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_RESTRICTED,

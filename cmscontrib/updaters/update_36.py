@@ -19,7 +19,7 @@
 
 """A class to update a dump created by CMS.
 
-Used by ContestImporter and DumpUpdater.
+Used by DumpImporter and DumpUpdater.
 
 Add the feedback_details field for tasks. The default for new tasks is
 "restricted", but the old behavior is "full", so when updating we use "full".
