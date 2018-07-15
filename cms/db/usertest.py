@@ -38,7 +38,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Filename, Base, Participation, Task, Dataset, DigestConstraint
+from . import Filename, Digest, Base, Participation, Task, Dataset
 
 
 class UserTest(Base):
@@ -87,8 +87,7 @@ class UserTest(Base):
 
     # Input (provided by the user) file's digest for this test.
     input = Column(
-        String,
-        DigestConstraint("input"),
+        Digest,
         nullable=False)
 
     # These one-to-many relationships are the reversed directions of
@@ -189,8 +188,7 @@ class UserTestFile(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -225,8 +223,7 @@ class UserTestManager(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -274,8 +271,7 @@ class UserTestResult(Base):
 
     # Output file's digest for this test
     output = Column(
-        String,
-        DigestConstraint("output"),
+        Digest,
         nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
@@ -550,6 +546,5 @@ class UserTestExecutable(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)

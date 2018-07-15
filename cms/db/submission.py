@@ -43,8 +43,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
-from . import Filename, Base, Participation, Task, Dataset, Testcase, \
-    DigestConstraint
+from . import Filename, Digest, Base, Participation, Task, Dataset, \
+    Testcase
 
 from cmscommon.datetime import make_datetime
 
@@ -217,8 +217,7 @@ class File(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -659,8 +658,7 @@ class Executable(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 

@@ -33,7 +33,7 @@ from sqlalchemy.types import Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Filename, Base, Participation, DigestConstraint
+from . import Filename, Digest, Base, Participation
 
 
 class PrintJob(Base):
@@ -68,8 +68,7 @@ class PrintJob(Base):
         Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
     done = Column(

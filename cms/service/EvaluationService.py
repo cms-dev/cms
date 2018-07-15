@@ -52,9 +52,8 @@ from sqlalchemy.orm import joinedload
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, TriggeredService, rpc_method
-from cms.db import SessionGen, Dataset, Submission, UserTest, get_submissions, \
-    get_submission_results, get_datasets_to_judge
-from cms.db.filecacher import FileCacher
+from cms.db import SessionGen, Digest, Dataset, Submission, UserTest, \
+    get_submissions, get_submission_results, get_datasets_to_judge
 from cms.grading.Job import JobGroup
 
 from .esoperations import ESOperation, get_relevant_operations, \
@@ -617,7 +616,7 @@ class EvaluationService(TriggeredService):
                     executable_digests = [
                         e.digest for e in
                         itervalues(object_result.executables)]
-                    if FileCacher.TOMBSTONE_DIGEST in executable_digests:
+                    if Digest.TOMBSTONE in executable_digests:
                         logger.info("Submission %d's compilation on dataset "
                                     "%d has been invalidated since the "
                                     "executable was the tombstone",
