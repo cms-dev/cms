@@ -60,7 +60,7 @@ class Sum(ScoreTypeAlone):
             <th class="details">
                 {% trans %}Details{% endtrans %}
             </th>
-    {% if feedback_details == "full" %}
+    {% if feedback_details == FEEDBACK_DETAILS_FULL %}
             <th class="execution-time">
                 {% trans %}Execution time{% endtrans %}
             </th>
@@ -83,7 +83,7 @@ class Sum(ScoreTypeAlone):
             <td class="idx">{{ loop.index }}</td>
             <td class="outcome">{{ _(tc["outcome"]) }}</td>
             <td class="details">{{ tc["text"]|format_status_text }}</td>
-            {% if feedback_details == "full" %}
+            {% if feedback_details == FEEDBACK_DETAILS_FULL %}
             <td class="execution-time">
                 {% if tc["time"] is not none %}
                 {{ tc["time"]|format_duration }}

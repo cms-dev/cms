@@ -254,7 +254,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <th class="details">
                         {% trans %}Details{% endtrans %}
                     </th>
-    {% if feedback_details == "full" %}
+    {% if feedback_details == FEEDBACK_DETAILS_FULL %}
                     <th class="execution-time">
                         {% trans %}Execution time{% endtrans %}
                     </th>
@@ -280,7 +280,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="details">
                       {{ tc["text"]|format_status_text }}
                     </td>
-            {% if feedback_details == "full" %}
+            {% if feedback_details == FEEDBACK_DETAILS_FULL %}
                     <td class="execution-time">
                 {% if "time" in tc and tc["time"] is not none %}
                         {{ tc["time"]|format_duration }}
@@ -297,12 +297,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
             {% endif %}
                 </tr>
-            {% if tc["outcome"] != "Correct" and feedback_details != "full" %}
+            {% if tc["outcome"] != "Correct"
+                    and feedback_details != FEEDBACK_DETAILS_FULL %}
                 {% set ns.continue_feedback = false %}
             {% endif %}
         {% else %}
                 <tr class="undefined">
-            {% if feedback_details == "full" %}
+            {% if feedback_details == FEEDBACK_DETAILS_FULL %}
                     <td colspan="5">
             {% else %}
                     <td colspan="3">

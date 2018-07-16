@@ -34,6 +34,8 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iteritems
 
+from cms import FEEDBACK_DETAILS_FULL
+
 
 class Updater(object):
 
@@ -46,5 +48,5 @@ class Updater(object):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Task":
-                v["feedback_details"] = "full"
+                v["feedback_details"] = FEEDBACK_DETAILS_FULL
         return self.objs
