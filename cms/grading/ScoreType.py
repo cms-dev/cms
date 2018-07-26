@@ -43,7 +43,7 @@ import logging
 import re
 from abc import ABCMeta, abstractmethod
 
-from cms import FEEDBACK_DETAILS_RESTRICTED
+from cms import FEEDBACK_LEVEL_RESTRICTED
 from cms.locale import DEFAULT_TRANSLATION
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
@@ -114,14 +114,14 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             translation.format_decimal(round(max_score, score_precision)))
 
     def get_html_details(self, score_details,
-                         feedback_details=FEEDBACK_DETAILS_RESTRICTED,
+                         feedback_level=FEEDBACK_LEVEL_RESTRICTED,
                          translation=DEFAULT_TRANSLATION):
         """Return an HTML string representing the score details of a
         submission.
 
         score_details (object): the data saved by the score type
             itself in the database; can be public or private.
-        feedback_details (str): the level of details to show to users.
+        feedback_level (str): the level of details to show to users.
         translation (Translation): the translation to use.
 
         return (string): an HTML string representing score_details.
@@ -138,7 +138,7 @@ class ScoreType(with_metaclass(ABCMeta, object)):
             # of a typical CWS context as it's entitled to expect them.
             try:
                 return self.template.render(details=score_details,
-                                            feedback_details=feedback_details,
+                                            feedback_level=feedback_level,
                                             translation=translation,
                                             gettext=_, ngettext=n_)
             except Exception:
@@ -254,7 +254,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <th class="details">
                         {% trans %}Details{% endtrans %}
                     </th>
-    {% if feedback_details == FEEDBACK_DETAILS_FULL %}
+    {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <th class="execution-time">
                         {% trans %}Execution time{% endtrans %}
                     </th>
@@ -280,7 +280,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="details">
                       {{ tc["text"]|format_status_text }}
                     </td>
-            {% if feedback_details == FEEDBACK_DETAILS_FULL %}
+            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <td class="execution-time">
                 {% if "time" in tc and tc["time"] is not none %}
                         {{ tc["time"]|format_duration }}
@@ -298,12 +298,12 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {% endif %}
                 </tr>
             {% if tc["outcome"] != "Correct"
-                    and feedback_details != FEEDBACK_DETAILS_FULL %}
+                    and feedback_level != FEEDBACK_LEVEL_FULL %}
                 {% set ns.continue_feedback = false %}
             {% endif %}
         {% else %}
                 <tr class="undefined">
-            {% if feedback_details == FEEDBACK_DETAILS_FULL %}
+            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <td colspan="5">
             {% else %}
                     <td colspan="3">

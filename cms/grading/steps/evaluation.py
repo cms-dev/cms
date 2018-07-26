@@ -38,7 +38,7 @@ import logging
 from .messages import HumanMessage, MessageCollection
 from .stats import execution_stats
 
-from cms import FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_RESTRICTED, config
+from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, config
 from cms.grading.Sandbox import Sandbox
 
 
@@ -261,7 +261,7 @@ def evaluation_step_after_run(sandbox):
 
 
 def human_evaluation_message(
-        stats, feedback_details=FEEDBACK_DETAILS_RESTRICTED):
+        stats, feedback_level=FEEDBACK_LEVEL_RESTRICTED):
     """Return a human-readable message from the given execution stats.
 
     Return a message for errors in the command ran in the evaluation, that can
@@ -270,7 +270,7 @@ def human_evaluation_message(
     submission will still be "evaluating..." for contestants).
 
     stats (dict): execution statistics for an evaluation step.
-    feedback_details (str): the level of details to show to users.
+    feedback_level (str): the level of details to show to users.
 
     return ([str]): a list of strings composing the message (where
         strings from the second to the last are formatting arguments for the
@@ -284,14 +284,14 @@ def human_evaluation_message(
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
         return [EVALUATION_MESSAGES.get("walltimeout").message]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        if feedback_details == FEEDBACK_DETAILS_RESTRICTED:
+        if feedback_level == FEEDBACK_LEVEL_RESTRICTED:
             return [EVALUATION_MESSAGES.get("signal_restricted").message]
-        elif feedback_details == FEEDBACK_DETAILS_FULL:
+        elif feedback_level == FEEDBACK_LEVEL_FULL:
             return [EVALUATION_MESSAGES.get("signal").message,
                     str(stats['signal'])]
         else:
-            raise ValueError("Unexpected value '%s' for feedback details."
-                             % feedback_details)
+            raise ValueError("Unexpected value '%s' for feedback level."
+                             % feedback_level)
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         # Contestants won't see this, the submission will still be evaluating.
         return []

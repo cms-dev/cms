@@ -257,7 +257,7 @@ class SubmissionDetailsHandler(ContestHandler):
 
             if sr.scored():
                 details = score_type.get_html_details(
-                    details, task.feedback_details,
+                    details, task.feedback_level,
                     translation=self.translation)
             else:
                 details = None

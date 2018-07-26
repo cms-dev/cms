@@ -21,7 +21,7 @@
 
 Used by DumpImporter and DumpUpdater.
 
-Add the feedback_details field for tasks. The default for new tasks is
+Add the feedback_level field for tasks. The default for new tasks is
 "restricted", but the old behavior is "full", so when updating we use "full".
 
 """
@@ -34,7 +34,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iteritems
 
-from cms import FEEDBACK_DETAILS_FULL
+from cms import FEEDBACK_LEVEL_FULL
 
 
 class Updater(object):
@@ -48,5 +48,5 @@ class Updater(object):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Task":
-                v["feedback_details"] = FEEDBACK_DETAILS_FULL
+                v["feedback_level"] = FEEDBACK_LEVEL_FULL
         return self.objs

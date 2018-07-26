@@ -42,7 +42,7 @@ from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
     get_icon_for_type
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
     TOKEN_MODE_MIXED, SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX, \
-    FEEDBACK_DETAILS_FULL, FEEDBACK_DETAILS_RESTRICTED
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
 from cms.grading import format_status_text
 from cms.grading.languagemanager import get_language
 from cms.locale import DEFAULT_TRANSLATION
@@ -163,8 +163,8 @@ def instrument_generic_toolbox(env):
     env.globals["TOKEN_MODE_INFINITE"] = TOKEN_MODE_INFINITE
     env.globals["TOKEN_MODE_MIXED"] = TOKEN_MODE_MIXED
 
-    env.globals["FEEDBACK_DETAILS_FULL"] = FEEDBACK_DETAILS_FULL
-    env.globals["FEEDBACK_DETAILS_RESTRICTED"] = FEEDBACK_DETAILS_RESTRICTED
+    env.globals["FEEDBACK_LEVEL_FULL"] = FEEDBACK_LEVEL_FULL
+    env.globals["FEEDBACK_LEVEL_RESTRICTED"] = FEEDBACK_LEVEL_RESTRICTED
 
     env.filters["all"] = all_
     env.filters["any"] = any_
