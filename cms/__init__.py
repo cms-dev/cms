@@ -81,7 +81,7 @@ TOKEN_MODE_MIXED = "mixed"
 # testcases).
 FEEDBACK_LEVEL_FULL = "full"
 # Restricted set of information (no killing signal, time or memory, testcases
-# can be omitted when not relevant to the score).
+# can be omitted).
 FEEDBACK_LEVEL_RESTRICTED = "restricted"
 
 
