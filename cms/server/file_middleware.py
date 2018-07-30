@@ -84,6 +84,9 @@ class FileServerMiddleware(object):
 
         """
         original_response = Response.from_app(self.wrapped_app, environ)
+        # We send relative locations to play nice with reverse proxies
+        # but Werkzeug by default turns them into absolute ones.
+        original_response.autocorrect_location_header = False
 
         if self.DIGEST_HEADER not in original_response.headers:
             return original_response
