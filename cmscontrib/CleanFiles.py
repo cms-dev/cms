@@ -37,7 +37,7 @@ import argparse
 import logging
 import sys
 
-from cms.db import SessionGen, Executable, enumerate_files
+from cms.db import SessionGen, Digest, Executable, enumerate_files
 from cms.db.filecacher import FileCacher
 
 

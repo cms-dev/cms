@@ -189,7 +189,16 @@ event.listen(metadata, "after_drop", FilenameSchemaArray.get_drop_command())
 
 
 class Digest(TypeDecorator):
-    """Check that the column is a valid SHA1 hex digest."""
+    """Check that the column is a valid SHA1 hex digest.
+
+    The digest must consist of 40 hexadecimal digits (arabic decimal
+    digits + lowercase latin letters from a to f).
+
+    Alternatively, the value could be a tombstone, which denotes that
+    the file existed but was deleted in order to recover space (this is
+    only done with files that can be regenerated, like executables).
+
+    """
 
     domain_name = "DIGEST"
     impl = Unicode
