@@ -39,6 +39,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Fields that contain filenames.
+FILENAME_FIELDS = {"Executable": "filename",
+                   "UserTestManager": "filename",
+                   "UserTestExecutable": "filename",
+                   "PrintJob": "filename",
+                   "Attachment": "filename",
+                   "Manager": "filename"}
+# Fields that contain filename schemas.
+FILENAME_SCHEMA_FIELDS = {"File": "filename",
+                          "UserTestFile": "filename"}
+# Fields that contain arrays of filename schemas.
+FILENAME_SCHEMA_ARRAY_FIELDS = {"Task": "submission_format"}
+
 
 class Updater(object):
 
@@ -65,33 +78,19 @@ class Updater(object):
         return schema
 
     def run(self):
-        for cls, attr in [("Executable", "filename"),
-                          ("UserTestManager", "filename"),
-                          ("UserTestExecutable", "filename"),
-                          ("PrintJob", "filename"),
-                          ("Attachment", "filename"),
-                          ("Manager", "filename")]:
-            for k, v in iteritems(self.objs):
-                if k.startswith("_"):
-                    continue
-                if v["_class"] == cls:
-                    v[attr] = self.check_filename(v[attr])
-
-        for cls, attr in [("File", "filename"),
-                          ("UserTestFile", "filename")]:
-            for k, v in iteritems(self.objs):
-                if k.startswith("_"):
-                    continue
-                if v["_class"] == cls:
-                    v[attr] = self.check_filename_schema(v[attr])
-
-        for cls, attr in [("Task", "submission_format")]:
-            for k, v in iteritems(self.objs):
-                if k.startswith("_"):
-                    continue
-                if v["_class"] == cls:
-                    v[attr] = list(self.check_filename_schema(schema)
-                                   for schema in v[attr])
+        for k, v in iteritems(self.objs):
+            if k.startswith("_"):
+                continue
+            if v["_class"] in FILENAME_FIELDS:
+                attr = FILENAME_FIELDS[v["_class"]]
+                v[attr] = self.check_filename(v[attr])
+            if v["_class"] in FILENAME_SCHEMA_FIELDS:
+                attr = FILENAME_SCHEMA_FIELDS[v["_class"]]
+                v[attr] = self.check_filename_schema(v[attr])
+            if v["_class"] in FILENAME_SCHEMA_ARRAY_FIELDS:
+                attr = FILENAME_SCHEMA_ARRAY_FIELDS[v["_class"]]
+                v[attr] = list(self.check_filename_schema(schema)
+                               for schema in v[attr])
 
         if self.warn:
             logger.warning("Some files contained '%' (the percent sign) in "
