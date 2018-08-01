@@ -122,7 +122,20 @@ event.listen(metadata, "after_drop", Filename.get_drop_command())
 
 
 class FilenameSchema(TypeDecorator):
-    """Check that the column is a filename schema using a simple alphabet."""
+    """Check that the column is a filename schema using a simple alphabet.
+
+    Namely: latin letters (upper and lowercase), arabic digits, the
+    underscore, the dash and the dot (for extensions). It is optionally
+    allowed to end in `.%l` which denotes a language-specific extension
+    placeholder. However, `.` and `..` are forbidden since they have a
+    special meaning in UNIX. It must also be non-empty (excluding the
+    extension placeholder).
+
+    A filename schema is used when specifying the format of submissions
+    in order to give a generic format that abstracts away the actual
+    language that will be used by the contestant.
+
+    """
 
     domain_name = "FILENAME_SCHEMA"
     impl = Unicode
@@ -150,7 +163,17 @@ event.listen(metadata, "after_drop", FilenameSchema.get_drop_command())
 
 
 class FilenameSchemaArray(TypeDecorator):
-    """Check that the column is an array of filename schemas (as above)."""
+    """Check that the column is an array of filename schemas (as above).
+
+    All elements of the array must satisfy the constraints of filename
+    schemas. Their alphabet is restricted to latin letters (upper and
+    lowercase), arabic digits, the underscore, the dash and the dot
+    (for extensions). They are optionally allowed to end in `.%l` which
+    denotes a language-specific extension placeholder. However, `.` and
+    `..` are forbidden since they have a special meaning in UNIX. They
+    must also be non-empty (excluding the extension placeholder).
+
+    """
 
     domain_name = "FILENAME_SCHEMA_ARRAY"
     impl = CastingArray(Unicode)

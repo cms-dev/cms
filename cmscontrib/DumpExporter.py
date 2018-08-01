@@ -124,13 +124,13 @@ def encode_value(type_, value):
         return None
     elif isinstance(type_, (
             Boolean, Integer, Float, String, Unicode, Enum, JSONB, Codename,
-            Filename, FilenameSchema, FilenameSchemaArray, Digest)):
+            Filename, FilenameSchema, Digest)):
         return value
     elif isinstance(type_, DateTime):
         return make_timestamp(value)
     elif isinstance(type_, Interval):
         return value.total_seconds()
-    elif isinstance(type_, ARRAY):
+    elif isinstance(type_, (ARRAY, FilenameSchemaArray)):
         return list(encode_value(type_.item_type, item) for item in value)
     elif isinstance(type_, CIDR):
         return str(value)

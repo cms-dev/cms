@@ -47,8 +47,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, \
     TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import CastingArray, Codename, Filename, FilenameSchemaArray, Digest, Base, \
-    Contest
+from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
 
 
 class Task(Base):

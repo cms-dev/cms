@@ -111,7 +111,7 @@ def decode_value(type_, value):
         return None
     elif isinstance(type_, (
             Boolean, Integer, Float, String, Unicode, Enum, JSONB, Codename,
-            Filename, FilenameSchema, FilenameSchemaArray, Digest)):
+            Filename, FilenameSchema, Digest)):
         return value
     elif isinstance(type_, DateTime):
         try:
@@ -122,7 +122,7 @@ def decode_value(type_, value):
             return datetime(2030, 1, 1)
     elif isinstance(type_, Interval):
         return timedelta(seconds=value)
-    elif isinstance(type_, ARRAY):
+    elif isinstance(type_, (ARRAY, FilenameSchemaArray)):
         return list(decode_value(type_.item_type, item) for item in value)
     elif isinstance(type_, CIDR):
         return ipaddress.ip_network(value)
