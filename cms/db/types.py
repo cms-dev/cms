@@ -87,7 +87,14 @@ event.listen(metadata, "after_drop", Codename.get_drop_command())
 
 
 class Filename(TypeDecorator):
-    """Check that the column is a filename using a simple alphabet."""
+    """Check that the column is a filename using a simple alphabet.
+
+    Namely: latin letters (upper and lowercase), arabic digits, the
+    underscore, the dash and the dot (for extensions). However, `.` and
+    `..` are forbidden since they have a special meaning in UNIX. It
+    must also be non-empty.
+
+    """
 
     domain_name = "FILENAME"
     impl = Unicode
