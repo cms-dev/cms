@@ -56,7 +56,12 @@ class CastingArray(ARRAY):
 
 
 class Codename(TypeDecorator):
-    """Check that the column uses a limited alphabet."""
+    """Check that the column uses a limited alphabet.
+
+    Namely: latin letters (upper and lowercase), arabic digits, the
+    underscore and the dash. It must also be non-empty.
+
+    """
 
     domain_name = "CODENAME"
     impl = Unicode
