@@ -44,14 +44,14 @@ import tornado.web
 
 from sqlalchemy.orm import joinedload
 
-from cms import config
+from cms import config, FEEDBACK_LEVEL_FULL
 from cms.db import Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     UnacceptableSubmission, accept_submission
-from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
-    accept_token, tokens_available
+from cms.server.contest.tokening import \
+    UnacceptableToken, TokenAlreadyPlayed, accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -256,8 +256,13 @@ class SubmissionDetailsHandler(ContestHandler):
                 details = sr.public_score_details
 
             if sr.scored():
+                feedback_level = task.feedback_level
+                # During analysis mode we show the full feedback regardless of
+                # what the task say.
+                if self.r_params["actual_phase"] == 3:
+                    feedback_level = FEEDBACK_LEVEL_FULL
                 details = score_type.get_html_details(
-                    details, translation=self.translation)
+                    details, feedback_level, translation=self.translation)
             else:
                 details = None
 

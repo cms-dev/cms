@@ -44,6 +44,7 @@ from six import itervalues, iteritems
 
 import logging
 
+from cms import FEEDBACK_LEVEL_RESTRICTED
 from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
@@ -441,6 +442,7 @@ class EvaluationJob(Job):
                  sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
+                 feedback_level=FEEDBACK_LEVEL_RESTRICTED,
                  input=None, output=None,
                  time_limit=None, memory_limit=None,
                  success=None, outcome=None, text=None,
@@ -450,6 +452,7 @@ class EvaluationJob(Job):
 
         See base class for the remaining arguments.
 
+        feedback_level (str): the level of details to show to users.
         input (string|None): digest of the input file.
         output (string|None): digest of the output file.
         time_limit (float|None): user time limit in seconds.
@@ -472,6 +475,7 @@ class EvaluationJob(Job):
                      language, multithreaded_sandbox,
                      shard, sandboxes, info, success, text,
                      files, managers, executables)
+        self.feedback_level = feedback_level
         self.input = input
         self.output = output
         self.time_limit = time_limit
@@ -486,6 +490,7 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
             'type': 'evaluation',
+            'feedback_level': self.feedback_level,
             'input': self.input,
             'output': self.output,
             'time_limit': self.time_limit,
@@ -548,10 +553,11 @@ class EvaluationJob(Job):
             files=dict(submission.files),
             managers=dict(dataset.managers),
             executables=dict(submission_result.executables),
-            time_limit=dataset.time_limit,
-            memory_limit=dataset.memory_limit,
+            feedback_level=dataset.task.feedback_level,
             input=testcase.input,
             output=testcase.output,
+            time_limit=dataset.time_limit,
+            memory_limit=dataset.memory_limit,
             info=info
         )
 
@@ -629,6 +635,7 @@ class EvaluationJob(Job):
             files=dict(user_test.files),
             managers=managers,
             executables=dict(user_test_result.executables),
+            feedback_level=dataset.task.feedback_level,
             input=user_test.input,
             time_limit=dataset.time_limit,
             memory_limit=dataset.memory_limit,
