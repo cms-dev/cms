@@ -737,6 +737,17 @@ td.token_rules p:last-child {
     color: #999999;
 }
 
+/*** Submissions stats */
+
+#stats rect {
+    transition: 100ms;
+    transition-timing-function: ease-in-out;
+}
+
+#stats rect:hover {
+    opacity: 0.6;
+}
+
 /*** License notice */
 
 .license_notice {

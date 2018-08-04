@@ -182,6 +182,49 @@ class NotificationsHandler(ContestHandler):
         self.write(json.dumps(res))
 
 
+class StatsHandler(ContestHandler):
+    """Displays statistics.
+
+    """
+
+    refresh_cookie = False
+
+    @tornado.web.authenticated
+    @multi_contest
+    def get(self):
+        res = {}
+
+        if "tasks_by_score_rel" in self.contest.visible_stats:
+            res["tasks_by_score_rel"] = {}
+
+            data = self.sql_session.execute(
+                """select
+                    tasks.name,
+                    (select coalesce(sum(x.best), 0) from
+                        (select p.id, max(sr.score) as best from
+                            submission_results sr
+                            join submissions s on sr.submission_id = s.id
+                            join participations p on p.id = s.participation_id
+                            where s.task_id = tasks.id group by p.id
+                        ) x
+                    )
+                    from tasks where tasks.contest_id = :contest_id""",
+                {"contest_id": self.contest.id}
+            )
+
+            total = 0
+
+            for task, tot in data:
+                total += tot + 1
+                res["tasks_by_score_rel"][task] = tot + 1
+
+            for task in res["tasks_by_score_rel"]:
+                res["tasks_by_score_rel"][task] = round(
+                    100.0 * res["tasks_by_score_rel"][task] / total, 2)
+
+        self.write(json.dumps(res))
+
+
 class PrintingHandler(ContestHandler):
     """Serve the interface to print and handle submitted print jobs.
 

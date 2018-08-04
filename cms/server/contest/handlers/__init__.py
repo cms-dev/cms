@@ -36,6 +36,7 @@ from .main import \
     LogoutHandler, \
     StartHandler, \
     NotificationsHandler, \
+    StatsHandler, \
     PrintingHandler, \
     DocumentationHandler
 from .task import \
@@ -69,6 +70,7 @@ HANDLERS = [
     (r"/logout", LogoutHandler),
     (r"/start", StartHandler),
     (r"/notifications", NotificationsHandler),
+    (r"/stats", StatsHandler),
     (r"/printing", PrintingHandler),
     (r"/documentation", DocumentationHandler),
 
