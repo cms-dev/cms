@@ -100,6 +100,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
                 attrs["allowed_localizations"] = []
 
             attrs["languages"] = self.get_arguments("languages")
+            attrs["visible_stats"] = self.get_arguments("visible_stats")
 
             self.get_bool(attrs, "submissions_download_allowed")
             self.get_bool(attrs, "allow_questions")
