@@ -40,12 +40,16 @@ $(document).ready(function () {
     setInterval(function() { utils.update_notifications(); }, 30000);
     $('#main').css('top', $('#navigation_bar').outerHeight());
 
+    {% if contest.visible_stats | length > 0 %}
+
     $(window).on('resize', function() {
         redrawStats();
     });
 
     reloadStats();
     setInterval(reloadStats, 60000);
+
+    {% endif %}
 });
 
 var stats = null;
@@ -228,6 +232,7 @@ function reloadStats(){
                     </h3>
                     <div class="well" style="padding: 8px 0;">
                         <ul class="nav nav-list">
+                            {% if contest.visible_stats | length > 0 %}
                             <li class="nav-header">
                                 Statistics
                             </li>
@@ -236,6 +241,7 @@ function reloadStats(){
                             <span id="stats-tooltip">Hover the graph for information</span>
 
                             <li class="divider"></li>
+                            {% endif %}
 
                             <li{% if page == "overview" %} class="active"{% endif %}>
                                 <a href="{{ contest_url() }}">{% trans %}Overview{% endtrans %}</a>
