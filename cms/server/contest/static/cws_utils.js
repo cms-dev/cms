@@ -2,6 +2,7 @@
  * Copyright © 2012-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
  * Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
  * Copyright © 2013 Vittorio Gambaletta <VittGam@VittGam.net>
+ * Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -85,6 +86,24 @@ CMS.CWSUtils.prototype.update_notifications = function(hush) {
                 }
             }
         }, "json");
+};
+
+
+CMS.CWSUtils.prototype.update_stats = function(onLoading, onData) {
+    var self = this;
+
+    onLoading(true);
+
+    $.get(
+        this.contest_url("stats"),
+        {},
+        function(data) {
+            onData(data);
+
+            onLoading(false);
+        },
+        "json"
+    );
 };
 
 

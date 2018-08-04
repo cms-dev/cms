@@ -48,6 +48,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="Statistics that will be made available to contestants during the competition."></span>
+        Visible statistics
+      </td>
+      <td>
+        <label><input type="checkbox" name="visible_stats" value="tasks_by_score_rel" {{ "checked" if "tasks_by_score_rel" in contest.visible_stats else "" }}>Show tasks by (relative) users' score</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Whether contestants can download their own submissions."></span>
         <label for="submissions_download_allowed">Submissions download allowed</label>
       </td>

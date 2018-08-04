@@ -39,7 +39,72 @@ $(document).ready(function () {
     utils.update_notifications(true);
     setInterval(function() { utils.update_notifications(); }, 30000);
     $('#main').css('top', $('#navigation_bar').outerHeight());
+
+    $(window).on('resize', function() {
+        redrawStats();
+    });
+
+    reloadStats();
+    setInterval(reloadStats, 60000);
 });
+
+var stats = null;
+var colors = ['rgb(255, 102, 102)', 'rgb(51, 153, 255)', 'rgb(102, 204, 0)', 'rgb(128, 128, 128)'];
+
+function redrawStats() {
+    var new_width = $("#stats").parent().width();
+
+    var s = [], i = 0, acc = 0;
+
+    for (let key in stats) {
+        s.push({
+            name: key,
+            perc: stats[key],
+            width: new_width * (stats[key] / 100),
+            x: acc,
+            fill: colors[i]
+        });
+
+        i = (i + 1) % colors.length;
+
+        acc += new_width * (stats[key] / 100);
+    }
+
+    d3
+        .select("#stats")
+        .attr("width", new_width)
+        .selectAll('rect')
+        .remove()
+        .data(s)
+        .enter()
+        .append('rect')
+        .attr('x', function(d) { return d.x; })
+        .attr('width', function(d) { return d.width; })
+        .attr('height', 20)
+        .attr('fill', function(d) { return d.fill; })
+        .on("mouseover", function(d) {
+            d3
+                .select("#stats-tooltip")
+                .html('<strong>' + d.name + '</strong>: ' + d.perc + '% of the points');
+        })
+        .on("mouseout", function(d) {
+            d3
+                .select("#stats-tooltip")
+                .html('Hover the graph for information');
+        })
+}
+
+function reloadStats(){
+    utils.update_stats(function(loading) {
+        if (loading) {
+
+        }
+    }, function(data) {
+        stats = data["tasks_by_score_rel"];
+        redrawStats();
+    });
+}
+
     {% endif %}
 
 {% block additional_js %}{% endblock additional_js %}
@@ -163,6 +228,14 @@ $(document).ready(function () {
                     </h3>
                     <div class="well" style="padding: 8px 0;">
                         <ul class="nav nav-list">
+                            <li class="nav-header">
+                                Statistics
+                            </li>
+
+                            <svg height="20" width="200" id="stats"></svg>
+                            <span id="stats-tooltip">Hover the graph for information</span>
+
+                            <li class="divider"></li>
 
                             <li{% if page == "overview" %} class="active"{% endif %}>
                                 <a href="{{ contest_url() }}">{% trans %}Overview{% endtrans %}</a>
