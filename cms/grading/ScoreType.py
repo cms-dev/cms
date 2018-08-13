@@ -265,9 +265,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 </tr>
             </thead>
             <tbody>
-    {% set ns = namespace(continue_feedback=true) %}
     {% for tc in st["testcases"] %}
-        {% if ns.continue_feedback and "outcome" in tc and "text" in tc %}
+        {% if "outcome" in tc
+               and (feedback_level == FEEDBACK_LEVEL_FULL
+                    or tc["show_in_restricted_feedback"]) %}
             {% if tc["outcome"] == "Correct" %}
                 <tr class="correct">
             {% elif tc["outcome"] == "Not correct" %}
@@ -297,16 +298,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
             {% endif %}
                 </tr>
-            {% if tc["outcome"] != "Correct"
-                    and feedback_level != FEEDBACK_LEVEL_FULL %}
-                {% set ns.continue_feedback = false %}
-            {% endif %}
         {% else %}
                 <tr class="undefined">
+                    <td class="idx">{{ loop.index }}</td>
             {% if feedback_level == FEEDBACK_LEVEL_FULL %}
-                    <td colspan="5">
+                    <td colspan="4">
             {% else %}
-                    <td colspan="3">
+                    <td colspan="2">
             {% endif %}
                         {% trans %}N/A{% endtrans %}
                     </td>
@@ -403,6 +401,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             testcases = []
             public_testcases = []
+            previous_tc_all_correct = True
             for tc_idx in target:
                 tc_outcome = self.get_public_outcome(
                     float(evaluations[tc_idx].outcome), parameter)
@@ -412,9 +411,15 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "outcome": tc_outcome,
                     "text": evaluations[tc_idx].text,
                     "time": evaluations[tc_idx].execution_time,
-                    "memory": evaluations[tc_idx].execution_memory})
+                    "memory": evaluations[tc_idx].execution_memory,
+                    "show_in_restricted_feedback": previous_tc_all_correct})
                 if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
+                    # Only block restricted feedback if this is the first
+                    # *public* non-correct testcase, otherwise we might be
+                    # leaking info on private testcases.
+                    if tc_outcome != "Correct":
+                        previous_tc_all_correct = False
                 else:
                     public_testcases.append({"idx": tc_idx})
 
