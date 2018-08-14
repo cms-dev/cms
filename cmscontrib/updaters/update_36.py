@@ -40,7 +40,7 @@ from cms import FEEDBACK_LEVEL_FULL
 class Updater(object):
 
     def __init__(self, data):
-        assert data["_version"] == 36
+        assert data["_version"] == 35
         self.objs = data
 
     def run(self):
