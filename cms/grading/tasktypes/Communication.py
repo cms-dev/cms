@@ -345,7 +345,7 @@ class Communication(TaskType):
         # the outcome is 0.0 and the text describes that problem.
         elif not evaluation_success_user:
             outcome = 0.0
-            text = human_evaluation_message(stats_user, job.feedback_level)
+            text = human_evaluation_message(stats_user)
 
         # Otherwise, we use the manager to obtain the outcome.
         else:
