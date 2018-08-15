@@ -38,8 +38,8 @@ import cms.log
 
 __all__ = [
     "__version__",
-    "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST", "TOKEN_MODE_DISABLED",
-    "TOKEN_MODE_FINITE", "TOKEN_MODE_INFINITE", "TOKEN_MODE_MIXED",
+    "TOKEN_MODE_DISABLED", "TOKEN_MODE_FINITE", "TOKEN_MODE_INFINITE",
+    "TOKEN_MODE_MIXED",
     "FEEDBACK_LEVEL_FULL", "FEEDBACK_LEVEL_RESTRICTED",
     # log
     # Nothing intended for external use, no need to advertise anything.
@@ -58,13 +58,6 @@ __version__ = '1.4.dev0'
 
 # Instantiate or import these objects.
 
-
-# Task score modes.
-
-# Maximum score amongst all submissions.
-SCORE_MODE_MAX = "max"
-# Maximum score among all tokened submissions and the last submission.
-SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
 
 # Token modes.
 
