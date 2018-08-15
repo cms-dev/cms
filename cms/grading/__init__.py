@@ -33,12 +33,6 @@ from future.builtins import *  # noqa
 
 import logging
 
-from collections import namedtuple
-
-from sqlalchemy.orm import joinedload
-
-from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
-from cms.db import Submission
 from cms.locale import DEFAULT_TRANSLATION
 
 from .language import Language, CompiledLanguage
@@ -47,20 +41,12 @@ from .language import Language, CompiledLanguage
 __all__ = [
     # __init__.py
     "JobException", "format_status_text",
-    "compute_changes_for_dataset", "task_score",
     # language.py
     "Language", "CompiledLanguage",
 ]
 
 
 logger = logging.getLogger(__name__)
-
-
-SubmissionScoreDelta = namedtuple(
-    'SubmissionScoreDelta',
-    ['submission', 'old_score', 'new_score',
-     'old_public_score', 'new_public_score',
-     'old_ranking_score_details', 'new_ranking_score_details'])
 
 
 class JobException(Exception):
@@ -106,139 +92,3 @@ def format_status_text(status, translation=DEFAULT_TRANSLATION):
         logger.error("Unexpected error when formatting status "
                      "text: %r", status, exc_info=True)
         return _("N/A")
-
-
-def compute_changes_for_dataset(old_dataset, new_dataset):
-    """This function will compute the differences expected when changing from
-    one dataset to another.
-
-    old_dataset (Dataset): the original dataset, typically the active one.
-    new_dataset (Dataset): the dataset to compare against.
-
-    returns (list): a list of tuples of SubmissionScoreDelta tuples
-        where they differ. Those entries that do not differ will have
-        None in the pair of respective tuple entries.
-
-    """
-    # If we are switching tasks, something has gone seriously wrong.
-    if old_dataset.task is not new_dataset.task:
-        raise ValueError(
-            "Cannot compare datasets referring to different tasks.")
-
-    task = old_dataset.task
-
-    def compare(a, b):
-        if a == b:
-            return False, (None, None)
-        else:
-            return True, (a, b)
-
-    # Construct query with all relevant fields to avoid roundtrips to the DB.
-    submissions = \
-        task.sa_session.query(Submission)\
-            .filter(Submission.task == task)\
-            .options(joinedload(Submission.participation))\
-            .options(joinedload(Submission.token))\
-            .options(joinedload(Submission.results)).all()
-
-    ret = []
-    for s in submissions:
-        old = s.get_result(old_dataset)
-        new = s.get_result(new_dataset)
-
-        diff1, pair1 = compare(
-            old.score if old is not None else None,
-            new.score if new is not None else None)
-        diff2, pair2 = compare(
-            old.public_score if old is not None else None,
-            new.public_score if new is not None else None)
-        diff3, pair3 = compare(
-            old.ranking_score_details if old is not None else None,
-            new.ranking_score_details if new is not None else None)
-
-        if diff1 or diff2 or diff3:
-            ret.append(SubmissionScoreDelta(*(s,) + pair1 + pair2 + pair3))
-
-    return ret
-
-
-# Computing global scores (for ranking).
-
-def task_score(participation, task):
-    """Return the score of a contest's user on a task.
-
-    participation (Participation): the user and contest for which to
-        compute the score.
-    task (Task): the task for which to compute the score.
-
-    return ((float, bool)): the score of user on task, and True if not
-        all submissions of the participation in the task have been scored.
-
-    """
-    # As this function is primarily used when generating a rankings table
-    # (AWS's RankingHandler), we optimize for the case where we are generating
-    # results for all users and all tasks. As such, for the following code to
-    # be more efficient, the query that generated task and user should have
-    # come from a joinedload with the submissions, tokens and
-    # submission_results table.  Doing so means that this function should incur
-    # no exta database queries.
-
-    # If some submission is yet to be scored.
-    partial = False
-
-    submissions = [s for s in participation.submissions
-                   if s.task is task and s.official]
-    submissions.sort(key=lambda s: s.timestamp)
-
-    if len(submissions) == 0:
-        return 0.0, False
-
-    if task.score_mode == SCORE_MODE_MAX:
-        # Like in IOI 2013-2016: maximum score amongst all submissions.
-
-        # The maximum score amongst all submissions (not yet computed
-        # scores count as 0.0).
-        max_score = 0.0
-
-        for s in submissions:
-            sr = s.get_result(task.active_dataset)
-            if sr is not None and sr.scored():
-                max_score = max(max_score, sr.score)
-            else:
-                partial = True
-
-        score = max_score
-
-    elif task.score_mode == SCORE_MODE_MAX_TOKENED_LAST:
-        # Like in IOI 2010-2012: maximum score among all tokened
-        # submissions and the last submission.
-
-        # The score of the last submission (if computed, otherwise 0.0).
-        last_score = 0.0
-        # The maximum score amongst the tokened submissions (not yet computed
-        # scores count as 0.0).
-        max_tokened_score = 0.0
-
-        # Last score: if the last submission is scored we use that,
-        # otherwise we use 0.0 (and mark that the score is partial
-        # when the last submission could be scored).
-        last_s = submissions[-1]
-        last_sr = last_s.get_result(task.active_dataset)
-
-        if last_sr is not None and last_sr.scored():
-            last_score = last_sr.score
-
-        for s in submissions:
-            sr = s.get_result(task.active_dataset)
-            if sr is not None and sr.scored():
-                if s.tokened():
-                    max_tokened_score = max(max_tokened_score, sr.score)
-            else:
-                partial = True
-
-        score = max(last_score, max_tokened_score)
-
-    else:
-        raise ValueError("Unknown score mode '%s'" % task.score_mode)
-
-    return score, partial
