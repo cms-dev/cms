@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -54,7 +55,7 @@ class Task(Entity):
         self.max_score = None
         self.extra_headers = None
         self.order = None
-        self.score_mode = "max_tokened_last"
+        self.score_mode = None
 
     @staticmethod
     def validate(data):
