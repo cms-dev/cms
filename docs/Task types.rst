@@ -167,7 +167,7 @@ To follow the standard manager output, a manager must write on stdout a single l
 Custom task types
 =================
 
-If the set of default task types doesn't suit a particular need, a custom task type can be provided. For that, in a separate "workspace" (i.e., a directory disjoint from CMS's tree), write a new Python class that extends :py:class:`cms.grading.TaskType.TaskType` and implements its abstract methods. The docstrings of those methods explain what they need to do, and the default task types can provide examples.
+If the set of default task types doesn't suit a particular need, a custom task type can be provided. For that, in a separate "workspace" (i.e., a directory disjoint from CMS's tree), write a new Python class that extends :py:class:`cms.grading.tasktypes.TaskType` and implements its abstract methods. The docstrings of those methods explain what they need to do, and the default task types can provide examples.
 
 An accompanying :file:`setup.py` file must also be prepared, which must reference the task type's class as an "entry point": the ``entry_points`` keyword argument of the ``setup`` function, which is a dictionary, needs to contain a key named ``cms.grading.tasktypes`` whose value is a list of strings; each string represents an entry point in the format ``{name}={package.module}:{Class}``, where ``{name}`` is the name of the entry point (at the moment it plays no role for CMS, but please name it in the same way as the class) and ``{package.module}`` and ``{Class}`` are the full module name and the name of the class for the task type.
 

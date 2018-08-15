@@ -29,7 +29,7 @@ from future.builtins import *  # noqa
 import unittest
 
 from cms.grading import Language
-from cms.grading.TaskType import is_manager_for_compilation
+from cms.grading.tasktypes import is_manager_for_compilation
 
 
 class TestLanguage(Language):

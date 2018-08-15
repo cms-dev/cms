@@ -41,10 +41,9 @@ from cms.grading.steps import compilation_step,  evaluation_step_before_run, \
     human_evaluation_message, merge_execution_stats, trusted_step
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
-from cms.grading.TaskType import TaskType, check_executables_number, \
-    check_manager_present, create_sandbox, delete_sandbox, \
-    is_manager_for_compilation
 from cms.db import Executable
+from . import TaskType, check_executables_number, check_manager_present, \
+    create_sandbox, delete_sandbox, is_manager_for_compilation
 
 
 logger = logging.getLogger(__name__)

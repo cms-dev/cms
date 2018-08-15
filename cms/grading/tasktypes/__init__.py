@@ -31,9 +31,25 @@ from future.builtins import *  # noqa
 import logging
 
 from cms import plugin_list
+from .abc import TaskType, \
+    create_sandbox, delete_sandbox, \
+    is_manager_for_compilation, set_configuration_error, \
+    check_executables_number, check_files_number, check_manager_present, \
+    eval_output
 
 
 logger = logging.getLogger(__name__)
+
+
+__all__ = [
+    "TASK_TYPES", "get_task_type_class", "get_task_type",
+    # abc
+    "TaskType",
+    "create_sandbox", "delete_sandbox",
+    "is_manager_for_compilation", "set_configuration_error",
+    "check_executables_number", "check_files_number", "check_manager_present",
+    "eval_output",
+]
 
 
 TASK_TYPES = dict((cls.__name__, cls)
