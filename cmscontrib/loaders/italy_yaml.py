@@ -39,12 +39,11 @@ import sys
 import yaml
 from datetime import timedelta
 
+from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
     Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
-from cmscommon.constants import \
-    SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, TOKEN_MODE_DISABLED, \
-    TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
+from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.crypto import build_password
 from cmscommon.datetime import make_datetime
 from cmscontrib import touch
