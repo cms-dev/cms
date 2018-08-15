@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tests for TaskType and utilities."""
+"""Tests for the utilities for task types."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +29,7 @@ from future.builtins import *  # noqa
 import unittest
 
 from cms.grading import Language
-from cms.grading.TaskType import is_manager_for_compilation
+from cms.grading.tasktypes import is_manager_for_compilation
 
 
 class TestLanguage(Language):

@@ -33,8 +33,8 @@ from future.builtins import *  # noqa
 
 import logging
 
-from cms.grading.TaskType import TaskType, eval_output
 from cms.grading.ParameterTypes import ParameterTypeChoice
+from . import TaskType, eval_output
 
 
 logger = logging.getLogger(__name__)

@@ -36,10 +36,10 @@ from cms.grading.steps import compilation_step, evaluation_step,\
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
-from cms.grading.TaskType import TaskType, check_executables_number, \
-    check_files_number, check_manager_present, create_sandbox, \
-    delete_sandbox, eval_output, is_manager_for_compilation
 from cms.db import Executable
+from . import TaskType, \
+    check_executables_number, check_files_number, check_manager_present, \
+    create_sandbox, delete_sandbox, eval_output, is_manager_for_compilation
 
 
 logger = logging.getLogger(__name__)

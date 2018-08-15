@@ -119,7 +119,7 @@ class TaskTypeTestMixin(object):
         # Child classes can append to this deque to add sandboxes (probably
         # actually MagicMocks) that each call to create_sandbox will return.
         self.sandboxes = deque()
-        patcher = patch("cms.grading.TaskType.Sandbox",
+        patcher = patch("cms.grading.tasktypes.util.Sandbox",
                         MagicMock(side_effect=self._mock_sandbox))
         self.addCleanup(patcher.stop)
         self.Sandbox = patcher.start()
