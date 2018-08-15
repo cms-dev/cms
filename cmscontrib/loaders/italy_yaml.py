@@ -50,6 +50,7 @@ from cmscontrib import touch
 
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,8 +58,14 @@ logger = logging.getLogger(__name__)
 # (see http://stackoverflow.com/questions/2890146).
 def construct_yaml_str(self, node):
     return self.construct_scalar(node)
+
+
 yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
 yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
+
+
+def getmtime(fname):
+    return os.stat(fname).st_mtime
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
@@ -693,8 +700,6 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if not os.path.exists(os.path.join(self.path, ".itime_contest")):
             return True
 
-        getmtime = lambda fname: os.stat(fname).st_mtime
-
         itime = getmtime(os.path.join(self.path, ".itime_contest"))
 
         # Check if contest.yaml has changed
@@ -746,8 +751,6 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # If there is no .itime file, we assume that the task has changed
         if not os.path.exists(os.path.join(self.path, ".itime")):
             return True
-
-        getmtime = lambda fname: os.stat(fname).st_mtime
 
         itime = getmtime(os.path.join(self.path, ".itime"))
 

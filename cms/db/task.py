@@ -449,8 +449,8 @@ class Dataset(Base):
     def task_type_object(self):
         if not hasattr(self, "_cached_task_type_object") \
                 or self.task_type != self._cached_task_type \
-                or self.task_type_parameters \
-                   != self._cached_task_type_parameters:
+                or (self.task_type_parameters
+                    != self._cached_task_type_parameters):
             # Import late to avoid a circular dependency.
             from cms.grading.tasktypes import get_task_type
             # This can raise.
@@ -466,11 +466,12 @@ class Dataset(Base):
 
     @property
     def score_type_object(self):
-        public_testcases = {k: tc.public for k, tc in iteritems(self.testcases)}
+        public_testcases = {k: tc.public
+                            for k, tc in iteritems(self.testcases)}
         if not hasattr(self, "_cached_score_type_object") \
                 or self.score_type != self._cached_score_type \
-                or self.score_type_parameters \
-                   != self._cached_score_type_parameters \
+                or (self.score_type_parameters
+                    != self._cached_score_type_parameters) \
                 or public_testcases != self._cached_public_testcases:
             # Import late to avoid a circular dependency.
             from cms.grading.scoretypes import get_score_type
