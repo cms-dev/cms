@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -77,7 +78,7 @@ class Score(object):
     # but cms assures that the order in which the subchanges have to
     # be processed is the ascending order of their keys (actually,
     # this is enforced only for subchanges with the same time).
-    def __init__(self, score_mode="max_tokened_last"):
+    def __init__(self, score_mode):
         # The submissions in their current status.
         self._submissions = dict()
 
