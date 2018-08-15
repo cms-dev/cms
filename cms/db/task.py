@@ -134,7 +134,7 @@ class Task(Base):
         Enum(TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE,
              name="token_mode"),
         nullable=False,
-        default="disabled")
+        default=TOKEN_MODE_DISABLED)
 
     # The maximum number of tokens a contestant is allowed to use
     # during the whole contest (on this tasks).

@@ -33,7 +33,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import itervalues
 
 from datetime import datetime, timedelta
 
@@ -151,7 +150,7 @@ class Contest(Base):
         Enum(TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE,
              name="token_mode"),
         nullable=False,
-        default="infinite")
+        default=TOKEN_MODE_INFINITE)
 
     # The maximum number of tokens a contestant is allowed to use
     # during the whole contest (on all tasks).
