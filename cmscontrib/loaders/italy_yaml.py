@@ -42,7 +42,9 @@ from datetime import timedelta
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
     Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
-from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
+from cmscommon.constants import \
+    SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST, TOKEN_MODE_DISABLED, \
+    TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cmscommon.crypto import build_password
 from cmscommon.datetime import make_datetime
 from cmscontrib import touch
@@ -179,12 +181,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 "update it.")
             # Determine the mode.
             if conf.get("token_initial", None) is None:
-                args["token_mode"] = "disabled"
+                args["token_mode"] = TOKEN_MODE_DISABLED
             elif conf.get("token_gen_number", 0) > 0 and \
                     conf.get("token_gen_time", 0) == 0:
-                args["token_mode"] = "infinite"
+                args["token_mode"] = TOKEN_MODE_INFINITE
             else:
-                args["token_mode"] = "finite"
+                args["token_mode"] = TOKEN_MODE_FINITE
             # Set the old default values.
             args["token_gen_initial"] = 0
             args["token_gen_number"] = 0
@@ -399,12 +401,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 "will soon stop being supported, you're advised to update it.")
             # Determine the mode.
             if conf.get("token_initial", None) is None:
-                args["token_mode"] = "disabled"
+                args["token_mode"] = TOKEN_MODE_DISABLED
             elif conf.get("token_gen_number", 0) > 0 and \
                     conf.get("token_gen_time", 0) == 0:
-                args["token_mode"] = "infinite"
+                args["token_mode"] = TOKEN_MODE_INFINITE
             else:
-                args["token_mode"] = "finite"
+                args["token_mode"] = TOKEN_MODE_FINITE
             # Set the old default values.
             args["token_gen_initial"] = 0
             args["token_gen_number"] = 0
