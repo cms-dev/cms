@@ -35,8 +35,8 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cms.db import Submission
+from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 
 
 __all__ = [
