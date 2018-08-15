@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -52,7 +52,8 @@ from cms import utf8_decoder
 from cms.db import SessionGen, Contest, ask_for_contest, Submission, \
     Participation, get_submissions
 from cms.db.filecacher import FileCacher
-from cms.grading import languagemanager, task_score
+from cms.grading import languagemanager
+from cms.grading.scoring import task_score
 
 
 logger = logging.getLogger(__name__)
