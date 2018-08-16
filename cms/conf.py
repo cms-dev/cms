@@ -97,7 +97,7 @@ class Config(object):
         directory.
 
         """
-        self.async = async_config
+        self.async_config = async_config
 
         # System-wide
         self.cmsuser = "cmsuser"
@@ -270,7 +270,7 @@ class Config(object):
             for shard_number, shard in \
                     enumerate(data["core_services"][service]):
                 coord = ServiceCoord(service, shard_number)
-                self.async.core_services[coord] = Address(*shard)
+                self.async_config.core_services[coord] = Address(*shard)
         del data["core_services"]
 
         for service in data["other_services"]:
@@ -279,7 +279,7 @@ class Config(object):
             for shard_number, shard in \
                     enumerate(data["other_services"][service]):
                 coord = ServiceCoord(service, shard_number)
-                self.async.other_services[coord] = Address(*shard)
+                self.async_config.other_services[coord] = Address(*shard)
         del data["other_services"]
 
         # Put everything else in self.
