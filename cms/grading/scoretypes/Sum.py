@@ -27,7 +27,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import iterkeys, itervalues
 
-from cms.grading.ScoreType import ScoreTypeAlone
+from . import ScoreTypeAlone
 
 
 # Dummy function to mark translatable string.
