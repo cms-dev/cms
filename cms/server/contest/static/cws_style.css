@@ -737,7 +737,7 @@ td.token_rules p:last-child {
     color: #999999;
 }
 
-/*** Submissions stats */
+/*** Score statistics */
 
 #stats rect {
     transition: 100ms;

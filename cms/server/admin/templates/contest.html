@@ -49,10 +49,13 @@
     <tr>
       <td>
         <span class="info" title="Statistics that will be made available to contestants during the competition."></span>
-        Visible statistics
+        Statistics visible to contestants
       </td>
       <td>
-        <label><input type="checkbox" name="visible_stats" value="tasks_by_score_rel" {{ "checked" if "tasks_by_score_rel" in contest.visible_stats else "" }}>Show tasks by (relative) users' score</label>
+        <label>
+          <input type="checkbox" name="visible_stats" value="tasks_by_score_rel" {{ "checked" if "tasks_by_score_rel" in contest.visible_stats else "" }}>
+          Show relative scores of tasks
+        </label>
       </td>
     </tr>
     <tr>

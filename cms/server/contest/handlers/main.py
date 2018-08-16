@@ -190,6 +190,7 @@ class StatsHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado.web.authenticated
+    @actual_phase_required(0, 1, 2, 3)
     @multi_contest
     def get(self):
         res = {}
@@ -197,7 +198,7 @@ class StatsHandler(ContestHandler):
         if "tasks_by_score_rel" in self.contest.visible_stats:
             res["tasks_by_score_rel"] = {}
 
-            data = self.sql_session.execute(
+            data = list(self.sql_session.execute(
                 """select
                     tasks.name,
                     (select coalesce(sum(x.best), 0) from
@@ -205,22 +206,25 @@ class StatsHandler(ContestHandler):
                             submission_results sr
                             join submissions s on sr.submission_id = s.id
                             join participations p on p.id = s.participation_id
-                            where s.task_id = tasks.id group by p.id
+                            where s.task_id = tasks.id and
+                                  sr.dataset_id = tasks.active_dataset_id
+                            group by p.id
                         ) x
                     )
                     from tasks where tasks.contest_id = :contest_id""",
                 {"contest_id": self.contest.id}
-            )
+            ))
 
-            total = 0
+            total = sum(d[1] for d in data)
+            # If there is no score, we fake data to achieve the same ratio
+            # for all tasks.
+            some_score = total != 0
+            total = total if some_score else len(data)
 
-            for task, tot in data:
-                total += tot + 1
-                res["tasks_by_score_rel"][task] = tot + 1
-
-            for task in res["tasks_by_score_rel"]:
+            for task, score in data:
+                score = score if some_score else 1
                 res["tasks_by_score_rel"][task] = round(
-                    100.0 * res["tasks_by_score_rel"][task] / total, 2)
+                    100.0 * score / total, 2)
 
         self.write(json.dumps(res))
 
