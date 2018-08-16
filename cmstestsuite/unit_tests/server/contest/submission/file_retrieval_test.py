@@ -105,7 +105,7 @@ class TestExtractFilesFromArchive(unittest.TestCase):
     # The behavior documented in this test actually only happens when
     # patool uses 7z (which happens if it is found installed). Otherwise
     # it falls back on Python's zipfile module which outright fails.
-    # Due to this difference we do not enforce the success of this test.
+    # Due to this difference we do not run this test.
     @unittest.skip("Depends on what is installed in the system.")
     def test_empty_filename(self):
         # This is a quite unexpected behavior: luckily in practice it
