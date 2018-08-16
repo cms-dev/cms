@@ -49,6 +49,10 @@ Files: cms/server/static/css/bootstrap.css
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
 
+Files: cms/server/contest/static/js/d3.min.js
+Copyright: 2018 Mike Bostock
+License: BSD 3-Clause
+
 Files: cms/server/static/img/mimetypes/*.png
 Copyright: 2009 Tango Desktop Project, http://tango.freedesktop.org/
 License: public-domain

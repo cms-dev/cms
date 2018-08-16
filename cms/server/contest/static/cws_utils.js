@@ -97,13 +97,13 @@ CMS.CWSUtils.prototype.update_stats = function(onLoading, onData) {
     $.get(
         this.contest_url("stats"),
         {},
-        function(data) {
-            onData(data);
-
-            onLoading(false);
-        },
+        $.noop,
         "json"
-    );
+    )
+    .done(onData)
+    .always(function() {
+        onLoading(false);
+    });
 };
 
 

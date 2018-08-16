@@ -18,6 +18,8 @@ var LANGUAGES = {
 {% endfor %}
 };
 
+var STATS_UPDATE_MS = 60000;
+
 {% if participation is undefined %}
 var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.name }}",
                              0, 0, 0, 0, 0);
@@ -46,21 +48,21 @@ $(document).ready(function () {
         redrawStats();
     });
 
-    reloadStats();
-    setInterval(reloadStats, 60000);
+    reloadStats(false);
+    setInterval(function() { reloadStats(true); }, STATS_UPDATE_MS);
 
     {% endif %}
 });
 
 var stats = null;
-var colors = ['rgb(255, 102, 102)', 'rgb(51, 153, 255)', 'rgb(102, 204, 0)', 'rgb(128, 128, 128)'];
+var colors = ['#007bff', '#e83e8c', '#ffc107', '#28a745', '#fd7e14', '#6f42c1', '#be202f'];
 
 function redrawStats() {
     var new_width = $("#stats").parent().width();
 
     var s = [], i = 0, acc = 0;
 
-    for (let key in stats) {
+    for (var key in stats) {
         s.push({
             name: key,
             perc: stats[key],
@@ -98,13 +100,32 @@ function redrawStats() {
         })
 }
 
-function reloadStats(){
+function reloadStats(force) {
+    // Cache results locally (unless force == true) to avoid new requests at each page refresh
+    var cache = localStorage.getItem("stats");
+    if (cache) cache = JSON.parse(cache);
+
+    if (cache && !force && (new Date() - new Date(cache["time"])) <= STATS_UPDATE_MS) {
+        // Probably the user just refreshed the page
+        stats = cache["data"];
+        redrawStats();
+        return;
+    }
+
     utils.update_stats(function(loading) {
         if (loading) {
-
+            $("#stats-tooltip").html("Loading...");
+        } else {
+            $("#stats-tooltip").html("Hover the graph for information");
         }
     }, function(data) {
         stats = data["tasks_by_score_rel"];
+
+        localStorage.setItem("stats", JSON.stringify({
+            "time": new Date(),
+            "data": stats
+        }));
+
         redrawStats();
     });
 }
@@ -234,7 +255,7 @@ function reloadStats(){
                         <ul class="nav nav-list">
                             {% if contest.visible_stats | length > 0 %}
                             <li class="nav-header">
-                                Statistics
+                                Score statistics
                             </li>
 
                             <svg height="20" width="200" id="stats"></svg>
