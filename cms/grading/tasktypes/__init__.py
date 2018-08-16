@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -31,8 +31,8 @@ from future.builtins import *  # noqa
 import logging
 
 from cms import plugin_list
-from .abc import TaskType, \
-    create_sandbox, delete_sandbox, \
+from .abc import TaskType
+from .util import create_sandbox, delete_sandbox, \
     is_manager_for_compilation, set_configuration_error, \
     check_executables_number, check_files_number, check_manager_present, \
     eval_output
@@ -45,6 +45,7 @@ __all__ = [
     "TASK_TYPES", "get_task_type_class", "get_task_type",
     # abc
     "TaskType",
+    # util
     "create_sandbox", "delete_sandbox",
     "is_manager_for_compilation", "set_configuration_error",
     "check_executables_number", "check_files_number", "check_manager_present",
