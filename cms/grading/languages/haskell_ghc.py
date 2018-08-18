@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2016-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -60,6 +60,8 @@ class HaskellGhc(CompiledLanguage):
                                  for_evaluation=True):
         """See Language.get_compilation_commands."""
         commands = []
+        # GHC requires a /tmp directory, so we create it if necessary.
+        commands.append([["/bin/mkdir", "-p", "/tmp"]])
         # Haskell module names are capitalized, so we change the source file
         # names (except for the first one) to match the module's name.
         # The first source file is, instead, the grader or the standalone
