@@ -894,21 +894,26 @@ class IsolateSandbox(SandboxBase):
             box_id = IsolateSandbox.next_id % 10
         IsolateSandbox.next_id += 1
 
-        # We create a directory "tmp" inside the outer temporary directory,
+        # We create a directory "box" inside the outer temporary directory,
         # because the sandbox will bind-mount the inner one. The sandbox also
         # runs code as a different user, and so we need to ensure that they can
         # read and write to the directory. But we don't want everybody on the
         # system to, which is why the outer directory exists with no read
-        # permissions.
-        self.inner_temp_dir = "/tmp"
+        # permissions to other than the user.
         self.outer_temp_dir = tempfile.mkdtemp(
             dir=self.temp_dir,
             prefix="cms-%s-" % (self.name))
-        # Don't use os.path.join here, because the absoluteness of /tmp will
-        # bite you.
-        self.path = self.outer_temp_dir + self.inner_temp_dir
+        self.path = os.path.join(self.outer_temp_dir, "box")
         os.mkdir(self.path)
         self.allow_writing_all()
+
+        # self.path will be bind-mounted inside the sandbox as inner_temp_dir.
+        # We use a subdirectory of /tmp so that the sandbox will create a
+        # /tmp, which is sometimes used by compilers. We don't want /tmp
+        # itself because some tasktype might decide to bind-mount external
+        # temp directories to the same name inside the sandbox, and we having
+        # one mount path as a children of another is a recipe for disaster.
+        self.inner_temp_dir = "/cms"
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
@@ -923,7 +928,6 @@ class IsolateSandbox(SandboxBase):
         self.cgroup = config.use_cgroups  # --cg
         self.chdir = self.inner_temp_dir  # -c
         self.dirs = []                 # -d
-        self.dirs += [(self.inner_temp_dir, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -937,6 +941,8 @@ class IsolateSandbox(SandboxBase):
         self.verbosity = 0             # -v
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
+
+        self.add_mapped_directory(self.path, inner=self.inner_temp_dir)
 
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
@@ -955,6 +961,18 @@ class IsolateSandbox(SandboxBase):
         self.cleanup()
         self.initialize_isolate()
 
+    def add_mapped_directory(self, dir, inner=None, options="rw"):
+        """Add dir to the external directory visible to the command
+
+        dir (string): directory to make visible.
+        inner (string|None): if not None, the inner path where to bind dir.
+        options (string|None): if not None, isolate directory rule options.
+
+        """
+        if inner is None:
+            inner = dir
+        self.dirs.append((inner, dir, options))
+
     def add_mapped_directories(self, dirs):
         """Add dirs to the external dirs visible to the sandboxed command.
 
@@ -962,7 +980,7 @@ class IsolateSandbox(SandboxBase):
 
         """
         for directory in dirs:
-            self.dirs.append((directory, None, "rw"))
+            self.add_mapped_directory(directory)
 
     def allow_writing_all(self):
         """Set permissions in such a way that any operation is allowed.
@@ -1037,7 +1055,7 @@ class IsolateSandbox(SandboxBase):
 
     def build_box_options(self):
         """Translate the options defined in the instance to a string
-        that can be postponed to mo-box as an arguments list.
+        that can be postponed to isolate as an arguments list.
 
         return ([string]): the arguments list as strings.
 
@@ -1050,9 +1068,7 @@ class IsolateSandbox(SandboxBase):
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
         for in_name, out_name, options in self.dirs:
-            s = in_name
-            if out_name is not None:
-                s += "=" + out_name
+            s = in_name + "=" + out_name
             if options is not None:
                 s += ":" + options
             res += ["--dir=%s" % s]

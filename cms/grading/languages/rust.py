@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2017 Dario Ostuni <dario.ostuni@gmail.com>
+# Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -52,7 +53,11 @@ class Rust(CompiledLanguage):
                                  source_filenames, executable_filename,
                                  for_evaluation=True):
         """See Language.get_compilation_commands."""
-        # In Rust only the source file containing the main function has
-        # to be passed to the compiler
-        return [["/usr/bin/rustc", "-O", "-o",
-                 executable_filename, source_filenames[0]]]
+        return [
+            # rustc requires a /tmp directory, so we create it if necessary.
+            ["/bin/mkdir", "-p", "/tmp"],
+            # In Rust only the source file containing the main function has
+            # to be passed to the compiler
+            ["/usr/bin/rustc", "-O", "-o",
+             executable_filename, source_filenames[0]]
+        ]
