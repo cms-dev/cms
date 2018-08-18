@@ -923,7 +923,6 @@ class IsolateSandbox(SandboxBase):
         self.cgroup = config.use_cgroups  # --cg
         self.chdir = self.inner_temp_dir  # -c
         self.dirs = []                 # -d
-        self.dirs += [(self.inner_temp_dir, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -937,6 +936,8 @@ class IsolateSandbox(SandboxBase):
         self.verbosity = 0             # -v
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
+
+        self.add_mapped_directory(self.path, inner=self.inner_temp_dir)
 
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
@@ -955,6 +956,18 @@ class IsolateSandbox(SandboxBase):
         self.cleanup()
         self.initialize_isolate()
 
+    def add_mapped_directory(self, dir, inner=None, options="rw"):
+        """Add dir to the external directory visible to the command
+
+        dir (string): directory to make visible.
+        inner (string|None): if not None, the inner path where to bind dir.
+        options (string|None): if not None, isolate directory rule options.
+
+        """
+        if inner is None:
+            inner = dir
+        self.dirs.append((inner, dir, options))
+
     def add_mapped_directories(self, dirs):
         """Add dirs to the external dirs visible to the sandboxed command.
 
@@ -962,7 +975,7 @@ class IsolateSandbox(SandboxBase):
 
         """
         for directory in dirs:
-            self.dirs.append((directory, None, "rw"))
+            self.add_mapped_directory(directory)
 
     def allow_writing_all(self):
         """Set permissions in such a way that any operation is allowed.
@@ -1050,9 +1063,7 @@ class IsolateSandbox(SandboxBase):
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
         for in_name, out_name, options in self.dirs:
-            s = in_name
-            if out_name is not None:
-                s += "=" + out_name
+            s = in_name + "=" + out_name
             if options is not None:
                 s += ":" + options
             res += ["--dir=%s" % s]
