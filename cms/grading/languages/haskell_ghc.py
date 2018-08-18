@@ -61,7 +61,7 @@ class HaskellGhc(CompiledLanguage):
         """See Language.get_compilation_commands."""
         commands = []
         # GHC requires a /tmp directory, so we create it if necessary.
-        commands.append([["/bin/mkdir", "-p", "/tmp"]])
+        commands.append(["/bin/mkdir", "-p", "/tmp"])
         # Haskell module names are capitalized, so we change the source file
         # names (except for the first one) to match the module's name.
         # The first source file is, instead, the grader or the standalone
