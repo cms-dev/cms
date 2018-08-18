@@ -894,21 +894,26 @@ class IsolateSandbox(SandboxBase):
             box_id = IsolateSandbox.next_id % 10
         IsolateSandbox.next_id += 1
 
-        # We create a directory "tmp" inside the outer temporary directory,
+        # We create a directory "box" inside the outer temporary directory,
         # because the sandbox will bind-mount the inner one. The sandbox also
-        # runs code as a different user, and so we need to ensure that they can
-        # read and write to the directory. But we don't want everybody on the
-        # system to, which is why the outer directory exists with no read
-        # permissions.
-        self.inner_temp_dir = "/tmp"
+        # runs code as a different user, and so we need to ensure that they
+        # can read and write to the directory. But we don't want everybody on
+        # the system to, which is why the outer directory exists with no read
+        # permissions to other than the user.
         self.outer_temp_dir = tempfile.mkdtemp(
             dir=self.temp_dir,
             prefix="cms-%s-" % (self.name))
-        # Don't use os.path.join here, because the absoluteness of /tmp will
-        # bite you.
-        self.path = self.outer_temp_dir + self.inner_temp_dir
+        self.path = os.path.join(self.outer_temp_dir, "box")
         os.mkdir(self.path)
         self.allow_writing_all()
+
+        # self.path will be bind-mounted inside the sandbox as inner_temp_dir.
+        # We use a subdirectory of /tmp so that the sandbox will create a
+        # /tmp, which is sometimes used by compilers. We don't want /tmp
+        # itself because some tasktype might decide to bind-mount external
+        # temp directories to the same name inside the sandbox, and we having
+        # one mount path as a children of another is a recipe for disaster.
+        self.inner_temp_dir = "/tmp/cmsbox"
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
