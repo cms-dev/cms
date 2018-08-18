@@ -1037,7 +1037,7 @@ class IsolateSandbox(SandboxBase):
 
     def build_box_options(self):
         """Translate the options defined in the instance to a string
-        that can be postponed to mo-box as an arguments list.
+        that can be postponed to isolate as an arguments list.
 
         return ([string]): the arguments list as strings.
 
