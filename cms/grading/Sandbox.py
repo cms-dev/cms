@@ -976,15 +976,6 @@ class IsolateSandbox(SandboxBase):
         return self.add_mapped_directory(src, dest, options,
                                          ignore_if_not_existing=True)
 
-    def add_mapped_directories(self, dirs):
-        """Add dirs to the external dirs visible to the sandboxed command.
-
-        dirs ([string]): list of dirs to make visible.
-
-        """
-        for directory in dirs:
-            self.add_mapped_directory(directory, options="rw")
-
     def allow_writing_all(self):
         """Set permissions in such a way that any operation is allowed.
 

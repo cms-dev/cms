@@ -239,12 +239,11 @@ class TwoSteps(TaskType):
         os.chmod(fifo, 0o666)
 
         # First step: we start the first manager.
-        first_command = ["./%s" % executable_filename, "0", fifo]
+        first_command = ["./%s" % executable_filename, "0", "/fifo/fifo"]
         first_executables_to_get = {executable_filename: executable_digest}
         first_files_to_get = {
             TwoSteps.INPUT_FILENAME: job.input
             }
-        first_allow_path = [fifo_dir]
 
         # Put the required files into the sandbox
         for filename, digest in iteritems(first_executables_to_get):
@@ -259,16 +258,15 @@ class TwoSteps(TaskType):
             first_command,
             job.time_limit,
             job.memory_limit,
-            first_allow_path,
+            dirs_map={fifo_dir: ("/fifo", "rw")},
             stdin_redirect=TwoSteps.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox,
             wait=False)
 
         # Second step: we start the second manager.
-        second_command = ["./%s" % executable_filename, "1", fifo]
+        second_command = ["./%s" % executable_filename, "1", "/fifo/fifo"]
         second_executables_to_get = {executable_filename: executable_digest}
         second_files_to_get = {}
-        second_allow_path = [fifo_dir]
 
         # Put the required files into the second sandbox
         for filename, digest in iteritems(second_executables_to_get):
@@ -283,7 +281,7 @@ class TwoSteps(TaskType):
             second_command,
             job.time_limit,
             job.memory_limit,
-            second_allow_path,
+            dirs_map={fifo_dir: ("/fifo", "rw")},
             stdout_redirect=TwoSteps.OUTPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox,
             wait=False)

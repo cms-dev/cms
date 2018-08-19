@@ -230,6 +230,12 @@ class Communication(TaskType):
             os.chmod(fifo_dir[i], 0o755)
             os.chmod(fifo_in[i], 0o666)
             os.chmod(fifo_out[i], 0o666)
+        # Names of the fifos after being mapped inside the sandboxes.
+        sandbox_fifo_dir = ["/fifo%d" % i for i in indices]
+        sandbox_fifo_in = [os.path.join(sandbox_fifo_dir[i], "in%d" % i)
+                           for i in indices]
+        sandbox_fifo_out = [os.path.join(sandbox_fifo_dir[i], "out%d" % i)
+                            for i in indices]
 
         # Create the manager sandbox and copy manager and input.
         sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
@@ -252,7 +258,7 @@ class Communication(TaskType):
         # instead than from INPUT_FILENAME.
         manager_command = ["./%s" % Communication.MANAGER_FILENAME]
         for i in indices:
-            manager_command += [fifo_in[i], fifo_out[i]]
+            manager_command += [sandbox_fifo_in[i], sandbox_fifo_out[i]]
         # We could use trusted_step for the manager, since it's fully
         # admin-controlled. But trusted_step is only synchronous at the moment.
         # Thus we use evaluation_step, and we set a time limit generous enough
@@ -274,7 +280,8 @@ class Communication(TaskType):
             manager_command,
             manager_time_limit,
             config.trusted_sandbox_max_memory_kib // 1024,
-            allow_dirs=fifo_dir,
+            dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw"))
+                          for i in indices),
             writable_files=[Communication.OUTPUT_FILENAME],
             stdin_redirect=Communication.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox)
@@ -283,7 +290,7 @@ class Communication(TaskType):
         language = get_language(job.language)
         processes = [None for i in indices]
         for i in indices:
-            args = [fifo_out[i], fifo_in[i]]
+            args = [sandbox_fifo_out[i], sandbox_fifo_in[i]]
             if self.num_processes != 1:
                 args.append(str(i))
             commands = language.get_evaluation_commands(
@@ -300,7 +307,7 @@ class Communication(TaskType):
                 commands[-1],
                 job.time_limit,
                 job.memory_limit,
-                allow_dirs=[fifo_dir[i]],
+                dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
                 multiprocess=job.multithreaded_sandbox)
 
         # Wait for the processes to conclude, without blocking them on I/O.
