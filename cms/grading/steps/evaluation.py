@@ -32,6 +32,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import iteritems
 
 import logging
 
@@ -93,7 +94,7 @@ EVALUATION_MESSAGES = MessageCollection([
 
 def evaluation_step(sandbox, commands,
                     time_limit=None, memory_limit=None,
-                    allow_dirs=None, writable_files=None,
+                    dirs_map=None, writable_files=None,
                     stdin_redirect=None, stdout_redirect=None,
                     multiprocess=False):
     """Execute some evaluation commands in the sandbox.
@@ -110,8 +111,10 @@ def evaluation_step(sandbox, commands,
         if None, no time limit is enforced.
     memory_limit (int|None): memory limit in MiB (applied to each command); if
         None, no memory limit is enforced.
-    allow_dirs ([str]|None): if not None, a list of external
-        directories to map inside the sandbox
+    dirs_map ({str: (str|None, str|None)}|None): if not None, a dict
+        from external directories to a pair of strings: the first is the path
+        they should be mapped to inside the sandbox, the second, is
+        isolate's options for the mapping.
     writable_files ([str]|None): a list of inner file names (relative to
         the inner path) on which the command is allow to write, or None to
         indicate that all files are read-only; if applicable, redirected
@@ -139,7 +142,7 @@ def evaluation_step(sandbox, commands,
     for command in commands:
         success = evaluation_step_before_run(
             sandbox, command, time_limit, memory_limit,
-            allow_dirs, writable_files, stdin_redirect, stdout_redirect,
+            dirs_map, writable_files, stdin_redirect, stdout_redirect,
             multiprocess, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
@@ -154,7 +157,7 @@ def evaluation_step(sandbox, commands,
 
 def evaluation_step_before_run(sandbox, command,
                                time_limit=None, memory_limit=None,
-                               allow_dirs=None, writable_files=None,
+                               dirs_map=None, writable_files=None,
                                stdin_redirect=None, stdout_redirect=None,
                                multiprocess=False, wait=False):
     """First part of an evaluation step, up to the execution, included.
@@ -176,8 +179,8 @@ def evaluation_step_before_run(sandbox, command,
             "Memory limit must be positive, is %s" % memory_limit)
 
     # Default parameters handling.
-    if allow_dirs is None:
-        allow_dirs = []
+    if dirs_map is None:
+        dirs_map = {}
     if writable_files is None:
         writable_files = []
     if stdout_redirect is None:
@@ -202,7 +205,8 @@ def evaluation_step_before_run(sandbox, command,
     sandbox.stdout_file = stdout_redirect
     sandbox.stderr_file = "stderr.txt"
 
-    sandbox.add_mapped_directories(allow_dirs)
+    for src, (dest, options) in iteritems(dirs_map):
+        sandbox.add_mapped_directory(src, dest=dest, options=options)
     for name in [sandbox.stderr_file, sandbox.stdout_file]:
         if name is not None:
             writable_files.append(name)

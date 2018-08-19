@@ -308,19 +308,15 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # Evaluation step called with the right arguments, in particular
         # redirects, and no (other) writable files. For the user's command,
         # see fake_evaluation_commands in the mixin.
-        cmdline_mgr = ["./manager",
-                       "%s/0/in0" % self.base_dir,
-                       "%s/0/out0" % self.base_dir]
-        cmdline_usr = ["run1", "foo", "stub",
-                       "%s/0/out0" % self.base_dir,
-                       "%s/0/in0" % self.base_dir]
+        cmdline_mgr = ["./manager", "/fifo0/in0", "/fifo0/out0"]
+        cmdline_usr = ["run1", "foo", "stub", "/fifo0/out0", "/fifo0/in0"]
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, cmdline_mgr, 4321, 1234,
-                 allow_dirs=[os.path.join(self.base_dir, "0")],
+                 dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
             call(sandbox_usr, cmdline_usr, 2.5, 123,
-                 allow_dirs=[os.path.join(self.base_dir, "0")],
+                 dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  multiprocess=True),
         ], any_order=True)
         self.assertEqual(self.evaluation_step_before_run.call_count, 2)
@@ -341,7 +337,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, ANY, 2.5 + 1, ANY, allow_dirs=ANY,
+            call(sandbox_mgr, ANY, 2.5 + 1, ANY, dirs_map=ANY,
                  writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_single_process_missing_manager(self):
@@ -519,29 +515,25 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # redirects, and no (other) writable files. For the user's command,
         # see fake_evaluation_commands in the mixin.
         cmdline_mgr = ["./manager",
-                       "%s/0/in0" % self.base_dir,
-                       "%s/0/out0" % self.base_dir,
-                       "%s/1/in1" % self.base_dir,
-                       "%s/1/out1" % self.base_dir]
+                       "/fifo0/in0", "/fifo0/out0",
+                       "/fifo1/in1", "/fifo1/out1"]
         cmdline_usr0 = ["run1", "foo", "stub",
-                        "%s/0/out0" % self.base_dir,
-                        "%s/0/in0" % self.base_dir,
-                        "0"]
+                        "/fifo0/out0", "/fifo0/in0", "0"]
         cmdline_usr1 = ["run1", "foo", "stub",
-                        "%s/1/out1" % self.base_dir,
-                        "%s/1/in1" % self.base_dir,
-                        "1"]
+                        "/fifo1/out1", "/fifo1/in1", "1"]
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, cmdline_mgr, 4321, 1234,
-                 allow_dirs=[os.path.join(self.base_dir, "0"),
-                             os.path.join(self.base_dir, "1")],
+                 dirs_map={
+                     os.path.join(self.base_dir, "0"): ("/fifo0", "rw"),
+                     os.path.join(self.base_dir, "1"): ("/fifo1", "rw"),
+                 },
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
             call(sandbox_usr0, cmdline_usr0, 2.5, 123,
-                 allow_dirs=[os.path.join(self.base_dir, "0")],
+                 dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  multiprocess=True),
             call(sandbox_usr1, cmdline_usr1, 2.5, 123,
-                 allow_dirs=[os.path.join(self.base_dir, "1")],
+                 dirs_map={os.path.join(self.base_dir, "1"): ("/fifo1", "rw")},
                  multiprocess=True),
         ], any_order=True)
         self.assertEqual(self.evaluation_step_before_run.call_count, 3)
@@ -565,7 +557,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, ANY, 2 * (2.5 + 1), ANY, allow_dirs=ANY,
+            call(sandbox_mgr, ANY, 2 * (2.5 + 1), ANY, dirs_map=ANY,
                  writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_many_processes_first_user_failure(self):
