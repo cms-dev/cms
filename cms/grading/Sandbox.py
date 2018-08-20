@@ -894,19 +894,17 @@ class IsolateSandbox(SandboxBase):
             box_id = IsolateSandbox.next_id % 10
         IsolateSandbox.next_id += 1
 
-        # We create a directory "tmp" inside the outer temporary directory,
-        # because the sandbox will bind-mount the inner one. The sandbox also
-        # runs code as a different user, and so we need to ensure that they can
-        # read and write to the directory. But we don't want everybody on the
-        # system to, which is why the outer directory exists with no read
-        # permissions.
-        self._inner_temp_dir = "/tmp"
-        self._outer_temp_dir = tempfile.mkdtemp(
-            dir=self.temp_dir,
-            prefix="cms-%s-" % (self.name))
-        # Don't use os.path.join here, because the absoluteness of /tmp will
-        # bite you.
-        self.path = self._outer_temp_dir + self._inner_temp_dir
+        # We create a directory "home" inside the outer temporary directory,
+        # that will be bind-mounted to "/tmp" inside the sandbox (some
+        # compilers need "/tmp" to exist, and this is a cheap shortcut to
+        # create it). The sandbox also runs code as a different user, and so
+        # we need to ensure that they can read and write to the directory.
+        # But we don't want everybody on the system to, which is why the
+        # outer directory exists with no read permissions.
+        self._outer_dir = tempfile.mkdtemp(dir=self.temp_dir,
+                                           prefix="cms-%s-" % (self.name))
+        self.path = os.path.join(self._outer_dir, "home")
+        self._home_dest = "/tmp"
         os.mkdir(self.path)
         self.allow_writing_all()
 
@@ -921,9 +919,9 @@ class IsolateSandbox(SandboxBase):
         # Default parameters for isolate
         self.box_id = box_id           # -b
         self.cgroup = config.use_cgroups  # --cg
-        self.chdir = self._inner_temp_dir  # -c
+        self.chdir = self._home_dest   # -c
         self.dirs = []                 # -d
-        self.dirs += [(self._inner_temp_dir, self.path, "rw")]
+        self.dirs += [(self._home_dest, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -1243,7 +1241,7 @@ class IsolateSandbox(SandboxBase):
         return (string): the absolute path of the file inside the sandbox.
 
         """
-        return os.path.join(self._inner_temp_dir, path)
+        return os.path.join(self._home_dest, path)
 
     def _popen(self, command,
                stdin=None, stdout=None, stderr=None,
@@ -1413,7 +1411,7 @@ class IsolateSandbox(SandboxBase):
         logger.debug("Deleting sandbox in %s.", self.path)
 
         # Delete the working directory.
-        rmtree(self._outer_temp_dir)
+        rmtree(self._outer_dir)
 
 
 Sandbox = {
