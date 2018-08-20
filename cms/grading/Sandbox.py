@@ -921,7 +921,6 @@ class IsolateSandbox(SandboxBase):
         self.cgroup = config.use_cgroups  # --cg
         self.chdir = self._home_dest   # -c
         self.dirs = []                 # -d
-        self.dirs += [(self._home_dest, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -936,22 +935,46 @@ class IsolateSandbox(SandboxBase):
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
 
+        self.add_mapped_directory(
+            self.path, dest=self._home_dest, options="rw")
+
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
         # packages.
         self.set_env["HOME"] = "./"
 
-        # Needed on Ubuntu by PHP (and more, ) that
-        # have in /usr/bin only a symlink to one out of many
-        # alternatives.
-        if os.path.isdir("/etc/alternatives"):
-            self.add_mapped_directories(["/etc/alternatives"])
+        # Needed on Ubuntu by PHP (and more), since /usr/bin only contains a
+        # symlink to one out of many alternatives.
+        self.maybe_add_mapped_directory("/etc/alternatives")
 
         # Tell isolate to get the sandbox ready. We do our best to
         # cleanup after ourselves, but we might have missed something
         # if the worker was interrupted in the middle of an execution.
         self.cleanup()
         self.initialize_isolate()
+
+    def add_mapped_directory(self, src, dest=None, options=None,
+                             ignore_if_not_existing=False):
+        """Add src to the directory to be mapped inside the sandbox.
+
+        src (str): directory to make visible.
+        dest (str|None): if not None, the path where to bind src.
+        options (str|None): if not None, isolate's directory rule options.
+        ignore_if_not_existing (bool): if True, ignore the mapping when src
+            does not exist (instead of having isolate terminate with an
+            error).
+
+        """
+        if dest is None:
+            dest = src
+        if ignore_if_not_existing and not os.path.exists(src):
+            return
+        self.dirs.append((src, dest, options))
+
+    def maybe_add_mapped_directory(self, src, dest=None, options=None):
+        """Same as add_mapped_directory, with ignore_if_not_existing."""
+        return self.add_mapped_directory(src, dest, options,
+                                         ignore_if_not_existing=True)
 
     def add_mapped_directories(self, dirs):
         """Add dirs to the external dirs visible to the sandboxed command.
@@ -960,7 +983,7 @@ class IsolateSandbox(SandboxBase):
 
         """
         for directory in dirs:
-            self.dirs.append((directory, None, "rw"))
+            self.add_mapped_directory(directory, options="rw")
 
     def allow_writing_all(self):
         """Set permissions in such a way that any operation is allowed.
@@ -1047,10 +1070,8 @@ class IsolateSandbox(SandboxBase):
             res += ["--cg", "--cg-timing"]
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
-        for in_name, out_name, options in self.dirs:
-            s = in_name
-            if out_name is not None:
-                s += "=" + out_name
+        for src, dest, options in self.dirs:
+            s = dest + "=" + src
             if options is not None:
                 s += ":" + options
             res += ["--dir=%s" % s]
