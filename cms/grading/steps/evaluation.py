@@ -111,10 +111,10 @@ def evaluation_step(sandbox, commands,
         if None, no time limit is enforced.
     memory_limit (int|None): memory limit in MiB (applied to each command); if
         None, no memory limit is enforced.
-    dirs_map ({string: (string, string|None)}|None): if not None, a dict
+    dirs_map ({str: (str|None, str|None)}|None): if not None, a dict
         from external directories to a pair of strings: the first is the path
-        they should be mapped to inside the sandbox, the second, if not None,
-        is isolate's options for the mapping.
+        they should be mapped to inside the sandbox, the second, is
+        isolate's options for the mapping.
     writable_files ([str]|None): a list of inner file names (relative to
         the inner path) on which the command is allow to write, or None to
         indicate that all files are read-only; if applicable, redirected
