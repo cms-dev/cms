@@ -34,7 +34,6 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import logging
-import os
 
 from .messages import HumanMessage, MessageCollection
 from .utils import generic_step
@@ -100,14 +99,12 @@ def compilation_step(sandbox, commands):
 
     """
     # Set sandbox parameters suitable for compilation.
-    sandbox.dirs += [("/etc", None, None)]
-    # We need to add "/var/lib/ghc" to the unrestricted dirs so GHC can access
-    # haskell's package database.
-    # GHC looks for it in "/usr/lib/ghc/package.conf.d", which is only a
-    # symlink to "/var/lib/ghc/package.conf.d"
-    ghc_dir = "/var/lib/ghc"
-    if os.path.exists(ghc_dir):
-        sandbox.dirs += [("/var/lib/ghc", None, None)]
+    sandbox.add_mapped_directory("/etc")
+    # Directory required to be visible during a compilation with GHC.
+    # GHC looks for the Haskell's package database in
+    # "/usr/lib/ghc/package.conf.d" (already visible by isolate's default,
+    # but it is a symlink to "/var/lib/ghc/package.conf.d"
+    sandbox.maybe_add_mapped_directory("/var/lib/ghc")
     sandbox.preserve_env = True
     sandbox.max_processes = config.compilation_sandbox_max_processes
     sandbox.timeout = config.compilation_sandbox_max_time_s
