@@ -896,7 +896,7 @@ class IsolateSandbox(SandboxBase):
 
         # We create a directory "box" inside the outer temporary directory,
         # that will be bind-mounted to "/tmp" inside the sandbox (some
-        # compiler need "/tmp" to exist, and this is a cheap shortcut to
+        # compilers need "/tmp" to exist, and this is a cheap shortcut to
         # create it). The sandbox also runs code as a different user, and so
         # we need to ensure that they can read and write to the directory.
         # But we don't want everybody on the system to, which is why the
