@@ -961,11 +961,11 @@ class IsolateSandbox(SandboxBase):
                              ignore_if_not_existing=False):
         """Add src to the directory to be mapped inside the sandbox.
 
-        src (string): directory to make visible.
-        dest (string|None): if not None, the path where to bind src.
-        options (string|None): if not None, isolate's directory rule options.
-        ignore_if_not_existing (boolean): if True, ignore the mapping if
-            src does not exist (instead of having isolate terminate with an
+        src (str): directory to make visible.
+        dest (str|None): if not None, the path where to bind src.
+        options (str|None): if not None, isolate's directory rule options.
+        ignore_if_not_existing (bool): if True, ignore the mapping when src
+            does not exist (instead of having isolate terminate with an
             error).
 
         """
