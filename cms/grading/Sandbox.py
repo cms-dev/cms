@@ -894,13 +894,15 @@ class IsolateSandbox(SandboxBase):
             box_id = IsolateSandbox.next_id % 10
         IsolateSandbox.next_id += 1
 
-        # We create a directory "tmp" inside the outer temporary directory,
-        # because the sandbox will bind-mount the inner one. The sandbox also
-        # runs code as a different user, and so we need to ensure that they can
-        # read and write to the directory. But we don't want everybody on the
-        # system to, which is why the outer directory exists with no read
-        # permissions.
-        self._inner_temp_dir = "/tmp"
+        # We create a directory "box" inside the outer temporary directory,
+        # that will be bind-mounted to "/tmp" inside the sandbox (some
+        # compiler need "/tmp" to exist, and this is a cheap shortcut to
+        # create it). The sandbox also runs code as a different user, and so
+        # we need to ensure that they can read and write to the directory.
+        # But we don't want everybody on the system to, which is why the
+        # outer directory exists with no read permissions.
+        self._inner_temp_dir = "/box"
+        self._inner_temp_dir_dest = "/tmp"
         self._outer_temp_dir = tempfile.mkdtemp(
             dir=self.temp_dir,
             prefix="cms-%s-" % (self.name))
@@ -921,9 +923,9 @@ class IsolateSandbox(SandboxBase):
         # Default parameters for isolate
         self.box_id = box_id           # -b
         self.cgroup = config.use_cgroups  # --cg
-        self.chdir = self._inner_temp_dir  # -c
+        self.chdir = self._inner_temp_dir_dest  # -c
         self.dirs = []                 # -d
-        self.dirs += [(self._inner_temp_dir, self.path, "rw")]
+        self.dirs += [(self._inner_temp_dir_dest, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -1243,7 +1245,7 @@ class IsolateSandbox(SandboxBase):
         return (string): the absolute path of the file inside the sandbox.
 
         """
-        return os.path.join(self._inner_temp_dir, path)
+        return os.path.join(self._inner_temp_dir_dest, path)
 
     def _popen(self, command,
                stdin=None, stdout=None, stderr=None,
