@@ -144,21 +144,18 @@ class Communication(TaskType):
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
+        codenames_to_compile = []
+        if self._uses_stub():
+            codenames_to_compile.append(self.STUB_BASENAME + ".%l")
+        codenames_to_compile.extend(submission_format)
+        executable_filename = self._executable_filename(submission_format)
         res = dict()
         for language in LANGUAGES:
-            # Collect source filenames.
             source_ext = language.source_extension
-            source_filenames = []
-            if self._uses_stub():
-                source_filenames.append(self.STUB_BASENAME + source_ext)
-            for codename in submission_format:
-                source_filenames.append(codename.replace(".%l", source_ext))
-            # Compute executable name.
-            executable_filename = self._executable_filename(submission_format)
-            # Build the compilation commands.
-            commands = language.get_compilation_commands(
-                source_filenames, executable_filename)
-            res[language.name] = commands
+            res[language.name] = language.get_compilation_commands(
+                [codename.replace(".%l", source_ext)
+                 for codename in codenames_to_compile],
+                executable_filename)
         return res
 
     def get_user_managers(self):
