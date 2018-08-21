@@ -129,7 +129,7 @@ class FakeIsolateSandbox(IsolateSandbox):
         self.exec_num += 1
 
         data = self._fake_execute_data.popleft()
-        self.fake_file("run.log.%d" % self.exec_num, data["log"])
+        self.fake_file("../run.log.%d" % self.exec_num, data["log"])
         if data["stdout"] is not None:
             assert self.stdout_file is not None
             self.fake_file(self.stdout_file, data["stdout"])
