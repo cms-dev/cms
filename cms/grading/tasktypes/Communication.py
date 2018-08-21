@@ -213,9 +213,9 @@ class Communication(TaskType):
         executable_digest = job.executables[executable_filename].digest
 
         # Make sure the required manager is among the job managers.
-        if not check_manager_present(job, Communication.MANAGER_FILENAME):
+        if not check_manager_present(job, self.MANAGER_FILENAME):
             return
-        manager_digest = job.managers[Communication.MANAGER_FILENAME].digest
+        manager_digest = job.managers[self.MANAGER_FILENAME].digest
 
         # Indices for the objects related to each user process.
         indices = range(self.num_processes)
@@ -241,9 +241,9 @@ class Communication(TaskType):
         sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
         job.sandboxes.append(sandbox_mgr.get_root_path())
         sandbox_mgr.create_file_from_storage(
-            Communication.MANAGER_FILENAME, manager_digest, executable=True)
+            self.MANAGER_FILENAME, manager_digest, executable=True)
         sandbox_mgr.create_file_from_storage(
-            Communication.INPUT_FILENAME, job.input)
+            self.INPUT_FILENAME, job.input)
 
         # Create the user sandbox(es) and copy the executable.
         sandbox_user = [create_sandbox(file_cacher, name="user_evaluate")
@@ -256,7 +256,7 @@ class Communication(TaskType):
         # Start the manager. Redirecting to stdin is unnecessary, but for
         # historical reasons the manager can choose to read from there
         # instead than from INPUT_FILENAME.
-        manager_command = ["./%s" % Communication.MANAGER_FILENAME]
+        manager_command = ["./%s" % self.MANAGER_FILENAME]
         for i in indices:
             manager_command += [sandbox_fifo_in[i], sandbox_fifo_out[i]]
         # We could use trusted_step for the manager, since it's fully
@@ -282,8 +282,8 @@ class Communication(TaskType):
             config.trusted_sandbox_max_memory_kib // 1024,
             dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw"))
                           for i in indices),
-            writable_files=[Communication.OUTPUT_FILENAME],
-            stdin_redirect=Communication.INPUT_FILENAME,
+            writable_files=[self.OUTPUT_FILENAME],
+            stdin_redirect=self.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox)
 
         # Start the user submissions compiled with the stub.
@@ -360,9 +360,9 @@ class Communication(TaskType):
         # If asked so, save the output file with additional information,
         # provided that it exists.
         if job.get_output:
-            if sandbox_mgr.file_exists(Communication.OUTPUT_FILENAME):
+            if sandbox_mgr.file_exists(self.OUTPUT_FILENAME):
                 job.user_output = sandbox_mgr.get_file_to_storage(
-                    Communication.OUTPUT_FILENAME,
+                    self.OUTPUT_FILENAME,
                     "Output file in job %s" % job.info,
                     trunc_len=100 * 1024)
             else:
