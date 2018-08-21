@@ -901,10 +901,10 @@ class IsolateSandbox(SandboxBase):
         # we need to ensure that they can read and write to the directory.
         # But we don't want everybody on the system to, which is why the
         # outer directory exists with no read permissions.
-        self._home_dest = "/tmp"
         self._outer_dir = tempfile.mkdtemp(dir=self.temp_dir,
                                            prefix="cms-%s-" % (self.name))
         self.path = os.path.join(self._outer_dir, "home")
+        self._home_dest = "/tmp"
         os.mkdir(self.path)
         self.allow_writing_all()
 
