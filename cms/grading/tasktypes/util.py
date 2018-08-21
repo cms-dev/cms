@@ -243,7 +243,7 @@ def eval_output(file_cacher, job, checker_codename,
 
         # Create a brand-new sandbox just for checking.
         sandbox = create_sandbox(file_cacher, name="check")
-        job.sandboxes.append(sandbox.path)
+        job.sandboxes.append(sandbox.get_root_path())
 
         # Put user output in the sandbox.
         if user_output_path is not None:

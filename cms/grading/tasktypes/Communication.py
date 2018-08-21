@@ -180,7 +180,7 @@ class Communication(TaskType):
 
         # Create the sandbox.
         sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
+        job.sandboxes.append(sandbox.get_root_path())
 
         # Copy all required files in the sandbox.
         for filename, digest in iteritems(files_to_get):
@@ -239,7 +239,7 @@ class Communication(TaskType):
 
         # Create the manager sandbox and copy manager and input.
         sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
-        job.sandboxes.append(sandbox_mgr.path)
+        job.sandboxes.append(sandbox_mgr.get_root_path())
         sandbox_mgr.create_file_from_storage(
             Communication.MANAGER_FILENAME, manager_digest, executable=True)
         sandbox_mgr.create_file_from_storage(
@@ -248,7 +248,7 @@ class Communication(TaskType):
         # Create the user sandbox(es) and copy the executable.
         sandbox_user = [create_sandbox(file_cacher, name="user_evaluate")
                         for i in indices]
-        job.sandboxes.extend(s.path for s in sandbox_user)
+        job.sandboxes.extend(s.get_root_path() for s in sandbox_user)
         for i in indices:
             sandbox_user[i].create_file_from_storage(
                 executable_filename, executable_digest, executable=True)
