@@ -910,7 +910,8 @@ class IsolateSandbox(SandboxBase):
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
-        self.info_basename = "run.log"   # Used for -M
+        # Used for -M - the meta file ends up in the outer directory.
+        self.info_basename = "../run.log"
         self.log = None
         self.exec_num = -1
         logger.debug("Sandbox in `%s' created, using box `%s'.",
