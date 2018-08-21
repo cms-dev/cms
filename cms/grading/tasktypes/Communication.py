@@ -198,36 +198,37 @@ class Communication(TaskType):
 
         # Prepare the files to copy in the sandbox and to add to the
         # compilation command.
-        files_to_get = {}
-        source_filenames = []
+        filenames_to_compile = []
+        filenames_and_digests_to_get = {}
         # The stub, that must have been provided (copy and add to compilation).
         if self._uses_stub():
             stub_filename = self.STUB_BASENAME + source_ext
             if not check_manager_present(job, stub_filename):
                 return
-            source_filenames.append(stub_filename)
-            files_to_get[stub_filename] = job.managers[stub_filename].digest
+            filenames_to_compile.append(stub_filename)
+            filenames_and_digests_to_get[stub_filename] = \
+                job.managers[stub_filename].digest
         # User's submitted file(s) (copy and add to compilation).
         for codename, file_ in iteritems(job.files):
-            source_filename = codename.replace(".%l", source_ext)
-            source_filenames.append(source_filename)
-            files_to_get[source_filename] = file_.digest
+            filename = codename.replace(".%l", source_ext)
+            filenames_to_compile.append(filename)
+            filenames_and_digests_to_get[filename] = file_.digest
         # Any other useful manager (just copy).
         for filename, manager in iteritems(job.managers):
             if is_manager_for_compilation(filename, language):
-                files_to_get[filename] = manager.digest
+                filenames_and_digests_to_get[filename] = manager.digest
 
         # Prepare the compilation command
         executable_filename = self._executable_filename(iterkeys(job.files))
         commands = language.get_compilation_commands(
-            source_filenames, executable_filename)
+            filenames_to_compile, executable_filename)
 
         # Create the sandbox.
         sandbox = create_sandbox(file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy all required files in the sandbox.
-        for filename, digest in iteritems(files_to_get):
+        for filename, digest in iteritems(filenames_and_digests_to_get):
             sandbox.create_file_from_storage(filename, digest)
 
         # Run the compilation.
@@ -398,7 +399,6 @@ class Communication(TaskType):
         # terminate correctly, we report an error (and no need for user stats).
         if not success:
             stats_user = None
-            pass
 
         # If just asked to execute, fill text and set dummy outcome.
         elif job.only_execution:
