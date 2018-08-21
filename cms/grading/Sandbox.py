@@ -1016,7 +1016,17 @@ class IsolateSandbox(SandboxBase):
         return (string): the root path.
 
         """
-        return self._home
+        return self._outer_dir
+
+    def relative_path(self, path):
+        """Translate from a relative path inside the sandbox to a system path.
+
+        path (string): relative path of the file inside the sandbox.
+
+        return (string): the absolute path.
+
+        """
+        return os.path.join(self._home, path)
 
     def detect_box_executable(self):
         """Try to find an isolate executable. It first looks in
