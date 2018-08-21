@@ -995,22 +995,30 @@ class IsolateSandbox(SandboxBase):
         for filename in os.listdir(self._home):
             os.chmod(os.path.join(self._home, filename), 0o755)
 
-    def allow_writing_only(self, paths):
+    def allow_writing_only(self, inner_paths):
         """Set permissions in so that the user can write only some paths.
 
         paths ([string]): the only paths that the user is allowed to
             write.
 
         """
+        outer_paths = []
+        for inner_path in inner_paths:
+            outer_path = os.path.realpath(os.path.join(self._home, inner_path))
+            # If an inner path is absolute (e.g., /fifo0/u0_to_m) then
+            # it may be outside home and we should ignore it.
+            if outer_path.startswith(self._home + "/"):
+                outer_paths.append(outer_path)
+
         # If one of the specified file do not exists, we touch it to
         # assign the correct permissions.
-        for path in (os.path.join(self._home, path) for path in paths):
+        for path in outer_paths:
             if not os.path.exists(path):
                 io.open(path, "wb").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
-        for path in (os.path.join(self._home, path) for path in paths):
+        for path in outer_paths:
             os.chmod(path, 0o722)
 
     def get_root_path(self):
