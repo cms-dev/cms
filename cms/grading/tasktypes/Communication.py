@@ -40,7 +40,7 @@ from cms.grading.steps import compilation_step,  evaluation_step_before_run, \
     evaluation_step_after_run, extract_outcome_and_text, \
     human_evaluation_message, merge_execution_stats, trusted_step
 from cms.grading.languagemanager import LANGUAGES, get_language
-from cms.grading.ParameterTypes import ParameterTypeInt
+from cms.grading.ParameterTypes import ParameterTypeChoice, ParameterTypeInt
 from cms.db import Executable
 from cms.grading.tasktypes import check_files_number
 from . import TaskType, check_executables_number, check_manager_present, \
@@ -59,15 +59,15 @@ class Communication(TaskType):
     """Task type class for tasks with a fully admin-controlled process.
 
     The task type will run *manager*, an admin-provided executable, and one or
-    more instances of the user solution, compiled together with a
+    more instances of the user solution, optionally compiled together with a
     language-specific stub.
 
     During the evaluation, the manager and each of the user processes
     communicate via FIFOs. The manager will read the input, send it (possibly
-    with some modifications) to the user process(es). The user processes, via
-    functions provided by the stub, will communicate with the manager. Finally,
-    the manager will decide outcome and text, and print them on stdout and
-    stderr.
+    with some modifications) to the user process(es). The user processes, either
+    via functions provided by the stub or by themselves, will communicate with
+    the manager. Finally, the manager will decide outcome and text, and print
+    them on stdout and stderr.
 
     The manager reads the input from stdin and writes to stdout and stderr the
     standard manager output (that is, the outcome on stdout and the text on
@@ -77,8 +77,9 @@ class Communication(TaskType):
     to a file named "output.txt"; the content of this file will be shown to
     users submitting a user test.
 
-    The stub receives as argument the fifos (from and to the manager) and if
-    there are more than one user processes, the 0-based index of the process.
+    The user process receives as argument the fifos (from and to the manager)
+    and, if there are more than one user processes, the 0-based index of the
+    process.
 
     """
     # Filename of the manager (the stand-alone, admin-provided program).
@@ -93,6 +94,10 @@ class Communication(TaskType):
     # in case of a user test.
     OUTPUT_FILENAME = "output.txt"
 
+    # Constants used in the parameter definition.
+    COMPILATION_ALONE = "alone"
+    COMPILATION_STUB = "stub"
+
     ALLOW_PARTIAL_SUBMISSION = False
 
     _NUM_PROCESSES = ParameterTypeInt(
@@ -100,7 +105,14 @@ class Communication(TaskType):
         "num_processes",
         "")
 
-    ACCEPTED_PARAMETERS = [_NUM_PROCESSES]
+    _COMPILATION = ParameterTypeChoice(
+        "Compilation",
+        "compilation",
+        "",
+        {COMPILATION_ALONE: "Submissions are self-sufficient",
+         COMPILATION_STUB: "Submissions are compiled with a stub"})
+
+    ACCEPTED_PARAMETERS = [_NUM_PROCESSES, _COMPILATION]
 
     @property
     def name(self):
@@ -111,8 +123,11 @@ class Communication(TaskType):
         super(Communication, self).__init__(parameters)
 
         self.num_processes = 1
-        if len(self.parameters) > 0:
+        self.compilation = self.COMPILATION_STUB
+        if len(self.parameters) >= 1:
             self.num_processes = self.parameters[0]
+        if len(self.parameters) >= 2:
+            self.compilation = self.parameters[1]
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -120,7 +135,9 @@ class Communication(TaskType):
         for language in LANGUAGES:
             # Collect source filenames.
             source_ext = language.source_extension
-            source_filenames = [self.STUB_BASENAME + source_ext]
+            source_filenames = []
+            if self._uses_stub():
+                source_filenames.append(self.STUB_BASENAME + source_ext)
             for codename in submission_format:
                 source_filenames.append(codename.replace(".%l", source_ext))
             # Compute executable name.
@@ -133,11 +150,17 @@ class Communication(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        return [self.STUB_BASENAME + ".%l"]
+        if self._uses_stub():
+            return [self.STUB_BASENAME + ".%l"]
+        else:
+            return []
 
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
         return [self.MANAGER_FILENAME]
+
+    def _uses_stub(self):
+        return self.compilation == self.COMPILATION_STUB
 
     @staticmethod
     def _executable_filename(codenames):
@@ -165,11 +188,12 @@ class Communication(TaskType):
         files_to_get = {}
         source_filenames = []
         # The stub, that must have been provided (copy and add to compilation).
-        stub_filename = self.STUB_BASENAME + source_ext
-        if not check_manager_present(job, stub_filename):
-            return
-        source_filenames.append(stub_filename)
-        files_to_get[stub_filename] = job.managers[stub_filename].digest
+        if self._uses_stub():
+            stub_filename = self.STUB_BASENAME + source_ext
+            if not check_manager_present(job, stub_filename):
+                return
+            source_filenames.append(stub_filename)
+            files_to_get[stub_filename] = job.managers[stub_filename].digest
         # User's submitted file(s) (copy and add to compilation).
         for codename, file_ in iteritems(job.files):
             source_filename = codename.replace(".%l", source_ext)
@@ -298,6 +322,7 @@ class Communication(TaskType):
 
         # Start the user submissions compiled with the stub.
         language = get_language(job.language)
+        main = self.STUB_BASENAME if self._uses_stub() else executable_filename
         processes = [None for i in indices]
         for i in indices:
             args = [sandbox_fifo_manager_to_user[i],
@@ -306,7 +331,7 @@ class Communication(TaskType):
                 args.append(str(i))
             commands = language.get_evaluation_commands(
                 executable_filename,
-                main=self.STUB_BASENAME,
+                main=main,
                 args=args)
             # Assumes that the actual execution of the user solution is the
             # last command in commands, and that the previous are "setup"
