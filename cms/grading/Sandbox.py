@@ -553,7 +553,7 @@ class StupidSandbox(SandboxBase):
         SandboxBase.__init__(self, file_cacher, name, temp_dir)
 
         # Make box directory
-        self.path = tempfile.mkdtemp(
+        self._path = tempfile.mkdtemp(
             dir=self.temp_dir,
             prefix="cms-%s-" % (self.name))
 
@@ -562,10 +562,10 @@ class StupidSandbox(SandboxBase):
         self.popen_time = None
         self.exec_time = None
 
-        logger.debug("Sandbox in `%s' created, using stupid box.", self.path)
+        logger.debug("Sandbox in `%s' created, using stupid box.", self._path)
 
         # Box parameters
-        self.chdir = self.path
+        self.chdir = self._path
         self.stdin_file = None
         self.stdout_file = None
         self.stderr_file = None
@@ -581,7 +581,7 @@ class StupidSandbox(SandboxBase):
         return (string): the root path.
 
         """
-        return self.path
+        return self._path
 
     # TODO - It returns wall clock time, because I have no way to
     # check CPU time (libev doesn't have wait4() support)
@@ -757,19 +757,19 @@ class StupidSandbox(SandboxBase):
 
         # Setup std*** redirection
         if self.stdin_file:
-            stdin_fd = os.open(os.path.join(self.path, self.stdin_file),
+            stdin_fd = os.open(os.path.join(self._path, self.stdin_file),
                                os.O_RDONLY)
         else:
             stdin_fd = subprocess.PIPE
         if self.stdout_file:
-            stdout_fd = os.open(os.path.join(self.path, self.stdout_file),
+            stdout_fd = os.open(os.path.join(self._path, self.stdout_file),
                                 os.O_WRONLY | os.O_TRUNC | os.O_CREAT,
                                 stat.S_IRUSR | stat.S_IRGRP |
                                 stat.S_IROTH | stat.S_IWUSR)
         else:
             stdout_fd = subprocess.PIPE
         if self.stderr_file:
-            stderr_fd = os.open(os.path.join(self.path, self.stderr_file),
+            stderr_fd = os.open(os.path.join(self._path, self.stderr_file),
                                 os.O_WRONLY | os.O_TRUNC | os.O_CREAT,
                                 stat.S_IRUSR | stat.S_IRGRP |
                                 stat.S_IROTH | stat.S_IWUSR)
@@ -843,10 +843,10 @@ class StupidSandbox(SandboxBase):
         """Delete the directory where the sandbox operated.
 
         """
-        logger.debug("Deleting sandbox in %s.", self.path)
+        logger.debug("Deleting sandbox in %s.", self._path)
 
         # Delete the working directory.
-        rmtree(self.path)
+        rmtree(self._path)
 
 
 class IsolateSandbox(SandboxBase):
@@ -903,9 +903,9 @@ class IsolateSandbox(SandboxBase):
         # outer directory exists with no read permissions.
         self._outer_dir = tempfile.mkdtemp(dir=self.temp_dir,
                                            prefix="cms-%s-" % (self.name))
-        self.path = os.path.join(self._outer_dir, "home")
+        self._home = os.path.join(self._outer_dir, "home")
         self._home_dest = "/tmp"
-        os.mkdir(self.path)
+        os.mkdir(self._home)
         self.allow_writing_all()
 
         self.exec_name = 'isolate'
@@ -914,7 +914,7 @@ class IsolateSandbox(SandboxBase):
         self.log = None
         self.exec_num = -1
         logger.debug("Sandbox in `%s' created, using box `%s'.",
-                     self.path, self.box_exec)
+                     self._home, self.box_exec)
 
         # Default parameters for isolate
         self.box_id = box_id           # -b
@@ -936,7 +936,7 @@ class IsolateSandbox(SandboxBase):
         self.extra_timeout = None      # -x
 
         self.add_mapped_directory(
-            self.path, dest=self._home_dest, options="rw")
+            self._home, dest=self._home_dest, options="rw")
 
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
@@ -980,17 +980,17 @@ class IsolateSandbox(SandboxBase):
         """Set permissions in such a way that any operation is allowed.
 
         """
-        os.chmod(self.path, 0o777)
-        for filename in os.listdir(self.path):
-            os.chmod(os.path.join(self.path, filename), 0o777)
+        os.chmod(self._home, 0o777)
+        for filename in os.listdir(self._home):
+            os.chmod(os.path.join(self._home, filename), 0o777)
 
     def allow_writing_none(self):
         """Set permissions in such a way that the user cannot write anything.
 
         """
-        os.chmod(self.path, 0o755)
-        for filename in os.listdir(self.path):
-            os.chmod(os.path.join(self.path, filename), 0o755)
+        os.chmod(self._home, 0o755)
+        for filename in os.listdir(self._home):
+            os.chmod(os.path.join(self._home, filename), 0o755)
 
     def allow_writing_only(self, paths):
         """Set permissions in so that the user can write only some paths.
@@ -1001,13 +1001,13 @@ class IsolateSandbox(SandboxBase):
         """
         # If one of the specified file do not exists, we touch it to
         # assign the correct permissions.
-        for path in (os.path.join(self.path, path) for path in paths):
+        for path in (os.path.join(self._home, path) for path in paths):
             if not os.path.exists(path):
                 io.open(path, "wb").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
-        for path in (os.path.join(self.path, path) for path in paths):
+        for path in (os.path.join(self._home, path) for path in paths):
             os.chmod(path, 0o722)
 
     def get_root_path(self):
@@ -1016,7 +1016,7 @@ class IsolateSandbox(SandboxBase):
         return (string): the root path.
 
         """
-        return self.path
+        return self._home
 
     def detect_box_executable(self):
         """Try to find an isolate executable. It first looks in
@@ -1280,24 +1280,24 @@ class IsolateSandbox(SandboxBase):
         # not depend on the user input.
         if command[0] in IsolateSandbox.SECURE_COMMANDS:
             logger.debug("Executing non-securely: %s at %s",
-                         pretty_print_cmdline(command), self.path)
+                         pretty_print_cmdline(command), self._home)
             try:
-                prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-                os.chmod(self.path, 0o700)
+                prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
+                os.chmod(self._home, 0o700)
                 with io.open(self.relative_path(self.cmd_file), 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
-                p = subprocess.Popen(command, cwd=self.path,
+                p = subprocess.Popen(command, cwd=self._home,
                                      stdin=stdin, stdout=stdout, stderr=stderr,
                                      close_fds=close_fds)
-                os.chmod(self.path, prev_permissions)
+                os.chmod(self._home, prev_permissions)
                 # For secure commands, we clear the output so that it
                 # is not forwarded to the contestants. Secure commands
                 # are "setup" commands, which should not fail or
                 # provide information for the contestants.
                 io.open(
-                    os.path.join(self.path, self.stdout_file), "wb").close()
+                    os.path.join(self._home, self.stdout_file), "wb").close()
                 io.open(
-                    os.path.join(self.path, self.stderr_file), "wb").close()
+                    os.path.join(self._home, self.stderr_file), "wb").close()
                 self._write_empty_run_log(self.exec_num)
             except OSError:
                 logger.critical(
@@ -1310,11 +1310,11 @@ class IsolateSandbox(SandboxBase):
         logger.debug("Executing program in sandbox with command: `%s'.",
                      pretty_print_cmdline(args))
         # Temporarily allow writing new files.
-        prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-        os.chmod(self.path, 0o770)
+        prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
+        os.chmod(self._home, 0o770)
         with io.open(self.relative_path(self.cmd_file), 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
-        os.chmod(self.path, prev_permissions)
+        os.chmod(self._home, prev_permissions)
         try:
             p = subprocess.Popen(args,
                                  stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1329,7 +1329,7 @@ class IsolateSandbox(SandboxBase):
 
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
-        with io.open(os.path.join(self.path, "run.log.%s" % index),
+        with io.open(os.path.join(self._home, "run.log.%s" % index),
                      "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
@@ -1420,7 +1420,7 @@ class IsolateSandbox(SandboxBase):
         """Delete the directory where the sandbox operated.
 
         """
-        logger.debug("Deleting sandbox in %s.", self.path)
+        logger.debug("Deleting sandbox in %s.", self._home)
 
         # Delete the working directory.
         rmtree(self._outer_dir)
