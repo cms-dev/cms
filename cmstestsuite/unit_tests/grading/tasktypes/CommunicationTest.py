@@ -308,8 +308,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # Evaluation step called with the right arguments, in particular
         # redirects, and no (other) writable files. For the user's command,
         # see fake_evaluation_commands in the mixin.
-        cmdline_mgr = ["./manager", "/fifo0/in0", "/fifo0/out0"]
-        cmdline_usr = ["run1", "foo", "stub", "/fifo0/out0", "/fifo0/in0"]
+        cmdline_mgr = ["./manager",
+                       "/fifo0/user0_to_manager",
+                       "/fifo0/manager_to_user0"]
+        cmdline_usr = ["run1", "foo", "stub",
+                       "/fifo0/manager_to_user0",
+                       "/fifo0/user0_to_manager"]
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, cmdline_mgr, 4321, 1234,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
@@ -515,12 +519,14 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # redirects, and no (other) writable files. For the user's command,
         # see fake_evaluation_commands in the mixin.
         cmdline_mgr = ["./manager",
-                       "/fifo0/in0", "/fifo0/out0",
-                       "/fifo1/in1", "/fifo1/out1"]
+                       "/fifo0/user0_to_manager", "/fifo0/manager_to_user0",
+                       "/fifo1/user1_to_manager", "/fifo1/manager_to_user1"]
         cmdline_usr0 = ["run1", "foo", "stub",
-                        "/fifo0/out0", "/fifo0/in0", "0"]
+                        "/fifo0/manager_to_user0", "/fifo0/user0_to_manager",
+                        "0"]
         cmdline_usr1 = ["run1", "foo", "stub",
-                        "/fifo1/out1", "/fifo1/in1", "1"]
+                        "/fifo1/manager_to_user1", "/fifo1/user1_to_manager",
+                        "1"]
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, cmdline_mgr, 4321, 1234,
                  dirs_map={
