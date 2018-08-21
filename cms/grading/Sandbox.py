@@ -1016,7 +1016,7 @@ class IsolateSandbox(SandboxBase):
         return (string): the root path.
 
         """
-        return self._home
+        return self._outer_dir
 
     def detect_box_executable(self):
         """Try to find an isolate executable. It first looks in
