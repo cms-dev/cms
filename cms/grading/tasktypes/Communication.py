@@ -225,20 +225,22 @@ class Communication(TaskType):
 
         # Create FIFOs.
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
-        fifo_in = [os.path.join(fifo_dir[i], "in%d" % i) for i in indices]
-        fifo_out = [os.path.join(fifo_dir[i], "out%d" % i) for i in indices]
+        fifo_user_to_manager = [
+            os.path.join(fifo_dir[i], "u%d_to_m" % i) for i in indices]
+        fifo_manager_to_user = [
+            os.path.join(fifo_dir[i], "m_to_u%d" % i) for i in indices]
         for i in indices:
-            os.mkfifo(fifo_in[i])
-            os.mkfifo(fifo_out[i])
+            os.mkfifo(fifo_user_to_manager[i])
+            os.mkfifo(fifo_manager_to_user[i])
             os.chmod(fifo_dir[i], 0o755)
-            os.chmod(fifo_in[i], 0o666)
-            os.chmod(fifo_out[i], 0o666)
+            os.chmod(fifo_user_to_manager[i], 0o666)
+            os.chmod(fifo_manager_to_user[i], 0o666)
         # Names of the fifos after being mapped inside the sandboxes.
         sandbox_fifo_dir = ["/fifo%d" % i for i in indices]
-        sandbox_fifo_in = [os.path.join(sandbox_fifo_dir[i], "in%d" % i)
-                           for i in indices]
-        sandbox_fifo_out = [os.path.join(sandbox_fifo_dir[i], "out%d" % i)
-                            for i in indices]
+        sandbox_fifo_user_to_manager = [
+            os.path.join(sandbox_fifo_dir[i], "u%d_to_m" % i) for i in indices]
+        sandbox_fifo_manager_to_user = [
+            os.path.join(sandbox_fifo_dir[i], "m_to_u%d" % i) for i in indices]
 
         # Create the manager sandbox and copy manager and input.
         sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
@@ -261,7 +263,8 @@ class Communication(TaskType):
         # instead than from INPUT_FILENAME.
         manager_command = ["./%s" % self.MANAGER_FILENAME]
         for i in indices:
-            manager_command += [sandbox_fifo_in[i], sandbox_fifo_out[i]]
+            manager_command += [sandbox_fifo_user_to_manager[i],
+                                sandbox_fifo_manager_to_user[i]]
         # We could use trusted_step for the manager, since it's fully
         # admin-controlled. But trusted_step is only synchronous at the moment.
         # Thus we use evaluation_step, and we set a time limit generous enough
@@ -293,7 +296,8 @@ class Communication(TaskType):
         language = get_language(job.language)
         processes = [None for i in indices]
         for i in indices:
-            args = [sandbox_fifo_out[i], sandbox_fifo_in[i]]
+            args = [sandbox_fifo_manager_to_user[i],
+                    sandbox_fifo_user_to_manager[i]]
             if self.num_processes != 1:
                 args.append(str(i))
             commands = language.get_evaluation_commands(
