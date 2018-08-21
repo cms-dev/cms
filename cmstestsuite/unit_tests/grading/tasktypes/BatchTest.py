@@ -39,6 +39,7 @@ from cmstestsuite.unit_tests.grading.tasktypes.tasktypetestutils import \
     TaskTypeTestMixin, fake_compilation_commands, fake_evaluation_commands
 
 FILE_FOO_L1 = File(digest="digest of foo.l1", filename="foo.%l")
+FILE_BAR_L1 = File(digest="digest of bar.l1", filename="bar.%l")
 GRADER_L1 = Manager(digest="digest of grader.l1", filename="grader.l1")
 GRADER_L2 = Manager(digest="digest of grader.l2", filename="grader.l2")
 HEADER_L1 = Manager(digest="digest of grader.hl1", filename="graderl.hl1")
@@ -71,6 +72,30 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
                 COMPILATION_COMMAND_1, ["foo.l1", "grader.l1"], "foo"),
             "L2": fake_compilation_commands(
                 COMPILATION_COMMAND_2, ["foo.l2", "grader.l2"], "foo"),
+        })
+
+    def test_alone_two_files(self):
+        tt = Batch(["alone", ["", ""], "diff"])
+        cc = tt.get_compilation_commands(["foo.%l", "bar.%l"])
+        self.assertEqual(cc, {
+            "L1": fake_compilation_commands(
+                COMPILATION_COMMAND_1, ["foo.l1", "bar.l1"], "bar_foo"),
+            "L2": fake_compilation_commands(
+                COMPILATION_COMMAND_2, ["foo.l2", "bar.l2"], "bar_foo"),
+        })
+
+    def test_grader_two_files(self):
+        tt = Batch(["grader", ["", ""], "diff"])
+        cc = tt.get_compilation_commands(["foo.%l", "bar.%l"])
+        self.assertEqual(cc, {
+            "L1": fake_compilation_commands(
+                COMPILATION_COMMAND_1,
+                ["foo.l1", "bar.l1", "grader.l1"],
+                "bar_foo"),
+            "L2": fake_compilation_commands(
+                COMPILATION_COMMAND_2,
+                ["foo.l2", "bar.l2", "grader.l2"],
+                "bar_foo"),
         })
 
 
@@ -153,15 +178,30 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.compilation_step.assert_not_called()
         self.assertResultsInJob(job)
 
-    def test_alone_failure_two_files(self):
+    def test_alone_success_two_files(self):
         # Same as for a missing file.
         tt, job = self.prepare(["alone", ["", ""], "diff"],
-                               {"foo.%l": FILE_FOO_L1, "foo2.%l": FILE_FOO_L1})
+                               {"foo.%l": FILE_FOO_L1, "bar.%l": FILE_BAR_L1})
+        sandbox = self.expect_sandbox()
+        sandbox.get_file_to_storage.return_value = "exe_digest"
 
         tt.compile(job, self.file_cacher)
 
-        self.compilation_step.assert_not_called()
+        # Sandbox created with the correct file cacher and name.
+        self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
+        # For alone, we only need the user source file.
+        sandbox.create_file_from_storage.assert_has_calls(
+            [call("foo.l1", "digest of foo.l1"),
+             call("bar.l1", "digest of bar.l1")], any_order=True)
+        self.assertEqual(sandbox.create_file_from_storage.call_count, 2)
+        # Compilation step called correctly.
+        self.compilation_step.assert_called_once_with(
+            sandbox, fake_compilation_commands(
+                COMPILATION_COMMAND_1, ["foo.l1", "bar.l1"], "bar_foo"))
+        # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job)
+        sandbox.get_file_to_storage.assert_called_once_with("bar_foo", ANY)
+        sandbox.delete.assert_called_once()
 
     def test_alone_compilation_failure(self):
         # Compilation failure, but sandbox succeeded. It's the user's fault.

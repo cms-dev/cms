@@ -161,7 +161,7 @@ def check_executables_number(job, n_executables):
     return True
 
 
-def check_files_number(job, n_files):
+def check_files_number(job, n_files, or_more=False):
     """Check that the required number of files were provided by the user.
 
     A mismatch here is likely caused by having had, at submission time, a wrong
@@ -172,11 +172,17 @@ def check_files_number(job, n_files):
 
     job (Job): the job currently running.
     n_files (int): the required number of files.
+    or_more (bool): whether more than the required number is also fine.
 
     return (bool): whether there is the right number of files in the job.
 
     """
-    if len(job.files) != n_files:
+    if or_more and len(job.files) < n_files:
+        msg = "submission contains %d files, at least %d are required; " \
+              "ensure the submission format is correct."
+        set_configuration_error(job, msg, len(job.files), n_files)
+        return False
+    if not or_more and len(job.files) != n_files:
         msg = "submission contains %d files, exactly %d are required; " \
               "ensure the submission format is correct."
         set_configuration_error(job, msg, len(job.files), n_files)
