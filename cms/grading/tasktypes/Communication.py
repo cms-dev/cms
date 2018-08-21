@@ -133,14 +133,9 @@ class Communication(TaskType):
     def __init__(self, parameters):
         super(Communication, self).__init__(parameters)
 
-        self.num_processes = 1
-        self.compilation = self.COMPILATION_STUB
-        self.io = self.USER_IO_FIFOS
-        if len(self.parameters) >= 1:
-            self.num_processes = self.parameters[0]
-        if len(self.parameters) >= 3:
-            self.compilation = self.parameters[1]
-            self.io = self.parameters[2]
+        self.num_processes = self.parameters[0]
+        self.compilation = self.parameters[1]
+        self.io = self.parameters[2]
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
