@@ -164,7 +164,7 @@ class Batch(TaskType):
         # In case the task uses a grader, we let the user provide their own
         # grader (which is usually a simplified grader provided by the admins).
         if self._uses_grader():
-            return ["grader.%l"]
+            return [self.GRADER_BASENAME + ".%l"]
         else:
             return []
 
