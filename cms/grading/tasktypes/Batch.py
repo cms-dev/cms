@@ -206,7 +206,7 @@ class Batch(TaskType):
 
         # Create the sandbox.
         sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
+        job.sandboxes.append(sandbox.get_root_path())
 
         # Copy required files in the sandbox (includes the grader if present).
         sandbox.create_file_from_storage(
@@ -268,7 +268,7 @@ class Batch(TaskType):
 
         # Create the sandbox
         sandbox = create_sandbox(file_cacher, name="evaluate")
-        job.sandboxes.append(sandbox.path)
+        job.sandboxes.append(sandbox.get_root_path())
 
         # Put the required files into the sandbox
         for filename, digest in iteritems(executables_to_get):

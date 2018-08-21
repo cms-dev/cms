@@ -194,7 +194,7 @@ class TwoSteps(TaskType):
 
         # Create the sandbox and put the required files in it.
         sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
+        job.sandboxes.append(sandbox.get_root_path())
 
         for filename, digest in iteritems(files_to_get):
             sandbox.create_file_from_storage(filename, digest)
@@ -229,8 +229,8 @@ class TwoSteps(TaskType):
 
         first_sandbox = create_sandbox(file_cacher, name="first_evaluate")
         second_sandbox = create_sandbox(file_cacher, name="second_evaluate")
-        job.sandboxes.append(first_sandbox.path)
-        job.sandboxes.append(second_sandbox.path)
+        job.sandboxes.append(first_sandbox.get_root_path())
+        job.sandboxes.append(second_sandbox.get_root_path())
 
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
