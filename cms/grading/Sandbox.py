@@ -210,7 +210,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         self.name = name if name is not None else "unnamed"
         self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
 
-        self.cmd_file = "commands.log"
+        self.cmd_file = "../commands.log"
 
         # These are not necessarily used, but are here for API compatibility
         # TODO: move all other common properties here.
@@ -1340,7 +1340,8 @@ class IsolateSandbox(SandboxBase):
 
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
-        with io.open(os.path.join(self._home, "run.log.%s" % index),
+        info_file = "%s.%d" % (self.info_basename, index)
+        with io.open(os.path.join(self._home, info_file),
                      "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
