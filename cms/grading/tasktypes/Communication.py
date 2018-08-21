@@ -82,6 +82,9 @@ class Communication(TaskType):
     """
     # Filename of the manager (the stand-alone, admin-provided program).
     MANAGER_FILENAME = "manager"
+    # Basename of the stub, used in the stub filename and as the main class in
+    # languages that require us to specify it.
+    STUB_BASENAME = "stub"
     # Filename of the input in the manager sandbox. The content will be
     # redirected to stdin, and managers should read from there.
     INPUT_FILENAME = "input.txt"
@@ -116,7 +119,7 @@ class Communication(TaskType):
         for language in LANGUAGES:
             # Collect source filenames.
             source_ext = language.source_extension
-            source_filenames = ["stub%s" % source_ext]
+            source_filenames = [self.STUB_BASENAME + source_ext]
             for codename in submission_format:
                 source_filenames.append(codename.replace(".%l", source_ext))
             # Compute executable name.
@@ -129,7 +132,7 @@ class Communication(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        return ["stub.%l"]
+        return [self.STUB_BASENAME + ".%l"]
 
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
@@ -158,7 +161,7 @@ class Communication(TaskType):
         files_to_get = {}
         source_filenames = []
         # The stub, that must have been provided (copy and add to compilation).
-        stub_filename = "stub%s" % source_ext
+        stub_filename = self.STUB_BASENAME + source_ext
         if not check_manager_present(job, stub_filename):
             return
         source_filenames.append(stub_filename)
@@ -295,7 +298,7 @@ class Communication(TaskType):
                 args.append(str(i))
             commands = language.get_evaluation_commands(
                 executable_filename,
-                main="stub",
+                main=self.STUB_BASENAME,
                 args=args)
             # Assumes that the actual execution of the user solution is the
             # last command in commands, and that the previous are "setup"
