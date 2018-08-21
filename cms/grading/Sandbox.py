@@ -941,7 +941,7 @@ class IsolateSandbox(SandboxBase):
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
         # packages.
-        self.set_env["HOME"] = "./"
+        self.set_env["HOME"] = self._home_dest
 
         # Needed on Ubuntu by PHP (and more), since /usr/bin only contains a
         # symlink to one out of many alternatives.
