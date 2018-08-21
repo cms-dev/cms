@@ -133,7 +133,7 @@ class Communication(TaskType):
 
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""
-        return ["manager"]
+        return [self.MANAGER_FILENAME]
 
     @staticmethod
     def _executable_filename(codenames):
