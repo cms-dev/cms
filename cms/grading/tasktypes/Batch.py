@@ -138,9 +138,9 @@ class Batch(TaskType):
         self._actual_input = self.input_filename
         self._actual_output = self.output_filename
         if len(self.input_filename) == 0:
-            self._actual_input = Batch.DEFAULT_INPUT_FILENAME
+            self._actual_input = self.DEFAULT_INPUT_FILENAME
         if len(self.output_filename) == 0:
-            self._actual_output = Batch.DEFAULT_OUTPUT_FILENAME
+            self._actual_output = self.DEFAULT_OUTPUT_FILENAME
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -148,7 +148,7 @@ class Batch(TaskType):
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager.
         if self._uses_grader():
-            source_filenames.append(Batch.GRADER_BASENAME + ".%l")
+            source_filenames.append(self.GRADER_BASENAME + ".%l")
         source_filenames.append(submission_format[0])
         executable_filename = submission_format[0].replace(".%l", "")
         res = dict()
@@ -173,10 +173,10 @@ class Batch(TaskType):
         return []
 
     def _uses_grader(self):
-        return self.compilation == Batch.COMPILATION_GRADER
+        return self.compilation == self.COMPILATION_GRADER
 
     def _uses_checker(self):
-        return self.output_eval == Batch.OUTPUT_EVAL_CHECKER
+        return self.output_eval == self.OUTPUT_EVAL_CHECKER
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -195,7 +195,7 @@ class Batch(TaskType):
         # we check that it exists.
         source_filenames = [user_source_filename]
         if self._uses_grader():
-            grader_source_filename = Batch.GRADER_BASENAME + source_ext
+            grader_source_filename = self.GRADER_BASENAME + source_ext
             if not check_manager_present(job, grader_source_filename):
                 return
             source_filenames.insert(0, grader_source_filename)
@@ -242,7 +242,7 @@ class Batch(TaskType):
         # Prepare the execution
         executable_filename = next(iterkeys(job.executables))
         language = get_language(job.language)
-        main = Batch.GRADER_BASENAME \
+        main = self.GRADER_BASENAME \
             if self._uses_grader() else executable_filename
         commands = language.get_evaluation_commands(
             executable_filename, main=main)
@@ -329,7 +329,7 @@ class Batch(TaskType):
                 else:
                     box_success, outcome, text = eval_output(
                         file_cacher, job,
-                        Batch.CHECKER_CODENAME
+                        self.CHECKER_CODENAME
                         if self._uses_checker() else None,
                         user_output_path=sandbox.relative_path(
                             self._actual_output),
