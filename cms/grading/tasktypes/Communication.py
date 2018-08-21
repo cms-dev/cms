@@ -42,6 +42,7 @@ from cms.grading.steps import compilation_step,  evaluation_step_before_run, \
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.ParameterTypes import ParameterTypeInt
 from cms.db import Executable
+from cms.grading.tasktypes import check_files_number
 from . import TaskType, check_executables_number, check_manager_present, \
     create_sandbox, delete_sandbox, is_manager_for_compilation
 
@@ -155,6 +156,9 @@ class Communication(TaskType):
         """See TaskType.compile."""
         language = get_language(job.language)
         source_ext = language.source_extension
+
+        if not check_files_number(job, 1, or_more=True):
+            return
 
         # Prepare the files to copy in the sandbox and to add to the
         # compilation command.
