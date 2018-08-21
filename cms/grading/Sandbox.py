@@ -910,9 +910,12 @@ class IsolateSandbox(SandboxBase):
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
-        self.info_basename = "run.log"   # Used for -M
+        # Used for -M - the meta file ends up in the outer directory. The
+        # actual filename will be <info_basename>.<execution_number>.
+        self.info_basename = os.path.join(self._outer_dir, "run.log")
         self.log = None
         self.exec_num = -1
+        self.cmd_file = os.path.join(self._outer_dir, "commands.log")
         logger.debug("Sandbox in `%s' created, using box `%s'.",
                      self._home, self.box_exec)
 
@@ -1108,8 +1111,7 @@ class IsolateSandbox(SandboxBase):
             res += ["--wall-time=%g" % self.wallclock_timeout]
         if self.extra_timeout is not None:
             res += ["--extra-time=%g" % self.extra_timeout]
-        res += ["--meta=%s" % self.relative_path("%s.%d" % (self.info_basename,
-                                                            self.exec_num))]
+        res += ["--meta=%s" % ("%s.%d" % (self.info_basename, self.exec_num))]
         res += ["--run"]
         return res
 
@@ -1125,9 +1127,9 @@ class IsolateSandbox(SandboxBase):
         self.log = {}
         info_file = "%s.%d" % (self.info_basename, self.exec_num)
         try:
-            with self.get_file(info_file) as log_file:
+            with self.get_file_text(info_file) as log_file:
                 for line in log_file:
-                    key, value = line.decode('utf-8').strip().split(":", 1)
+                    key, value = line.strip().split(":", 1)
                     if key in self.log:
                         self.log[key].append(value)
                     else:
@@ -1294,7 +1296,7 @@ class IsolateSandbox(SandboxBase):
             try:
                 prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
                 os.chmod(self._home, 0o700)
-                with io.open(self.relative_path(self.cmd_file), 'at') as cmds:
+                with io.open(self.cmd_file, 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
                 p = subprocess.Popen(command, cwd=self._home,
                                      stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1322,7 +1324,7 @@ class IsolateSandbox(SandboxBase):
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
         os.chmod(self._home, 0o770)
-        with io.open(self.relative_path(self.cmd_file), 'at') as commands:
+        with io.open(self.cmd_file, 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
         os.chmod(self._home, prev_permissions)
         try:
@@ -1339,8 +1341,8 @@ class IsolateSandbox(SandboxBase):
 
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
-        with io.open(os.path.join(self._home, "run.log.%s" % index),
-                     "wt", encoding="utf-8") as f:
+        info_file = "%s.%d" % (self.info_basename, index)
+        with io.open(info_file, "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
             f.write("max-rss:0\n")
