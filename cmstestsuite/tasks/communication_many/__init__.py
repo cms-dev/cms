@@ -27,7 +27,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 task_info = {
-    "name": "communication2",
+    "name": "communication_many",
     "title": "Test Communication Task",
     "official_language": "",
     "submission_format_choice": "other",

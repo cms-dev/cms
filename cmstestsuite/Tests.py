@@ -31,7 +31,7 @@ import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
-import cmstestsuite.tasks.communication2 as communication2
+import cmstestsuite.tasks.communication_many as communication_many
 import cmstestsuite.tasks.outputonly as outputonly
 import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
 import cmstestsuite.tasks.twosteps as twosteps
@@ -262,15 +262,17 @@ ALL_TESTS = [
 
     # Communication tasks with two processes.
 
-    Test('communication2-correct',
-         task=communication2, filenames=['communication2-correct-user1.%l',
-                                         'communication2-correct-user2.%l'],
+    Test('communication-many-correct',
+         task=communication_many,
+         filenames=['communication-many-correct-user1.%l',
+                    'communication-many-correct-user2.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
-    Test('communication2-incorrect',
-         task=communication2, filenames=['communication2-incorrect-user1.%l',
-                                         'communication2-incorrect-user2.%l'],
+    Test('communication-many-incorrect',
+         task=communication_many,
+         filenames=['communication-many-incorrect-user1.%l',
+                    'communication-many-incorrect-user2.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
