@@ -210,7 +210,7 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         self.name = name if name is not None else "unnamed"
         self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
 
-        self.cmd_file = "../commands.log"
+        self.cmd_file = "commands.log"
 
         # These are not necessarily used, but are here for API compatibility
         # TODO: move all other common properties here.
@@ -915,6 +915,7 @@ class IsolateSandbox(SandboxBase):
         self.info_basename = os.path.join(self._outer_dir, "run.log")
         self.log = None
         self.exec_num = -1
+        self.cmd_file = os.path.join(self._outer_dir, "commands.log")
         logger.debug("Sandbox in `%s' created, using box `%s'.",
                      self._home, self.box_exec)
 
@@ -1295,7 +1296,7 @@ class IsolateSandbox(SandboxBase):
             try:
                 prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
                 os.chmod(self._home, 0o700)
-                with io.open(self.relative_path(self.cmd_file), 'at') as cmds:
+                with io.open(self.cmd_file, 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
                 p = subprocess.Popen(command, cwd=self._home,
                                      stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1323,7 +1324,7 @@ class IsolateSandbox(SandboxBase):
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
         os.chmod(self._home, 0o770)
-        with io.open(self.relative_path(self.cmd_file), 'at') as commands:
+        with io.open(self.cmd_file, 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
         os.chmod(self._home, prev_permissions)
         try:
