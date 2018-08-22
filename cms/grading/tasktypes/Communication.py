@@ -83,8 +83,8 @@ class Communication(TaskType):
     """
     # Filename of the manager (the stand-alone, admin-provided program).
     MANAGER_FILENAME = "manager"
-    # Basename of the stub, used in the manager filename and as the main
-    # class in languages that require us to specify it.
+    # Basename of the stub, used in the stub filename and as the main class in
+    # languages that require us to specify it.
     STUB_BASENAME = "stub"
     # Filename of the input in the manager sandbox. The content will be
     # redirected to stdin, and managers should read from there.
