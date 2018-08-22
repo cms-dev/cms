@@ -203,7 +203,7 @@ class PolygonTaskLoader(TaskLoader):
                                                 "polygon", "testlib.h")
                 os.system("cat %s | \
                     sed 's$testlib.h$%s$' | \
-                    g++ -x c++ -O2 -static -o %s -" %
+                    g++ -x c++ -O2 -static -DCMS -o %s -" %
                           (checker_src, testlib_path, checker_exe))
                 digest = self.file_cacher.put_file_from_path(
                     checker_exe,
