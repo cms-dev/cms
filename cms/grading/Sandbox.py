@@ -910,8 +910,9 @@ class IsolateSandbox(SandboxBase):
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
-        # Used for -M - the meta file ends up in the outer directory.
-        self.info_basename = "../run.log"
+        # Used for -M - the meta file ends up in the outer directory. The
+        # actual filename will be <info_basename>.<execution_number>.
+        self.info_basename = os.path.join(self._outer_dir, "run.log")
         self.log = None
         self.exec_num = -1
         logger.debug("Sandbox in `%s' created, using box `%s'.",
@@ -1109,8 +1110,7 @@ class IsolateSandbox(SandboxBase):
             res += ["--wall-time=%g" % self.wallclock_timeout]
         if self.extra_timeout is not None:
             res += ["--extra-time=%g" % self.extra_timeout]
-        res += ["--meta=%s" % self.relative_path("%s.%d" % (self.info_basename,
-                                                            self.exec_num))]
+        res += ["--meta=%s" % ("%s.%d" % (self.info_basename, self.exec_num))]
         res += ["--run"]
         return res
 
@@ -1341,8 +1341,7 @@ class IsolateSandbox(SandboxBase):
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
         info_file = "%s.%d" % (self.info_basename, index)
-        with io.open(os.path.join(self._home, info_file),
-                     "wt", encoding="utf-8") as f:
+        with io.open(info_file, "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
             f.write("max-rss:0\n")
