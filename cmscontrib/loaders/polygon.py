@@ -32,6 +32,7 @@ import imp
 import io
 import logging
 import os
+import subprocess
 
 from datetime import datetime
 from datetime import timedelta
@@ -197,14 +198,13 @@ class PolygonTaskLoader(TaskLoader):
                 logger.info("Checker found, compiling")
                 checker_exe = os.path.join(
                     os.path.dirname(checker_src), "checker")
-                testlib_path = "/usr/local/include/cms/testlib.h"
+                testlib_path = "/usr/local/include/cms"
                 if not config.installed:
                     testlib_path = os.path.join(os.path.dirname(__file__),
-                                                "polygon", "testlib.h")
-                os.system("cat %s | \
-                    sed 's$testlib.h$%s$' | \
-                    g++ -x c++ -O2 -static -DCMS -o %s -" %
-                          (checker_src, testlib_path, checker_exe))
+                                                "polygon")
+                subprocess.call(["g++", "-x", "c++", "-O2", "-static", "-DCMS",
+                                 "-I", testlib_path, "-o", checker_exe,
+                                 checker_src])
                 digest = self.file_cacher.put_file_from_path(
                     checker_exe,
                     "Manager for task %s" % name)
