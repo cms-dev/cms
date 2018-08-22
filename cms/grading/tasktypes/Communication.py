@@ -230,9 +230,9 @@ class Communication(TaskType):
         # Create FIFOs.
         fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
         fifo_user_to_manager = [
-            os.path.join(fifo_dir[i], "user%d_to_manager" % i) for i in indices]
+            os.path.join(fifo_dir[i], "u%d_to_m" % i) for i in indices]
         fifo_manager_to_user = [
-            os.path.join(fifo_dir[i], "manager_to_user%d" % i) for i in indices]
+            os.path.join(fifo_dir[i], "m_to_u%d" % i) for i in indices]
         for i in indices:
             os.mkfifo(fifo_user_to_manager[i])
             os.mkfifo(fifo_manager_to_user[i])
@@ -242,11 +242,9 @@ class Communication(TaskType):
         # Names of the fifos after being mapped inside the sandboxes.
         sandbox_fifo_dir = ["/fifo%d" % i for i in indices]
         sandbox_fifo_user_to_manager = [
-            os.path.join(sandbox_fifo_dir[i], "user%d_to_manager" % i)
-            for i in indices]
+            os.path.join(sandbox_fifo_dir[i], "u%d_to_m" % i) for i in indices]
         sandbox_fifo_manager_to_user = [
-            os.path.join(sandbox_fifo_dir[i], "manager_to_user%d" % i)
-            for i in indices]
+            os.path.join(sandbox_fifo_dir[i], "m_to_u%d" % i) for i in indices]
 
         # Create the manager sandbox and copy manager and input.
         sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
