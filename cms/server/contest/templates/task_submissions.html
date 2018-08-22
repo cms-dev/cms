@@ -2,6 +2,10 @@
 
 {% set page = "task_submissions" %}
 
+{% set score_type = get_score_type(dataset=task.active_dataset) %}
+{% set can_use_tokens = tokens_contest != TOKEN_MODE_DISABLED
+       and tokens_task != TOKEN_MODE_DISABLED %}
+
 {% block additional_js %}
 
 $(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
@@ -39,7 +43,45 @@ function get_score_class (score, max_score) {
     }
 };
 
-update_submission_row = function (submission_id, data) {
+/**
+ * Update the score (public or tokened) in the UI (both in the task score and in
+ * the submission row) given the results of a newly scored submisson
+ *
+ * score_elem: table cell with the submission score to update.
+ * task_score_elem: container element of the task score to update.
+ * score (Number): the score of the submission.
+ * score_message (String): the score of the submission as a string.
+ * task_score (Number): the current score of the task.
+ * task_score_message (String): the current score of the task as a string.
+ * task_score_is_partial (Boolean): if some submission has yet to be scored.
+ * max_score (Number): maximum score of the task.
+ */
+update_score = function(score_elem, task_score_elem,
+        score, score_message,
+        task_score, task_score_message, task_score_is_partial,
+        max_score) {
+    // Submission row.
+    if (score !== undefined) {
+        score_elem.addClass(get_score_class(score, max_score));
+        score_elem.removeClass("undefined");
+        score_elem.text(score_message);
+    }
+
+    // Task score.
+    var task_score_span = task_score_elem.find(".score");
+    task_score_span.text(task_score_message);
+    if (task_score_is_partial) {
+        task_score_span.append(
+            $("<img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>"));
+    }
+    task_score_elem.removeClass("undefined");
+    task_score_elem.removeClass("score_0");
+    task_score_elem.removeClass("score_0_100");
+    task_score_elem.removeClass("score_100");
+    task_score_elem.addClass(get_score_class(task_score, max_score));
+};
+
+update_scores = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").text(data["status_text"]);
@@ -52,47 +94,48 @@ update_submission_row = function (submission_id, data) {
             $("<a class=\"details\">{% trans %}details{% endtrans %}</a>"));
     }
     if (data["status"] == {{ SubmissionResult.SCORED }}) {
-        if (data["public_score"] != undefined) {
-            row.children("td.public_score").addClass(get_score_class(data["public_score"], data["max_public_score"]));
-            row.children("td.public_score").removeClass("undefined");
-            row.children("td.public_score").html(data["public_score_message"]);
-        }
-        if (data["score"] != undefined) {
-            // This element may not exist, if max_public_score == max_score.
-            row.children("td.total_score").addClass(get_score_class(data["score"], data["max_score"]));
-            row.children("td.total_score").removeClass("undefined");
-            row.children("td.total_score").html(data["score_message"]);
-        }
+        update_score(
+            row.children("td.public_score"), $("#task_score_public"),
+            data["public_score"], data["public_score_message"],
+            data["task_public_score"], data["task_public_score_message"],
+            data["task_score_is_partial"], data["max_public_score"]);
+{% if can_use_tokens %}
+        update_score(
+            row.children("td.total_score"), $("#task_score_tokened"),
+            data["score"], data["score_message"],
+            data["task_tokened_score"], data["task_tokened_score_message"],
+            data["task_score_is_partial"], data["max_score"]);
+{% endif %}
     } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
-        schedule_update_submission_row(submission_id);
+        schedule_update_scores(submission_id);
     }
 };
 
-schedule_update_submission_row = function (submission_id) {
-    if (typeof(schedule_update_submission_row.delays) === "undefined") {
-        schedule_update_submission_row.delays = {};
+schedule_update_scores = function (submission_id) {
+    if (typeof(schedule_update_scores.delays) === "undefined") {
+        schedule_update_scores.delays = {};
     }
-    if (!schedule_update_submission_row.delays[submission_id]) {
-        schedule_update_submission_row.delays[submission_id] = 1000.0;
+    if (!schedule_update_scores.delays[submission_id]) {
+        schedule_update_scores.delays[submission_id] = 1000.0;
     } else {
         // We want exponential backoff, but slightly staggered across submissions to
         // avoid asking about all of them at the same time, so we use 1.4 plus a
         // value depending on the submission id.
         var hash = (37 * parseInt(submission_id)) % 100 / 100.0;
-        schedule_update_submission_row.delays[submission_id] =
-            schedule_update_submission_row.delays[submission_id]
+        schedule_update_scores.delays[submission_id] =
+            schedule_update_scores.delays[submission_id]
                 * (1.4 + hash * 0.2);
     }
     setTimeout(function () {
         $.get(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id), function (data) {
-            update_submission_row(submission_id, data);
+            update_scores(submission_id, data);
         });
-    }, schedule_update_submission_row.delays[submission_id]);
+    }, schedule_update_scores.delays[submission_id]);
 };
 
 $(document).ready(function () {
     $('#submission_list tbody tr[data-status][data-status!="{{ SubmissionResult.COMPILATION_FAILED }}"][data-status!="{{ SubmissionResult.SCORED }}"]').each(function (idx, elem) {
-        schedule_update_submission_row($(this).attr("data-submission"));
+        schedule_update_scores($(this).attr("data-submission"));
     });
 });
 
@@ -106,6 +149,59 @@ $(document).ready(function () {
     <h1>{% trans name=task.title, short_name=task.name %}{{ name }} ({{ short_name }}) <small>submissions</small>{% endtrans %}</h1>
 </div>
 
+{% if score_type is defined %}
+    {% set two_task_scores = score_type.max_public_score > 0
+        and score_type.max_public_score < score_type.max_score %}
+<div class="task_score_container row-fluid">
+
+    {% if score_type.max_public_score > 0 %}
+        {# Show the public score (alone, if everything is public or tokens are disabled, or together with the tokened score). #}
+    <div id="task_score_public"
+         class="{{ "span6" if two_task_scores else "span12" }} well well-small task_score {{ get_score_class(public_score, score_type.max_public_score) }}">
+        <span>
+        {% if score_type.max_public_score == score_type.max_score %}
+            {% trans %}Score:{% endtrans %}
+        {% else %}
+            {% trans %}Public score:{% endtrans %}
+        {% endif %}
+        </span>
+      <br/>
+        <span class="score">
+            {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
+        {% if is_score_partial %}
+            <img src="{{ url("static", "loading.gif") }}" />
+        {% endif %}
+        </span>
+    </div>
+    {% endif %}
+
+    {% if score_type.max_public_score < score_type.max_score %}
+        {# Show the tokened score (alone if everything is non-public, or together with the public score). #}
+    <div id="task_score_tokened"
+         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) if can_use_tokens else "undefined" }}">
+        <span>
+        {% if can_use_tokens %}
+            {% trans %}Score of tokened submissions:{% endtrans %}
+        {% else %}
+            {% trans %}Total score:{% endtrans %}
+        {% endif %}
+        </span>
+      <br/>
+        <span class="score">
+        {% if can_use_tokens %}
+            {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
+            {% if is_score_partial %}
+            <img src="{{ url("static", "loading.gif") }}" />
+            {% endif %}
+        {% else %}
+            {% trans %}N/A{% endtrans %}
+        {% endif %}
+        </span>
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
 
 <h2 style="margin-bottom: 10px">{% trans %}Submit a solution{% endtrans %}</h2>
 
@@ -228,8 +324,6 @@ $(document).ready(function () {
 </div>
 {% endif %}
 
-
-{% set score_type = get_score_type(dataset=task.active_dataset) %}
 
 {% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 

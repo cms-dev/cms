@@ -411,6 +411,37 @@ td.token_rules p:last-child {
     clear: both;
 }
 
+/*** Task score */
+
+.task_score_container {
+    display: flex;
+    justify-content: space-evenly;
+    font-weight: bold;
+}
+
+.task_score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.task_score .score img {
+    margin-left: 5px;
+}
+
+.task_score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.4);
+}
+
+.task_score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.4);
+}
+
+.task_score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.4);
+}
+
 /*** Submit a solution */
 
 #submit_solution {

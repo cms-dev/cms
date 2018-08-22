@@ -47,6 +47,7 @@ from sqlalchemy.orm import joinedload
 from cms import config, FEEDBACK_LEVEL_FULL
 from cms.db import Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
+from cms.grading.scoring import task_score
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     UnacceptableSubmission, accept_submission
@@ -133,6 +134,13 @@ class TaskSubmissionsHandler(ContestHandler):
             .options(joinedload(Submission.results))\
             .all()
 
+        public_score, is_public_score_partial = task_score(
+            participation, task, public=True)
+        tokened_score, is_tokened_score_partial = task_score(
+            participation, task, only_tokened=True)
+        # These two should be the same, anyway.
+        is_score_partial = is_public_score_partial or is_tokened_score_partial
+
         submissions_left_contest = None
         if self.contest.max_submission_number is not None:
             submissions_c = \
@@ -162,6 +170,9 @@ class TaskSubmissionsHandler(ContestHandler):
         download_allowed = self.contest.submissions_download_allowed
         self.render("task_submissions.html",
                     task=task, submissions=submissions,
+                    public_score=public_score,
+                    tokened_score=tokened_score,
+                    is_score_partial=is_score_partial,
                     tokens_task=task.token_mode,
                     tokens_info=tokens_info,
                     submissions_left=submissions_left,
@@ -172,6 +183,42 @@ class TaskSubmissionsHandler(ContestHandler):
 class SubmissionStatusHandler(ContestHandler):
 
     refresh_cookie = False
+
+    def add_task_score(self, participation, task, data):
+        """Add the task score information to the dict to be returned.
+
+        participation (Participation): user for which we want the score.
+        task (Task): task for which we want the score.
+        data (dict): where to put the data; all fields will start with "task",
+            followed by "public" if referring to the public scores, or
+            "tokened" if referring to the total score (always limited to
+            tokened submissions); for both public and tokened, the fields are:
+            "score" and "score_message"; in addition we have
+            "task_is_score_partial" as partial info is the same for both.
+
+        """
+        # Just to preload all information required to compute the task score.
+        self.sql_session.query(Submission)\
+            .filter(Submission.participation == participation)\
+            .filter(Submission.task == task)\
+            .options(joinedload(Submission.token))\
+            .options(joinedload(Submission.results))\
+            .all()
+        data["task_public_score"], public_score_is_partial = \
+            task_score(participation, task, public=True)
+        data["task_tokened_score"], tokened_score_is_partial = \
+            task_score(participation, task, only_tokened=True)
+        # These two should be the same, anyway.
+        data["task_score_is_partial"] = \
+            public_score_is_partial or tokened_score_is_partial
+
+        score_type = task.active_dataset.score_type_object
+        data["task_public_score_message"] = score_type.format_score(
+            data["task_public_score"], score_type.max_public_score, None,
+            task.score_precision, translation=self.translation)
+        data["task_tokened_score_message"] = score_type.format_score(
+            data["task_tokened_score"], score_type.max_score, None,
+            task.score_precision, translation=self.translation)
 
     @tornado.web.authenticated
     @actual_phase_required(0, 3)
@@ -186,7 +233,8 @@ class SubmissionStatusHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
-        data = dict()
+
+        data = {}
 
         if sr is None:
             # implicit compiling state while result is not created
@@ -204,6 +252,7 @@ class SubmissionStatusHandler(ContestHandler):
             data["status_text"] = self._("Scoring...")
         elif data["status"] == SubmissionResult.SCORED:
             data["status_text"] = self._("Evaluated")
+            self.add_task_score(submission.participation, task, data)
 
             score_type = task.active_dataset.score_type_object
             if score_type.max_public_score > 0:
