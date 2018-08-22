@@ -41,6 +41,22 @@
  *
  */
 
+/*
+ * Artem Iglikov
+ *
+ * This software has been modified to make it possible to use it with CMS. More
+ * precisely, at termination it now output the "outcome" to stdout and the
+ * "message" to stderr.
+ */
+
+/*
+ * Alexander Kernozhitsky
+ *
+ * Ported patch from CMS to the new version.
+ * Also added conditional compilation for CMS checker outcome format (with #ifdef CMS)
+ *
+ */
+
 /* NOTE: This file contains testlib library for C++.
  *
  *   Check, using testlib running format:
@@ -2468,6 +2484,48 @@ NORETURN void InStream::quit(TResult result, const char* msg)
     int pctype = result - _partially;
     bool isPartial = false;
 
+    #ifdef CMS
+        inf.close();
+        ouf.close();
+        ans.close();
+        if (tout.is_open())
+            tout.close();
+
+        if (result == _ok) {
+            std::fprintf(stdout, "1.0\n");
+            std::fprintf(stderr, "OK\n");
+        } else if (result == _wa) {
+            std::fprintf(stdout, "0.0\n");
+            std::fprintf(stderr, "Wrong Answer\n");
+        } else if (result == _pe) {
+            std::fprintf(stdout, "0.0\n");
+            std::fprintf(stderr, "Presentation Error\n");
+        } else if (result == _dirt) {
+            std::fprintf(stdout, "0.0\n");
+            std::fprintf(stderr, "Wrong Output Format\n");
+        } else if (result == _points) {
+            std::fprintf(stdout, "%f\n", __testlib_points);
+            std::fprintf(stderr, "Partial Score\n");
+        } else if (result == _unexpected_eof) {
+            std::fprintf(stdout, "0.0\n");
+            std::fprintf(stderr, "Wrong Output Format\n");
+        } else if (result >= _partially) {
+            double score = (double)pctype / 200.0;
+            std::fprintf(stdout, "%.3f\n", score);
+            std::fprintf(stderr, "Partial Score\n");
+        } else if (result == _fail) {
+          std::fprintf(stdout, "0.0\n");
+          std::fprintf(stderr, "FAILURE, CONTACT JURY, ERROR 1\n");
+          halt(1);
+        } else {
+          std::fprintf(stdout, "0.0\n");
+          std::fprintf(stderr, "FAILURE, CONTACT JURY, ERROR 2 %d\n", result);
+          halt(1);
+        }
+
+        halt(0);
+    #endif
+
     switch (result)
     {
     case _ok:
@@ -4081,8 +4139,13 @@ void registerTestlibCmd(int argc, char* argv[])
     }
 
     inf.init(argv[1], _input);
+    #ifdef CMS
+    ouf.init(argv[3], _output);
+    ans.init(argv[2], _answer);
+    #else
     ouf.init(argv[2], _output);
     ans.init(argv[3], _answer);
+    #endif
 }
 
 void registerTestlib(int argc, ...)
