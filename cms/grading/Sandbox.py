@@ -1127,9 +1127,9 @@ class IsolateSandbox(SandboxBase):
         self.log = {}
         info_file = "%s.%d" % (self.info_basename, self.exec_num)
         try:
-            with self.get_file(info_file) as log_file:
+            with self.get_file_text(info_file) as log_file:
                 for line in log_file:
-                    key, value = line.decode('utf-8').strip().split(":", 1)
+                    key, value = line.strip().split(":", 1)
                     if key in self.log:
                         self.log[key].append(value)
                     else:
