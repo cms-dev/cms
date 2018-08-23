@@ -6,7 +6,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -48,10 +48,11 @@ import os
 import sys
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Task
+from cms.db import SessionGen
 from cms.db.filecacher import FileCacher
 
-from cmscontrib.importing import ImportDataError, contest_from_db, update_task
+from cmscontrib.importing import ImportDataError, contest_from_db, \
+    update_task, task_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
@@ -65,7 +66,7 @@ class TaskImporter(object):
     """
 
     def __init__(self, path, prefix, override_name, update, no_statement,
-                 contest_id, loader_class):
+                 contest_id, task_id, loader_class):
         """Create the importer object for a task.
 
         path (string): the path to the file or directory to import.
@@ -76,6 +77,8 @@ class TaskImporter(object):
         contest_id (int|None): if set, the new task will be tied to this
             contest; if not set, the task will not be tied to any contest, or
             if this was an update, will remain tied to the previous contest.
+        task_id (int|None): if set, the script will check that the task that
+            is going to be updated is exactly the task with the given ID.
 
         """
         self.file_cacher = FileCacher()
@@ -84,6 +87,7 @@ class TaskImporter(object):
         self.update = update
         self.no_statement = no_statement
         self.contest_id = contest_id
+        self.task_id = task_id
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
 
     def do_import(self):
@@ -130,38 +134,32 @@ class TaskImporter(object):
     def _task_to_db(self, session, contest, new_task, task_has_changed):
         """Add the task to the DB
 
-        Return the task, or raise in case of one of these errors:
-        - if the task is not in the DB and user did not ask to update it;
-        - if the task is already in the DB and attached to another contest.
+        Return the task, or raise if the user wants to update the task but:
+        - there are no task with the task name provided, or
+        - the task name provided is ambiguous and no valid ID was specified.
 
         """
-        task = session.query(Task).filter(Task.name == new_task.name).first()
-        if task is None:
-            if contest is not None:
-                logger.info("Attaching task to contest (id %s.)",
-                            self.contest_id)
-                new_task.num = len(contest.tasks)
-                new_task.contest = contest
-            session.add(new_task)
-            return new_task
+        if self.update:
+            task = task_from_db(session, new_task.name, self.task_id)
 
-        if not self.update:
-            raise ImportDataError(
-                "Task \"%s\" already exists in database. "
-                "Use --update to update it." % new_task.name)
+            if task_has_changed:
+                logger.info(
+                    "Task \"%s\" data has changed, updating it.", task.name)
+                update_task(task, new_task,
+                            get_statements=not self.no_statement)
+            else:
+                logger.info("Task \"%s\" data has not changed.", task.name)
 
-        if contest is not None and task.contest_id != contest.id:
-            raise ImportDataError(
-                "Task \"%s\" already tied to another contest." % task.name)
+            return task
 
-        if task_has_changed:
-            logger.info(
-                "Task \"%s\" data has changed, updating it.", task.name)
-            update_task(task, new_task, get_statements=not self.no_statement)
-        else:
-            logger.info("Task \"%s\" data has not changed.", task.name)
+        if contest is not None:
+            logger.info("Attaching task to contest (id %s.)",
+                        self.contest_id)
+            new_task.num = len(contest.tasks)
+            new_task.contest = contest
+        session.add(new_task)
 
-        return task
+        return new_task
 
 
 def main():
@@ -195,6 +193,11 @@ def main():
         help="id of the contest the task will be attached to"
     )
     parser.add_argument(
+        "-t", "--task-id",
+        action="store", type=int,
+        help="optional task ID used for disambiguation"
+    )
+    parser.add_argument(
         "-p", "--prefix",
         action="store", type=utf8_decoder,
         help="the prefix to be added before the task name"
@@ -222,6 +225,7 @@ def main():
                             update=args.update,
                             no_statement=args.no_statement,
                             contest_id=args.contest_id,
+                            task_id=args.task_id,
                             prefix=args.prefix,
                             override_name=args.name,
                             loader_class=loader_class)

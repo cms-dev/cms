@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,31 +36,29 @@ import sys
 import os
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Statement, Task
+from cms.db import SessionGen, Statement
 from cms.db.filecacher import FileCacher
+from cmscontrib.importing import ImportDataError, task_from_db
 
 
 logger = logging.getLogger(__name__)
 
 
-def add_statement(task_name, language_code, statement_file, overwrite):
+def add_statement(task_name, task_id, language_code, statement_file,
+                  overwrite):
     logger.info("Adding the statement(language: %s) of task %s "
                 "in the database.", language_code, task_name)
 
     if not os.path.exists(statement_file):
-        logger.error("Statement file (path: %s) does not exist.",
-                     statement_file)
-        return False
+        raise ImportDataError("Statement file (path: %s) does not exist."
+                              % statement_file)
+
     if not statement_file.endswith(".pdf"):
-        logger.error("Statement file should be a pdf file.")
-        return False
+        raise ImportDataError("Statement file should be a pdf file.")
 
     with SessionGen() as session:
-        task = session.query(Task)\
-            .filter(Task.name == task_name).first()
-        if not task:
-            logger.error("No task named %s", task_name)
-            return False
+        task = task_from_db(session, task_name, task_id)
+
         try:
             file_cacher = FileCacher()
             digest = file_cacher.put_file_from_path(
@@ -78,9 +77,9 @@ def add_statement(task_name, language_code, statement_file, overwrite):
                 session.delete(arr[0])
                 session.commit()
             else:
-                logger.error("A statement with given language already exists. "
-                             "Not overwriting.")
-                return False
+                raise ImportDataError("A statement with given language "
+                                      "already exists. Not overwriting.")
+
         statement = Statement(language_code, digest, task=task)
         session.add(statement)
         session.commit()
@@ -100,6 +99,8 @@ def main():
                         help="language code of statement, e.g. en")
     parser.add_argument("statement_file", action="store", type=utf8_decoder,
                         help="absolute/relative path of statement file")
+    parser.add_argument("-t", "--task-id", action="store", type=int,
+                        help="optional task ID used for disambiguation")
     parser.add_argument("-o", "--overwrite", dest="overwrite",
                         action="store_true",
                         help="overwrite existing statement")
@@ -107,8 +108,15 @@ def main():
 
     args = parser.parse_args()
 
-    success = add_statement(args.task_name, args.language_code,
-                            args.statement_file, args.overwrite)
+    try:
+        success = add_statement(
+            args.task_name, args.task_id, args.language_code,
+            args.statement_file, args.overwrite)
+    except ImportDataError as e:
+        logger.error(str(e))
+        logger.info("Error while importing, no changes were made.")
+        return 1
+
     return 0 if success is True else 1
 
 

@@ -5,6 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -64,24 +65,44 @@ def contest_from_db(contest_id, session):
     return contest
 
 
-def task_from_db(task_name, session):
+def task_from_db(session, task_name, task_id):
     """Return the task object with the given name
 
-    task_name (string|None): the name of the task, or None to return None.
     session (Session): SQLAlchemy session to use.
+    task_name (string|None): the name of the task, or None to return None.
+    task_id (int|None): the ID of the task, or None.
 
     return (Task|None): None if task_name is None, or the task.
     raise (ImportDataError): if there is no task with the given name.
+    raise (AmbiguousTaskName): if the task name is ambiguous.
 
     """
     if task_name is None:
         return None
 
-    task = session.query(Task).filter(Task.name == task_name).first()
-    if task is None:
+    tasks = session.query(Task).filter(Task.name == task_name)
+
+    if task_id is not None:
+        tasks = tasks.filter(Task.id == task_id)
+
+    tasks = tasks.all()
+
+    if len(tasks) == 0:
         raise ImportDataError(
             "The specified task (name %s) does not exist." % task_name)
-    return task
+    elif len(tasks) > 1:
+        message = "Task name is ambiguous, please use the -t argument " \
+                  "to specify a valid ID:"
+
+        for t in tasks:
+            message += "\n ID = %3d | %s (%s) | %s" % (
+                t.id, t.name, t.title, "<none>"
+                if t.contest is None else t.contest.name)
+
+        raise ImportDataError(message)
+
+    # Only one task is found, proceed
+    return tasks[0]
 
 
 def _update_columns(old_object, new_object, spec=None):

@@ -29,10 +29,15 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import argparse
+import logging
 import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Task
+from cmscontrib.importing import task_from_db, ImportDataError
+
+
+logger = logging.getLogger(__name__)
 
 
 def ask(task_name):
@@ -42,19 +47,18 @@ def ask(task_name):
     return ans in ["y", "yes"]
 
 
-def remove_task(task_name):
+def remove_task(task_name, task_id):
     with SessionGen() as session:
-        task = session.query(Task)\
-            .filter(Task.name == task_name).first()
-        if not task:
-            print("No task called `%s' found." % task_name)
-            return False
+        task = task_from_db(session, task_name, task_id)
+
         if not ask(task_name):
-            print("Not removing task `%s'." % task_name)
+            logger.info("Not removing task `%s'." % task_name)
             return False
+
         num = task.num
         contest_id = task.contest_id
         session.delete(task)
+
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
             following_tasks = session.query(Task)\
@@ -64,7 +68,8 @@ def remove_task(task_name):
             for task in following_tasks:
                 task.num -= 1
         session.commit()
-        print("Task `%s' removed." % task_name)
+
+        logger.info("Task `%s' removed." % task_name)
 
     return True
 
@@ -77,15 +82,20 @@ def main():
         description="Remove a task from the database."
     )
 
-    parser.add_argument(
-        "task_name",
-        action="store", type=utf8_decoder,
-        help="short name of the task"
-    )
+    parser.add_argument("task_name", action="store", type=utf8_decoder,
+                        help="short name of the task")
+    parser.add_argument("-t", "--task-id", action="store", type=int,
+                        help="optional task ID used for disambiguation")
 
     args = parser.parse_args()
 
-    success = remove_task(task_name=args.task_name)
+    try:
+        success = remove_task(args.task_name, args.task_id)
+    except ImportDataError as e:
+        logger.error(str(e))
+        logger.info("Error while importing, no changes were made.")
+        return 1
+
     return 0 if success is True else 1
 
 

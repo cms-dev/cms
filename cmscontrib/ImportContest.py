@@ -6,7 +6,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015-2016 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -190,60 +190,88 @@ class ContestImporter(object):
         return (Task): the task in the DB.
 
         raise (ImportDataError): in case of one of these errors:
-            - if the task is not in the DB and user did not ask to import it;
             - if the loader cannot load the task;
-            - if the task is already in the DB, attached to another contest.
+            - if the user did not ask to import the task AND one of:
+              - the task is not in the DB and;
+              - the task is in the DB but it's attached to another contest;
+              - the task exists in more than one version (we would need the
+              ID of every single "problematic" task if we wanted to decide
+              which ones to attach, so for now this is not supported).
 
         """
         task_loader = self.loader.get_task_loader(taskname)
-        task = session.query(Task).filter(Task.name == taskname).first()
+        tasks = session.query(Task).filter(Task.name == taskname).all()
 
-        if task is None:
-            # Task is not in the DB; if the user asked us to import it, we do
-            # so, otherwise we return an error.
-
-            if not self.import_tasks:
-                raise ImportDataError(
-                    "Task \"%s\" not found in database. "
-                    "Use --import-task to import it." % taskname)
-
+        if self.import_tasks:
             task = task_loader.get_task(get_statement=not self.no_statements)
             if task is None:
                 raise ImportDataError(
                     "Could not import task \"%s\"." % taskname)
 
             session.add(task)
-
-        elif not task_loader.task_has_changed():
-            # Task is in the DB and has not changed, nothing to do.
-            logger.info("Task \"%s\" data has not changed.", taskname)
-
-        elif self.update_tasks:
-            # Task is in the DB, but has changed, and the user asked us to
-            # update it. We do so.
-            new_task = task_loader.get_task(
-                get_statement=not self.no_statements)
-            if new_task is None:
-                raise ImportDataError(
-                    "Could not reimport task \"%s\"." % taskname)
-            logger.info("Task \"%s\" data has changed, updating it.", taskname)
-            update_task(task, new_task, get_statements=not self.no_statements)
-
         else:
-            # Task is in the DB, has changed, and the user didn't ask to update
-            # it; we just show a warning.
-            logger.warning("Not updating task \"%s\", even if it has changed. "
-                           "Use --update-tasks to update it.", taskname)
+            if len(tasks) == 0:
+                raise ImportDataError(
+                    "Task \"%s\" not found in database. Consider using "
+                    "--import-task to import it." % taskname)
+            if len(tasks) > 1:
+                raise ImportDataError(
+                    "Multiple tasks with name \"%s\". You should either "
+                    "delete the ambiguous tasks, or consider using the "
+                    "--import-tasks argument with this script." % taskname)
 
-        # Finally we tie the task to the contest, if it is not already used
-        # elsewhere.
-        if task.contest is not None and task.contest.name != contest.name:
-            raise ImportDataError(
-                "Task \"%s\" is already tied to contest \"%s\"."
-                % (taskname, task.contest.name))
+            # Only one task is found, proceed
+            task = tasks[0]
 
+            if task.contest is not None:
+                raise ImportDataError(
+                    "The task with name \"%s\" is already attached to a "
+                    "different contest. Deattach it, or consider using the "
+                    "--import-tasks argument with this script." % taskname)
+
+            # The task exists, is unique, and is not attached.
+
+            # We will assume it's the same task that the user wants, though
+            # it could also be a previously created (and completely different)
+            # task that just happens to have the same name. So, let's warn
+            # the user.
+            logger.warning(
+                "A task with name \"%s\" was found and it's not attached to a "
+                "contest yet. It is recommended to double-check if this is "
+                "REALLY the task intended to be imported in the contest, and "
+                "not some previously-imported task that happen to have the "
+                "same name as this new one.")
+
+            # Proceed using that task.
+
+            if task_loader.task_has_changed():
+                if self.update_tasks:
+                    # Task is in the DB, has changed on disk, and the user
+                    # asked us to update it. We do so.
+                    new_task = task_loader.get_task(
+                        get_statement=not self.no_statements)
+                    if new_task is None:
+                        raise ImportDataError(
+                            "Could not reimport task \"%s\"." % taskname)
+                    logger.info("Task \"%s\" data has changed, updating it.",
+                                taskname)
+                    update_task(task, new_task,
+                                get_statements=not self.no_statements)
+                else:
+                    # Task is in the DB, has changed on disk, and the user
+                    # didn't ask to update it; We just warn the user.
+                    logger.warning(
+                        "Not updating task \"%s\", even if it has changed on "
+                        "disk. Consider using --update-tasks to update it, or "
+                        "--import-task to import it anew.", taskname)
+            else:
+                # Task is in the DB and has not changed, nothing to do.
+                logger.info("Task \"%s\" data has not changed.", taskname)
+
+        # Finally we tie the task to the contest.
         task.num = tasknum
         task.contest = contest
+
         return task
 
     @staticmethod
@@ -374,7 +402,7 @@ If updating a contest already in the DB:
     parser.add_argument(
         "-i", "--import-tasks",
         action="store_true",
-        help="import tasks if they do not exist"
+        help="import tasks anew, ignoring what exists in the database"
     )
     parser.add_argument(
         "-u", "--update-contest",
