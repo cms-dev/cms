@@ -240,7 +240,7 @@ class ContestImporter(object):
                 "contest yet. It is recommended to double-check if this is "
                 "REALLY the task intended to be imported in the contest, and "
                 "not some previously-imported task that happens to have the "
-                "same name as this new one.")
+                "same name as this new one." % taskname)
 
             # Proceed using that task.
 
