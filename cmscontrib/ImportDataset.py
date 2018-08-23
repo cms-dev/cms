@@ -53,10 +53,11 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetImporter(object):
-    def __init__(self, path, description, loader_class):
+    def __init__(self, path, description, loader_class, task_id):
         self.file_cacher = FileCacher()
         self.description = description
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
+        self.task_id = task_id
 
     def do_import(self):
         """Get the task from the TaskLoader, but store *just* its dataset."""
@@ -80,7 +81,7 @@ class DatasetImporter(object):
 
         with SessionGen() as session:
             try:
-                task = task_from_db(task_name, session)
+                task = task_from_db(session, task_name, self.task_id)
                 self._dataset_to_db(session, dataset, task)
             except ImportDataError as e:
                 logger.error(str(e))
@@ -126,6 +127,8 @@ def main():
         action="store", type=utf8_decoder,
         help="target file/directory from where to import the dataset"
     )
+    parser.add_argument("-t", "--task-id", action="store", type=int,
+                        help="optional task ID used for disambiguation")
 
     args = parser.parse_args()
 
@@ -139,7 +142,8 @@ def main():
 
     importer = DatasetImporter(path=args.target,
                                description=args.description,
-                               loader_class=loader_class)
+                               loader_class=loader_class,
+                               task_id=args.task_id)
     success = importer.do_import()
     return 0 if success is True else 1
 
