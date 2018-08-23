@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
