@@ -165,7 +165,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_alone_failure_missing_file(self):
         # For some reason the user submission is missing. This should not
@@ -201,7 +201,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.get_file_to_storage.assert_called_once_with("bar_foo", ANY)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_alone_compilation_failure(self):
         # Compilation failure, but sandbox succeeded. It's the user's fault.
@@ -218,7 +218,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         # But no executable stored.
         sandbox.get_file_to_storage.assert_not_called()
         # Still, we delete the sandbox, since it's not an error.
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_alone_sandbox_failure(self):
         # Sandbox (or CMS) failure. It's the admins' fault.
@@ -233,7 +233,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job)
         sandbox.get_file_to_storage.assert_not_called()
         # We preserve the sandbox to let admins check the problem.
-        sandbox.delete.assert_not_called()
+        sandbox.cleanup.assert_called_once_with(delete=False)
 
     def test_grader_success(self):
         # We sprinkle in also a header, that should be copied, but not the
@@ -265,7 +265,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_grader_failure_missing_grader(self):
         # Grader is missing from the managers, this is a configuration error.
@@ -373,7 +373,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             user_output_path="/path/0/output.txt", user_output_filename="")
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_stdio_diff_failure_missing_file(self):
         # For some reason the executable is missing. This should not happen
@@ -408,7 +408,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         # eval_output should not have been called, but the since it didn't
         # have any error, the sandbox should be deleted.
         self.eval_output.assert_not_called()
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_stdio_diff_evaluation_step_sandbox_failure_(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})
@@ -420,7 +420,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job)
         # eval_output should not have been called, and the sandbox not deleted.
         self.eval_output.assert_not_called()
-        sandbox.delete.assert_not_called()
+        sandbox.cleanup.assert_called_once_with(delete=False)
 
     def test_stdio_diff_eval_output_failure_(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})
@@ -432,7 +432,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job)
         # Even if the error is in the eval_output sandbox, we keep also the one
         # for evaluation_step to allow debugging.
-        sandbox.delete.assert_not_called()
+        sandbox.cleanup.assert_called_once_with(delete=False)
 
     def test_stdio_diff_get_output_success(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})
@@ -494,7 +494,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             user_output_filename="myout")
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_stdio_checker_success(self):
         tt, job = self.prepare(["alone", ["", ""], "comparator"],
@@ -509,7 +509,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             user_output_path="/path/0/output.txt", user_output_filename="")
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_fileio_checker_success(self):
         tt, job = self.prepare(["alone", ["myin", "myout"], "comparator"],
@@ -525,7 +525,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             user_output_filename="myout")
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
-        sandbox.delete.assert_called_once()
+        sandbox.cleanup.assert_called_once_with(delete=True)
 
 
 if __name__ == "__main__":
