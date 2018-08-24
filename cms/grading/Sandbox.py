@@ -518,18 +518,14 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         pass
 
     @abstractmethod
-    def cleanup(self):
+    def cleanup(self, delete=False):
         """Cleanup the sandbox.
 
         To be called at the end of the execution, regardless of
         whether the sandbox should be deleted or not.
 
-        """
-        pass
-
-    @abstractmethod
-    def delete(self):
-        """Delete the directory where the sandbox operated.
+        delete (bool): if True, also delete get_root_path() and everything it
+            contains.
 
         """
         pass
@@ -831,22 +827,12 @@ class StupidSandbox(SandboxBase):
         """
         return True
 
-    def cleanup(self):
-        """Cleanup the sandbox.
-
-        This sandbox needs no cleanup.
-
-        """
-        pass
-
-    def delete(self):
-        """Delete the directory where the sandbox operated.
-
-        """
-        logger.debug("Deleting sandbox in %s.", self._path)
-
-        # Delete the working directory.
-        rmtree(self._path)
+    def cleanup(self, delete=False):
+        """See Sandbox.cleanup()."""
+        # This sandbox doesn't have any cleanup, but we might want to delete.
+        if delete:
+            logger.debug("Deleting sandbox in %s.", self._path)
+            rmtree(self._path)
 
 
 class IsolateSandbox(SandboxBase):
@@ -950,9 +936,10 @@ class IsolateSandbox(SandboxBase):
         # symlink to one out of many alternatives.
         self.maybe_add_mapped_directory("/etc/alternatives")
 
-        # Tell isolate to get the sandbox ready. We do our best to
-        # cleanup after ourselves, but we might have missed something
-        # if the worker was interrupted in the middle of an execution.
+        # Tell isolate to get the sandbox ready. We do our best to cleanup
+        # after ourselves, but we might have missed something if a previous
+        # worker was interrupted in the middle of an execution, so we issue an
+        # idempotent cleanup.
         self.cleanup()
         self.initialize_isolate()
 
@@ -1411,31 +1398,35 @@ class IsolateSandbox(SandboxBase):
                 "Failed to initialize sandbox with command: %s "
                 "(error %d)" % (pretty_print_cmdline(init_cmd), ret))
 
-    def cleanup(self):
-        """Cleanup the sandbox.
+    def cleanup(self, delete=False):
+        """See Sandbox.cleanup()."""
+        # The user isolate assigns within the sandbox might have created
+        # subdirectories and files therein, making the user outside the sandbox
+        # unable to delete the whole tree. If the caller asked us to delete the
+        # sandbox, we first issue a chmod within isolate to make sure that we
+        # will be able to delete everything. If not, we leave the files as they
+        # are to avoid masking possible problems the admin wanted to debug.
 
-        To be called at the end of the execution, regardless of
-        whether the sandbox should be deleted or not.
-
-        """
-        # Tell isolate to cleanup the sandbox.
-        subprocess.call(
-            [self.box_exec]
-            + (["--cg"] if self.cgroup else [])
+        exe = [self.box_exec] \
+            + (["--cg"] if self.cgroup else []) \
             + ["--box-id=%d" % self.box_id]
-            + ["--cleanup"],
-            # Use subprocess.DEVNULL when dropping Python 2.
-            stdout=io.open(os.devnull, "r+b"),
-            stderr=subprocess.STDOUT)
 
-    def delete(self):
-        """Delete the directory where the sandbox operated.
+        # Use subprocess.DEVNULL when dropping Python 2.
+        with io.open(os.devnull, "r+b") as devnull:
+            if delete:
+                subprocess.call(exe + [
+                    "--dir=%s=%s:rw" % (self._home_dest, self._home),
+                    "--run", "--",
+                    "/bin/chmod", "777", "-R", self._home_dest])
 
-        """
-        logger.debug("Deleting sandbox in %s.", self._home)
+            # Tell isolate to cleanup the sandbox.
+            subprocess.call(exe + ["--cleanup"],
+                            stdout=devnull, stderr=subprocess.STDOUT)
 
-        # Delete the working directory.
-        rmtree(self._outer_dir)
+            if delete:
+                logger.debug("Deleting sandbox in %s.", self._outer_dir)
+                # Delete the working directory.
+                rmtree(self._outer_dir)
 
 
 Sandbox = {

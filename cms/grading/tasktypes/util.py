@@ -83,17 +83,17 @@ def delete_sandbox(sandbox, success=True):
     success (boolean): if the job succeeded (no system errors).
 
     """
-    sandbox.cleanup()
     # If the job was not successful, we keep the sandbox around.
     if not success:
         logger.warning("Sandbox %s kept around because job did not succeeded.",
                        sandbox.get_root_path())
-    elif not config.keep_sandbox:
-        try:
-            sandbox.delete()
-        except (IOError, OSError):
-            err_msg = "Couldn't delete sandbox."
-            logger.warning(err_msg, exc_info=True)
+
+    delete = success and not config.keep_sandbox
+    try:
+        sandbox.cleanup(delete=delete)
+    except (IOError, OSError):
+        err_msg = "Couldn't delete sandbox."
+        logger.warning(err_msg, exc_info=True)
 
 
 def is_manager_for_compilation(filename, language):
