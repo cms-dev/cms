@@ -30,8 +30,15 @@ from future.builtins import *  # noqa
 import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
-import cmstestsuite.tasks.communication as communication
-import cmstestsuite.tasks.communication_many as communication_many
+import cmstestsuite.tasks.communication_fifoio_stubbed \
+    as communication_fifoio_stubbed
+import cmstestsuite.tasks.communication_many_fifoio_stubbed \
+    as communication_many_fifoio_stubbed
+import cmstestsuite.tasks.communication_many_stdio_stubbed \
+    as communication_many_stdio_stubbed
+import cmstestsuite.tasks.communication_stdio as communication_stdio
+import cmstestsuite.tasks.communication_stdio_stubbed \
+    as communication_stdio_stubbed
 import cmstestsuite.tasks.outputonly as outputonly
 import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
 import cmstestsuite.tasks.twosteps as twosteps
@@ -250,27 +257,67 @@ ALL_TESTS = [
 
     # Communication tasks. Python and PHP are not yet supported.
 
-    Test('communication-correct',
-         task=communication, filenames=['communication-correct.%l'],
+    Test('communication-fifoio-correct',
+         task=communication_fifoio_stubbed,
+         filenames=['communication-stubbed-correct.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
-    Test('communication-incorrect',
-         task=communication, filenames=['communication-incorrect.%l'],
+    Test('communication-fifoio-incorrect',
+         task=communication_fifoio_stubbed,
+         filenames=['communication-stubbed-incorrect.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('communication-stdio-correct',
+         task=communication_stdio_stubbed,
+         filenames=['communication-stubbed-correct.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('communication-stdio-incorrect',
+         task=communication_stdio_stubbed,
+         filenames=['communication-stubbed-incorrect.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('communication-stdio-unstubbed-correct',
+         task=communication_stdio,
+         filenames=['communication-stdio-correct.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('communication-stdio-unstubbed-incorrect',
+         task=communication_stdio,
+         filenames=['communication-stdio-incorrect.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
     # Communication tasks with two processes.
 
-    Test('communication-many-correct',
-         task=communication_many,
+    Test('communication-many-fifoio-correct',
+         task=communication_many_fifoio_stubbed,
          filenames=['communication-many-correct-user1.%l',
                     'communication-many-correct-user2.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
-    Test('communication-many-incorrect',
-         task=communication_many,
+    Test('communication-many-fifoio-incorrect',
+         task=communication_many_fifoio_stubbed,
+         filenames=['communication-many-incorrect-user1.%l',
+                    'communication-many-incorrect-user2.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('communication-many-stdio-correct',
+         task=communication_many_stdio_stubbed,
+         filenames=['communication-many-correct-user1.%l',
+                    'communication-many-correct-user2.%l'],
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('communication-many-stdio-incorrect',
+         task=communication_many_stdio_stubbed,
          filenames=['communication-many-incorrect-user1.%l',
                     'communication-many-incorrect-user2.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
@@ -337,7 +384,8 @@ ALL_TESTS = [
          checks=[CheckOverallScore(0, 100)]),
 
     Test('write-forbidden-communication',
-         task=communication, filenames=['write-forbidden-communication.%l'],
+         task=communication_fifoio_stubbed,
+         filenames=['write-forbidden-communication.%l'],
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
