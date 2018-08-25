@@ -1,0 +1,49 @@
+#!/usr/bin/python2 -sS
+
+from __future__ import print_function
+
+import io
+import sys
+
+fifo_path_from_user, fifo_path_to_user = sys.argv[1:]
+
+# When the sandbox opens the other endpoints of these fifos to redirect
+# them to to stdin/out it does so first for stdin and then for stdout.
+# We must match that order as otherwise we would deadlock.
+fifo_to_user = io.open(fifo_path_to_user, "wb", buffering=0)
+fifo_from_user = io.open(fifo_path_from_user, "rb", buffering=0)
+
+input_value = int(io.open("input.txt", "rb").readline())
+
+correct = True
+
+# Speak the to program a few times, check what it does, and output the last
+# line.
+for i in range(10,20) + [0]:
+    x = i + input_value
+    # Write a question to the candidate executable.
+    fifo_to_user.write("%d\n" % x)
+    # Read their response.
+    l = fifo_from_user.readline()
+    # EOF?
+    if l == '':
+        correct = False
+        break
+    # These are the only things we expect from our stub.
+    if l.strip() != 'correct %d' % x:
+        correct = False
+        break
+
+    correct = correct and (int(l.split()[1]) == x)
+else:
+    # Tell stub to exit.
+    fifo_to_user.write("0\n")
+
+# This file exists just for convenience.
+io.open("output.txt", "wb").write(l + "\n")
+
+# This is the final score.
+if correct:
+    print("1")
+else:
+    print("0")
