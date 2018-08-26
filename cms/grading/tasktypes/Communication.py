@@ -394,7 +394,6 @@ class Communication(TaskType):
         # terminate correctly, we report an error (and no need for user stats).
         if not success:
             stats_user = None
-            pass
 
         # If just asked to execute, fill text and set dummy outcome.
         elif job.only_execution:

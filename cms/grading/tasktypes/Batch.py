@@ -203,7 +203,8 @@ class Batch(TaskType):
         # we check that it exists.
         filenames_to_compile = []
         filenames_and_digests_to_get = {}
-        # The grader, that must have been provided (copy and add to compilation).
+        # The grader, that must have been provided (copy and add to
+        # compilation).
         if self._uses_grader():
             grader_filename = self.GRADER_BASENAME + source_ext
             if not check_manager_present(job, grader_filename):
