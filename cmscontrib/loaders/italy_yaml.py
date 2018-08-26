@@ -6,7 +6,7 @@
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
@@ -592,6 +592,17 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             if n_input != 0:
                 input_value = total_value / n_input
             args["score_type_parameters"] = input_value
+
+        # Override score_type if explicitly specified
+        if "score_type" in conf and "score_type_parameters" in conf:
+            logger.info("Overriding 'score_type' and 'score_type_parameters' "
+                        "as per task.yaml")
+            load(conf, args, "score_type")
+            load(conf, args, "score_type_parameters")
+        elif "score_type" in conf or "score_type_parameters" in conf:
+            logger.warning("To override score type data, task.yaml must "
+                           "specify both 'score_type' and "
+                           "'score_type_parameters'.")
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
