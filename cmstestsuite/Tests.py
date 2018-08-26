@@ -381,7 +381,8 @@ ALL_TESTS = [
          checks=[CheckOverallScore(0, 100)]),
 
     Test('write-forbidden-communication',
-         task=communication_fifoio, filenames=['write-forbidden-communication.%l'],
+         task=communication_fifoio,
+         filenames=['write-forbidden-communication.%l'],
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
