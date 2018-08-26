@@ -4,31 +4,40 @@
 <div class="core_title">
   <h1>Ranking</h1>
 </div>
-Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>, <a href="{{ url("contest", contest.id, "ranking", "txt") }}">text</a>.
+Download as <a href="{{ url("contest", contest.id, "ranking", "export", "csv") }}">csv</a>, <a href="{{ url("contest", contest.id, "ranking", "export", "txt") }}">text</a>.
 <table class="bordered">
   <thead>
+    {% macro sorting(sort_by) -%}
+      {%- set sort_direction, sort_arrow = get_sort_attributes(sort_by) -%}
+      (<a href="{{ url("contest", contest.id, "ranking", "sort", sort_by, sort_direction) }}">{{sort_arrow}}</a>)
+    {%- endmacro %}
     <tr>
-      <th>Username</th>
-      <th>User</th>
+      <th>#</th>
+      <th>Username {{- sorting('user.username') }}</th>
+      <th>User {{- sorting('user.name') }}</th>
       {% if show_teams %}
-      <th>Team</th>
+      <th>Team {{- sorting('team.name') }}</th>
       {% endif %}
       {% for task in contest.tasks %}
-      <th><a href="{{ url("task", task.id) }}">{{ task.name }}</a></th>
+      <th><a href="{{ url("task", task.id) }}">{{ task.name }}</a> {{- sorting('score.' + task.name) }}</th>
       {% endfor %}
-      <th>Global</th>
+      <th>Global {{- sorting('total_score') }}</th>
     </tr>
   </thead>
   <tbody>
-    {# TODO: Consider client-side sorting #}
-    {# This template assumes participations have two fields in addition to those in the DB: #}
+    {# TODO: Consider client-side sorting and/or secondary, tertiary etc sorting #}
+    {# This template assumes participations have four fields in addition to those in the DB: #}
+    {# - user.name: a string containing both user first and last names (used for sorting); #}
+    {# - score: a dict containing scores for each task by task name (used for sorting); #}
     {# - scores: a list of pairs (score, is score partial) for each task; #}
     {# - total_score: the total score for the contest. #}
-    {% for p in contest.participations|sort(attribute="total_score")|reverse %}
+    {# Primary sort by specified 'sort_by' variable, secondary sort by 'total_score'. #}
+    {% for p in contest.participations|sort(attribute='total_score',reverse=sort_reverse)|sort(attribute=sort_by,reverse=sort_reverse) %}
       {% if not p.hidden %}
     <tr>
+      <td>{{ loop.index }}</td>
       <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
-      <td>{{ "%s %s"|format(p.user.first_name, p.user.last_name) }}</td>
+      <td>{{ p.user.name }}</td>
       {% if show_teams %}
         {% if p.team %}
         <td><a href="{{ url("team", p.team_id) }}">{{ p.team.name }}</a></td>
