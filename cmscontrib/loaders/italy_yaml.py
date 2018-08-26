@@ -6,7 +6,7 @@
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
@@ -652,6 +652,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 args["task_type_parameters"] = \
                     [compilation_param, [infile_param, outfile_param],
                      evaluation_param]
+
+        # Override score_type if explicitly specified
+        if "score_type" in conf and "score_type_parameters" in conf:
+            load(conf, args, "score_type")
+            load(conf, args, "score_type_parameters")
 
         args["testcases"] = []
         for i in range(n_input):
