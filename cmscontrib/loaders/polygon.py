@@ -119,7 +119,7 @@ class PolygonTaskLoader(TaskLoader):
         root = tree.getroot()
 
         args["name"] = name
-        args["title"] = root.find('names').find("name").attrib['value']
+        args["title"] = str(root.find('names').find("name").attrib['value'])
 
         if get_statement:
             args["statements"] = {}
@@ -176,11 +176,11 @@ class PolygonTaskLoader(TaskLoader):
 
             args = {}
             args["task"] = task
-            args["description"] = testset_name
+            args["description"] = str(testset_name)
             args["autojudge"] = False
 
             tl = float(testset.find('time-limit').text)
-            ml = float(testset.find('memory-limit').text)
+            ml = int(testset.find('memory-limit').text)
             args["time_limit"] = tl * 0.001
             args["memory_limit"] = ml // (1024 * 1024)
 
