@@ -34,7 +34,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import pickle
 
 import tornado.web
 
@@ -117,9 +116,9 @@ class LoginHandler(BaseHandler):
         logger.info("User logged in: user=%s remote_ip=%s.",
                     filtered_user, self.request.remote_ip)
         self.set_secure_cookie("login",
-                               pickle.dumps((user.username,
-                                             correct_password,
-                                             make_timestamp())),
+                               json.dumps([user.username,
+                                           correct_password,
+                                           make_timestamp()]),
                                expires_days=None)
         self.redirect(next_page)
 

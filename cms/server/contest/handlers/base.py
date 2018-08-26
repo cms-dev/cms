@@ -34,8 +34,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 import logging
-import pickle
 import socket
 import struct
 import traceback
@@ -224,7 +224,7 @@ class BaseHandler(CommonRequestHandler):
 
         # Parse cookie.
         try:
-            cookie = pickle.loads(self.get_secure_cookie("login"))
+            cookie = json.loads(self.get_secure_cookie("login"))
             username = cookie[0]
             password = cookie[1]
             last_update = make_datetime(cookie[2])
@@ -257,9 +257,9 @@ class BaseHandler(CommonRequestHandler):
 
         if self.refresh_cookie:
             self.set_secure_cookie("login",
-                                   pickle.dumps((username,
-                                                 password,
-                                                 make_timestamp())),
+                                   json.dumps([username,
+                                               password,
+                                               make_timestamp()]),
                                    expires_days=None)
 
         return participation
