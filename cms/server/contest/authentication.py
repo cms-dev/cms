@@ -34,8 +34,8 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 import ipaddress
+import json
 import logging
-import pickle
 from datetime import timedelta
 
 from sqlalchemy.orm import contains_eager
@@ -150,7 +150,7 @@ def validate_login(
                 timestamp)
 
     return (participation,
-            pickle.dumps((username, password, make_timestamp(timestamp))))
+            json.dumps([username, password, make_timestamp(timestamp)]))
 
 
 class AmbiguousIPAddress(Exception):
@@ -316,7 +316,7 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
 
     # Parse cookie.
     try:
-        cookie = pickle.loads(cookie)
+        cookie = json.loads(cookie)
         username = cookie[0]
         password = cookie[1]
         last_update = make_datetime(cookie[2])
@@ -357,4 +357,4 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
                 timestamp)
 
     return (participation,
-            pickle.dumps((username, password, make_timestamp(timestamp))))
+            json.dumps([username, password, make_timestamp(timestamp)]))
