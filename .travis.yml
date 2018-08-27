@@ -27,16 +27,10 @@ addons:
       - libpq-dev
       - libcups2-dev
       - libyaml-dev
-      - wget
+      - rustc
       - mono-mcs
 
 install:
-  - wget "https://static.rust-lang.org/dist/rust-1.15.1-x86_64-unknown-linux-gnu.tar.gz"
-  - tar xf rust-1.15.1-x86_64-unknown-linux-gnu.tar.gz
-  - pushd rust-1.15.1-x86_64-unknown-linux-gnu
-  - sudo ./install.sh --prefix=/usr
-  - popd
-
   - pip install -r requirements.txt
   - pip install -r dev-requirements.txt
 
