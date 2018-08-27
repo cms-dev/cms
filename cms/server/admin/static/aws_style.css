@@ -390,6 +390,18 @@ table td.wrapping-options label {
     margin-right: 15px;
 }
 
+table td.partial::after {
+    content: "*";
+}
+
+table.sortable th {
+    white-space: nowrap;
+}
+
+th .column-sort {
+    text-decoration: none;
+    margin-left: 8px;
+}
 
 /* TODO */
 
