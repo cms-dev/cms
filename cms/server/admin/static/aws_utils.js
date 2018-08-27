@@ -3,6 +3,7 @@
  * Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
  * Copyright © 2013 Fabian Gundlach <320pointsguy@gmail.com>
  * Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
+ * Copyright © 2018 Gregor Eesmaa <gregoreesmaa1@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -308,6 +309,108 @@ CMS.AWSUtils.prototype.close_notification = function(item) {
         this.update_unread_counts(0, -1);
     }
     bubble.parentNode.removeChild(item.parentNode);
+};
+
+
+/**
+ * Provides table row comparator for specified column and order.
+ */
+function get_table_row_comparator(column_idx, reverse_order) {
+    return function(a, b) {
+        let valA = $(a).children('td').eq(column_idx).text();
+        let valB = $(b).children('td').eq(column_idx).text();
+        let result = valB.localeCompare(valA, undefined, { numeric: true });
+        return reverse_order ? -result : result;
+    }
+}
+
+
+/**
+ * Sorts specified table by specified column in specified order.
+ */
+CMS.AWSUtils.prototype.sort_table = function(table, column_idx, reverse) {
+    let initial_column_idx = table.data("initial_sort_column_idx");
+    let ranks_column = table.data("ranks_column");
+    column_idx += ranks_column ? 1 : 0;
+    let table_rows = table
+        .children("tbody")
+        .children("tr");
+    let column_header = table
+        .children("thead")
+        .children("tr")
+        .children("th")
+        .eq(column_idx);
+
+    // Normalize column index
+    column_idx = column_header.index();
+
+    // Reassign arrows to headers
+    table.find('.column-sort').html("&udarr;");
+    column_header.find(".column-sort").html(reverse ? "&ddarr;" : "&uuarr;");
+
+    // Do the sorting, by initial column and then by selected column.
+    table_rows
+        .sort(get_table_row_comparator(initial_column_idx, reverse))
+        .sort(get_table_row_comparator(column_idx, reverse))
+        .each((idx, row) => table.children("tbody").append(row));
+
+    if (ranks_column) {
+        table_rows
+            .each((idx, row) => $(row).children("td").first().text(idx + 1))
+    }
+};
+
+
+/**
+ * Makes table sortable, adding ranks column and sorting buttons in header.
+ */
+CMS.AWSUtils.prototype.init_table_sort = function(table, ranks_column,
+                                                  initial_column_idx,
+                                                  initial_reverse) {
+    let self = this;
+    let table_column_headers = table
+        .children("thead")
+        .children("tr");
+    let table_rows = table
+        .children("tbody")
+        .children("tr");
+
+    // Normalize column index
+    initial_column_idx = table_column_headers
+        .children("th")
+        .eq(initial_column_idx)
+        .index();
+
+    table.data("ranks_column", ranks_column);
+    table.data("initial_sort_column_idx", initial_column_idx);
+
+    let previous_column_idx = initial_column_idx;
+    let reverse = initial_reverse;
+
+    // Add sorting indicators to column headers
+    table_column_headers
+        .children("th")
+        .each((column_idx, header) => {
+            let $a = $("<a/>", {
+                href: "#",
+                class: "column-sort",
+                click: () => {
+                    reverse = !reverse && previous_column_idx === column_idx;
+                    previous_column_idx = column_idx;
+                    self.sort_table(table, column_idx, reverse);
+                }
+            });
+            $(header).append("(", $a, ")");
+        });
+
+    // Add ranks column
+    if (ranks_column) {
+        table_column_headers.prepend("<th>#</th>");
+        table_rows.prepend("<td></td>");
+    }
+
+    // Do initial sorting
+    self.sort_table(table, initial_column_idx, initial_reverse);
 };
 
 

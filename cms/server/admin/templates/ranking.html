@@ -5,7 +5,7 @@
   <h1>Ranking</h1>
 </div>
 Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>, <a href="{{ url("contest", contest.id, "ranking", "txt") }}">text</a>.
-<table class="bordered">
+<table id="ranking-table" class="bordered">
   <thead>
     <tr>
       <th>Username</th>
@@ -20,11 +20,10 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
     </tr>
   </thead>
   <tbody>
-    {# TODO: Consider client-side sorting #}
     {# This template assumes participations have two fields in addition to those in the DB: #}
     {# - scores: a list of pairs (score, is score partial) for each task; #}
     {# - total_score: the total score for the contest. #}
-    {% for p in contest.participations|sort(attribute="total_score")|reverse %}
+    {% for p in contest.participations %}
       {% if not p.hidden %}
     <tr>
       <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
@@ -46,4 +45,9 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
     {% endfor %}
   </tbody>
 </table>
+<script>
+  $(document).ready(function() {
+    utils.init_table_sort($("#ranking-table"), true, -1);
+  })
+</script>
 {% endblock core %}
