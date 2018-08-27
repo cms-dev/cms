@@ -374,7 +374,18 @@ table.TaskTypeOptions {
     margin: 5px 0px;
 }
 
+table td.partial::after {
+    content: "*";
+}
 
+table.sortable th {
+    white-space: nowrap;
+}
+
+th .column-sort {
+    text-decoration: none;
+    margin-left: 8px;
+}
 
 
 /* TODO */

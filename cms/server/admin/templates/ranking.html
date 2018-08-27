@@ -5,7 +5,7 @@
   <h1>Ranking</h1>
 </div>
 Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>, <a href="{{ url("contest", contest.id, "ranking", "txt") }}">text</a>.
-<table class="bordered">
+<table id="ranking-table" class="bordered">
   <thead>
     <tr>
       <th>Username</th>
@@ -14,17 +14,16 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
       <th>Team</th>
       {% endif %}
       {% for task in contest.tasks %}
-      <th><a href="{{ url("task", task.id) }}">{{ task.name }}</a></th>
+      <th data-sort-settings="numeric reversed"><a href="{{ url("task", task.id) }}">{{ task.name }}</a></th>
       {% endfor %}
-      <th>Global</th>
+      <th data-sort-settings="numeric reversed">Global</th>
     </tr>
   </thead>
   <tbody>
-    {# TODO: Consider client-side sorting #}
     {# This template assumes participations have two fields in addition to those in the DB: #}
     {# - scores: a list of pairs (score, is score partial) for each task; #}
     {# - total_score: the total score for the contest. #}
-    {% for p in contest.participations|sort(attribute="total_score")|reverse %}
+    {% for p in contest.participations %}
       {% if not p.hidden %}
     <tr>
       <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
@@ -37,13 +36,18 @@ Download as <a href="{{ url("contest", contest.id, "ranking", "csv") }}">csv</a>
         {% endif %}
       {% endif %}
       {% for t_score, t_partial in p.scores %}
-      <td>{{ t_score }}{% if t_partial %}*{% endif %}</td>
+      <td {%- if t_partial %} class="partial" {%- endif -%}>{{ t_score }}</td>
       {% endfor %}
       {% set total_score, partial = p.total_score %}
-      <td>{{ total_score }}{% if partial %}*{% endif %}</td>
+      <td {%- if partial %} class="partial" {%- endif -%}>{{ total_score }}</td>
     </tr>
       {% endif %}
     {% endfor %}
   </tbody>
 </table>
+<script>
+  $(document).ready(function() {
+    CMS.AWSUtils.init_table_sort($("#ranking-table"), true, -1);
+  })
+</script>
 {% endblock core %}
