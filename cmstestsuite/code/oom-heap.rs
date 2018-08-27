@@ -1,13 +1,15 @@
 use std::io;
+use std::cmp::max;
 
 fn main()
 {
-    let mut v = vec![0; 128 * 1024 * 1024];
+    let n = 128 * 1024 * 1024;
     let mut s = String::new();
-    match io::stdin().read_line(&mut s)
+    let g: usize = match io::stdin().read_line(&mut s)
     {
-        Ok(_) => v[10000] = s.trim().parse::<i32>().unwrap(),
+        Ok(_) => s.trim().parse().unwrap(),
         Err(why) => panic!("{}", why),
     };
-    println!("correct {}", v[10000]);
+    let v: Vec<_> = (0..max(n, g + 1)).collect();
+    println!("correct {}", v[g]);
 }
