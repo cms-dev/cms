@@ -93,7 +93,7 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
     def setUp(self):
         super(TestImportContest, self).setUp()
 
-        # DB already contains a contest in a contest with a submission.
+        # DB already contains a task in a contest with a submission.
         self.contest = self.add_contest()
         self.participation = self.add_participation(contest=self.contest)
         self.task = self.add_task(contest=self.contest)
@@ -206,19 +206,19 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
 
         self.assertFalse(ret)
 
-    def test_import_task_in_db_already_attached_fail(self):
+    def test_import_task_in_db_already_attached_success(self):
         # Completely new contest, but the task is already attached to another
-        # contest in the DB.
+        # contest in the DB. It should be imported as a "detached" new task.
         name = "new_name"
         description = "new_desc"
         contest = self.get_contest(name=name, description=description)
-        task = self.get_task(name=self.task_name, title=self.task_title,
+        task = self.get_task(name=self.task_name, title=self.task_title + " 2",
                              contest=contest)
         ret = self.do_import(contest, [(task, True)], [],
                              import_tasks=True, update_tasks=True)
 
-        self.assertFalse(ret)
-        # Task still tied to the original contest.
+        self.assertTrue(ret)
+        # The original contest is unchanged.
         self.assertContestInDb(self.name, self.description,
                                [(self.task_name, self.task_title)],
                                [(self.username, self.last_name)])

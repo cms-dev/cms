@@ -47,7 +47,7 @@ def ask(task_name):
     return ans in ["y", "yes"]
 
 
-def remove_task(task_name, task_id):
+def remove_task(task_name, task_id=None):
     with SessionGen() as session:
         task = task_from_db(session, task_name, task_id)
 

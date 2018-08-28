@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetImporter(object):
-    def __init__(self, path, description, loader_class, task_id):
+    def __init__(self, path, description, loader_class, task_id=None):
         self.file_cacher = FileCacher()
         self.description = description
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)

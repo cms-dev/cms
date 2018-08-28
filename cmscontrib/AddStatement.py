@@ -44,8 +44,8 @@ from cmscontrib.importing import ImportDataError, task_from_db
 logger = logging.getLogger(__name__)
 
 
-def add_statement(task_name, task_id, language_code, statement_file,
-                  overwrite):
+def add_statement(task_name, language_code, statement_file,
+                  overwrite, task_id=None):
     logger.info("Adding the statement(language: %s) of task %s "
                 "in the database.", language_code, task_name)
 
@@ -85,7 +85,6 @@ def add_statement(task_name, task_id, language_code, statement_file,
         session.commit()
 
     logger.info("Statement added.")
-    return True
 
 
 def main():
@@ -109,15 +108,15 @@ def main():
     args = parser.parse_args()
 
     try:
-        success = add_statement(
-            args.task_name, args.task_id, args.language_code,
-            args.statement_file, args.overwrite)
+        add_statement(
+            args.task_name, args.language_code,
+            args.statement_file, args.overwrite, args.task_id)
     except ImportDataError as e:
         logger.error(str(e))
         logger.info("Error while importing, no changes were made.")
         return 1
 
-    return 0 if success is True else 1
+    return 0
 
 
 if __name__ == "__main__":

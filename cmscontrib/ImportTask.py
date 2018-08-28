@@ -66,7 +66,7 @@ class TaskImporter(object):
     """
 
     def __init__(self, path, prefix, override_name, update, no_statement,
-                 contest_id, task_id, loader_class):
+                 contest_id, loader_class, task_id=None):
         """Create the importer object for a task.
 
         path (string): the path to the file or directory to import.
@@ -116,9 +116,9 @@ class TaskImporter(object):
         logger.info("Creating task on the database.")
         with SessionGen() as session:
             try:
-                contest = contest_from_db(self.contest_id, session)
+                contest_to_attach = contest_from_db(self.contest_id, session)
                 task = self._task_to_db(
-                    session, contest, task, task_has_changed)
+                    session, contest_to_attach, task, task_has_changed)
 
             except ImportDataError as e:
                 logger.error(str(e))
@@ -131,7 +131,8 @@ class TaskImporter(object):
         logger.info("Import finished (new task id: %s).", task_id)
         return True
 
-    def _task_to_db(self, session, contest, new_task, task_has_changed):
+    def _task_to_db(self, session, contest_to_attach, new_task,
+                    task_has_changed):
         """Add the task to the DB
 
         Return the task, or raise if the user wants to update the task but:
@@ -150,14 +151,13 @@ class TaskImporter(object):
             else:
                 logger.info("Task \"%s\" data has not changed.", task.name)
 
-            return task
-
-        if contest is not None:
-            logger.info("Attaching task to contest (id %s.)",
-                        self.contest_id)
-            new_task.num = len(contest.tasks)
-            new_task.contest = contest
-        session.add(new_task)
+            if contest_to_attach is not None:
+                logger.info("Attaching task to contest (id %s.)",
+                            self.contest_id)
+                task.num = len(contest_to_attach.tasks)
+                task.contest = contest_to_attach
+        else:
+            session.add(task)
 
         return new_task
 
@@ -225,10 +225,10 @@ def main():
                             update=args.update,
                             no_statement=args.no_statement,
                             contest_id=args.contest_id,
-                            task_id=args.task_id,
                             prefix=args.prefix,
                             override_name=args.name,
-                            loader_class=loader_class)
+                            loader_class=loader_class,
+                            task_id=args.task_id)
     success = importer.do_import()
     return 0 if success is True else 1
 

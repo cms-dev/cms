@@ -65,16 +65,16 @@ def contest_from_db(contest_id, session):
     return contest
 
 
-def task_from_db(session, task_name, task_id):
+def task_from_db(session, task_name=None, task_id=None):
     """Return the task object with the given name
 
     session (Session): SQLAlchemy session to use.
-    task_name (string|None): the name of the task, or None to return None.
+    task_name (str|None): the name of the task, or None to return None.
     task_id (int|None): the ID of the task, or None.
 
     return (Task|None): None if task_name is None, or the task.
-    raise (ImportDataError): if there is no task with the given name.
-    raise (AmbiguousTaskName): if the task name is ambiguous.
+    raise (ImportDataError): if there is no task with the given name or if the
+                             task name is ambiguous.
 
     """
     if task_name is None:
