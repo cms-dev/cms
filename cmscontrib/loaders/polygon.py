@@ -203,9 +203,13 @@ class PolygonTaskLoader(TaskLoader):
                 if not config.installed:
                     testlib_path = os.path.join(os.path.dirname(__file__),
                                                 "polygon")
-                subprocess.call(["g++", "-x", "c++", "-O2", "-static", "-DCMS",
-                                 "-I", testlib_path, "-include", testlib_include,
-                                 "-o", checker_exe, checker_src])
+                code = subprocess.call(["g++", "-x", "c++", "-O2", "-static",
+                                        "-DCMS", "-I", testlib_path,
+                                        "-include", testlib_include,
+                                        "-o", checker_exe, checker_src])
+                if code != 0:
+                    logger.critical("Could not compile checker")
+                    return None
                 digest = self.file_cacher.put_file_from_path(
                     checker_exe,
                     "Manager for task %s" % name)
