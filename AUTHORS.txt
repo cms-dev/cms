@@ -43,5 +43,6 @@ Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 Kārlis Seņko <karlis3p70l1ij@gmail.com>
 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 Valentin Rosca <rosca.valentin2012@gmail.com>
+Alexander Kernozhitsky <sh200105@mail.ru>
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
