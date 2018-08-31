@@ -124,6 +124,7 @@ def main():
                              "  time: submission timestamp\n"
                              "  user: username\n"
                              "  task: taskname\n"
+                             "  score: raw score\n"
                              " (default: {id}.{file}{ext})",
                         default="{id}.{file}{ext}")
     parser.add_argument("output_dir", action="store", type=utf8_decoder,
@@ -207,7 +208,8 @@ def main():
                                             name=filename_base,
                                             ext=filename_ext,
                                             time=timef, user=u_name,
-                                            task=t_name)
+                                            task=t_name,
+                                            score=sr_score)
             filename = os.path.join(args.output_dir, filename)
             if os.path.exists(filename):
                 logger.warning("Skipping file '%s' because it already exists",
