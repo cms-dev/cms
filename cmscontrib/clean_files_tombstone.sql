@@ -27,6 +27,7 @@ BEGIN;
     INSERT INTO digests_to_delete
       SELECT digest FROM fsobjects EXCEPT (
         SELECT digest FROM attachments UNION
+        SELECT digest FROM spoilers UNION
         SELECT digest FROM executables UNION
         SELECT digest FROM files UNION
         SELECT digest FROM managers UNION

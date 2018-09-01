@@ -122,6 +122,27 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       </tr>
       <tr>
         <td>
+          <span class="info" title="Spoilers for this task. In analysis mode, contestant can view and download spoilers from the task page."></span>
+          Analysis Spoilers
+{% if admin.permission_all %}
+          [<a href="{{ url("task", task.id, "spoilers", "add") }}">add</a>]
+{% endif %}
+        </td>
+        <td>
+          {% if task.spoilers|length == 0 %}
+            No spoilers.
+          {% else %}
+            {% for spoiler in itervalues(task.spoilers) %}
+              <div class="spoiler">
+                <a href="{{ url("file", spoiler.digest, spoiler.filename) }}">{{ spoiler.filename }}</a>
+                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "spoiler", spoiler.id) }}'); ">Delete</a>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>
           <span class="info" title="A comma-separated list with the names of the files that need to be submitted (with the language extensions changed to %l).
                                     The task type dictates the submission format. Consult the task type documentation to know the requirements."></span>
           Submission format

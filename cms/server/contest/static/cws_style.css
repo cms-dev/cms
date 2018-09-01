@@ -748,7 +748,7 @@ td.token_rules p:last-child {
 
 /*** Attachments */
 
-#attachments ul {
+.attachments ul {
     margin-left: 0;
     list-style-type: none;
     -webkit-column-count: 3;
@@ -759,7 +759,7 @@ td.token_rules p:last-child {
     column-gap: 8px;
 }
 
-#attachments ul li {
+.attachments ul li {
     -webkit-column-break-inside: avoid;
     -webkit-break-inside: avoid;
     -moz-break-inside: avoid;
@@ -768,14 +768,14 @@ td.token_rules p:last-child {
 
 /* this is a really ugly hack to simulate the no-break behavior on firefox */
 @-moz-document url-prefix() {
-    #attachments ul li {
+    .attachments ul li {
         display: table;
         table-layout: fixed;
         width: 100%;
     }
 }
 
-#attachments ul li a {
+.attachments ul li a {
     display: block;
     height: 36px;
     margin-bottom: 8px;
@@ -783,22 +783,22 @@ td.token_rules p:last-child {
     text-align: left;
 }
 
-#attachments ul li a:hover {
+.attachments ul li a:hover {
     background-color: #E3E3E3;
 }
 
-#attachments ul li img {
+.attachments ul li img {
     float: left;
     margin: 2px 8px 2px 2px;
 }
 
-#attachments ul li .first_line {
+.attachments ul li .first_line {
     display: block;
     height: 18px;
     overflow: hidden;
 }
 
-#attachments ul li .name {
+.attachments ul li .name {
     display: inline-block;
     max-width: 100%;
     overflow: hidden;
@@ -807,7 +807,7 @@ td.token_rules p:last-child {
     font-weight: bold;
 }
 
-#attachments ul li .size {
+.attachments ul li .size {
     float: right;
     font-style: italic;
     /* the size floats on right of the first line if there's enough space.
@@ -815,7 +815,7 @@ td.token_rules p:last-child {
        "disappearing" because the first line has overflow: hidden */
 }
 
-#attachments ul li .type {
+.attachments ul li .type {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;

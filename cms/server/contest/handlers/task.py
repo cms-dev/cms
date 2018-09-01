@@ -115,3 +115,28 @@ class TaskAttachmentViewHandler(FileHandler):
             mimetype = 'application/octet-stream'
 
         self.fetch(attachment, mimetype, filename)
+
+
+class TaskSpoilerViewHandler(FileHandler):
+    """Shows an analysis spoiler file of a task in the contest.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(3)
+    @multi_contest
+    def get(self, task_name, filename):
+        task = self.get_task(task_name)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+
+        if filename not in task.spoilers:
+            raise tornado.web.HTTPError(404)
+
+        spoiler = task.spoilers[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(spoiler, mimetype, filename)

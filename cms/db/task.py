@@ -251,6 +251,13 @@ class Task(Base):
         passive_deletes=True,
         back_populates="task")
 
+    spoilers = relationship(
+        "Spoiler",
+        collection_class=attribute_mapped_collection("filename"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
     datasets = relationship(
         "Dataset",
         # Due to active_dataset_id, SQLAlchemy cannot unambiguously
@@ -347,6 +354,39 @@ class Attachment(Base):
         Digest,
         nullable=False)
 
+class Spoiler(Base):
+    """Class to store additional files to give to the user together
+    with the statement of the task during analysis mode.
+
+    """
+    __tablename__ = 'spoilers'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Task (id and object) owning the spoiler.
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    task = relationship(
+        Task,
+        back_populates="spoilers")
+
+    # Filename and digest of the provided spoiler.
+    filename = Column(
+        Filename,
+        nullable=False)
+    digest = Column(
+        Digest,
+        nullable=False)
 
 class Dataset(Base):
     """Class to store the information about a data set.

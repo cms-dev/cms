@@ -165,7 +165,7 @@
 
 {% if task.attachments|length > 0 %}
     <h2>{% trans %}Attachments{% endtrans %}</h2>
-    <div id="attachments">
+    <div class="attachments">
         <ul>
     {% for filename, attachment in task.attachments|dictsort(by="key") %}
         {% set mime_type = get_mimetype_for_file_name(filename) %}
@@ -179,6 +179,41 @@
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
                 <a href="{{ contest_url("tasks", task.name, "attachments", filename) }}" class="btn">
+            {% if type_icon is not none %}
+                    <img src="{{ url("static", "img", "mimetypes", "%s.png"|format(type_icon)) }}" alt="{{ mime_type }}" />
+            {% else %}
+                    <img src="{{ url("static", "img", "mimetypes", "unknown.png") }}" alt="{% trans %}unknown{% endtrans %}" />
+            {% endif %}
+                    <span class="first_line">
+                        <span class="name">{{ filename }}</span>
+                        <span class="size">{{ file_size|format_size }}</span>
+                    </span>
+            {% if type_name is not none %}
+                    <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
+            {% endif %}
+                </a>
+            </li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% if contest.analysis_enabled and actual_phase == +3 and task.spoilers|length > 0 %}
+    <h2>{% trans %}Analysis Spoilers{% endtrans %}</h2>
+    <div class="attachments">
+        <ul>
+    {% for filename, spoiler in task.spoilers|dictsort(by="key") %}
+        {% set mime_type = get_mimetype_for_file_name(filename) %}
+        {% if mime_type is not none %}
+            {% set type_name = get_name_for_mimetype(mime_type) %}
+            {% set type_icon = get_icon_for_mimetype(mime_type) %}
+        {% else %}
+            {% set type_name = none %}
+            {% set type_icon = none %}
+        {% endif %}
+        {% set file_size = handler.application.service.file_cacher.get_size(spoiler.digest) %}
+            <li>
+                <a href="{{ contest_url("tasks", task.name, "spoilers", filename) }}" class="btn">
             {% if type_icon is not none %}
                     <img src="{{ url("static", "img", "mimetypes", "%s.png"|format(type_icon)) }}" alt="{{ mime_type }}" />
             {% else %}
