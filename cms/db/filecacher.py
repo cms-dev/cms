@@ -514,6 +514,10 @@ class FileCacher(object):
         else:
             self.backend = FSBackend(path)
 
+        # First we create the config directories.
+        self._create_directory_or_die(config.temp_dir)
+        self._create_directory_or_die(config.cache_dir)
+
         if service is None:
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
             # Delete this directory on exit since it has a random name and
@@ -523,14 +527,21 @@ class FileCacher(object):
             self.file_dir = os.path.join(
                 config.cache_dir,
                 "fs-cache-%s-%d" % (service.name, service.shard))
+        self._create_directory_or_die(self.file_dir)
 
-        self.temp_dir = os.path.join(self.file_dir, "_temp")
-
-        if not mkdir(config.cache_dir) or not mkdir(config.temp_dir) \
-                or not mkdir(self.file_dir) or not mkdir(self.temp_dir):
-            logger.error("Cannot create necessary directories.")
-            raise RuntimeError("Cannot create necessary directories.")
+        # Temp dir must be a subdirectory of file_dir to avoid cross-filesystem
+        # moves.
+        self.temp_dir = tempfile.mkdtemp(dir=self.file_dir, prefix="_temp")
         atexit.register(lambda: rmtree(self.temp_dir))
+        # Just to make sure it was created.
+        self._create_directory_or_die(self.file_dir)
+
+    def _create_directory_or_die(self, dir):
+        """Create dir and ensure it exists, or raise a RuntimeError."""
+        if not mkdir(dir):
+            msg = "Cannot create required directory '%s'." % dir
+            logger.error(msg)
+            raise RuntimeError(msg)
 
     def load(self, digest, if_needed=False):
         """Load the file with the given digest into the cache.
