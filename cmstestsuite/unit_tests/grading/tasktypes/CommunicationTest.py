@@ -243,6 +243,29 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         sandbox.delete.assert_called_once()
 
     def test_no_stub_success(self):
+        tt, job = self.prepare(
+            [1, "alone", "fifo_io"],
+            {"foo.%l": FILE_FOO_L1}, {})
+        sandbox = self.expect_sandbox()
+        sandbox.get_file_to_storage.return_value = "exe_digest"
+
+        tt.compile(job, self.file_cacher)
+
+        # Sandbox created with the correct file cacher and name.
+        self.Sandbox.assert_called_once_with(self.file_cacher,
+                                             name="compile")
+        sandbox.create_file_from_storage.assert_called_once_with(
+            "foo.l1", "digest of foo.l1")
+        # Compilation step called correctly, without the stub.
+        self.compilation_step.assert_called_once_with(
+            sandbox, fake_compilation_commands(
+                COMPILATION_COMMAND_1, ["foo.l1"], "foo"))
+        # Results put in job, executable stored and sandbox deleted.
+        self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
+        sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
+        sandbox.delete.assert_called_once()
+
+    def test_no_stub_but_stub_given_success(self):
         # A stub is given but should be ignored.
         tt, job = self.prepare(
             [1, "alone", "fifo_io"],
