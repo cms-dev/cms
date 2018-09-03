@@ -87,11 +87,11 @@ The admins must provide an executable manager called ``manager``. It can read th
 
 Admins can also provide a manager called :file:`stub.{ext}` for each allowed language, where :file:`{ext}` is the standard extension of a source file in that language. The task type can be set up to compile the stub with the contestant's source. Usually, a stub takes care of the communication with the manager, so that the contestants have to implement only a function. As for Batch, admins can also add header file that will be used when compiling the stub and the contestant's source.
 
-The contestant's program, regardless of whether it's compiled with or without a stub, can be set up to communicate with the manager in two ways: through the standard input and output or through FIFOs, whose filenames will be given as arguments, first the one from the manager and then the one to it.
+The contestant's program, regardless of whether it's compiled with or without a stub, can be set up to communicate with the manager in two ways: through the standard input and output, or through FIFOs (in which case the FIFOs' filenames will be given as arguments, first the one from the manager and then the one to it).
 
 The first parameter of the task type controls the number of user processes. If it is equal to 1, the behavior will be as explained above. If it is an integer N greater than 1, there are a few differences:
 
-- there will be N processes with the contestant's code and the stub (if any) running;
+- there will be N processes with the contestant's code and the stub (if present) running;
 - there will be N pairs of FIFOs, one for each process running the contestant's program; the manager will receive as argument all pairs in order, and each contestant program will receive its own (as arguments or redirected through stdin/stdout);
 - each copy of the contestant's program will receive as an additional argument its 0-based index within the running programs;
 - the time limit is checked against the total user time of all the contestant's processes.
