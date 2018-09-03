@@ -29,7 +29,8 @@ from six import itervalues, iteritems
 import heapq
 import logging
 
-from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
+from cmscommon.constants import \
+    SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 
 
 logger = logging.getLogger(__name__)
@@ -124,6 +125,20 @@ class Score(object):
             score = max([0.0] +
                         [submission.score
                          for submission in itervalues(self._submissions)])
+        elif self._score_mode == SCORE_MODE_MAX_SUBTASK:
+            subtask_scores = None
+            for s in itervalues(self._submissions):
+                if s.extra is None:
+                    continue
+                print(s.extra)
+                if subtask_scores is None:
+                    subtask_scores = [float(score) for score in s.extra]
+                else:
+                    subtask_scores = [
+                        max(old, float(new))
+                        for old, new in zip(subtask_scores, s.extra)
+                    ]
+            score = 0.0 if subtask_scores is None else sum(subtask_scores)
         elif self._score_mode == SCORE_MODE_MAX_TOKENED_LAST:
             score = max(self._released.query(),
                         self._last.score if self._last is not None else 0.0)
