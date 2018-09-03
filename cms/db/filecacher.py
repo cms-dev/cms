@@ -536,10 +536,11 @@ class FileCacher(object):
         # Just to make sure it was created.
         self._create_directory_or_die(self.file_dir)
 
-    def _create_directory_or_die(self, dir):
-        """Create dir and ensure it exists, or raise a RuntimeError."""
-        if not mkdir(dir):
-            msg = "Cannot create required directory '%s'." % dir
+    @staticmethod
+    def _create_directory_or_die(directory):
+        """Create directory and ensure it exists, or raise a RuntimeError."""
+        if not mkdir(directory):
+            msg = "Cannot create required directory '%s'." % directory
             logger.error(msg)
             raise RuntimeError(msg)
 
