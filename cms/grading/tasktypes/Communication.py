@@ -119,8 +119,8 @@ class Communication(TaskType):
         "User I/O",
         "user_io",
         "",
-        {USER_IO_STD: "Submissions read from stdin and write to stdout",
-         USER_IO_FIFOS: "Submissions read from and write to fifos, "
+        {USER_IO_STD: "User processes read from stdin and write to stdout",
+         USER_IO_FIFOS: "User processes read from and write to fifos, "
                         "whose paths are given as arguments"})
 
     ACCEPTED_PARAMETERS = [_NUM_PROCESSES, _COMPILATION, _USER_IO]
@@ -167,7 +167,7 @@ class Communication(TaskType):
     def _uses_stub(self):
         return self.compilation == self.COMPILATION_STUB
 
-    def _uses_pipes(self):
+    def _uses_fifos(self):
         return self.io == self.USER_IO_FIFOS
 
     @staticmethod
@@ -337,7 +337,7 @@ class Communication(TaskType):
             args = []
             stdin_redirect = None
             stdout_redirect = None
-            if self._uses_pipes():
+            if self._uses_fifos():
                 args.extend([sandbox_fifo_manager_to_user[i],
                              sandbox_fifo_user_to_manager[i]])
             else:
