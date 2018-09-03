@@ -1414,10 +1414,12 @@ class IsolateSandbox(SandboxBase):
         # Use subprocess.DEVNULL when dropping Python 2.
         with io.open(os.devnull, "r+b") as devnull:
             if delete:
-                subprocess.call(exe + [
-                    "--dir=%s=%s:rw" % (self._home_dest, self._home),
-                    "--run", "--",
-                    "/bin/chmod", "777", "-R", self._home_dest])
+                subprocess.call(
+                    exe + [
+                        "--dir=%s=%s:rw" % (self._home_dest, self._home),
+                        "--run", "--",
+                        "/bin/chmod", "777", "-R", self._home_dest],
+                    stdout=devnull, stderr=devnull)
 
             # Tell isolate to cleanup the sandbox.
             subprocess.call(exe + ["--cleanup"],
