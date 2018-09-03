@@ -30,13 +30,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
+from six import iteritems, itervalues
 
 from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
 from cms.db import Submission
-from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
+from cmscommon.constants import \
+    SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 
 
 __all__ = [
@@ -137,6 +139,8 @@ def task_score(participation, task):
 
     if task.score_mode == SCORE_MODE_MAX:
         return _task_score_max(submissions_and_results)
+    if task.score_mode == SCORE_MODE_MAX_SUBTASK:
+        return _task_score_max_subtask(submissions_and_results)
     elif task.score_mode == SCORE_MODE_MAX_TOKENED_LAST:
         return _task_score_max_tokened_last(submissions_and_results)
     else:
@@ -178,6 +182,58 @@ def _task_score_max_tokened_last(submissions_and_results):
             partial = True
 
     return max(last_score, max_tokened_score), partial
+
+
+def _task_score_max_subtask(submissions_and_results):
+    """Compute score using the "max subtask" score mode.
+
+    This has been used in IOI since 2017. The score of a participant on a
+    task is the sum, over the subtasks, of the maximum score amongst all
+    submissions for that subtask (not yet computed scores count as 0.0).
+
+    If this score mode is selected, all tasks should be children of
+    ScoreTypeGroup, or follow the same format for their score details. If
+    this is not true, the score mode will work as if the task had a single
+    subtask.
+
+    submissions_and_results ([(Submission, SubmissionResult|None)]): list of
+        all submissions and their results for the participant on the task (on
+        the dataset of interest); result is None if not available (that is,
+        if the submission has not been compiled).
+
+    return ((float, bool)): (score, partial), same as task_score().
+
+    """
+    # Maximum score for each subtask (not yet computed scores count as 0.0).
+    max_scores = {}
+
+    partial = False
+    for _, sr in submissions_and_results:
+        if sr is None or not sr.scored():
+            partial = True
+            continue
+
+        if sr.score_details == [] and sr.score == 0.0:
+            # Submission did not compile, ignore it.
+            continue
+
+        try:
+            subtask_scores = dict(
+                (subtask["idx"],
+                 subtask["score_fraction"] * subtask["max_score"])
+                for subtask in sr.score_details
+            )
+        except Exception:
+            subtask_scores = None
+
+        if subtask_scores is None or len(subtask_scores) == 0:
+            # Task's score type is not group, assume a single subtask.
+            subtask_scores = {1: sr.score}
+
+        for idx, score in iteritems(subtask_scores):
+            max_scores[idx] = max(max_scores.get(idx, 0.0), score)
+
+    return sum(itervalues(max_scores)), partial
 
 
 def _task_score_max(submissions_and_results):

@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -46,7 +46,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
     FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
-from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
+from cmscommon.constants import \
+    SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 
 from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
 
@@ -216,7 +217,9 @@ class Task(Base):
 
     # Score mode for the task.
     score_mode = Column(
-        Enum(SCORE_MODE_MAX_TOKENED_LAST, SCORE_MODE_MAX,
+        Enum(SCORE_MODE_MAX_TOKENED_LAST,
+             SCORE_MODE_MAX,
+             SCORE_MODE_MAX_SUBTASK,
              name="score_mode"),
         nullable=False,
         default=SCORE_MODE_MAX_TOKENED_LAST)
