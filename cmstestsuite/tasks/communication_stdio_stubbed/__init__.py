@@ -26,7 +26,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 task_info = {
-    "name": "communication_stdio_unstubbed",
+    "name": "communication_stdio_stubbed",
     "title": "Test Communication Task",
     "official_language": "",
     "submission_format_choice": "other",
@@ -35,13 +35,17 @@ task_info = {
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Communication",
     "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "1",
-    "TaskTypeOptions_{{dataset_id}}_Communication_compilation": "alone",
+    "TaskTypeOptions_{{dataset_id}}_Communication_compilation": "stub",
     "TaskTypeOptions_{{dataset_id}}_Communication_user_io": "std_io",
     "score_type_{{dataset_id}}": "Sum",
     "score_type_parameters_{{dataset_id}}": "50",
 }
 
 managers = [
+    "stub.c",
+    "stub.cpp",
+    "stub.pas",
+    "stub.java",
     "manager",
 ]
 

@@ -27,7 +27,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 task_info = {
-    "name": "communication_many_stdio",
+    "name": "communication_many_fifoio_stubbed",
     "title": "Test Communication Task",
     "official_language": "",
     "submission_format_choice": "other",
@@ -37,7 +37,7 @@ task_info = {
     "task_type_{{dataset_id}}": "Communication",
     "TaskTypeOptions_{{dataset_id}}_Communication_num_processes": "2",
     "TaskTypeOptions_{{dataset_id}}_Communication_compilation": "stub",
-    "TaskTypeOptions_{{dataset_id}}_Communication_user_io": "std_io",
+    "TaskTypeOptions_{{dataset_id}}_Communication_user_io": "fifo_io",
     "score_type_{{dataset_id}}": "Sum",
     "score_type_parameters_{{dataset_id}}": "50",
 }

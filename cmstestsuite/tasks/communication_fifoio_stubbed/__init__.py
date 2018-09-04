@@ -26,7 +26,7 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 task_info = {
-    "name": "communication_fifoio",
+    "name": "communication_fifoio_stubbed",
     "title": "Test Communication Task",
     "official_language": "",
     "submission_format_choice": "other",
