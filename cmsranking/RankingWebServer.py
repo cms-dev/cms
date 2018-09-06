@@ -519,7 +519,7 @@ def main():
             shutil.rmtree(config.lib_dir)
         else:
             print("Not removing directory %s." % config.lib_dir)
-        return 1
+        return 0
 
     stores = dict()
 
