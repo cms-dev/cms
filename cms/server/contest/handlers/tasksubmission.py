@@ -196,15 +196,13 @@ class SubmissionStatusHandler(ContestHandler):
         if data["status"] == SubmissionResult.COMPILING:
             data["status_text"] = self._("Compiling...")
         elif data["status"] == SubmissionResult.COMPILATION_FAILED:
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
-                self._("Compilation failed"), self._("details"))
+            data["status_text"] = self._("Compilation failed")
         elif data["status"] == SubmissionResult.EVALUATING:
             data["status_text"] = self._("Evaluating...")
         elif data["status"] == SubmissionResult.SCORING:
             data["status_text"] = self._("Scoring...")
         elif data["status"] == SubmissionResult.SCORED:
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
-                self._("Evaluated"), self._("details"))
+            data["status_text"] = self._("Evaluated")
 
             score_type = task.active_dataset.score_type_object
             if score_type.max_public_score > 0:

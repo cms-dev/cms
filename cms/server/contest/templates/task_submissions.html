@@ -42,7 +42,15 @@ function get_score_class (score, max_score) {
 update_submission_row = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
-    row.children("td.status").html(data["status_text"]);
+    row.children("td.status").text(data["status_text"]);
+    if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}
+            && data["status"] != {{ SubmissionResult.SCORED }}) {
+        row.children("td.status").append(
+            $("<img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>"));
+    } else {
+        row.children("td.status").append(
+            $("<a class=\"details\">{% trans %}details{% endtrans %}</a>"));
+    }
     if (data["status"] == {{ SubmissionResult.SCORED }}) {
         if (data["public_score"] != undefined) {
             row.children("td.public_score").addClass(get_score_class(data["public_score"], data["max_public_score"]));
