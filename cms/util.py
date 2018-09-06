@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
@@ -313,18 +313,19 @@ def _get_shard_from_addresses(service, addrs):
             ipv6_addrs.add(addr)
     while True:
         try:
-            host, port = get_service_address(ServiceCoord(service, i))
-            res_ipv4_addrs = set()
-            res_ipv6_addrs = set()
             # For magic numbers, see getaddrinfo() documentation
+            host, port = get_service_address(ServiceCoord(service, i))
+
             try:
                 res_ipv4_addrs = set([x[4][0] for x in
                                       gevent.socket.getaddrinfo(
                                           host, port,
                                           gevent.socket.AF_INET,
                                           gevent.socket.SOCK_STREAM)])
+                if not ipv4_addrs.isdisjoint(res_ipv4_addrs):
+                    return i
             except (gevent.socket.gaierror, gevent.socket.error):
-                res_ipv4_addrs = set()
+                pass
 
             try:
                 res_ipv6_addrs = set([x[4][0] for x in
@@ -332,12 +333,11 @@ def _get_shard_from_addresses(service, addrs):
                                           host, port,
                                           gevent.socket.AF_INET6,
                                           gevent.socket.SOCK_STREAM)])
-            except (gevent.socket.gaierror, gevent.socket.error):
-                res_ipv6_addrs = set()
+                if not ipv6_addrs.isdisjoint(res_ipv6_addrs):
+                    return i
+            except (gevent.socket.gaierror, gevent.socket.error) as e:
+                pass
 
-            if not ipv4_addrs.isdisjoint(res_ipv4_addrs) or \
-                    not ipv6_addrs.isdisjoint(res_ipv6_addrs):
-                return i
         except KeyError:
             return None
         i += 1
