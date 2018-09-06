@@ -69,11 +69,25 @@ update_submission_row = function (submission_id, data) {
 };
 
 schedule_update_submission_row = function (submission_id) {
+    if (typeof(schedule_update_submission_row.delays) === "undefined") {
+        schedule_update_submission_row.delays = {};
+    }
+    if (!schedule_update_submission_row.delays[submission_id]) {
+        schedule_update_submission_row.delays[submission_id] = 1000.0;
+    } else {
+        // We want exponential backoff, but slightly staggered across submissions to
+        // avoid asking about all of them at the same time, so we use 1.4 plus a
+        // value depending on the submission id.
+        var hash = (37 * parseInt(submission_id)) % 100 / 100.0;
+        schedule_update_submission_row.delays[submission_id] =
+            schedule_update_submission_row.delays[submission_id]
+                * (1.4 + hash * 0.2);
+    }
     setTimeout(function () {
         $.get(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id), function (data) {
             update_submission_row(submission_id, data);
         });
-    }, 10000);
+    }, schedule_update_submission_row.delays[submission_id]);
 };
 
 $(document).ready(function () {
