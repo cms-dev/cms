@@ -8,13 +8,16 @@
     <td class="status">
 {% if status == SubmissionResult.COMPILING %}
         {% trans %}Compiling...{% endtrans %}
+      <img class="details" src="{{ url("static", "loading.gif") }}" />
 {% elif status == SubmissionResult.COMPILATION_FAILED %}
         {% trans %}Compilation failed{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
 {% elif status == SubmissionResult.EVALUATING %}
         {% trans %}Evaluating...{% endtrans %}
+      <img class="details" src="{{ url("static", "loading.gif") }}" />
 {% elif status == SubmissionResult.SCORING %}
         {% trans %}Scoring...{% endtrans %}
+      <img class="details" src="{{ url("static", "loading.gif") }}" />
 {% elif status == SubmissionResult.SCORED %}
         {% trans %}Evaluated{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
