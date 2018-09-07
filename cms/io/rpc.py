@@ -94,7 +94,7 @@ class RemoteServiceBase(object):
 
         """
         self.remote_address = remote_address
-        self.connected = gevent.event.Event()
+        self._connection_event = gevent.event.Event()
 
         self._on_connect_handlers = list()
         self._on_disconnect_handlers = list()
@@ -105,6 +105,10 @@ class RemoteServiceBase(object):
 
         self._read_lock = gevent.lock.RLock()
         self._write_lock = gevent.lock.RLock()
+
+    @property
+    def connected(self):
+        return self._connection_event.is_set()
 
     def add_on_connect_handler(self, handler):
         """Register a callback for connection establishment.
@@ -144,7 +148,7 @@ class RemoteServiceBase(object):
         plus (object): object to pass to the on_connect callbacks.
 
         """
-        if self.connected.is_set():
+        if self.connected:
             raise RuntimeError("Already connected.")
 
         self._socket = sock
@@ -167,7 +171,7 @@ class RemoteServiceBase(object):
             connection, to be put in log messages and exceptions.
 
         """
-        if not self.connected.is_set():
+        if not self.connected:
             return
 
         self._socket = None
@@ -187,7 +191,7 @@ class RemoteServiceBase(object):
         return (bool): True if the service was connected.
 
         """
-        if not self.connected.is_set():
+        if not self.connected:
             return False
 
         try:
@@ -211,12 +215,12 @@ class RemoteServiceBase(object):
         raise (IOError): if reading fails.
 
         """
-        if not self.connected.is_set():
+        if not self.connected:
             raise IOError("Not connected.")
 
         try:
             with self._read_lock:
-                if not self.connected.is_set():
+                if not self.connected:
                     raise IOError("Not connected.")
                 data = self._reader.readline(self.MAX_MESSAGE_SIZE)
                 # If there weren't a "\r\n" between the last message
@@ -246,7 +250,7 @@ class RemoteServiceBase(object):
         raise (IOError): if writing fails.
 
         """
-        if not self.connected.is_set():
+        if not self.connected:
             raise IOError("Not connected.")
 
         if len(data + b'\r\n') > self.MAX_MESSAGE_SIZE:
@@ -260,7 +264,7 @@ class RemoteServiceBase(object):
 
         try:
             with self._write_lock:
-                if not self.connected.is_set():
+                if not self.connected:
                     raise IOError("Not connected.")
                 # Does the same as self._socket.sendall.
                 self._writer.write(data + b'\r\n')
@@ -477,10 +481,10 @@ class RemoteServiceClient(RemoteServiceBase):
         """
         while True:
             self._connect()
-            while not self.connected.is_set() and self.auto_retry is not None:
+            while not self.connected and self.auto_retry is not None:
                 gevent.sleep(self.auto_retry)
                 self._connect()
-            if self.connected.is_set():
+            if self.connected:
                 self.run()
             if self.auto_retry is None:
                 break
