@@ -108,6 +108,11 @@ class RemoteServiceBase(object):
 
     @property
     def connected(self):
+        """Return whether we're connected to the other endpoint.
+
+        return (bool): the status of the connection.
+
+        """
         return self._connection_event.is_set()
 
     def add_on_connect_handler(self, handler):
@@ -154,7 +159,7 @@ class RemoteServiceBase(object):
         self._socket = sock
         self._reader = self._socket.makefile('rb')
         self._writer = self._socket.makefile('wb')
-        self.connected.set()
+        self._connection_event.set()
 
         logger.info("Established connection with %s.", self._repr_remote())
 
@@ -177,7 +182,7 @@ class RemoteServiceBase(object):
         self._socket = None
         self._reader = None
         self._writer = None
-        self.connected.clear()
+        self._connection_event.clear()
 
         logger.info("Terminated connection with %s: %s", self._repr_remote(),
                     reason)

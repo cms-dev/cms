@@ -144,7 +144,7 @@ class TestRPC(unittest.TestCase):
         client = RemoteServiceClient(coord, auto_retry)
         client.connect()
         if block:
-            client.connected.wait()
+            client._connection_event.wait()
         self.clients.append(client)
         return client
 
@@ -373,7 +373,7 @@ class TestRPC(unittest.TestCase):
             self.assertFalse(client.connected)
             self.sleep()
             client.connect()
-            client.connected.wait()
+            client._connection_event.wait()
             self.assertTrue(client.connected)
 
         self.sleep()
