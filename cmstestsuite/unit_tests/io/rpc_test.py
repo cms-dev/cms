@@ -144,7 +144,7 @@ class TestRPC(unittest.TestCase):
         client = RemoteServiceClient(coord, auto_retry)
         client.connect()
         if block:
-            client.connected_event.wait()
+            client.connected.wait()
         self.clients.append(client)
         return client
 
@@ -239,42 +239,56 @@ class TestRPC(unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(result.value, ["Hello", 42, "World"])
 
-    def test_background_connect(self):
-        self.kill_listener()
-        client = self.get_client(ServiceCoord("Foo", 0), block=False)
-        self.assertFalse(client.connected)
-        self.assertFalse(client.connected_event.is_set())
+    @patch("cms.io.rpc.gevent.socket.socket")
+    def test_background_connect(self, socket_mock):
+        connect_mock = socket_mock.return_value.connect
+        done_event = gevent.event.Event()
+        connect_mock.side_effect = lambda _: done_event.wait()
+        with gevent.Timeout(0.001) as timeout:
+            try:
+                client = self.get_client(ServiceCoord("Foo", 0), block=False)
+            except gevent.Timeout as t:
+                if t is not timeout:
+                    raise
+                self.fail("Connecting blocks")
+        self.assertFalse(client.connected.is_set())
+        done_event.set()
+        gevent.sleep()
+        connect_mock.assert_called_once_with(Address(self.host, self.port))
 
     def test_autoreconnect1(self):
         client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)
         self.sleep()
-        self.assertTrue(client.connected)
+        self.assertTrue(client.connected.is_set())
         self.disconnect_servers()
         gevent.sleep(0.01)
-        self.assertTrue(client.connected, "Autoreconnect didn't kick in "
-                                          "after server disconnected")
+        self.assertTrue(client.connected.is_set(),
+                        "Autoreconnect didn't kick in "
+                        "after server disconnected")
 
     def test_autoreconnect2(self):
         client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)
         self.sleep()
-        self.assertTrue(client.connected)
+        self.assertTrue(client.connected.is_set())
         self.disconnect_servers()
         self.kill_listener()
         self.sleep()
-        self.assertFalse(client.connected)
+        self.assertFalse(client.connected.is_set())
         self.spawn_listener(port=self.port)
         self.sleep()
-        self.assertTrue(client.connected, "Autoreconnect didn't kick in "
-                                          "after server came back online")
+        self.assertTrue(client.connected.is_set(),
+                        "Autoreconnect didn't kick in "
+                        "after server came back online")
 
     def test_autoreconnect3(self):
         client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)
         self.sleep()
-        self.assertTrue(client.connected)
+        self.assertTrue(client.connected.is_set())
         self.disconnect_clients()
         self.sleep()
-        self.assertFalse(client.connected, "Autoreconnect still active "
-                                           "after explicit disconnection")
+        self.assertFalse(client.connected.is_set(),
+                         "Autoreconnect still active "
+                         "after explicit disconnection")
 
     def test_concurrency(self):
         client = self.get_client(ServiceCoord("Foo", 0))
@@ -302,28 +316,28 @@ class TestRPC(unittest.TestCase):
 
         client.connect()
         self.sleep()
-        self.assertTrue(client.connected)
+        self.assertTrue(client.connected.is_set())
         on_connect_handler.assert_called_once_with(coord)
         on_connect_handler.reset_mock()
         self.assertFalse(on_disconnect_handler.called)
 
         client.disconnect()
         self.sleep()
-        self.assertFalse(client.connected)
+        self.assertFalse(client.connected.is_set())
         self.assertFalse(on_connect_handler.called)
         on_disconnect_handler.assert_called_once_with()
         on_disconnect_handler.reset_mock()
 
         client.connect()
         self.sleep()
-        self.assertTrue(client.connected)
+        self.assertTrue(client.connected.is_set())
         on_connect_handler.assert_called_once_with(coord)
         on_connect_handler.reset_mock()
         self.assertFalse(on_disconnect_handler.called)
 
         self.disconnect_servers()
         gevent.sleep(0.1)
-        self.assertFalse(client.connected)
+        self.assertFalse(client.connected.is_set())
         self.assertFalse(on_connect_handler.called)
         on_disconnect_handler.assert_called_once_with()
         on_disconnect_handler.reset_mock()
@@ -337,20 +351,20 @@ class TestRPC(unittest.TestCase):
         client.add_on_disconnect_handler(on_disconnect_handler)
 
         for i in range(10):
-            self.assertTrue(client.connected)
+            self.assertTrue(client.connected.is_set())
             result = client.echo(value=42)
             result.wait()
             self.assertTrue(result.successful())
             self.assertEqual(result.value, 42)
-            self.assertTrue(client.connected)
+            self.assertTrue(client.connected.is_set())
 
             self.sleep()
             client.disconnect()
-            self.assertFalse(client.connected)
+            self.assertFalse(client.connected.is_set())
             self.sleep()
             client.connect()
-            client.connected_event.wait()
-            self.assertTrue(client.connected)
+            client.connected.wait()
+            self.assertTrue(client.connected.is_set())
 
         self.sleep()
 
