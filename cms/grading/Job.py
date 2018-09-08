@@ -44,7 +44,8 @@ from six import itervalues, iteritems
 
 import logging
 
-from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
+from cms.db import Dataset, Evaluation, Executable, File, Manager, Submission, \
+    UserTest, UserTestExecutable
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
 
@@ -677,3 +678,29 @@ class JobGroup(object):
         for job in data["jobs"]:
             jobs.append(Job.import_from_dict_with_type(job))
         return cls(jobs)
+
+    @staticmethod
+    def from_operations(operations, session):
+        jobs = []
+        datasets = {}
+        submissions = {}
+        user_tests = {}
+        for operation in operations:
+            if operation.dataset_id not in datasets:
+                datasets[operation.dataset_id] = Dataset.get_from_id(
+                    operation.dataset_id, session)
+            if operation.for_submission():
+                if operation.object_id not in submissions:
+                    submissions[operation.object_id] = \
+                        Submission.get_from_id(
+                            operation.object_id, session)
+                object_ = submissions[operation.object_id]
+            else:
+                if operation.object_id not in user_tests:
+                    user_tests[operation.object_id] = \
+                        UserTest.get_from_id(operation.object_id, session)
+                object_ = user_tests[operation.object_id]
+
+            jobs.append(Job.from_operation(
+                operation, object_, datasets[operation.dataset_id]))
+        return JobGroup(jobs)
