@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,6 +46,7 @@ managers = [
     "grader.c",
     "grader.cpp",
     "grader.pas",
+    "grader.py",
     "grader.java",
     "grader.cs",
     "checker",

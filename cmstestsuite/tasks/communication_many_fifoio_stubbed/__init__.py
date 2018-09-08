@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012-2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2014-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,6 +46,7 @@ managers = [
     "stub.c",
     "stub.cpp",
     "stub.pas",
+    "stub.py",
     "stub.java",
     "manager",
 ]
