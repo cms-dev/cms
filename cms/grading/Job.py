@@ -682,25 +682,14 @@ class JobGroup(object):
     @staticmethod
     def from_operations(operations, session):
         jobs = []
-        datasets = {}
-        submissions = {}
-        user_tests = {}
         for operation in operations:
-            if operation.dataset_id not in datasets:
-                datasets[operation.dataset_id] = Dataset.get_from_id(
-                    operation.dataset_id, session)
+            # The get_from_id method loads from the instance map (if the
+            # object exists there), which thus acts as a cache.
             if operation.for_submission():
-                if operation.object_id not in submissions:
-                    submissions[operation.object_id] = \
-                        Submission.get_from_id(
-                            operation.object_id, session)
-                object_ = submissions[operation.object_id]
+                object_ = Submission.get_from_id(operation.object_id, session)
             else:
-                if operation.object_id not in user_tests:
-                    user_tests[operation.object_id] = \
-                        UserTest.get_from_id(operation.object_id, session)
-                object_ = user_tests[operation.object_id]
+                object_ = UserTest.get_from_id(operation.object_id, session)
+            dataset = Dataset.get_from_id(operation.dataset_id, session)
 
-            jobs.append(Job.from_operation(
-                operation, object_, datasets[operation.dataset_id]))
+            jobs.append(Job.from_operation(operation, object_, dataset))
         return JobGroup(jobs)
