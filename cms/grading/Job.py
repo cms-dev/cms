@@ -78,7 +78,7 @@ class Job(object):
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
                  language=None, multithreaded_sandbox=False,
-                 shard=None, sandboxes=None, info=None,
+                 shard=None, keep_sandbox=False, sandboxes=None, info=None,
                  success=None, text=None,
                  files=None, managers=None, executables=None):
         """Initialization.
@@ -92,6 +92,9 @@ class Job(object):
         multithreaded_sandbox (boolean): whether the sandbox should
             allow multithreading.
         shard (int|None): the shard of the Worker completing this job.
+        keep_sandbox (bool): whether to forcefully keep the sandbox,
+            even if other conditions (the config, the sandbox status)
+            don't warrant it.
         sandboxes ([string]|None): the paths of the sandboxes used in
             the Worker during the execution of the job.
         info (string|None): a human readable description of the job.
@@ -126,6 +129,7 @@ class Job(object):
         self.language = language
         self.multithreaded_sandbox = multithreaded_sandbox
         self.shard = shard
+        self.keep_sandbox = keep_sandbox
         self.sandboxes = sandboxes
         self.info = info
 
@@ -147,6 +151,7 @@ class Job(object):
             'language': self.language,
             'multithreaded_sandbox': self.multithreaded_sandbox,
             'shard': self.shard,
+            'keep_sandbox': self.keep_sandbox,
             'sandboxes': self.sandboxes,
             'info': self.info,
             'success': self.success,
@@ -250,7 +255,7 @@ class CompilationJob(Job):
 
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
-                 shard=None, sandboxes=None, info=None,
+                 shard=None, keep_sandbox=False, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None,
                  success=None, compilation_success=None,
@@ -267,7 +272,7 @@ class CompilationJob(Job):
 
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox,
-                     shard, sandboxes, info, success, text,
+                     shard, keep_sandbox, sandboxes, info, success, text,
                      files, managers, executables)
         self.compilation_success = compilation_success
         self.plus = plus
@@ -436,7 +441,7 @@ class EvaluationJob(Job):
     """
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None, shard=None,
-                 sandboxes=None, info=None,
+                 keep_sandbox=False, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
                  input=None, output=None,
@@ -468,7 +473,7 @@ class EvaluationJob(Job):
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox,
-                     shard, sandboxes, info, success, text,
+                     shard, keep_sandbox, sandboxes, info, success, text,
                      files, managers, executables)
         self.input = input
         self.output = output

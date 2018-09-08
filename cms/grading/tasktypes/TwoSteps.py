@@ -217,7 +217,7 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox, job.success)
+        delete_sandbox(sandbox, job.success, job.keep_sandbox)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -352,5 +352,5 @@ class TwoSteps(TaskType):
         job.text = text
         job.plus = stats
 
-        delete_sandbox(first_sandbox, job.success)
-        delete_sandbox(second_sandbox, job.success)
+        delete_sandbox(first_sandbox, job.success, job.keep_sandbox)
+        delete_sandbox(second_sandbox, job.success, job.keep_sandbox)
