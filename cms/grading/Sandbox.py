@@ -982,22 +982,43 @@ class IsolateSandbox(SandboxBase):
         for filename in os.listdir(self._home):
             os.chmod(os.path.join(self._home, filename), 0o755)
 
-    def allow_writing_only(self, paths):
+    def allow_writing_only(self, inner_paths):
         """Set permissions in so that the user can write only some paths.
 
-        paths ([string]): the only paths that the user is allowed to
-            write.
+        By default the user can only write to the home directory. This
+        method further restricts permissions so that it can only write
+        to some files inside the home directory.
+
+        inner_paths ([str]): the only paths that the user is allowed to
+            write to; they should be "inner" paths (from the perspective
+            of the sandboxed process, not of the host system); they can
+            be absolute or relative (in which case they are interpreted
+            relative to the home directory); paths that point to a file
+            outside the home directory are ignored.
 
         """
+        outer_paths = []
+        for inner_path in inner_paths:
+            abs_inner_path = \
+                os.path.realpath(os.path.join(self._home_dest, inner_path))
+            # If an inner path is absolute (e.g., /fifo0/u0_to_m) then
+            # it may be outside home and we should ignore it.
+            # FIXME: In Py3 use os.path.commonpath.
+            if not abs_inner_path.startswith(self._home_dest + "/"):
+                continue
+            rel_inner_path = os.path.relpath(abs_inner_path, self._home_dest)
+            outer_path = os.path.join(self._home, rel_inner_path)
+            outer_paths.append(outer_path)
+
         # If one of the specified file do not exists, we touch it to
         # assign the correct permissions.
-        for path in (os.path.join(self._home, path) for path in paths):
+        for path in outer_paths:
             if not os.path.exists(path):
                 io.open(path, "wb").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
-        for path in (os.path.join(self._home, path) for path in paths):
+        for path in outer_paths:
             os.chmod(path, 0o722)
 
     def get_root_path(self):

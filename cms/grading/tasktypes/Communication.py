@@ -79,7 +79,8 @@ class Communication(TaskType):
 
     The user process receives as argument the fifos (from and to the manager)
     and, if there are more than one user processes, the 0-based index of the
-    process.
+    process. The pipes can also be set up to be redirected to stdin/stdout: in
+    that case the names of the pipes are not passed as arguments.
 
     """
     # Filename of the manager (the stand-alone, admin-provided program).
@@ -97,6 +98,8 @@ class Communication(TaskType):
     # Constants used in the parameter definition.
     COMPILATION_ALONE = "alone"
     COMPILATION_STUB = "stub"
+    USER_IO_STD = "std_io"
+    USER_IO_FIFOS = "fifo_io"
 
     ALLOW_PARTIAL_SUBMISSION = False
 
@@ -112,7 +115,15 @@ class Communication(TaskType):
         {COMPILATION_ALONE: "Submissions are self-sufficient",
          COMPILATION_STUB: "Submissions are compiled with a stub"})
 
-    ACCEPTED_PARAMETERS = [_NUM_PROCESSES, _COMPILATION]
+    _USER_IO = ParameterTypeChoice(
+        "User I/O",
+        "user_io",
+        "",
+        {USER_IO_STD: "User processes read from stdin and write to stdout",
+         USER_IO_FIFOS: "User processes read from and write to fifos, "
+                        "whose paths are given as arguments"})
+
+    ACCEPTED_PARAMETERS = [_NUM_PROCESSES, _COMPILATION, _USER_IO]
 
     @property
     def name(self):
@@ -124,10 +135,12 @@ class Communication(TaskType):
 
         self.num_processes = 1
         self.compilation = self.COMPILATION_STUB
+        self.io = self.USER_IO_FIFOS
         if len(self.parameters) >= 1:
             self.num_processes = self.parameters[0]
-        if len(self.parameters) >= 2:
+        if len(self.parameters) >= 3:
             self.compilation = self.parameters[1]
+            self.io = self.parameters[2]
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -161,6 +174,9 @@ class Communication(TaskType):
 
     def _uses_stub(self):
         return self.compilation == self.COMPILATION_STUB
+
+    def _uses_fifos(self):
+        return self.io == self.USER_IO_FIFOS
 
     @staticmethod
     def _executable_filename(codenames):
@@ -325,8 +341,15 @@ class Communication(TaskType):
         main = self.STUB_BASENAME if self._uses_stub() else executable_filename
         processes = [None for i in indices]
         for i in indices:
-            args = [sandbox_fifo_manager_to_user[i],
-                    sandbox_fifo_user_to_manager[i]]
+            args = []
+            stdin_redirect = None
+            stdout_redirect = None
+            if self._uses_fifos():
+                args.extend([sandbox_fifo_manager_to_user[i],
+                             sandbox_fifo_user_to_manager[i]])
+            else:
+                stdin_redirect = sandbox_fifo_manager_to_user[i]
+                stdout_redirect = sandbox_fifo_user_to_manager[i]
             if self.num_processes != 1:
                 args.append(str(i))
             commands = language.get_evaluation_commands(
@@ -344,6 +367,8 @@ class Communication(TaskType):
                 job.time_limit,
                 job.memory_limit,
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
+                stdin_redirect=stdin_redirect,
+                stdout_redirect=stdout_redirect,
                 multiprocess=job.multithreaded_sandbox)
 
         # Wait for the processes to conclude, without blocking them on I/O.

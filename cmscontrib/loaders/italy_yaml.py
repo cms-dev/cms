@@ -625,7 +625,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         num_processes = 1
                     logger.info("Task type Communication")
                     args["task_type"] = "Communication"
-                    args["task_type_parameters"] = [num_processes, "stub"]
+                    args["task_type_parameters"] = \
+                        [num_processes, "stub", "fifo_io"]
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Manager for task %s" % task.name)
