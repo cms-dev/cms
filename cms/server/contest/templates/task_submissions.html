@@ -42,12 +42,14 @@ function get_score_class (score, max_score) {
 update_submission_row = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
-    if (data["status_text"].endsWith("...")) {
-      row.children("td.status").html(data["status_text"]
-          + " <img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>");
+    row.children("td.status").text(data["status_text"]);
+    if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}
+            && data["status"] != {{ SubmissionResult.SCORED }}) {
+        row.children("td.status").append(
+            $("<img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>"));
     } else {
-      row.children("td.status").html(data["status_text"]
-          + " <a class=\"details\">{% trans %}details{% endtrans %}</a>");
+        row.children("td.status").append(
+            $("<a class=\"details\">{% trans %}details{% endtrans %}</a>"));
     }
     if (data["status"] == {{ SubmissionResult.SCORED }}) {
         if (data["public_score"] != undefined) {
