@@ -185,6 +185,12 @@ class Job(object):
     @classmethod
     def import_from_dict(cls, data):
         """Create a Job from the output of export_to_dict."""
+        data['files'] = dict(
+            (k, File(k, v)) for k, v in iteritems(data['files']))
+        data['managers'] = dict(
+            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
+        data['executables'] = dict(
+            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
         return cls(**data)
 
     @staticmethod
@@ -273,16 +279,6 @@ class CompilationJob(Job):
             'plus': self.plus,
             })
         return res
-
-    @classmethod
-    def import_from_dict(cls, data):
-        data['files'] = dict(
-            (k, File(k, v)) for k, v in iteritems(data['files']))
-        data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
-        data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
-        return cls(**data)
 
     @staticmethod
     def from_submission(operation, submission, dataset):
@@ -498,16 +494,6 @@ class EvaluationJob(Job):
             'get_output': self.get_output,
             })
         return res
-
-    @classmethod
-    def import_from_dict(cls, data):
-        data['files'] = dict(
-            (k, File(k, v)) for k, v in iteritems(data['files']))
-        data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
-        data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
-        return cls(**data)
 
     @staticmethod
     def from_submission(operation, submission, dataset):
