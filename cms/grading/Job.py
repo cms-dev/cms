@@ -83,8 +83,7 @@ class Job(object):
                  files=None, managers=None, executables=None):
         """Initialization.
 
-        operation (dict|None): the operation, in the format that
-            ESOperation.to_dict() uses.
+        operation (ESOperation|None): the operation.
         task_type (string|None): the name of the task type.
         task_type_parameters (object|None): the parameters for the
             creation of the correct task type.
@@ -108,8 +107,6 @@ class Job(object):
             in the compilation.
 
         """
-        if operation is None:
-            operation = {}
         if task_type is None:
             task_type = ""
         if sandboxes is None:
@@ -142,7 +139,9 @@ class Job(object):
     def export_to_dict(self):
         """Return a dict representing the job."""
         res = {
-            'operation': self.operation,
+            'operation': (self.operation.to_dict()
+                          if self.operation is not None
+                          else None),
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
             'language': self.language,
@@ -185,6 +184,8 @@ class Job(object):
     @classmethod
     def import_from_dict(cls, data):
         """Create a Job from the output of export_to_dict."""
+        if data['operation'] is not None:
+            data['operation'] = ESOperation.from_dict(data['operation'])
         data['files'] = dict(
             (k, File(k, v)) for k, v in iteritems(data['files']))
         data['managers'] = dict(
@@ -303,7 +304,7 @@ class CompilationJob(Job):
         # dict() is required to detach the dictionary that gets added
         # to the Job from the control of SQLAlchemy
         return CompilationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
@@ -382,7 +383,7 @@ class CompilationJob(Job):
                         dataset.managers[manager_filename]
 
         return CompilationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
@@ -527,7 +528,7 @@ class EvaluationJob(Job):
         # dict() is required to detach the dictionary that gets added
         # to the Job from the control of SQLAlchemy
         return EvaluationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
@@ -560,8 +561,7 @@ class EvaluationJob(Job):
             execution_memory=self.plus.get('execution_memory'),
             evaluation_shard=self.shard,
             evaluation_sandbox=":".join(self.sandboxes),
-            testcase=sr.dataset.testcases[
-                self.operation["testcase_codename"]])]
+            testcase=sr.dataset.testcases[self.operation.testcase_codename])]
 
     @staticmethod
     def from_user_test(operation, user_test, dataset):
@@ -608,7 +608,7 @@ class EvaluationJob(Job):
                         dataset.managers[manager_filename]
 
         return EvaluationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
