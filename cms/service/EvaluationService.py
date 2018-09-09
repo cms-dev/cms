@@ -440,7 +440,7 @@ class EvaluationService(TriggeredService):
 
         if job_group_success:
             for job in job_group.jobs:
-                operation = ESOperation.from_dict(job.operation)
+                operation = job.operation
                 if job.success:
                     logger.info("`%s' succeeded.", operation)
                 else:

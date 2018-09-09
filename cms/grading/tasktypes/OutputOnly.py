@@ -107,7 +107,7 @@ class OutputOnly(TaskType):
     @staticmethod
     def _get_user_output_filename(job):
         return OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
-            job.operation["testcase_codename"]
+            job.operation.testcase_codename
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""

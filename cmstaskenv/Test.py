@@ -126,7 +126,7 @@ def test_testcases(base_dir, solution, language, assume=None):
             ESOperation.EVALUATION,
             None,
             dataset.id,
-            dataset.testcases[t].codename).to_dict(),
+            dataset.testcases[t].codename),
         language=language.name,
         task_type=dataset.task_type,
         task_type_parameters=dataset.task_type_parameters,

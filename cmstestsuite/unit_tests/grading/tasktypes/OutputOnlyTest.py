@@ -61,7 +61,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         return EvaluationJob(input="digest of input",
                              output="digest of correct output",
                              files=files,
-                             operation=operation.to_dict(),
+                             operation=operation,
                              multithreaded_sandbox=True)
 
     def prepare(self, parameters, files):
