@@ -31,6 +31,7 @@ from future.builtins import *  # noqa
 import argparse
 import chardet
 import errno
+import itertools
 import logging
 import netifaces
 import os
@@ -303,7 +304,6 @@ def _get_shard_from_addresses(service, addrs):
         exist.
 
     """
-    i = 0
     ipv4_addrs = set()
     ipv6_addrs = set()
     for proto, addr in addrs:
@@ -311,33 +311,34 @@ def _get_shard_from_addresses(service, addrs):
             ipv4_addrs.add(addr)
         elif proto == gevent.socket.AF_INET6:
             ipv6_addrs.add(addr)
-    while True:
+
+    for shard in itertools.count():
         try:
-            # For magic numbers, see getaddrinfo() documentation
-            host, port = get_service_address(ServiceCoord(service, i))
-
-            try:
-                res_ipv4_addrs = set([x[4][0] for x in
-                                      gevent.socket.getaddrinfo(
-                                          host, port,
-                                          gevent.socket.AF_INET,
-                                          gevent.socket.SOCK_STREAM)])
-                if not ipv4_addrs.isdisjoint(res_ipv4_addrs):
-                    return i
-            except (gevent.socket.gaierror, gevent.socket.error):
-                pass
-
-            try:
-                res_ipv6_addrs = set([x[4][0] for x in
-                                      gevent.socket.getaddrinfo(
-                                          host, port,
-                                          gevent.socket.AF_INET6,
-                                          gevent.socket.SOCK_STREAM)])
-                if not ipv6_addrs.isdisjoint(res_ipv6_addrs):
-                    return i
-            except (gevent.socket.gaierror, gevent.socket.error):
-                pass
-
+            host, port = get_service_address(ServiceCoord(service, shard))
         except KeyError:
+            # No more shards to test.
             return None
-        i += 1
+
+        try:
+            res_ipv4_addrs = set([x[4][0] for x in
+                                  gevent.socket.getaddrinfo(
+                                      host, port,
+                                      gevent.socket.AF_INET,
+                                      gevent.socket.SOCK_STREAM)])
+        except (gevent.socket.gaierror, gevent.socket.error):
+            pass
+        else:
+            if not ipv4_addrs.isdisjoint(res_ipv4_addrs):
+                return shard
+
+        try:
+            res_ipv6_addrs = set([x[4][0] for x in
+                                  gevent.socket.getaddrinfo(
+                                      host, port,
+                                      gevent.socket.AF_INET6,
+                                      gevent.socket.SOCK_STREAM)])
+        except (gevent.socket.gaierror, gevent.socket.error):
+            pass
+        else:
+            if not ipv6_addrs.isdisjoint(res_ipv6_addrs):
+                return shard
