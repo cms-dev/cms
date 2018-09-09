@@ -335,7 +335,7 @@ def _get_shard_from_addresses(service, addrs):
                                           gevent.socket.SOCK_STREAM)])
                 if not ipv6_addrs.isdisjoint(res_ipv6_addrs):
                     return i
-            except (gevent.socket.gaierror, gevent.socket.error) as e:
+            except (gevent.socket.gaierror, gevent.socket.error):
                 pass
 
         except KeyError:
