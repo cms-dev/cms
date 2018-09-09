@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
@@ -44,7 +44,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 from cmscommon.crypto import generate_random_password, build_password
 
-from . import CastingArray, Codename, Base, Contest
+from . import CastingArray, Codename, Base, Admin, Contest
 
 
 class User(Base):
@@ -379,3 +379,15 @@ class Question(Base):
     participation = relationship(
         Participation,
         back_populates="questions")
+
+    # Latest admin to interact with the question (null if no interactions
+    # yet, or if the admin has been later deleted). Admins only loosely "own" a
+    # question, so we do not back populate any field in Admin, nor delete the
+    # question if the admin gets deleted.
+    admin_id = Column(
+        Integer,
+        ForeignKey(Admin.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    admin = relationship(Admin)

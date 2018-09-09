@@ -625,6 +625,10 @@ body.admin .notifications .ignore_reply {
     padding-right: 0.5em;
 }
 
+body.admin .notifications .notification_admin_owner {
+    font-style: italic;
+}
+
 body.admin .notifications .notification_close {
     background-color: #E475FF;
     border-left: 0.143em solid #E475FF;

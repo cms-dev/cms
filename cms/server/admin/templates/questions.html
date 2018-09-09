@@ -51,10 +51,20 @@ utils.show_page("questions", 1);
       <div class="notification_subject">{{ msg.subject }}</div>
       <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
       {% if msg.reply_timestamp is not none %}
+      <hr>
       <div class="notification_subject">Reply: {{ msg.reply_subject }}</div>
       <div class="notification_text preserve_line_breaks">{{ msg.reply_text }}</div>
+      <hr>
+      <div class="notification_admin_owner">
+        Reply from: {{ msg.admin.name if msg.admin is not none else "<unknown>" }}</div>
       {% else %}
+      <hr>
       <div class="notification_subject">Not yet replied.</div>
+      <hr>
+        {% if not msg.admin is none and msg.ignored %}
+      <div class="notification_admin_owner">
+        Ignored by: {{ msg.admin is none and "<deleted>" or msg.admin.name }}</div>
+        {% endif %}
       {% endif %}
 {% if admin.permission_all or admin.permission_messaging %}
       {% if msg.reply_timestamp is none %}
