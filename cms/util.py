@@ -184,13 +184,11 @@ def get_service_shards(service):
     returns (int): the number of shards defined in the configuration.
 
     """
-    i = 0
-    while True:
+    for i in itertools.count():
         try:
             get_service_address(ServiceCoord(service, i))
         except KeyError:
             return i
-        i += 1
 
 
 def default_argument_parser(description, cls, ask_contest=None):
