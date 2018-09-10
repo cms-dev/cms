@@ -61,11 +61,10 @@ class Python2CPython(CompiledLanguage):
 
         commands = []
         files_to_package = []
+        commands.append(["/usr/bin/python2", "-m", "compileall", "."])
         for idx, source_filename in enumerate(source_filenames):
             basename = os.path.splitext(os.path.basename(source_filename))[0]
             pyc_filename = "%s.pyc" % basename
-            commands.append(
-                ["/usr/bin/python2", "-m", "py_compile", source_filename])
             # The file with the entry point must be in first position.
             if idx == 0:
                 commands.append(["/bin/mv", pyc_filename, self.MAIN_FILENAME])
