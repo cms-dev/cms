@@ -204,9 +204,7 @@ class Program(object):
     def _check_with_backoff(self):
         """Check and wait that the service is healthy."""
         self.healthy = False
-        attempts = 0
-        while attempts < _MAX_ATTEMPTS:
-            attempts += 1
+        for attempts in range(_MAX_ATTEMPTS):
             self._check()
             if not self.healthy:
                 time.sleep(0.2 * (1.2 ** attempts))
@@ -321,9 +319,7 @@ class ProgramStarter(object):
         return len([p for p in itervalues(self._programs) if not p.healthy])
 
     def wait(self):
-        attempts = 0
-        while attempts <= _MAX_ATTEMPTS:
-            attempts += 1
+        for attempts in range(_MAX_ATTEMPTS):
             unhealthy = self.count_unhealthy()
             if unhealthy == 0:
                 logger.info("All healthy! Continuing.")
