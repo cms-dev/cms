@@ -139,7 +139,9 @@ class Job(object):
     def export_to_dict(self):
         """Return a dict representing the job."""
         res = {
-            'operation': self.operation.to_dict() if self.operation is not None else None,
+            'operation': (self.operation.to_dict()
+                          if self.operation is not None
+                          else None),
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
             'language': self.language,
