@@ -37,7 +37,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import itervalues, iteritems
+from six import iterkeys, itervalues, iteritems
 
 import logging
 
@@ -46,14 +46,14 @@ from datetime import timedelta
 from functools import wraps
 
 import gevent.lock
-
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, TriggeredService, rpc_method
-from cms.db import SessionGen, Digest, Dataset, Submission, UserTest, \
-    get_submissions, get_submission_results, get_datasets_to_judge
+from cms.db import SessionGen, Digest, Dataset, Evaluation, Submission, \
+    SubmissionResult, Testcase, UserTest, UserTestResult, get_submissions, \
+    get_submission_results, get_datasets_to_judge
 from cms.grading.Job import JobGroup
 
 from .esoperations import ESOperation, get_relevant_operations, \
@@ -477,47 +477,29 @@ class EvaluationService(TriggeredService):
             by_object_and_type[t].append((operation, result))
 
         with SessionGen() as session:
-            # Dictionary holding the objects we use repeatedly,
-            # indexed by id, to avoid querying them multiple times.
-            # TODO: this pattern is used in WorkerPool and should be
-            # abstracted away.
-            datasets = dict()
-            subs = dict()
-            srs = dict()
-
             for key, operation_results in iteritems(by_object_and_type):
                 type_, object_id, dataset_id = key
 
-                # Get dataset.
-                if dataset_id not in datasets:
-                    datasets[dataset_id] = session.query(Dataset)\
-                        .filter(Dataset.id == dataset_id)\
-                        .options(joinedload(Dataset.testcases))\
-                        .first()
-                dataset = datasets[dataset_id]
+                dataset = Dataset.get_from_id(dataset_id, session)
                 if dataset is None:
                     logger.error("Could not find dataset %d in the database.",
                                  dataset_id)
                     continue
 
-                # Get submission or user test, and their results.
+                # Get submission or user test results.
                 if type_ in [ESOperation.COMPILATION, ESOperation.EVALUATION]:
-                    if object_id not in subs:
-                        subs[object_id] = \
-                            Submission.get_from_id(object_id, session)
-                    object_ = subs[object_id]
+                    object_ = Submission.get_from_id(object_id, session)
                     if object_ is None:
                         logger.error("Could not find submission %d "
                                      "in the database.", object_id)
                         continue
-                    result_id = (object_id, dataset_id)
-                    if result_id not in srs:
-                        srs[result_id] = object_.get_result_or_create(dataset)
-                    object_result = srs[result_id]
+                    object_result = object_.get_result_or_create(dataset)
                 else:
-                    # We do not cache user tests as they can come up
-                    # only once.
                     object_ = UserTest.get_from_id(object_id, session)
+                    if object_ is None:
+                        logger.error("Could not find user test %d "
+                                     "in the database.", object_id)
+                        continue
                     object_result = object_.get_result_or_create(dataset)
 
                 self.write_results_one_object_and_type(
@@ -526,12 +508,20 @@ class EvaluationService(TriggeredService):
             logger.info("Committing evaluations...")
             session.commit()
 
-            for type_, object_id, dataset_id in by_object_and_type:
+            num_testcases_per_dataset = dict()
+            for type_, object_id, dataset_id in iterkeys(by_object_and_type):
                 if type_ == ESOperation.EVALUATION:
-                    submission_result = srs[(object_id, dataset_id)]
-                    dataset = datasets[dataset_id]
-                    if len(submission_result.evaluations) == \
-                            len(dataset.testcases):
+                    if dataset_id not in num_testcases_per_dataset:
+                        num_testcases_per_dataset[dataset_id] = session\
+                            .query(func.count(Testcase.id))\
+                            .filter(Testcase.dataset_id == dataset_id).scalar()
+                    num_evaluations = session\
+                        .query(func.count(Evaluation.id)) \
+                        .filter(Evaluation.dataset_id == dataset_id) \
+                        .filter(Evaluation.submission_id == object_id).scalar()
+                    if num_evaluations == num_testcases_per_dataset[dataset_id]:
+                        submission_result = SubmissionResult.get_from_id(
+                            (object_id, dataset_id), session)
                         submission_result.set_evaluation_outcome()
 
             logger.info("Committing evaluation outcomes...")
@@ -539,23 +529,23 @@ class EvaluationService(TriggeredService):
 
             logger.info("Ending operations for %s objects...",
                         len(by_object_and_type))
-            for type_, object_id, dataset_id in by_object_and_type:
+            for type_, object_id, dataset_id in iterkeys(by_object_and_type):
                 if type_ == ESOperation.COMPILATION:
-                    submission_result = srs[(object_id, dataset_id)]
+                    submission_result = SubmissionResult.get_from_id(
+                        (object_id, dataset_id), session)
                     self.compilation_ended(submission_result)
                 elif type_ == ESOperation.EVALUATION:
-                    submission_result = srs[(object_id, dataset_id)]
+                    submission_result = SubmissionResult.get_from_id(
+                        (object_id, dataset_id), session)
                     if submission_result.evaluated():
                         self.evaluation_ended(submission_result)
                 elif type_ == ESOperation.USER_TEST_COMPILATION:
-                    user_test_result = UserTest\
-                        .get_from_id(object_id, session)\
-                        .get_result(datasets[dataset_id])
+                    user_test_result = UserTestResult.get_from_id(
+                        (object_id, dataset_id), session)
                     self.user_test_compilation_ended(user_test_result)
                 elif type_ == ESOperation.USER_TEST_EVALUATION:
-                    user_test_result = UserTest\
-                        .get_from_id(object_id, session)\
-                        .get_result(datasets[dataset_id])
+                    user_test_result = UserTestResult.get_from_id(
+                        (object_id, dataset_id), session)
                     self.user_test_evaluation_ended(user_test_result)
 
         logger.info("Done")
