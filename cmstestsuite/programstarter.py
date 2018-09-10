@@ -207,7 +207,7 @@ class Program(object):
         for attempts in range(_MAX_ATTEMPTS):
             self._check()
             if not self.healthy:
-                time.sleep(0.2 * (1.2 ** (attempts + 1)))
+                time.sleep(0.2 * (1.2 ** attempts))
             else:
                 return
 
@@ -325,7 +325,7 @@ class ProgramStarter(object):
                 logger.info("All healthy! Continuing.")
                 return
             logger.info("Still %s unhealthy.", unhealthy)
-            time.sleep(0.2 * (1.2 ** (attempts + 1)))
+            time.sleep(0.2 * (1.2 ** attempts))
         raise TestException(
             "Failed to bring up services: %s" % ", ".join(
                 p.coord for p in itervalues(self._programs) if not p.healthy))
