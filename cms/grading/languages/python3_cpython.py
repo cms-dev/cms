@@ -61,14 +61,10 @@ class Python3CPython(CompiledLanguage):
 
         commands = []
         files_to_package = []
+        commands.append(["/usr/bin/python3", "-m", "compileall", "-b", "."])
         for idx, source_filename in enumerate(source_filenames):
             basename = os.path.splitext(os.path.basename(source_filename))[0]
             pyc_filename = "%s.pyc" % basename
-            compilation_program = ";".join([
-                "import py_compile as m",
-                "m.compile(%s, %s, doraise=True)" % (
-                    repr(source_filename), repr(pyc_filename))])
-            commands.append(["/usr/bin/python3", "-c", compilation_program])
             # The file with the entry point must be in first position.
             if idx == 0:
                 commands.append(["/bin/mv", pyc_filename, self.MAIN_FILENAME])
