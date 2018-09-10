@@ -26,12 +26,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, iteritems
+from six import iterkeys
 
 import ipaddress
 from datetime import datetime, timedelta
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
@@ -78,6 +78,7 @@ _TYPE_MAP = {
 }
 
 
+@as_declarative(bind=engine, metadata=metadata, constructor=None)
 class Base(object):
     """Base class for all classes managed by SQLAlchemy. Extending the
     base class given by SQLAlchemy.
@@ -336,5 +337,3 @@ class Base(object):
                 "set_attrs() got an unexpected keyword argument '%s'" %
                 attrs.popitem()[0])
 
-
-Base = declarative_base(engine, metadata=metadata, cls=Base, constructor=None)
