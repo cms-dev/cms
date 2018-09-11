@@ -38,6 +38,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
+from typing import List
+
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import itervalues, iteritems
@@ -656,7 +659,7 @@ class JobGroup(object):
     """A simple collection of jobs."""
 
     def __init__(self, jobs=None):
-        self.jobs = jobs if jobs is not None else []
+        self.jobs: List[Job] = jobs if jobs is not None else []
 
     def export_to_dict(self):
         return {

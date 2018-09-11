@@ -40,10 +40,10 @@ from future.builtins import *  # noqa
 from six import iterkeys, itervalues, iteritems
 
 import logging
-
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
+from typing import Dict, List
 
 import gevent.lock
 from sqlalchemy import func
@@ -61,8 +61,7 @@ from .esoperations import ESOperation, get_relevant_operations, \
     submission_get_operations, submission_to_evaluate, \
     user_test_get_operations
 from .flushingdict import FlushingDict
-from .workerpool import WorkerPool
-
+from .workerpool import WorkerPool, WorkerPoolItem
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ class EvaluationExecutor(Executor):
     # Real maximum number of operations to be sent to a worker.
     MAX_OPERATIONS_PER_BATCH = 25
 
-    def __init__(self, evaluation_service):
+    def __init__(self, pool: WorkerPool, result_cache: FlushingDict):
         """Create the single executor for ES.
 
         The executor just delegates work to the worker pool.
@@ -80,19 +79,15 @@ class EvaluationExecutor(Executor):
         """
         super(EvaluationExecutor, self).__init__(True)
 
-        self.evaluation_service = evaluation_service
-        self.pool = WorkerPool(self.evaluation_service)
+        self.pool = pool
+        self.result_cache = result_cache
 
         # List of QueueItem (ESOperation) we have extracted from the
         # queue, but not yet finished to execute.
-        self._currently_executing = []
+        self._currently_executing: Dict[ESOperation, int] = dict()
 
         # Lock used to guard the currently executing operations
         self._current_execution_lock = gevent.lock.RLock()
-
-        for i in range(get_service_shards("Worker")):
-            worker = ServiceCoord("Worker", i)
-            self.pool.add_worker(worker)
 
     def __contains__(self, item):
         """Return whether the item is in execution.
@@ -104,9 +99,10 @@ class EvaluationExecutor(Executor):
             or if it is being executed by a worker.
 
         """
-        return super(EvaluationExecutor, self).__contains__(item) or \
-            item in self._currently_executing or \
-            item in self.pool
+        if super(EvaluationExecutor, self).__contains__(item):
+            return True
+        with self._current_execution_lock:
+            return item in self._currently_executing
 
     def max_operations_per_batch(self):
         """Return the maximum number of operations per batch.
@@ -115,15 +111,15 @@ class EvaluationExecutor(Executor):
         the number of workers, with a cap at MAX_OPERATIONS_PER_BATCH.
 
         """
-        # TODO: len(self.pool) is the total number of workers,
+        # TODO: self.pool.num_workers is the total number of workers,
         # included those that are disabled.
-        ratio = len(self._operation_queue) // len(self.pool) + 1
+        ratio = len(self._operation_queue) // self.pool.num_workers + 1
         ret = min(max(ratio, 1), EvaluationExecutor.MAX_OPERATIONS_PER_BATCH)
         logger.info("Ratio is %d, executing %d operations together.",
                     ratio, ret)
         return ret
 
-    def execute(self, entries):
+    def execute(self, entries: List[QueueEntry]):
         """Execute a batch of operations in the queue.
 
         The operations might not be executed immediately because of
@@ -133,31 +129,58 @@ class EvaluationExecutor(Executor):
             perform.
 
         """
-        with self._current_execution_lock:
-            self._currently_executing = []
-            for entry in entries:
-                operation = entry.item
-                # Side data is attached to the operation sent to the
-                # worker pool. In case the operation is lost, the pool
-                # will return it to us, and we will use it to
-                # re-enqueue it.
-                operation.side_data = (entry.priority, entry.timestamp)
-                self._currently_executing.append(operation)
-        while len(self._currently_executing) > 0:
-            self.pool.wait_for_workers()
+        # TODO In some sense, we'd want to first wait for a worker to become
+        # available and then get the operations to send to it, as by then
+        # more could have arrived and we'd rather send to it a larger batch.
+        with self.pool.acquire_worker() as worker:
+            operations = list()
             with self._current_execution_lock:
-                if len(self._currently_executing) == 0:
-                    break
-                res = self.pool.acquire_worker(self._currently_executing)
-                if res is not None:
-                    self._currently_executing = []
-                    break
+                for entry in entries:
+                    operation = entry.item
+                    # Side data is attached to the operation sent to the
+                    # worker pool. In case the operation is lost, the pool
+                    # will return it to us, and we will use it to
+                    # re-enqueue it.
+                    operation.side_data = (entry.priority, entry.timestamp)
+                    operations.append(operation)
+                    self._currently_executing[operation] = worker.shard
+            with SessionGen() as session:
+                job_group = JobGroup.from_operations(operations, session)
+            res = worker.run(job_group)
+            gevent.spawn(self._wait_for_result, worker, res, operations)
+
+    def _wait_for_result(self, worker: WorkerPoolItem, res: AsyncResult,
+                         original_operations: List[ESOperation]):
+        res.wait()
+        if not res.successful():
+            with self._current_execution_lock:
+                for operation in original_operations:
+                    if self._currently_executing.get(operation) != worker.shard:
+                        continue
+                    priority, timestamp = operation.side_data
+                    self.enqueue(operation, priority, timestamp)
+                    del self._currently_executing[operation]
+            return
+        job_group: JobGroup = res.value
+        with self._current_execution_lock:
+            for job in job_group.jobs:
+                operation = job.operation
+                if self._currently_executing.get(operation) != worker.shard:
+                    continue
+                self.result_cache.add(operation, Result(job, job.success))
+                del self._currently_executing[operation]
+                if job.success:
+                    logger.info("`%s' succeeded.", operation)
+                else:
+                    logger.error("`%s' failed, see worker logs and (possibly) "
+                                 "sandboxes at '%s'.",
+                                 operation, " ".join(job.sandboxes))
 
     def dequeue(self, operation):
         """Remove an item from the queue.
 
         We need to override dequeue because the operation to dequeue
-        might have already been extracted, but not yet executed.
+        might have already been extracted and being executed.
 
         operation (ESOperation)
 
@@ -165,12 +188,19 @@ class EvaluationExecutor(Executor):
         try:
             super(EvaluationExecutor, self).dequeue(operation)
         except KeyError:
-            with self._current_execution_lock:
-                for i in range(len(self._currently_executing)):
-                    if self._currently_executing[i] == operation:
-                        del self._currently_executing[i]
-                        return
-            raise
+            pass
+        else:
+            return
+
+        with self._current_execution_lock:
+            try:
+                del self._currently_executing[operation]
+            except KeyError:
+                pass
+            else:
+                return
+
+        raise KeyError()
 
 
 def with_post_finish_lock(func):
@@ -228,6 +258,10 @@ class EvaluationService(TriggeredService):
 
         self.contest_id = contest_id
 
+        self.pool: WorkerPool = WorkerPool(contest_id=self.contest_id)
+        for i in range(get_service_shards("Worker")):
+            self.pool.add_worker(self.connect_to(ServiceCoord("Worker", i)))
+
         # Cache holding the results from the worker until they are
         # written to the DB.
         self.result_cache = FlushingDict(
@@ -261,17 +295,8 @@ class EvaluationService(TriggeredService):
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
 
-        self.add_executor(EvaluationExecutor(self))
+        self.add_executor(EvaluationExecutor(self.pool, self.result_cache))
         self.start_sweeper(117.0)
-
-        self.add_timeout(self.check_workers_timeout, None,
-                         EvaluationService.WORKER_TIMEOUT_CHECK_TIME
-                         .total_seconds(),
-                         immediately=False)
-        self.add_timeout(self.check_workers_connection, None,
-                         EvaluationService.WORKER_CONNECTION_CHECK_TIME
-                         .total_seconds(),
-                         immediately=False)
 
     def submission_enqueue_operations(self, submission):
         """Push in queue the operations required by a submission.
@@ -354,34 +379,8 @@ class EvaluationService(TriggeredService):
         """
         return self.get_executor().pool.get_status()
 
-    def check_workers_timeout(self):
-        """We ask WorkerPool for the unresponsive workers, and we put
-        again their operations in the queue.
-
-        """
-        lost_operations = self.get_executor().pool.check_timeouts()
-        for operation in lost_operations:
-            logger.info("Operation %s put again in the queue because of "
-                        "worker timeout.", operation)
-            priority, timestamp = operation.side_data
-            self.enqueue(operation, priority, timestamp)
-        return True
-
-    def check_workers_connection(self):
-        """We ask WorkerPool for the unconnected workers, and we put
-        again their operations in the queue.
-
-        """
-        lost_operations = self.get_executor().pool.check_connections()
-        for operation in lost_operations:
-            logger.info("Operation %s put again in the queue because of "
-                        "disconnected worker.", operation)
-            priority, timestamp = operation.side_data
-            self.enqueue(operation, priority, timestamp)
-        return True
-
     @with_post_finish_lock
-    def enqueue(self, operation, priority, timestamp):
+    def enqueue(self, operation, priority=None, timestamp=None):
         """Push an operation in the queue.
 
         Push an operation in the operation queue if the submission is
@@ -403,54 +402,7 @@ class EvaluationService(TriggeredService):
 
     @with_post_finish_lock
     def action_finished(self, data, shard, error=None):
-        """Callback from a worker, to signal that is finished some
-        action (compilation or evaluation).
-
-        data (dict): the JobGroup, exported to dict.
-        shard (int): the shard finishing the action.
-
-        """
-        # We notify the pool that the worker is available again for
-        # further work (no matter how the current request turned out,
-        # even if the worker encountered an error). If the pool
-        # informs us that the data produced by the worker has to be
-        # ignored (by returning True) we interrupt the execution of
-        # this method and do nothing because in that case we know the
-        # operation has returned to the queue and perhaps already been
-        # reassigned to another worker.
-        to_ignore = self.get_executor().pool.release_worker(shard)
-        if to_ignore is True:
-            logger.info("Ignored result from worker %s as requested.", shard)
-            return
-
-        job_group = None
-        job_group_success = True
-        if error is not None:
-            logger.error(
-                "Received error from Worker (see above), job group lost.")
-            job_group_success = False
-
-        else:
-            try:
-                job_group = JobGroup.import_from_dict(data)
-            except Exception:
-                logger.error("Couldn't build JobGroup for data %s.", data,
-                             exc_info=True)
-                job_group_success = False
-
-        if job_group_success:
-            for job in job_group.jobs:
-                operation = job.operation
-                if job.success:
-                    logger.info("`%s' succeeded.", operation)
-                else:
-                    logger.error("`%s' failed, see worker logs and (possibly) "
-                                 "sandboxes at '%s'.",
-                                 operation, " ".join(job.sandboxes))
-                if isinstance(to_ignore, list) and operation in to_ignore:
-                    logger.info("`%s' result ignored as requested", operation)
-                else:
-                    self.result_cache.add(operation, Result(job, job.success))
+        pass
 
     @with_post_finish_lock
     def write_results(self, items):
@@ -912,10 +864,6 @@ class EvaluationService(TriggeredService):
                     self.dequeue(operation)
                 except KeyError:
                     pass  # Ok, the operation wasn't in the queue.
-                try:
-                    self.get_executor().pool.ignore_operation(operation)
-                except LookupError:
-                    pass  # Ok, the operation wasn't in the pool.
 
             # Then we find all existing results in the database, and
             # we remove them.
@@ -961,18 +909,8 @@ class EvaluationService(TriggeredService):
 
         """
         logger.info("Received request to disable worker %s.", shard)
-
-        lost_operations = []
-        try:
-            lost_operations = self.get_executor().pool.disable_worker(shard)
-        except ValueError:
-            return False
-
-        for operation in lost_operations:
-            logger.info("Operation %s put again in the queue because "
-                        "the worker was disabled.", operation)
-            priority, timestamp = operation.side_data
-            self.enqueue(operation, priority, timestamp)
+        # TODO KeyError?
+        self.get_executor().pool.disable_worker(shard)
         return True
 
     @rpc_method
@@ -985,11 +923,8 @@ class EvaluationService(TriggeredService):
 
         """
         logger.info("Received request to enable worker %s.", shard)
-        try:
-            self.get_executor().pool.enable_worker(shard)
-        except ValueError:
-            return False
-
+        # TODO KeyError?
+        self.get_executor().pool.enable_worker(shard)
         return True
 
     @rpc_method

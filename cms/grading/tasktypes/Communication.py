@@ -430,6 +430,6 @@ class Communication(TaskType):
         delete_sandbox(sandbox_mgr, job.success, job.keep_sandbox)
         for s in sandbox_user:
             delete_sandbox(s, job.success, job.keep_sandbox)
-        if not config.keep_sandbox and not job.keep_sandbox:
+        if job.success and not config.keep_sandbox and not job.keep_sandbox:
             for d in fifo_dir:
                 rmtree(d)

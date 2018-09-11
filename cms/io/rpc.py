@@ -41,8 +41,7 @@ import gevent.lock
 import gevent.socket
 import gevent.event
 
-from cms import Address, get_service_address
-
+from cms import Address, get_service_address, ServiceCoord
 
 logger = logging.getLogger(__name__)
 
@@ -443,7 +442,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """
         super(RemoteServiceClient, self).__init__(
             get_service_address(remote_service_coord))
-        self.remote_service_coord = remote_service_coord
+        self.remote_service_coord: ServiceCoord = remote_service_coord
 
         self.pending_outgoing_requests = dict()
         self.pending_outgoing_requests_results = dict()
