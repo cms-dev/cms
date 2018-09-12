@@ -1,0 +1,11 @@
+exclude_paths:
+  - 'cms/server/admin/static/jq/**'
+  - 'cms/server/admin/static/sh/**'
+  - 'cms/server/contest/static/css/**'
+  - 'cms/server/contest/static/js/**'
+  - 'cms/server/static/jq/**'
+  - 'cmscontrib/loaders/polygon/testlib.h'
+  - 'cmsranking/static/lib/**'
+  - 'cmstestsuite/code/**'
+  - 'cmstestsuite/tasks/*/code/**'
+  - 'docs/**'
