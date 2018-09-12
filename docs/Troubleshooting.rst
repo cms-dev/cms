@@ -35,6 +35,10 @@ Servers
 
   *Possible cause.* RWS is designed to handle groups of contests, so it retains data about past contests. If you want to delete previous data, run RWS with the ```-d``` option. See :doc:`RankingWebServer` for more details
 
+- *Symptom.* Ranking Web Server prints an "Inconsistent data" exception.
+
+  *Possible cause.* RWS has its own local storage of the score data; this exception usually means that it got corrupted in some way (e.g., some of the data was deleted). If all the scores are still present in the core CMS, the easiest way to fix this is to stop RWS and ProxyService, run ``cmsRankingWebServer -d`` to delete the local storage, then start again RWS and PS.
+
 
 Sandbox
 =======
