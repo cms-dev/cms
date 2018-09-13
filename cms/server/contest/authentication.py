@@ -38,7 +38,7 @@ import json
 import logging
 from datetime import timedelta
 
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, joinedload
 
 from cms import config
 from cms.db import Participation, User
@@ -259,7 +259,7 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
     ip_network = ipaddress.ip_network((ip_address, ip_address.max_prefixlen))
 
     participations = sql_session.query(Participation) \
-        .options(contains_eager(Participation.user)) \
+        .options(joinedload(Participation.user)) \
         .filter(Participation.contest == contest) \
         .filter(Participation.ip.any(ip_network))
 
