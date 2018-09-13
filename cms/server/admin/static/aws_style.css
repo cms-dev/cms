@@ -620,6 +620,11 @@ body.admin .notifications .answered {
     border: 0.143em solid #555555;
 }
 
+body.admin .notifications .claim_reply {
+    float: right;
+    padding-right: 0.5em;
+}
+
 body.admin .notifications .ignore_reply {
     float: right;
     padding-right: 0.5em;
