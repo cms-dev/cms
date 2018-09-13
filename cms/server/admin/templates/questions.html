@@ -61,13 +61,28 @@ utils.show_page("questions", 1);
       <hr>
       <div class="notification_subject">Not yet replied.</div>
       <hr>
-        {% if not msg.admin is none and msg.ignored %}
+        {% if msg.admin is not none %}
       <div class="notification_admin_owner">
-        Ignored by: {{ msg.admin is none and "<deleted>" or msg.admin.name }}</div>
+        {{ "Ignored" if msg.ignored else "Claimed" }} by: {{ msg.admin.name }}
+      </div>
         {% endif %}
       {% endif %}
 {% if admin.permission_all or admin.permission_messaging %}
       {% if msg.reply_timestamp is none %}
+        {% if not msg.ignored %}
+      <div class="claim_reply">
+        <form class="claim_question_form" action="{{ url("contest", contest.id, "question", msg.id, "claim") }}" name="claim{{ msg.id }}" method="POST">
+          {{ xsrf_form_html|safe }}
+          {% if msg.admin is none %}
+          <input type="hidden" name="claim" value="yes"/>
+          <a href="javascript:void(0);" onclick="document.claim{{ msg.id }}.submit();">Claim</a>
+          {% else %}
+          <input type="hidden" name="claim" value="no"/>
+          <a href="javascript:void(0);" onclick="document.claim{{ msg.id }}.submit();">Unclaim</a>
+          {% endif %}
+        </form>
+      </div>
+        {% endif %}
       <div class="ignore_reply">
         <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
           {{ xsrf_form_html|safe }}

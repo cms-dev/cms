@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
@@ -61,7 +61,8 @@ from .contestannouncement import \
 from .contestquestion import \
     QuestionsHandler, \
     QuestionReplyHandler, \
-    QuestionIgnoreHandler
+    QuestionIgnoreHandler, \
+    QuestionClaimHandler
 from .contestranking import \
     RankingHandler
 from .task import \
@@ -160,6 +161,7 @@ HANDLERS = [
     (r"/contest/([0-9]+)/questions", QuestionsHandler),
     (r"/contest/([0-9]+)/question/([0-9]+)/reply", QuestionReplyHandler),
     (r"/contest/([0-9]+)/question/([0-9]+)/ignore", QuestionIgnoreHandler),
+    (r"/contest/([0-9]+)/question/([0-9]+)/claim", QuestionClaimHandler),
 
     # Contest's ranking
 
