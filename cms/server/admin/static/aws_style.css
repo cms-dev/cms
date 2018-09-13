@@ -64,6 +64,12 @@ a, a:visited {
     color: #426DC9;
 }
 
+hr {
+    height: 0;
+    border: none;
+    border-top: 1px dashed grey;
+}
+
 .hr {
     text-align: center;
     color: #53637D;
