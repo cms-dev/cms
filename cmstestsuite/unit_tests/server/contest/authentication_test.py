@@ -50,13 +50,23 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
     def setUp(self):
         super(TestValidateLogin, self).setUp()
         self.timestamp = make_datetime()
+        self.add_contest()
         self.contest = self.add_contest(allow_password_authentication=True)
+        self.add_user(username="otheruser")
         self.user = self.add_user(
             username="myuser", password=build_password("mypass"))
         self.participation = self.add_participation(
             contest=self.contest, user=self.user)
 
     def assertSuccess(self, username, password, ip_address):
+        # We had an issue where due to a misuse of contains_eager we ended up
+        # with the wrong user attached to the participation. This only happens
+        # if the correct user isn't already in the identity map, which is what
+        # these lines trigger.
+        self.session.flush()
+        self.session.expire(self.user)
+        self.session.expire(self.contest)
+
         authenticated_participation, cookie = validate_login(
             self.session, self.contest, self.timestamp,
             username, password, ipaddress.ip_address(ip_address))
@@ -64,6 +74,8 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertIsNotNone(authenticated_participation)
         self.assertIsNotNone(cookie)
         self.assertIs(authenticated_participation, self.participation)
+        self.assertIs(authenticated_participation.user, self.user)
+        self.assertIs(authenticated_participation.contest, self.contest)
 
     def assertFailure(self, username, password, ip_address):
         authenticated_participation, cookie = validate_login(
@@ -152,7 +164,9 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
     def setUp(self):
         super(TestAuthenticateRequest, self).setUp()
         self.timestamp = make_datetime()
+        self.add_contest()
         self.contest = self.add_contest()
+        self.add_user(username="otheruser")
         self.user = self.add_user(
             username="myuser", password=build_password("mypass"))
         self.participation = self.add_participation(
@@ -176,10 +190,23 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         # autologin or thanks to the cookie) and return the cookie that should
         # be set (or None, if it should be cleared/left unset).
         # The arguments are the same as those of attempt_authentication.
+
+        # We had an issue where due to a misuse of contains_eager we ended up
+        # with the wrong user attached to the participation. This only happens
+        # if the correct user isn't already in the identity map, which is what
+        # these lines trigger.
+        self.session.flush()
+        self.session.expire(self.user)
+        self.session.expire(self.contest)
+
         authenticated_participation, cookie = \
             self.attempt_authentication(**kwargs)
+
         self.assertIsNotNone(authenticated_participation)
         self.assertIs(authenticated_participation, self.participation)
+        self.assertIs(authenticated_participation.user, self.user)
+        self.assertIs(authenticated_participation.contest, self.contest)
+
         return cookie
 
     def assertSuccessAndCookieRefreshed(self, **kwargs):
