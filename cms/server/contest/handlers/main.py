@@ -207,7 +207,8 @@ class StatsHandler(ContestHandler):
                             join submissions s on sr.submission_id = s.id
                             join participations p on p.id = s.participation_id
                             where s.task_id = tasks.id and
-                                  sr.dataset_id = tasks.active_dataset_id
+                                  sr.dataset_id = tasks.active_dataset_id and
+                                  not p.hidden
                             group by p.id
                         ) x
                     )
