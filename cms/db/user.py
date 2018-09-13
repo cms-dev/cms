@@ -108,8 +108,8 @@ class User(Base):
 
     participations = relationship(
         "Participation",
-        cascade = "all, delete-orphan",
-        passive_deletes = True,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
         back_populates="user")
 
 
