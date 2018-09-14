@@ -185,9 +185,9 @@
 
   <div class="score_details" id="evaluation_{{ s.id }}">
     {% if s.tokened() %}
-      {{ st.get_html_details(sr.score_details)|safe }}
+      {{ st.get_html_details(sr.score_details, s.task.feedback_level)|safe }}
     {% else %}
-      {{ st.get_html_details(sr.public_score_details)|safe }}
+      {{ st.get_html_details(sr.public_score_details, s.task.feedback_level)|safe }}
     {% endif %}
   </div>
 </div>
