@@ -320,6 +320,18 @@ class Message(Base):
         Participation,
         back_populates="messages")
 
+    # Admin that sent the message (or null if the admin has been later
+    # deleted). Admins only loosely "own" a message, so we do not back
+    # populate any field in Admin, nor we delete the message when the admin
+    # gets deleted.
+    admin_id = Column(
+        Integer,
+        ForeignKey(Admin.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    admin = relationship(Admin)
+
 
 class Question(Base):
     """Class to store a private question from the user to the

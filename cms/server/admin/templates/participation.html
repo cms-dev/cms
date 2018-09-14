@@ -217,6 +217,10 @@ function update_additional_answer(element, invoker)
           <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
           <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
+          <hr>
+          <div class="notification_admin_owner">
+            By: {{ msg.admin.name if msg.admin is not none else "<unknown>" }}
+          </div>
         </div>
       </div>
       {% endfor %}
