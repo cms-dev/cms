@@ -38,7 +38,7 @@ from six import iteritems
 class Updater(object):
 
     def __init__(self, data):
-        assert data["_version"] == 37
+        assert data["_version"] == 38
         self.objs = data
 
     def run(self):
