@@ -40,7 +40,7 @@
                                   All the allowed languages must have task support, for example in managed tasks."></span>
         Allowed programming languages
       </td>
-      <td>
+      <td class="wrapping-options">
         {% for lang in LANGUAGES %}
           <label><input type="checkbox" name="languages" value="{{ lang.name }}" {{ "checked" if lang.name in contest.languages else "" }}>{{ lang.name }}</label>
         {% endfor %}
