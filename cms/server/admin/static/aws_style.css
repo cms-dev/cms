@@ -380,7 +380,15 @@ table.TaskTypeOptions {
     margin: 5px 0px;
 }
 
+table td.wrapping-options {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
 
+table td.wrapping-options label {
+    margin-right: 15px;
+}
 
 
 /* TODO */
