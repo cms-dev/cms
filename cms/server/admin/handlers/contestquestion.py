@@ -137,7 +137,7 @@ class QuestionIgnoreHandler(BaseHandler):
                         question.subject,
                         question.participation.user.username,
                         question.participation.contest.name,
-                        ["unignored", "ignored"][should_ignore])
+                        "ignored" if should_ignore else "unignored")
 
         self.redirect(ref)
 
@@ -172,7 +172,7 @@ class QuestionClaimHandler(BaseHandler):
                         question.subject,
                         question.participation.user.username,
                         question.participation.contest.name,
-                        ["unclaimed", "claimed"][should_claim],
+                        "claimed" if should_claim else "unclaimed",
                         self.current_user.name)
 
         self.redirect(ref)

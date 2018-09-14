@@ -61,9 +61,10 @@ utils.show_page("questions", 1);
       <hr>
       <div class="notification_subject">Not yet replied.</div>
       <hr>
-        {% if not msg.admin is none %}
+        {% if msg.admin is not none %}
       <div class="notification_admin_owner">
-        {{ "Ignored" if msg.ignored else "Claimed" }} by: {{ msg.admin is none and "<deleted>" or msg.admin.name }}</div>
+        {{ "Ignored" if msg.ignored else "Claimed" }} by: {{ msg.admin.name }}
+      </div>
         {% endif %}
       {% endif %}
 {% if admin.permission_all or admin.permission_messaging %}
