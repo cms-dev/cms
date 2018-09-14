@@ -102,8 +102,8 @@ from .types import CastingArray, Codename, Filename, FilenameSchema, \
     FilenameSchemaArray, Digest
 from .base import Base
 from .fsobject import FSObject, LargeObject
-from .contest import Contest, Announcement
 from .admin import Admin
+from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
 from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \

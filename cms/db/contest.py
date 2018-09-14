@@ -45,7 +45,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import Codename, Base
+from . import Codename, Base, Admin
 
 
 class Contest(Base):
@@ -342,3 +342,15 @@ class Announcement(Base):
     contest = relationship(
         Contest,
         back_populates="announcements")
+
+    # Admin that created the announcement (or null if the admin has been
+    # later deleted). Admins only loosely "own" an announcement, so we do not
+    # back populate any field in Admin, not delete the announcement if the
+    # admin gets deleted.
+    admin_id = Column(
+        Integer,
+        ForeignKey(Admin.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    admin = relationship(Admin)
