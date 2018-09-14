@@ -380,9 +380,10 @@ class Question(Base):
         Participation,
         back_populates="questions")
 
-    # Latest admin to interact the question (null if no interactions yet, or
-    # if the admin has been later deleted). Admins only loosely "own" a
-    # question, so we do not back populate any field in Admin.
+    # Latest admin to interact with the question (null if no interactions
+    # yet, or if the admin has been later deleted). Admins only loosely "own" a
+    # question, so we do not back populate any field in Admin, not delete the
+    # question if the admin gets deleted.
     admin_id = Column(
         Integer,
         ForeignKey(Admin.id,
