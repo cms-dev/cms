@@ -216,12 +216,12 @@ class Translation(object):
     def format_size(self, n):
         """Format the given number of bytes.
 
-        Format the size of a file, a memory allocation, etc. which is given
-        as a number of bytes. Use the most appropriate unit, from bytes up
-        to tebibytes. Always show the entire integral part plus as many
-        fractional digits as needed to reach three significant digits in total,
-        except when this would mean showing sub-byte values (happens only for
-        less than 100 bytes), in which case use less than three.
+        Format the size of a file, a memory allocation, etc. which is
+        given as a number of bytes. Use the most appropriate unit, from
+        bytes up to tebibytes. Always show the entire integral part plus
+        as many fractional digits as needed to reach at least three
+        significant digits in total, except when this would mean showing
+        sub-byte values (happens only for less than 100 bytes).
 
         n (int): a size, as number of bytes.
 
