@@ -31,8 +31,11 @@ from future.builtins import *  # noqa
 import os.path
 import unittest
 from datetime import datetime, timedelta
+from io import BytesIO
 
 import babel.dates
+from babel.messages import Catalog
+from babel.messages.mofile import write_mo
 
 from cms.locale import Translation, DEFAULT_TRANSLATION, filter_language_codes, \
     choose_language_code
@@ -41,9 +44,18 @@ from cms.locale import Translation, DEFAULT_TRANSLATION, filter_language_codes, 
 UTC = babel.dates.UTC
 ROME = babel.dates.get_timezone("Europe/Rome")
 
+FRENCH_CATALOG = Catalog(locale="fr")
+FRENCH_CATALOG.add("%s KiB", "%s Kio")
+FRENCH_CATALOG.add("%s MiB", "%s Mio")
+FRENCH_CATALOG.add("%s GiB", "%s Gio")
+FRENCH_CATALOG.add("%s TiB", "%s Tio")
+FRENCH_CATALOG_BUF = BytesIO()
+write_mo(FRENCH_CATALOG_BUF, FRENCH_CATALOG)
+FRENCH_CATALOG_BUF.seek(0)
+
 ENGLISH = DEFAULT_TRANSLATION
 BRITISH_ENGLISH = Translation("en_GB")
-FRENCH = Translation("fr")
+FRENCH = Translation("fr", mofile=FRENCH_CATALOG_BUF)
 HINDI = Translation("hi")
 ITALIAN = Translation("it")
 NORWEGIAN = Translation("no")
@@ -450,36 +462,36 @@ class TestFormatSize(unittest.TestCase):
     def test_zero(self):
         # Corner case.
         self.assertEqual(ENGLISH.format_size(0),
-                         "0 byte")
+                         "0 bytes")
 
     def test_small_values(self):
         # Note that there is no singular/plural.
         self.assertEqual(ENGLISH.format_size(1),
                          "1 byte")
         self.assertEqual(ENGLISH.format_size(2),
-                         "2 byte")
+                         "2 bytes")
 
     def test_cutoff(self):
         # Cutoff is at 1000, not 1024, as we use kilo, mega, ... rather
         # than kibi, mebi, ...
         self.assertEqual(ENGLISH.format_size(999),
-                         "999 byte")
+                         "999 bytes")
         self.assertEqual(ENGLISH.format_size(1000),
-                         "1.00 kB")
+                         "1,000 bytes")
         self.assertEqual(ENGLISH.format_size(1024),
-                         "1.02 kB")
+                         "1.00 KiB")
 
     def test_large(self):
         # Ensure larger units are used for larger values, with rounding
         # to three significant digits, up to terabytes.
         self.assertEqual(ENGLISH.format_size(2.345 * 1000000),
-                         "2.34 MB")
+                         "2.24 MiB")
         self.assertEqual(ENGLISH.format_size(34.567 * 1000000000),
-                         "34.6 GB")
+                         "32.2 GiB")
         self.assertEqual(ENGLISH.format_size(456.789 * 1000000000000),
-                         "457 TB")
+                         "415 TiB")
         self.assertEqual(ENGLISH.format_size(5678.9 * 1000000000000),
-                         "5,679 TB")
+                         "5,165 TiB")
 
     # As above, localized (use French as it's sensibly different).
 
@@ -491,25 +503,25 @@ class TestFormatSize(unittest.TestCase):
         self.assertEqual(FRENCH.format_size(1),
                          "1 octet")
         self.assertEqual(FRENCH.format_size(2),
-                         "2 octet")
+                         "2 octets")
 
     def test_localized_cutoff(self):
         self.assertEqual(FRENCH.format_size(999),
-                         "999 octet")
+                         "999 octets")
         self.assertEqual(FRENCH.format_size(1000),
-                         "1,00 ko")
+                         "1\N{NO-BREAK SPACE}000 octets")
         self.assertEqual(FRENCH.format_size(1024),
-                         "1,02 ko")
+                         "1,00 Kio")
 
     def test_localized_large(self):
         self.assertEqual(FRENCH.format_size(2.345 * 1000000),
-                         "2,34 Mo")
+                         "2,24 Mio")
         self.assertEqual(FRENCH.format_size(34.567 * 1000000000),
-                         "34,6 Go")
+                         "32,2 Gio")
         self.assertEqual(FRENCH.format_size(456.789 * 1000000000000),
-                         "457 To")
+                         "415 Tio")
         self.assertEqual(FRENCH.format_size(5678.9123 * 1000000000000),
-                         "5\N{NO-BREAK SPACE}679 To")
+                         "5\N{NO-BREAK SPACE}165 Tio")
 
 
 class TestFormatDecimal(unittest.TestCase):
