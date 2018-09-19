@@ -46,7 +46,6 @@ from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, \
     Forbidden, NotFound, NotAcceptable, UnsupportedMediaType
 from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
     DispatcherMiddleware
-from werkzeug.utils import redirect
 
 # Needed for initialization. Do not remove.
 import cmsranking.Logger
@@ -454,10 +453,36 @@ class ImageHandler(object):
         return response
 
 
+class RootHandler(object):
+
+    def __init__(self, location):
+        self.path = os.path.join(location, "Ranking.html")
+
+    def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
+
+    @responder
+    def wsgi_app(self, environ, start_response):
+        request = Request(environ)
+        request.encoding_errors = "strict"
+
+        response = Response()
+        response.status_code = 200
+        response.mimetype = "text/html"
+        response.last_modified = \
+            datetime.utcfromtimestamp(os.path.getmtime(self.path))\
+                    .replace(microsecond=0)
+        # TODO check for If-Modified-Since and If-None-Match
+        response.response = wrap_file(environ, io.open(self.path, 'rb'))
+        response.direct_passthrough = True
+
+        return response
+
+
 class RoutingHandler(object):
 
-    def __init__(
-            self, event_handler, logo_handler, score_handler, history_handler):
+    def __init__(self, root_handler, event_handler, logo_handler,
+                 score_handler, history_handler):
         self.router = Map([
             Rule("/", methods=["GET"], endpoint="root"),
             Rule("/history", methods=["GET"], endpoint="history"),
@@ -470,7 +495,7 @@ class RoutingHandler(object):
         self.logo_handler = logo_handler
         self.score_handler = score_handler
         self.history_handler = history_handler
-        self.root_handler = redirect("Ranking.html")
+        self.root_handler = root_handler
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -552,6 +577,7 @@ def main():
     stores["scoring"].init_store()
 
     toplevel_handler = RoutingHandler(
+        RootHandler(config.web_dir),
         DataWatcher(stores, config.buffer_size),
         ImageHandler(
             os.path.join(config.lib_dir, '%(name)s'),
