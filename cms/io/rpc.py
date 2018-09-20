@@ -351,6 +351,7 @@ class RemoteServiceServer(RemoteServiceBase):
         try:
             message = json.loads(data.decode('utf-8'))
         except ValueError:
+            self.disconnect("Bad request received")
             logger.warning("Cannot parse incoming message, discarding.")
             return
 
@@ -367,6 +368,7 @@ class RemoteServiceServer(RemoteServiceBase):
         """
         # Validate the request.
         if not {"__id", "__method", "__data"}.issubset(iterkeys(request)):
+            self.disconnect("Bad request received")
             logger.warning("Request is missing some fields, ignoring.")
             return
 
@@ -542,6 +544,7 @@ class RemoteServiceClient(RemoteServiceBase):
         try:
             message = json.loads(data.decode('utf-8'))
         except ValueError:
+            self.disconnect("Bad response received")
             logger.warning("Cannot parse incoming message, discarding.")
             return
 
@@ -558,6 +561,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """
         # Validate the response.
         if not {"__id", "__data", "__error"}.issubset(iterkeys(response)):
+            self.disconnect("Bad response received")
             logger.warning("Response is missing some fields, ignoring.")
             return
 

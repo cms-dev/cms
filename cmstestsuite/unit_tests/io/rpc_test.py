@@ -415,17 +415,17 @@ class TestRPC(unittest.TestCase):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall(b"foo\r\n")
         self.sleep()
-        self.assertTrue(self.servers[0].connected)
-        # Verify the server resumes normal operation.
-        self.test_method_return_int()
+        # Malformed messages cause the connection to be closed.
+        self.assertFalse(self.servers[0].connected)
+        sock.close()
 
     def test_send_incomplete_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall(b'{"__id": "foo"}\r\n')
         self.sleep()
-        self.assertTrue(self.servers[0].connected)
-        # Verify the server resumes normal operation.
-        self.test_method_return_int()
+        # Malformed messages cause the connection to be closed.
+        self.assertFalse(self.servers[0].connected)
+        sock.close()
 
 
 if __name__ == "__main__":
