@@ -367,7 +367,7 @@ class RemoteServiceServer(RemoteServiceBase):
         """
         # Validate the request.
         if not {"__id", "__method", "__data"}.issubset(iterkeys(request)):
-            logger.warning("Request is missing some fields, ingoring.")
+            logger.warning("Request is missing some fields, ignoring.")
             return
 
         # Determine the ID.
@@ -558,7 +558,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """
         # Validate the response.
         if not {"__id", "__data", "__error"}.issubset(iterkeys(response)):
-            logger.warning("Response is missing some fields, ingoring.")
+            logger.warning("Response is missing some fields, ignoring.")
             return
 
         # Determine the ID.
