@@ -93,6 +93,7 @@ class RemoteServiceBase(object):
             connection (origin or target, depending on its direction).
 
         """
+        self.local_address = None
         self.remote_address = remote_address
         self._connection_event = gevent.event.Event()
 
@@ -160,8 +161,13 @@ class RemoteServiceBase(object):
         self._reader = self._socket.makefile('rb')
         self._writer = self._socket.makefile('wb')
         self._connection_event.set()
+        # IPv4 addresses have two elements (host and port), IPv6 ones
+        # have 4 elements (host, port, flowinfo and scopeid). We will
+        # discard the last two ones, losing information, to simplify.
+        self.local_address = "%s:%d" % self._socket.getsockname()[:2]
 
-        logger.info("Established connection with %s.", self._repr_remote())
+        logger.info("Established connection with %s (local endpoint: %s).",
+                    self._repr_remote(), self.local_address)
 
         for handler in self._on_connect_handlers:
             gevent.spawn(handler, plus)
@@ -179,13 +185,14 @@ class RemoteServiceBase(object):
         if not self.connected:
             return
 
+        logger.info("Terminated connection with %s (local endpoint: %s): %s",
+                    self._repr_remote(), self.local_address, reason)
+
         self._socket = None
         self._reader = None
         self._writer = None
         self._connection_event.clear()
-
-        logger.info("Terminated connection with %s: %s", self._repr_remote(),
-                    reason)
+        self.local_address = None
 
         for handler in self._on_disconnect_handlers:
             gevent.spawn(handler)
