@@ -190,7 +190,7 @@ class RemoteServiceBase(object):
         for handler in self._on_disconnect_handlers:
             gevent.spawn(handler)
 
-    def disconnect(self):
+    def disconnect(self, reason="Disconnection requested."):
         """Gracefully close the connection.
 
         return (bool): True if the service was connected.
@@ -206,7 +206,7 @@ class RemoteServiceBase(object):
             logger.warning("Couldn't disconnect from %s: %s.",
                            self._repr_remote(), error)
         finally:
-            self.finalize("Disconnection requested.")
+            self.finalize(reason=reason)
         return True
 
     def _read(self):
@@ -502,9 +502,9 @@ class RemoteServiceClient(RemoteServiceBase):
             raise RuntimeError("Already (auto-re)connecting")
         self._loop = gevent.spawn(self._run)
 
-    def disconnect(self):
+    def disconnect(self, reason="Disconnection requested."):
         """See RemoteServiceBase.disconnect."""
-        if super(RemoteServiceClient, self).disconnect():
+        if super(RemoteServiceClient, self).disconnect(reason=reason):
             self._loop.kill()
             self._loop = None
 
