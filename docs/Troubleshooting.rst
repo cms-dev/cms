@@ -20,6 +20,15 @@ Database
 
   *Possible cause.* The default configuration of PostgreSQL may allow insufficiently many incoming connections on the database engine. You can raise this limit by tweaking the ```max_connections``` parameter in ```postgresql.conf``` (`see docs <http://www.postgresql.org/docs/9.1/static/runtime-config-connection.html>`_). This, in turn, requires more shared memory for the PostgreSQL process (see ```shared_buffers``` parameter in `docs <http://www.postgresql.org/docs/9.1/static/runtime-config-resource.html>`_), which may overflow the maximum limit allowed by the operating system. In such case see the suggestions in http://www.postgresql.org/docs/9.1/static/kernel-resources.html#SYSVIPC. Users reported that another way to go is to use a connection pooler like `PgBouncer <https://wiki.postgresql.org/wiki/PgBouncer>`_.
 
+Services
+========
+
+- *Symptom.* Some services log error messages like :samp:`Response is missing some fields, ignoring` then disconnect from other services.
+
+  *Possible cause.* It is possible that a service that was trying to establish a connection to another service residing on the same host was assigned by the kernel an outgoing port that is equal to the port it was trying to reach. This can be verified by looking for logs that resemble the following: :samp:`Established connection with 192.168.1.1:43210 (LogService,0) (local address: 192.168.1.1:43210)` (observe the same address repeated twice).
+
+  A workaround for this issue is to first look at what range of ports is reserved by the kernel to "ephemeral" ports (the ones dynamically assigned to outgoing connections). This can be found out with ``cat /proc/sys/net/ipv4/ip_local_port_range``. Then the configuration file of CMS should be updated so that all services are assigned ports outside that range.
+
 Servers
 =======
 
@@ -38,7 +47,6 @@ Servers
 - *Symptom.* Ranking Web Server prints an "Inconsistent data" exception.
 
   *Possible cause.* RWS has its own local storage of the score data; this exception usually means that it got corrupted in some way (e.g., some of the data was deleted). If all the scores are still present in the core CMS, the easiest way to fix this is to stop RWS and ProxyService, run ``cmsRankingWebServer -d`` to delete the local storage, then start again RWS and PS.
-
 
 Sandbox
 =======
