@@ -34,7 +34,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
-* `Python <http://www.python.org/>`_ >= 2.7, < 3.0 (for Python, with executable ``python2``; note though that this must be installed anyway because it is required by CMS itself);
+* `Python <http://www.python.org/>`_ >= 2.7 (for Python, with executable ``python2`` or ``python3``; in addition you will need ``zip``);
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
@@ -56,7 +56,7 @@ On Ubuntu 18.04, one will need to run the following script to satisfy all depend
     # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-8-jdk-headless fp-compiler \
         postgresql postgresql-client python3.6 cppreference-doc-en-html \
-        cgroup-lite libcap-dev
+        cgroup-lite libcap-dev zip
 
     # Only if you are going to use pip/venv to install python dependencies
     sudo apt-get install python3.6-dev libpq-dev libcups2-dev libyaml-dev \

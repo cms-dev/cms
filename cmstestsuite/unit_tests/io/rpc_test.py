@@ -103,7 +103,7 @@ class TestRPC(unittest.TestCase):
     def kill_listener(self):
         """Stop listening."""
         # Some code may kill the listener in the middle of a test, and
-        # plan to spawn a new one aftwerards. Yet if the test fails
+        # plan to spawn a new one afterwards. Yet if the test fails
         # then upon tearDown _server will still be unset.
         if hasattr(self, "_server"):
             self._server.stop()
@@ -126,7 +126,7 @@ class TestRPC(unittest.TestCase):
         self.servers.append(server)
         server.handle(socket_)
 
-    def get_client(self, coord, auto_retry=None):
+    def get_client(self, coord, block=True, auto_retry=None):
         """Obtain a new RemoteServiceClient to connect to a server.
 
         Instantiate a RemoteServiceClient, spawn its greenlet and add
@@ -134,6 +134,8 @@ class TestRPC(unittest.TestCase):
         the given coordinates.
 
         coord (ServiceCoord): the (name, shard) of the service
+        block (bool): whether to wait for the connection to be
+            established before returning
         auto_retry (float|None): how long to wait after a disconnection
             before trying to reconnect
         return (RemoteServiceClient): a client
@@ -141,6 +143,8 @@ class TestRPC(unittest.TestCase):
         """
         client = RemoteServiceClient(coord, auto_retry)
         client.connect()
+        if block:
+            client._connection_event.wait()
         self.clients.append(client)
         return client
 
@@ -158,7 +162,8 @@ class TestRPC(unittest.TestCase):
             if client.connected:
                 client.disconnect()
 
-    def sleep(self):
+    @staticmethod
+    def sleep():
         """Pause the greenlet so other work can be done."""
         gevent.sleep(0.005)
 
@@ -234,17 +239,45 @@ class TestRPC(unittest.TestCase):
         self.assertTrue(result.successful())
         self.assertEqual(result.value, ["Hello", 42, "World"])
 
+    @patch("cms.io.rpc.gevent.socket.socket")
+    def test_background_connect(self, socket_mock):
+        # Patch the connect method of sockets so that it blocks until
+        # we set the done_event (we will do so at the end of the test).
+        connect_mock = socket_mock.return_value.connect
+        done_event = gevent.event.Event()
+        connect_mock.side_effect = lambda _: done_event.wait()
+        # Connect to the RPC server in non-blocking mode and make sure
+        # that we indeed don't block (i.e., take more than 0.001s).
+        with gevent.Timeout(0.001) as timeout:
+            try:
+                client = self.get_client(ServiceCoord("Foo", 0), block=False)
+            except gevent.Timeout as t:
+                if t is not timeout:
+                    raise
+                self.fail("Connecting blocks")
+        # As socket.connect() never returned, the RPC client cannot have
+        # connected.
+        self.assertFalse(client.connected)
+        # Unblock the socket's connect method and make sure it actually
+        # got called (otherwise this whole tests is pointless). Also,
+        # yield to other greenlets so that they can be awoken after the
+        # event triggered.
+        done_event.set()
+        gevent.sleep()
+        connect_mock.assert_called_once_with(Address(self.host, self.port))
+
     def test_autoreconnect1(self):
-        client = self.get_client(ServiceCoord("Foo", 0), 0.002)
+        client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)
         self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_servers()
         gevent.sleep(0.01)
-        self.assertTrue(client.connected, "Autoreconnect didn't kick in "
-                                          "after server disconnected")
+        self.assertTrue(client.connected,
+                        "Autoreconnect didn't kick in "
+                        "after server disconnected")
 
     def test_autoreconnect2(self):
-        client = self.get_client(ServiceCoord("Foo", 0), 0.002)
+        client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)
         self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_servers()
@@ -257,7 +290,7 @@ class TestRPC(unittest.TestCase):
                                           "after server came back online")
 
     def test_autoreconnect3(self):
-        client = self.get_client(ServiceCoord("Foo", 0), 0.002)
+        client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)
         self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_clients()
@@ -338,6 +371,7 @@ class TestRPC(unittest.TestCase):
             self.assertFalse(client.connected)
             self.sleep()
             client.connect()
+            client._connection_event.wait()
             self.assertTrue(client.connected)
 
         self.sleep()

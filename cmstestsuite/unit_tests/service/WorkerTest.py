@@ -266,7 +266,7 @@ class TestWorker(unittest.TestCase):
             job_params = [
                 ESOperation(ESOperation.EVALUATION,
                             unique_long_id(), unique_long_id(),
-                            unique_unicode_id()).to_dict(),
+                            unique_unicode_id()),
                 "fake_task_type",
                 "fake_parameters_%s%d" % (prefix, i)
             ]

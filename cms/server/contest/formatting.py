@@ -30,6 +30,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
+from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.locale import DEFAULT_TRANSLATION
 
 
@@ -64,18 +65,18 @@ def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):
 
     result = ""
 
-    if tokens["mode"] == "disabled":
+    if tokens["mode"] == TOKEN_MODE_DISABLED:
         # This message will only be shown on tasks in case of a mixed
         # modes scenario.
         result += \
             _("You don't have %(type_pl)s available for this task.") % tokens
-    elif tokens["mode"] == "infinite":
+    elif tokens["mode"] == TOKEN_MODE_INFINITE:
         # This message will only be shown on tasks in case of a mixed
         # modes scenario.
         result += \
             _("You have an infinite number of %(type_pl)s "
               "for this task.") % tokens
-    else:
+    elif tokens["mode"] == TOKEN_MODE_FINITE:
         if tokens['gen_initial'] == 0:
             result += _("You start with no %(type_pl)s.") % tokens
         else:
@@ -127,6 +128,8 @@ def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):
         else:
             result += \
                 _("You have no limitations on how you use them.") % tokens
+    else:
+        raise ValueError("Unexpected token mode '%s'" % tokens["mode"])
 
     return result
 

@@ -38,8 +38,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Base, Participation, Task, Dataset, FilenameConstraint, \
-    DigestConstraint
+from . import Filename, FilenameSchema, Digest, Base, Participation, Task, \
+    Dataset
 
 
 class UserTest(Base):
@@ -88,8 +88,7 @@ class UserTest(Base):
 
     # Input (provided by the user) file's digest for this test.
     input = Column(
-        String,
-        DigestConstraint("input"),
+        Digest,
         nullable=False)
 
     # These one-to-many relationships are the reversed directions of
@@ -187,12 +186,10 @@ class UserTestFile(Base):
 
     # Filename and digest of the submitted file.
     filename = Column(
-        String,
-        FilenameConstraint("filename"),
+        FilenameSchema,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -224,12 +221,10 @@ class UserTestManager(Base):
 
     # Filename and digest of the submitted manager.
     filename = Column(
-        String,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
 
@@ -277,8 +272,7 @@ class UserTestResult(Base):
 
     # Output file's digest for this test
     output = Column(
-        String,
-        DigestConstraint("output"),
+        Digest,
         nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
@@ -550,10 +544,8 @@ class UserTestExecutable(Base):
 
     # Filename and digest of the generated executable.
     filename = Column(
-        String,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)

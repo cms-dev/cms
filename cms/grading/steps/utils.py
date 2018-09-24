@@ -67,7 +67,7 @@ def _generic_execution(sandbox, command, exec_num, step_name,
     if not box_success:
         logger.error("Step '%s' aborted because of sandbox error in '%s' on "
                      "the %d-th command ('%r').",
-                     step_name, sandbox.path, exec_num + 1, command)
+                     step_name, sandbox.get_root_path(), exec_num + 1, command)
         return None
 
     return execution_stats(sandbox, collect_output=collect_output)
@@ -93,7 +93,7 @@ def generic_step(sandbox, commands, step_name, collect_output=False):
 
     """
     logger.debug("Starting step '%s' in sandbox '%s' (%d commands).",
-                 step_name, sandbox.path, len(commands))
+                 step_name, sandbox.get_root_path(), len(commands))
     stats = None
     for exec_num, command in enumerate(commands):
         this_stats = _generic_execution(sandbox, command, exec_num, step_name,

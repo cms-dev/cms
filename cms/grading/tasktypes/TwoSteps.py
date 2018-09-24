@@ -39,10 +39,10 @@ from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.steps import compilation_step, evaluation_step_before_run, \
     evaluation_step_after_run, human_evaluation_message, merge_execution_stats
 from cms.grading.languagemanager import LANGUAGES, get_language
-from cms.grading.TaskType import TaskType, check_executables_number, \
-    check_files_number, check_manager_present, create_sandbox, \
-    delete_sandbox, eval_output
 from cms.db import Executable
+from . import TaskType, \
+    check_executables_number, check_files_number, check_manager_present, \
+    create_sandbox, delete_sandbox, eval_output
 
 
 logger = logging.getLogger(__name__)
@@ -194,7 +194,7 @@ class TwoSteps(TaskType):
 
         # Create the sandbox and put the required files in it.
         sandbox = create_sandbox(file_cacher, name="compile")
-        job.sandboxes.append(sandbox.path)
+        job.sandboxes.append(sandbox.get_root_path())
 
         for filename, digest in iteritems(files_to_get):
             sandbox.create_file_from_storage(filename, digest)
@@ -217,7 +217,7 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox, job.success)
+        delete_sandbox(sandbox, job.success, job.keep_sandbox)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -229,8 +229,8 @@ class TwoSteps(TaskType):
 
         first_sandbox = create_sandbox(file_cacher, name="first_evaluate")
         second_sandbox = create_sandbox(file_cacher, name="second_evaluate")
-        job.sandboxes.append(first_sandbox.path)
-        job.sandboxes.append(second_sandbox.path)
+        job.sandboxes.append(first_sandbox.get_root_path())
+        job.sandboxes.append(second_sandbox.get_root_path())
 
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
@@ -239,12 +239,11 @@ class TwoSteps(TaskType):
         os.chmod(fifo, 0o666)
 
         # First step: we start the first manager.
-        first_command = ["./%s" % executable_filename, "0", fifo]
+        first_command = ["./%s" % executable_filename, "0", "/fifo/fifo"]
         first_executables_to_get = {executable_filename: executable_digest}
         first_files_to_get = {
             TwoSteps.INPUT_FILENAME: job.input
             }
-        first_allow_path = [fifo_dir]
 
         # Put the required files into the sandbox
         for filename, digest in iteritems(first_executables_to_get):
@@ -259,16 +258,15 @@ class TwoSteps(TaskType):
             first_command,
             job.time_limit,
             job.memory_limit,
-            first_allow_path,
+            dirs_map={fifo_dir: ("/fifo", "rw")},
             stdin_redirect=TwoSteps.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox,
             wait=False)
 
         # Second step: we start the second manager.
-        second_command = ["./%s" % executable_filename, "1", fifo]
+        second_command = ["./%s" % executable_filename, "1", "/fifo/fifo"]
         second_executables_to_get = {executable_filename: executable_digest}
         second_files_to_get = {}
-        second_allow_path = [fifo_dir]
 
         # Put the required files into the second sandbox
         for filename, digest in iteritems(second_executables_to_get):
@@ -283,7 +281,7 @@ class TwoSteps(TaskType):
             second_command,
             job.time_limit,
             job.memory_limit,
-            second_allow_path,
+            dirs_map={fifo_dir: ("/fifo", "rw")},
             stdout_redirect=TwoSteps.OUTPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox,
             wait=False)
@@ -354,5 +352,5 @@ class TwoSteps(TaskType):
         job.text = text
         job.plus = stats
 
-        delete_sandbox(first_sandbox, job.success)
-        delete_sandbox(second_sandbox, job.success)
+        delete_sandbox(first_sandbox, job.success, job.keep_sandbox)
+        delete_sandbox(second_sandbox, job.success, job.keep_sandbox)

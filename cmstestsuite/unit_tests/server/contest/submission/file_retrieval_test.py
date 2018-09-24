@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,8 +22,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from future.builtins.disabled import *
-from future.builtins import *
+from future.builtins.disabled import *  # noqa
+from future.builtins import *  # noqa
 import six
 
 import io
@@ -104,8 +105,8 @@ class TestExtractFilesFromArchive(unittest.TestCase):
     # The behavior documented in this test actually only happens when
     # patool uses 7z (which happens if it is found installed). Otherwise
     # it falls back on Python's zipfile module which outright fails.
-    # Due to this difference we tolerate failures in this test.
-    @unittest.expectedFailure
+    # Due to this difference we do not run this test.
+    @unittest.skip("Depends on what is installed in the system.")
     def test_empty_filename(self):
         # This is a quite unexpected behavior: luckily in practice it
         # should have no effect as the elements of the submission format

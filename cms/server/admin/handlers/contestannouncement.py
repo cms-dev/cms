@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
@@ -54,7 +54,7 @@ class AddAnnouncementHandler(BaseHandler):
         text = self.get_argument("text", "")
         if len(subject) > 0:
             ann = Announcement(make_datetime(), subject, text,
-                               contest=self.contest)
+                               contest=self.contest, admin=self.current_user)
             self.sql_session.add(ann)
             self.try_commit()
         else:

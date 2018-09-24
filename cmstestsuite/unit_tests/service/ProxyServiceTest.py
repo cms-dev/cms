@@ -41,8 +41,8 @@ from mock import patch, PropertyMock
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
-from cms import SCORE_MODE_MAX
 from cms.service.ProxyService import ProxyService
+from cmscommon.constants import SCORE_MODE_MAX
 
 
 class TestProxyService(DatabaseMixin, unittest.TestCase):

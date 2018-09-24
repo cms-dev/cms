@@ -39,6 +39,9 @@ import shutil
 import unittest
 from io import BytesIO
 
+# Needs to be first to allow for monkey patching the DB connection string.
+from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
+
 from cmscommon.digest import Digester, bytes_digest
 from cms.db.filecacher import FileCacher
 
@@ -373,10 +376,11 @@ class TestFileCacherBase(object):
         self.check_stored_file(digest)
 
 
-class TestFileCacherDB(TestFileCacherBase, unittest.TestCase):
+class TestFileCacherDB(TestFileCacherBase, DatabaseMixin, unittest.TestCase):
     """Tests for the FileCacher service with a database backend."""
 
     def setUp(self):
+        super(TestFileCacherDB, self).setUp()
         file_cacher = FileCacher()
         self._setUp(file_cacher)
 
@@ -388,6 +392,7 @@ class TestFileCacherFS(TestFileCacherBase, unittest.TestCase):
     """Tests for the FileCacher service with a filesystem backend."""
 
     def setUp(self):
+        super(TestFileCacherFS, self).setUp()
         file_cacher = FileCacher(path="fs-storage")
         self._setUp(file_cacher)
 

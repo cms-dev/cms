@@ -148,6 +148,7 @@ class TaskHandler(BaseHandler):
             ]))
 
             self.get_submission_format(attrs)
+            self.get_string(attrs, "feedback_level")
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")

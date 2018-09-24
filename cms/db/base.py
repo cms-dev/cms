@@ -26,12 +26,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import iterkeys, iteritems
+from six import iterkeys
 
 import ipaddress
 from datetime import datetime, timedelta
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
@@ -51,7 +51,8 @@ else:
     import __builtin__
     raw_object = __builtin__.object
 
-from . import engine, CastingArray
+from . import engine, metadata, CastingArray, Codename, Filename, \
+    FilenameSchema, FilenameSchemaArray, Digest
 
 
 _TYPE_MAP = {
@@ -63,15 +64,21 @@ _TYPE_MAP = {
     Enum: six.text_type,
     Unicode: six.text_type,
     String: six.string_types,  # TODO Use six.binary_type.
+    Codename: six.text_type,
+    Filename: six.text_type,
+    FilenameSchema: six.text_type,
+    Digest: six.text_type,
     DateTime: datetime,
     Interval: timedelta,
     ARRAY: list,
     CastingArray: list,
+    FilenameSchemaArray: list,
     CIDR: (ipaddress.IPv4Network, ipaddress.IPv6Network),
     JSONB: raw_object,
 }
 
 
+@as_declarative(bind=engine, metadata=metadata, constructor=None)
 class Base(object):
     """Base class for all classes managed by SQLAlchemy. Extending the
     base class given by SQLAlchemy.
@@ -330,8 +337,3 @@ class Base(object):
                 "set_attrs() got an unexpected keyword argument '%s'" %
                 attrs.popitem()[0])
 
-
-Base = declarative_base(engine, cls=Base, constructor=None)
-
-
-metadata = Base.metadata

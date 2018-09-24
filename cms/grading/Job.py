@@ -44,7 +44,8 @@ from six import itervalues, iteritems
 
 import logging
 
-from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
+from cms.db import Dataset, Evaluation, Executable, File, Manager, Submission, \
+    UserTest, UserTestExecutable
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
 
@@ -77,13 +78,12 @@ class Job(object):
     def __init__(self, operation=None,
                  task_type=None, task_type_parameters=None,
                  language=None, multithreaded_sandbox=False,
-                 shard=None, sandboxes=None, info=None,
+                 shard=None, keep_sandbox=False, sandboxes=None, info=None,
                  success=None, text=None,
                  files=None, managers=None, executables=None):
         """Initialization.
 
-        operation (dict|None): the operation, in the format that
-            ESOperation.to_dict() uses.
+        operation (ESOperation|None): the operation.
         task_type (string|None): the name of the task type.
         task_type_parameters (object|None): the parameters for the
             creation of the correct task type.
@@ -92,6 +92,9 @@ class Job(object):
         multithreaded_sandbox (boolean): whether the sandbox should
             allow multithreading.
         shard (int|None): the shard of the Worker completing this job.
+        keep_sandbox (bool): whether to forcefully keep the sandbox,
+            even if other conditions (the config, the sandbox status)
+            don't warrant it.
         sandboxes ([string]|None): the paths of the sandboxes used in
             the Worker during the execution of the job.
         info (string|None): a human readable description of the job.
@@ -107,8 +110,6 @@ class Job(object):
             in the compilation.
 
         """
-        if operation is None:
-            operation = {}
         if task_type is None:
             task_type = ""
         if sandboxes is None:
@@ -128,6 +129,7 @@ class Job(object):
         self.language = language
         self.multithreaded_sandbox = multithreaded_sandbox
         self.shard = shard
+        self.keep_sandbox = keep_sandbox
         self.sandboxes = sandboxes
         self.info = info
 
@@ -141,12 +143,15 @@ class Job(object):
     def export_to_dict(self):
         """Return a dict representing the job."""
         res = {
-            'operation': self.operation,
+            'operation': (self.operation.to_dict()
+                          if self.operation is not None
+                          else None),
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
             'language': self.language,
             'multithreaded_sandbox': self.multithreaded_sandbox,
             'shard': self.shard,
+            'keep_sandbox': self.keep_sandbox,
             'sandboxes': self.sandboxes,
             'info': self.info,
             'success': self.success,
@@ -184,6 +189,14 @@ class Job(object):
     @classmethod
     def import_from_dict(cls, data):
         """Create a Job from the output of export_to_dict."""
+        if data['operation'] is not None:
+            data['operation'] = ESOperation.from_dict(data['operation'])
+        data['files'] = dict(
+            (k, File(k, v)) for k, v in iteritems(data['files']))
+        data['managers'] = dict(
+            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
+        data['executables'] = dict(
+            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
         return cls(**data)
 
     @staticmethod
@@ -242,7 +255,7 @@ class CompilationJob(Job):
 
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None,
-                 shard=None, sandboxes=None, info=None,
+                 shard=None, keep_sandbox=False, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None,
                  success=None, compilation_success=None,
@@ -259,7 +272,7 @@ class CompilationJob(Job):
 
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox,
-                     shard, sandboxes, info, success, text,
+                     shard, keep_sandbox, sandboxes, info, success, text,
                      files, managers, executables)
         self.compilation_success = compilation_success
         self.plus = plus
@@ -272,16 +285,6 @@ class CompilationJob(Job):
             'plus': self.plus,
             })
         return res
-
-    @classmethod
-    def import_from_dict(cls, data):
-        data['files'] = dict(
-            (k, File(k, v)) for k, v in iteritems(data['files']))
-        data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
-        data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
-        return cls(**data)
 
     @staticmethod
     def from_submission(operation, submission, dataset):
@@ -306,7 +309,7 @@ class CompilationJob(Job):
         # dict() is required to detach the dictionary that gets added
         # to the Job from the control of SQLAlchemy
         return CompilationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
@@ -385,7 +388,7 @@ class CompilationJob(Job):
                         dataset.managers[manager_filename]
 
         return CompilationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
@@ -438,7 +441,7 @@ class EvaluationJob(Job):
     """
     def __init__(self, operation=None, task_type=None,
                  task_type_parameters=None, shard=None,
-                 sandboxes=None, info=None,
+                 keep_sandbox=False, sandboxes=None, info=None,
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
                  input=None, output=None,
@@ -470,7 +473,7 @@ class EvaluationJob(Job):
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox,
-                     shard, sandboxes, info, success, text,
+                     shard, keep_sandbox, sandboxes, info, success, text,
                      files, managers, executables)
         self.input = input
         self.output = output
@@ -497,16 +500,6 @@ class EvaluationJob(Job):
             'get_output': self.get_output,
             })
         return res
-
-    @classmethod
-    def import_from_dict(cls, data):
-        data['files'] = dict(
-            (k, File(k, v)) for k, v in iteritems(data['files']))
-        data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
-        data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
-        return cls(**data)
 
     @staticmethod
     def from_submission(operation, submission, dataset):
@@ -540,7 +533,7 @@ class EvaluationJob(Job):
         # dict() is required to detach the dictionary that gets added
         # to the Job from the control of SQLAlchemy
         return EvaluationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
@@ -548,10 +541,10 @@ class EvaluationJob(Job):
             files=dict(submission.files),
             managers=dict(dataset.managers),
             executables=dict(submission_result.executables),
-            time_limit=dataset.time_limit,
-            memory_limit=dataset.memory_limit,
             input=testcase.input,
             output=testcase.output,
+            time_limit=dataset.time_limit,
+            memory_limit=dataset.memory_limit,
             info=info
         )
 
@@ -573,8 +566,7 @@ class EvaluationJob(Job):
             execution_memory=self.plus.get('execution_memory'),
             evaluation_shard=self.shard,
             evaluation_sandbox=":".join(self.sandboxes),
-            testcase=sr.dataset.testcases[
-                self.operation["testcase_codename"]])]
+            testcase=sr.dataset.testcases[self.operation.testcase_codename])]
 
     @staticmethod
     def from_user_test(operation, user_test, dataset):
@@ -621,7 +613,7 @@ class EvaluationJob(Job):
                         dataset.managers[manager_filename]
 
         return EvaluationJob(
-            operation=operation.to_dict(),
+            operation=operation,
             task_type=dataset.task_type,
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
@@ -677,3 +669,18 @@ class JobGroup(object):
         for job in data["jobs"]:
             jobs.append(Job.import_from_dict_with_type(job))
         return cls(jobs)
+
+    @staticmethod
+    def from_operations(operations, session):
+        jobs = []
+        for operation in operations:
+            # The get_from_id method loads from the instance map (if the
+            # object exists there), which thus acts as a cache.
+            if operation.for_submission():
+                object_ = Submission.get_from_id(operation.object_id, session)
+            else:
+                object_ = UserTest.get_from_id(operation.object_id, session)
+            dataset = Dataset.get_from_id(operation.dataset_id, session)
+
+            jobs.append(Job.from_operation(operation, object_, dataset))
+        return JobGroup(jobs)

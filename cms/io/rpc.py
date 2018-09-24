@@ -94,7 +94,7 @@ class RemoteServiceBase(object):
 
         """
         self.remote_address = remote_address
-        self.connected = False
+        self._connection_event = gevent.event.Event()
 
         self._on_connect_handlers = list()
         self._on_disconnect_handlers = list()
@@ -105,6 +105,15 @@ class RemoteServiceBase(object):
 
         self._read_lock = gevent.lock.RLock()
         self._write_lock = gevent.lock.RLock()
+
+    @property
+    def connected(self):
+        """Return whether we're connected to the other endpoint.
+
+        return (bool): the status of the connection.
+
+        """
+        return self._connection_event.is_set()
 
     def add_on_connect_handler(self, handler):
         """Register a callback for connection establishment.
@@ -150,7 +159,7 @@ class RemoteServiceBase(object):
         self._socket = sock
         self._reader = self._socket.makefile('rb')
         self._writer = self._socket.makefile('wb')
-        self.connected = True
+        self._connection_event.set()
 
         logger.info("Established connection with %s.", self._repr_remote())
 
@@ -173,7 +182,7 @@ class RemoteServiceBase(object):
         self._socket = None
         self._reader = None
         self._writer = None
-        self.connected = False
+        self._connection_event.clear()
 
         logger.info("Terminated connection with %s: %s", self._repr_remote(),
                     reason)
@@ -475,22 +484,22 @@ class RemoteServiceClient(RemoteServiceBase):
         """Maintain the connection up, if required.
 
         """
-        if self.connected:
-            self.run()
-
-        if self.auto_retry is not None:
-            while True:
+        while True:
+            self._connect()
+            while not self.connected and self.auto_retry is not None:
+                gevent.sleep(self.auto_retry)
                 self._connect()
-                while not self.connected:
-                    gevent.sleep(self.auto_retry)
-                    self._connect()
+            if self.connected:
                 self.run()
+            if self.auto_retry is None:
+                break
 
     def connect(self):
         """Connect and start the main loop.
 
         """
-        self._connect()
+        if self._loop is not None and not self._loop.ready():
+            raise RuntimeError("Already (auto-re)connecting")
         self._loop = gevent.spawn(self._run)
 
     def disconnect(self):

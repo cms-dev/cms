@@ -52,17 +52,14 @@ import cms
 # Noqa to avoid complaints due to imports after a statement.
 cms.config.database += "fortesting"  # noqa
 
-import cms.db
-
-from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
-    unique_unicode_id, unique_digest
-
-from cms.db import Announcement, Base, Contest, Dataset, Evaluation, \
+from cms.db import engine, metadata, Announcement, Contest, Dataset, Evaluation, \
     Executable, File, Manager, Message, Participation, Question, Session, \
     Statement, Submission, SubmissionResult, Task, Team, Testcase, User, \
     UserTest, UserTestResult, drop_db, init_db, Token, UserTestFile, \
     UserTestManager
 from cms.db.filecacher import DBBackend
+from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
+    unique_unicode_id, unique_digest
 
 
 class DatabaseObjectGeneratorMixin(object):
@@ -272,18 +269,14 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
     @classmethod
     def setUpClass(cls):
         super(DatabaseMixin, cls).setUpClass()
-        assert "fortesting" in str(cms.db.engine), \
+        assert "fortesting" in str(engine), \
             "Monkey patching of DB connection string failed"
         drop_db()
         init_db()
-        cls.connection = cms.db.engine.connect()
-        cms.db.metadata.create_all(cls.connection)
 
     @classmethod
     def tearDownClass(cls):
         drop_db()
-        cls.connection.close()
-        cms.db.engine.dispose()
         super(DatabaseMixin, cls).tearDownClass()
 
     def setUp(self):
@@ -301,7 +294,7 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
         starting from a clean DB.
 
         """
-        for table in itervalues(Base.metadata.tables):
+        for table in itervalues(metadata.tables):
             self.session.execute(table.delete())
         self.session.commit()
 

@@ -37,7 +37,7 @@ import argparse
 import logging
 import sys
 
-from cms.db import SessionGen, Executable, enumerate_files
+from cms.db import SessionGen, Digest, Executable, enumerate_files
 from cms.db.filecacher import FileCacher
 
 
@@ -47,9 +47,9 @@ logger = logging.getLogger()
 def make_tombstone(session):
     count = 0
     for exe in session.query(Executable).all():
-        if exe.digest != FileCacher.TOMBSTONE_DIGEST:
+        if exe.digest != Digest.TOMBSTONE:
             count += 1
-        exe.digest = FileCacher.TOMBSTONE_DIGEST
+        exe.digest = Digest.TOMBSTONE
     logger.info("Replaced %d executables with the tombstone.", count)
 
 
@@ -59,7 +59,6 @@ def clean_files(session, dry_run):
     logger.info("A total number of %d files are present in the file store",
                 len(files))
     found_digests = enumerate_files(session)
-    found_digests.discard(FileCacher.TOMBSTONE_DIGEST)
     logger.info("Found %d digests while scanning", len(found_digests))
     files -= found_digests
     logger.info("%d digests are orphan.", len(files))

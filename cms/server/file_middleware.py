@@ -21,8 +21,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from future.builtins.disabled import *
-from future.builtins import *
+from future.builtins.disabled import *  # noqa
+from future.builtins import *  # noqa
 
 from werkzeug.exceptions import HTTPException, NotFound, ServiceUnavailable
 from werkzeug.wrappers import Response, Request
@@ -84,6 +84,9 @@ class FileServerMiddleware(object):
 
         """
         original_response = Response.from_app(self.wrapped_app, environ)
+        # We send relative locations to play nice with reverse proxies
+        # but Werkzeug by default turns them into absolute ones.
+        original_response.autocorrect_location_header = False
 
         if self.DIGEST_HEADER not in original_response.headers:
             return original_response

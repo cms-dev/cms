@@ -43,8 +43,8 @@ import gevent.lock
 
 from gevent.event import Event
 
-from cms.db import Dataset, SessionGen, Submission, UserTest
-from cms.grading.Job import Job, JobGroup
+from cms.db import SessionGen
+from cms.grading.Job import JobGroup
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
@@ -221,30 +221,11 @@ class WorkerPool(object):
         self._start_time[shard] = make_datetime()
 
         with SessionGen() as session:
-            jobs = []
-            datasets = {}
-            submissions = {}
-            user_tests = {}
-            for operation in operations:
-                if operation.dataset_id not in datasets:
-                    datasets[operation.dataset_id] = Dataset.get_from_id(
-                        operation.dataset_id, session)
-                if operation.for_submission():
-                    if operation.object_id not in submissions:
-                        submissions[operation.object_id] = \
-                            Submission.get_from_id(
-                                operation.object_id, session)
-                    object_ = submissions[operation.object_id]
-                else:
-                    if operation.object_id not in user_tests:
-                        user_tests[operation.object_id] = \
-                            UserTest.get_from_id(operation.object_id, session)
-                    object_ = user_tests[operation.object_id]
-                logger.info("Asking worker %s to `%s'.", shard, operation)
+            job_group_dict = \
+                JobGroup.from_operations(operations, session).export_to_dict()
 
-                jobs.append(Job.from_operation(
-                    operation, object_, datasets[operation.dataset_id]))
-            job_group_dict = JobGroup(jobs).export_to_dict()
+        logger.info("Asking worker %s to %s.", shard,
+                    ", ".join("`%s'" % operation for operation in operations))
 
         self._worker[shard].execute_job_group(
             job_group_dict=job_group_dict,

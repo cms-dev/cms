@@ -226,7 +226,7 @@
             <td>{{ t_iter.submission_format|map("replace", ".%l", extensions)|join(" ") }}</td>
     {% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
             <td>
-        {% if t_iter.token_mode == "finite" or t_iter.token_mode == "infinite" %}
+        {% if t_iter.token_mode == TOKEN_MODE_FINITE or t_iter.token_mode == TOKEN_MODE_INFINITE %}
             {% trans %}Yes{% endtrans %}
         {% else %}
             {% trans %}No{% endtrans %}

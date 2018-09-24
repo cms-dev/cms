@@ -33,8 +33,8 @@ from future.builtins import *  # noqa
 
 import logging
 
-from cms.grading.TaskType import TaskType, eval_output
 from cms.grading.ParameterTypes import ParameterTypeChoice
+from . import TaskType, eval_output
 
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ class OutputOnly(TaskType):
     @staticmethod
     def _get_user_output_filename(job):
         return OutputOnly.USER_OUTPUT_FILENAME_TEMPLATE % \
-            job.operation["testcase_codename"]
+            job.operation.testcase_codename
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""

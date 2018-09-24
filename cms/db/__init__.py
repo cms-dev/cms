@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -37,7 +37,7 @@ from future.builtins import *  # noqa
 
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import configure_mappers, joinedload, subqueryload
 
 from cms import config
@@ -53,13 +53,12 @@ __all__ = [
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # types
-    "CastingArray",
+    "CastingArray", "Codename", "Filename", "FilenameSchema",
+    "FilenameSchemaArray", "Digest",
     # base
     "metadata", "Base",
     # fsobject
     "FSObject", "LargeObject",
-    # validation
-    "CodenameConstraint", "FilenameConstraint", "DigestConstraint",
     # contest
     "Contest", "Announcement",
     # user
@@ -89,23 +88,23 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 35
+version = 39
 
 engine = create_engine(config.database, echo=config.database_debug,
                        pool_timeout=60, pool_recycle=120)
 
+metadata = MetaData(engine)
 
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
-from .types import CastingArray
-from .base import metadata, Base
+from .types import CastingArray, Codename, Filename, FilenameSchema, \
+    FilenameSchemaArray, Digest
+from .base import Base
 from .fsobject import FSObject, LargeObject
-from .validation import CodenameConstraint, FilenameConstraint, \
-    DigestConstraint
+from .admin import Admin
 from .contest import Contest, Announcement
 from .user import User, Team, Participation, Message, Question
-from .admin import Admin
 from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
     Executable, Evaluation
@@ -148,5 +147,6 @@ def get_submission_results_for_dataset(self, dataset):
         .options(subqueryload(SubmissionResult.executables))\
         .options(subqueryload(SubmissionResult.evaluations))\
         .all()
+
 
 Dataset.get_submission_results = get_submission_results_for_dataset

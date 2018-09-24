@@ -38,8 +38,9 @@ import cms.log
 
 __all__ = [
     "__version__",
-    "SCORE_MODE_MAX", "SCORE_MODE_MAX_TOKENED_LAST", "TOKEN_MODE_DISABLED",
-    "TOKEN_MODE_FINITE", "TOKEN_MODE_INFINITE", "TOKEN_MODE_MIXED",
+    "TOKEN_MODE_DISABLED", "TOKEN_MODE_FINITE", "TOKEN_MODE_INFINITE",
+    "TOKEN_MODE_MIXED",
+    "FEEDBACK_LEVEL_FULL", "FEEDBACK_LEVEL_RESTRICTED",
     # log
     # Nothing intended for external use, no need to advertise anything.
     # conf
@@ -58,13 +59,6 @@ __version__ = '1.4.dev0'
 # Instantiate or import these objects.
 
 
-# Task score modes.
-
-# Maximum score amongst all submissions.
-SCORE_MODE_MAX = "max"
-# Maximum score among all tokened submissions and the last submission.
-SCORE_MODE_MAX_TOKENED_LAST = "max_tokened_last"
-
 # Token modes.
 
 TOKEN_MODE_DISABLED = "disabled"
@@ -73,6 +67,15 @@ TOKEN_MODE_INFINITE = "infinite"
 # Only used when aggregating modes (e.g., for all tasks of a contest).
 # Acts as a "none of the above".
 TOKEN_MODE_MIXED = "mixed"
+
+# Feedback level.
+
+# Full information (killing signals, time and memory, status for all
+# testcases).
+FEEDBACK_LEVEL_FULL = "full"
+# Restricted set of information (no killing signal, time or memory, testcases
+# can be omitted).
+FEEDBACK_LEVEL_RESTRICTED = "restricted"
 
 
 from .conf import Address, ServiceCoord, ConfigError, async_config, config

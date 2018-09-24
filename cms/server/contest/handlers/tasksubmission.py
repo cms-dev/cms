@@ -44,14 +44,14 @@ import tornado.web
 
 from sqlalchemy.orm import joinedload
 
-from cms import config
+from cms import config, FEEDBACK_LEVEL_FULL
 from cms.db import Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     UnacceptableSubmission, accept_submission
-from cms.server.contest.tokening import UnacceptableToken, TokenAlreadyPlayed, \
-    accept_token, tokens_available
+from cms.server.contest.tokening import \
+    UnacceptableToken, TokenAlreadyPlayed, accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
 
@@ -196,15 +196,13 @@ class SubmissionStatusHandler(ContestHandler):
         if data["status"] == SubmissionResult.COMPILING:
             data["status_text"] = self._("Compiling...")
         elif data["status"] == SubmissionResult.COMPILATION_FAILED:
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
-                self._("Compilation failed"), self._("details"))
+            data["status_text"] = self._("Compilation failed")
         elif data["status"] == SubmissionResult.EVALUATING:
             data["status_text"] = self._("Evaluating...")
         elif data["status"] == SubmissionResult.SCORING:
             data["status_text"] = self._("Scoring...")
         elif data["status"] == SubmissionResult.SCORED:
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
-                self._("Evaluated"), self._("details"))
+            data["status_text"] = self._("Evaluated")
 
             score_type = task.active_dataset.score_type_object
             if score_type.max_public_score > 0:
@@ -256,8 +254,13 @@ class SubmissionDetailsHandler(ContestHandler):
                 details = sr.public_score_details
 
             if sr.scored():
+                feedback_level = task.feedback_level
+                # During analysis mode we show the full feedback regardless of
+                # what the task says.
+                if self.r_params["actual_phase"] == 3:
+                    feedback_level = FEEDBACK_LEVEL_FULL
                 details = score_type.get_html_details(
-                    details, translation=self.translation)
+                    details, feedback_level, translation=self.translation)
             else:
                 details = None
 

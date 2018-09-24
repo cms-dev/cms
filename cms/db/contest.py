@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -33,7 +33,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
-from six import itervalues
 
 from datetime import datetime, timedelta
 
@@ -46,7 +45,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 
-from . import Base, CodenameConstraint
+from . import Codename, Base, Admin
 
 
 class Contest(Base):
@@ -69,8 +68,7 @@ class Contest(Base):
 
     # Short name of the contest.
     name = Column(
-        Unicode,
-        CodenameConstraint("name"),
+        Codename,
         nullable=False,
         unique=True)
     # Description of the contest (human readable).
@@ -152,7 +150,7 @@ class Contest(Base):
         Enum(TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE,
              name="token_mode"),
         nullable=False,
-        default="infinite")
+        default=TOKEN_MODE_INFINITE)
 
     # The maximum number of tokens a contestant is allowed to use
     # during the whole contest (on all tasks).
@@ -344,3 +342,15 @@ class Announcement(Base):
     contest = relationship(
         Contest,
         back_populates="announcements")
+
+    # Admin that created the announcement (or null if the admin has been
+    # later deleted). Admins only loosely "own" an announcement, so we do not
+    # back populate any field in Admin, nor delete the announcement if the
+    # admin gets deleted.
+    admin_id = Column(
+        Integer,
+        ForeignKey(Admin.id,
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        index=True)
+    admin = relationship(Admin)

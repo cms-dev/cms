@@ -108,7 +108,7 @@ class TpsTaskLoader(TaskLoader):
             par_processes = '%s_num_processes' % par_prefix
             if par_processes not in task_type_parameters:
                 task_type_parameters[par_processes] = 1
-            return [task_type_parameters[par_processes]]
+            return [task_type_parameters[par_processes], "stub", "fifo_io"]
 
         if task_type == 'TwoSteps' or task_type == 'OutputOnly':
             return [evaluation_param]

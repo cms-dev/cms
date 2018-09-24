@@ -6,7 +6,7 @@
 # Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
@@ -39,15 +39,17 @@ import sys
 import yaml
 from datetime import timedelta
 
-from cms import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
+from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
     Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
+from cmscommon.constants import SCORE_MODE_MAX, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.crypto import build_password
 from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
+
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +58,14 @@ logger = logging.getLogger(__name__)
 # (see http://stackoverflow.com/questions/2890146).
 def construct_yaml_str(self, node):
     return self.construct_scalar(node)
+
+
 yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
 yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
+
+
+def getmtime(fname):
+    return os.stat(fname).st_mtime
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
@@ -179,12 +187,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 "update it.")
             # Determine the mode.
             if conf.get("token_initial", None) is None:
-                args["token_mode"] = "disabled"
+                args["token_mode"] = TOKEN_MODE_DISABLED
             elif conf.get("token_gen_number", 0) > 0 and \
                     conf.get("token_gen_time", 0) == 0:
-                args["token_mode"] = "infinite"
+                args["token_mode"] = TOKEN_MODE_INFINITE
             else:
-                args["token_mode"] = "finite"
+                args["token_mode"] = TOKEN_MODE_FINITE
             # Set the old default values.
             args["token_gen_initial"] = 0
             args["token_gen_number"] = 0
@@ -399,12 +407,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 "will soon stop being supported, you're advised to update it.")
             # Determine the mode.
             if conf.get("token_initial", None) is None:
-                args["token_mode"] = "disabled"
+                args["token_mode"] = TOKEN_MODE_DISABLED
             elif conf.get("token_gen_number", 0) > 0 and \
                     conf.get("token_gen_time", 0) == 0:
-                args["token_mode"] = "infinite"
+                args["token_mode"] = TOKEN_MODE_INFINITE
             else:
-                args["token_mode"] = "finite"
+                args["token_mode"] = TOKEN_MODE_FINITE
             # Set the old default values.
             args["token_gen_initial"] = 0
             args["token_gen_number"] = 0
@@ -585,6 +593,17 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 input_value = total_value / n_input
             args["score_type_parameters"] = input_value
 
+        # Override score_type if explicitly specified
+        if "score_type" in conf and "score_type_parameters" in conf:
+            logger.info("Overriding 'score_type' and 'score_type_parameters' "
+                        "as per task.yaml")
+            load(conf, args, "score_type")
+            load(conf, args, "score_type_parameters")
+        elif "score_type" in conf or "score_type_parameters" in conf:
+            logger.warning("To override score type data, task.yaml must "
+                           "specify both 'score_type' and "
+                           "'score_type_parameters'.")
+
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
             args["task_type"] = "OutputOnly"
@@ -606,7 +625,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         num_processes = 1
                     logger.info("Task type Communication")
                     args["task_type"] = "Communication"
-                    args["task_type_parameters"] = [num_processes]
+                    args["task_type_parameters"] = \
+                        [num_processes, "stub", "fifo_io"]
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Manager for task %s" % task.name)
@@ -692,8 +712,6 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if not os.path.exists(os.path.join(self.path, ".itime_contest")):
             return True
 
-        getmtime = lambda fname: os.stat(fname).st_mtime
-
         itime = getmtime(os.path.join(self.path, ".itime_contest"))
 
         # Check if contest.yaml has changed
@@ -745,8 +763,6 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # If there is no .itime file, we assume that the task has changed
         if not os.path.exists(os.path.join(self.path, ".itime")):
             return True
-
-        getmtime = lambda fname: os.stat(fname).st_mtime
 
         itime = getmtime(os.path.join(self.path, ".itime"))
 

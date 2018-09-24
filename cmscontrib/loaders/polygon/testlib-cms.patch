@@ -1,0 +1,124 @@
+*** testlib.h.orig	2018-08-22 12:26:04.104893746 +0300
+--- testlib.h	2018-08-22 12:27:59.172759328 +0300
+***************
+*** 36,51 ****
+--- 36,67 ----
+   * Permission to use or copy this software for any purpose is hereby granted 
+   * without fee, provided the above notices are retained on all copies.
+   * Permission to modify the code and to distribute modified code is granted,
+   * provided the above notices are retained, and a notice that the code was
+   * modified is included with the above copyright notice.
+   *
+   */
+  
++ /*
++  * Artem Iglikov
++  *
++  * This software has been modified to make it possible to use it with CMS. More
++  * precisely, at termination it now output the "outcome" to stdout and the
++  * "message" to stderr.
++  */
++ 
++ /*
++  * Alexander Kernozhitsky
++  *
++  * Ported patch from CMS to the new version.
++  * Also added conditional compilation for CMS checker outcome format (with #ifdef CMS)
++  *
++  */
++ 
+  /* NOTE: This file contains testlib library for C++.
+   *
+   *   Check, using testlib running format:
+   *     check.exe <Input_File> <Output_File> <Answer_File> [<Result_File> [-appes]],
+   *   If result file is specified it will contain results.
+   *
+   *   Validator, using testlib running format:                                          
+   *     validator.exe < input.txt,
+***************
+*** 2463,2478 ****
+--- 2479,2536 ----
+      {
+          if (testlibMode != _interactor && !ouf.seekEof())
+              quit(_dirt, "Extra information in the output file");
+      }
+  
+      int pctype = result - _partially;
+      bool isPartial = false;
+  
++     #ifdef CMS
++         inf.close();
++         ouf.close();
++         ans.close();
++         if (tout.is_open())
++             tout.close();
++ 
++         if (result == _ok) {
++             std::fprintf(stdout, "1.0\n");
++             std::fprintf(stderr, "OK\n");
++         } else if (result == _wa) {
++             std::fprintf(stdout, "0.0\n");
++             std::fprintf(stderr, "Wrong Answer\n");
++         } else if (result == _pe) {
++             std::fprintf(stdout, "0.0\n");
++             std::fprintf(stderr, "Presentation Error\n");
++         } else if (result == _dirt) {
++             std::fprintf(stdout, "0.0\n");
++             std::fprintf(stderr, "Wrong Output Format\n");
++         } else if (result == _points) {
++             std::fprintf(stdout, "%f\n", __testlib_points);
++             std::fprintf(stderr, "Partial Score\n");
++         } else if (result == _unexpected_eof) {
++             std::fprintf(stdout, "0.0\n");
++             std::fprintf(stderr, "Wrong Output Format\n");
++         } else if (result >= _partially) {
++             double score = (double)pctype / 200.0;
++             std::fprintf(stdout, "%.3f\n", score);
++             std::fprintf(stderr, "Partial Score\n");
++         } else if (result == _fail) {
++           std::fprintf(stdout, "0.0\n");
++           std::fprintf(stderr, "FAILURE, CONTACT JURY, ERROR 1\n");
++           halt(1);
++         } else {
++           std::fprintf(stdout, "0.0\n");
++           std::fprintf(stderr, "FAILURE, CONTACT JURY, ERROR 2 %d\n", result);
++           halt(1);
++         }
++ 
++         halt(0);
++     #endif
++ 
+      switch (result)
+      {
+      case _ok:
+          errorName = "ok ";
+          quitscrS(LightGreen, errorName);
+          break;
+      case _wa:
+          errorName = "wrong answer ";
+***************
+*** 4076,4093 ****
+--- 4134,4156 ----
+          else
+          {
+              resultName = argv[4];
+              appesMode = true;
+          }
+      }
+  
+      inf.init(argv[1], _input);
++     #ifdef CMS
++     ouf.init(argv[3], _output);
++     ans.init(argv[2], _answer);
++     #else
+      ouf.init(argv[2], _output);
+      ans.init(argv[3], _answer);
++     #endif
+  }
+  
+  void registerTestlib(int argc, ...)
+  {
+      if (argc  < 3 || argc > 5)
+          quit(_fail, std::string("Program must be run with the following arguments: ") +
+              "<input-file> <output-file> <answer-file> [<report-file> [<-appes>]]");
+  

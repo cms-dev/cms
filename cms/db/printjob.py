@@ -29,11 +29,11 @@ from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
 from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Integer, String, Unicode, DateTime, Boolean
+from sqlalchemy.types import Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from . import Base, Participation, FilenameConstraint, DigestConstraint
+from . import Filename, Digest, Base, Participation
 
 
 class PrintJob(Base):
@@ -65,12 +65,10 @@ class PrintJob(Base):
 
     # Filename and digest of the submitted file.
     filename = Column(
-        Unicode,
-        FilenameConstraint("filename"),
+        Filename,
         nullable=False)
     digest = Column(
-        String,
-        DigestConstraint("digest"),
+        Digest,
         nullable=False)
 
     done = Column(

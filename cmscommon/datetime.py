@@ -125,15 +125,12 @@ if sys.version_info >= (3, 3):
         values does, as it is guaranteed to accurately represent the
         amount of time passed between when those two measurements were
         taken, no matter the adjustments to the clock that occurred in
-        between. Even NTP adjustments are ignored, meaning that the
-        flow of time here is dictated only by the system clock and thus
-        subject to any drift it may have.
+        between.
 
         return (float): the value of the clock, in seconds.
 
         """
-        # Raw means it's immune even to NTP time adjustments.
-        return time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+        return time.monotonic()
 
 # Taken from http://bugs.python.org/file19461/monotonic.py and
 # http://stackoverflow.com/questions/1205722/how-do-i-get-monotonic-time-durations-in-python

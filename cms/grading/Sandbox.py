@@ -518,18 +518,14 @@ class SandboxBase(with_metaclass(ABCMeta, object)):
         pass
 
     @abstractmethod
-    def cleanup(self):
+    def cleanup(self, delete=False):
         """Cleanup the sandbox.
 
         To be called at the end of the execution, regardless of
         whether the sandbox should be deleted or not.
 
-        """
-        pass
-
-    @abstractmethod
-    def delete(self):
-        """Delete the directory where the sandbox operated.
+        delete (bool): if True, also delete get_root_path() and everything it
+            contains.
 
         """
         pass
@@ -553,7 +549,7 @@ class StupidSandbox(SandboxBase):
         SandboxBase.__init__(self, file_cacher, name, temp_dir)
 
         # Make box directory
-        self.path = tempfile.mkdtemp(
+        self._path = tempfile.mkdtemp(
             dir=self.temp_dir,
             prefix="cms-%s-" % (self.name))
 
@@ -562,10 +558,10 @@ class StupidSandbox(SandboxBase):
         self.popen_time = None
         self.exec_time = None
 
-        logger.debug("Sandbox in `%s' created, using stupid box.", self.path)
+        logger.debug("Sandbox in `%s' created, using stupid box.", self._path)
 
         # Box parameters
-        self.chdir = self.path
+        self.chdir = self._path
         self.stdin_file = None
         self.stdout_file = None
         self.stderr_file = None
@@ -581,7 +577,7 @@ class StupidSandbox(SandboxBase):
         return (string): the root path.
 
         """
-        return self.path
+        return self._path
 
     # TODO - It returns wall clock time, because I have no way to
     # check CPU time (libev doesn't have wait4() support)
@@ -757,19 +753,19 @@ class StupidSandbox(SandboxBase):
 
         # Setup std*** redirection
         if self.stdin_file:
-            stdin_fd = os.open(os.path.join(self.path, self.stdin_file),
+            stdin_fd = os.open(os.path.join(self._path, self.stdin_file),
                                os.O_RDONLY)
         else:
             stdin_fd = subprocess.PIPE
         if self.stdout_file:
-            stdout_fd = os.open(os.path.join(self.path, self.stdout_file),
+            stdout_fd = os.open(os.path.join(self._path, self.stdout_file),
                                 os.O_WRONLY | os.O_TRUNC | os.O_CREAT,
                                 stat.S_IRUSR | stat.S_IRGRP |
                                 stat.S_IROTH | stat.S_IWUSR)
         else:
             stdout_fd = subprocess.PIPE
         if self.stderr_file:
-            stderr_fd = os.open(os.path.join(self.path, self.stderr_file),
+            stderr_fd = os.open(os.path.join(self._path, self.stderr_file),
                                 os.O_WRONLY | os.O_TRUNC | os.O_CREAT,
                                 stat.S_IRUSR | stat.S_IRGRP |
                                 stat.S_IROTH | stat.S_IWUSR)
@@ -831,22 +827,12 @@ class StupidSandbox(SandboxBase):
         """
         return True
 
-    def cleanup(self):
-        """Cleanup the sandbox.
-
-        This sandbox needs no cleanup.
-
-        """
-        pass
-
-    def delete(self):
-        """Delete the directory where the sandbox operated.
-
-        """
-        logger.debug("Deleting sandbox in %s.", self.path)
-
-        # Delete the working directory.
-        rmtree(self.path)
+    def cleanup(self, delete=False):
+        """See Sandbox.cleanup()."""
+        # This sandbox doesn't have any cleanup, but we might want to delete.
+        if delete:
+            logger.debug("Deleting sandbox in %s.", self._path)
+            rmtree(self._path)
 
 
 class IsolateSandbox(SandboxBase):
@@ -894,36 +880,36 @@ class IsolateSandbox(SandboxBase):
             box_id = IsolateSandbox.next_id % 10
         IsolateSandbox.next_id += 1
 
-        # We create a directory "tmp" inside the outer temporary directory,
-        # because the sandbox will bind-mount the inner one. The sandbox also
-        # runs code as a different user, and so we need to ensure that they can
-        # read and write to the directory. But we don't want everybody on the
-        # system to, which is why the outer directory exists with no read
-        # permissions.
-        self.inner_temp_dir = "/tmp"
-        self.outer_temp_dir = tempfile.mkdtemp(
-            dir=self.temp_dir,
-            prefix="cms-%s-" % (self.name))
-        # Don't use os.path.join here, because the absoluteness of /tmp will
-        # bite you.
-        self.path = self.outer_temp_dir + self.inner_temp_dir
-        os.mkdir(self.path)
+        # We create a directory "home" inside the outer temporary directory,
+        # that will be bind-mounted to "/tmp" inside the sandbox (some
+        # compilers need "/tmp" to exist, and this is a cheap shortcut to
+        # create it). The sandbox also runs code as a different user, and so
+        # we need to ensure that they can read and write to the directory.
+        # But we don't want everybody on the system to, which is why the
+        # outer directory exists with no read permissions.
+        self._outer_dir = tempfile.mkdtemp(dir=self.temp_dir,
+                                           prefix="cms-%s-" % (self.name))
+        self._home = os.path.join(self._outer_dir, "home")
+        self._home_dest = "/tmp"
+        os.mkdir(self._home)
         self.allow_writing_all()
 
         self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
-        self.info_basename = "run.log"   # Used for -M
+        # Used for -M - the meta file ends up in the outer directory. The
+        # actual filename will be <info_basename>.<execution_number>.
+        self.info_basename = os.path.join(self._outer_dir, "run.log")
         self.log = None
         self.exec_num = -1
+        self.cmd_file = os.path.join(self._outer_dir, "commands.log")
         logger.debug("Sandbox in `%s' created, using box `%s'.",
-                     self.path, self.box_exec)
+                     self._home, self.box_exec)
 
         # Default parameters for isolate
         self.box_id = box_id           # -b
         self.cgroup = config.use_cgroups  # --cg
-        self.chdir = self.inner_temp_dir  # -c
+        self.chdir = self._home_dest   # -c
         self.dirs = []                 # -d
-        self.dirs += [(self.inner_temp_dir, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -938,64 +924,101 @@ class IsolateSandbox(SandboxBase):
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
 
+        self.add_mapped_directory(
+            self._home, dest=self._home_dest, options="rw")
+
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
         # packages.
-        self.set_env["HOME"] = "./"
+        self.set_env["HOME"] = self._home_dest
 
-        # Needed on Ubuntu by PHP (and more, ) that
-        # have in /usr/bin only a symlink to one out of many
-        # alternatives.
-        if os.path.isdir("/etc/alternatives"):
-            self.add_mapped_directories(["/etc/alternatives"])
+        # Needed on Ubuntu by PHP (and more), since /usr/bin only contains a
+        # symlink to one out of many alternatives.
+        self.maybe_add_mapped_directory("/etc/alternatives")
 
-        # Tell isolate to get the sandbox ready. We do our best to
-        # cleanup after ourselves, but we might have missed something
-        # if the worker was interrupted in the middle of an execution.
+        # Tell isolate to get the sandbox ready. We do our best to cleanup
+        # after ourselves, but we might have missed something if a previous
+        # worker was interrupted in the middle of an execution, so we issue an
+        # idempotent cleanup.
         self.cleanup()
         self.initialize_isolate()
 
-    def add_mapped_directories(self, dirs):
-        """Add dirs to the external dirs visible to the sandboxed command.
+    def add_mapped_directory(self, src, dest=None, options=None,
+                             ignore_if_not_existing=False):
+        """Add src to the directory to be mapped inside the sandbox.
 
-        dirs ([string]): list of dirs to make visible.
+        src (str): directory to make visible.
+        dest (str|None): if not None, the path where to bind src.
+        options (str|None): if not None, isolate's directory rule options.
+        ignore_if_not_existing (bool): if True, ignore the mapping when src
+            does not exist (instead of having isolate terminate with an
+            error).
 
         """
-        for directory in dirs:
-            self.dirs.append((directory, None, "rw"))
+        if dest is None:
+            dest = src
+        if ignore_if_not_existing and not os.path.exists(src):
+            return
+        self.dirs.append((src, dest, options))
+
+    def maybe_add_mapped_directory(self, src, dest=None, options=None):
+        """Same as add_mapped_directory, with ignore_if_not_existing."""
+        return self.add_mapped_directory(src, dest, options,
+                                         ignore_if_not_existing=True)
 
     def allow_writing_all(self):
         """Set permissions in such a way that any operation is allowed.
 
         """
-        os.chmod(self.path, 0o777)
-        for filename in os.listdir(self.path):
-            os.chmod(os.path.join(self.path, filename), 0o777)
+        os.chmod(self._home, 0o777)
+        for filename in os.listdir(self._home):
+            os.chmod(os.path.join(self._home, filename), 0o777)
 
     def allow_writing_none(self):
         """Set permissions in such a way that the user cannot write anything.
 
         """
-        os.chmod(self.path, 0o755)
-        for filename in os.listdir(self.path):
-            os.chmod(os.path.join(self.path, filename), 0o755)
+        os.chmod(self._home, 0o755)
+        for filename in os.listdir(self._home):
+            os.chmod(os.path.join(self._home, filename), 0o755)
 
-    def allow_writing_only(self, paths):
+    def allow_writing_only(self, inner_paths):
         """Set permissions in so that the user can write only some paths.
 
-        paths ([string]): the only paths that the user is allowed to
-            write.
+        By default the user can only write to the home directory. This
+        method further restricts permissions so that it can only write
+        to some files inside the home directory.
+
+        inner_paths ([str]): the only paths that the user is allowed to
+            write to; they should be "inner" paths (from the perspective
+            of the sandboxed process, not of the host system); they can
+            be absolute or relative (in which case they are interpreted
+            relative to the home directory); paths that point to a file
+            outside the home directory are ignored.
 
         """
+        outer_paths = []
+        for inner_path in inner_paths:
+            abs_inner_path = \
+                os.path.realpath(os.path.join(self._home_dest, inner_path))
+            # If an inner path is absolute (e.g., /fifo0/u0_to_m) then
+            # it may be outside home and we should ignore it.
+            # FIXME: In Py3 use os.path.commonpath.
+            if not abs_inner_path.startswith(self._home_dest + "/"):
+                continue
+            rel_inner_path = os.path.relpath(abs_inner_path, self._home_dest)
+            outer_path = os.path.join(self._home, rel_inner_path)
+            outer_paths.append(outer_path)
+
         # If one of the specified file do not exists, we touch it to
         # assign the correct permissions.
-        for path in (os.path.join(self.path, path) for path in paths):
+        for path in outer_paths:
             if not os.path.exists(path):
                 io.open(path, "wb").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
-        for path in (os.path.join(self.path, path) for path in paths):
+        for path in outer_paths:
             os.chmod(path, 0o722)
 
     def get_root_path(self):
@@ -1004,7 +1027,17 @@ class IsolateSandbox(SandboxBase):
         return (string): the root path.
 
         """
-        return self.path
+        return self._outer_dir
+
+    def relative_path(self, path):
+        """Translate from a relative path inside the sandbox to a system path.
+
+        path (string): relative path of the file inside the sandbox.
+
+        return (string): the absolute path.
+
+        """
+        return os.path.join(self._home, path)
 
     def detect_box_executable(self):
         """Try to find an isolate executable. It first looks in
@@ -1037,7 +1070,7 @@ class IsolateSandbox(SandboxBase):
 
     def build_box_options(self):
         """Translate the options defined in the instance to a string
-        that can be postponed to mo-box as an arguments list.
+        that can be postponed to isolate as an arguments list.
 
         return ([string]): the arguments list as strings.
 
@@ -1049,10 +1082,8 @@ class IsolateSandbox(SandboxBase):
             res += ["--cg", "--cg-timing"]
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
-        for in_name, out_name, options in self.dirs:
-            s = in_name
-            if out_name is not None:
-                s += "=" + out_name
+        for src, dest, options in self.dirs:
+            s = dest + "=" + src
             if options is not None:
                 s += ":" + options
             res += ["--dir=%s" % s]
@@ -1088,8 +1119,7 @@ class IsolateSandbox(SandboxBase):
             res += ["--wall-time=%g" % self.wallclock_timeout]
         if self.extra_timeout is not None:
             res += ["--extra-time=%g" % self.extra_timeout]
-        res += ["--meta=%s" % self.relative_path("%s.%d" % (self.info_basename,
-                                                            self.exec_num))]
+        res += ["--meta=%s" % ("%s.%d" % (self.info_basename, self.exec_num))]
         res += ["--run"]
         return res
 
@@ -1105,9 +1135,9 @@ class IsolateSandbox(SandboxBase):
         self.log = {}
         info_file = "%s.%d" % (self.info_basename, self.exec_num)
         try:
-            with self.get_file(info_file) as log_file:
+            with self.get_file_text(info_file) as log_file:
                 for line in log_file:
-                    key, value = line.decode('utf-8').strip().split(":", 1)
+                    key, value = line.strip().split(":", 1)
                     if key in self.log:
                         self.log[key].append(value)
                     else:
@@ -1243,7 +1273,7 @@ class IsolateSandbox(SandboxBase):
         return (string): the absolute path of the file inside the sandbox.
 
         """
-        return os.path.join(self.inner_temp_dir, path)
+        return os.path.join(self._home_dest, path)
 
     def _popen(self, command,
                stdin=None, stdout=None, stderr=None,
@@ -1270,24 +1300,24 @@ class IsolateSandbox(SandboxBase):
         # not depend on the user input.
         if command[0] in IsolateSandbox.SECURE_COMMANDS:
             logger.debug("Executing non-securely: %s at %s",
-                         pretty_print_cmdline(command), self.path)
+                         pretty_print_cmdline(command), self._home)
             try:
-                prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-                os.chmod(self.path, 0o700)
-                with io.open(self.relative_path(self.cmd_file), 'at') as cmds:
+                prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
+                os.chmod(self._home, 0o700)
+                with io.open(self.cmd_file, 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
-                p = subprocess.Popen(command, cwd=self.path,
+                p = subprocess.Popen(command, cwd=self._home,
                                      stdin=stdin, stdout=stdout, stderr=stderr,
                                      close_fds=close_fds)
-                os.chmod(self.path, prev_permissions)
+                os.chmod(self._home, prev_permissions)
                 # For secure commands, we clear the output so that it
                 # is not forwarded to the contestants. Secure commands
                 # are "setup" commands, which should not fail or
                 # provide information for the contestants.
                 io.open(
-                    os.path.join(self.path, self.stdout_file), "wb").close()
+                    os.path.join(self._home, self.stdout_file), "wb").close()
                 io.open(
-                    os.path.join(self.path, self.stderr_file), "wb").close()
+                    os.path.join(self._home, self.stderr_file), "wb").close()
                 self._write_empty_run_log(self.exec_num)
             except OSError:
                 logger.critical(
@@ -1300,11 +1330,11 @@ class IsolateSandbox(SandboxBase):
         logger.debug("Executing program in sandbox with command: `%s'.",
                      pretty_print_cmdline(args))
         # Temporarily allow writing new files.
-        prev_permissions = stat.S_IMODE(os.stat(self.path).st_mode)
-        os.chmod(self.path, 0o770)
-        with io.open(self.relative_path(self.cmd_file), 'at') as commands:
+        prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
+        os.chmod(self._home, 0o770)
+        with io.open(self.cmd_file, 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
-        os.chmod(self.path, prev_permissions)
+        os.chmod(self._home, prev_permissions)
         try:
             p = subprocess.Popen(args,
                                  stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1319,8 +1349,8 @@ class IsolateSandbox(SandboxBase):
 
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
-        with io.open(os.path.join(self.path, "run.log.%s" % index),
-                     "wt", encoding="utf-8") as f:
+        info_file = "%s.%d" % (self.info_basename, index)
+        with io.open(info_file, "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
             f.write("max-rss:0\n")
@@ -1389,31 +1419,37 @@ class IsolateSandbox(SandboxBase):
                 "Failed to initialize sandbox with command: %s "
                 "(error %d)" % (pretty_print_cmdline(init_cmd), ret))
 
-    def cleanup(self):
-        """Cleanup the sandbox.
+    def cleanup(self, delete=False):
+        """See Sandbox.cleanup()."""
+        # The user isolate assigns within the sandbox might have created
+        # subdirectories and files therein, making the user outside the sandbox
+        # unable to delete the whole tree. If the caller asked us to delete the
+        # sandbox, we first issue a chmod within isolate to make sure that we
+        # will be able to delete everything. If not, we leave the files as they
+        # are to avoid masking possible problems the admin wanted to debug.
 
-        To be called at the end of the execution, regardless of
-        whether the sandbox should be deleted or not.
-
-        """
-        # Tell isolate to cleanup the sandbox.
-        subprocess.call(
-            [self.box_exec]
-            + (["--cg"] if self.cgroup else [])
+        exe = [self.box_exec] \
+            + (["--cg"] if self.cgroup else []) \
             + ["--box-id=%d" % self.box_id]
-            + ["--cleanup"],
-            # Use subprocess.DEVNULL when dropping Python 2.
-            stdout=io.open(os.devnull, "r+b"),
-            stderr=subprocess.STDOUT)
 
-    def delete(self):
-        """Delete the directory where the sandbox operated.
+        # Use subprocess.DEVNULL when dropping Python 2.
+        with io.open(os.devnull, "r+b") as devnull:
+            if delete:
+                subprocess.call(
+                    exe + [
+                        "--dir=%s=%s:rw" % (self._home_dest, self._home),
+                        "--run", "--",
+                        "/bin/chmod", "777", "-R", self._home_dest],
+                    stdout=devnull, stderr=devnull)
 
-        """
-        logger.debug("Deleting sandbox in %s.", self.path)
+            # Tell isolate to cleanup the sandbox.
+            subprocess.call(exe + ["--cleanup"],
+                            stdout=devnull, stderr=subprocess.STDOUT)
 
-        # Delete the working directory.
-        rmtree(self.outer_temp_dir)
+            if delete:
+                logger.debug("Deleting sandbox in %s.", self._outer_dir)
+                # Delete the working directory.
+                rmtree(self._outer_dir)
 
 
 Sandbox = {
