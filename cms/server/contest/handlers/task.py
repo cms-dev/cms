@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -63,7 +63,10 @@ class TaskDescriptionHandler(ContestHandler):
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        self.render("task_description.html", task=task, **self.r_params)
+        self.render("task_description.html",
+                    task=task,
+                    tokens_task=task.token_mode,
+                    **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):

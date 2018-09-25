@@ -96,7 +96,7 @@
         {% endif %}
     </td>
 {% endif %}
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED and actual_phase == 0 %}
+{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_task != TOKEN_MODE_DISABLED and actual_phase == 0 %}
     <td class="token">
         {% if s.token is not none %}
         <a class="btn disabled">{% trans %}Played{% endtrans %}</a>
