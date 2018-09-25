@@ -130,7 +130,6 @@ class Score(object):
             for s in itervalues(self._submissions):
                 if s.extra is None:
                     continue
-                print(s.extra)
                 if subtask_scores is None:
                     subtask_scores = [float(score) for score in s.extra]
                 else:
