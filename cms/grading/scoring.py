@@ -116,8 +116,11 @@ def task_score(participation, task, public=False, only_tokened=False):
         compute the score.
     task (Task): the task for which to compute the score.
     public (bool): if True, compute the public score (that is, the one
-        discoverable looking only at the result of public testcases) instead
+        discoverable looking only at the results of public testcases) instead
         of the full score.
+    only_tokened (bool): if True, compute the score discoverable only looking
+        at the results of tokened submissions (that is, the score that the user
+        would obtain if all non-tokened submissions scored 0.0).
 
     return ((float, bool)): the score of user on task, and True if not
         all submissions of the participation in the task have been scored.
@@ -133,9 +136,9 @@ def task_score(participation, task, public=False, only_tokened=False):
 
     if public and only_tokened:
         raise ValueError(
-            "Public task score requested for tokened submissions. "
+            "Requested public task score restricted to tokened submissions. "
             "This is a programming error: users have access to all public "
-            "scores")
+            "scores regardless of token status.")
 
     submissions = [s for s in participation.submissions
                    if s.task is task and s.official]
@@ -146,19 +149,15 @@ def task_score(participation, task, public=False, only_tokened=False):
         (s, s.get_result(task.active_dataset))
         for s in sorted(submissions, key=lambda s: s.timestamp)]
 
-    if public:
-        score_details_tokened = [
-            (sr.public_score if sr is not None and sr.scored() else None,
-             sr.public_score_details
-             if sr is not None and sr.scored() else None,
-             s.tokened())
-            for s, sr in submissions_and_results]
-    else:
-        score_details_tokened = [
-            (sr.score if sr is not None and sr.scored() else None,
-             sr.score_details if sr is not None and sr.scored() else None,
-             s.tokened())
-            for s, sr in submissions_and_results]
+    score_details_tokened = []
+    for s, sr in submissions_and_results:
+        if sr is None or not sr.scored():
+            score, score_details = None, None
+        elif public:
+            score, score_details = sr.public_score, sr.public_score_details
+        else:
+            score, score_details = sr.score, sr.score_details
+        score_details_tokened.append((score, score_details, s.tokened()))
 
     if task.score_mode == SCORE_MODE_MAX:
         return _task_score_max(
@@ -181,10 +180,10 @@ def _task_score_max_tokened_last(score_details_tokened,
     the maximum score amongst all tokened submissions and the last submission
     (not yet computed scores count as 0.0).
 
-    submissions_and_results ([(Submission, SubmissionResult|None)]): list of
-        all submissions and their results for the participant on the task (on
-        the dataset of interest); result is None if not available (that is,
-        if the submission has not been compiled).
+    score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
+        submission of the user in the task, containing score, score details
+        (each None if not scored yet) and if the submission was tokened.
+    only_tokened (bool): same as task_score().
 
     return ((float, bool)): (score, partial), same as task_score().
 
@@ -224,10 +223,10 @@ def _task_score_max_subtask(score_details_tokened, only_tokened):
     this is not true, the score mode will work as if the task had a single
     subtask.
 
-    submissions_and_results ([(Submission, SubmissionResult|None)]): list of
-        all submissions and their results for the participant on the task (on
-        the dataset of interest); result is None if not available (that is,
-        if the submission has not been compiled).
+    score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
+        submission of the user in the task, containing score, score details
+        (each None if not scored yet) and if the submission was tokened.
+    only_tokened (bool): same as task_score().
 
     return ((float, bool)): (score, partial), same as task_score().
 
@@ -273,10 +272,10 @@ def _task_score_max(score_details_tokened, only_tokened):
     the maximum score amongst all submissions (not yet computed scores count
     as 0.0).
 
-    submissions_and_results ([(Submission, SubmissionResult|None)]): list of
-        all submissions and their results for the participant on the task (on
-        the dataset of interest); result is None if not available (that is,
-        if the submission has not been compiled).
+    score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
+        submission of the user in the task, containing score, score details
+        (each None if not scored yet) and if the submission was tokened.
+    only_tokened (bool): same as task_score().
 
     return ((float, bool)): (score, partial), same as task_score().
 
