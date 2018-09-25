@@ -188,7 +188,9 @@ $(document).ready(function () {
 <div style="padding-bottom:10px">
     {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
     {% set need_to_wait = tokens_info[2] is not none %}
-    {% if can_play_token %}
+    {% if tokens_task == TOKEN_MODE_DISABLED %}
+        {% trans %}Tokens are not allowed on this task.{% endtrans %}
+    {% elif can_play_token %}
         {% if tokens_info[0] == -1 %}
             {% trans %}Right now, you have infinite tokens available on this task.{% endtrans %}
         {% elif tokens_info[0] == 1 %}
@@ -259,7 +261,7 @@ $(document).ready(function () {
         <col class="files"/>
     {% set num_cols = num_cols + 1 %}
 {% endif %}
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED and actual_phase == 0 %}
+{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_task != TOKEN_MODE_DISABLED and actual_phase == 0 %}
         <col class="token"/>
     {% set num_cols = num_cols + 1 %}
 {% endif %}
@@ -286,7 +288,7 @@ $(document).ready(function () {
 {% if submissions_download_allowed %}
             <th class="files">{% trans %}Files{% endtrans %}</th>
 {% endif %}
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED and actual_phase == 0 %}
+{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_task != TOKEN_MODE_DISABLED and actual_phase == 0 %}
             <th class="token">{% trans %}Token{% endtrans %}</th>
 {% endif %}
         </tr>

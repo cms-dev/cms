@@ -162,6 +162,7 @@ class TaskSubmissionsHandler(ContestHandler):
         download_allowed = self.contest.submissions_download_allowed
         self.render("task_submissions.html",
                     task=task, submissions=submissions,
+                    tokens_task=task.token_mode,
                     tokens_info=tokens_info,
                     submissions_left=submissions_left,
                     submissions_download_allowed=download_allowed,
