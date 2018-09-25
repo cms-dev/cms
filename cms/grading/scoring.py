@@ -215,9 +215,9 @@ def _task_score_max_tokened_last(score_details_tokened,
 def _task_score_max_subtask(score_details_tokened, only_tokened):
     """Compute score using the "max subtask" score mode.
 
-    This is used in IOI since 2017-. The score of a participant on a task is
-    the sum, over the subtasks, of the maximum score amongst all submissions
-    for that subtask(not yet computed scores count as 0.0).
+    This has been used in IOI since 2017. The score of a participant on a
+    task is the sum, over the subtasks, of the maximum score amongst all
+    submissions for that subtask (not yet computed scores count as 0.0).
 
     If this score mode is selected, all tasks should be children of
     ScoreTypeGroup, or follow the same format for their score details. If
@@ -232,8 +232,7 @@ def _task_score_max_subtask(score_details_tokened, only_tokened):
     return ((float, bool)): (score, partial), same as task_score().
 
     """
-    # The maximum scores for each subtasks (not yet computed scores count
-    # as 0.0).
+    # Maximum score for each subtask (not yet computed scores count as 0.0).
     max_scores = {}
 
     partial = False
@@ -243,6 +242,10 @@ def _task_score_max_subtask(score_details_tokened, only_tokened):
             continue
 
         if only_tokened and not tokened:
+            continue
+
+        if details == [] and score == 0.0:
+            # Submission did not compile, ignore it.
             continue
 
         try:
@@ -260,10 +263,7 @@ def _task_score_max_subtask(score_details_tokened, only_tokened):
         for idx, score in iteritems(subtask_scores):
             max_scores[idx] = max(max_scores.get(idx, 0.0), score)
 
-    if max_scores is not None:
-        return sum(itervalues(max_scores)), partial
-    else:
-        return 0.0, partial
+    return sum(itervalues(max_scores)), partial
 
 
 def _task_score_max(score_details_tokened, only_tokened):
