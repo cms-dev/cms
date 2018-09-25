@@ -2,7 +2,7 @@
 
 {% set page = "task_submissions" %}
 
-{% set score_type = get_score_type(dataset=task.active_dataset) %}
+{% set score_type = task.active_dataset.score_type_object %}
 
 {% block additional_js %}
 
@@ -41,6 +41,19 @@ function get_score_class (score, max_score) {
     }
 };
 
+/**
+ * Update the score (public or tokened) in the UI (both in the task score and in
+ * the submission row) given the results of a newly scored submisson
+ *
+ * score_elem: table cell with the submission score to update.
+ * task_score_elem: container element of the task score to update.
+ * score (Number): the score of the submission.
+ * score_message (String): the score of the submission as a string.
+ * task_score (Number): the current score of the task.
+ * task_score_message (String): the current score of the task as a string.
+ * task_score_is_partial (Boolean): if some submission has yet to be scored.
+ * max_score (Number): maximum score of the task.
+ */
 update_score = function(score_elem, task_score_elem,
         score, score_message,
         task_score, task_score_message, task_score_is_partial,
@@ -136,53 +149,45 @@ $(document).ready(function () {
 
 {% if score_type is defined %}
 <div class="task_score_container">
-    {% if score_type.max_public_score == 0 %}
-        {# Only show non-public score, maybe partially inaccessible. #}
-    <div id="task_score_tokened"
-         class="task_score {{ get_score_class(tokened_score, score_type.max_score) }}">
-      <span>{% trans %}Score of tokened submissions{% endtrans %}</span>
-      <span class="score">
-        {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
-    {% if is_tokened_score_partial %}
-        <img src="{{ url("static", "loading.gif") }}" />
-    {% endif %}
-      </span>
-    </div>
-    {% elif score_type.max_public_score == score_type.max_score %}
-        {# Only show public score. #}
+
+    {% if score_type.max_public_score > 0 %}
+        {# Show the public score (alone, if everything is public or tokens are disabled, or together with the tokened score). #}
     <div id="task_score_public"
          class="task_score {{ get_score_class(public_score, score_type.max_public_score) }}">
-      <span>{% trans %}Score{% endtrans %}</span>
-      <span class="score">
-        {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
-    {% if is_public_score_partial %}
-        <img src="{{ url("static", "loading.gif") }}" />
-    {% endif %}
-      </span>
+        <span>
+        {% if score_type.max_public_score == score_type.max_score %}
+            {% trans %}Score{% endtrans %}
+        {% else %}
+            {% trans %}Public score{% endtrans %}
+        {% endif %}
+        </span>
+        <span class="score">
+            {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
+        {% if is_public_score_partial %}
+            <img src="{{ url("static", "loading.gif") }}" />
+        {% endif %}
+        </span>
     </div>
-    {% else %}
-        {# Show both public and non-public (maybe partially inaccessible) score. #}
-    <div id="task_score_public"
-         class="task_score {{ get_score_class(public_score, score_type.max_public_score) }}">
-      <span>{% trans %}Public score{% endtrans %}</span>
-      <span class="score">
-        {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
-    {% if is_public_score_partial %}
-        <img src="{{ url("static", "loading.gif") }}" />
     {% endif %}
-      </span>
-    </div>
+
+    {% if score_type.max_public_score < score_type.max_score
+            and tokens_contest != TOKEN_MODE_DISABLED
+            and tokens_tasks != TOKEN_MODE_DISABLED %}
+        {# Show the tokened score (alone if everything is non-public, or together with the public score). #}
     <div id="task_score_tokened"
          class="task_score {{ get_score_class(tokened_score, score_type.max_score) }}">
-      <span>{% trans %}Total score of tokened submissions{% endtrans %}</span>
-      <span class="score">
-        {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
-    {% if is_public_score_partial %}
-        <img src="{{ url("static", "loading.gif") }}" />
-    {% endif %}
-      </span>
+        <span>
+            {% trans %}Score of tokened submissions{% endtrans %}
+        </span>
+        <span class="score">
+            {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
+        {% if is_tokened_score_partial %}
+            <img src="{{ url("static", "loading.gif") }}" />
+        {% endif %}
+        </span>
     </div>
     {% endif %}
+
 </div>
 {% endif %}
 
