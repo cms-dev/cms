@@ -358,6 +358,7 @@ class RemoteServiceServer(RemoteServiceBase):
         try:
             message = json.loads(data.decode('utf-8'))
         except ValueError:
+            self.disconnect("Bad request received")
             logger.warning("Cannot parse incoming message, discarding.")
             return
 
@@ -550,6 +551,7 @@ class RemoteServiceClient(RemoteServiceBase):
         try:
             message = json.loads(data.decode('utf-8'))
         except ValueError:
+            self.disconnect("Bad response received")
             logger.warning("Cannot parse incoming message, discarding.")
             return
 
