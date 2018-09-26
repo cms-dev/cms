@@ -25,7 +25,7 @@ Services
 
 - *Symptom.* Some services log error messages like :samp:`Response is missing some fields, ignoring` then disconnect from other services.
 
-  *Possible cause.* It is possible that a service that was trying to establish a connection to another service residing on the same host was assigned by the kernel an outgoing port that is equal to the port it was trying to reach. This can be verified by looking for logs that resemble the following: :samp:`Established connection with 192.168.1.1:43210 (LogService,0) (local endpoint: 192.168.1.1:43210)` (observe the same address repeated twice).
+  *Possible cause.* It is possible that a service that was trying to establish a connection to another service residing on the same host was assigned by the kernel an outgoing port that is equal to the port it was trying to reach. This can be verified by looking for logs that resemble the following: :samp:`Established connection with 192.168.1.1:43210 (LogService,0) (local address: 192.168.1.1:43210)` (observe the same address repeated twice).
 
   A workaround for this issue is to first look at what range of ports is reserved by the kernel to "ephemeral" ports (the ones dynamically assigned to outgoing connections). This can be found out with ``cat /proc/sys/net/ipv4/ip_local_port_range``. Then the configuration file of CMS should be updated so that all services are assigned ports outside that range.
 
