@@ -185,11 +185,11 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.wallclock_timeout = None
 
     if memory_limit is not None:
-        sandbox.address_space = memory_limit // 1024
+        sandbox.address_space = memory_limit
     else:
         sandbox.address_space = None
 
-    sandbox.fsize = config.max_file_size
+    sandbox.fsize = config.max_file_size * 1024
 
     sandbox.stdin_file = stdin_redirect
     sandbox.stdout_file = stdout_redirect
