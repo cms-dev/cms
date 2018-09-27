@@ -120,7 +120,8 @@ def task_score(participation, task, public=False, only_tokened=False):
         of the full score.
     only_tokened (bool): if True, compute the score discoverable only looking
         at the results of tokened submissions (that is, the score that the user
-        would obtain if all non-tokened submissions scored 0.0).
+        would obtain if all non-tokened submissions scored 0.0, or equivalently
+        had not been scored yet).
 
     return ((float, bool)): the score of user on task, and True if not
         all submissions of the participation in the task have been scored.
@@ -150,30 +151,34 @@ def task_score(participation, task, public=False, only_tokened=False):
         for s in sorted(submissions, key=lambda s: s.timestamp)]
 
     score_details_tokened = []
+    partial = False
     for s, sr in submissions_and_results:
         if sr is None or not sr.scored():
+            partial = True
             score, score_details = None, None
         elif public:
             score, score_details = sr.public_score, sr.public_score_details
+        elif only_tokened and not s.tokened():
+            # If the caller wants the only_tokened score and this submission is
+            # not tokened, the score mode should ignore its score. To do so, we
+            # send it to the score mode what we would send if it wasn't already
+            # scored.
+            score, score_details = None, None
         else:
             score, score_details = sr.score, sr.score_details
         score_details_tokened.append((score, score_details, s.tokened()))
 
     if task.score_mode == SCORE_MODE_MAX:
-        return _task_score_max(
-            score_details_tokened, only_tokened=only_tokened)
+        return _task_score_max(score_details_tokened), partial
     if task.score_mode == SCORE_MODE_MAX_SUBTASK:
-        return _task_score_max_subtask(
-            score_details_tokened, only_tokened=only_tokened)
+        return _task_score_max_subtask(score_details_tokened), partial
     elif task.score_mode == SCORE_MODE_MAX_TOKENED_LAST:
-        return _task_score_max_tokened_last(
-            score_details_tokened, only_tokened=only_tokened)
+        return _task_score_max_tokened_last(score_details_tokened), partial
     else:
         raise ValueError("Unknown score mode '%s'" % task.score_mode)
 
 
-def _task_score_max_tokened_last(score_details_tokened,
-                                 only_tokened):
+def _task_score_max_tokened_last(score_details_tokened):
     """Compute score using the "max tokened last" score mode.
 
     This was used in IOI 2010-2012. The score of a participant on a task is
@@ -183,19 +188,15 @@ def _task_score_max_tokened_last(score_details_tokened,
     score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
         submission of the user in the task, containing score, score details
         (each None if not scored yet) and if the submission was tokened.
-    only_tokened (bool): same as task_score().
 
-    return ((float, bool)): (score, partial), same as task_score().
+    return (float): the score.
 
     """
-    partial = False
 
     # The score of the last submission (if computed, otherwise 0.0). Note that
     # partial will be set to True in the next loop.
     last_score, _, last_tokened = score_details_tokened[-1]
     if last_score is None:
-        last_score = 0.0
-    if only_tokened and not last_tokened:
         last_score = 0.0
 
     # The maximum score amongst the tokened submissions (not yet computed
@@ -205,13 +206,11 @@ def _task_score_max_tokened_last(score_details_tokened,
         if score is not None:
             if tokened:
                 max_tokened_score = max(max_tokened_score, score)
-        else:
-            partial = True
 
-    return max(last_score, max_tokened_score), partial
+    return max(last_score, max_tokened_score)
 
 
-def _task_score_max_subtask(score_details_tokened, only_tokened):
+def _task_score_max_subtask(score_details_tokened):
     """Compute score using the "max subtask" score mode.
 
     This has been used in IOI since 2017. The score of a participant on a
@@ -226,21 +225,15 @@ def _task_score_max_subtask(score_details_tokened, only_tokened):
     score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
         submission of the user in the task, containing score, score details
         (each None if not scored yet) and if the submission was tokened.
-    only_tokened (bool): same as task_score().
 
-    return ((float, bool)): (score, partial), same as task_score().
+    return (float): the score.
 
     """
     # Maximum score for each subtask (not yet computed scores count as 0.0).
     max_scores = {}
 
-    partial = False
     for score, details, tokened in score_details_tokened:
         if score is None:
-            partial = True
-            continue
-
-        if only_tokened and not tokened:
             continue
 
         if details == [] and score == 0.0:
@@ -262,10 +255,10 @@ def _task_score_max_subtask(score_details_tokened, only_tokened):
         for idx, score in iteritems(subtask_scores):
             max_scores[idx] = max(max_scores.get(idx, 0.0), score)
 
-    return sum(itervalues(max_scores)), partial
+    return sum(itervalues(max_scores))
 
 
-def _task_score_max(score_details_tokened, only_tokened):
+def _task_score_max(score_details_tokened):
     """Compute score using the "max" score mode.
 
     This was used in IOI 2013-2016. The score of a participant on a task is
@@ -275,20 +268,14 @@ def _task_score_max(score_details_tokened, only_tokened):
     score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
         submission of the user in the task, containing score, score details
         (each None if not scored yet) and if the submission was tokened.
-    only_tokened (bool): same as task_score().
 
-    return ((float, bool)): (score, partial), same as task_score().
+    return (float): the score.
 
     """
-    partial = False
     max_score = 0.0
 
     for score, _, tokened in score_details_tokened:
         if score is not None:
-            if only_tokened and not tokened:
-                continue
             max_score = max(max_score, score)
-        else:
-            partial = True
 
-    return max_score, partial
+    return max_score
