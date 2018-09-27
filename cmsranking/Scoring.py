@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import itervalues, iteritems
+from six.moves import zip_longest
 
 import heapq
 import logging
@@ -126,18 +127,11 @@ class Score(object):
                         [submission.score
                          for submission in itervalues(self._submissions)])
         elif self._score_mode == SCORE_MODE_MAX_SUBTASK:
-            subtask_scores = None
-            for s in itervalues(self._submissions):
-                if s.extra is None:
-                    continue
-                if subtask_scores is None:
-                    subtask_scores = [float(score) for score in s.extra]
-                else:
-                    subtask_scores = [
-                        max(old, float(new))
-                        for old, new in zip(subtask_scores, s.extra)
-                    ]
-            score = 0.0 if subtask_scores is None else sum(subtask_scores)
+            scores_by_submission = (s.extra or []
+                                    for s in itervalues(self._submissions))
+            scores_by_subtask = zip_longest(*scores_by_submission,
+                                            fillvalue=0.0)
+            score = float(sum(max(s) for s in scores_by_subtask))
         elif self._score_mode == SCORE_MODE_MAX_TOKENED_LAST:
             score = max(self._released.query(),
                         self._last.score if self._last is not None else 0.0)
