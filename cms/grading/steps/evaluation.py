@@ -99,8 +99,8 @@ def evaluation_step(sandbox, commands,
     commands ([[str]]): evaluation commands to execute.
     time_limit (float|None): time limit in seconds (applied to each command);
         if None, no time limit is enforced.
-    memory_limit (int|None): memory limit in MiB (applied to each command); if
-        None, no memory limit is enforced.
+    memory_limit (int|None): memory limit in bytes (applied to each command);
+        if None, no memory limit is enforced.
     dirs_map ({str: (str|None, str|None)}|None): if not None, a dict
         from external directories to a pair of strings: the first is the path
         they should be mapped to inside the sandbox, the second, is
@@ -185,7 +185,7 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.wallclock_timeout = None
 
     if memory_limit is not None:
-        sandbox.address_space = memory_limit * 1024
+        sandbox.address_space = memory_limit // 1024
     else:
         sandbox.address_space = None
 
