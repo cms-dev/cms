@@ -126,7 +126,8 @@ def test_testcases(base_dir, solution, language, assume=None):
         executables=executables,
         input=dataset.testcases[t].input, output=dataset.testcases[t].output,
         time_limit=dataset.time_limit,
-        memory_limit=dataset.memory_limit)) for t in dataset.testcases]
+        memory_limit=dataset.memory_limit // (1024 * 1024)))
+            for t in dataset.testcases]
     tasktype = dataset.task_type_object
 
     ask_again = True

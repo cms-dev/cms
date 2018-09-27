@@ -68,7 +68,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             "score_type": "Sum",
             "score_type_parameters": "[]",
             "time_limit": 1.0,
-            "memory_limit": 512,
+            "memory_limit": 512 * 1024 * 1024,
             "description": "dataset description",
             "task": "task_key",
         },

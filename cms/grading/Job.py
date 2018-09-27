@@ -535,7 +535,7 @@ class EvaluationJob(Job):
             input=testcase.input,
             output=testcase.output,
             time_limit=dataset.time_limit,
-            memory_limit=dataset.memory_limit,
+            memory_limit=dataset.memory_limit // (1024 * 1024),
             info=info
         )
 
@@ -614,7 +614,7 @@ class EvaluationJob(Job):
             executables=dict(user_test_result.executables),
             input=user_test.input,
             time_limit=dataset.time_limit,
-            memory_limit=dataset.memory_limit,
+            memory_limit=dataset.memory_limit // (1024 * 1024),
             info="evaluate user test %d" % (user_test.id),
             get_output=True,
             only_execution=True

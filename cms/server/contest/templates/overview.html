@@ -217,7 +217,7 @@
             </td>
             <td>
     {% if t_iter.active_dataset.memory_limit is not none %}
-        {{ (t_iter.active_dataset.memory_limit * 1024 * 1024)|format_size }}
+        {{ t_iter.active_dataset.memory_limit|format_size }}
     {% else %}
         {% trans %}N/A{% endtrans %}
     {% endif %}
