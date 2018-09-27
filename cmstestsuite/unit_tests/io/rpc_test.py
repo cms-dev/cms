@@ -415,6 +415,7 @@ class TestRPC(unittest.TestCase):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall(b"foo\r\n")
         self.sleep()
+        # Malformed messages cause the connection to be closed.
         self.assertFalse(self.servers[0].connected)
         sock.close()
 
@@ -422,6 +423,7 @@ class TestRPC(unittest.TestCase):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall(b'{"__id": "foo"}\r\n')
         self.sleep()
+        # Malformed messages cause the connection to be closed.
         self.assertFalse(self.servers[0].connected)
         sock.close()
 
