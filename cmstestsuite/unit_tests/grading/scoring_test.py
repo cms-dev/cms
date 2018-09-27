@@ -54,10 +54,15 @@ class TaskScoreMixin(DatabaseMixin):
     def at(self, timestamp):
         return self.timestamp + timedelta(seconds=timestamp)
 
-    def call(self):
-        return task_score(self.participation, self.task)
+    def call(self, public=False, only_tokened=False):
+        return task_score(self.participation, self.task,
+                          public=public, only_tokened=only_tokened)
 
-    def add_result(self, timestamp, score, tokened=False, score_details=None):
+    def add_result(self, timestamp, score, tokened=False, score_details=None,
+                   public_score=None, public_score_details=None):
+        public_score = public_score if public_score is not None else 0.0
+        public_score_details = public_score_details \
+            if public_score_details is not None else []
         score_details = score_details if score_details is not None else []
         submission = self.add_submission(
             participation=self.participation,
@@ -67,9 +72,9 @@ class TaskScoreMixin(DatabaseMixin):
         # must be set to declare the submission result as scored.
         self.add_submission_result(submission, self.task.active_dataset,
                                    score=score,
-                                   public_score=score,
+                                   public_score=public_score,
                                    score_details=score_details,
-                                   public_score_details=score_details,
+                                   public_score_details=public_score_details,
                                    ranking_score_details=[])
         if tokened:
             self.add_token(timestamp=timestamp, submission=submission)
@@ -148,6 +153,20 @@ class TestTaskScoreMaxTokenedLast(TaskScoreMixin, unittest.TestCase):
         self.add_result(self.at(3), None, tokened=False)
         self.session.flush()
         self.assertEqual(self.call(), (0.0, True))
+
+    def test_public(self):
+        self.add_result(self.at(1), 44.4, tokened=True, public_score=4.4)
+        self.add_result(self.at(2), 66.6, tokened=False, public_score=66.6)
+        self.add_result(self.at(3), 11.1, tokened=False, public_score=11.1)
+        self.session.flush()
+        self.assertEqual(self.call(public=True), (11.1, False))
+
+    def test_only_tokened(self):
+        self.add_result(self.at(1), 11.1, tokened=True)
+        self.add_result(self.at(2), 66.6, tokened=False)
+        self.add_result(self.at(3), 44.4, tokened=False)
+        self.session.flush()
+        self.assertEqual(self.call(only_tokened=True), (11.1, False))
 
 
 class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
@@ -247,6 +266,60 @@ class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
         self.session.flush()
         self.assertEqual(self.call(), (80 + 0.0004, False))
 
+    def test_public(self):
+        self.add_result(self.at(1),
+                        30 * 1.0 + 40 * 1.0 + 30 * 1.0,
+                        score_details=[
+                            self.subtask(3, 30, 1.0),
+                            self.subtask(2, 40, 1.0),
+                            self.subtask(1, 30, 1.0),
+                        ],
+                        public_score=30 * 0.2 + 40 * 0.5 + 30 * 0.1,
+                        public_score_details=[
+                            self.subtask(3, 30, 0.2),
+                            self.subtask(2, 40, 0.5),
+                            self.subtask(1, 30, 0.1),
+                        ])
+        self.add_result(self.at(2),
+                        30 * 1.0 + 40 * 1.0 + 30 * 1.0,
+                        score_details=[
+                            self.subtask(2, 40, 1.0),
+                            self.subtask(1, 30, 1.0),
+                            self.subtask(3, 30, 1.0),
+                        ],
+                        public_score=30 * 0.1 + 40 * 0.5 + 30 * 0.2,
+                        public_score_details=[
+                            self.subtask(2, 40, 0.5),
+                            self.subtask(1, 30, 0.2),
+                            self.subtask(3, 30, 0.1),
+                        ])
+        self.session.flush()
+        self.assertEqual(self.call(public=True),
+                         (30 * 0.2 + 40 * 0.5 + 30 * 0.2, False))
+
+    def test_only_tokened(self):
+        self.add_result(self.at(1), 30 * 0.2 + 40 * 0.5 + 30 * 0.1,
+                        score_details=[
+                            self.subtask(3, 30, 0.2),
+                            self.subtask(2, 40, 0.5),
+                            self.subtask(1, 30, 0.1),
+                        ], tokened=True)
+        self.add_result(self.at(2), 30 * 0.1 + 40 * 0.5 + 30 * 0.2,
+                        score_details=[
+                            self.subtask(2, 40, 0.5),
+                            self.subtask(1, 30, 0.2),
+                            self.subtask(3, 30, 0.1),
+                        ], tokened=True)
+        self.add_result(self.at(3), 30 * 1.0 + 40 * 1.0 + 30 * 1.0,
+                        score_details=[
+                            self.subtask(2, 40, 1.0),
+                            self.subtask(1, 30, 1.0),
+                            self.subtask(3, 30, 1.0),
+                        ], tokened=False)
+        self.session.flush()
+        self.assertEqual(self.call(only_tokened=True),
+                         (30 * 0.2 + 40 * 0.5 + 30 * 0.2, False))
+
 
 class TestTaskScoreMax(TaskScoreMixin, unittest.TestCase):
     """Tests for task_score() using the max score mode."""
@@ -289,6 +362,18 @@ class TestTaskScoreMax(TaskScoreMixin, unittest.TestCase):
         self.add_result(self.at(2), None, tokened=False)
         self.session.flush()
         self.assertEqual(self.call(), (0.0, True))
+
+    def test_public(self):
+        self.add_result(self.at(1), 44.4, tokened=False, public_score=44.4)
+        self.add_result(self.at(2), 66.6, tokened=False, public_score=6.6)
+        self.session.flush()
+        self.assertEqual(self.call(public=True), (44.4, False))
+
+    def test_only_tokened(self):
+        self.add_result(self.at(1), 44.4, tokened=True)
+        self.add_result(self.at(2), 66.6, tokened=False)
+        self.session.flush()
+        self.assertEqual(self.call(only_tokened=True), (44.4, False))
 
 
 if __name__ == "__main__":
