@@ -129,7 +129,7 @@
 </tr>
 {% endif %}
 
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_task != TOKEN_MODE_DISABLED %}
+{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
 <tr>
     <th>{% trans %}Tokens{% endtrans %}</th>
     <td colspan="2" class="token_rules">
@@ -144,6 +144,10 @@
     {% elif tokens_task == TOKEN_MODE_INFINITE %}
         <p>
         {% trans type_pl=_("tokens"), contest_root=contest_url() %}You can find the rules for the {{ type_pl }} on the <a href="{{ contest_root }}">contest overview page</a>.{% endtrans %}
+        </p>
+    {% elif tokens_task == TOKEN_MODE_DISABLED %}
+        <p>
+        {% trans %}Tokens are not allowed on this task.{% endtrans %}
         </p>
     {% else %}
         <p>
