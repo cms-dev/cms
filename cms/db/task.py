@@ -381,7 +381,7 @@ class Dataset(Base):
         nullable=False,
         default=False)
 
-    # Time and memory limits for every testcase.
+    # Time and memory limits (in seconds and bytes) for every testcase.
     time_limit = Column(
         Float,
         CheckConstraint("time_limit > 0"),
@@ -389,6 +389,8 @@ class Dataset(Base):
     memory_limit = Column(
         BigInteger,
         CheckConstraint("memory_limit > 0"),
+        # Double % is needed because Alchemy formats this string.
+        CheckConstraint("memory_limit %% 1048576 = 0"),
         nullable=True)
 
     # Name of the TaskType child class suited for the task.

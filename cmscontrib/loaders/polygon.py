@@ -170,7 +170,8 @@ class PolygonTaskLoader(TaskLoader):
             tl = float(testset.find('time-limit').text)
             ml = int(testset.find('memory-limit').text)
             args["time_limit"] = tl * 0.001
-            args["memory_limit"] = ml // (1024 * 1024)
+            # Polygon specifies the memory limit in bytes.
+            args["memory_limit"] = ml
 
             args["managers"] = {}
             infile_param = judging.attrib['input-file']
