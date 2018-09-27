@@ -385,11 +385,11 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         cmdline_usr = ["run1", "foo", "stub",
                        "/fifo0/m_to_u0", "/fifo0/u0_to_m"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, cmdline_mgr, 4321, 1234,
+            call(sandbox_mgr, cmdline_mgr, 4321, 1234 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
-            call(sandbox_usr, cmdline_usr, 2.5, 123,
+            call(sandbox_usr, cmdline_usr, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  stdin_redirect=None,
                  stdout_redirect=None,
@@ -636,19 +636,19 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         cmdline_usr1 = ["run1", "foo", "stub",
                         "/fifo1/m_to_u1", "/fifo1/u1_to_m", "1"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, cmdline_mgr, 4321, 1234,
+            call(sandbox_mgr, cmdline_mgr, 4321, 1234 * 1024 * 1024,
                  dirs_map={
                      os.path.join(self.base_dir, "0"): ("/fifo0", "rw"),
                      os.path.join(self.base_dir, "1"): ("/fifo1", "rw"),
                  },
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
-            call(sandbox_usr0, cmdline_usr0, 2.5, 123,
+            call(sandbox_usr0, cmdline_usr0, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  stdin_redirect=None,
                  stdout_redirect=None,
                  multiprocess=True),
-            call(sandbox_usr1, cmdline_usr1, 2.5, 123,
+            call(sandbox_usr1, cmdline_usr1, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "1"): ("/fifo1", "rw")},
                  stdin_redirect=None,
                  stdout_redirect=None,

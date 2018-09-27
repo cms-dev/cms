@@ -313,7 +313,7 @@ class Communication(TaskType):
             sandbox_mgr,
             manager_command,
             manager_time_limit,
-            config.trusted_sandbox_max_memory_kib // 1024,
+            config.trusted_sandbox_max_memory_kib * 1024,
             dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw"))
                           for i in indices),
             writable_files=[self.OUTPUT_FILENAME],
@@ -349,7 +349,7 @@ class Communication(TaskType):
                 sandbox_user[i],
                 commands[-1],
                 job.time_limit,
-                job.memory_limit // (1024 * 1024),
+                job.memory_limit,
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
                 stdin_redirect=stdin_redirect,
                 stdout_redirect=stdout_redirect,

@@ -354,7 +354,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.evaluation_step.assert_called_once_with(
             sandbox,
             fake_evaluation_commands(EVALUATION_COMMAND_1, "foo", "foo"),
-            2.5, 123,
+            2.5, 123 * 1024 * 1024,
             writable_files=[],
             stdin_redirect="input.txt",
             stdout_redirect="output.txt",
@@ -475,7 +475,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.evaluation_step.assert_called_once_with(
             sandbox,
             fake_evaluation_commands(EVALUATION_COMMAND_1, "foo", "foo"),
-            2.5, 123,
+            2.5, 123 * 1024 * 1024,
             writable_files=["myout"],
             stdin_redirect=None,
             stdout_redirect=None,

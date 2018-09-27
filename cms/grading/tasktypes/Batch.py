@@ -292,7 +292,7 @@ class Batch(TaskType):
             sandbox,
             commands,
             job.time_limit,
-            job.memory_limit // (1024 * 1024),
+            job.memory_limit,
             writable_files=files_allowing_write,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect,
