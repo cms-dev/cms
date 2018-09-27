@@ -297,7 +297,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
                              input="digest of input",
                              output="digest of correct output",
                              time_limit=2.5,
-                             memory_limit=123,
+                             memory_limit=123 * 1024 * 1024,
                              executables=executables,
                              multithreaded_sandbox=True)
 
