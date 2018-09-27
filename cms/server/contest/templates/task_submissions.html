@@ -2,7 +2,7 @@
 
 {% set page = "task_submissions" %}
 
-{% set score_type = task.active_dataset.score_type_object %}
+{% set score_type = get_score_type(dataset=task.active_dataset) %}
 
 {% block additional_js %}
 
