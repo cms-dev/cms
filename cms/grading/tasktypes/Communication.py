@@ -349,7 +349,7 @@ class Communication(TaskType):
                 sandbox_user[i],
                 commands[-1],
                 job.time_limit,
-                job.memory_limit,
+                job.memory_limit // (1024 * 1024),
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
                 stdin_redirect=stdin_redirect,
                 stdout_redirect=stdout_redirect,
