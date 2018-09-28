@@ -138,6 +138,8 @@ class TaskSubmissionsHandler(ContestHandler):
             participation, task, public=True)
         tokened_score, is_tokened_score_partial = task_score(
             participation, task, only_tokened=True)
+        # These two should be the same, anyway.
+        is_score_partial = is_public_score_partial or is_tokened_score_partial
 
         submissions_left_contest = None
         if self.contest.max_submission_number is not None:
@@ -169,9 +171,8 @@ class TaskSubmissionsHandler(ContestHandler):
         self.render("task_submissions.html",
                     task=task, submissions=submissions,
                     public_score=public_score,
-                    is_public_score_partial=is_public_score_partial,
                     tokened_score=tokened_score,
-                    is_tokened_score_partial=is_tokened_score_partial,
+                    is_score_partial=is_score_partial,
                     tokens_task=task.token_mode,
                     tokens_info=tokens_info,
                     submissions_left=submissions_left,
@@ -192,7 +193,8 @@ class SubmissionStatusHandler(ContestHandler):
             followed by "public" if referring to the public scores, or
             "tokened" if referring to the total score (always limited to
             tokened submissions); for both public and tokened, the fields are:
-            "score", "is_score_partial" and "score_message".
+            "score" and "score_message"; in addition we have
+            "task_is_score_partial" as partial info is the same for both.
 
         """
         # Just to preload all information required to compute the task score.
@@ -202,10 +204,13 @@ class SubmissionStatusHandler(ContestHandler):
             .options(joinedload(Submission.token))\
             .options(joinedload(Submission.results))\
             .all()
-        data["task_public_score"], data["task_public_score_is_partial"] = \
+        data["task_public_score"], public_score_is_partial = \
             task_score(participation, task, public=True)
-        data["task_tokened_score"], data["task_tokened_score_is_partial"] = \
+        data["task_tokened_score"], tokened_score_is_partial = \
             task_score(participation, task, only_tokened=True)
+        # These two should be the same, anyway.
+        data["task_score_is_partial"] = \
+            public_score_is_partial or tokened_score_is_partial
 
         score_type = task.active_dataset.score_type_object
         data["task_public_score_message"] = score_type.format_score(

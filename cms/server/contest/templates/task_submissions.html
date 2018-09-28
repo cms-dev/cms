@@ -59,9 +59,11 @@ update_score = function(score_elem, task_score_elem,
         task_score, task_score_message, task_score_is_partial,
         max_score) {
     // Submission row.
-    score_elem.addClass(get_score_class(score, max_score));
-    score_elem.removeClass("undefined");
-    score_elem.text(score_message);
+    if (score !== undefined) {
+        score_elem.addClass(get_score_class(score, max_score));
+        score_elem.removeClass("undefined");
+        score_elem.text(score_message);
+    }
 
     // Task score.
     var task_score_span = task_score_elem.find(".score");
@@ -90,20 +92,16 @@ update_scores = function (submission_id, data) {
             $("<a class=\"details\">{% trans %}details{% endtrans %}</a>"));
     }
     if (data["status"] == {{ SubmissionResult.SCORED }}) {
-        if (data["public_score"] != undefined) {
-            update_score(
-                row.children("td.public_score"), $("#task_score_public"),
-                data["public_score"], data["public_score_message"],
-                data["task_public_score"], data["task_public_score_message"],
-                data["task_public_score_is_partial"], data["max_public_score"]);
-        }
-        if (data["score"] != undefined) {
-            update_score(
-                row.children("td.total_score"), $("#task_score_tokened"),
-                data["score"], data["score_message"],
-                data["task_tokened_score"], data["task_tokened_score_message"],
-                data["task_tokened_score_is_partial"], data["max_score"]);
-        }
+        update_score(
+            row.children("td.public_score"), $("#task_score_public"),
+            data["public_score"], data["public_score_message"],
+            data["task_public_score"], data["task_public_score_message"],
+            data["task_score_is_partial"], data["max_public_score"]);
+        update_score(
+            row.children("td.total_score"), $("#task_score_tokened"),
+            data["score"], data["score_message"],
+            data["task_tokened_score"], data["task_tokened_score_message"],
+            data["task_score_is_partial"], data["max_score"]);
     } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
         schedule_update_scores(submission_id);
     }
@@ -163,7 +161,7 @@ $(document).ready(function () {
         </span>
         <span class="score">
             {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
-        {% if is_public_score_partial %}
+        {% if is_score_partial %}
             <img src="{{ url("static", "loading.gif") }}" />
         {% endif %}
         </span>
@@ -181,7 +179,7 @@ $(document).ready(function () {
         </span>
         <span class="score">
             {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
-        {% if is_tokened_score_partial %}
+        {% if is_score_partial %}
             <img src="{{ url("static", "loading.gif") }}" />
         {% endif %}
         </span>
