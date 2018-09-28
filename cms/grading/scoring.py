@@ -161,7 +161,7 @@ def task_score(participation, task, public=False, only_tokened=False):
         elif only_tokened and not s.tokened():
             # If the caller wants the only_tokened score and this submission is
             # not tokened, the score mode should ignore its score. To do so, we
-            # send it to the score mode what we would send if it wasn't already
+            # send to the score mode what we would send if it wasn't already
             # scored.
             score, score_details = None, None
         else:
