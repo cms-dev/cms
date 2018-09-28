@@ -195,7 +195,7 @@ def _task_score_max_tokened_last(score_details_tokened):
 
     # The score of the last submission (if computed, otherwise 0.0). Note that
     # partial will be set to True in the next loop.
-    last_score, _, last_tokened = score_details_tokened[-1]
+    last_score, _, _ = score_details_tokened[-1]
     if last_score is None:
         last_score = 0.0
 
@@ -232,7 +232,7 @@ def _task_score_max_subtask(score_details_tokened):
     # Maximum score for each subtask (not yet computed scores count as 0.0).
     max_scores = {}
 
-    for score, details, tokened in score_details_tokened:
+    for score, details, _ in score_details_tokened:
         if score is None:
             continue
 
@@ -274,7 +274,7 @@ def _task_score_max(score_details_tokened):
     """
     max_score = 0.0
 
-    for score, _, tokened in score_details_tokened:
+    for score, _, _ in score_details_tokened:
         if score is not None:
             max_score = max(max_score, score)
 
