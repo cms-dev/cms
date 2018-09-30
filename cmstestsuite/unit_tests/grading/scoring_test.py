@@ -58,7 +58,7 @@ class TaskScoreMixin(DatabaseMixin):
         return task_score(self.participation, self.task)
 
     def add_result(self, timestamp, score, tokened=False, score_details=None):
-        score_details = score_details if score_details is not None else {}
+        score_details = score_details if score_details is not None else []
         submission = self.add_submission(
             participation=self.participation,
             task=self.task,
@@ -184,12 +184,36 @@ class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
                         ])
         self.add_result(self.at(2), 30 * 0.1 + 40 * 0.5 + 30 * 0.2,
                         score_details=[
-                            self.subtask(3, 30, 0.1),
                             self.subtask(2, 40, 0.5),
                             self.subtask(1, 30, 0.2),
+                            self.subtask(3, 30, 0.1),
                         ])
         self.session.flush()
         self.assertEqual(self.call(), (30 * 0.2 + 40 * 0.5 + 30 * 0.2, False))
+
+    def test_compilation_error_total_is_zero(self):
+        # Compilation errors have details=[].
+        self.add_result(self.at(1), 0.0, score_details=[])
+        self.add_result(self.at(2), 30 * 0.0 + 40 * 0.0 + 30 * 0.0,
+                        score_details=[
+                            self.subtask(3, 30, 0.0),
+                            self.subtask(2, 40, 0.0),
+                            self.subtask(1, 30, 0.0),
+                        ])
+        self.session.flush()
+        self.assertEqual(self.call(), (30 * 0.0 + 40 * 0.0 + 30 * 0.0, False))
+
+    def test_compilation_error_total_is_positive(self):
+        # Compilation errors have details=[].
+        self.add_result(self.at(1), 0.0, score_details=[])
+        self.add_result(self.at(2), 30 * 0.1 + 40 * 0.0 + 30 * 0.0,
+                        score_details=[
+                            self.subtask(3, 30, 0.1),
+                            self.subtask(2, 40, 0.0),
+                            self.subtask(1, 30, 0.0),
+                        ])
+        self.session.flush()
+        self.assertEqual(self.call(), (30 * 0.1 + 40 * 0.0 + 30 * 0.0, False))
 
     def test_partial(self):
         self.add_result(self.at(1), 30 * 0.2 + 40 * 0.5 + 30 * 0.1,
