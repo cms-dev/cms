@@ -208,7 +208,6 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: "
         "GNU Affero General Public License v3",
