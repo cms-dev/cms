@@ -62,20 +62,23 @@ Computation of the score
 ========================
 
 
-Released submissions
---------------------
+The score of a contestant on the contest is always the sum of the score over all tasks. The score on a task depends on the score on each submission via the "score mode" (a setting that can be changed in AdminWebServer for each task).
 
-The score of a contestant for the contest is always the sum of the score for each task. The score for a task is the best score among the set of "released" submissions.
 
-Admins can use the configuration "Score mode" in AdminWebServer to change the way CMS defines the set of released submission. There are two ways, corresponding to the rules of IOI 2010-2012 and IOI 2013-.
+Score modes
+-----------
 
-In the first mode, used in IOI from 2010 to 2012, the released submissions are those on which the contestant used a token, plus the latest one submitted.
+The score mode determines how to compute the score of a contestant in a task from their submissions on that task. There are three score modes, corresponding to the rules of IOI in different years.
 
-In the second mode, used since 2013, the released submissions are all submissions.
+"Use best among tokened and last submissions" is the score mode that follows the rules of IOI 2010-2012. It is intended to be used with tasks having some private testcases, and that allow the use of tokens. The score on the task is the best score among "released" submissions. A submission is said to be released if the contestant used a token on it, or if it is the latest one submitted. The idea is that the contestants have to "choose" which submissions they want to use for grading.
 
-Usually, a task using the first mode will have a certain number of private testcases, and a limited sets of tokens. In this situation, you can think that contestants are required to "choose" the submission they want to use for grading, by submitting it last, or by using a token on it.
+"Use best among all submissions" is the score mode that follows the rules of IOI 2013-2016. The score on the task is simply the best score among all submissions.
 
-On the other hand, a task using the second mode usually has all testcases public, and therefore it would be silly to ask contestants to choose the submission (as they would always choose the one with the best score).
+"Use the sum over each subtask of the best result for that subtask across all submissions" is the score mode that follows the rules of IOI since 2017. It is intended to be used with tasks that have a group score type, like "GroupMin" (note that "group" and "subtask" are synonyms). The score on the task is the sum of the best score for each subtask, over all submissions. The difference with the previous score mode is that here a contestant can achieve the maximum score on the task even when no submission gets the maximum score (for example if each subtask is solved by exactly one submission).
+
+.. note::
+
+    OutputOnly tasks have a similar behavior to the score mode for IOI 2017-; namely, if a contestant doesn't submit the output of a testcase, CMS automatically fills in the latest submitted output for that testcase, if present. There is a difference, though: the IOI 2017- score mode would be as if CMS filled the missing output with the one obtaining the highest score, instead of the latest one. Therefore, it might still make sense to use this score mode, even with OutputOnly tasks.
 
 
 Score rounding
