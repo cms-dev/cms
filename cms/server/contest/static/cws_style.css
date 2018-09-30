@@ -423,10 +423,7 @@ td.token_rules p:last-child {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 20px;
-    margin: 10px 5px;
-    border: 2px solid lightgrey;
-    border-radius: 5px;
+    margin-bottom: 0;
 }
 
 .task_score .score img {

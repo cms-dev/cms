@@ -146,19 +146,24 @@ $(document).ready(function () {
 </div>
 
 {% if score_type is defined %}
-<div class="task_score_container">
+    {% set two_task_scores = score_type.max_public_score > 0
+        and score_type.max_public_score < score_type.max_score
+        and tokens_contest != TOKEN_MODE_DISABLED
+        and tokens_tasks != TOKEN_MODE_DISABLED %}
+<div class="task_score_container row-fluid">
 
     {% if score_type.max_public_score > 0 %}
         {# Show the public score (alone, if everything is public or tokens are disabled, or together with the tokened score). #}
     <div id="task_score_public"
-         class="task_score {{ get_score_class(public_score, score_type.max_public_score) }}">
+         class="{{ "span6" if two_task_scores else "span12" }} well well-small task_score {{ get_score_class(public_score, score_type.max_public_score) }}">
         <span>
         {% if score_type.max_public_score == score_type.max_score %}
-            {% trans %}Score{% endtrans %}
+            {% trans %}Score:{% endtrans %}
         {% else %}
-            {% trans %}Public score{% endtrans %}
+            {% trans %}Public score:{% endtrans %}
         {% endif %}
         </span>
+      <br/>
         <span class="score">
             {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
         {% if is_score_partial %}
@@ -173,10 +178,11 @@ $(document).ready(function () {
             and tokens_tasks != TOKEN_MODE_DISABLED %}
         {# Show the tokened score (alone if everything is non-public, or together with the public score). #}
     <div id="task_score_tokened"
-         class="task_score {{ get_score_class(tokened_score, score_type.max_score) }}">
+         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) }}">
         <span>
-            {% trans %}Score of tokened submissions{% endtrans %}
+            {% trans %}Score of tokened submissions:{% endtrans %}
         </span>
+      <br/>
         <span class="score">
             {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
         {% if is_score_partial %}
