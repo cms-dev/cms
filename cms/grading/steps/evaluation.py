@@ -79,7 +79,7 @@ EVALUATION_MESSAGES = MessageCollection([
     HumanMessage("signal",
                  N_("Execution killed (could be triggered by violating memory "
                     "limits)"),
-                 N_("The evaluation was killed by a signal."
+                 N_("The evaluation was killed by a signal. "
                     "Among other things, this might be caused by exceeding "
                     "the memory limit. Note that if this is the reason, "
                     "the memory usage visible in the submission details is "
