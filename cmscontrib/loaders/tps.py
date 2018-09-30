@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Programming contest management system
 # Copyright © 2017 Kiarash Golezardi <kiarashgolezardi@gmail.com>

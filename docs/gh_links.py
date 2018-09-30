@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Sphinx extension to add roles for some GitHub features
 # Copyright © 2013-2015 Luca Wehrstedt <luca.wehrstedt@gmail.com>

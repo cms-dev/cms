@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # This file was taken from
 # https://bitbucket.org/zzzeek/green_sqla/src/2732bb7ea9d06b9d4a61e8c \
