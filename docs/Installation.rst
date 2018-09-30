@@ -159,8 +159,6 @@ This command installs python dependencies globally. Note that on some distros, l
 Method 2: Virtual environment
 -----------------------------
 
-.. warning::
-
 An alternative method to perform the installation is with a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python environment that you can put wherever you like and that can be activated/deactivated at will.
 
 You will need to create a virtual environment somewhere in your filesystem. For example, let's assume that you decided to create it under your home directory (as ``~/cms_venv``):
