@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -185,14 +185,16 @@ class RemoteServiceBase(object):
         if not self.connected:
             return
 
-        logger.info("Terminated connection with %s (local address: %s): %s",
-                    self._repr_remote(), self._local_address, reason)
+        local_address = self._local_address
 
         self._socket = None
         self._reader = None
         self._writer = None
         self._local_address = None
         self._connection_event.clear()
+
+        logger.info("Terminated connection with %s (local address: %s): %s",
+                    self._repr_remote(), local_address, reason)
 
         for handler in self._on_disconnect_handlers:
             gevent.spawn(handler)
