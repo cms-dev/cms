@@ -248,9 +248,14 @@ class RemoteServiceBase(object):
                     self.finalize("Client misbehaving.")
                     raise IOError("Message too long.")
         except socket.error as error:
-            logger.warning("Failed reading from socket: %s.", error)
-            self.finalize("Read failed.")
-            raise error
+            if self.connected:
+                logger.warning("Failed reading from socket: %s.", error)
+                self.finalize("Read failed.")
+                raise error
+            else:
+                # The client was terminated willingly; its correct termination
+                # is handled in disconnect(), so here we can just return.
+                return b""
 
         return data
 
