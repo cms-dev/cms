@@ -36,8 +36,7 @@ gevent.monkey.patch_all()  # noqa
 import argparse
 import logging
 import sys
-
-from future.moves.urllib.parse import quote, urljoin, urlsplit
+from urllib.parse import quote, urljoin, urlsplit
 
 from requests import Session, Request
 from requests.exceptions import RequestException
