@@ -18,8 +18,6 @@
 
 """Tests for the step utils."""
 
-from six import assertRegex
-
 import unittest
 
 from cms.grading.Sandbox import Sandbox
@@ -172,8 +170,8 @@ class TestGenericStep(unittest.TestCase):
                              collect_output=True)
 
         # UTF-8 invalid parts are replaced with funny question marks (\uFFFD).
-        assertRegex(self, stats["stdout"], "^o.*1$")
-        assertRegex(self, stats["stderr"], "^e.*2$")
+        self.assertRegex(stats["stdout"], "^o.*1$")
+        self.assertRegex(stats["stderr"], "^e.*2$")
 
 
 if __name__ == "__main__":

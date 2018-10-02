@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import six
-
 import unittest
 from collections import namedtuple
 from datetime import timedelta
@@ -709,7 +707,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.assertEqual(len(args), 2)
         content, description = args
         self.assertIn(content, {FOO_CONTENT, SPAM_CONTENT, INPUT_CONTENT})
-        six.assertRegex(self, description, "foo.%l|spammock.1|input")
+        self.assertRegex(description, "foo.%l|spammock.1|input")
         self.assertIn(self.participation.user.username, description)
 
 

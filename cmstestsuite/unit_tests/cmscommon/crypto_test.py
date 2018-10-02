@@ -18,8 +18,6 @@
 
 """Tests for the crypto module"""
 
-import six
-
 import re
 import unittest
 
@@ -42,7 +40,7 @@ class TestGetHexRandomKey(unittest.TestCase):
     """Tests for the function get_hex_random_key."""
 
     def test_valid(self):
-        six.assertRegex(self, get_hex_random_key(), r"^[0-9a-f]*$")
+        self.assertRegex(get_hex_random_key(), r"^[0-9a-f]*$")
 
     def test_length(self):
         # Should be 16 bytes.
@@ -122,7 +120,7 @@ class TestGenerateRandomPassword(unittest.TestCase):
     """Tests for the function generate_random_password."""
 
     def test_alphabet(self):
-        six.assertRegex(self, generate_random_password(), r"^[a-z]*$")
+        self.assertRegex(generate_random_password(), r"^[a-z]*$")
 
     def test_random(self):
         self.assertNotEqual(generate_random_password(),
