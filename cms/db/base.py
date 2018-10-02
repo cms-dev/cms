@@ -32,25 +32,23 @@ from sqlalchemy.types import \
     BigInteger
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB, OID
 
-import six
-
 from . import engine, metadata, CastingArray, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest
 
 
 _TYPE_MAP = {
     Boolean: bool,
-    Integer: six.integer_types,
-    BigInteger: six.integer_types,
-    OID: six.integer_types,
+    Integer: int,
+    BigInteger: int,
+    OID: int,
     Float: float,
-    Enum: six.text_type,
-    Unicode: six.text_type,
-    String: six.string_types,  # TODO Use six.binary_type.
-    Codename: six.text_type,
-    Filename: six.text_type,
-    FilenameSchema: six.text_type,
-    Digest: six.text_type,
+    Enum: str,
+    Unicode: str,
+    String: str,  # TODO Use bytes.
+    Codename: str,
+    Filename: str,
+    FilenameSchema: str,
+    Digest: str,
     DateTime: datetime,
     Interval: timedelta,
     ARRAY: list,
