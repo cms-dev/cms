@@ -22,9 +22,6 @@
 
 """Utilities dealing with encryption and randomness."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import bcrypt
 import binascii
 import random

@@ -26,9 +26,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import tornado.web
 
 from cms.db import Contest, Announcement

@@ -18,9 +18,6 @@
 
 """Tests for the compilation step."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import unittest
 
 from mock import patch

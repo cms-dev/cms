@@ -18,8 +18,6 @@
 
 """Tests for the DumpImporter script"""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import PY3, assertCountEqual, iteritems
 
 import json

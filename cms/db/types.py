@@ -21,9 +21,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import psycopg2.extras
 import sqlalchemy
 from sqlalchemy import DDL, event, TypeDecorator, Unicode

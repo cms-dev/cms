@@ -24,8 +24,6 @@ using gevent and JSON encoding.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import itervalues
 
 import errno

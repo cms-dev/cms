@@ -38,9 +38,6 @@ using `python -m line_profile output.lprof`
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cmstestsuite import CONFIG
 
 

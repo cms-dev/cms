@@ -19,9 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 # As this package initialization code is run by all code that imports
 # something in cms.* it's the best place to setup the logging handlers.
 # By importing the log module we install a handler on stdout. Other

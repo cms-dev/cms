@@ -16,9 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import io
 import random
 import unittest
@@ -37,11 +34,9 @@ from cmscommon.digest import bytes_digest
 class TestFileByDigestMiddleware(unittest.TestCase):
 
     def setUp(self):
-        # We need to wrap the generator in a list because of a
-        # shortcoming of future's bytes implementation.
         # Choose a size that is larger than FileCacher.CHUNK_SIZE.
         self.content = \
-            bytes([random.getrandbits(8) for _ in range(2 ** 14 + 1024)])
+            bytes(random.getrandbits(8) for _ in range(2 ** 14 + 1024))
         self.digest = bytes_digest(self.content)
 
         self.filename = "foobar.pdf"

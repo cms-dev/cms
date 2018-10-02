@@ -18,9 +18,6 @@
 
 """Tests for the utilities for task types."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import unittest
 
 from cms.grading import Language

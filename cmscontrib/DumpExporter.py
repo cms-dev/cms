@@ -25,8 +25,6 @@ exporting and importing again should be idempotent.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import PY3, itervalues, iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly

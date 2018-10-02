@@ -18,9 +18,6 @@
 
 """Java programming language definition, compiled."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import os
 
 from cms.grading import CompiledLanguage

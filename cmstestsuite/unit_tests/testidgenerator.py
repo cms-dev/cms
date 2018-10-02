@@ -18,9 +18,6 @@
 
 """Utilities to generate "unique" test ids."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import random
 
 from cmscommon.digest import bytes_digest

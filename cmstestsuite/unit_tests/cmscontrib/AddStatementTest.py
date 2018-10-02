@@ -18,9 +18,6 @@
 
 """Tests for the AddStatement script"""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.

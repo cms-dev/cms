@@ -20,9 +20,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import io
 import os
 import shutil

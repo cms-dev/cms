@@ -23,9 +23,6 @@ useful specifically to the use that AWS makes of it.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from jinja2 import PackageLoader
 
 from cms.grading.languagemanager import LANGUAGES

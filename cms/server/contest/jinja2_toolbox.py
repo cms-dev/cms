@@ -23,8 +23,6 @@ useful specifically to the use that CWS makes of it.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 from jinja2 import contextfilter, PackageLoader

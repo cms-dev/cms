@@ -18,9 +18,6 @@
 
 """Tests for the Sum score type."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import unittest
 
 from cms.grading.scoretypes.Sum import Sum

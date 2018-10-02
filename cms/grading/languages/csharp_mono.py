@@ -21,9 +21,6 @@ and runtime "mono" installed in the system.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cms.grading import Language
 
 

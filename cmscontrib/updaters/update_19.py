@@ -25,8 +25,6 @@ This updater just adds the default values for the new fields
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 

@@ -18,9 +18,6 @@
 
 """Python programming language, version 3, definition."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import os
 
 from cms.grading import CompiledLanguage

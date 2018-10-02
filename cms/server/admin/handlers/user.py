@@ -27,9 +27,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cms.db import Contest, Participation, Submission, Team, User
 from cmscommon.datetime import make_datetime
 

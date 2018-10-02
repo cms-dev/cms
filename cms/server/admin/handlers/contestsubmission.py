@@ -25,9 +25,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cms.db import Contest, Submission, UserTest, Task
 
 from .base import BaseHandler, require_permission

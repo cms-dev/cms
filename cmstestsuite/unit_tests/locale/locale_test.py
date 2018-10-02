@@ -20,9 +20,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import os.path
 import unittest
 from datetime import datetime, timedelta
