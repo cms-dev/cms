@@ -19,8 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import with_metaclass
-
 import io
 import logging
 import os
@@ -175,7 +173,7 @@ class Truncator(io.RawIOBase):
         raise io.UnsupportedOperation('write')
 
 
-class SandboxBase(with_metaclass(ABCMeta, object)):
+class SandboxBase(object, metaclass=ABCMeta):
     """A base class for all sandboxes, meant to contain common
     resources.
 

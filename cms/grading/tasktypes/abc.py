@@ -29,15 +29,13 @@ compilation and the evaluation are contained in the task type class.
 
 """
 
-from six import with_metaclass
-
 import re
 from abc import ABCMeta, abstractmethod
 
 from cms.grading.Job import CompilationJob, EvaluationJob
 
 
-class TaskType(with_metaclass(ABCMeta, object)):
+class TaskType(object, metaclass=ABCMeta):
     """Base class with common operation that (more or less) all task
     types must do sometimes.
 
