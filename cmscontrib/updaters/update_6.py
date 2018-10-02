@@ -26,8 +26,6 @@ af2338b9a22df8a19671c7fee78d9dc4b35c49ea.
 
 """
 
-from six import iteritems
-
 import json
 
 
@@ -107,7 +105,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
 

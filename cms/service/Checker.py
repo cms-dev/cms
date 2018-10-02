@@ -22,8 +22,6 @@
 
 """
 
-from six import iteritems
-
 import logging
 import time
 
@@ -53,7 +51,7 @@ class Checker(Service):
 
         """
         logger.debug("Checker.check")
-        for coordinates, service in iteritems(self.remote_services):
+        for coordinates, service in self.remote_services.items():
             if coordinates in self.waiting_for:
                 logger.info("Service %s timeout, retrying.", coordinates)
                 del self.waiting_for[coordinates]

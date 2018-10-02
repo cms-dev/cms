@@ -25,8 +25,6 @@ trailing ".%l", if any.
 
 """
 
-from six import iteritems
-
 import logging
 
 
@@ -71,7 +69,7 @@ class Updater(object):
         return schema
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v["_class"] in FILENAME_FIELDS:

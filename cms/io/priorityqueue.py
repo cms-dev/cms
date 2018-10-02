@@ -38,8 +38,6 @@ together the three data point: item, priority, and timestamp.
 
 """
 
-from six import iteritems
-
 from gevent.event import Event
 
 from functools import total_ordering
@@ -146,7 +144,7 @@ class PriorityQueue(object):
             return False
         if self._event.isSet() == self.empty():
             return False
-        for item, idx in iteritems(self._reverse):
+        for item, idx in self._reverse.items():
             if self._queue[idx].item != item:
                 return False
         return True

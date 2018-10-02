@@ -25,8 +25,6 @@
 
 """
 
-from six import iteritems
-
 import logging
 import random
 
@@ -291,7 +289,7 @@ class WorkerPool(object):
 
         """
         pool = []
-        for shard, worker_operation in iteritems(self._operations):
+        for shard, worker_operation in self._operations.items():
             if worker_operation == operation:
                 if not require_connection or self._worker[shard].connected:
                     pool.append(shard)

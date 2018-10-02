@@ -22,8 +22,6 @@
 
 """
 
-from six import iteritems
-
 import argparse
 import io
 import logging
@@ -86,7 +84,7 @@ def filter_top_scoring(results, unique):
                 usertask[key].append(value)
 
     results = []
-    for key, values in iteritems(usertask):
+    for key, values in usertask.items():
         for value in values:
             results.append(value[2])  # the "old" row
 

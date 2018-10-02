@@ -25,7 +25,7 @@ that saves the resources usage in that machine.
 
 """
 
-from six import PY3, iteritems
+from six import PY3
 
 import logging
 import os
@@ -80,7 +80,7 @@ class ProcessMatcher(object):
         if self._procs is None:
             self._procs = ProcessMatcher._get_interesting_running_processes()
         shards = self._procs.get(service.name, {})
-        for shard, proc in iteritems(shards):
+        for shard, proc in shards.items():
             if get_safe_shard(service.name, shard) == service.shard:
                 logger.debug("Found %s", service)
                 if cpu_times is not None:

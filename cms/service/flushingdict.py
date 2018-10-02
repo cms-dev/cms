@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import logging
 
 import gevent
@@ -81,7 +79,7 @@ class FlushingDict(object):
         with self.d_lock:
             self.fd = self.d
             self.d = dict()
-        self.callback(list(iteritems(self.fd)))
+        self.callback(list(self.fd.items()))
         self.fd = dict()
 
     def __contains__(self, key):

@@ -363,13 +363,13 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           <td>
 
             <select name="task_type_{{ dataset.id }}">
-              {% for task_type_name, task_type in iteritems(TASK_TYPES) %}
+              {% for task_type_name, task_type in TASK_TYPES.items() %}
               <option value="{{ task_type_name }}" {% if dataset.task_type == task_type_name %}selected{% endif %}>{{ task_type_name }}</option>
               {% endfor %}
             </select>
           {% set parameters = dataset.task_type_parameters %}
 
-          {% for task_type_name, task_type in iteritems(TASK_TYPES) %}
+          {% for task_type_name, task_type in TASK_TYPES.items() %}
           <table class="TaskTypeOptions TaskTypeOptions_{{ dataset.id }} bordered" id="TaskType{{ task_type_name }}Options_{{ dataset.id }}" style="display: none;">
             {% for i in range(task_type.ACCEPTED_PARAMETERS|length) %}
               {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
@@ -416,7 +416,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           </td>
           <td>
             <select name="score_type_{{ dataset.id }}">
-              {% for score_type_name, score_type in iteritems(SCORE_TYPES) %}
+              {% for score_type_name, score_type in SCORE_TYPES.items() %}
               <option value="{{ score_type_name }}" {% if dataset.score_type == score_type_name %}selected{% endif %}>{{ score_type_name }}</option>
               {% endfor %}
             </select>

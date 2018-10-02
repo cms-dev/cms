@@ -22,8 +22,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import io
 import json
 import logging
@@ -233,7 +231,7 @@ class FunctionalTestFramework(object):
             task_id = int(match_task_id.group(1))
             dataset_id = int(match_dataset_id.group(1))
             edit_args = {}
-            for k, v in iteritems(kwargs):
+            for k, v in kwargs.items():
                 edit_args[k.replace("{{dataset_id}}", str(dataset_id))] = v
             r = self.admin_req('task/%s' % task_id, args=edit_args)
             self.created_tasks[task_id] = kwargs

@@ -24,8 +24,6 @@
 
 """
 
-from six import iteritems
-
 import copy
 from datetime import timedelta
 
@@ -463,7 +461,7 @@ class Dataset(Base):
     @property
     def score_type_object(self):
         public_testcases = {k: tc.public
-                            for k, tc in iteritems(self.testcases)}
+                            for k, tc in self.testcases.items()}
         if not hasattr(self, "_cached_score_type_object") \
                 or self.score_type != self._cached_score_type \
                 or (self.score_type_parameters

@@ -25,8 +25,6 @@ db4adada08d66b4797d0569d95e8f0c028a4e5e0.
 
 """
 
-from six import iteritems
-
 from functools import partial
 
 
@@ -53,7 +51,7 @@ class Updater(object):
             item_id = fun(item)
             if num:
                 self.objs[item_id]['num'] = i
-            for k, v in iteritems(kwargs):
+            for k, v in kwargs.items():
                 self.objs[item_id][k] = v
             ret.append(item_id)
         return ret
@@ -62,7 +60,7 @@ class Updater(object):
         ret = dict()
         for item in list_:
             item_id = fun(item)
-            for k, v in iteritems(kwargs):
+            for k, v in kwargs.items():
                 self.objs[item_id][k] = v
             ret[item[key]] = item_id
         return ret

@@ -28,8 +28,6 @@ again should be idempotent.
 
 """
 
-from six import iteritems
-
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -236,14 +234,14 @@ class DumpImporter(object):
                 assert self.datas["_version"] == model_version
 
                 self.objs = dict()
-                for id_, data in iteritems(self.datas):
+                for id_, data in self.datas.items():
                     if not id_.startswith("_"):
                         self.objs[id_] = self.import_object(data)
-                for id_, data in iteritems(self.datas):
+                for id_, data in self.datas.items():
                     if not id_.startswith("_"):
                         self.add_relationships(data, self.objs[id_])
 
-                for k, v in list(iteritems(self.objs)):
+                for k, v in list(self.objs.items()):
 
                     # Skip submissions if requested
                     if self.skip_submissions and isinstance(v, Submission):
@@ -416,7 +414,7 @@ class DumpImporter(object):
                 setattr(obj, prp.key, list(self.objs[i] for i in val))
             elif isinstance(val, dict):
                 setattr(obj, prp.key,
-                        dict((k, self.objs[v]) for k, v in iteritems(val)))
+                        dict((k, self.objs[v]) for k, v in val.items()))
             else:
                 raise RuntimeError(
                     "Unknown RelationshipProperty value: %s" % type(val))

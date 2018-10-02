@@ -30,8 +30,6 @@ the current ranking.
 
 """
 
-from six import iteritems
-
 import logging
 
 from collections import defaultdict
@@ -470,7 +468,7 @@ class EvaluationService(TriggeredService):
             by_object_and_type[t].append((operation, result))
 
         with SessionGen() as session:
-            for key, operation_results in iteritems(by_object_and_type):
+            for key, operation_results in by_object_and_type.items():
                 type_, object_id, dataset_id = key
 
                 dataset = Dataset.get_from_id(dataset_id, session)

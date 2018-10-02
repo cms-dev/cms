@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import logging
 import zipfile
 
@@ -73,7 +71,7 @@ def import_testcases_from_zipfile(
             skipped_tc = []
             overwritten_tc = []
             added_tc = []
-            for codename, testdata in iteritems(tests):
+            for codename, testdata in tests.items():
                 # If input or output file isn't found, skip it.
                 if not testdata[0] or not testdata[1]:
                     continue

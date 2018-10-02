@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 from .italy_yaml import YamlLoader
 from .polygon import PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
 from .tps import TpsTaskLoader
@@ -81,6 +79,6 @@ def build_epilog():
 
     """
     epilog = "The following loaders are supported:\n"
-    for short_name, loader_class in sorted(iteritems(LOADERS)):
+    for short_name, loader_class in sorted(LOADERS.items()):
         epilog += " * %s (%s)\n" % (short_name, loader_class.description)
     return epilog

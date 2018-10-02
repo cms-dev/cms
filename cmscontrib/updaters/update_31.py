@@ -24,8 +24,6 @@ This updater makes submission_format become a list-of-strings column.
 
 """
 
-from six import iteritems
-
 import logging
 
 
@@ -41,7 +39,7 @@ class Updater(object):
     def run(self):
         to_delete = set()
 
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
 

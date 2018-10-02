@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import argparse
 import functools
 import io
@@ -374,8 +372,8 @@ class ScoreHandler(object):
             raise NotAcceptable()
 
         result = dict()
-        for u_id, tasks in iteritems(self.scoring_store._scores):
-            for t_id, score in iteritems(tasks):
+        for u_id, tasks in self.scoring_store._scores.items():
+            for t_id, score in tasks.items():
                 if score.get_score() > 0.0:
                     result.setdefault(u_id, dict())[t_id] = score.get_score()
 
@@ -396,7 +394,7 @@ class ImageHandler(object):
         'bmp': 'image/bmp'
     }
 
-    MIME_TO_EXT = dict((v, k) for k, v in iteritems(EXT_TO_MIME))
+    MIME_TO_EXT = dict((v, k) for k, v in EXT_TO_MIME.items())
 
     def __init__(self, location, fallback):
         self.location = location
@@ -425,7 +423,7 @@ class ImageHandler(object):
         response = Response()
 
         available = list()
-        for extension, mimetype in iteritems(self.EXT_TO_MIME):
+        for extension, mimetype in self.EXT_TO_MIME.items():
             if os.path.isfile(location + '.' + extension):
                 available.append(mimetype)
         mimetype = request.accept_mimetypes.best_match(available)

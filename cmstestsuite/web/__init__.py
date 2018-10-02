@@ -21,8 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import datetime
 import io
 import sys
@@ -205,14 +203,14 @@ class GenericRequest(object):
         res = "URL: %s\n" % self.url
         if self.response is not None:
             res += "\nREQUEST HEADERS\n"
-            for key, value in iteritems(self.response.request.headers):
+            for key, value in self.response.request.headers.items():
                 res += "%s: %s\n" % (key, value)
             res += "\nREQUEST DATA\n%s\n" % self.response.request.body
         else:
             res += "\nNO REQUEST INFORMATION AVAILABLE\n"
         if self.res_data is not None:
             res += "\nRESPONSE HEADERS\n"
-            for key, value in iteritems(self.response.headers):
+            for key, value in self.response.headers.items():
                 res += "%s: %s\n" % (key, value)
             res += "\nRESPONSE DATA\n%s\n" % (self.res_data)
         else:

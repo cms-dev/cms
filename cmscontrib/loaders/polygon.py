@@ -19,8 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import imp
 import io
 import logging
@@ -118,7 +116,7 @@ class PolygonTaskLoader(TaskLoader):
         if get_statement:
             args["statements"] = {}
             args["primary_statements"] = []
-            for language, lang in iteritems(LANGUAGE_MAP):
+            for language, lang in LANGUAGE_MAP.items():
                 path = os.path.join(self.path, 'statements',
                                     '.pdf', language, 'problem.pdf')
                 if os.path.exists(path):

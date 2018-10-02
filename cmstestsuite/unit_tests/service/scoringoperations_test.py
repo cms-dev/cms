@@ -21,8 +21,6 @@ and the function to compute them).
 
 """
 
-from six import iteritems
-
 import unittest
 
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
@@ -125,7 +123,7 @@ class TestScoringOperations(DatabaseMixin, unittest.TestCase):
         submission, results = self.add_submission_with_results(
             self.tasks[0], self.participation, True)
         for result in results:
-            for codename, testcase in iteritems(result.dataset.testcases):
+            for codename, testcase in result.dataset.testcases.items():
                 self.add_evaluation(result, testcase)
                 result.set_evaluation_outcome()
         self.session.flush()

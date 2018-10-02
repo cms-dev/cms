@@ -27,8 +27,6 @@
 
 """Procedures used by CWS to accept submissions and user tests."""
 
-from six import iteritems
-
 import logging
 
 from cms import config
@@ -172,7 +170,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
 
     # We now have to send all the files to the destination...
     try:
-        for codename, content in iteritems(files):
+        for codename, content in files.items():
             digest = file_cacher.put_file_content(
                 content,
                 "Submission file %s sent by %s at %d." % (
@@ -199,7 +197,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
         official=official)
     sql_session.add(submission)
 
-    for codename, digest in iteritems(digests):
+    for codename, digest in digests.items():
         sql_session.add(File(
             filename=codename, digest=digest, submission=submission))
 
@@ -324,7 +322,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
             N_("Please select the correct files."))
 
     if any(len(content) > config.max_submission_length
-           for codename, content in iteritems(files)
+           for codename, content in files.items()
            if codename != "input"):
         raise UnacceptableUserTest(
             N_("Test too big!"),
@@ -347,7 +345,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
 
     # We now have to send all the files to the destination...
     try:
-        for codename, content in iteritems(files):
+        for codename, content in files.items():
             digest = file_cacher.put_file_content(
                 content,
                 "Test file %s sent by %s at %d." % (
@@ -374,7 +372,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
         task=task)
     sql_session.add(user_test)
 
-    for codename, digest in iteritems(digests):
+    for codename, digest in digests.items():
         if codename == "input":
             continue
         if codename in task.submission_format:

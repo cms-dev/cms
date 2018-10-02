@@ -24,8 +24,6 @@ filters, tests, etc. that are useful for generic global usage.
 
 """
 
-from six import iteritems
-
 from jinja2 import Environment, StrictUndefined, contextfilter, \
     contextfunction, environmentfunction
 
@@ -118,7 +116,7 @@ def dictselect(ctx, d, test=None, *args, **kwargs):
                          % next(iter(kwargs.keys())))
     if by not in {"key", "value"}:
         raise ValueError("Invalid value of \"by\" keyword argument: %s" % by)
-    return dict((k, v) for k, v in iteritems(d)
+    return dict((k, v) for k, v in d.items()
                 if ctx.call(test, {"key": k, "value": v}[by], *args))
 
 
@@ -140,7 +138,6 @@ def today(ctx, dt):
 
 
 def instrument_generic_toolbox(env):
-    env.globals["iteritems"] = iteritems
     env.globals["iter"] = iter
     env.globals["next"] = next
 

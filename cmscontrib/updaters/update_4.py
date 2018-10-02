@@ -25,8 +25,6 @@ This adapts the dump to some changes in the model introduced in commit
 
 """
 
-from six import iteritems
-
 
 class Updater(object):
 
@@ -36,7 +34,7 @@ class Updater(object):
         self.testcases = dict()
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v["_class"] == "Testcase":
@@ -44,7 +42,7 @@ class Updater(object):
                 v["codename"] = "%03d" % v["num"]
                 del v["num"]
 
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v["_class"] == "Evaluation":

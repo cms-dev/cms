@@ -155,7 +155,7 @@ class ParameterTypeChoice(ParameterType):
 
     TEMPLATE = GLOBAL_ENVIRONMENT.from_string("""
 <select name="{{ prefix ~ parameter.short_name }}">
-{% for choice_value, choice_description in iteritems(parameter.values) %}
+{% for choice_value, choice_description in parameter.values.items() %}
   <option value="{{ choice_value }}"
           {% if choice_value == previous_value %}selected{% endif %}>
     {{ choice_description }}
