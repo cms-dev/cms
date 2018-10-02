@@ -25,7 +25,6 @@ This updater just adds the default values for the new fields
 
 """
 
-from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
