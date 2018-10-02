@@ -19,8 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues
-
 import functools
 import json
 import logging
@@ -470,7 +468,7 @@ class RemoteServiceClient(RemoteServiceBase):
         """See RemoteServiceBase.finalize."""
         super(RemoteServiceClient, self).finalize(reason)
 
-        for result in itervalues(self.pending_outgoing_requests_results):
+        for result in self.pending_outgoing_requests_results.values():
             result.set_exception(RPCError(reason))
 
         self.pending_outgoing_requests.clear()

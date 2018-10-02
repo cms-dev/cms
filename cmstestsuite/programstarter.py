@@ -20,8 +20,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues
-
 import atexit
 import errno
 import io
@@ -309,7 +307,7 @@ class ProgramStarter(object):
         self._programs[(service_name, shard, contest)] = p
 
     def count_unhealthy(self):
-        return len([p for p in itervalues(self._programs) if not p.healthy])
+        return len([p for p in self._programs.values() if not p.healthy])
 
     def wait(self):
         for attempts in range(_MAX_ATTEMPTS):
@@ -321,12 +319,12 @@ class ProgramStarter(object):
             time.sleep(0.2 * (1.2 ** attempts))
         raise TestException(
             "Failed to bring up services: %s" % ", ".join(
-                p.coord for p in itervalues(self._programs) if not p.healthy))
+                p.coord for p in self._programs.values() if not p.healthy))
 
     def stop_all(self):
-        for p in itervalues(self._programs):
+        for p in self._programs.values():
             p.log_cpu_times()
-        for p in itervalues(self._programs):
+        for p in self._programs.values():
             p.stop()
-        for p in itervalues(self._programs):
+        for p in self._programs.values():
             p.wait_or_kill()

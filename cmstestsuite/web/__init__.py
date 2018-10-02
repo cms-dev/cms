@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues, iteritems
+from six import iteritems
 
 import datetime
 import io
@@ -77,7 +77,7 @@ class Browser(object):
                 file_objs = dict((k, io.open(v, "rb")) for k, v in file_names)
                 response = self.session.post(url, data, files=file_objs)
             finally:
-                for fobj in itervalues(file_objs):
+                for fobj in file_objs.values():
                     fobj.close()
         return response
 

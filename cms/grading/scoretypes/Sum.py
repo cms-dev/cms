@@ -18,8 +18,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues
-
 from . import ScoreTypeAlone
 
 
@@ -107,7 +105,7 @@ class Sum(ScoreTypeAlone):
         """See ScoreType.max_score."""
         public_score = 0.0
         score = 0.0
-        for public in itervalues(self.public_testcases):
+        for public in self.public_testcases.values():
             if public:
                 public_score += self.parameters
             score += self.parameters

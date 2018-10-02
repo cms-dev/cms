@@ -24,8 +24,6 @@ using gevent and JSON encoding.
 
 """
 
-from six import itervalues
-
 import errno
 import functools
 import logging
@@ -340,7 +338,7 @@ class Service(object):
         """Disconnect all remote services.
 
         """
-        for service in itervalues(self.remote_services):
+        for service in self.remote_services.values():
             if service.connected:
                 service.disconnect()
 

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues, iteritems
+from six import iteritems
 from six.moves import zip_longest
 
 import heapq
@@ -118,10 +118,10 @@ class Score(object):
         if self._score_mode == SCORE_MODE_MAX:
             score = max([0.0] +
                         [submission.score
-                         for submission in itervalues(self._submissions)])
+                         for submission in self._submissions.values()])
         elif self._score_mode == SCORE_MODE_MAX_SUBTASK:
             scores_by_submission = (s.extra or []
-                                    for s in itervalues(self._submissions))
+                                    for s in self._submissions.values())
             scores_by_subtask = zip_longest(*scores_by_submission,
                                             fillvalue=0.0)
             score = float(sum(max(s) for s in scores_by_subtask))
@@ -144,7 +144,7 @@ class Score(object):
         del self._history[:]
 
         # Reset the submissions at their default value.
-        for sub in itervalues(self._submissions):
+        for sub in self._submissions.values():
             sub.score = 0.0
             sub.token = False
             sub.extra = list()

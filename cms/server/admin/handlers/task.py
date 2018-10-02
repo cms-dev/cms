@@ -26,8 +26,6 @@
 
 """
 
-from six import itervalues
-
 import logging
 import traceback
 
@@ -189,7 +187,7 @@ class TaskHandler(BaseHandler):
                 self.redirect(self.url("task", task_id))
                 return
 
-            for testcase in itervalues(dataset.testcases):
+            for testcase in dataset.testcases.values():
                 testcase.public = bool(self.get_argument(
                     "testcase_%s_public" % testcase.id, False))
 

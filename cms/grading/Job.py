@@ -33,7 +33,7 @@ testcase".
 
 """
 
-from six import itervalues, iteritems
+from six import iteritems
 
 import logging
 
@@ -334,7 +334,7 @@ class CompilationJob(Job):
         sr.compilation_memory = self.plus.get('execution_memory')
         sr.compilation_shard = self.shard
         sr.compilation_sandbox = ":".join(self.sandboxes)
-        for executable in itervalues(self.executables):
+        for executable in self.executables.values():
             sr.executables.set(executable)
 
     @staticmethod
@@ -413,7 +413,7 @@ class CompilationJob(Job):
         ur.compilation_memory = self.plus.get('execution_memory')
         ur.compilation_shard = self.shard
         ur.compilation_sandbox = ":".join(self.sandboxes)
-        for executable in itervalues(self.executables):
+        for executable in self.executables.values():
             u_executable = UserTestExecutable(
                 executable.filename, executable.digest)
             ur.executables.set(u_executable)

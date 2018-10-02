@@ -120,7 +120,7 @@ class TestImportTask(DatabaseMixin, unittest.TestCase):
                 six.assertCountEqual(self, dataset_manager_digests,
                                      (m.digest
                                       for d in t.datasets
-                                      for m in six.itervalues(d.managers)))
+                                      for m in d.managers.values()))
 
     def test_clean_import(self):
         # Completely new task, import and attach it to the contest.

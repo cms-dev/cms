@@ -37,7 +37,7 @@
             {% trans %}You can see (and download) all of them using the list on the right.{% endtrans %}
             {% trans %}Some suggested translations follow.{% endtrans %}
         </p>
-    {% for statement in itervalues(task.statements)|sort(attribute="language") %}
+    {% for statement in task.statements.values()|sort(attribute="language") %}
         {% if statement.language in task.primary_statements %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
             {% set language_name = statement.language|format_locale %}
@@ -49,7 +49,7 @@
         </a>
         {% endif %}
     {% endfor %}
-    {% for statement in itervalues(task.statements)|sort(attribute="language") %}
+    {% for statement in task.statements.values()|sort(attribute="language") %}
         {% if statement.language in participation.user.preferred_languages and statement.language not in task.primary_statements %}
         <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
             {% set language_name = statement.language|format_locale %}
@@ -65,7 +65,7 @@
     <div class="all_statements well">
         <div>
             <ul>
-    {% for statement in itervalues(task.statements)|sort(attribute="language") %}
+    {% for statement in task.statements.values()|sort(attribute="language") %}
                 <li>
                     <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
         {% set language_name = statement.language|format_locale %}

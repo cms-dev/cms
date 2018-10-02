@@ -24,7 +24,7 @@ filters, tests, etc. that are useful for generic global usage.
 
 """
 
-from six import itervalues, iteritems
+from six import iteritems
 
 from jinja2 import Environment, StrictUndefined, contextfilter, \
     contextfunction, environmentfunction
@@ -140,7 +140,6 @@ def today(ctx, dt):
 
 
 def instrument_generic_toolbox(env):
-    env.globals["itervalues"] = itervalues
     env.globals["iteritems"] = iteritems
     env.globals["iter"] = iter
     env.globals["next"] = next

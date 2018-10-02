@@ -25,7 +25,7 @@ exporting and importing again should be idempotent.
 
 """
 
-from six import PY3, itervalues, iteritems
+from six import PY3, iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -241,7 +241,7 @@ class DumpExporter(object):
                         self.get_id(obj)
 
                 # Specify the "root" of the data graph
-                data["_objects"] = list(itervalues(self.ids))
+                data["_objects"] = list(self.ids.values())
 
                 while len(self.queue) > 0:
                     obj = self.queue.pop(0)

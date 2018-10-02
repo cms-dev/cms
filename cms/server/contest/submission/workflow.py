@@ -27,7 +27,7 @@
 
 """Procedures used by CWS to accept submissions and user tests."""
 
-from six import itervalues, iteritems
+from six import iteritems
 
 import logging
 
@@ -155,7 +155,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
                 N_("Please select the correct files."))
 
     if any(len(content) > config.max_submission_length
-           for content in itervalues(files)):
+           for content in files.values()):
         raise UnacceptableSubmission(
             N_("Submission too big!"),
             N_("Each source file must be at most %d bytes long.") %

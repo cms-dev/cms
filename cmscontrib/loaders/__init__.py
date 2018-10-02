@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues, iteritems
+from six import iteritems
 
 from .italy_yaml import YamlLoader
 from .polygon import PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
@@ -58,7 +58,7 @@ def choose_loader(arg, path, error_callback):
             error_callback("Specified loader doesn't exist")
     else:
         res = None
-        for loader in itervalues(LOADERS):
+        for loader in LOADERS.values():
             if loader.detect(path):
                 if res is None:
                     res = loader

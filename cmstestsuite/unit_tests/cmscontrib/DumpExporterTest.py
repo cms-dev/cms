@@ -18,7 +18,7 @@
 
 """Tests for the DumpExporter script"""
 
-from six import assertCountEqual, iteritems, itervalues
+from six import assertCountEqual, iteritems
 
 import json
 import io
@@ -137,7 +137,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         raise (AssertionError): if the object is in the dump.
 
         """
-        for obj in itervalues(self.dump):
+        for obj in self.dump.values():
             if isinstance(obj, dict) and obj["_class"] == cls.__name__ and \
                     all(obj[k] == v for k, v in iteritems(kwargs)):
                 raise AssertionError("Object of class %s with fields %s "
