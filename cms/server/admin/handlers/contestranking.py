@@ -26,8 +26,6 @@
 
 """
 
-import six
-
 import csv
 import io
 
@@ -87,12 +85,7 @@ class RankingHandler(BaseHandler):
             self.set_header("Content-Disposition",
                             "attachment; filename=\"ranking.csv\"")
 
-            if six.PY3:
-                output = io.StringIO()  # untested
-            else:
-                # In python2 we must use this because its csv module does not
-                # support unicode input
-                output = io.BytesIO()
+            output = io.StringIO()  # untested
             writer = csv.writer(output)
 
             include_partial = True
@@ -133,10 +126,7 @@ class RankingHandler(BaseHandler):
                 if include_partial:
                     row.append("*" if partial else "")
 
-                if six.PY3:
-                    writer.writerow(row)  # untested
-                else:
-                    writer.writerow([s.encode("utf-8") for s in row])
+                writer.writerow(row)  # untested
 
             self.finish(output.getvalue())
         else:

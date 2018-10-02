@@ -18,8 +18,6 @@
 
 """Tests for the binary module"""
 
-from six import PY2
-
 import binascii
 import unittest
 
@@ -33,7 +31,6 @@ class TestBinToHex(unittest.TestCase):
         self.assertEqual(bin_to_hex(b"\xFF\xFF\xFF\xFF"), "ffffffff")
         self.assertEqual(bin_to_hex(b"\x00" * 1000), "0" * 2000)
 
-    @unittest.skipIf(PY2, "Python2 allows strings")
     def test_string(self):
         with self.assertRaises(TypeError):
             bin_to_hex("cms")
@@ -45,8 +42,6 @@ class TestHexToBin(unittest.TestCase):
         super(TestHexToBin, self).setUp()
         # The exception type depend on Python's version.
         self.error = binascii.Error
-        if PY2:
-            self.error = TypeError
 
     def test_success(self):
         self.assertEqual(hex_to_bin("3200a0"), b"\x32\x00\xa0")
@@ -69,7 +64,6 @@ class TestBinToB64(unittest.TestCase):
         self.assertEqual(bin_to_b64(b"\xFF\xFF\xFF\xFF"), "/////w==")
         self.assertEqual(bin_to_b64(b"\x00" * 3000), "A" * (3000 * 4 // 3))
 
-    @unittest.skipIf(PY2, "Python2 allows strings")
     def test_string(self):
         with self.assertRaises(TypeError):
             bin_to_b64("cms")

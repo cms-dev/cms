@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import PY3
-
 import io
 import json
 import logging
@@ -160,12 +158,8 @@ class Store(object):
             # reflect changes on the persistent storage
             try:
                 path = os.path.join(self._path, key + '.json')
-                if PY3:
-                    with io.open(path, 'wt', encoding="utf-8") as rec:
-                        json.dump(self._store[key].get(), rec)
-                else:
-                    with io.open(path, 'wb') as rec:
-                        json.dump(self._store[key].get(), rec)
+                with io.open(path, 'wt', encoding="utf-8") as rec:
+                    json.dump(self._store[key].get(), rec)
             except IOError:
                 logger.error("I/O error occured while creating entity",
                              exc_info=True)
@@ -203,12 +197,8 @@ class Store(object):
             # reflect changes on the persistent storage
             try:
                 path = os.path.join(self._path, key + '.json')
-                if PY3:
-                    with io.open(path, 'wt', encoding="utf-8") as rec:
-                        json.dump(self._store[key].get(), rec)
-                else:
-                    with io.open(path, 'wb') as rec:
-                        json.dump(self._store[key].get(), rec)
+                with io.open(path, 'wt', encoding="utf-8") as rec:
+                    json.dump(self._store[key].get(), rec)
             except IOError:
                 logger.error("I/O error occured while updating entity",
                              exc_info=True)
@@ -263,12 +253,8 @@ class Store(object):
                 # reflect changes on the persistent storage
                 try:
                     path = os.path.join(self._path, key + '.json')
-                    if PY3:
-                        with io.open(path, 'wt', encoding="utf-8") as rec:
-                            json.dump(value.get(), rec)
-                    else:
-                        with io.open(path, 'wb') as rec:
-                            json.dump(value.get(), rec)
+                    with io.open(path, 'wt', encoding="utf-8") as rec:
+                        json.dump(value.get(), rec)
                 except IOError:
                     logger.error(
                         "I/O error occured while merging entity lists",

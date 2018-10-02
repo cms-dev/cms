@@ -21,12 +21,7 @@ in the system.
 
 """
 
-from six import PY3
-
-if PY3:
-    from shlex import quote as shell_quote
-else:
-    from pipes import quote as shell_quote
+from shlex import quote as shell_quote
 
 from cms.grading import Language
 
