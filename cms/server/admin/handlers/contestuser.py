@@ -29,9 +29,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import logging
 
 import tornado.web

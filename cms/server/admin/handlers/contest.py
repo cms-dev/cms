@@ -27,9 +27,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Contest, Participation, Submission
 from cmscommon.datetime import make_datetime

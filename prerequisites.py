@@ -27,11 +27,6 @@ configuration, and so on).
 
 """
 
-# Do not use imports from the future module here as this script is
-# called as root and thus may get a different environment than the one
-# the user will be using and in which the requirements were installed
-# (e.g. the site installation rather than a venv).
-
 # Alias raw_input as input on py2 only.
 try:
     input = raw_input

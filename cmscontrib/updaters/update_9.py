@@ -28,8 +28,6 @@ named "Task", whereas now it must be called with the task short name.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 import logging

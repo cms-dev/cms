@@ -25,9 +25,6 @@
 
 """Computing and merging statistics about command executions in the sandbox."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cms.grading.Sandbox import Sandbox
 
 

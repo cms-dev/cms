@@ -32,9 +32,6 @@ Use `make_psycopg_green()` to enable gevent support in Psycopg.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from contextlib import contextmanager
 
 import psycopg2

@@ -18,9 +18,6 @@
 
 """Utilities for testing task types."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import functools
 
 from collections import deque

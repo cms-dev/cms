@@ -28,8 +28,6 @@ again should be idempotent.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly

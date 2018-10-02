@@ -25,9 +25,6 @@ BigInteger.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 
 class Updater(object):
 

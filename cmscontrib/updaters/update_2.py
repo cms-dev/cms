@@ -28,8 +28,6 @@ bd80d0c930e25972eeda861719f96990de6e7822
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iterkeys, itervalues, iteritems
 
 

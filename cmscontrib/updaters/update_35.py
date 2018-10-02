@@ -24,9 +24,6 @@ This updater is no-op as we only changed a field from Integer to OID.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 
 class Updater(object):
 

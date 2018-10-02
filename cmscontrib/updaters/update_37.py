@@ -25,8 +25,6 @@ Add the feedback_level field for tasks. The default for new tasks is
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 from cms import FEEDBACK_LEVEL_FULL

@@ -20,9 +20,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from cms.db import Dataset, UserTestFile, UserTest
 from cms.grading.languagemanager import get_language
 

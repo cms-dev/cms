@@ -25,9 +25,6 @@
 
 """High level functions to perform standardized white-diff comparison."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import logging
 
 from .evaluation import EVALUATION_MESSAGES

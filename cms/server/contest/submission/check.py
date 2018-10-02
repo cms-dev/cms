@@ -34,9 +34,6 @@ exported as they may be of general interest.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from sqlalchemy import desc, func
 
 from cms.db import Task, Submission

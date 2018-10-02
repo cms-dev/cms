@@ -18,8 +18,6 @@
 
 """Tests for the DumpExporter script"""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import assertCountEqual, iteritems, itervalues
 
 import json

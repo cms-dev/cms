@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from .locale import \
     Translation, DEFAULT_TRANSLATION, get_translations, \
     filter_language_codes, choose_language_code

@@ -25,8 +25,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
 import logging

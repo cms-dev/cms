@@ -18,9 +18,6 @@
 
 """Package containing high-level utilities for performing grading steps."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from .compilation import COMPILATION_MESSAGES, compilation_step
 from .evaluation import EVALUATION_MESSAGES, evaluation_step, \
     evaluation_step_after_run, evaluation_step_before_run, \

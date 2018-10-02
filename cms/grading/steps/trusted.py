@@ -35,9 +35,6 @@ can be translated by writing "translate:x" where x is "success", "partial" or
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import errno
 import logging
 

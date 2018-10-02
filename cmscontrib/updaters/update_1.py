@@ -25,8 +25,6 @@ db4adada08d66b4797d0569d95e8f0c028a4e5e0.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 from functools import partial

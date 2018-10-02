@@ -25,9 +25,6 @@
 
 """Utilities to handle messages for contestants about execution outcomes."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import logging
 
 

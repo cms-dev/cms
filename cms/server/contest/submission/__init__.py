@@ -26,9 +26,6 @@ is irrelevant and duplicates are allowed.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from .check import get_submission_count, check_max_number, \
     get_latest_submission, check_min_interval
 from .file_retrieval import ReceivedFile, InvalidArchive, \

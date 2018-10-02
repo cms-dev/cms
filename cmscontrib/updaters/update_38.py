@@ -25,8 +25,6 @@ newly-introduced fields 'compilation' and 'user_io'.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iteritems
 
 import json

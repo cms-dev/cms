@@ -25,9 +25,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \

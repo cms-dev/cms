@@ -35,8 +35,6 @@ same regardless of the path used to reach it.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import itervalues
 
 from datetime import timedelta

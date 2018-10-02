@@ -19,9 +19,6 @@
 
 """Utility class to run functional-like tests."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import datetime
 import io
 import logging

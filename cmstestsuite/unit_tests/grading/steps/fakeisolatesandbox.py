@@ -18,9 +18,6 @@
 
 """A fake sandbox for tests."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import errno
 
 from collections import deque

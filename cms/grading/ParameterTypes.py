@@ -27,8 +27,6 @@ represented by JSON objects.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import string_types, with_metaclass
 
 from abc import ABCMeta, abstractmethod

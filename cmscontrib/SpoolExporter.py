@@ -25,8 +25,6 @@ Italian IOI repository for storing the results of a contest.
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iterkeys, iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly

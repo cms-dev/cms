@@ -17,9 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import io
 import os.path
 

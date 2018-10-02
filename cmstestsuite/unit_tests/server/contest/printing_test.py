@@ -20,9 +20,6 @@
 
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
-
 import unittest
 from collections import namedtuple
 

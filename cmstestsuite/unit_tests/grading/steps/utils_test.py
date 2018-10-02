@@ -18,8 +18,6 @@
 
 """Tests for the step utils."""
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import assertRegex
 
 import unittest

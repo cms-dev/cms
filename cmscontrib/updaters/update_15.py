@@ -25,8 +25,6 @@ This converts the dump to the new schema introduced to support user
 and contest separation.
 """
 
-from future.builtins.disabled import *  # noqa
-from future.builtins import *  # noqa
 from six import iterkeys
 
 
