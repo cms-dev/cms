@@ -82,7 +82,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           {% else %}
           <table>
             <tbody>
-            {% for statement in itervalues(task.statements) %}
+            {% for statement in task.statements.values() %}
               <tr>
                 <td><a href="{{ url("file", statement.digest, "statement.pdf") }}">Statement for language "{{ statement.language }}"</a></td>
                 <td>
@@ -111,7 +111,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           {% if task.attachments|length == 0 %}
             No attachments.
           {% else %}
-            {% for attachment in itervalues(task.attachments) %}
+            {% for attachment in task.attachments.values() %}
               <div class="attachment">
                 <a href="{{ url("file", attachment.digest, attachment.filename) }}">{{ attachment.filename }}</a>
                 - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "attachment", attachment.id) }}'); ">Delete</a>
@@ -398,7 +398,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% if dataset.managers|length == 0 %}
               No managers.
             {% else %}
-              {% for manager in itervalues(dataset.managers) %}
+              {% for manager in dataset.managers.values() %}
                 <div class="manager">
                   <a href="{{ url("file", manager.digest, manager.filename) }}">{{ manager.filename }}</a>
                   - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("dataset", dataset.id, "manager", manager.id, "delete") }}');">Delete</a>

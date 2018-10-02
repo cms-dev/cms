@@ -25,8 +25,6 @@
 
 """
 
-from six import itervalues
-
 import logging
 
 from sqlalchemy import func, not_
@@ -185,6 +183,6 @@ class AdminWebServer(WebService):
 
         for i, k in enumerate(keys):
             stats[k] = results[i][0]
-        stats['compiling'] += 2 * stats['total'] - sum(itervalues(stats))
+        stats['compiling'] += 2 * stats['total'] - sum(stats.values())
 
         return stats

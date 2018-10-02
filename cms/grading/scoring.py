@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems, itervalues
+from six import iteritems
 
 from collections import namedtuple
 
@@ -248,7 +248,7 @@ def _task_score_max_subtask(score_details_tokened):
         for idx, score in iteritems(subtask_scores):
             max_scores[idx] = max(max_scores.get(idx, 0.0), score)
 
-    return sum(itervalues(max_scores))
+    return sum(max_scores.values())
 
 
 def _task_score_max(score_details_tokened):

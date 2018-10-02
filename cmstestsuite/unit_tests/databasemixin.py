@@ -35,8 +35,6 @@ same regardless of the path used to reach it.
 
 """
 
-from six import itervalues
-
 from datetime import timedelta
 
 import cms
@@ -287,7 +285,7 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
         starting from a clean DB.
 
         """
-        for table in itervalues(metadata.tables):
+        for table in metadata.tables.values():
             self.session.execute(table.delete())
         self.session.commit()
 

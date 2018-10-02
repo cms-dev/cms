@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import itervalues, iteritems
+from six import iteritems
 
 import argparse
 import functools
@@ -318,8 +318,8 @@ class SubListHandler(object):
 
         result = list()
         for task_id in self.task_store._store.keys():
-            result.extend(itervalues(
-                self.scoring_store.get_submissions(args["user_id"], task_id)))
+            result.extend(self.scoring_store
+                          .get_submissions(args["user_id"], task_id).values())
         result.sort(key=lambda x: (x.task, x.time))
         result = list(a.__dict__ for a in result)
 

@@ -27,8 +27,6 @@
 
 """
 
-from six import itervalues
-
 import io
 import logging
 import re
@@ -614,7 +612,7 @@ class DownloadTestcasesHandler(BaseHandler):
         # to avoid having the whole ZIP file in memory at once.
         temp_file = io.BytesIO()
         with zipfile.ZipFile(temp_file, "w") as zip_file:
-            for testcase in itervalues(dataset.testcases):
+            for testcase in dataset.testcases.values():
                 # Get input, output file path
                 with self.service.file_cacher.get_file(testcase.input) as f:
                     input_path = f.name

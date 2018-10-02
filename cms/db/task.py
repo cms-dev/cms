@@ -24,7 +24,7 @@
 
 """
 
-from six import itervalues, iteritems
+from six import iteritems
 
 import copy
 from datetime import timedelta
@@ -496,13 +496,13 @@ class Dataset(Base):
         """
         new_testcases = dict()
         if clone_testcases or clone_results:
-            for old_t in itervalues(old_dataset.testcases):
+            for old_t in old_dataset.testcases.values():
                 new_t = old_t.clone()
                 new_t.dataset = self
                 new_testcases[new_t.codename] = new_t
 
         if clone_managers or clone_results:
-            for old_m in itervalues(old_dataset.managers):
+            for old_m in old_dataset.managers.values():
                 new_m = old_m.clone()
                 new_m.dataset = self
 
@@ -519,7 +519,7 @@ class Dataset(Base):
                 new_sr.dataset = self
 
                 # Create executables.
-                for old_e in itervalues(old_sr.executables):
+                for old_e in old_sr.executables.values():
                     new_e = old_e.clone()
                     new_e.submission_result = new_sr
 

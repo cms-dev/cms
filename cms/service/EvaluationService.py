@@ -30,7 +30,7 @@ the current ranking.
 
 """
 
-from six import itervalues, iteritems
+from six import iteritems
 
 import logging
 
@@ -598,7 +598,7 @@ class EvaluationService(TriggeredService):
                    result.job.plus.get("tombstone") is True:
                     executable_digests = [
                         e.digest for e in
-                        itervalues(object_result.executables)]
+                        object_result.executables.values()]
                     if Digest.TOMBSTONE in executable_digests:
                         logger.info("Submission %d's compilation on dataset "
                                     "%d has been invalidated since the "
@@ -1019,5 +1019,5 @@ class EvaluationService(TriggeredService):
                 entries_by_key[key] = entry
                 entries_by_key[key]["item"]["multiplicity"] = 1
         return sorted(
-            itervalues(entries_by_key),
+            entries_by_key.values(),
             key=lambda x: (x["priority"], x["timestamp"]))
