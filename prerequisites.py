@@ -27,13 +27,6 @@ configuration, and so on).
 
 """
 
-# Alias raw_input as input on py2 only.
-try:
-    input = raw_input
-    del raw_input
-except NameError:
-    pass
-
 import argparse
 import grp
 import os
