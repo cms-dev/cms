@@ -29,8 +29,6 @@
 
 """
 
-from six import iteritems
-
 import ipaddress
 import logging
 
@@ -75,7 +73,7 @@ class ContestHandler(BaseHandler):
                 list(self.available_translations.keys()),
                 self.contest.allowed_localizations)
             self.available_translations = dict(
-                (k, v) for k, v in iteritems(self.available_translations)
+                (k, v) for k, v in self.available_translations.items()
                 if k in lang_codes)
 
         super(ContestHandler, self).prepare()

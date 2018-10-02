@@ -25,8 +25,6 @@ positive or null (for no limit).
 
 """
 
-from six import iteritems
-
 import logging
 
 
@@ -40,7 +38,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
 

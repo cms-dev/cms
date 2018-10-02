@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import io
 import errno
 import json
@@ -173,7 +171,7 @@ class Config(object):
             return False
 
         # Store every config property.
-        for key, value in iteritems(data):
+        for key, value in data.items():
             if key.startswith("_"):
                 continue
             if not hasattr(self, key):

@@ -20,8 +20,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import logging
 import os
 import tempfile
@@ -197,12 +195,12 @@ class Communication(TaskType):
             filenames_and_digests_to_get[stub_filename] = \
                 job.managers[stub_filename].digest
         # User's submitted file(s) (copy and add to compilation).
-        for codename, file_ in iteritems(job.files):
+        for codename, file_ in job.files.items():
             filename = codename.replace(".%l", source_ext)
             filenames_to_compile.append(filename)
             filenames_and_digests_to_get[filename] = file_.digest
         # Any other useful manager (just copy).
-        for filename, manager in iteritems(job.managers):
+        for filename, manager in job.managers.items():
             if is_manager_for_compilation(filename, language):
                 filenames_and_digests_to_get[filename] = manager.digest
 
@@ -216,7 +214,7 @@ class Communication(TaskType):
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy all required files in the sandbox.
-        for filename, digest in iteritems(filenames_and_digests_to_get):
+        for filename, digest in filenames_and_digests_to_get.items():
             sandbox.create_file_from_storage(filename, digest)
 
         # Run the compilation.

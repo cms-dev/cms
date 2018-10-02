@@ -24,8 +24,6 @@ This updater specifies the method contestant passwords are hashed with.
 
 """
 
-from six import iteritems
-
 
 class Updater(object):
 
@@ -34,7 +32,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
 

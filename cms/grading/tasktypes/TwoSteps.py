@@ -20,8 +20,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import logging
 import os
 import tempfile
@@ -167,7 +165,7 @@ class TwoSteps(TaskType):
                 job.managers[manager_filename].digest
 
         # User's submissions and headers.
-        for filename, file_ in iteritems(job.files):
+        for filename, file_ in job.files.items():
             source_filename = filename.replace(".%l", source_ext)
             source_filenames.append(source_filename)
             files_to_get[source_filename] = file_.digest
@@ -189,7 +187,7 @@ class TwoSteps(TaskType):
         sandbox = create_sandbox(file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
-        for filename, digest in iteritems(files_to_get):
+        for filename, digest in files_to_get.items():
             sandbox.create_file_from_storage(filename, digest)
 
         # Run the compilation.
@@ -239,11 +237,11 @@ class TwoSteps(TaskType):
             }
 
         # Put the required files into the sandbox
-        for filename, digest in iteritems(first_executables_to_get):
+        for filename, digest in first_executables_to_get.items():
             first_sandbox.create_file_from_storage(filename,
                                                    digest,
                                                    executable=True)
-        for filename, digest in iteritems(first_files_to_get):
+        for filename, digest in first_files_to_get.items():
             first_sandbox.create_file_from_storage(filename, digest)
 
         first = evaluation_step_before_run(
@@ -262,11 +260,11 @@ class TwoSteps(TaskType):
         second_files_to_get = {}
 
         # Put the required files into the second sandbox
-        for filename, digest in iteritems(second_executables_to_get):
+        for filename, digest in second_executables_to_get.items():
             second_sandbox.create_file_from_storage(filename,
                                                     digest,
                                                     executable=True)
-        for filename, digest in iteritems(second_files_to_get):
+        for filename, digest in second_files_to_get.items():
             second_sandbox.create_file_from_storage(filename, digest)
 
         second = evaluation_step_before_run(

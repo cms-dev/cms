@@ -25,8 +25,6 @@ Italian IOI repository for storing the results of a contest.
 
 """
 
-from six import iteritems
-
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -132,7 +130,7 @@ class SpoolExporter(object):
             submission_dir = os.path.join(
                 self.upload_dir, username, "%s.%d.%s" % (task, timestamp, ext))
             os.mkdir(submission_dir)
-            for filename, file_ in iteritems(submission.files):
+            for filename, file_ in submission.files.items():
                 self.file_cacher.get_file_to_path(
                     file_.digest,
                     os.path.join(submission_dir, filename.replace(".%l", ext)))

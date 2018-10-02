@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import PY3, iteritems
+from six import PY3
 
 import io
 import json
@@ -231,7 +231,7 @@ class Store(object):
             if not isinstance(data_dict, dict):
                 raise InvalidData("Not a dictionary")
             item_dict = dict()
-            for key, value in iteritems(data_dict):
+            for key, value in data_dict.items():
                 try:
                     # FIXME We should allow keys to be arbitrary unicode
                     # strings, so this just needs to be a non-empty check.
@@ -248,7 +248,7 @@ class Store(object):
                     exc.args = exc.message,
                     raise exc
 
-            for key, value in iteritems(item_dict):
+            for key, value in item_dict.items():
                 is_new = key not in self._store
                 old_value = self._store.get(key)
                 # insert entity
@@ -294,7 +294,7 @@ class Store(object):
             del self._store[key]
             # enforce consistency
             for depend in self._depends:
-                for o_key, o_value in list(iteritems(depend._store)):
+                for o_key, o_value in list(depend._store.items()):
                     if not o_value.consistent(self._all_stores):
                         depend.delete(o_key)
             # notify callbacks
@@ -337,7 +337,7 @@ class Store(object):
     def retrieve_list(self):
         """Retrieve a list of all entities."""
         result = dict()
-        for key, value in iteritems(self._store):
+        for key, value in self._store.items():
             result[key] = value.get()
         return result
 

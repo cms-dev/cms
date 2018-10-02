@@ -25,8 +25,6 @@
 
 """High level functions to perform standardized evaluations."""
 
-from six import iteritems
-
 import logging
 
 from .messages import HumanMessage, MessageCollection
@@ -198,7 +196,7 @@ def evaluation_step_before_run(sandbox, command,
     sandbox.stdout_file = stdout_redirect
     sandbox.stderr_file = "stderr.txt"
 
-    for src, (dest, options) in iteritems(dirs_map):
+    for src, (dest, options) in dirs_map.items():
         sandbox.add_mapped_directory(src, dest=dest, options=options)
     for name in [sandbox.stderr_file, sandbox.stdout_file]:
         if name is not None:

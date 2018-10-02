@@ -24,8 +24,6 @@ This updater encodes codenames using a more restricted alphabet.
 
 """
 
-from six import iteritems
-
 import ipaddress
 import logging
 import re
@@ -96,7 +94,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
 

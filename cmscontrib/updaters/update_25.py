@@ -25,8 +25,6 @@ language plugins (for example, from
 
 """
 
-from six import iteritems
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,7 +49,7 @@ class Updater(object):
         self._warned_lang = set()
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v["_class"] == "Contest":

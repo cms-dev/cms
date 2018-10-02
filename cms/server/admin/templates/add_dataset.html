@@ -74,12 +74,12 @@ You are cloning the dataset "{{ original_dataset.description }}".
       <td>
 
         <select name="task_type">
-          {% for task_type_name, task_type in iteritems(TASK_TYPES) %}
+          {% for task_type_name, task_type in TASK_TYPES.items() %}
           <option value="{{ task_type_name }}"{% if original_dataset is not none and task_type_name == original_dataset.task_type %} selected{% endif %}>{{ task_type_name }}</option>
           {% endfor %}
         </select>
 
-        {% for task_type_name, task_type in iteritems(TASK_TYPES) %}
+        {% for task_type_name, task_type in TASK_TYPES.items() %}
         <table class="TaskTypeOptions bordered" id="TaskType{{ task_type_name }}Options" style="display: none;">
           {% if original_dataset is not none and task_type_name == original_dataset.task_type %}
             {% set values = original_dataset_task_type_parameters %}
@@ -121,7 +121,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
       </td>
       <td>
         <select name="score_type">
-          {% for score_type_name, score_type in iteritems(SCORE_TYPES) %}
+          {% for score_type_name, score_type in SCORE_TYPES.items() %}
           <option value="{{ score_type_name }}"{% if original_dataset is not none and score_type_name == original_dataset.score_type %} selected{% endif %}>{{ score_type_name }}</option>
           {% endfor %}
         </select>

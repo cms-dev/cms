@@ -20,8 +20,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import logging
 
 from cms.grading.steps import compilation_step, evaluation_step,\
@@ -206,12 +204,12 @@ class Batch(TaskType):
             filenames_and_digests_to_get[grader_filename] = \
                 job.managers[grader_filename].digest
         # User's submitted file(s) (copy and add to compilation).
-        for codename, file_ in iteritems(job.files):
+        for codename, file_ in job.files.items():
             filename = codename.replace(".%l", source_ext)
             filenames_to_compile.append(filename)
             filenames_and_digests_to_get[filename] = file_.digest
         # Any other useful manager (just copy).
-        for filename, manager in iteritems(job.managers):
+        for filename, manager in job.managers.items():
             if is_manager_for_compilation(filename, language):
                 filenames_and_digests_to_get[filename] = manager.digest
 
@@ -225,7 +223,7 @@ class Batch(TaskType):
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy required files in the sandbox (includes the grader if present).
-        for filename, digest in iteritems(filenames_and_digests_to_get):
+        for filename, digest in filenames_and_digests_to_get.items():
             sandbox.create_file_from_storage(filename, digest)
 
         # Run the compilation.
@@ -284,9 +282,9 @@ class Batch(TaskType):
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put the required files into the sandbox
-        for filename, digest in iteritems(executables_to_get):
+        for filename, digest in executables_to_get.items():
             sandbox.create_file_from_storage(filename, digest, executable=True)
-        for filename, digest in iteritems(files_to_get):
+        for filename, digest in files_to_get.items():
             sandbox.create_file_from_storage(filename, digest)
 
         # Actually performs the execution

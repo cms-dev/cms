@@ -33,8 +33,6 @@ format.
 
 """
 
-from six import iteritems
-
 import os.path
 from collections import namedtuple
 
@@ -121,7 +119,7 @@ def extract_files_from_tornado(tornado_files):
         return extract_files_from_archive(tornado_files["submission"][0].body)
 
     result = list()
-    for codename, files in iteritems(tornado_files):
+    for codename, files in tornado_files.items():
         for f in files:
             result.append(ReceivedFile(codename, f.filename, f.body))
     return result

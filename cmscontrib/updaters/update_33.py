@@ -25,8 +25,6 @@ a fraction of the max score rather than in absolute terms.
 
 """
 
-from six import iteritems
-
 import logging
 
 
@@ -181,7 +179,7 @@ class Updater(object):
         # See convert_score_details.
         inaccurate = False
 
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
 

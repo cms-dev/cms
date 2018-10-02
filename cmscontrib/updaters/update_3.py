@@ -27,8 +27,6 @@ d66951d3149a954fb0b81b6015e8e0b060020152
 
 """
 
-from six import iteritems
-
 
 class Updater(object):
 
@@ -37,7 +35,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v["_class"] == "User":

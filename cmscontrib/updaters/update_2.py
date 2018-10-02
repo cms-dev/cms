@@ -28,8 +28,6 @@ bd80d0c930e25972eeda861719f96990de6e7822
 
 """
 
-from six import iteritems
-
 
 def split_dict(src, *keys):
     ret = dict()

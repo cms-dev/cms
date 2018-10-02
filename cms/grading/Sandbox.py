@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems, with_metaclass
+from six import with_metaclass
 
 import io
 import logging
@@ -1084,7 +1084,7 @@ class IsolateSandbox(SandboxBase):
             res += ["--full-env"]
         for var in self.inherit_env:
             res += ["--env=%s" % var]
-        for var, value in iteritems(self.set_env):
+        for var, value in self.set_env.items():
             res += ["--env=%s=%s" % (var, value)]
         if self.fsize is not None:
             res += ["--fsize=%d" % self.fsize]

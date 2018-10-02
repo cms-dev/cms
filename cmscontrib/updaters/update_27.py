@@ -25,8 +25,6 @@ analysis mode (Submission.official, Contest.analysis_*).
 
 """
 
-from six import iteritems
-
 
 class Updater(object):
 
@@ -35,7 +33,7 @@ class Updater(object):
         self.objs = data
 
     def run(self):
-        for k, v in iteritems(self.objs):
+        for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v["_class"] == "Submission":

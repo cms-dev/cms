@@ -25,7 +25,7 @@ exporting and importing again should be idempotent.
 
 """
 
-from six import PY3, iteritems
+from six import PY3
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -343,7 +343,7 @@ class DumpExporter(object):
                 data[prp.key] = list(self.get_id(i) for i in val)
             elif isinstance(val, dict):
                 data[prp.key] = \
-                    dict((k, self.get_id(v)) for k, v in iteritems(val))
+                    dict((k, self.get_id(v)) for k, v in val.items())
             else:
                 raise RuntimeError("Unknown SQLAlchemy relationship type: %s"
                                    % type(val))

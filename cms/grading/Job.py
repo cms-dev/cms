@@ -33,8 +33,6 @@ testcase".
 
 """
 
-from six import iteritems
-
 import logging
 
 from cms.db import Dataset, Evaluation, Executable, File, Manager, Submission, \
@@ -150,11 +148,11 @@ class Job(object):
             'success': self.success,
             'text': self.text,
             'files': dict((k, v.digest)
-                          for k, v in iteritems(self.files)),
+                          for k, v in self.files.items()),
             'managers': dict((k, v.digest)
-                             for k, v in iteritems(self.managers)),
+                             for k, v in self.managers.items()),
             'executables': dict((k, v.digest)
-                                for k, v in iteritems(self.executables)),
+                                for k, v in self.executables.items()),
             }
         return res
 
@@ -185,11 +183,11 @@ class Job(object):
         if data['operation'] is not None:
             data['operation'] = ESOperation.from_dict(data['operation'])
         data['files'] = dict(
-            (k, File(k, v)) for k, v in iteritems(data['files']))
+            (k, File(k, v)) for k, v in data['files'].items())
         data['managers'] = dict(
-            (k, Manager(k, v)) for k, v in iteritems(data['managers']))
+            (k, Manager(k, v)) for k, v in data['managers'].items())
         data['executables'] = dict(
-            (k, Executable(k, v)) for k, v in iteritems(data['executables']))
+            (k, Executable(k, v)) for k, v in data['executables'].items())
         return cls(**data)
 
     @staticmethod

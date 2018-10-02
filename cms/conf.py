@@ -21,8 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iteritems
-
 import errno
 import io
 import json
@@ -276,7 +274,7 @@ class Config(object):
         del data["other_services"]
 
         # Put everything else in self.
-        for key, value in iteritems(data):
+        for key, value in data.items():
             setattr(self, key, value)
 
         return True

@@ -18,7 +18,7 @@
 
 """Tests for the DumpExporter script"""
 
-from six import assertCountEqual, iteritems
+from six import assertCountEqual
 
 import json
 import io
@@ -121,9 +121,9 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         raise (AssertionError): if the object is not in the dump.
 
         """
-        for key, obj in iteritems(self.dump):
+        for key, obj in self.dump.items():
             if isinstance(obj, dict) and obj["_class"] == cls.__name__ and \
-                    all(obj[k] == v for k, v in iteritems(kwargs)):
+                    all(obj[k] == v for k, v in kwargs.items()):
                 return key
         raise AssertionError("Cannot find object of class %s with fields %s" %
                              (cls.__name__, kwargs))
@@ -139,7 +139,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         """
         for obj in self.dump.values():
             if isinstance(obj, dict) and obj["_class"] == cls.__name__ and \
-                    all(obj[k] == v for k, v in iteritems(kwargs)):
+                    all(obj[k] == v for k, v in kwargs.items()):
                 raise AssertionError("Object of class %s with fields %s "
                                      "should not appear in the dump" %
                                      (cls.__name__, kwargs))

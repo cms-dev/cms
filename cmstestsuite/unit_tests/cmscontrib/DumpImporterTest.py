@@ -18,7 +18,7 @@
 
 """Tests for the DumpImporter script"""
 
-from six import PY3, assertCountEqual, iteritems
+from six import PY3, assertCountEqual
 
 import json
 import io
@@ -164,7 +164,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         """
         f_path = self.makedirs("files")
         d_path = self.makedirs("descriptions")
-        for digest, (desc, content) in iteritems(data):
+        for digest, (desc, content) in data.items():
             with io.open(
                     os.path.join(d_path, digest), "wt", encoding="utf-8") as f:
                 f.write(desc)
