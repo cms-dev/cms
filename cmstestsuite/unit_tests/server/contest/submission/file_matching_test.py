@@ -17,8 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from cms.server.contest.submission import ReceivedFile, \
     InvalidFilesOrLanguage, match_files_and_language

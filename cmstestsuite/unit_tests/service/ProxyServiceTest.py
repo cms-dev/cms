@@ -26,9 +26,9 @@ import gevent.monkey
 gevent.monkey.patch_all()  # noqa
 
 import unittest
+from unittest.mock import patch, PropertyMock
 
 import gevent
-from mock import patch, PropertyMock
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin

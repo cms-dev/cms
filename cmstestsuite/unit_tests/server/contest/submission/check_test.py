@@ -18,8 +18,7 @@
 
 import unittest
 from datetime import timedelta
-
-from mock import call, patch
+from unittest.mock import call, patch
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin

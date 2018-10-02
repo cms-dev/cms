@@ -19,9 +19,8 @@
 """Utilities for testing task types."""
 
 import functools
-
 from collections import deque
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from cms import config
 

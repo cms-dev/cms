@@ -21,9 +21,10 @@
 
 """
 
-import gevent
 import unittest
-from mock import Mock, call
+from unittest.mock import Mock, call
+
+import gevent
 
 from cmstestsuite.unit_tests.testidgenerator import \
     unique_long_id, unique_unicode_id

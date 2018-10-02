@@ -1,7 +1,6 @@
 # Only for testing
 beautifulsoup4>=4.6,<4.7
 coverage>=4.4,<4.5
-mock>=2.0,<2.1
 
 # Only for building documentation
 Sphinx>=1.6,<1.7

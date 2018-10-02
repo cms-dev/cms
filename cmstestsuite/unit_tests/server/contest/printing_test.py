@@ -22,8 +22,7 @@
 
 import unittest
 from collections import namedtuple
-
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cms import config

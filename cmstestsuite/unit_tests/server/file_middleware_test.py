@@ -19,8 +19,8 @@
 import io
 import random
 import unittest
+from unittest.mock import Mock
 
-from mock import Mock
 from werkzeug.http import quote_header_value
 from werkzeug.test import Client, EnvironBuilder
 from werkzeug.wrappers import Response
