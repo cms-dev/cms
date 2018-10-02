@@ -25,7 +25,6 @@ Add the feedback_level field for tasks. The default for new tasks is
 
 """
 
-from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
