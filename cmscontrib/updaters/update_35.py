@@ -24,7 +24,6 @@ This updater is no-op as we only changed a field from Integer to OID.
 
 """
 
-from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa

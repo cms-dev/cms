@@ -18,7 +18,6 @@
 
 """Utilities for testing task types."""
 
-from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
