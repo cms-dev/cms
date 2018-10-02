@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import logging
 
@@ -216,7 +216,7 @@ class Batch(TaskType):
                 filenames_and_digests_to_get[filename] = manager.digest
 
         # Prepare the compilation command.
-        executable_filename = self._executable_filename(iterkeys(job.files))
+        executable_filename = self._executable_filename(job.files.keys())
         commands = language.get_compilation_commands(
             filenames_to_compile, executable_filename)
 
@@ -253,7 +253,7 @@ class Batch(TaskType):
             return
 
         # Prepare the execution
-        executable_filename = next(iterkeys(job.executables))
+        executable_filename = next(iter(job.executables.keys()))
         language = get_language(job.language)
         main = self.GRADER_BASENAME \
             if self._uses_grader() else executable_filename

@@ -28,12 +28,12 @@ bd80d0c930e25972eeda861719f96990de6e7822
 
 """
 
-from six import iterkeys, itervalues, iteritems
+from six import itervalues, iteritems
 
 
 def split_dict(src, *keys):
     ret = dict()
-    for k in list(iterkeys(src)):
+    for k in list(src.keys()):
         v = src[k]
         if k in keys:
             ret[k] = v
@@ -54,7 +54,7 @@ class Updater(object):
         return str(self.next_id)
 
     def run(self):
-        for k in list(iterkeys(self.objs)):
+        for k in list(self.objs.keys()):
             if k.startswith("_"):
                 continue
             v = self.objs[k]

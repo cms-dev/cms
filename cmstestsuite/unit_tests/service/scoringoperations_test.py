@@ -21,7 +21,7 @@ and the function to compute them).
 
 """
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import unittest
 
@@ -97,7 +97,7 @@ class TestScoringOperations(DatabaseMixin, unittest.TestCase):
         evaluated_codenames = set()
         for result in results:
             # Pick one arbitrary testcase.
-            evaluated_codename = next(iterkeys(result.dataset.testcases))
+            evaluated_codename = next(iter(result.dataset.testcases.keys()))
             self.add_evaluation(
                 result, result.dataset.testcases[evaluated_codename])
             evaluated_codenames.add(evaluated_codename)

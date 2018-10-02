@@ -18,8 +18,6 @@
 
 """Utilities for testing score types."""
 
-from six import iterkeys
-
 from unittest.mock import Mock
 
 
@@ -38,7 +36,7 @@ class ScoreTypeTestMixin(object):
         # Reversed to make sure the score type does not depend on the order.
         sr.evaluations = [
             ScoreTypeTestMixin.get_evaluation(codename, 1.0)
-            for codename in reversed(sorted(iterkeys(testcases)))]
+            for codename in reversed(sorted(testcases.keys()))]
         return sr
 
     @staticmethod

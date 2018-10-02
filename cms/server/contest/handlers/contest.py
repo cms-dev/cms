@@ -29,7 +29,7 @@
 
 """
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import ipaddress
 import logging
@@ -72,7 +72,7 @@ class ContestHandler(BaseHandler):
 
         if self.contest.allowed_localizations:
             lang_codes = filter_language_codes(
-                list(iterkeys(self.available_translations)),
+                list(self.available_translations.keys()),
                 self.contest.allowed_localizations)
             self.available_translations = dict(
                 (k, v) for k, v in iteritems(self.available_translations)

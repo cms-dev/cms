@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import logging
 import os
@@ -207,7 +207,7 @@ class Communication(TaskType):
                 filenames_and_digests_to_get[filename] = manager.digest
 
         # Prepare the compilation command
-        executable_filename = self._executable_filename(iterkeys(job.files))
+        executable_filename = self._executable_filename(job.files.keys())
         commands = language.get_compilation_commands(
             filenames_to_compile, executable_filename)
 
@@ -242,7 +242,7 @@ class Communication(TaskType):
         """See TaskType.evaluate."""
         if not check_executables_number(job, 1):
             return
-        executable_filename = next(iterkeys(job.executables))
+        executable_filename = next(iter(job.executables.keys()))
         executable_digest = job.executables[executable_filename].digest
 
         # Make sure the required manager is among the job managers.

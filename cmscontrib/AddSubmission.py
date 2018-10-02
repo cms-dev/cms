@@ -20,7 +20,7 @@
 
 """
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import argparse
 import logging
@@ -60,7 +60,7 @@ def language_from_submitted_files(files):
     """
     # TODO: deduplicate with the code in SubmitHandler.
     language = None
-    for filename in iterkeys(files):
+    for filename in files.keys():
         this_language = filename_to_language(files[filename])
         if this_language is None and ".%l" in filename:
             raise ValueError(

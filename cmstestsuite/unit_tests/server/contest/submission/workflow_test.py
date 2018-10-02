@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, itervalues
+from six import itervalues
 import six
 
 import unittest
@@ -171,7 +171,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         # And that it has the expected fields.
         self.assertEqual(submission.timestamp, timestamp)
         self.assertEqual(submission.language, language)
-        six.assertCountEqual(self, iterkeys(submission.files), iterkeys(files))
+        six.assertCountEqual(self, submission.files.keys(), files.keys())
         six.assertCountEqual(self,
                              (f.digest for f in itervalues(submission.files)),
                              (bytes_digest(b) for b in itervalues(files)))
@@ -477,12 +477,12 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         # And that it has the expected fields.
         self.assertEqual(user_test.timestamp, timestamp)
         self.assertEqual(user_test.language, language)
-        six.assertCountEqual(self, iterkeys(user_test.files), iterkeys(files))
+        six.assertCountEqual(self, user_test.files.keys(), files.keys())
         six.assertCountEqual(self,
                              (f.digest for f in itervalues(user_test.files)),
                              (bytes_digest(b) for b in itervalues(files)))
-        six.assertCountEqual(self, iterkeys(user_test.managers),
-                             iterkeys(managers))
+        six.assertCountEqual(self, user_test.managers.keys(),
+                             managers.keys())
         six.assertCountEqual(self,
                              (f.digest for f in itervalues(user_test.managers)),
                              (bytes_digest(b) for b in itervalues(managers)))

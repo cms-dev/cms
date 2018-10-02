@@ -30,7 +30,7 @@ task.
 
 """
 
-from six import iterkeys, with_metaclass
+from six import with_metaclass
 
 import logging
 import re
@@ -327,7 +327,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         if all(isinstance(t, int) for t in t_params):
 
             # XXX Lexicographical order by codename
-            indices = sorted(iterkeys(self.public_testcases))
+            indices = sorted(self.public_testcases.keys())
             current = 0
             targets = []
 
@@ -340,7 +340,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         elif all(isinstance(t, str) for t in t_params):
 
-            indices = sorted(iterkeys(self.public_testcases))
+            indices = sorted(self.public_testcases.keys())
             targets = []
 
             for t in t_params:

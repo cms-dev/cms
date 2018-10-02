@@ -30,7 +30,7 @@ the current ranking.
 
 """
 
-from six import iterkeys, itervalues, iteritems
+from six import itervalues, iteritems
 
 import logging
 
@@ -502,7 +502,7 @@ class EvaluationService(TriggeredService):
             session.commit()
 
             num_testcases_per_dataset = dict()
-            for type_, object_id, dataset_id in iterkeys(by_object_and_type):
+            for type_, object_id, dataset_id in by_object_and_type.keys():
                 if type_ == ESOperation.EVALUATION:
                     if dataset_id not in num_testcases_per_dataset:
                         num_testcases_per_dataset[dataset_id] = session\
@@ -522,7 +522,7 @@ class EvaluationService(TriggeredService):
 
             logger.info("Ending operations for %s objects...",
                         len(by_object_and_type))
-            for type_, object_id, dataset_id in iterkeys(by_object_and_type):
+            for type_, object_id, dataset_id in by_object_and_type.keys():
                 if type_ == ESOperation.COMPILATION:
                     submission_result = SubmissionResult.get_from_id(
                         (object_id, dataset_id), session)

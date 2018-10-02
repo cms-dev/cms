@@ -25,7 +25,7 @@ a fraction of the max score rather than in absolute terms.
 
 """
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import logging
 
@@ -75,7 +75,7 @@ def is_group_score_details(details):
         if not isinstance(subtask, dict):
             return False
 
-        keys = set(iterkeys(subtask))
+        keys = set(subtask.keys())
         # Whether the subtask exposes all its information, which
         # requires all its testcases to do the same.
         subtask_is_visible = False
@@ -96,7 +96,7 @@ def is_group_score_details(details):
             if not isinstance(testcase, dict):
                 return False
 
-            keys = set(iterkeys(testcase))
+            keys = set(testcase.keys())
 
             if keys == TESTCASE_FULL_KEYS:
                 if testcase["outcome"] not in OUTCOMES \

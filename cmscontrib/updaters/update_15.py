@@ -25,12 +25,10 @@ This converts the dump to the new schema introduced to support user
 and contest separation.
 """
 
-from six import iterkeys
-
 
 def split_dict(src, *keys):
     ret = dict()
-    for k in list(iterkeys(src)):
+    for k in list(src.keys()):
         v = src[k]
         if k in keys:
             ret[k] = v
@@ -50,7 +48,7 @@ class Updater(object):
         return str(self.next_id)
 
     def run(self):
-        for k in list(iterkeys(self.objs)):
+        for k in list(self.objs.keys()):
             if k.startswith("_"):
                 continue
             v = self.objs[k]

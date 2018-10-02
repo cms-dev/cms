@@ -62,13 +62,13 @@
         {# We replace '.%l' with the actual language only when it occurs as an extension at the end of the string and only when #}
         {# there isn't another file with that name. This allows to securily reverse the replacement and should work great in #}
         {# the common case. Yet, it still allows the marginal case of both 'foo.%l' and 'foo.c' in the submission format. #}
-        {% set files = iterkeys(t.files)|list + iterkeys(t.managers)|list %}
+        {% set files = t.files.keys()|list + t.managers.keys()|list %}
         {% if files|length == 0 %}
         <a class="btn disabled">
             {% trans %}None{% endtrans %}
         </a>
         {% elif files|length == 1 %}
-            {% set filename = next(iterkeys(t.files)) %}
+            {% set filename = next(iter(t.files.keys())) %}
             {% set real_filename = filename|replace(".%l", (t.language|to_language).source_extension) %}
         <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
             {% trans %}Download{% endtrans %}
