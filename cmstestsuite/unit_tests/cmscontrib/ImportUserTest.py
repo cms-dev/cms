@@ -18,8 +18,6 @@
 
 """Tests for the ImportUser script"""
 
-import six
-
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
@@ -91,8 +89,8 @@ class TestImportUser(DatabaseMixin, unittest.TestCase):
             if contest_ids is not None:
                 db_participations = session.query(Participation) \
                     .filter(Participation.user_id == u.id).all()
-                six.assertCountEqual(
-                    self, contest_ids,
+                self.assertCountEqual(
+                    contest_ids,
                     (p.contest_id for p in db_participations))
 
     def test_clean_import(self):

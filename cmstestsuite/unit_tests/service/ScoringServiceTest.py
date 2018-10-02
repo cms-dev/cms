@@ -21,8 +21,6 @@
 
 """
 
-import six
-
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -96,8 +94,8 @@ class TestScoringService(DatabaseMixin, unittest.TestCase):
         gevent.sleep(0.1)  # Needed to trigger the score loop.
 
         # Asserts that compute_score was called.
-        six.assertCountEqual(self, self.call_args,
-                             [(sr.submission_id, sr.dataset_id)])
+        self.assertCountEqual(self.call_args,
+                              [(sr.submission_id, sr.dataset_id)])
         self.session.expire(sr)
         self.assertEqual((sr.score, sr.score_details,
                           sr.public_score, sr.public_score_details,
@@ -119,9 +117,9 @@ class TestScoringService(DatabaseMixin, unittest.TestCase):
         gevent.sleep(0.1)  # Needed to trigger the score loop.
 
         # Asserts that compute_score was called.
-        six.assertCountEqual(self, self.call_args,
-                             [(sr_a.submission_id, sr_a.dataset_id),
-                              (sr_b.submission_id, sr_b.dataset_id)])
+        self.assertCountEqual(self.call_args,
+                              [(sr_a.submission_id, sr_a.dataset_id),
+                               (sr_b.submission_id, sr_b.dataset_id)])
 
     def test_new_evaluation_already_scored(self):
         """One submission is not re-scored if already scored.

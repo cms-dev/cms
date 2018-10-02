@@ -18,8 +18,6 @@
 
 """Tests for the AddParticipation script"""
 
-from six import assertCountEqual
-
 import ipaddress
 import unittest
 
@@ -62,7 +60,7 @@ class TestAddParticipation(DatabaseMixin, unittest.TestCase):
         if ip is None:
             self.assertIsNone(p.ip)
         else:
-            assertCountEqual(self, p.ip, ip)
+            self.assertCountEqual(p.ip, ip)
         if team_code is None:
             self.assertIsNone(p.team)
         else:

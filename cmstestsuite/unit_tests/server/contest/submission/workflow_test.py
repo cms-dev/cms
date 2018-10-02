@@ -170,10 +170,9 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         # And that it has the expected fields.
         self.assertEqual(submission.timestamp, timestamp)
         self.assertEqual(submission.language, language)
-        six.assertCountEqual(self, submission.files.keys(), files.keys())
-        six.assertCountEqual(self,
-                             (f.digest for f in submission.files.values()),
-                             (bytes_digest(b) for b in files.values()))
+        self.assertCountEqual(submission.files.keys(), files.keys())
+        self.assertCountEqual((f.digest for f in submission.files.values()),
+                              (bytes_digest(b) for b in files.values()))
         self.assertIs(submission.official, official)
 
     def test_success(self):
@@ -476,14 +475,12 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         # And that it has the expected fields.
         self.assertEqual(user_test.timestamp, timestamp)
         self.assertEqual(user_test.language, language)
-        six.assertCountEqual(self, user_test.files.keys(), files.keys())
-        six.assertCountEqual(self,
-                             (f.digest for f in user_test.files.values()),
-                             (bytes_digest(b) for b in files.values()))
-        six.assertCountEqual(self, user_test.managers.keys(), managers.keys())
-        six.assertCountEqual(self,
-                             (f.digest for f in user_test.managers.values()),
-                             (bytes_digest(b) for b in managers.values()))
+        self.assertCountEqual(user_test.files.keys(), files.keys())
+        self.assertCountEqual((f.digest for f in user_test.files.values()),
+                              (bytes_digest(b) for b in files.values()))
+        self.assertCountEqual(user_test.managers.keys(), managers.keys())
+        self.assertCountEqual((f.digest for f in user_test.managers.values()),
+                              (bytes_digest(b) for b in managers.values()))
         self.assertEqual(user_test.input,
                          bytes_digest(input_) if input_ is not None else None)
 

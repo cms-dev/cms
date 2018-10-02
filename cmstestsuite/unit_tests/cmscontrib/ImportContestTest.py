@@ -18,8 +18,6 @@
 
 """Tests for the ImportContest script"""
 
-import six
-
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
@@ -140,11 +138,11 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
             c = db_contests[0]
             self.assertEqual(c.name, name)
             self.assertEqual(c.description, description)
-            six.assertCountEqual(self, [(t.name, t.title) for t in c.tasks],
-                                 task_names_and_titles)
-            six.assertCountEqual(self, [(u.user.username, u.user.last_name)
-                                        for u in c.participations],
-                                 usernames_and_last_names)
+            self.assertCountEqual([(t.name, t.title) for t in c.tasks],
+                                  task_names_and_titles)
+            self.assertCountEqual([(u.user.username, u.user.last_name)
+                                   for u in c.participations],
+                                  usernames_and_last_names)
 
     def assertSubmissionCount(self, count):
         """Assert that we have that many submissions in the DB"""

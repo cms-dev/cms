@@ -18,8 +18,6 @@
 
 """Tests for the DumpExporter script"""
 
-from six import assertCountEqual
-
 import json
 import io
 import os
@@ -193,9 +191,9 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertFileInDump(self.file_digest, self.file_content)
 
         # Root objects are the contests, the users, and unattached tasks.
-        assertCountEqual(self, self.dump["_objects"],
-                         [contest_key, other_contest_key, user_key,
-                          unattached_task_key, unattached_user_key])
+        self.assertCountEqual(self.dump["_objects"],
+                              [contest_key, other_contest_key, user_key,
+                               unattached_task_key, unattached_user_key])
         self.assertEqual(self.dump["_version"], version)
 
     def test_export_single_contest(self):
