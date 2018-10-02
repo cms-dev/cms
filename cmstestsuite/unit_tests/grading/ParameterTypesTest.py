@@ -18,8 +18,6 @@
 
 """Tests for parameter types."""
 
-from six import PY2
-
 import unittest
 
 from tornado.web import MissingArgumentError
@@ -57,7 +55,6 @@ class TestParameterTypeString(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.p.validate(["asd"])
 
-    @unittest.skipIf(PY2, "In Python2 bytes is a string type")
     def test_validate_failure_bytes(self):
         with self.assertRaises(ValueError):
             self.p.validate(b"asd")

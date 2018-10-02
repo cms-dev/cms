@@ -18,8 +18,6 @@
 
 """Tests for the trusted step."""
 
-from six import PY2
-
 import unittest
 from unittest.mock import ANY, MagicMock, call, patch
 
@@ -93,7 +91,6 @@ class TestExtractOutcomeAndText(unittest.TestCase):
         with self.assertRaises(ValueError):
             extract_outcome_and_text(self.sandbox)
 
-    @unittest.skipIf(PY2, "Python 2 does not have FileNotFoundError.")
     def test_failure_missing_file(self):
         self.sandbox.fake_file("o", b"0.45\n")
         with self.assertRaises(FileNotFoundError):

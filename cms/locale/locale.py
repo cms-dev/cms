@@ -28,8 +28,6 @@
 
 """
 
-import six
-
 import copy
 import logging
 import math
@@ -84,16 +82,10 @@ class Translation(object):
         return self.locale.display_name
 
     def gettext(self, msgid):
-        if six.PY3:
-            return self.translation.gettext(msgid)
-        else:
-            return self.translation.ugettext(msgid)
+        return self.translation.gettext(msgid)
 
     def ngettext(self, msgid1, msgid2, n):
-        if six.PY3:
-            return self.translation.ngettext(msgid1, msgid2, n)
-        else:
-            return self.translation.ungettext(msgid1, msgid2, n)
+        return self.translation.ngettext(msgid1, msgid2, n)
 
     def format_datetime(self, dt, timezone):
         """Return the date and time of dt.
@@ -269,10 +261,7 @@ class Translation(object):
             return code
 
     def translate_mimetype(self, mimetype):
-        if six.PY3:
-            return self.mimetype_translation.gettext(mimetype)
-        else:
-            return self.mimetype_translation.ugettext(mimetype)
+        return self.mimetype_translation.gettext(mimetype)
 
 
 DEFAULT_TRANSLATION = Translation("en")

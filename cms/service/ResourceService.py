@@ -25,17 +25,12 @@ that saves the resources usage in that machine.
 
 """
 
-from six import PY3
-
 import logging
 import os
 import re
 import time
 from collections import defaultdict, deque
-if PY3:
-    from shlex import quote as shell_quote
-else:
-    from pipes import quote as shell_quote
+from shlex import quote as shell_quote
 
 import psutil
 

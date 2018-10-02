@@ -18,7 +18,7 @@
 
 """Tests for the DumpImporter script"""
 
-from six import PY3, assertCountEqual
+from six import assertCountEqual
 
 import json
 import io
@@ -148,12 +148,8 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def write_dump(self, dump):
         destination = self.get_path("contest.json")
-        if PY3:
-            with io.open(destination, "wt", encoding="utf-8") as f:
-                json.dump(dump, f, indent=4, sort_keys=True)
-        else:
-            with io.open(destination, "wb") as f:
-                json.dump(dump, f, indent=4, sort_keys=True)
+        with io.open(destination, "wt", encoding="utf-8") as f:
+            json.dump(dump, f, indent=4, sort_keys=True)
 
     def write_files(self, data):
         """Write files and descriptions on the filesystem.
