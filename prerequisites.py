@@ -27,7 +27,6 @@ configuration, and so on).
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 # Do not use imports from the future module here as this script is
 # called as root and thus may get a different environment than the one

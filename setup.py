@@ -28,7 +28,6 @@
 
 """
 
-from __future__ import print_function
 # setuptools doesn't seem to like this:
 # from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
