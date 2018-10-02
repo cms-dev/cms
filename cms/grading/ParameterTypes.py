@@ -27,7 +27,6 @@ represented by JSON objects.
 
 """
 
-from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import string_types, with_metaclass

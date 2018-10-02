@@ -20,7 +20,6 @@
 
 """Utilities for cmscontrib"""
 
-from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 
