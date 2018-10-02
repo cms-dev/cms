@@ -27,7 +27,7 @@
 
 """Procedures used by CWS to accept submissions and user tests."""
 
-from six import iterkeys, itervalues, iteritems
+from six import itervalues, iteritems
 
 import logging
 
@@ -143,7 +143,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
             N_("Please select the correct files."))
 
     digests = dict()
-    missing_codenames = required_codenames.difference(iterkeys(files))
+    missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
             digests = fetch_file_digests_from_previous_submission(
@@ -307,7 +307,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
             N_("Please select the correct files."))
 
     digests = dict()
-    missing_codenames = required_codenames.difference(iterkeys(files))
+    missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
             digests = fetch_file_digests_from_previous_submission(

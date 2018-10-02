@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import logging
 import os
@@ -217,7 +217,7 @@ class TwoSteps(TaskType):
         if not check_executables_number(job, 1):
             return
 
-        executable_filename = next(iterkeys(job.executables))
+        executable_filename = next(iter(job.executables.keys()))
         executable_digest = job.executables[executable_filename].digest
 
         first_sandbox = create_sandbox(file_cacher, name="first_evaluate")

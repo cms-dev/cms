@@ -20,8 +20,6 @@
 
 """Utility functions for importers"""
 
-from six import iterkeys
-
 import functools
 
 from cms.db import Contest, Dataset, Task
@@ -211,7 +209,7 @@ def _update_dict(old_dict, new_dict, update_value_fn=None):
     """
     if update_value_fn is None:
         update_value_fn = _update_object
-    for key in set(iterkeys(old_dict)) | set(iterkeys(new_dict)):
+    for key in set(old_dict.keys()) | set(new_dict.keys()):
         if key in new_dict:
             if key not in old_dict:
                 # Move the object from new_dict to old_dict. For some funny
@@ -246,7 +244,7 @@ def _update_list_with_key(old_list, new_list, key,
     old_dict = dict((key(v), v) for v in old_list)
     new_dict = dict((key(v), v) for v in new_list)
 
-    for k in set(iterkeys(old_dict)) | set(iterkeys(new_dict)):
+    for k in set(old_dict.keys()) | set(new_dict.keys()):
         if k in new_dict:
             if k not in old_dict:
                 # Add new value to the old dictionary.

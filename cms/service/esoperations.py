@@ -26,8 +26,6 @@ compute sets of operations to do.
 
 """
 
-from six import iterkeys
-
 import logging
 
 from sqlalchemy import case, literal
@@ -189,7 +187,7 @@ def submission_get_operations(submission_result, submission, dataset):
         evaluated_testcase_ids = set(
             evaluation.testcase_id
             for evaluation in submission_result.evaluations)
-        for testcase_codename in iterkeys(dataset.testcases):
+        for testcase_codename in dataset.testcases.keys():
             testcase_id = dataset.testcases[testcase_codename].id
             if testcase_id not in evaluated_testcase_ids:
                 yield ESOperation(ESOperation.EVALUATION,

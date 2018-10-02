@@ -19,8 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys
-
 import ipaddress
 from datetime import datetime, timedelta
 
@@ -113,7 +111,7 @@ class Base(object):
                     continue
 
                 # Check that we understand the type
-                if not isinstance(col.type, tuple(iterkeys(_TYPE_MAP))):
+                if not isinstance(col.type, tuple(_TYPE_MAP.keys())):
                     raise RuntimeError(
                         "Unknown SQLAlchemy column type for ColumnProperty "
                         "%s of %s: %s" % (prp.key, cls.__name__, col.type))

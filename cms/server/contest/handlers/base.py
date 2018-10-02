@@ -29,8 +29,6 @@
 
 """
 
-from six import iterkeys
-
 import logging
 import os
 import traceback
@@ -83,7 +81,7 @@ class BaseHandler(CommonRequestHandler):
         self.setup_locale()
 
     def setup_locale(self):
-        lang_codes = list(iterkeys(self.available_translations))
+        lang_codes = list(self.available_translations.keys())
 
         browser_langs = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),

@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, itervalues
+from six import itervalues
 
 from . import ScoreTypeAlone
 
@@ -120,7 +120,7 @@ class Sum(ScoreTypeAlone):
             return 0.0, [], 0.0, [], []
 
         # XXX Lexicographical order by codename
-        indices = sorted(iterkeys(self.public_testcases))
+        indices = sorted(self.public_testcases.keys())
         evaluations = dict((ev.codename, ev)
                            for ev in submission_result.evaluations)
         testcases = []

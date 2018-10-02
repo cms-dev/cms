@@ -25,7 +25,7 @@
 
 """
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import logging
 import random
@@ -329,7 +329,7 @@ class WorkerPool(object):
 
         """
         result = dict()
-        for shard in iterkeys(self._worker):
+        for shard in self._worker.keys():
             s_time = self._start_time[shard]
             s_time = make_timestamp(s_time) if s_time is not None else None
 

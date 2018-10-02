@@ -64,7 +64,7 @@
             {% trans %}None{% endtrans %}
         </a>
         {% elif s.files|length == 1 %}
-            {% set filename = next(iterkeys(s.files)) %}
+            {% set filename = next(iter(s.files.keys())) %}
             {% if s.language is not none %}
                 {% set filename = filename|replace(".%l", (s.language|to_language).source_extension) %}
             {% endif %}

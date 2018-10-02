@@ -33,8 +33,6 @@ etc.) and try to match them against the desired format for a submission.
 
 """
 
-from six import iterkeys
-
 import os.path
 
 from cms.grading.languagemanager import get_language, LANGUAGES
@@ -275,7 +273,7 @@ def match_files_and_language(given_files, given_language_name,
     elif len(matched_files_by_language) > 1:
         raise InvalidFilesOrLanguage(
             "there is more than one language that matches all the files: %r"
-            % set(iterkeys(matched_files_by_language)))
+            % set(matched_files_by_language.keys()))
 
     language, files = matched_files_by_language.popitem()
 

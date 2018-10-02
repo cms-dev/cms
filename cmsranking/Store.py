@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import PY3, iterkeys, iteritems
+from six import PY3, iteritems
 
 import io
 import json
@@ -314,7 +314,7 @@ class Store(object):
         """
         with LOCK:
             # delete all entities
-            for key in list(iterkeys(self._store)):
+            for key in list(self._store.keys()):
                 self.delete(key)
 
     def retrieve(self, key):

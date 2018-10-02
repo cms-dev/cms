@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, itervalues
+from six import itervalues
 
 import functools
 import json
@@ -374,7 +374,7 @@ class RemoteServiceServer(RemoteServiceBase):
 
         """
         # Validate the request.
-        if not {"__id", "__method", "__data"}.issubset(iterkeys(request)):
+        if not {"__id", "__method", "__data"}.issubset(request.keys()):
             self.disconnect("Bad request received")
             logger.warning("Request is missing some fields, ignoring.")
             return
@@ -567,7 +567,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         """
         # Validate the response.
-        if not {"__id", "__data", "__error"}.issubset(iterkeys(response)):
+        if not {"__id", "__data", "__error"}.issubset(response.keys()):
             self.disconnect("Bad response received")
             logger.warning("Response is missing some fields, ignoring.")
             return

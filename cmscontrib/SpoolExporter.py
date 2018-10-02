@@ -25,7 +25,7 @@ Italian IOI repository for storing the results of a contest.
 
 """
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
@@ -204,7 +204,7 @@ class SpoolExporter(object):
         if is_partial:
             logger.warning("Some of the scores are not definitive.")
 
-        sorted_usernames = sorted(iterkeys(scores),
+        sorted_usernames = sorted(scores.keys(),
                                   key=lambda username: (scores[username],
                                                         username),
                                   reverse=True)

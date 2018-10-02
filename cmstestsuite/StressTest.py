@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import iterkeys, iteritems
+from six import iteritems
 
 import argparse
 import ast
@@ -279,7 +279,7 @@ def harvest_contest_data(contest_id):
                 continue
             users[user.username] = {'password': password}
         for task in contest.tasks:
-            tasks.append((task.id, task.name, list(iterkeys(task.statements))))
+            tasks.append((task.id, task.name, list(task.statements.keys())))
     return users, tasks
 
 

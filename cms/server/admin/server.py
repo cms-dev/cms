@@ -25,7 +25,7 @@
 
 """
 
-from six import iterkeys, itervalues
+from six import itervalues
 
 import logging
 
@@ -179,7 +179,7 @@ class AdminWebServer(WebService):
             queries['total'] = total_query
 
             stats = {}
-            keys = list(iterkeys(queries))
+            keys = list(queries.keys())
             results = queries[keys[0]].union_all(
                 *(queries[key] for key in keys[1:])).all()
 
