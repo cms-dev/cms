@@ -18,8 +18,6 @@
 
 """Interfaces for supported programming languages."""
 
-from six import with_metaclass
-
 import logging
 import os
 from abc import ABCMeta, abstractmethod
@@ -28,7 +26,7 @@ from abc import ABCMeta, abstractmethod
 logger = logging.getLogger(__name__)
 
 
-class Language(with_metaclass(ABCMeta, object)):
+class Language(object, metaclass=ABCMeta):
     """A supported programming language"""
 
     @property

@@ -27,7 +27,7 @@ represented by JSON objects.
 
 """
 
-from six import string_types, with_metaclass
+from six import string_types
 
 from abc import ABCMeta, abstractmethod
 
@@ -36,7 +36,7 @@ from jinja2 import Markup
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
 
-class ParameterType(with_metaclass(ABCMeta, object)):
+class ParameterType(object, metaclass=ABCMeta):
     """Base class for parameter types."""
 
     TEMPLATE = None

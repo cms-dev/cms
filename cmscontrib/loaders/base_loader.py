@@ -17,12 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import with_metaclass
-
 from abc import ABCMeta, abstractmethod
 
 
-class BaseLoader(with_metaclass(ABCMeta, object)):
+class BaseLoader(object, metaclass=ABCMeta):
     """Base class for deriving loaders.
 
     Each loader must extend this class and support the following

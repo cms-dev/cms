@@ -30,8 +30,6 @@ task.
 
 """
 
-from six import with_metaclass
-
 import logging
 import re
 from abc import ABCMeta, abstractmethod
@@ -49,7 +47,7 @@ def N_(message):
     return message
 
 
-class ScoreType(with_metaclass(ABCMeta, object)):
+class ScoreType(object, metaclass=ABCMeta):
     """Base class for all score types, that must implement all methods
     defined here.
 

@@ -21,8 +21,6 @@ on notifications and sweeper loops.
 
 """
 
-from six import with_metaclass
-
 import logging
 import time
 from abc import ABCMeta, abstractmethod
@@ -37,7 +35,7 @@ from cmscommon.datetime import monotonic_time
 logger = logging.getLogger(__name__)
 
 
-class Executor(with_metaclass(ABCMeta, object)):  # pylint: disable=R0921
+class Executor(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     """A class taking care of executing operations.
 
