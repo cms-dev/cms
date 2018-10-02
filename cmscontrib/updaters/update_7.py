@@ -41,6 +41,6 @@ class Updater(object):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Contest":
-                v["languages"] = [u"c", u"cpp", u"pas"]
+                v["languages"] = ["c", "cpp", "pas"]
 
         return self.objs
