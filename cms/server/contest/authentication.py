@@ -150,7 +150,8 @@ def validate_login(
                 timestamp)
 
     return (participation,
-            json.dumps([username, password, make_timestamp(timestamp)]))
+            json.dumps([username, password, make_timestamp(timestamp)])
+                .encode("utf-8"))
 
 
 class AmbiguousIPAddress(Exception):
@@ -316,7 +317,7 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
 
     # Parse cookie.
     try:
-        cookie = json.loads(cookie)
+        cookie = json.loads(cookie.decode("utf-8"))
         username = cookie[0]
         password = cookie[1]
         last_update = make_datetime(cookie[2])
@@ -357,4 +358,5 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
                 timestamp)
 
     return (participation,
-            json.dumps([username, password, make_timestamp(timestamp)]))
+            json.dumps([username, password, make_timestamp(timestamp)])
+                .encode("utf-8"))
