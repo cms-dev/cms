@@ -21,7 +21,6 @@ import time
 from collections import deque
 from weakref import WeakSet
 
-from future.utils import text_to_native_str
 from gevent import Timeout
 from gevent.queue import Queue, Empty
 from gevent.pywsgi import WSGIHandler
@@ -305,11 +304,8 @@ class EventSource(object):
         # it explicitly to avoid unwanted caching by unaware proxies and
         # middlewares.
         write = start_response(
-            text_to_native_str("200 OK"),
-            [(text_to_native_str("Content-Type"),
-              text_to_native_str("text/event-stream; charset=utf-8")),
-             (text_to_native_str("Cache-Control"),
-              text_to_native_str("no-cache"))])
+            "200 OK", [("Content-Type", "text/event-stream; charset=utf-8"),
+                       ("Cache-Control", "no-cache")])
 
         # This is a part of the fourth hack (see above).
         if hasattr(start_response, "__self__") and \
