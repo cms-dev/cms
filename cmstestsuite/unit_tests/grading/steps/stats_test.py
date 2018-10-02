@@ -18,8 +18,6 @@
 
 """Tests for stats.py."""
 
-from six import assertRegex
-
 import unittest
 
 from cms.grading.Sandbox import Sandbox
@@ -98,8 +96,8 @@ class TestExecutionStats(unittest.TestCase):
         stats = execution_stats(self.sandbox, collect_output=True)
 
         # UTF-8 invalid parts are replaced with funny question marks (\uFFFD).
-        assertRegex(self, stats["stdout"], "^o.*1$")
-        assertRegex(self, stats["stderr"], "^e.*2$")
+        self.assertRegex(stats["stdout"], "^o.*1$")
+        self.assertRegex(stats["stderr"], "^e.*2$")
 
 
 class TestMergeExecutionStats(unittest.TestCase):

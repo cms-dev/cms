@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import six
-
 import io
 import tarfile
 import unittest
@@ -115,7 +113,7 @@ class TestExtractFilesFromArchive(unittest.TestCase):
         self.assertIsNone(f.codename)
         # The extracted file is named like the temporary file where the
         # archive's contents were copied to, plus a trailing tilde.
-        six.assertRegex(self, f.filename, "tmp[a-z0-9_]+~")
+        self.assertRegex(f.filename, "tmp[a-z0-9_]+~")
         self.assertEqual(f.content, b"some content")
 
     def test_multiple_slashes_are_compressed(self):
