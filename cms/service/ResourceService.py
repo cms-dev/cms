@@ -5,7 +5,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2014-2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,7 @@ that saves the resources usage in that machine.
 import logging
 import os
 import re
+import sys
 import time
 from collections import defaultdict, deque
 from shlex import quote as shell_quote
@@ -41,6 +42,8 @@ from cms.io import Service, rpc_method
 
 logger = logging.getLogger(__name__)
 
+
+BIN_PATH = os.path.dirname(sys.argv[0])
 
 B_TO_MB = 1024 * 1024
 
@@ -135,7 +138,9 @@ class ProcessMatcher:
         if "python" not in cl_interpreter:
             return None
 
-        cl_service = re.search(r"\bcms([a-zA-Z]+)$", cmdline[start_index + 1])
+        cl_service = re.search(r"^%s([a-zA-Z]+)$" %
+                               re.escape(os.path.join(BIN_PATH, "cms")),
+                               cmdline[start_index + 1])
         if not cl_service:
             return None
         cl_service = cl_service.groups()[0]
@@ -241,7 +246,7 @@ class ResourceService(Service):
                 # it, since it causes no trouble.
                 logger.info("Restarting (%s, %s)...",
                             service.name, service.shard)
-                command = "cms%s" % service.name
+                command = os.path.join(BIN_PATH, "cms%s" % service.name)
                 if not config.installed:
                     command = os.path.join(
                         ".",
