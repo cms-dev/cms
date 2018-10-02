@@ -37,7 +37,7 @@ import socket
 import subprocess
 import threading
 import time
-from future.moves.urllib.parse import urlsplit
+from urllib.parse import urlsplit
 
 from cmscommon.datetime import monotonic_time
 from cmstestsuite import CONFIG, TestException

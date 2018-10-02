@@ -31,7 +31,7 @@ from future.builtins import *  # noqa
 
 import logging
 from functools import wraps
-from future.moves.urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode
 
 from tornado.web import RequestHandler
 

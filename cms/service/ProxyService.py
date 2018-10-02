@@ -33,7 +33,7 @@ from future.builtins import *  # noqa
 import json
 import logging
 import string
-from future.moves.urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import gevent
 import gevent.queue

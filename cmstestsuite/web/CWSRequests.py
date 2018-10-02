@@ -29,7 +29,7 @@ import os
 import random
 import re
 import tempfile
-from future.moves.urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from cms import config
 from cms.grading.languagemanager import filename_to_language
