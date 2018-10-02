@@ -25,7 +25,6 @@
 
 """Computing and merging statistics about command executions in the sandbox."""
 
-from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 

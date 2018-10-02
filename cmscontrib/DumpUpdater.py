@@ -27,7 +27,6 @@ of the old supported versions to the current one.
 
 """
 
-from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import PY3

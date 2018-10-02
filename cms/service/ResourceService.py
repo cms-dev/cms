@@ -25,7 +25,6 @@ that saves the resources usage in that machine.
 
 """
 
-from __future__ import unicode_literals
 from future.builtins.disabled import *  # noqa
 from future.builtins import *  # noqa
 from six import PY3, iteritems
