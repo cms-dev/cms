@@ -18,8 +18,6 @@
 
 """Tests for the DumpImporter script"""
 
-from six import assertCountEqual
-
 import json
 import io
 import os
@@ -181,11 +179,11 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         c = db_contests[0]
         self.assertEqual(c.name, name)
         self.assertEqual(c.description, description)
-        assertCountEqual(self, [(t.name, t.title) for t in c.tasks],
-                         task_names_and_titles)
-        assertCountEqual(self, [(u.user.username, u.user.last_name)
+        self.assertCountEqual([(t.name, t.title) for t in c.tasks],
+                              task_names_and_titles)
+        self.assertCountEqual([(u.user.username, u.user.last_name)
                                 for u in c.participations],
-                         usernames_and_last_names)
+                              usernames_and_last_names)
 
     def assertContestNotInDb(self, name):
         """Assert that the contest with the given name is not in the DB."""

@@ -20,8 +20,6 @@
 
 """
 
-import six
-
 import unittest
 from datetime import timedelta
 
@@ -134,13 +132,13 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
 
         """
         for test_time in range(test_interval):
-            six.assertCountEqual(
-                self, self.call(test_time),
+            self.assertCountEqual(
+                self.call(test_time),
                 res if ts <= test_time else [])
         for test_time_after in range(test_interval):
             for test_time_until in range(test_time_after + 1, test_interval):
-                six.assertCountEqual(
-                    self, self.call(test_time_until, after=test_time_after),
+                self.assertCountEqual(
+                    self.call(test_time_until, after=test_time_after),
                     res if test_time_after < ts <= test_time_until else [])
 
     def test_no_elements(self):

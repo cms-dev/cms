@@ -18,8 +18,6 @@
 
 """Tests for the ImportTask script"""
 
-import six
-
 import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
@@ -108,19 +106,19 @@ class TestImportTask(DatabaseMixin, unittest.TestCase):
             if active_dataset_id is not None:
                 self.assertEqual(active_dataset_id, t.active_dataset_id)
             if dataset_ids is not None:
-                six.assertCountEqual(self, dataset_ids,
-                                     (d.id for d in t.datasets))
+                self.assertCountEqual(dataset_ids,
+                                      (d.id for d in t.datasets))
             if dataset_descriptions is not None:
-                six.assertCountEqual(self, dataset_descriptions,
-                                     (d.description for d in t.datasets))
+                self.assertCountEqual(dataset_descriptions,
+                                      (d.description for d in t.datasets))
             if dataset_task_types is not None:
-                six.assertCountEqual(self, dataset_task_types,
-                                     (d.task_type for d in t.datasets))
+                self.assertCountEqual(dataset_task_types,
+                                      (d.task_type for d in t.datasets))
             if dataset_manager_digests is not None:
-                six.assertCountEqual(self, dataset_manager_digests,
-                                     (m.digest
-                                      for d in t.datasets
-                                      for m in d.managers.values()))
+                self.assertCountEqual(dataset_manager_digests,
+                                      (m.digest
+                                       for d in t.datasets
+                                       for m in d.managers.values()))
 
     def test_clean_import(self):
         # Completely new task, import and attach it to the contest.
