@@ -27,8 +27,6 @@ represented by JSON objects.
 
 """
 
-from six import string_types
-
 from abc import ABCMeta, abstractmethod
 
 from jinja2 import Markup
@@ -125,7 +123,7 @@ class ParameterTypeString(ParameterType):
 """)
 
     def validate(self, value):
-        if not isinstance(value, string_types):
+        if not isinstance(value, str):
             raise ValueError(
                 "Invalid value for string parameter %s" % self.name)
 
