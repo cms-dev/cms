@@ -316,7 +316,7 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
 
     # Parse cookie.
     try:
-        cookie = json.loads(cookie)
+        cookie = json.loads(cookie.decode("utf-8"))
         username = cookie[0]
         password = cookie[1]
         last_update = make_datetime(cookie[2])
