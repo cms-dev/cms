@@ -20,8 +20,7 @@
 
 import sys
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from cms import ServiceCoord
 from cms.service.ResourceService import ProcessMatcher

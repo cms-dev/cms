@@ -22,8 +22,7 @@ import six
 import unittest
 from collections import namedtuple
 from datetime import timedelta
-
-from mock import MagicMock, PropertyMock, patch, sentinel
+from unittest.mock import MagicMock, PropertyMock, patch, sentinel
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin

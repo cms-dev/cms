@@ -20,7 +20,7 @@
 
 from six import iterkeys
 
-from mock import Mock
+from unittest.mock import Mock
 
 
 class ScoreTypeTestMixin(object):

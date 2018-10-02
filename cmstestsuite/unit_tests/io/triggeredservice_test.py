@@ -20,10 +20,10 @@
 
 """
 
-import gevent
 import unittest
+from unittest.mock import patch
 
-from mock import patch
+import gevent
 
 from cms import Address
 from cms.io import Executor, FakeQueueItem, TriggeredService

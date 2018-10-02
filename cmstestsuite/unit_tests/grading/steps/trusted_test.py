@@ -21,8 +21,7 @@
 from six import PY2
 
 import unittest
-
-from mock import ANY, MagicMock, call, patch
+from unittest.mock import ANY, MagicMock, call, patch
 
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import extract_outcome_and_text, trusted_step, \

@@ -22,13 +22,12 @@
 """
 
 import unittest
+from unittest.mock import Mock, patch
 
 import gevent
 import gevent.socket
 import gevent.event
 from gevent.server import StreamServer
-
-from mock import Mock, patch
 
 from cms import Address, ServiceCoord
 from cms.io import RPCError, rpc_method, RemoteServiceServer, \

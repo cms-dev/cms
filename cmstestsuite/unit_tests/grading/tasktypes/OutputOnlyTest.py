@@ -19,8 +19,7 @@
 """Tests for the OutputOnly task type."""
 
 import unittest
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from cms.db import File
 from cms.grading.Job import EvaluationJob

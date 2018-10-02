@@ -24,8 +24,7 @@ import tarfile
 import unittest
 import zipfile
 from collections import namedtuple
-
-from mock import patch
+from unittest.mock import patch
 
 from cms.server.contest.submission import ReceivedFile, InvalidArchive, \
     extract_files_from_archive, extract_files_from_tornado

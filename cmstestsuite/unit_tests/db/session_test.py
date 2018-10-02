@@ -19,8 +19,7 @@
 """Tests for session.py."""
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from cms import config
 from cms.db.session import custom_psycopg2_connection

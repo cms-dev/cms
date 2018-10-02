@@ -20,8 +20,7 @@
 
 import os
 import unittest
-
-from mock import MagicMock, call, ANY, patch
+from unittest.mock import MagicMock, call, ANY, patch
 
 from cms import config
 from cms.db import File, Manager, Executable

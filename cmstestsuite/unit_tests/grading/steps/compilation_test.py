@@ -19,8 +19,7 @@
 """Tests for the compilation step."""
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import COMPILATION_MESSAGES, compilation_step
