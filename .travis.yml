@@ -33,7 +33,7 @@ install:
   - pip install -r requirements.txt
   - pip install -r dev-requirements.txt
 
-  - sudo python prerequisites.py -y --cmsuser=$USER install
+  - sudo $(which python) prerequisites.py -y --cmsuser=$USER install
   - python setup.py install
 
 before_script:
