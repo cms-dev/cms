@@ -53,11 +53,11 @@ CMS.AWSUtils = function(url_root, timestamp,
 CMS.AWSUtils.create_url_builder = function(url_root) {
     return function() {
         var url = url_root;
-        for (var component in arguments) {
+        for (var i = 0; i < arguments.length; ++i) {
             if (url.substr(-1) != "/") {
                 url += "/";
             }
-            url += encodeURIComponent(component);
+            url += encodeURIComponent(arguments[i]);
         }
         return url;
     };
