@@ -65,12 +65,42 @@ var UserDetail = new function () {
                 self.show_task(self.active.attr('data-task'));
             }
         });
+
+        window.addEventListener("hashchange", self.toggle_visibility_from_hash);
+        self.toggle_visibility_from_hash();
+    };
+
+    self.get_current_hash = function () {
+        return window.location.hash.substr(1);
+    };
+
+    self.toggle_visibility_from_hash = function () {
+        var user_id = self.get_current_hash();
+        if (user_id == "") {
+            // No user requested, hide the details if they were open.
+            self.hide();
+        } else if (!DataStore.users.hasOwnProperty(user_id)) {
+            // Non-existing user, do as if the request was without the hash.
+            window.history.replaceState(
+                {}, "", window.location.href.replace(/#.*$/, ''));
+            self.hide();
+        } else {
+            // Some valid user requested, show the details.
+            self.show(user_id);
+        }
     };
 
     self.show = function (user_id) {
         self.user_id = user_id;
         self.user = DataStore.users[user_id];
         self.data_fetched = 0;
+
+        if (self.get_current_hash() != user_id) {
+            window.history.pushState({}, "", "#" + user_id);
+        }
+        window.document.title =
+            "Ranking - " + self.user["f_name"] + " " + self.user["l_name"];
+
         HistoryStore.request_update(self.history_callback);
 
         $.ajax({
@@ -280,6 +310,11 @@ var UserDetail = new function () {
     };
 
     self.hide = function () {
+        if (self.get_current_hash() != "") {
+            window.history.pushState(
+                {}, "", window.location.href.replace(/#.*$/, ''));
+        }
+        window.document.title = "Ranking";
         $("#UserDetail_bg").removeClass("open");
     };
 };
