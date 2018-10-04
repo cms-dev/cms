@@ -316,8 +316,11 @@ class SubListHandler(object):
 
         result = list()
         for task_id in self.task_store._store.keys():
-            result.extend(self.scoring_store
-                          .get_submissions(args["user_id"], task_id).values())
+            result.extend(
+                self.scoring_store.get_submissions(
+                    args["user_id"], task_id
+                ).values()
+            )
         result.sort(key=lambda x: (x.task, x.time))
         result = list(a.__dict__ for a in result)
 
