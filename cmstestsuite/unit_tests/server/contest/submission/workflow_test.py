@@ -474,8 +474,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.assertCountEqual(user_test.files.keys(), files.keys())
         self.assertCountEqual((f.digest for f in user_test.files.values()),
                               (bytes_digest(b) for b in files.values()))
-        self.assertCountEqual(user_test.managers.keys(),
-                              managers.keys())
+        self.assertCountEqual(user_test.managers.keys(), managers.keys())
         self.assertCountEqual((f.digest for f in user_test.managers.values()),
                               (bytes_digest(b) for b in managers.values()))
         self.assertEqual(user_test.input,
