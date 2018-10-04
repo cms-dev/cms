@@ -202,7 +202,7 @@ class RemoteServiceBase(object):
         try:
             self._socket.shutdown(socket.SHUT_RDWR)
             self._socket.close()
-        except socket.error as error:
+        except OSError as error:
             logger.warning("Couldn't disconnect from %s: %s.",
                            self._repr_remote(), error)
         finally:
@@ -217,16 +217,16 @@ class RemoteServiceBase(object):
 
         return (bytes): the retrieved message.
 
-        raise (IOError): if reading fails.
+        raise (OSError): if reading fails.
 
         """
         if not self.connected:
-            raise IOError("Not connected.")
+            raise OSError("Not connected.")
 
         try:
             with self._read_lock:
                 if not self.connected:
-                    raise IOError("Not connected.")
+                    raise OSError("Not connected.")
                 data = self._reader.readline(self.MAX_MESSAGE_SIZE)
                 # If there weren't a "\r\n" between the last message
                 # and the EOF we would have a false positive here.
@@ -237,8 +237,8 @@ class RemoteServiceBase(object):
                         "is MAX_MESSAGE_SIZE). Consider raising that value if "
                         "the message seemed legit.", self.MAX_MESSAGE_SIZE)
                     self.finalize("Client misbehaving.")
-                    raise IOError("Message too long.")
-        except socket.error as error:
+                    raise OSError("Message too long.")
+        except OSError as error:
             if self.connected:
                 logger.warning("Failed reading from socket: %s.", error)
                 self.finalize("Read failed.")
@@ -257,11 +257,11 @@ class RemoteServiceBase(object):
 
         data (bytes): the message to transmit.
 
-        raise (IOError): if writing fails.
+        raise (OSError): if writing fails.
 
         """
         if not self.connected:
-            raise IOError("Not connected.")
+            raise OSError("Not connected.")
 
         if len(data + b'\r\n') > self.MAX_MESSAGE_SIZE:
             logger.error(
@@ -270,16 +270,16 @@ class RemoteServiceBase(object):
                 "value if the message seemed legit.", self._repr_remote(),
                 self.MAX_MESSAGE_SIZE)
             # No need to call finalize.
-            raise IOError("Message too long.")
+            raise OSError("Message too long.")
 
         try:
             with self._write_lock:
                 if not self.connected:
-                    raise IOError("Not connected.")
+                    raise OSError("Not connected.")
                 # Does the same as self._socket.sendall.
                 self._writer.write(data + b'\r\n')
                 self._writer.flush()
-        except socket.error as error:
+        except OSError as error:
             self.finalize("Write failed.")
             logger.warning("Failed writing to socket: %s.", error)
             raise error
@@ -334,7 +334,7 @@ class RemoteServiceServer(RemoteServiceBase):
         while True:
             try:
                 data = self._read()
-            except IOError:
+            except OSError:
                 break
 
             if len(data) == 0:
@@ -415,7 +415,7 @@ class RemoteServiceServer(RemoteServiceBase):
         # Send it.
         try:
             self._write(data)
-        except IOError:
+        except OSError:
             # Log messages have already been produced.
             return
 
@@ -481,7 +481,7 @@ class RemoteServiceClient(RemoteServiceBase):
         try:
             sock = gevent.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(self.remote_address)
-        except socket.error as error:
+        except OSError as error:
             logger.debug("Couldn't connect to %s: %s.",
                          self._repr_remote(), error)
         else:
@@ -527,7 +527,7 @@ class RemoteServiceClient(RemoteServiceBase):
         while True:
             try:
                 data = self._read()
-            except IOError:
+            except OSError:
                 break
 
             if len(data) == 0:
@@ -621,7 +621,7 @@ class RemoteServiceClient(RemoteServiceBase):
         # Send it.
         try:
             self._write(data)
-        except IOError:
+        except OSError:
             result.set_exception(RPCError("Write failed."))
             return result
 

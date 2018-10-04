@@ -87,8 +87,7 @@ def extract_files_from_archive(data):
                 result.append(
                     ReceivedFile(None, os.path.basename(name), f.read()))
 
-    # When dropping py2, replace EnvironmentError by OSError.
-    except (PatoolError, EnvironmentError):
+    except (PatoolError, OSError):
         raise InvalidArchive()
 
     finally:

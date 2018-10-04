@@ -60,7 +60,7 @@ def create_sandbox(file_cacher, name=None):
     """
     try:
         sandbox = Sandbox(file_cacher, name=name)
-    except (OSError, IOError):
+    except OSError:
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)
         raise JobException(err_msg)
@@ -84,7 +84,7 @@ def delete_sandbox(sandbox, success=True, keep_sandbox=False):
     delete = success and not config.keep_sandbox and not keep_sandbox
     try:
         sandbox.cleanup(delete=delete)
-    except (IOError, OSError):
+    except OSError:
         err_msg = "Couldn't delete sandbox."
         logger.warning(err_msg, exc_info=True)
 

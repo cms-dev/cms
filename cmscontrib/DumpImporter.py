@@ -436,7 +436,7 @@ class DumpImporter(object):
         try:
             with open(descr_path, 'rt', encoding='utf-8') as fin:
                 description = fin.read()
-        except IOError:
+        except OSError:
             description = ''
 
         # Put the file.

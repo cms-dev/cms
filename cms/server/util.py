@@ -197,9 +197,9 @@ class CommonRequestHandler(RequestHandler):
                 logger.warning("Couldn't close SQL connection: %r", error)
         try:
             super(CommonRequestHandler, self).finish(*args, **kwargs)
-        except IOError:
+        except OSError:
             # When the client closes the connection before we reply,
-            # Tornado raises an IOError exception, that would pollute
+            # Tornado raises an OSError exception, that would pollute
             # our log with unnecessarily critical messages
             logger.debug("Connection closed before our reply.")
 

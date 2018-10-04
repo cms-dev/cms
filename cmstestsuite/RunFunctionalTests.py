@@ -53,7 +53,7 @@ def load_test_list_from_file(filename):
     try:
         with open(filename, "rt", encoding="utf-8") as f:
             lines = f.readlines()
-    except (IOError, OSError) as e:
+    except OSError as e:
         print("Failed to read test list. %s." % (e))
         return None
 

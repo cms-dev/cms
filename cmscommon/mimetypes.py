@@ -37,7 +37,7 @@ def _retrieve_icons():
             # This is a system file: open it with default system encoding.
             with open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
                 res.update(tuple(l.strip().split(':')) for l in f.readlines())
-        except IOError as err:
+        except OSError as err:
             if err.errno != errno.ENOENT:
                 raise
     return res

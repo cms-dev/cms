@@ -234,7 +234,7 @@ class Config(object):
         try:
             with open(path, 'rt', encoding='utf-8') as f:
                 data = json.load(f)
-        except IOError as error:
+        except OSError as error:
             if error.errno == errno.ENOENT:
                 logger.debug("Couldn't find config file %s.", path)
             else:

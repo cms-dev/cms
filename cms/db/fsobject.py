@@ -104,7 +104,7 @@ class LargeObject(io.RawIOBase):
                                       {'mode': creat_mode},
                                       "Couldn't create large object.", cursor)
             if self.loid == 0:
-                raise IOError("Couldn't create large object.")
+                raise OSError("Couldn't create large object.")
 
         # Open the large object.
         open_mode = (LargeObject.INV_READ if self._readable else 0) | \
@@ -161,7 +161,7 @@ class LargeObject(io.RawIOBase):
             if isinstance(res, int):
                 assert res >= 0
         except (AssertionError, ValueError, psycopg2.DatabaseError):
-            raise IOError(message)
+            raise OSError(message)
         else:
             return res
 

@@ -123,7 +123,7 @@ def parse_task_yaml(base_dir):
     try:
         with open(yaml_path, "rt", encoding="utf-8") as yaml_file:
             conf = yaml.load(yaml_file)
-    except IOError:
+    except OSError:
         yaml_path = os.path.join(parent_dir, "%s.yaml" %
                                  (detect_task_name(base_dir)))
 
