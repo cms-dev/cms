@@ -136,5 +136,5 @@ def store_local_copy(path, participation, task, timestamp, files):
         with open(os.path.join(path, "%s" % timestamp), "wb") as f:
             pickle.dump((participation.contest.id, participation.user.id,
                          task.id, files), f)
-    except EnvironmentError as e:
+    except OSError as e:
         raise StorageFailed("Failed to store local copy of submission: %s", e)

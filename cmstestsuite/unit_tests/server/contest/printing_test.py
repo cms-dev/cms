@@ -89,7 +89,7 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
                                 MockHTTPFile("foo.txt", "other content")]})
 
     def test_storage_failure(self):
-        self.file_cacher.put_file_content.side_effect = IOError("sth wrong")
+        self.file_cacher.put_file_content.side_effect = OSError("sth wrong")
         with self.assertRaises(UnacceptablePrintJob):
             self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
 

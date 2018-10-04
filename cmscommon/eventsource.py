@@ -277,7 +277,7 @@ class EventSource(object):
         # this by seeing when a call to write() fails, i.e. raises an
         # exception. This behavior isn't documented by the PEP, but it
         # seems reasonable and it's present in gevent (which raises a
-        # socket.error).
+        # OSError).
 
         # The third non-standard behavior that we expect (related to
         # the previous one) is that no one in the application-to-client
@@ -378,7 +378,7 @@ class EventSource(object):
                 # fails. We're conservative, and allow any unexpected
                 # event to interrupt the request. We hope it's enough
                 # to detect when the client disconnects. It is with
-                # gevent, which raises a socket.error. The timeout (we
+                # gevent, which raises an OSError. The timeout (we
                 # catch that too) is just an extra precaution.
                 except Exception:
                     # This is part of the fourth hack (see above).

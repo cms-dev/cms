@@ -315,7 +315,7 @@ def _get_shard_from_addresses(service, addrs):
                                       host, port,
                                       gevent.socket.AF_INET,
                                       gevent.socket.SOCK_STREAM)])
-        except (gevent.socket.gaierror, gevent.socket.error):
+        except OSError:
             pass
         else:
             if not ipv4_addrs.isdisjoint(res_ipv4_addrs):
@@ -327,7 +327,7 @@ def _get_shard_from_addresses(service, addrs):
                                       host, port,
                                       gevent.socket.AF_INET6,
                                       gevent.socket.SOCK_STREAM)])
-        except (gevent.socket.gaierror, gevent.socket.error):
+        except OSError:
             pass
         else:
             if not ipv6_addrs.isdisjoint(res_ipv6_addrs):

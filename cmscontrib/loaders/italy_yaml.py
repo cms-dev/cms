@@ -315,7 +315,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             with open(os.path.join(self.path, "task.yaml"),
                       "rt", encoding="utf-8") as f:
                 conf = yaml.safe_load(f)
-        except IOError as err:
+        except OSError as err:
             try:
                 deprecated_path = os.path.join(self.path, "..", name + ".yaml")
                 with open(deprecated_path, "rt", encoding="utf-8") as f:
@@ -325,7 +325,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                                "task.yaml file. You're advised to move %s to "
                                "%s.", deprecated_path,
                                os.path.join(self.path, "task.yaml"))
-            except IOError:
+            except OSError:
                 # Since both task.yaml and the (deprecated) "../taskname.yaml"
                 # are missing, we will only warn the user that task.yaml is
                 # missing (to avoid encouraging the use of the deprecated one)
@@ -578,7 +578,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     assert int(conf['n_input']) == n_input
 
         # If gen/GEN doesn't exist, just fallback to Sum
-        except IOError:
+        except OSError:
             args["score_type"] = "Sum"
             total_value = float(conf.get("total_value", 100.0))
             input_value = 0.0
@@ -749,7 +749,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             with open(os.path.join(self.path, "task.yaml"),
                       "rt", encoding="utf-8") as f:
                 conf = yaml.safe_load(f)
-        except IOError:
+        except OSError:
             with open(os.path.join(self.path, "..", name + ".yaml"),
                       "rt", encoding="utf-8") as f:
                 conf = yaml.safe_load(f)

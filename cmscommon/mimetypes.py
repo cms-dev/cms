@@ -37,7 +37,7 @@ def _retrieve_icons():
             with open(os.path.join(d, "mime", "generic-icons"),
                       "rt", encoding="utf-8") as f:
                 res.update(tuple(l.strip().split(':')) for l in f.readlines())
-        except IOError as err:
+        except OSError as err:
             if err.errno != errno.ENOENT:
                 raise
     return res

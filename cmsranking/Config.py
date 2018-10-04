@@ -140,7 +140,7 @@ class Config(object):
                 with open(conf_path, "rt", encoding="utf-8") as conf_fobj:
                     logger.info("Using config file %s.", conf_path)
                     return self._load_one(conf_fobj)
-            except IOError as error:
+            except OSError as error:
                 # If it's because it doesn't exist we just skip to the
                 # next one. Otherwise it's probably unintended and the
                 # user should do something about it.

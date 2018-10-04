@@ -89,7 +89,7 @@ class Store(object):
             # the path isn't a directory or is inaccessible
             logger.error("Path is not a directory or is not accessible",
                          exc_info=True)
-        except IOError:
+        except OSError:
             logger.error("I/O error occured", exc_info=True)
         except ValueError:
             logger.error("Invalid JSON", exc_info=False,
@@ -159,7 +159,7 @@ class Store(object):
                 path = os.path.join(self._path, key + '.json')
                 with open(path, 'wt', encoding="utf-8") as rec:
                     json.dump(self._store[key].get(), rec)
-            except IOError:
+            except OSError:
                 logger.error("I/O error occured while creating entity",
                              exc_info=True)
 
@@ -198,7 +198,7 @@ class Store(object):
                 path = os.path.join(self._path, key + '.json')
                 with open(path, 'wt', encoding="utf-8") as rec:
                     json.dump(self._store[key].get(), rec)
-            except IOError:
+            except OSError:
                 logger.error("I/O error occured while updating entity",
                              exc_info=True)
 
@@ -254,7 +254,7 @@ class Store(object):
                     path = os.path.join(self._path, key + '.json')
                     with open(path, 'wt', encoding="utf-8") as rec:
                         json.dump(value.get(), rec)
-                except IOError:
+                except OSError:
                     logger.error(
                         "I/O error occured while merging entity lists",
                         exc_info=True)

@@ -215,7 +215,7 @@ class Program(object):
                 self._check_ranking_web_server()
             else:
                 self._check_service()
-        except socket.error as error:
+        except OSError as error:
             self.healthy = False
             if error.errno != errno.ECONNREFUSED:
                 raise TestException("Weird connection state.")

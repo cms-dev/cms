@@ -104,7 +104,7 @@ def load_test_list_from_file(filename):
     try:
         with open(filename, "rt", encoding="utf-8") as f:
             return [line.strip().split(" ") for line in f.readlines()]
-    except (IOError, OSError) as error:
+    except OSError as error:
         print("Failed to read test list. %s." % error)
         return None
 

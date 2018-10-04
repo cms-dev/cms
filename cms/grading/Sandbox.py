@@ -1134,8 +1134,8 @@ class IsolateSandbox(SandboxBase):
                         self.log[key].append(value)
                     else:
                         self.log[key] = [value]
-        except IOError as error:
-            raise IOError("Error while reading execution log file %s. %r" %
+        except OSError as error:
+            raise OSError("Error while reading execution log file %s. %r" %
                           (info_file, error))
 
     @with_log
