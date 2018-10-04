@@ -81,7 +81,7 @@ class TestESOperations(DatabaseMixin, unittest.TestCase):
         submission, results = self.add_submission_with_results(
             self.tasks[0], self.participation, True)
         for result in results:
-            for codename, testcase in result.dataset.testcases.items():
+            for testcase in result.dataset.testcases.values():
                 self.add_evaluation(result, testcase)
 
         # A submission reaching maximum tries for compilation
