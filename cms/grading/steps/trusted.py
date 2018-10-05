@@ -35,7 +35,6 @@ can be translated by writing "translate:x" where x is "success", "partial" or
 
 """
 
-import errno
 import logging
 
 from cms import config
@@ -242,11 +241,7 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
     except ValueError as e:
         logger.error("Invalid output from checker: %s", e)
         return False, None, None
-    except OSError as e:
-        # Change OSError to FileNotFoundError and drop the check for being a
-        # file not found errno when dropping Python 2.
-        if e.errno != errno.ENOENT:
-            raise
+    except FileNotFoundError as e:
         # This should not happen, as the redirect is handled by the sandbox.
         logger.error("Missing stdout or stderr file from checker: %s", e)
         return False, None, None

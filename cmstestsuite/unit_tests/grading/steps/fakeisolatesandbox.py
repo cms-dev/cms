@@ -19,6 +19,7 @@
 """A fake sandbox for tests."""
 
 import errno
+import os
 
 from collections import deque
 from io import BytesIO, StringIO
@@ -94,21 +95,18 @@ class FakeIsolateSandbox(IsolateSandbox):
         assert trunc_len is None  # other case not handled by fake
         if path in self._fake_files:
             return BytesIO(self._fake_files[path])
-        # Change to FileNotFoundError when dropping Python 2.
-        raise OSError(errno.ENOENT, "File not found", path)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
     def get_file_text(self, path, trunc_len=None):
         assert trunc_len is None  # other case not handled by fake
         if path in self._fake_files:
             return StringIO(self._fake_files[path].decode("utf-8"))
-        # Change to FileNotFoundError when dropping Python 2.
-        raise OSError(errno.ENOENT, "File not found", path)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
     def get_file_to_string(self, path, maxlen=1024):
         if path in self._fake_files:
             return self._fake_files[path]
-        # Change to FileNotFoundError when dropping Python 2.
-        raise OSError(errno.ENOENT, "File not found", path)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
     def execute_without_std(self, command, wait=False):
         # This is only able to simulate blocking calls.

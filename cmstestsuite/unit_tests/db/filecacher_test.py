@@ -23,7 +23,6 @@
 
 """
 
-import errno
 import os
 import random
 import shutil
@@ -136,11 +135,8 @@ class TestFileCacherBase(object):
         cache_path = os.path.join(self.cache_base_path, digest)
         try:
             os.unlink(cache_path)
-        except OSError as e:
-            # Only ignore if the file didn't exist. Other failures we should
-            # know about!
-            if e.errno == errno.ENOENT:
-                pass
+        except FileNotFoundError:
+            pass
 
         # Pull it out of the file_cacher and compute the hash
         hash_file = HashingFile()

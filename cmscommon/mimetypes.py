@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import errno
 import os.path
 
 import xdg.BaseDirectory
@@ -37,9 +36,8 @@ def _retrieve_icons():
             # This is a system file: open it with default system encoding.
             with open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
                 res.update(tuple(l.strip().split(':')) for l in f.readlines())
-        except OSError as err:
-            if err.errno != errno.ENOENT:
-                raise
+        except FileNotFoundError:
+            pass
     return res
 
 

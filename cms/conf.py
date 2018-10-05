@@ -234,13 +234,13 @@ class Config(object):
         try:
             with open(path, 'rt', encoding='utf-8') as f:
                 data = json.load(f)
+        except FileNotFoundError:
+            logger.debug("Couldn't find config file %s.", path)
+            return False
         except OSError as error:
-            if error.errno == errno.ENOENT:
-                logger.debug("Couldn't find config file %s.", path)
-            else:
-                logger.warning("I/O error while opening file %s: [%s] %s",
-                               path, errno.errorcode[error.errno],
-                               os.strerror(error.errno))
+            logger.warning("I/O error while opening file %s: [%s] %s",
+                           path, errno.errorcode[error.errno],
+                           os.strerror(error.errno))
             return False
         except ValueError as error:
             logger.warning("Invalid syntax in file %s: %s", path, error)
