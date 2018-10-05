@@ -31,7 +31,6 @@ import gevent.monkey
 gevent.monkey.patch_all()  # noqa
 
 import argparse
-import io
 import logging
 import os
 import sys
@@ -116,8 +115,8 @@ class SpoolExporter(object):
         """
         logger.info("Exporting submissions.")
 
-        queue_file = io.open(os.path.join(self.spool_dir, "queue"), "w",
-                             encoding="utf-8")
+        queue_file = open(os.path.join(self.spool_dir, "queue"), "w",
+                          encoding="utf-8")
         for submission in sorted(self.submissions, key=lambda x: x.timestamp):
             logger.info("Exporting submission %s.", submission.id)
             username = submission.participation.user.username
@@ -148,11 +147,11 @@ class SpoolExporter(object):
             active_dataset = submission.task.active_dataset
             result = submission.get_result(active_dataset)
             if result.evaluated():
-                res_file = io.open(os.path.join(
+                res_file = open(os.path.join(
                     self.spool_dir,
                     "%d.%s.%s.%s.res" % (timestamp, username, task, ext)),
                     "w", encoding="utf-8")
-                res2_file = io.open(
+                res2_file = open(
                     os.path.join(self.spool_dir,
                                  "%s.%s.%s.res" % (username, task, ext)),
                     "w", encoding="utf-8")
@@ -209,10 +208,10 @@ class SpoolExporter(object):
         sorted_tasks = sorted(self.contest.tasks,
                               key=lambda task: task.num)
 
-        ranking_file = io.open(
+        ranking_file = open(
             os.path.join(self.spool_dir, "ranking.txt"),
             "w", encoding="utf-8")
-        ranking_csv = io.open(
+        ranking_csv = open(
             os.path.join(self.spool_dir, "ranking.csv"),
             "w", encoding="utf-8")
 

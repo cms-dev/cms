@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import os
 import stat
 import unittest
@@ -199,7 +198,7 @@ class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         # we can find them unchanged when we look at the encoded data.
         for directory, _, filenames in os.walk(in_):
             for filename in filenames:
-                with io.open(os.path.join(directory, filename), "rb") as f:
+                with open(os.path.join(directory, filename), "rb") as f:
                     if content in f.read():
                         return
         self.fail("store_local_copy didn't create any file")

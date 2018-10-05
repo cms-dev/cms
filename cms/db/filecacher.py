@@ -214,7 +214,7 @@ class FSBackend(FileCacherBackend):
         if not os.path.exists(file_path):
             raise KeyError("File not found.")
 
-        return io.open(file_path, 'rb')
+        return open(file_path, 'rb')
 
     def create_file(self, digest):
         """See FileCacherBackend.create_file().
@@ -558,7 +558,7 @@ class FileCacher(object):
 
         ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
                                                        text=False)
-        with io.open(ftmp_handle, 'wb') as ftmp, \
+        with open(ftmp_handle, 'wb') as ftmp, \
                 self.backend.get_file(digest) as fobj:
             copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
 
@@ -600,7 +600,7 @@ class FileCacher(object):
 
             logger.debug("File %s downloaded.", digest)
 
-        return io.open(cache_file_path, 'rb')
+        return open(cache_file_path, 'rb')
 
     def get_file_content(self, digest):
         """Retrieve a file from the storage.
@@ -656,7 +656,7 @@ class FileCacher(object):
         if digest == Digest.TOMBSTONE:
             raise TombstoneError()
         with self.get_file(digest) as src:
-            with io.open(dst_path, 'wb') as dst:
+            with open(dst_path, 'wb') as dst:
                 copyfileobj(src, dst, self.CHUNK_SIZE)
 
     def save(self, digest, desc=""):
@@ -681,7 +681,7 @@ class FileCacher(object):
         if fobj is None:
             return
 
-        with io.open(cache_file_path, 'rb') as src:
+        with open(cache_file_path, 'rb') as src:
             copyfileobj(src, fobj, self.CHUNK_SIZE)
 
         self.backend.commit_file(fobj, digest, desc)
@@ -777,7 +777,7 @@ class FileCacher(object):
         return (unicode): the digest of the stored file.
 
         """
-        with io.open(src_path, 'rb') as src:
+        with open(src_path, 'rb') as src:
             return self.put_file_from_fobj(src, desc)
 
     def describe(self, digest):

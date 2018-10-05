@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
-import io
 import os.path
 
 import xdg.BaseDirectory
@@ -35,7 +34,7 @@ def _retrieve_icons():
     for d in reversed([xdg.BaseDirectory.xdg_data_home]
                       + xdg.BaseDirectory.xdg_data_dirs):
         try:
-            with io.open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
+            with open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
                 res.update(tuple(l.strip().split(':')) for l in f.readlines())
         except IOError as err:
             if err.errno != errno.ENOENT:

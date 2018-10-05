@@ -23,7 +23,6 @@
 """
 
 import argparse
-import io
 import logging
 import os
 import sys
@@ -246,11 +245,11 @@ def main():
                         ) + data
 
                     # Print utf8-encoded, possibly altered data
-                    with io.open(filename, "wt", encoding="utf-8") as f_out:
+                    with open(filename, "wt", encoding="utf-8") as f_out:
                         f_out.write(data)
                 else:
                     # Print raw, untouched binary data
-                    with io.open(filename, "wb") as f_out:
+                    with open(filename, "wb") as f_out:
                         f_out.write(data)
 
             done += 1

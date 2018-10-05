@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import os
 import sys
 
@@ -54,7 +53,7 @@ def main():
     except TestException:
         if os.path.exists("./log/cms/last.log"):
             print("\n\n===== START OF LOG DUMP =====\n\n")
-            with io.open("./log/cms/last.log", "rt", encoding="utf-8") as f:
+            with open("./log/cms/last.log", "rt", encoding="utf-8") as f:
                 print(f.read())
             print("\n\n===== END OF LOG DUMP =====\n\n")
         return 1

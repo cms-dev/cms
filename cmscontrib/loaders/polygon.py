@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import imp
-import io
 import logging
 import os
 import subprocess
@@ -152,7 +151,7 @@ class PolygonTaskLoader(TaskLoader):
         task_cms_conf = None
         if os.path.exists(task_cms_conf_path):
             logger.info("Found additional CMS options for task %s.", name)
-            with io.open(task_cms_conf_path, 'rb') as f:
+            with open(task_cms_conf_path, 'rb') as f:
                 task_cms_conf = imp.load_module('cms_conf', f,
                                                 task_cms_conf_path,
                                                 ('.py', 'r', imp.PY_SOURCE))
@@ -308,7 +307,7 @@ class PolygonUserLoader(UserLoader):
         users_path = os.path.join(
             os.path.dirname(self.path), 'contestants.txt')
         if os.path.exists(users_path):
-            with io.open(users_path, "rt", encoding="utf-8") as users_file:
+            with open(users_path, "rt", encoding="utf-8") as users_file:
                 for user in users_file.readlines():
                     user = user.strip().split(';')
                     name = user[0].strip()
@@ -438,7 +437,7 @@ class PolygonContestLoader(ContestLoader):
 
         users_path = os.path.join(self.path, 'contestants.txt')
         if os.path.exists(users_path):
-            with io.open(users_path, "rt", encoding="utf-8") as users_file:
+            with open(users_path, "rt", encoding="utf-8") as users_file:
                 for user in users_file.readlines():
                     user = user.strip()
                     user = user.split(';')

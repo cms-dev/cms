@@ -34,7 +34,6 @@ import gevent.monkey
 gevent.monkey.patch_all()  # noqa
 
 import argparse
-import io
 import ipaddress
 import json
 import logging
@@ -182,8 +181,8 @@ class DumpImporter(object):
             if self.load_model:
                 logger.info("Importing the contest from a JSON file.")
 
-                with io.open(os.path.join(self.import_dir,
-                                          "contest.json"), "rb") as fin:
+                with open(os.path.join(self.import_dir,
+                                       "contest.json"), "rb") as fin:
                     # TODO - Throughout all the code we'll assume the
                     # input is correct without actually doing any
                     # validations.  Thus, for example, we're not
@@ -435,7 +434,7 @@ class DumpImporter(object):
 
         # First read the description.
         try:
-            with io.open(descr_path, 'rt', encoding='utf-8') as fin:
+            with open(descr_path, 'rt', encoding='utf-8') as fin:
                 description = fin.read()
         except IOError:
             description = ''

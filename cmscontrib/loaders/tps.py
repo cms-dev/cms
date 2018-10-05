@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import json
 import logging
 import os
@@ -116,7 +115,7 @@ class TpsTaskLoader(TaskLoader):
         if not os.path.exists(json_src):
             logger.critical('No task found.')
             raise IOError('No task found at path %s' % json_src)
-        with io.open(json_src, 'rt', encoding='utf-8') as json_file:
+        with open(json_src, 'rt', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
         name = data['code']
@@ -336,8 +335,8 @@ class TpsTaskLoader(TaskLoader):
             add_optional_name = False
             for subtask in subtasks:
                 subtask_no += 1
-                with io.open(os.path.join(subtasks_dir, subtask), 'rt',
-                             encoding='utf-8') as subtask_json:
+                with open(os.path.join(subtasks_dir, subtask), 'rt',
+                          encoding='utf-8') as subtask_json:
                     subtask_data = json.load(subtask_json)
                     score = int(subtask_data["score"])
                     testcases = "|".join(

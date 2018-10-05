@@ -20,7 +20,6 @@
 
 """Utilities for cmscontrib"""
 
-import io
 import os
 
 
@@ -34,5 +33,5 @@ def touch(path):
     path (str): the path to be touched.
 
     """
-    with io.open(path, 'ab'):
+    with open(path, 'ab'):
         os.utime(path, None)

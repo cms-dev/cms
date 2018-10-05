@@ -18,7 +18,6 @@
 
 import argparse
 import functools
-import io
 import json
 import logging
 import os
@@ -441,7 +440,7 @@ class ImageHandler(object):
 
         # TODO check for If-Modified-Since and If-None-Match
 
-        response.response = wrap_file(environ, io.open(path, 'rb'))
+        response.response = wrap_file(environ, open(path, 'rb'))
         response.direct_passthrough = True
 
         return response
@@ -467,7 +466,7 @@ class RootHandler(object):
             datetime.utcfromtimestamp(os.path.getmtime(self.path))\
                     .replace(microsecond=0)
         # TODO check for If-Modified-Since and If-None-Match
-        response.response = wrap_file(environ, io.open(self.path, 'rb'))
+        response.response = wrap_file(environ, open(self.path, 'rb'))
         response.direct_passthrough = True
 
         return response

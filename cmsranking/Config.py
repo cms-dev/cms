@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import errno
 import json
 import logging
@@ -138,7 +137,7 @@ class Config(object):
         """
         for conf_path in conf_paths:
             try:
-                with io.open(conf_path, "rt") as conf_fobj:
+                with open(conf_path, "rt") as conf_fobj:
                     logger.info("Using config file %s.", conf_path)
                     return self._load_one(conf_fobj)
             except IOError as error:

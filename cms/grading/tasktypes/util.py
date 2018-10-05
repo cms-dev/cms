@@ -29,7 +29,6 @@ compilation and the evaluation are contained in the task type class.
 
 """
 
-import io
 import logging
 import os
 import shutil
@@ -264,7 +263,7 @@ def eval_output(file_cacher, job, checker_codename,
 
     else:
         if user_output_path is not None:
-            user_output_fobj = io.open(user_output_path, "rb")
+            user_output_fobj = open(user_output_path, "rb")
         else:
             user_output_fobj = file_cacher.get_file(user_output_digest)
         with user_output_fobj:

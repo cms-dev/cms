@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import io
 import logging
 import os
 import re
@@ -52,7 +51,7 @@ def load_test_list_from_file(filename):
     if not os.path.exists(filename):
         return []
     try:
-        with io.open(filename, "rt", encoding="utf-8") as f:
+        with open(filename, "rt", encoding="utf-8") as f:
             lines = f.readlines()
     except (IOError, OSError) as e:
         print("Failed to read test list. %s." % (e))
@@ -142,7 +141,7 @@ def filter_tests(orig_test_list, regexes, languages):
 
 
 def write_test_case_list(test_list, filename):
-    with io.open(filename, 'wt', encoding="utf-8") as f:
+    with open(filename, 'wt', encoding="utf-8") as f:
         for test, lang in test_list:
             f.write('%s %s\n' % (test.name, lang))
 

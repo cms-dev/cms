@@ -21,7 +21,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import io
 import os
 import sys
 import subprocess
@@ -122,13 +121,13 @@ def parse_task_yaml(base_dir):
     yaml_path = os.path.join(base_dir, "task.yaml")
 
     try:
-        with io.open(yaml_path, "rt", encoding="utf-8") as yaml_file:
+        with open(yaml_path, "rt", encoding="utf-8") as yaml_file:
             conf = yaml.load(yaml_file)
     except IOError:
         yaml_path = os.path.join(parent_dir, "%s.yaml" %
                                  (detect_task_name(base_dir)))
 
-        with io.open(yaml_path, "rt", encoding="utf-8") as yaml_file:
+        with open(yaml_path, "rt", encoding="utf-8") as yaml_file:
             conf = yaml.load(yaml_file)
     return conf
 
@@ -324,7 +323,7 @@ def build_text_list(base_dir, task_type):
 
 def iter_GEN(name):
     st = 0
-    for line in io.open(name, "rt", encoding="utf-8"):
+    for line in open(name, "rt", encoding="utf-8"):
         line = line.strip()
         splitted = line.split('#', 1)
 
@@ -439,7 +438,7 @@ def build_gen_list(base_dir, task_type, yaml_conf):
                 shutil.copyfile(copy_input, new_input)
             else:
                 # Call the generator
-                with io.open(new_input, 'wb') as fout:
+                with open(new_input, 'wb') as fout:
                     call(base_dir,
                          [gen_exe] + line.split(),
                          stdout=fout)
@@ -480,8 +479,8 @@ def build_gen_list(base_dir, task_type, yaml_conf):
             "output.txt" if use_stdout else yaml_conf.get("outfile"))
 
         os.symlink(infile, copied_infile)
-        fin = io.open(copied_infile, "rb") if use_stdin else None
-        fout = io.open(copied_outfile, 'wb') if use_stdout else None
+        fin = open(copied_infile, "rb") if use_stdin else None
+        fout = open(copied_outfile, 'wb') if use_stdout else None
 
         shutil.copy(sol_exe, temp_dir)
 
