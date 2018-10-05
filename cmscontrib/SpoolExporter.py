@@ -115,7 +115,7 @@ class SpoolExporter(object):
         """
         logger.info("Exporting submissions.")
 
-        queue_file = open(os.path.join(self.spool_dir, "queue"), "w",
+        queue_file = open(os.path.join(self.spool_dir, "queue"), "wt",
                           encoding="utf-8")
         for submission in sorted(self.submissions, key=lambda x: x.timestamp):
             logger.info("Exporting submission %s.", submission.id)
@@ -151,11 +151,11 @@ class SpoolExporter(object):
                     os.path.join(self.spool_dir,
                                  "%d.%s.%s.%s.res"
                                  % (timestamp, username, task, ext)),
-                    "w", encoding="utf-8")
+                    "wt", encoding="utf-8")
                 res2_file = open(
                     os.path.join(self.spool_dir,
                                  "%s.%s.%s.res" % (username, task, ext)),
-                    "w", encoding="utf-8")
+                    "wt", encoding="utf-8")
                 total = 0.0
                 for evaluation in result.evaluations:
                     outcome = float(evaluation.outcome)
@@ -210,9 +210,9 @@ class SpoolExporter(object):
                               key=lambda task: task.num)
 
         ranking_file = open(os.path.join(self.spool_dir, "ranking.txt"),
-                            "w", encoding="utf-8")
+                            "wt", encoding="utf-8")
         ranking_csv = open(os.path.join(self.spool_dir, "ranking.csv"),
-                           "w", encoding="utf-8")
+                           "wt", encoding="utf-8")
 
         # Write rankings' header.
         n_tasks = len(sorted_tasks)
