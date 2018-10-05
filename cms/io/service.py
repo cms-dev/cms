@@ -254,9 +254,8 @@ class Service(object):
         backdoor_path = self.get_backdoor_path()
         try:
             os.remove(backdoor_path)
-        except OSError as error:
-            if error.errno != errno.ENOENT:
-                raise
+        except FileNotFoundError:
+            pass
         else:
             logger.warning("A backdoor socket has been found and deleted.")
         mkdir(os.path.dirname(backdoor_path))
@@ -283,9 +282,8 @@ class Service(object):
         backdoor_path = self.get_backdoor_path()
         try:
             os.remove(backdoor_path)
-        except OSError as error:
-            if error.errno != errno.ENOENT:
-                raise
+        except FileNotFoundError:
+            pass
 
     def run(self):
         """Starts the main loop of the service.

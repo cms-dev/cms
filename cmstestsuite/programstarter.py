@@ -21,7 +21,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import atexit
-import errno
 import json
 import logging
 import os
@@ -215,10 +214,11 @@ class Program(object):
                 self._check_ranking_web_server()
             else:
                 self._check_service()
-        except OSError as error:
+        except ConnectionRefusedError:
             self.healthy = False
-            if error.errno != errno.ECONNREFUSED:
-                raise TestException("Weird connection state.")
+        except OSError:
+            self.healthy = False
+            raise TestException("Weird connection state.")
         else:
             self.healthy = True
 

@@ -22,7 +22,6 @@
 
 import argparse
 import chardet
-import errno
 import itertools
 import logging
 import netifaces
@@ -48,17 +47,20 @@ def mkdir(path):
     """
     try:
         os.mkdir(path)
+    except FileExistsError:
+        return True
+    except OSError:
+        return False
+    else:
         try:
             os.chmod(path, 0o770)
             cmsuser_gid = grp.getgrnam(config.cmsuser).gr_gid
             os.chown(path, -1, cmsuser_gid)
-        except OSError as error:
+        except OSError:
             os.rmdir(path)
             return False
-    except OSError as error:
-        if error.errno != errno.EEXIST:
-            return False
-    return True
+        else:
+            return True
 
 
 # This function is vulnerable to a symlink attack, see:
