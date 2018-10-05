@@ -21,7 +21,6 @@
 
 """
 
-import io
 import os
 import shutil
 import tempfile
@@ -107,7 +106,7 @@ class Archive(object):
 
         """
         temp_file, temp_filename = tempfile.mkstemp(dir=config.temp_dir)
-        with io.open(temp_file, "wb") as temp_file:
+        with open(temp_file, "wb") as temp_file:
             temp_file.write(raw_data)
 
         try:
@@ -203,7 +202,7 @@ class Archive(object):
             # Unfortunately, patoolib does not expose an API to do this.
             raise NotImplementedError("Cannot read before unpacking.")
         else:
-            return io.open(os.path.join(self.temp_dir, file_path), "rb")
+            return open(os.path.join(self.temp_dir, file_path), "rb")
 
     def write(self, file_path, file_object):
         """Writes a file in the archive in place.

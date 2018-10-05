@@ -31,7 +31,6 @@ import gevent.monkey
 gevent.monkey.patch_all()  # noqa
 
 import argparse
-import io
 import json
 import logging
 import os
@@ -249,7 +248,7 @@ class DumpExporter(object):
                 data["_version"] = model_version
 
                 destination = os.path.join(export_dir, "contest.json")
-                with io.open(destination, "wt", encoding="utf-8") as fout:
+                with open(destination, "wt", encoding="utf-8") as fout:
                     json.dump(data, fout, indent=4, sort_keys=True)
 
         # If the admin requested export to file, we do that.
@@ -376,7 +375,7 @@ class DumpExporter(object):
 
         # If applicable, retrieve also the description
         if descr_path is not None:
-            with io.open(descr_path, 'wt', encoding='utf-8') as fout:
+            with open(descr_path, 'wt', encoding='utf-8') as fout:
                 fout.write(self.file_cacher.describe(digest))
 
         return True

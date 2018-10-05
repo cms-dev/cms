@@ -20,7 +20,6 @@
 
 """
 
-import io
 import os
 import shutil
 import tempfile
@@ -66,6 +65,6 @@ class FileSystemMixin(object):
 
         """
         path = self.get_path(inner_path)
-        with io.open(path, "wb") as f:
+        with open(path, "wb") as f:
             f.write(content)
         return path

@@ -22,7 +22,6 @@
 
 import atexit
 import errno
-import io
 import json
 import logging
 import os

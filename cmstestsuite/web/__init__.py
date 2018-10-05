@@ -22,7 +22,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import io
 import sys
 import time
 import traceback
@@ -72,7 +71,7 @@ class Browser(object):
             try:
                 data = data.copy()
                 data['_xsrf'] = self.xsrf_token
-                file_objs = dict((k, io.open(v, "rb")) for k, v in file_names)
+                file_objs = dict((k, open(v, "rb")) for k, v in file_names)
                 response = self.session.post(url, data, files=file_objs)
             finally:
                 for fobj in file_objs.values():

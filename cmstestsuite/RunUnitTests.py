@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import io
 import logging
 import os
 import re
@@ -82,8 +81,8 @@ def run_unittests(test_list):
         results += " %s.%s\n" % (path, filename)
 
     if failures:
-        with io.open(FAILED_UNITTEST_FILENAME,
-                     "wt", encoding="utf-8") as failed_filename:
+        with open(FAILED_UNITTEST_FILENAME,
+                  "wt", encoding="utf-8") as failed_filename:
             for path, filename in failures:
                 failed_filename.write("%s %s\n" % (path, filename))
         results += "\n"
@@ -103,7 +102,7 @@ def load_test_list_from_file(filename):
     if not os.path.exists(filename):
         return []
     try:
-        lines = io.open(filename, "rt", encoding="utf-8").readlines()
+        lines = open(filename, "rt", encoding="utf-8").readlines()
         return [line.strip().split(" ") for line in lines]
     except (IOError, OSError) as error:
         print("Failed to read test list. %s." % error)

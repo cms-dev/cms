@@ -66,7 +66,7 @@ def path_digest(path):
     return (str): digest of the content of the file in path.
 
     """
-    with io.open(path, 'rb') as fin:
+    with open(path, 'rb') as fin:
         d = Digester()
         buf = fin.read(io.DEFAULT_BUFFER_SIZE)
         while len(buf) > 0:

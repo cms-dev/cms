@@ -24,7 +24,6 @@
 """
 
 import errno
-import io
 import os
 import random
 import shutil
@@ -180,7 +179,7 @@ class TestFileCacherBase(object):
 
         if not os.path.exists(os.path.join(self.cache_base_path, data)):
             self.fail("File not stored in local cache.")
-        with io.open(os.path.join(self.cache_base_path, data), "rb") as f:
+        with open(os.path.join(self.cache_base_path, data), "rb") as f:
             if f.read() != self.content:
                 self.fail("Local cache's content differ "
                           "from original file.")
@@ -189,7 +188,7 @@ class TestFileCacherBase(object):
 
         # Retrieve the file.
         self.fake_content = b"Fake content.\n"
-        with io.open(self.cache_path, "wb") as cached_file:
+        with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
         try:
             data = self.file_cacher.get_file(self.digest)
@@ -226,7 +225,7 @@ class TestFileCacherBase(object):
             self.fail("Content differ.")
         if not os.path.exists(self.cache_path):
             self.fail("File not stored in local cache.")
-        with io.open(self.cache_path, "rb") as f:
+        with open(self.cache_path, "rb") as f:
             if f.read() != self.content:
                 self.fail("Local cache's content differ " +
                           "from original file.")
@@ -267,7 +266,7 @@ class TestFileCacherBase(object):
 
         if not os.path.exists(os.path.join(self.cache_base_path, data)):
             self.fail("File not stored in local cache.")
-        with io.open(os.path.join(self.cache_base_path, data), "rb") as f:
+        with open(os.path.join(self.cache_base_path, data), "rb") as f:
             if f.read() != self.content:
                 self.fail("Local cache's content differ "
                           "from original file.")
@@ -276,7 +275,7 @@ class TestFileCacherBase(object):
 
         # Retrieve the file as a string.
         self.fake_content = b"Fake content.\n"
-        with io.open(self.cache_path, "wb") as cached_file:
+        with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
         try:
             data = self.file_cacher.get_file_content(self.digest)

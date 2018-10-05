@@ -20,7 +20,6 @@
 """Utility class to run functional-like tests."""
 
 import datetime
-import io
 import logging
 import os
 import subprocess

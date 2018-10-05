@@ -345,7 +345,7 @@ class SandboxBase(object, metaclass=ABCMeta):
         real_path = self.relative_path(path)
         try:
             file_fd = os.open(real_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            file_ = io.open(file_fd, "wb")
+            file_ = open(file_fd, "wb")
         except OSError as e:
             logger.error("Failed create file %s in sandbox. Unable to "
                          "evalulate this submission. This may be due to "
@@ -391,7 +391,7 @@ class SandboxBase(object, metaclass=ABCMeta):
         """
         logger.debug("Retrieving file %s from sandbox.", path)
         real_path = self.relative_path(path)
-        file_ = io.open(real_path, "rb")
+        file_ = open(real_path, "rb")
         if trunc_len is not None:
             file_ = Truncator(file_, trunc_len)
         return file_
@@ -410,7 +410,7 @@ class SandboxBase(object, metaclass=ABCMeta):
         """
         logger.debug("Retrieving text file %s from sandbox.", path)
         real_path = self.relative_path(path)
-        file_ = io.open(real_path, "rt", encoding="utf-8")
+        file_ = open(real_path, "rt", encoding="utf-8")
         if trunc_len is not None:
             file_ = Truncator(file_, trunc_len)
         return file_
@@ -681,7 +681,7 @@ class StupidSandbox(SandboxBase):
 
         logger.debug("Executing program in sandbox with command: `%s'.",
                      " ".join(command))
-        with io.open(self.relative_path(self.cmd_file), 'at') as commands:
+        with open(self.relative_path(self.cmd_file), 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(command)))
         try:
             p = subprocess.Popen(command,
@@ -1005,7 +1005,7 @@ class IsolateSandbox(SandboxBase):
         # assign the correct permissions.
         for path in outer_paths:
             if not os.path.exists(path):
-                io.open(path, "wb").close()
+                open(path, "wb").close()
 
         # Close everything, then open only the specified.
         self.allow_writing_none()
@@ -1295,7 +1295,7 @@ class IsolateSandbox(SandboxBase):
             try:
                 prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
                 os.chmod(self._home, 0o700)
-                with io.open(self.cmd_file, 'at') as cmds:
+                with open(self.cmd_file, 'at') as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
                 p = subprocess.Popen(command, cwd=self._home,
                                      stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1305,10 +1305,8 @@ class IsolateSandbox(SandboxBase):
                 # is not forwarded to the contestants. Secure commands
                 # are "setup" commands, which should not fail or
                 # provide information for the contestants.
-                io.open(
-                    os.path.join(self._home, self.stdout_file), "wb").close()
-                io.open(
-                    os.path.join(self._home, self.stderr_file), "wb").close()
+                open(os.path.join(self._home, self.stdout_file), "wb").close()
+                open(os.path.join(self._home, self.stderr_file), "wb").close()
                 self._write_empty_run_log(self.exec_num)
             except OSError:
                 logger.critical(
@@ -1323,7 +1321,7 @@ class IsolateSandbox(SandboxBase):
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
         os.chmod(self._home, 0o770)
-        with io.open(self.cmd_file, 'at') as commands:
+        with open(self.cmd_file, 'at') as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
         os.chmod(self._home, prev_permissions)
         try:
@@ -1341,7 +1339,7 @@ class IsolateSandbox(SandboxBase):
     def _write_empty_run_log(self, index):
         """Write a fake run.log file with no information."""
         info_file = "%s.%d" % (self.info_basename, index)
-        with io.open(info_file, "wt", encoding="utf-8") as f:
+        with open(info_file, "wt", encoding="utf-8") as f:
             f.write("time:0.000\n")
             f.write("time-wall:0.000\n")
             f.write("max-rss:0\n")

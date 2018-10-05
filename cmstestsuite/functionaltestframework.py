@@ -22,7 +22,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import json
 import logging
 import re
@@ -142,7 +141,7 @@ class FunctionalTestFramework(object):
 
     def get_cms_config(self):
         if self._cms_config is None:
-            with io.open("%(CONFIG_PATH)s" % CONFIG, "rt") as f:
+            with open("%(CONFIG_PATH)s" % CONFIG, "rt") as f:
                 self._cms_config = json.load(f)
         return self._cms_config
 

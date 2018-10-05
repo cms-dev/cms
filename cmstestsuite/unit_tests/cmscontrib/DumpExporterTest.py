@@ -19,7 +19,6 @@
 """Tests for the DumpExporter script"""
 
 import json
-import io
 import os
 import unittest
 
@@ -101,7 +100,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             skip_print_jobs=False).do_export()
         dump_path = os.path.join(self.target, "contest.json")
         try:
-            with io.open(dump_path, "rt", encoding="utf-8") as f:
+            with open(dump_path, "rt", encoding="utf-8") as f:
                 self.dump = json.load(f)
         except Exception:
             self.dump = None
@@ -145,7 +144,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
     def assertFileInDump(self, digest, content):
         path = os.path.join(self.target, "files", digest)
         self.assertTrue(os.path.exists(path))
-        with io.open(path, "rb") as f:
+        with open(path, "rb") as f:
             self.assertEqual(content, f.read())
 
     def assertFileNotInDump(self, digest):
@@ -153,10 +152,10 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertFalse(os.path.exists(path))
 
     def test_dont_overwrite(self):
-        with io.open(self.target, "wt", encoding="utf-8") as f:
+        with open(self.target, "wt", encoding="utf-8") as f:
             f.write("hello!")
         self.assertFalse(self.do_export(None))
-        with io.open(self.target, "rt") as f:
+        with open(self.target, "rt") as f:
             self.assertEqual(f.read(), "hello!")
 
     def test_export_all(self):

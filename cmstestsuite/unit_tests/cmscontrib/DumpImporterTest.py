@@ -19,7 +19,6 @@
 """Tests for the DumpImporter script"""
 
 import json
-import io
 import os
 import unittest
 
@@ -146,7 +145,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def write_dump(self, dump):
         destination = self.get_path("contest.json")
-        with io.open(destination, "wt", encoding="utf-8") as f:
+        with open(destination, "wt", encoding="utf-8") as f:
             json.dump(dump, f, indent=4, sort_keys=True)
 
     def write_files(self, data):
@@ -159,10 +158,10 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         f_path = self.makedirs("files")
         d_path = self.makedirs("descriptions")
         for digest, (desc, content) in data.items():
-            with io.open(
+            with open(
                     os.path.join(d_path, digest), "wt", encoding="utf-8") as f:
                 f.write(desc)
-            with io.open(os.path.join(f_path, digest), "wb") as f:
+            with open(os.path.join(f_path, digest), "wb") as f:
                 f.write(content)
 
     def assertContestInDb(self, name, description, task_names_and_titles,
