@@ -681,7 +681,8 @@ class StupidSandbox(SandboxBase):
 
         logger.debug("Executing program in sandbox with command: `%s'.",
                      " ".join(command))
-        with open(self.relative_path(self.cmd_file), 'at') as commands:
+        with open(self.relative_path(self.cmd_file),
+                  'at', encoding="utf-8") as commands:
             commands.write("%s\n" % (pretty_print_cmdline(command)))
         try:
             p = subprocess.Popen(command,
@@ -1295,7 +1296,7 @@ class IsolateSandbox(SandboxBase):
             try:
                 prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
                 os.chmod(self._home, 0o700)
-                with open(self.cmd_file, 'at') as cmds:
+                with open(self.cmd_file, 'at', encoding="utf-8") as cmds:
                     cmds.write("%s\n" % (pretty_print_cmdline(command)))
                 p = subprocess.Popen(command, cwd=self._home,
                                      stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1321,7 +1322,7 @@ class IsolateSandbox(SandboxBase):
         # Temporarily allow writing new files.
         prev_permissions = stat.S_IMODE(os.stat(self._home).st_mode)
         os.chmod(self._home, 0o770)
-        with open(self.cmd_file, 'at') as commands:
+        with open(self.cmd_file, 'at', encoding="utf-8") as commands:
             commands.write("%s\n" % (pretty_print_cmdline(args)))
         os.chmod(self._home, prev_permissions)
         try:

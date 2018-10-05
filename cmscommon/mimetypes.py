@@ -34,7 +34,8 @@ def _retrieve_icons():
     for d in reversed([xdg.BaseDirectory.xdg_data_home]
                       + xdg.BaseDirectory.xdg_data_dirs):
         try:
-            with open(os.path.join(d, "mime", "generic-icons"), "rt") as f:
+            with open(os.path.join(d, "mime", "generic-icons"),
+                      "rt", encoding="utf-8") as f:
                 res.update(tuple(l.strip().split(':')) for l in f.readlines())
         except IOError as err:
             if err.errno != errno.ENOENT:

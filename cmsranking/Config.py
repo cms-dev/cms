@@ -137,7 +137,7 @@ class Config(object):
         """
         for conf_path in conf_paths:
             try:
-                with open(conf_path, "rt") as conf_fobj:
+                with open(conf_path, "rt", encoding="utf-8") as conf_fobj:
                     logger.info("Using config file %s.", conf_path)
                     return self._load_one(conf_fobj)
             except IOError as error:
