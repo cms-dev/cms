@@ -177,7 +177,7 @@ def main():
     try:
         git_root = subprocess.check_output(
             "git rev-parse --show-toplevel", shell=True,
-            stderr=io.open(os.devnull, "wb")).decode('utf8').strip()
+            stderr=subprocess.DEVNULL).decode('utf8').strip()
     except subprocess.CalledProcessError:
         print("Please run the unit tests from the git repository.")
         return 1

@@ -1423,24 +1423,22 @@ class IsolateSandbox(SandboxBase):
             + (["--cg"] if self.cgroup else []) \
             + ["--box-id=%d" % self.box_id]
 
-        # Use subprocess.DEVNULL when dropping Python 2.
-        with io.open(os.devnull, "r+b") as devnull:
-            if delete:
-                subprocess.call(
-                    exe + [
-                        "--dir=%s=%s:rw" % (self._home_dest, self._home),
-                        "--run", "--",
-                        "/bin/chmod", "777", "-R", self._home_dest],
-                    stdout=devnull, stderr=devnull)
+        if delete:
+            subprocess.call(
+                exe + [
+                    "--dir=%s=%s:rw" % (self._home_dest, self._home),
+                    "--run", "--",
+                    "/bin/chmod", "777", "-R", self._home_dest],
+                stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
-            # Tell isolate to cleanup the sandbox.
-            subprocess.call(exe + ["--cleanup"],
-                            stdout=devnull, stderr=subprocess.STDOUT)
+        # Tell isolate to cleanup the sandbox.
+        subprocess.call(exe + ["--cleanup"],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
-            if delete:
-                logger.debug("Deleting sandbox in %s.", self._outer_dir)
-                # Delete the working directory.
-                rmtree(self._outer_dir)
+        if delete:
+            logger.debug("Deleting sandbox in %s.", self._outer_dir)
+            # Delete the working directory.
+            rmtree(self._outer_dir)
 
 
 Sandbox = {

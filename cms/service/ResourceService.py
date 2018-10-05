@@ -35,10 +35,6 @@ from shlex import quote as shell_quote
 import psutil
 
 from gevent import subprocess
-try:
-    from subprocess import DEVNULL  # py3k
-except ImportError:
-    DEVNULL = os.open(os.devnull, os.O_WRONLY)
 
 from cms import config, get_safe_shard, ServiceCoord
 from cms.io import Service, rpc_method
@@ -259,9 +255,8 @@ class ResourceService(Service):
                     args += ["-c", "ALL"]
                 try:
                     process = subprocess.Popen(args,
-                                               stdout=DEVNULL,
-                                               stderr=subprocess.STDOUT
-                                               )
+                                               stdout=subprocess.DEVNULL,
+                                               stderr=subprocess.STDOUT)
                 except Exception:
                     logger.error("Error for command line %s",
                                  shell_quote(" ".join(args)))

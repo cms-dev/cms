@@ -262,8 +262,8 @@ class Program(object):
             stdout = None
             stderr = None
         else:
-            stdout = io.open(os.devnull, "wb")
-            stderr = stdout
+            stdout = subprocess.DEVNULL
+            stderr = subprocess.STDOUT
         instance = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
         if self.cpu_limit is not None:
             logger.info("Limiting %s to %d%% CPU time",
