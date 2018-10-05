@@ -93,9 +93,9 @@ PACKAGE_DATA = {
 def find_version():
     """Return the version string obtained from cms/__init__.py"""
     path = os.path.join("cms", "__init__.py")
-    version_file = open(path, "rt", encoding="utf-8").read()
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
-                              version_file, re.M)
+    with open(path, "rt", encoding="utf-8") as f:
+        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+                                  f.read(), re.M)
     if version_match is not None:
         return version_match.group(1)
     raise RuntimeError("Unable to find version string.")
