@@ -45,8 +45,6 @@ class RandomFile(object):
     """
     def __init__(self, dim):
         self.dim = dim
-        # FIXME We could use os.urandom() instead.
-        self.source = io.open('/dev/urandom', 'rb')
         self.digester = Digester()
 
     def read(self, byte_num):
@@ -62,16 +60,16 @@ class RandomFile(object):
             byte_num = self.dim
         if byte_num == 0:
             return b''
-        buf = self.source.read(byte_num)
+        buf = os.urandom(byte_num)
         self.dim -= len(buf)
         self.digester.update(buf)
         return buf
 
     def close(self):
-        """Close the source file.
+        """Do nothing.
 
         """
-        self.source.close()
+        pass
 
     @property
     def digest(self):
