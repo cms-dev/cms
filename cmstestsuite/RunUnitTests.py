@@ -102,8 +102,8 @@ def load_test_list_from_file(filename):
     if not os.path.exists(filename):
         return []
     try:
-        lines = open(filename, "rt", encoding="utf-8").readlines()
-        return [line.strip().split(" ") for line in lines]
+        with open(filename, "rt", encoding="utf-8") as f:
+            return [line.strip().split(" ") for line in f.readlines()]
     except (IOError, OSError) as error:
         print("Failed to read test list. %s." % error)
         return None

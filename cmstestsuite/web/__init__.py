@@ -71,7 +71,8 @@ class Browser(object):
             try:
                 data = data.copy()
                 data['_xsrf'] = self.xsrf_token
-                file_objs = dict((k, open(v, "rb")) for k, v in file_names)
+                for k, v in file_names:
+                    file_objs[k] = open(v, "rb")
                 response = self.session.post(url, data, files=file_objs)
             finally:
                 for fobj in file_objs.values():
