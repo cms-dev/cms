@@ -87,10 +87,8 @@ class Store(object):
                         self._store[name[:-5]] = item
         except OSError:
             # the path isn't a directory or is inaccessible
-            logger.error("Path is not a directory or is not accessible",
-                         exc_info=True)
-        except OSError:
-            logger.error("I/O error occured", exc_info=True)
+            logger.error("Path is not a directory or is not accessible "
+                         "(or other I/O error occurred)", exc_info=True)
         except ValueError:
             logger.error("Invalid JSON", exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
