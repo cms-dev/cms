@@ -60,6 +60,11 @@ def getmtime(fname):
     return os.stat(fname).st_mtime
 
 
+def load_yaml_from_path(path):
+    with open(path, "rt", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
     """Execute:
       dst[dst_name] = conv(src[src_name])
@@ -146,9 +151,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             logger.critical("File missing: \"contest.yaml\"")
             return None
 
-        with open(os.path.join(self.path, "contest.yaml"),
-                  "rt", encoding="utf-8") as f:
-            conf = yaml.safe_load(f)
+        conf = load_yaml_from_path(os.path.join(self.path, "contest.yaml"))
 
         # Here we update the time of the last import
         touch(os.path.join(self.path, ".itime_contest"))
@@ -235,9 +238,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         username = os.path.basename(self.path)
         logger.info("Loading parameters for user %s.", username)
 
-        with open(os.path.join(os.path.dirname(self.path), "contest.yaml"),
-                  "rt", encoding="utf-8") as f:
-            conf = yaml.safe_load(f)
+        conf = load_yaml_from_path(
+            os.path.join(os.path.dirname(self.path), "contest.yaml"))
 
         args = {}
 
@@ -277,9 +279,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         team_code = os.path.basename(self.path)
         logger.info("Loading parameters for team %s.", team_code)
 
-        with open(os.path.join(os.path.dirname(self.path), "contest.yaml"),
-                 "rt", encoding="utf-8") as f:
-            conf = yaml.safe_load(f)
+        conf = load_yaml_from_path(
+            os.path.join(os.path.dirname(self.path), "contest.yaml"))
 
         args = {}
 
@@ -312,14 +313,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # We first look for the yaml file inside the task folder,
         # and eventually fallback to a yaml file in its parent folder.
         try:
-            with open(os.path.join(self.path, "task.yaml"),
-                      "rt", encoding="utf-8") as f:
-                conf = yaml.safe_load(f)
+            conf = load_yaml_from_path(os.path.join(self.path, "task.yaml"))
         except OSError as err:
             try:
                 deprecated_path = os.path.join(self.path, "..", name + ".yaml")
-                with open(deprecated_path, "rt", encoding="utf-8") as f:
-                    conf = yaml.safe_load(f)
+                conf = load_yaml_from_path(deprecated_path)
 
                 logger.warning("You're using a deprecated location for the "
                                "task.yaml file. You're advised to move %s to "
@@ -746,13 +744,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # We first look for the yaml file inside the task folder,
         # and eventually fallback to a yaml file in its parent folder.
         try:
-            with open(os.path.join(self.path, "task.yaml"),
-                      "rt", encoding="utf-8") as f:
-                conf = yaml.safe_load(f)
+            conf = load_yaml_from_path(os.path.join(self.path, "task.yaml"))
         except OSError:
-            with open(os.path.join(self.path, "..", name + ".yaml"),
-                      "rt", encoding="utf-8") as f:
-                conf = yaml.safe_load(f)
+            conf = load_yaml_from_path(
+                os.path.join(self.path, "..", name + ".yaml"))
 
         # If there is no .itime file, we assume that the task has changed
         if not os.path.exists(os.path.join(self.path, ".itime")):
