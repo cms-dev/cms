@@ -28,7 +28,7 @@ from cms import Address, ServiceCoord, \
     get_safe_shard, get_service_address, get_service_shards
 
 
-class FakeAsyncConfig(object):
+class FakeAsyncConfig:
     """Fake class for the configuration of service addresses."""
     core_services = {
         ServiceCoord("Service", 0): Address("0.0.0.0", 0),

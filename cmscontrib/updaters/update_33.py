@@ -169,7 +169,7 @@ def convert_score_details(details):
     return inaccurate
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 32

@@ -44,7 +44,7 @@ from cmscontrib.loaders import choose_loader, build_epilog
 logger = logging.getLogger(__name__)
 
 
-class DatasetImporter(object):
+class DatasetImporter:
     def __init__(self, path, description, loader_class):
         self.file_cacher = FileCacher()
         self.description = description

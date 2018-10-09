@@ -98,7 +98,7 @@ def parse_st_details(s):
     return s
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 5

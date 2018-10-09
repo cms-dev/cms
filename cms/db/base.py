@@ -60,7 +60,7 @@ _TYPE_MAP = {
 
 
 @as_declarative(bind=engine, metadata=metadata, constructor=None)
-class Base(object):
+class Base:
     """Base class for all classes managed by SQLAlchemy. Extending the
     base class given by SQLAlchemy.
 

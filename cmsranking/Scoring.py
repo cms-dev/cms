@@ -29,7 +29,7 @@ from cmscommon.constants import \
 logger = logging.getLogger(__name__)
 
 
-class NumberSet(object):
+class NumberSet:
     """A fast data structure on numbers.
 
     It supports:
@@ -59,7 +59,7 @@ class NumberSet(object):
         del self._impl[:]
 
 
-class Score(object):
+class Score:
     """The score of a user for a task.
 
     It computes the current score (and its history) for this
@@ -224,7 +224,7 @@ class Score(object):
         self._score_mode = score_mode
 
 
-class ScoringStore(object):
+class ScoringStore:
     """A manager for all instances of Scoring.
 
     It listens to the events of submission_store and subchange_store and

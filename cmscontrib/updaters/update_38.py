@@ -28,7 +28,7 @@ newly-introduced fields 'compilation' and 'user_io'.
 import json
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 37

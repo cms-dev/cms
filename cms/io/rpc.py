@@ -56,7 +56,7 @@ def rpc_method(func):
     return func
 
 
-class RemoteServiceBase(object):
+class RemoteServiceBase:
     """Base class for both ends of a RPC connection.
 
     Just provides some basic helpers for I/O. It alternates between two

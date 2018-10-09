@@ -29,7 +29,7 @@ class TestFailure(Exception):
     pass
 
 
-class Check(object):
+class Check:
     def check(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -131,7 +131,7 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
             "Execution failed because the return code was nonzero")
 
 
-class Test(object):
+class Test:
     def __init__(self, name, task, filenames, languages, checks,
                  user_tests=False):
         self.framework = FunctionalTestFramework()

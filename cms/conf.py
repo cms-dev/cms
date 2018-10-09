@@ -53,7 +53,7 @@ class ConfigError(Exception):
     pass
 
 
-class AsyncConfig(object):
+class AsyncConfig:
     """This class will contain the configuration for the
     services. This needs to be populated at the initilization stage.
 
@@ -74,7 +74,7 @@ class AsyncConfig(object):
 async_config = AsyncConfig()
 
 
-class Config(object):
+class Config:
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
     default with some sane data. See cms.conf.sample in the config

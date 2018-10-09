@@ -26,7 +26,7 @@ from cms.db.filecacher import FileCacher, TombstoneError
 SECONDS_IN_A_YEAR = 365 * 24 * 60 * 60
 
 
-class FileServerMiddleware(object):
+class FileServerMiddleware:
     """Intercept requests wanting to serve files and serve those files.
 
     Tornado's WSGI adapter contravenes the specification by buffering

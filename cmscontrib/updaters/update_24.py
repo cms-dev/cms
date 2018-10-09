@@ -26,7 +26,7 @@ This updater just adds the default values for the new field
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 23

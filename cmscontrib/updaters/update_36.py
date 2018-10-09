@@ -44,7 +44,7 @@ FILENAME_SCHEMA_FIELDS = {"File": "filename",
 FILENAME_SCHEMA_ARRAY_FIELDS = {"Task": "submission_format"}
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 35

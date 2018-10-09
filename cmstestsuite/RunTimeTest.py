@@ -36,7 +36,7 @@ from cmstestsuite.Tests import LANG_C
 logger = logging.getLogger(__name__)
 
 
-class TimeTest(object):
+class TimeTest:
     def __init__(self, name, task, filename, languages, repetitions):
         self.framework = FunctionalTestFramework()
 

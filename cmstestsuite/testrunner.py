@@ -36,7 +36,7 @@ from cmscommon.datetime import get_system_timezone
 logger = logging.getLogger(__name__)
 
 
-class TestRunner(object):
+class TestRunner:
     def __init__(self, test_list, contest_id=None, workers=1, cpu_limits=None):
         self.start_time = datetime.datetime.now()
         self.last_end_time = self.start_time

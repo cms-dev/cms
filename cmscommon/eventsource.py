@@ -76,7 +76,7 @@ def format_event(id_, event, data):
     return b'\n'.join(result)
 
 
-class Publisher(object):
+class Publisher:
     """The publish part of a pub-sub broadcast system.
 
     Publish-subscribe is actually an improper name, as there's just one
@@ -151,7 +151,7 @@ class Publisher(object):
         return Subscriber(queue)
 
 
-class Subscriber(object):
+class Subscriber:
     """The subscribe part of a pub-sub broadcast system.
 
     This class receives the messages sent to the Publisher that created
@@ -193,7 +193,7 @@ class Subscriber(object):
             pass
 
 
-class EventSource(object):
+class EventSource:
     """A class that implements a Server-Sent Events [1] handler.
 
     This class is intended to be extended: it takes charge of all the

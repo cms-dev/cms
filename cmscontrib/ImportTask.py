@@ -50,7 +50,7 @@ from cmscontrib.loaders import choose_loader, build_epilog
 logger = logging.getLogger(__name__)
 
 
-class TaskImporter(object):
+class TaskImporter:
 
     """This script creates a task
 

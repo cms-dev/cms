@@ -101,7 +101,7 @@ def get_url_root(request_path):
         return "."
 
 
-class Url(object):
+class Url:
     """An object that helps in building a URL piece by piece.
 
     """

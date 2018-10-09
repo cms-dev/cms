@@ -28,7 +28,7 @@ db4adada08d66b4797d0569d95e8f0c028a4e5e0.
 from functools import partial
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         self.data = data

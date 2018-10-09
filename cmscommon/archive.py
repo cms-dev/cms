@@ -39,7 +39,7 @@ class ArchiveException(Exception):
     pass
 
 
-class Archive(object):
+class Archive:
     """Class to manage archives.
 
     This class has static methods to test, extract, and create

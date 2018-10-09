@@ -58,7 +58,7 @@ def _is_contest_multithreaded(contest):
                for l in contest.languages)
 
 
-class Job(object):
+class Job:
     """Base class for all jobs.
 
     Input data (usually filled by ES): task_type,
@@ -643,7 +643,7 @@ class EvaluationJob(Job):
         ur.output = self.user_output
 
 
-class JobGroup(object):
+class JobGroup:
     """A simple collection of jobs."""
 
     def __init__(self, jobs=None):

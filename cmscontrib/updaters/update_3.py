@@ -28,7 +28,7 @@ d66951d3149a954fb0b81b6015e8e0b060020152
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 2

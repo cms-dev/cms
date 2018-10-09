@@ -20,7 +20,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BaseLoader(object, metaclass=ABCMeta):
+class BaseLoader(metaclass=ABCMeta):
     """Base class for deriving loaders.
 
     Each loader must extend this class and support the following

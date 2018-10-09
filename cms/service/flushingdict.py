@@ -28,7 +28,7 @@ from cmscommon.datetime import monotonic_time
 logger = logging.getLogger(__name__)
 
 
-class FlushingDict(object):
+class FlushingDict:
     """A dict that periodically flushes its content to a callback.
 
     The dict flushes after a specified time since the latest entry

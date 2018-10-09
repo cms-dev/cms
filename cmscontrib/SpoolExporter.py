@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: review this file to avoid print.
-class SpoolExporter(object):
+class SpoolExporter:
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
 

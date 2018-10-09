@@ -178,7 +178,7 @@ def with_post_finish_lock(func):
     return wrapped
 
 
-class Result(object):
+class Result:
     """An object grouping the results obtained from a worker for an
     operation.
 

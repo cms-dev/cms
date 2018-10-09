@@ -80,7 +80,7 @@ class TombstoneError(RuntimeError):
     pass
 
 
-class FileCacherBackend(object):
+class FileCacherBackend:
     """Abstract base class for all FileCacher backends.
 
     """
@@ -457,7 +457,7 @@ class NullBackend(FileCacherBackend):
         return list()
 
 
-class FileCacher(object):
+class FileCacher:
     """This class implement a local cache for files stored as FSObject
     in the database.
 

@@ -39,7 +39,7 @@ from cmstestsuite.web.CWSRequests import \
 logger = logging.getLogger(__name__)
 
 
-class FunctionalTestFramework(object):
+class FunctionalTestFramework:
     """An object encapsulating the status of a functional test
 
     It maintains facilities to interact with the services while running a

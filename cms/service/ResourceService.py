@@ -51,7 +51,7 @@ PSUTIL_PROC_ATTRS = \
     ["cmdline", "cpu_times", "create_time", "memory_info", "num_threads"]
 
 
-class ProcessMatcher(object):
+class ProcessMatcher:
     def __init__(self):
         # Running processes, lazily loaded.
         self._procs = None

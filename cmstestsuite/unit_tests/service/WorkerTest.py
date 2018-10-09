@@ -284,7 +284,7 @@ class TestWorker(unittest.TestCase):
         return job_groups, calls
 
 
-class FakeTaskType(object):
+class FakeTaskType:
     def __init__(self, execute_results):
         self.execute_results = execute_results
         self.index = 0
