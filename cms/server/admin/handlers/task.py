@@ -33,7 +33,6 @@ import tornado.web
 
 from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
 from cmscommon.datetime import make_datetime
-
 from .base import BaseHandler, SimpleHandler, require_permission
 
 

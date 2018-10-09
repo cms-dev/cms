@@ -27,11 +27,9 @@
 
 import logging
 import random
-
 from datetime import timedelta
 
 import gevent.lock
-
 from gevent.event import Event
 
 from cms.db import SessionGen

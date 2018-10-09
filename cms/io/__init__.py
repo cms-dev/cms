@@ -37,14 +37,13 @@ __all__ = [
 
 # Instantiate or import these objects.
 
+from .PsycoGevent import make_psycopg_green
 from .priorityqueue import FakeQueueItem, PriorityQueue, QueueEntry, QueueItem
 from .rpc import RPCError, rpc_method, RemoteServiceServer, RemoteServiceClient
 from .service import Service
 from .triggeredservice import Executor, TriggeredService
 from .web_rpc import RPCMiddleware
 from .web_service import WebService
-
-from .PsycoGevent import make_psycopg_green
 
 
 # Fix psycopg in order to support gevent greenlets.

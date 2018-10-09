@@ -21,7 +21,6 @@ import os
 import re
 
 from cms.grading.languagemanager import get_language
-
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
 
 

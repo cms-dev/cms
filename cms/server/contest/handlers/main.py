@@ -42,10 +42,8 @@ from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
 from cmscommon.datetime import make_datetime, make_timestamp
-
-from ..phase_management import actual_phase_required
-
 from .contest import ContestHandler
+from ..phase_management import actual_phase_required
 
 
 logger = logging.getLogger(__name__)

@@ -24,9 +24,8 @@ import unittest
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import SessionGen, Team
-
-from cmscontrib.loaders.base_loader import TeamLoader
 from cmscontrib.ImportTeam import TeamImporter
+from cmscontrib.loaders.base_loader import TeamLoader
 
 
 def fake_loader_factory(team):

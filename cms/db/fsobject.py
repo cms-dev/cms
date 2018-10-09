@@ -25,12 +25,11 @@
 
 import io
 
-from sqlalchemy.schema import Column
-from sqlalchemy.types import String, Unicode
-from sqlalchemy.dialects.postgresql import OID
-
 import psycopg2
 import psycopg2.extensions
+from sqlalchemy.dialects.postgresql import OID
+from sqlalchemy.schema import Column
+from sqlalchemy.types import String, Unicode
 
 from . import Base, custom_psycopg2_connection
 

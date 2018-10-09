@@ -19,9 +19,9 @@
 
 import json
 
-from werkzeug.wrappers import Request, Response
-from werkzeug.local import Local, LocalManager
 from werkzeug.contrib.securecookie import SecureCookie
+from werkzeug.local import Local, LocalManager
+from werkzeug.wrappers import Request, Response
 
 from cms import config
 from cmscommon.binary import hex_to_bin

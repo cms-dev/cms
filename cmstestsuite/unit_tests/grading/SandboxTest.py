@@ -19,8 +19,8 @@
 
 """Tests for general utility functions."""
 
-import unittest
 import io
+import unittest
 
 from cms.grading.Sandbox import Truncator
 

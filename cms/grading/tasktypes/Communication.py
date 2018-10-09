@@ -26,13 +26,13 @@ import tempfile
 from functools import reduce
 
 from cms import config, rmtree
+from cms.db import Executable
+from cms.grading.ParameterTypes import ParameterTypeChoice, ParameterTypeInt
 from cms.grading.Sandbox import wait_without_std, Sandbox
-from cms.grading.steps import compilation_step,  evaluation_step_before_run, \
+from cms.grading.languagemanager import LANGUAGES, get_language
+from cms.grading.steps import compilation_step, evaluation_step_before_run, \
     evaluation_step_after_run, extract_outcome_and_text, \
     human_evaluation_message, merge_execution_stats, trusted_step
-from cms.grading.languagemanager import LANGUAGES, get_language
-from cms.grading.ParameterTypes import ParameterTypeChoice, ParameterTypeInt
-from cms.db import Executable
 from cms.grading.tasktypes import check_files_number
 from . import TaskType, check_executables_number, check_manager_present, \
     create_sandbox, delete_sandbox, is_manager_for_compilation

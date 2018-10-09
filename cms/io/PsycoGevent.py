@@ -35,9 +35,8 @@ Use `make_psycopg_green()` to enable gevent support in Psycopg.
 from contextlib import contextmanager
 
 import psycopg2
-from psycopg2 import extensions
-
 from gevent.socket import wait_read, wait_write
+from psycopg2 import extensions
 
 
 def make_psycopg_green():

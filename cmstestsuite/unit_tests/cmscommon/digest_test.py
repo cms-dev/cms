@@ -20,9 +20,8 @@
 
 import unittest
 
-from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
-
 from cmscommon.digest import Digester, bytes_digest, path_digest
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 
 _EMPTY_DIGEST = "da39a3ee5e6b4b0d3255bfef95601890afd80709"

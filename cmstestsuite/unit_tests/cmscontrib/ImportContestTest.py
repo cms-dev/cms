@@ -24,9 +24,8 @@ import unittest
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Contest, SessionGen, Submission, User
-
-from cmscontrib.loaders.base_loader import ContestLoader, TaskLoader
 from cmscontrib.ImportContest import ContestImporter
+from cmscontrib.loaders.base_loader import ContestLoader, TaskLoader
 
 
 def fake_loader_factory(contest, contest_has_changed=False,

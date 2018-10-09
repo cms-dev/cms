@@ -28,15 +28,14 @@
 
 from datetime import datetime, timedelta
 
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, \
     Boolean, String
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
-
 from . import Codename, Base, Admin
 
 

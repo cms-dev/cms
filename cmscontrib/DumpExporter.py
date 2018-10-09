@@ -37,6 +37,7 @@ import os
 import sys
 import tarfile
 import tempfile
+from datetime import date
 
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
@@ -44,15 +45,13 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
-    FilenameSchema, FilenameSchemaArray, Digest
-from cms.db import SessionGen, Contest, User, Task, Submission, UserTest, \
-    SubmissionResult, UserTestResult, PrintJob, enumerate_files
+    FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
+    Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
+    enumerate_files
 from cms.db.filecacher import FileCacher
-
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
 
-from datetime import date
 
 logger = logging.getLogger(__name__)
 

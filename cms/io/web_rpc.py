@@ -20,10 +20,10 @@
 import json
 import logging
 
-from werkzeug.wrappers import Request, Response
-from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import HTTPException, BadRequest, Forbidden, \
     NotFound, NotAcceptable, UnsupportedMediaType, ServiceUnavailable
+from werkzeug.routing import Map, Rule
+from werkzeug.wrappers import Request, Response
 from werkzeug.wsgi import responder
 
 from cms import ServiceCoord

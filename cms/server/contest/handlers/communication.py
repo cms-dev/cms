@@ -34,7 +34,6 @@ import tornado.web
 from cms.server import multi_contest
 from cms.server.contest.communication import accept_question, \
     UnacceptableQuestion, QuestionsNotAllowed
-
 from .contest import ContestHandler
 
 

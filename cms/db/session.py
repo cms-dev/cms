@@ -27,13 +27,12 @@ interact with SQLAlchemy objects.
 """
 
 import logging
-import psycopg2
 
-from sqlalchemy.orm import sessionmaker, scoped_session
+import psycopg2
 from sqlalchemy.engine.url import make_url
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from cms import config
-
 from . import engine
 
 

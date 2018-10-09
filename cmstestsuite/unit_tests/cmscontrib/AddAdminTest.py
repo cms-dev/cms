@@ -24,9 +24,7 @@ import unittest
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Admin
-
 from cmscommon.crypto import validate_password
-
 from cmscontrib.AddAdmin import add_admin
 
 

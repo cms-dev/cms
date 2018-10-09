@@ -27,11 +27,10 @@
 
 import logging
 
-from .messages import HumanMessage, MessageCollection
-from .utils import generic_step
-
 from cms import config
 from cms.grading.Sandbox import Sandbox
+from .messages import HumanMessage, MessageCollection
+from .utils import generic_step
 
 
 logger = logging.getLogger(__name__)

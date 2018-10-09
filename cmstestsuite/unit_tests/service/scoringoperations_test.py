@@ -23,6 +23,7 @@ and the function to compute them).
 
 import unittest
 
+# Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.service.scoringoperations import ScoringOperation, get_operations

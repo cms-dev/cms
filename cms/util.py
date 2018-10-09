@@ -21,14 +21,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import chardet
+import grp
 import itertools
 import logging
 import netifaces
 import os
 import sys
-import grp
 
+import chardet
 import gevent
 import gevent.socket
 

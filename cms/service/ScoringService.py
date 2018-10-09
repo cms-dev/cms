@@ -28,11 +28,9 @@
 import logging
 
 from cms import ServiceCoord, config
-from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Submission, Dataset, get_submission_results
-
+from cms.io import Executor, TriggeredService, rpc_method
 from cmscommon.datetime import make_datetime
-
 from .scoringoperations import ScoringOperation, get_operations
 
 

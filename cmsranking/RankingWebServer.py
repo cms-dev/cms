@@ -29,28 +29,27 @@ from datetime import datetime
 
 import gevent
 from gevent.pywsgi import WSGIServer
-
-from werkzeug.wrappers import Request, Response
-from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, \
     Forbidden, NotFound, NotAcceptable, UnsupportedMediaType
+from werkzeug.routing import Map, Rule
+from werkzeug.wrappers import Request, Response
 from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
     DispatcherMiddleware
 
-# Needed for initialization. Do not remove.
-import cmsranking.Logger
-
 from cmscommon.eventsource import EventSource
 from cmsranking.Config import Config
-from cmsranking.Entity import InvalidData
 from cmsranking.Contest import Contest
+from cmsranking.Entity import InvalidData
+from cmsranking.Scoring import ScoringStore
+from cmsranking.Store import Store
+from cmsranking.Subchange import Subchange
+from cmsranking.Submission import Submission
 from cmsranking.Task import Task
 from cmsranking.Team import Team
 from cmsranking.User import User
-from cmsranking.Submission import Submission
-from cmsranking.Subchange import Subchange
-from cmsranking.Scoring import ScoringStore
-from cmsranking.Store import Store
+
+
+# Needed for initialization. Do not remove.
 
 
 logger = logging.getLogger(__name__)

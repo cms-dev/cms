@@ -27,12 +27,12 @@ import sys
 
 from cms import utf8_decoder
 from cmstestsuite import CONFIG
+from cmstestsuite.Tests import ALL_TESTS
 from cmstestsuite.coverage import clear_coverage, combine_coverage, \
     send_coverage_to_codecov
 from cmstestsuite.profiling import \
     PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI
 from cmstestsuite.testrunner import TestRunner
-from cmstestsuite.Tests import ALL_TESTS
 
 
 logger = logging.getLogger(__name__)

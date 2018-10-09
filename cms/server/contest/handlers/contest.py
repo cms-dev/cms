@@ -36,14 +36,12 @@ import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest
-from cms.server import FileHandlerMixin
 from cms.locale import filter_language_codes
+from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
 from cmscommon.datetime import get_timezone
-
-from ..phase_management import compute_actual_phase
-
 from .base import BaseHandler
+from ..phase_management import compute_actual_phase
 
 
 logger = logging.getLogger(__name__)

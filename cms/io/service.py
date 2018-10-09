@@ -34,17 +34,16 @@ import socket
 import time
 
 import gevent
-import gevent.socket
 import gevent.event
-from gevent.server import StreamServer
+import gevent.socket
 from gevent.backdoor import BackdoorServer
+from gevent.server import StreamServer
 
 from cms import ConfigError, config, mkdir, ServiceCoord, Address, \
     get_service_address
 from cms.log import root_logger, shell_handler, ServiceFilter, \
     DetailedFormatter, LogServiceHandler, FileHandler
 from cmscommon.datetime import monotonic_time
-
 from .rpc import rpc_method, RemoteServiceServer, RemoteServiceClient, \
     FakeRemoteServiceClient
 

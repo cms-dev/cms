@@ -31,7 +31,6 @@ import logging
 from cms.db import Dataset, File, Submission
 from cms.grading.languagemanager import get_language
 from cmscommon.datetime import make_datetime
-
 from .base import BaseHandler, FileHandler, require_permission
 
 

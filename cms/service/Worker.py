@@ -29,12 +29,12 @@ import time
 
 import gevent.lock
 
-from cms.io import Service, rpc_method
 from cms.db import SessionGen, Contest, enumerate_files
 from cms.db.filecacher import FileCacher, TombstoneError
 from cms.grading import JobException
-from cms.grading.tasktypes import get_task_type
 from cms.grading.Job import CompilationJob, EvaluationJob, JobGroup
+from cms.grading.tasktypes import get_task_type
+from cms.io import Service, rpc_method
 
 
 logger = logging.getLogger(__name__)

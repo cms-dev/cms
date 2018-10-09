@@ -23,8 +23,8 @@
 import unittest
 
 import gevent
-import gevent.socket
 import gevent.event
+import gevent.socket
 
 from cms.io import FakeQueueItem, PriorityQueue
 from cmscommon.datetime import make_datetime

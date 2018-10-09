@@ -23,8 +23,8 @@
 
 import argparse
 import logging
-import sys
 import os
+import sys
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Statement, Task

@@ -23,6 +23,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .communication import \
+    CommunicationHandler, \
+    QuestionHandler
 from .main import \
     LoginHandler, \
     LogoutHandler, \
@@ -48,9 +51,6 @@ from .taskusertest import \
     UserTestDetailsHandler, \
     UserTestIOHandler, \
     UserTestFileHandler
-from .communication import \
-    CommunicationHandler, \
-    QuestionHandler
 
 
 HANDLERS = [

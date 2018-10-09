@@ -35,8 +35,8 @@ import shutil
 
 from cms import config
 from cms.grading import JobException
-from cms.grading.Sandbox import Sandbox
 from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import EVALUATION_MESSAGES, checker_step, \
     white_diff_fobj_step
 

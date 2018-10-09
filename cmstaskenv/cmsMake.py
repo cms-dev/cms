@@ -21,21 +21,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import os
-import sys
-import subprocess
 import copy
 import functools
-import shutil
-import tempfile
-import yaml
 import logging
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+
+import yaml
 
 from cms import utf8_decoder
 from cms.grading.languagemanager import SOURCE_EXTS, filename_to_language
-from cmstaskenv.Test import test_testcases, clean_test_env
 from cmscommon.terminal import move_cursor, add_color_to_string, \
     colors, directions
+from cmstaskenv.Test import test_testcases, clean_test_env
+
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'

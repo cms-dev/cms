@@ -31,12 +31,11 @@ import os
 import tempfile
 
 import gevent
-
 from sqlalchemy.exc import IntegrityError
 
-from cmscommon.digest import Digester
 from cms import config, mkdir, rmtree
 from cms.db import SessionGen, Digest, FSObject, LargeObject
+from cmscommon.digest import Digester
 
 
 logger = logging.getLogger(__name__)

@@ -27,9 +27,9 @@ compute sets of operations to do.
 
 import logging
 
-from cms.io import QueueItem
 from cms.db import Dataset, Submission, SubmissionResult, \
     Task
+from cms.io import QueueItem
 
 
 logger = logging.getLogger(__name__)

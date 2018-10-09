@@ -29,7 +29,7 @@ from cms.grading.steps import merge_execution_stats
 from cms.grading.tasktypes.Communication import Communication
 from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 from cmstestsuite.unit_tests.grading.tasktypes.tasktypetestutils import \
-    COMPILATION_COMMAND_1, COMPILATION_COMMAND_2, LANG_1, LANG_2, OUTCOME,\
+    COMPILATION_COMMAND_1, COMPILATION_COMMAND_2, LANG_1, LANG_2, OUTCOME, \
     STATS_OK, STATS_RE, TEXT, TaskTypeTestMixin, fake_compilation_commands
 
 

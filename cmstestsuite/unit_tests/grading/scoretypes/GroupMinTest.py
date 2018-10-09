@@ -21,7 +21,6 @@
 import unittest
 
 from cms.grading.scoretypes.GroupMin import GroupMin
-
 from cmstestsuite.unit_tests.grading.scoretypes.scoretypetestutils \
     import ScoreTypeTestMixin
 

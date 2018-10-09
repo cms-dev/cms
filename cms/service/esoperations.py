@@ -30,9 +30,9 @@ import logging
 
 from sqlalchemy import case, literal
 
-from cms.io import PriorityQueue, QueueItem
 from cms.db import Dataset, Evaluation, Submission, SubmissionResult, \
     Task, Testcase, UserTest, UserTestResult
+from cms.io import PriorityQueue, QueueItem
 
 
 logger = logging.getLogger(__name__)

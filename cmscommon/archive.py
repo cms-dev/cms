@@ -24,8 +24,8 @@
 import os
 import shutil
 import tempfile
-import patoolib
 
+import patoolib
 from patoolib.util import PatoolError
 
 from cms import config

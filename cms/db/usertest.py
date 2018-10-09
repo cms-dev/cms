@@ -22,13 +22,13 @@
 
 """
 
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime, \
     BigInteger
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.dialects.postgresql import ARRAY
 
 from . import Filename, FilenameSchema, Digest, Base, Participation, Task, \
     Dataset

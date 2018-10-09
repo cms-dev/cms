@@ -22,12 +22,12 @@
 
 import logging
 
-from cms.grading.steps import compilation_step, evaluation_step,\
-    human_evaluation_message
-from cms.grading.languagemanager import LANGUAGES, get_language
+from cms.db import Executable
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
-from cms.db import Executable
+from cms.grading.languagemanager import LANGUAGES, get_language
+from cms.grading.steps import compilation_step, evaluation_step, \
+    human_evaluation_message
 from . import TaskType, \
     check_executables_number, check_files_number, check_manager_present, \
     create_sandbox, delete_sandbox, eval_output, is_manager_for_compilation
