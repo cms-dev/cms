@@ -26,7 +26,6 @@
 import logging
 
 from cms.locale import DEFAULT_TRANSLATION
-
 from .language import Language, CompiledLanguage
 
 

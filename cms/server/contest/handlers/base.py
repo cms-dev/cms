@@ -30,7 +30,6 @@
 """
 
 import logging
-import os
 import traceback
 
 import tornado.web

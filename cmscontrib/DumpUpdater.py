@@ -40,8 +40,8 @@ import shutil
 import sys
 
 from cms import utf8_decoder
-from cmscommon.archive import Archive
 from cms.db import version as model_version
+from cmscommon.archive import Archive
 
 
 logger = logging.getLogger(__name__)

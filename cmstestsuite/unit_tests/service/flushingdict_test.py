@@ -18,8 +18,9 @@
 
 """Tests for the flushing dict module."""
 
-import gevent
 import unittest
+
+import gevent
 
 from cms.service.flushingdict import FlushingDict
 

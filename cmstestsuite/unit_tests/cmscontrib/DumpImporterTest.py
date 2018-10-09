@@ -24,13 +24,11 @@ import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
-from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 from cms.db import Contest, FSObject, Session, version
-
 from cmscommon.digest import bytes_digest
-
 from cmscontrib.DumpImporter import DumpImporter
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 
 class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):

@@ -32,7 +32,6 @@ import copy
 import logging
 import math
 import os
-import pkg_resources
 
 import babel.core
 import babel.dates
@@ -40,6 +39,7 @@ import babel.lists
 import babel.numbers
 import babel.support
 import babel.units
+import pkg_resources
 
 from cms import config
 from cmscommon.datetime import utc

@@ -20,8 +20,9 @@ import errno
 import json
 import logging
 import os
-import pkg_resources
 import sys
+
+import pkg_resources
 
 from cmsranking.Logger import add_file_handler
 

@@ -24,7 +24,6 @@ import atexit
 import json
 import logging
 import os
-import psutil
 import re
 import signal
 import socket
@@ -32,6 +31,8 @@ import subprocess
 import threading
 import time
 from urllib.parse import urlsplit
+
+import psutil
 
 from cmscommon.datetime import monotonic_time
 from cmstestsuite import CONFIG, TestException

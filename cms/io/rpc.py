@@ -28,9 +28,9 @@ import uuid
 from weakref import WeakSet
 
 import gevent
+import gevent.event
 import gevent.lock
 import gevent.socket
-import gevent.event
 
 from cms import Address, get_service_address
 

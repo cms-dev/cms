@@ -29,7 +29,6 @@ from psycopg2 import ProgrammingError
 from sqlalchemy.engine.url import make_url
 
 from cms import config
-
 from . import custom_psycopg2_connection
 
 

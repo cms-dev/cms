@@ -23,14 +23,14 @@
 
 """
 
+import logging
 import os
 import time
-import logging
 from collections import deque
 
 from cms import config, mkdir
-from cms.log import root_logger, shell_handler, FileHandler, DetailedFormatter
 from cms.io import Service, rpc_method
+from cms.log import root_logger, shell_handler, FileHandler, DetailedFormatter
 
 
 logger = logging.getLogger(__name__)

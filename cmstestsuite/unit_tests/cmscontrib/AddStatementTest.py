@@ -22,13 +22,11 @@ import unittest
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
-from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 from cms.db import Statement
-
 from cmscommon.digest import bytes_digest
-
 from cmscontrib.AddStatement import add_statement
+from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 
 _CONTENT_1 = b"this is a pdf"

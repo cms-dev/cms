@@ -38,9 +38,9 @@ together the three data point: item, priority, and timestamp.
 
 """
 
-from gevent.event import Event
-
 from functools import total_ordering
+
+from gevent.event import Event
 
 from cmscommon.datetime import make_datetime, make_timestamp
 

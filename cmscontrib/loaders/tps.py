@@ -23,11 +23,9 @@ import logging
 import os
 import re
 import subprocess
-
 from datetime import timedelta
 
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
-
 from .base_loader import TaskLoader
 
 

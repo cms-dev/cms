@@ -18,12 +18,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import datetime
 import logging
 import os
 import re
-import sys
 import subprocess
-import datetime
+import sys
 
 from cms import utf8_decoder
 from cmstestsuite import CONFIG, TestException, sh

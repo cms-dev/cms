@@ -27,11 +27,10 @@
 
 import logging
 
-from .messages import HumanMessage, MessageCollection
-from .stats import execution_stats
-
 from cms import config
 from cms.grading.Sandbox import Sandbox
+from .messages import HumanMessage, MessageCollection
+from .stats import execution_stats
 
 
 logger = logging.getLogger(__name__)

@@ -27,15 +27,14 @@
 
 from datetime import timedelta
 
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 from cmscommon.crypto import generate_random_password, build_password
-
 from . import CastingArray, Codename, Base, Admin, Contest
 
 

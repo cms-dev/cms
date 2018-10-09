@@ -23,18 +23,15 @@ import imp
 import logging
 import os
 import subprocess
-
-from datetime import datetime
-from datetime import timedelta
-
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
 
 from cms import config
 from cms.db import Contest, User, Task, Statement, Dataset, Manager, Testcase
 from cmscommon.crypto import build_password
 from cmscontrib import touch
-
 from .base_loader import ContestLoader, TaskLoader, UserLoader
+
 
 logger = logging.getLogger(__name__)
 

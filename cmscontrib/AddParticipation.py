@@ -33,12 +33,12 @@ import ipaddress
 import logging
 import sys
 
+from sqlalchemy.exc import IntegrityError
+
 from cms import utf8_decoder
 from cms.db import Contest, Participation, SessionGen, Team, User, \
     ask_for_contest
 from cmscommon.crypto import build_password, hash_password
-
-from sqlalchemy.exc import IntegrityError
 
 
 logger = logging.getLogger(__name__)

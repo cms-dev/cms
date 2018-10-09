@@ -27,9 +27,8 @@
 
 import logging
 
-from .stats import execution_stats, merge_execution_stats
-
 from cms.grading.Sandbox import Sandbox
+from .stats import execution_stats, merge_execution_stats
 
 
 logger = logging.getLogger(__name__)

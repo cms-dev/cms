@@ -22,11 +22,10 @@ from collections import deque
 from weakref import WeakSet
 
 from gevent import Timeout
-from gevent.queue import Queue, Empty
 from gevent.pywsgi import WSGIHandler
-
-from werkzeug.wrappers import Request
+from gevent.queue import Queue, Empty
 from werkzeug.exceptions import NotAcceptable
+from werkzeug.wrappers import Request
 
 
 __all__ = [

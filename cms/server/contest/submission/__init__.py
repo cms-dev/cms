@@ -28,9 +28,9 @@ is irrelevant and duplicates are allowed.
 
 from .check import get_submission_count, check_max_number, \
     get_latest_submission, check_min_interval
+from .file_matching import InvalidFilesOrLanguage, match_files_and_language
 from .file_retrieval import ReceivedFile, InvalidArchive, \
     extract_files_from_archive, extract_files_from_tornado
-from .file_matching import InvalidFilesOrLanguage, match_files_and_language
 from .utils import fetch_file_digests_from_previous_submission, StorageFailed, \
     store_local_copy
 from .workflow import UnacceptableSubmission, accept_submission, \

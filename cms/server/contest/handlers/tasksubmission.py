@@ -33,7 +33,6 @@ import logging
 import re
 
 import tornado.web
-
 from sqlalchemy.orm import joinedload
 
 from cms import config, FEEDBACK_LEVEL_FULL
@@ -47,10 +46,8 @@ from cms.server.contest.tokening import \
     UnacceptableToken, TokenAlreadyPlayed, accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
-
-from ..phase_management import actual_phase_required
-
 from .contest import ContestHandler, FileHandler
+from ..phase_management import actual_phase_required
 
 
 logger = logging.getLogger(__name__)

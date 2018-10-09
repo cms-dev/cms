@@ -25,9 +25,7 @@ import unittest
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Participation
-
 from cmscommon.crypto import validate_password
-
 from cmscontrib.AddParticipation import add_participation
 
 

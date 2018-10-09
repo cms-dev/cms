@@ -42,7 +42,6 @@ import sys
 from cms import utf8_decoder
 from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
-
 from cmscontrib.importing import ImportDataError, contest_from_db, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 

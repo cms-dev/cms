@@ -24,9 +24,8 @@ import unittest
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Participation, SessionGen, User
-
-from cmscontrib.loaders.base_loader import UserLoader
 from cmscontrib.ImportUser import UserImporter
+from cmscontrib.loaders.base_loader import UserLoader
 
 
 def fake_loader_factory(user):

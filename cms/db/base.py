@@ -22,15 +22,15 @@
 import ipaddress
 from datetime import datetime, timedelta
 
+from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB, OID
 from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.orm.exc import ObjectDeletedError
-from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
+from sqlalchemy.orm.exc import ObjectDeletedError
+from sqlalchemy.orm.session import object_session
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, Enum, DateTime, Interval, \
     BigInteger
-from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB, OID
 
 from . import engine, metadata, CastingArray, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest

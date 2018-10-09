@@ -25,9 +25,9 @@ from collections import namedtuple
 from unittest.mock import Mock, patch
 
 # Needs to be first to allow for monkey patching the DB connection string.
-from cms import config
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
+from cms import config
 from cms.db import PrintJob
 from cms.server.contest.printing import accept_print_job, \
     UnacceptablePrintJob, PrintingDisabled

@@ -39,6 +39,7 @@ from datetime import timedelta
 
 import cms
 
+
 # Monkeypatch the db string.
 # Noqa to avoid complaints due to imports after a statement.
 cms.config.database += "fortesting"  # noqa

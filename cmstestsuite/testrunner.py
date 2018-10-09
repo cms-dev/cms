@@ -25,12 +25,12 @@ import os
 import subprocess
 
 from cms import TOKEN_MODE_FINITE
+from cmscommon.datetime import get_system_timezone
 from cmstestsuite import CONFIG
-from cmstestsuite.functionaltestframework import FunctionalTestFramework
 from cmstestsuite.Test import TestFailure
 from cmstestsuite.Tests import ALL_LANGUAGES
+from cmstestsuite.functionaltestframework import FunctionalTestFramework
 from cmstestsuite.programstarter import ProgramStarter
-from cmscommon.datetime import get_system_timezone
 
 
 logger = logging.getLogger(__name__)

@@ -29,11 +29,11 @@ import argparse
 import logging
 import sys
 
+from sqlalchemy.exc import IntegrityError
+
 from cms import utf8_decoder
 from cms.db import Admin, SessionGen
 from cmscommon.crypto import generate_random_password, hash_password
-
-from sqlalchemy.exc import IntegrityError
 
 
 logger = logging.getLogger(__name__)

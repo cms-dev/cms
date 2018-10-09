@@ -24,8 +24,8 @@ existing dataset.
 
 import argparse
 import logging
-import sys
 import re
+import sys
 
 from cms import utf8_decoder
 from cms.db import Contest, Dataset, SessionGen, Task

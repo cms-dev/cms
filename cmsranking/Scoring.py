@@ -21,7 +21,6 @@ import heapq
 import logging
 from itertools import zip_longest
 
-
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 

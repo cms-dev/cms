@@ -21,18 +21,15 @@
 
 import logging
 
-import tornado.web
 import tornado.escape
+import tornado.web
 import tornado.wsgi
-
 from gevent.pywsgi import WSGIServer
-
-from werkzeug.wsgi import DispatcherMiddleware, SharedDataMiddleware
 from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.wsgi import DispatcherMiddleware, SharedDataMiddleware
 
 from cms.db.filecacher import FileCacher
 from cms.server.file_middleware import FileServerMiddleware
-
 from .service import Service
 from .web_rpc import RPCMiddleware
 

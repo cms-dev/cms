@@ -24,20 +24,18 @@
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
-
-
 gevent.monkey.patch_all()  # noqa
 
 import argparse
 import logging
 import sys
 
+from sqlalchemy.exc import IntegrityError
+
 from cms import utf8_decoder
 from cms.db import SessionGen, User
 from cmscommon.crypto import generate_random_password, build_password, \
     hash_password
-
-from sqlalchemy.exc import IntegrityError
 
 
 logger = logging.getLogger(__name__)

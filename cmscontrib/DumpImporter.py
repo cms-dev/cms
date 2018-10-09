@@ -39,7 +39,6 @@ import json
 import logging
 import os
 import sys
-
 from datetime import datetime, timedelta
 
 from sqlalchemy.types import \
@@ -47,14 +46,12 @@ from sqlalchemy.types import \
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import cms.db as class_hook
-
 from cms import utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
-    FilenameSchema, FilenameSchemaArray, Digest
-from cms.db import SessionGen, Contest, Submission, SubmissionResult, \
-    UserTest, UserTestResult, PrintJob, init_db, drop_db, enumerate_files
+    FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
+    Submission, SubmissionResult, UserTest, UserTestResult, PrintJob, init_db, \
+    drop_db, enumerate_files
 from cms.db.filecacher import FileCacher
-
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
 from cmscommon.digest import path_digest

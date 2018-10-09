@@ -29,15 +29,14 @@ import logging
 
 from sqlalchemy import func, not_
 
-from cmscommon.binary import hex_to_bin
 from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
 from cms.io import WebService, rpc_method
 from cms.service import EvaluationService
-
+from cmscommon.binary import hex_to_bin
 from .authentication import AWSAuthMiddleware
-from .jinja2_toolbox import AWS_ENVIRONMENT
 from .handlers import HANDLERS
+from .jinja2_toolbox import AWS_ENVIRONMENT
 from .rpc_authorization import rpc_authorization_checker
 
 

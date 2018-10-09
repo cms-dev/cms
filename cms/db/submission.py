@@ -27,16 +27,15 @@
 """
 
 from sqlalchemy import Boolean
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime, Enum, \
     BigInteger
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from cmscommon.datetime import make_datetime
-
 from . import Filename, FilenameSchema, Digest, Base, Participation, Task, \
     Dataset, Testcase
 

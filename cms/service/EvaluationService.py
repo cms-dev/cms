@@ -31,7 +31,6 @@ the current ranking.
 """
 
 import logging
-
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps
@@ -41,12 +40,11 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from cms import ServiceCoord, get_service_shards
-from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen, Digest, Dataset, Evaluation, Submission, \
     SubmissionResult, Testcase, UserTest, UserTestResult, get_submissions, \
     get_submission_results, get_datasets_to_judge
 from cms.grading.Job import JobGroup
-
+from cms.io import Executor, TriggeredService, rpc_method
 from .esoperations import ESOperation, get_relevant_operations, \
     get_submissions_operations, get_user_tests_operations, \
     submission_get_operations, submission_to_evaluate, \

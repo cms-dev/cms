@@ -22,12 +22,11 @@
 
 """Utilities dealing with encryption and randomness."""
 
-import bcrypt
 import binascii
 import random
-
 from string import ascii_lowercase
 
+import bcrypt
 from Crypto import Random
 from Crypto.Cipher import AES
 

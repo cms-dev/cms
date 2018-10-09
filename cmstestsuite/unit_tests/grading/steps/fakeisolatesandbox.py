@@ -20,7 +20,6 @@
 
 import errno
 import os
-
 from collections import deque
 from io import BytesIO, StringIO
 

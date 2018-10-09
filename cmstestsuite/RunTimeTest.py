@@ -23,14 +23,13 @@ import os
 import sys
 
 import cmstestsuite.tasks.batch_50 as batch_50
-
 from cmstestsuite import CONFIG
+from cmstestsuite.Test import Test
+from cmstestsuite.Tests import LANG_C
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
 from cmstestsuite.profiling import \
     PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI
 from cmstestsuite.testrunner import TestRunner
-from cmstestsuite.Test import Test
-from cmstestsuite.Tests import LANG_C
 
 
 logger = logging.getLogger(__name__)

@@ -39,7 +39,6 @@ from cms.db import Dataset, Manager, Message, Participation, \
 from cms.grading.scoring import compute_changes_for_dataset
 from cmscommon.datetime import make_datetime
 from cmscommon.importers import import_testcases_from_zipfile
-
 from .base import BaseHandler, require_permission
 
 

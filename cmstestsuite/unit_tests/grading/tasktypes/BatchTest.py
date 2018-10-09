@@ -30,6 +30,7 @@ from cmstestsuite.unit_tests.grading.tasktypes.tasktypetestutils import \
     LANG_1, LANG_2, OUTCOME, STATS_OK, STATS_RE, TEXT, \
     TaskTypeTestMixin, fake_compilation_commands, fake_evaluation_commands
 
+
 FILE_FOO_L1 = File(digest="digest of foo.l1", filename="foo.%l")
 FILE_BAR_L1 = File(digest="digest of bar.l1", filename="bar.%l")
 GRADER_L1 = Manager(digest="digest of grader.l1", filename="grader.l1")

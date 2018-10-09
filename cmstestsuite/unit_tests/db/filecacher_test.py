@@ -32,8 +32,8 @@ from io import BytesIO
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
-from cmscommon.digest import Digester, bytes_digest
 from cms.db.filecacher import FileCacher
+from cmscommon.digest import Digester, bytes_digest
 
 
 class RandomFile:

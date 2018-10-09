@@ -34,7 +34,6 @@ import pickle
 
 from cms import config
 from cms.db import Submission, UserTest
-
 from .check import get_latest_submission
 
 

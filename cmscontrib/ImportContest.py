@@ -44,7 +44,6 @@ import sys
 from cms import utf8_decoder
 from cms.db import SessionGen, User, Team, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
-
 from cmscontrib.importing import ImportDataError, update_contest, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 

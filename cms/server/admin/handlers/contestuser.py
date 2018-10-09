@@ -35,7 +35,6 @@ import tornado.web
 
 from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
-
 from .base import BaseHandler, require_permission
 
 
