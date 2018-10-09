@@ -77,7 +77,7 @@ class TestPathDigest(FileSystemMixin, unittest.TestCase):
         self.assertEqual(path_digest(self.path), _EMPTY_DIGEST)
 
     def test_long(self):
-        content = b"0" * 1000000
+        content = b"0" * 1_000_000
         self.write_file(self.filename, content)
         self.assertEqual(path_digest(self.path), bytes_digest(content))
 

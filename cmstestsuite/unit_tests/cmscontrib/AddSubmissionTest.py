@@ -30,7 +30,7 @@ from cmscontrib.AddSubmission import add_submission
 from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
 
 
-_TS = 1234567890
+_TS = 1_234_567_890
 
 
 _CONTENT_1 = b"this is a source file"

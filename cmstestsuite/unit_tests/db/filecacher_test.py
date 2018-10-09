@@ -292,7 +292,7 @@ class TestFileCacherBase:
         Then get it back.
 
         """
-        rand_file = RandomFile(10000000)
+        rand_file = RandomFile(10_000_000)
         try:
             data = self.file_cacher.put_file_from_fobj(rand_file, "Test #007")
         except Exception as error:

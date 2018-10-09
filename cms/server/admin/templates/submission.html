@@ -146,7 +146,7 @@
       </tr>
       <tr>
         <td>Max memory used</td>
-        <td>{% if m is not none %}{{ m // (1024 ** 2) }} MiB{% else %}N/A{% endif %}</td>
+        <td>{% if m is not none %}{{ m // (1024 * 1024) }} MiB{% else %}N/A{% endif %}</td>
       </tr>
       {% endif %}
       <tr>
@@ -232,7 +232,7 @@
             ({{ ev.execution_wall_clock_time }} s)
             {% endif %}
             {% if ev.execution_memory is not none %}
-            ({{ (ev.execution_memory // 1024) // 1024 }} MiB)
+            ({{ ev.execution_memory // (1024 * 1024) }} MiB)
             {% endif %}
           </td>
           <td>{{ ev.evaluation_sandbox }}</td>

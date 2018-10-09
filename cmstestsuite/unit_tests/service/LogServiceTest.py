@@ -32,7 +32,7 @@ class TestLogService(unittest.TestCase):
     SERVICE_NAME = "RandomService"
     SERVICE_SHARD = 0
     OPERATION = "Random operation"
-    CREATED = 1234567890.123
+    CREATED = 1_234_567_890.123
     EXC_TEXT = "Random exception"
 
     def setUp(self):

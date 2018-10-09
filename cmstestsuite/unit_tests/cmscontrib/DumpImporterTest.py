@@ -87,7 +87,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         },
         "sub_key": {
             "_class": "Submission",
-            "timestamp": 1234567890.123,
+            "timestamp": 1_234_567_890.123,
             "participation": "part_key",
             "task": "task_key",
         },
@@ -284,8 +284,8 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
                 "_class": "Contest",
                 "name": "contestname",
                 "description": "contest description",
-                "start": 1234567890.000,
-                "stop": 1324567890.000,
+                "start": 1_234_567_890.000,
+                "stop": 1_324_567_890.000,
                 "token_initial": 2,
                 "token_gen_number": 1,
                 "token_gen_time": 10,
@@ -330,7 +330,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             },
             "sub1_key": {
                 "_class": "Submission",
-                "timestamp": 1234567890.123,
+                "timestamp": 1_234_567_890.123,
                 "language": "c",
                 "user": "user_key",
                 "task": "task_key",
@@ -340,7 +340,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             },
             "sub2_key": {
                 "_class": "Submission",
-                "timestamp": 1234567900.123,
+                "timestamp": 1_234_567_900.123,
                 "language": "c",
                 "user": "user_key",
                 "task": "task_key",

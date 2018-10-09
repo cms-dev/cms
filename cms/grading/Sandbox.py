@@ -100,7 +100,7 @@ def wait_without_std(procs):
     while len(to_consume) > 0:
         to_read = select.select(to_consume, [], [], 1.0)[0]
         for file_ in to_read:
-            file_.read(8192)
+            file_.read(8 * 1024)
         to_consume = get_to_consume()
 
     return [process.wait() for process in procs]

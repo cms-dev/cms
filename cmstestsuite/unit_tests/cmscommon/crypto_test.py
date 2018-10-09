@@ -65,13 +65,14 @@ class TestEncryptAndDecryptBinary(unittest.TestCase):
             b"")
 
     def test_encrypt_and_decrypt_long(self):
+        value = b"0" * 1_000_000
         self.assertEqual(
-            decrypt_binary(encrypt_binary(b"0" * 1000000, self.key), self.key),
-            b"0" * 1000000)
+            decrypt_binary(encrypt_binary(value, self.key), self.key),
+            value)
 
     def test_encrypt_chaining(self):
         # Even if the input is repeated, the output should not be.
-        encrypted = encrypt_binary(b"0" * 1000000, self.key)
+        encrypted = encrypt_binary(b"0" * 1_000_000, self.key)
         # The output should appear random, so any sequence of 64 bytes is
         # very unlikely to repeat.
         blocks = re.findall(".{64}", encrypted)
@@ -112,7 +113,7 @@ class TestEncryptAndDecryptNumber(unittest.TestCase):
 
     def test_encrypt_and_decrypt_big(self):
         self.assertEqual(
-            decrypt_number(encrypt_number(10**42, self.key), self.key),
+            decrypt_number(encrypt_number(10 ** 42, self.key), self.key),
             10 ** 42)
 
 

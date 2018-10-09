@@ -109,7 +109,7 @@ class Publisher:
 
         """
         # Number of microseconds since epoch.
-        key = int(time.time() * 1000000)
+        key = int(time.time() * 1_000_000)
         msg = format_event("%x" % key, event, data)
         # Put into cache.
         self._cache.append((key, msg))
