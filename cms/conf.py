@@ -108,7 +108,7 @@ class Config:
 
         # Sandbox.
         # Max size of each writable file during an evaluation step, in KiB.
-        self.max_file_size = 1048576
+        self.max_file_size = 1024 * 1024  # 1 GiB
         # Max processes, CPU time (s), memory (KiB) for compilation runs.
         self.compilation_sandbox_max_processes = 1000
         self.compilation_sandbox_max_time_s = 10.0
@@ -126,15 +126,15 @@ class Config:
         # ContestWebServer.
         self.contest_listen_address = [""]
         self.contest_listen_port = [8888]
-        self.cookie_duration = 1800
+        self.cookie_duration = 30 * 60  # 30 minutes
         self.submit_local_copy = True
         self.submit_local_copy_path = "%s/submissions/"
         self.tests_local_copy = True
         self.tests_local_copy_path = "%s/tests/"
         self.is_proxy_used = None  # (deprecated in favor of num_proxies_used)
         self.num_proxies_used = None
-        self.max_submission_length = 100000
-        self.max_input_length = 5000000
+        self.max_submission_length = 100_000  # 100 KB
+        self.max_input_length = 5_000_000  # 5 MB
         self.stl_path = "/usr/share/cppreference/doc/html/"
         # Prefix of 'shared-mime-info'[1] installation. It can be found
         # out using `pkg-config --variable=prefix shared-mime-info`, but
@@ -153,7 +153,7 @@ class Config:
         self.https_certfile = None
 
         # PrintingService
-        self.max_print_length = 10000000
+        self.max_print_length = 10_000_000  # 10 MB
         self.printer = None
         self.paper_size = "A4"
         self.max_pages_per_job = 10

@@ -245,18 +245,18 @@ class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
 
     def test_rounding(self):
         # No rounding should happen at the subtask or task level.
-        self.add_result(self.at(1), 80 + 0.0002,
+        self.add_result(self.at(1), 80 + 0.000_2,
                         score_details=[
                             self.subtask(1, 80, 1.0),
-                            self.subtask(2, 20, 0.00001),
+                            self.subtask(2, 20, 0.000_01),
                         ])
-        self.add_result(self.at(2), 0.0004,
+        self.add_result(self.at(2), 0.000_4,
                         score_details=[
                             self.subtask(1, 80, 0.0),
-                            self.subtask(2, 20, 0.00002),
+                            self.subtask(2, 20, 0.000_02),
                         ])
         self.session.flush()
-        self.assertEqual(self.call(), (80 + 0.0004, False))
+        self.assertEqual(self.call(), (80 + 0.000_4, False))
 
     def test_public(self):
         self.add_result(self.at(1),

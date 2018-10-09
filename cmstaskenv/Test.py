@@ -56,12 +56,12 @@ assume:     if it's y, answer yes to every question
 def mem_human(mem):
     if mem is None:
         return 'None'
-    if mem > 2 ** 30:
-        return "%4.3gG" % (mem / (2 ** 30))
-    if mem > 2 ** 20:
-        return "%4.3gM" % (mem / (2 ** 20))
-    if mem > 2 ** 10:
-        return "%4.3gK" % (mem / (2 ** 10))
+    if mem > 1024 * 1024 * 1024:
+        return "%4.3gG" % (mem / (1024 * 1024 * 1024))
+    if mem > 1024 * 1024:
+        return "%4.3gM" % (mem / (1024 * 1024))
+    if mem > 1024:
+        return "%4.3gK" % (mem / 1024)
     return "%4d" % mem
 
 

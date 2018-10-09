@@ -130,7 +130,7 @@ class Translation:
         else:
             return self.format_datetime(dt, timezone)
 
-    SECONDS_PER_HOUR = 3600
+    SECONDS_PER_HOUR = 60 * 60
     SECONDS_PER_MINUTE = 60
 
     def format_timedelta(self, td):

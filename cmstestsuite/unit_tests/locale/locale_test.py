@@ -379,29 +379,29 @@ class TestFormatDuration(unittest.TestCase):
         # At most three fractional digits are shown if needed to get to
         # four significant digits.
         # Large values are *not* cast to minutes (or higher).
-        self.assertEqual(ENGLISH.format_duration(0.123456789),
+        self.assertEqual(ENGLISH.format_duration(0.123_456_789),
                          "0.123 sec")
-        self.assertEqual(ENGLISH.format_duration(0.123456789, length="long"),
+        self.assertEqual(ENGLISH.format_duration(0.123_456_789, length="long"),
                          "0.123 seconds")
-        self.assertEqual(ENGLISH.format_duration(1.23456789),
+        self.assertEqual(ENGLISH.format_duration(1.234_567_89),
                          "1.235 sec")
-        self.assertEqual(ENGLISH.format_duration(1.23456789, length="long"),
+        self.assertEqual(ENGLISH.format_duration(1.234_567_89, length="long"),
                          "1.235 seconds")
-        self.assertEqual(ENGLISH.format_duration(12.3456789),
+        self.assertEqual(ENGLISH.format_duration(12.345_678_9),
                          "12.346 sec")
-        self.assertEqual(ENGLISH.format_duration(12.3456789, length="long"),
+        self.assertEqual(ENGLISH.format_duration(12.345_678_9, length="long"),
                          "12.346 seconds")
-        self.assertEqual(ENGLISH.format_duration(123.456789),
+        self.assertEqual(ENGLISH.format_duration(123.456_789),
                          "123.457 sec")
-        self.assertEqual(ENGLISH.format_duration(123.456789, length="long"),
+        self.assertEqual(ENGLISH.format_duration(123.456_789, length="long"),
                          "123.457 seconds")
-        self.assertEqual(ENGLISH.format_duration(1234.56789),
+        self.assertEqual(ENGLISH.format_duration(1234.567_89),
                          "1,234.568 sec")
-        self.assertEqual(ENGLISH.format_duration(1234.56789, length="long"),
+        self.assertEqual(ENGLISH.format_duration(1234.567_89, length="long"),
                          "1,234.568 seconds")
-        self.assertEqual(ENGLISH.format_duration(12345.6789),
+        self.assertEqual(ENGLISH.format_duration(12_345.678_9),
                          "12,345.679 sec")
-        self.assertEqual(ENGLISH.format_duration(12345.6789, length="long"),
+        self.assertEqual(ENGLISH.format_duration(12_345.678_9, length="long"),
                          "12,345.679 seconds")
 
     # As above, localized.
@@ -423,29 +423,29 @@ class TestFormatDuration(unittest.TestCase):
                          "2,000 secondi")
 
     def test_localized_increasing_magnitude(self):
-        self.assertEqual(ITALIAN.format_duration(0.123456789),
+        self.assertEqual(ITALIAN.format_duration(0.123_456_789),
                          "0,123 s")
-        self.assertEqual(ITALIAN.format_duration(0.123456789, length="long"),
+        self.assertEqual(ITALIAN.format_duration(0.123_456_789, length="long"),
                          "0,123 secondi")
-        self.assertEqual(ITALIAN.format_duration(1.23456789),
+        self.assertEqual(ITALIAN.format_duration(1.234_567_89),
                          "1,235 s")
-        self.assertEqual(ITALIAN.format_duration(1.23456789, length="long"),
+        self.assertEqual(ITALIAN.format_duration(1.234_567_89, length="long"),
                          "1,235 secondi")
-        self.assertEqual(ITALIAN.format_duration(12.3456789),
+        self.assertEqual(ITALIAN.format_duration(12.345_678_9),
                          "12,346 s")
-        self.assertEqual(ITALIAN.format_duration(12.3456789, length="long"),
+        self.assertEqual(ITALIAN.format_duration(12.345_678_9, length="long"),
                          "12,346 secondi")
-        self.assertEqual(ITALIAN.format_duration(123.456789),
+        self.assertEqual(ITALIAN.format_duration(123.456_789),
                          "123,457 s")
-        self.assertEqual(ITALIAN.format_duration(123.456789, length="long"),
+        self.assertEqual(ITALIAN.format_duration(123.456_789, length="long"),
                          "123,457 secondi")
-        self.assertEqual(ITALIAN.format_duration(1234.56789),
+        self.assertEqual(ITALIAN.format_duration(1234.567_89),
                          "1.234,568 s")
-        self.assertEqual(ITALIAN.format_duration(1234.56789, length="long"),
+        self.assertEqual(ITALIAN.format_duration(1234.567_89, length="long"),
                          "1.234,568 secondi")
-        self.assertEqual(ITALIAN.format_duration(12345.6789),
+        self.assertEqual(ITALIAN.format_duration(12_345.678_9),
                          "12.345,679 s")
-        self.assertEqual(ITALIAN.format_duration(12345.6789, length="long"),
+        self.assertEqual(ITALIAN.format_duration(12_345.678_9, length="long"),
                          "12.345,679 secondi")
 
 
@@ -476,13 +476,13 @@ class TestFormatSize(unittest.TestCase):
     def test_large(self):
         # Ensure larger units are used for larger values, with rounding
         # to three significant digits, up to terabytes.
-        self.assertEqual(ENGLISH.format_size(2.345 * 1000000),
+        self.assertEqual(ENGLISH.format_size(2_345_000),
                          "2.24 MiB")
-        self.assertEqual(ENGLISH.format_size(34.567 * 1000000000),
+        self.assertEqual(ENGLISH.format_size(34_567_000_000),
                          "32.2 GiB")
-        self.assertEqual(ENGLISH.format_size(456.789 * 1000000000000),
+        self.assertEqual(ENGLISH.format_size(456_789_000_000_000),
                          "415 TiB")
-        self.assertEqual(ENGLISH.format_size(5678.9 * 1000000000000),
+        self.assertEqual(ENGLISH.format_size(5_678_900_000_000_000),
                          "5,165 TiB")
 
     # As above, localized (use French as it's sensibly different).
@@ -506,13 +506,13 @@ class TestFormatSize(unittest.TestCase):
                          "1,00 Kio")
 
     def test_localized_large(self):
-        self.assertEqual(FRENCH.format_size(2.345 * 1000000),
+        self.assertEqual(FRENCH.format_size(2_345_000),
                          "2,24 Mio")
-        self.assertEqual(FRENCH.format_size(34.567 * 1000000000),
+        self.assertEqual(FRENCH.format_size(34_567_000_000),
                          "32,2 Gio")
-        self.assertEqual(FRENCH.format_size(456.789 * 1000000000000),
+        self.assertEqual(FRENCH.format_size(456_789_000_000_000),
                          "415 Tio")
-        self.assertEqual(FRENCH.format_size(5678.9123 * 1000000000000),
+        self.assertEqual(FRENCH.format_size(5_678_912_300_000_000),
                          "5\N{NO-BREAK SPACE}165 Tio")
 
 
@@ -531,22 +531,22 @@ class TestFormatDecimal(unittest.TestCase):
         # Large integers get thousands separators.
         self.assertEqual(ENGLISH.format_decimal(1234),
                          "1,234")
-        self.assertEqual(ENGLISH.format_decimal(1234567890),
+        self.assertEqual(ENGLISH.format_decimal(1_234_567_890),
                          "1,234,567,890")
 
     def test_fractional_digits_and_rounding(self):
         # Fractional digits are preserved and rounded.
-        self.assertEqual(ENGLISH.format_decimal(1.23456789),
+        self.assertEqual(ENGLISH.format_decimal(1.234_567_89),
                          "1.235")
 
     def test_localized_decimal_and_thousands_separators(self):
         # Ensure correct decimal and thousands separators are used.
-        self.assertEqual(ITALIAN.format_decimal(1234567890),
+        self.assertEqual(ITALIAN.format_decimal(1_234_567_890),
                          "1.234.567.890")
-        self.assertEqual(ITALIAN.format_decimal(1.23456789),
+        self.assertEqual(ITALIAN.format_decimal(1.234_567_89),
                          "1,235")
         # Use Hindi as they have a peculiar separator rule.
-        self.assertEqual(HINDI.format_decimal(1234567890),
+        self.assertEqual(HINDI.format_decimal(1_234_567_890),
                          "1,23,45,67,890")
 
 

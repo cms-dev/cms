@@ -116,7 +116,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o1", b"e1", 0.1, 0.5, 1000, "OK")
         self.sandbox.fake_execute_data(
-            True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
+            True, b"o2", b"e2", 1.0, 5.0, 10_000, "OK")
 
         stats = generic_step(self.sandbox, TWO_COMMANDS, "name",
                              collect_output=True)
@@ -126,7 +126,7 @@ class TestGenericStep(unittest.TestCase):
         # Stats are the combination of the two.
         self.assertEqual(stats, get_stats(1.1,  # sum
                                           5.5,  # sum
-                                          10000 * 1024,  # max
+                                          10_000 * 1024,  # max
                                           Sandbox.EXIT_OK,
                                           stdout="o1\n===\no2",
                                           stderr="e1\n===\ne2"))
@@ -135,7 +135,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             True, b"o1", b"e1", 0.1, 0.5, 1000, "RE")
         self.sandbox.fake_execute_data(
-            True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
+            True, b"o2", b"e2", 1.0, 5.0, 10_000, "OK")
 
         stats = generic_step(self.sandbox, TWO_COMMANDS, "name",
                              collect_output=True)
@@ -151,7 +151,7 @@ class TestGenericStep(unittest.TestCase):
         self.sandbox.fake_execute_data(
             False, b"o1", b"e1", 0.1, 0.5, 1000, "XX")
         self.sandbox.fake_execute_data(
-            True, b"o2", b"e2", 1.0, 5.0, 10000, "OK")
+            True, b"o2", b"e2", 1.0, 5.0, 10_000, "OK")
 
         stats = generic_step(self.sandbox, TWO_COMMANDS, "name")
 
