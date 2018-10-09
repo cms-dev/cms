@@ -128,7 +128,7 @@ def encode_value(type_, value):
         raise RuntimeError("Unknown SQLAlchemy column type: %s" % type_)
 
 
-class DumpExporter(object):
+class DumpExporter:
 
     """This service exports every data that CMS knows. The process of
     exporting and importing again should be idempotent.

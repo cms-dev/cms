@@ -20,7 +20,7 @@ import curses
 import sys
 
 
-class colors(object):
+class colors:
     BLACK = curses.COLOR_BLACK
     RED = curses.COLOR_RED
     GREEN = curses.COLOR_GREEN
@@ -31,7 +31,7 @@ class colors(object):
     WHITE = curses.COLOR_WHITE
 
 
-class directions(object):
+class directions:
     UP = 1
     DOWN = 2
     LEFT = 3

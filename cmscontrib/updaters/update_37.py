@@ -28,7 +28,7 @@ Add the feedback_level field for tasks. The default for new tasks is
 from cms import FEEDBACK_LEVEL_FULL
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 36

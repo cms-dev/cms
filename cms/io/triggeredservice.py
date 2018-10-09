@@ -35,7 +35,7 @@ from cmscommon.datetime import monotonic_time
 logger = logging.getLogger(__name__)
 
 
-class Executor(object, metaclass=ABCMeta):  # pylint: disable=R0921
+class Executor(metaclass=ABCMeta):  # pylint: disable=R0921
 
     """A class taking care of executing operations.
 

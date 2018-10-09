@@ -75,7 +75,7 @@ def repeater(func, period):
         gevent.sleep(max(call + period - monotonic_time(), 0))
 
 
-class Service(object):
+class Service:
 
     def __init__(self, shard=0):
         signal.signal(signal.SIGINT, lambda unused_x, unused_y: self.exit())

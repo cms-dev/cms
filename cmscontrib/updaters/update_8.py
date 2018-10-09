@@ -26,7 +26,7 @@ commit that created this same file.
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 7

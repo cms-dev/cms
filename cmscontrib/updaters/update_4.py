@@ -26,7 +26,7 @@ This adapts the dump to some changes in the model introduced in commit
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 3

@@ -25,7 +25,7 @@ This updater is no-op as we only changed a field from Integer to OID.
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 34

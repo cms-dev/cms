@@ -30,7 +30,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 30

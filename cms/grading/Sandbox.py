@@ -173,7 +173,7 @@ class Truncator(io.RawIOBase):
         raise io.UnsupportedOperation('write')
 
 
-class SandboxBase(object, metaclass=ABCMeta):
+class SandboxBase(metaclass=ABCMeta):
     """A base class for all sandboxes, meant to contain common
     resources.
 

@@ -34,7 +34,7 @@ from cms.io import RPCError, rpc_method, RemoteServiceServer, \
     RemoteServiceClient
 
 
-class MockService(object):
+class MockService:
     def not_rpc_callable(self):
         pass
 

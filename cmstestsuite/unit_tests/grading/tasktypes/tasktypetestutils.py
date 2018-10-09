@@ -82,7 +82,7 @@ STATS_RE = {
 }
 
 
-class TaskTypeTestMixin(object):
+class TaskTypeTestMixin:
     """A test mixin to make it easier to test task types."""
 
     def setUpMocks(self, tasktype):

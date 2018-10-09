@@ -32,7 +32,7 @@ from cms import ServiceCoord
 logger = logging.getLogger(__name__)
 
 
-class RPCMiddleware(object):
+class RPCMiddleware:
     """An HTTP interface to the internal RPC communications.
 
     This WSGI application provides a synchronous and unfiltered access,

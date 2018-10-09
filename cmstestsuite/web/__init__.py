@@ -32,7 +32,7 @@ import requests
 debug = False
 
 
-class Browser(object):
+class Browser:
     def __init__(self):
         self.xsrf_token = None
         self.session = requests.Session()
@@ -80,7 +80,7 @@ class Browser(object):
         return response
 
 
-class GenericRequest(object):
+class GenericRequest:
     """Request to a server.
 
     """

@@ -53,7 +53,7 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id, unique_digest
 
 
-class DatabaseObjectGeneratorMixin(object):
+class DatabaseObjectGeneratorMixin:
     """Mixin to create database objects without a session.
 
     This is to be preferred to DatabaseMixin when a session is not required, in

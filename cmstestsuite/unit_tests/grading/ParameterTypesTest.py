@@ -26,7 +26,7 @@ from cms.grading.ParameterTypes import ParameterTypeString, \
     ParameterTypeInt, ParameterTypeChoice, ParameterTypeCollection
 
 
-class FakeHandler(object):
+class FakeHandler:
     """Fake handler with a static set of arguments."""
 
     def __init__(self, arguments):

@@ -29,7 +29,7 @@ from cms import Address
 from cms.io import Executor, FakeQueueItem, TriggeredService
 
 
-class Notifier(object):
+class Notifier:
     def __init__(self):
         self._notifications = 0
 

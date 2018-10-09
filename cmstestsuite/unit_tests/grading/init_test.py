@@ -25,7 +25,7 @@ import unittest
 from cms.grading import format_status_text
 
 
-class DummyTranslation(object):
+class DummyTranslation:
     @staticmethod
     def gettext(s):
         if len(s) == 0:

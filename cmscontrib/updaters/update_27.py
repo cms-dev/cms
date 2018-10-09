@@ -26,7 +26,7 @@ analysis mode (Submission.official, Contest.analysis_*).
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 26

@@ -34,7 +34,7 @@ from jinja2 import Markup
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
 
-class ParameterType(object, metaclass=ABCMeta):
+class ParameterType(metaclass=ABCMeta):
     """Base class for parameter types."""
 
     TEMPLATE = None

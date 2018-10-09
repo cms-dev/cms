@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-class Digester(object):
+class Digester:
     """Simple wrapper of hashlib using our preferred hasher."""
 
     def __init__(self):

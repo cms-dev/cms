@@ -43,7 +43,7 @@ def fix_text(t):
     return [str(x) for x in t]
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 28

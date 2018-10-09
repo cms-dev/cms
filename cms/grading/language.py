@@ -26,7 +26,7 @@ from abc import ABCMeta, abstractmethod
 logger = logging.getLogger(__name__)
 
 
-class Language(object, metaclass=ABCMeta):
+class Language(metaclass=ABCMeta):
     """A supported programming language"""
 
     @property

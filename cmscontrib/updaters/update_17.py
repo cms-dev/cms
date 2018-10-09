@@ -25,7 +25,7 @@ This updater adds the default value for the new field team_id.
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 16

@@ -25,7 +25,7 @@ This updater specifies the method contestant passwords are hashed with.
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 27

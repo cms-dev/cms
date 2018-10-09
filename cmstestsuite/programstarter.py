@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 _MAX_ATTEMPTS = 20
 
 
-class RemoteService(object):
+class RemoteService:
     """Class which implements the RPC protocol used by CMS.
 
     This is deliberately a re-implementation in order to catch or
@@ -89,7 +89,7 @@ class RemoteService(object):
         return reply
 
 
-class Program(object):
+class Program:
     """An instance of a program, which might be running or not."""
 
     def __init__(self, cms_config, service_name, shard=0, contest=None,
@@ -273,7 +273,7 @@ class Program(object):
         return instance
 
 
-class ProgramStarter(object):
+class ProgramStarter:
     """Utility to keep track of all programs started."""
 
     def __init__(self, cpu_limits=None):

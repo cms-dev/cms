@@ -31,7 +31,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class HumanMessage(object):
+class HumanMessage:
     """Represent a possible outcome message for a grading, to be presented
     to the contestants.
 
@@ -50,7 +50,7 @@ class HumanMessage(object):
         self.help_text = help_text
 
 
-class MessageCollection(object):
+class MessageCollection:
     """Represent a collection of messages, with error checking."""
 
     def __init__(self, messages=None):

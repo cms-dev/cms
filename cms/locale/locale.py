@@ -52,7 +52,7 @@ def N_(msgid):
     return msgid
 
 
-class Translation(object):
+class Translation:
     """A shim that bundles all sources of translations for a language
 
     This class is a thin wrapper that collects all message catalogs and

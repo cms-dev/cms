@@ -27,7 +27,7 @@ class InvalidData(Exception):
     pass
 
 
-class Entity(object):
+class Entity:
     """Base virtual class which all entities should extend.
 
     Provide some virtual methods that other classes should implement.

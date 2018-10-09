@@ -42,7 +42,7 @@ class JSONSecureCookie(SecureCookie):
     serialization_method = UTF8JSON
 
 
-class AWSAuthMiddleware(object):
+class AWSAuthMiddleware:
     """Handler for the low-level tasks of admin authentication.
 
     Intercepts all requests and responses to AWS, parses the auth

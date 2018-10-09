@@ -47,7 +47,7 @@ def N_(message):
     return message
 
 
-class ScoreType(object, metaclass=ABCMeta):
+class ScoreType(metaclass=ABCMeta):
     """Base class for all score types, that must implement all methods
     defined here.
 

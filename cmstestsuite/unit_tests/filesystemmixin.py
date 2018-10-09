@@ -25,7 +25,7 @@ import shutil
 import tempfile
 
 
-class FileSystemMixin(object):
+class FileSystemMixin:
     """Mixin for tests with filesystem access."""
 
     def setUp(self):

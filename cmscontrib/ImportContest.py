@@ -52,7 +52,7 @@ from cmscontrib.loaders import choose_loader, build_epilog
 logger = logging.getLogger(__name__)
 
 
-class ContestImporter(object):
+class ContestImporter:
 
     """This script creates a contest and all its associations to users
     and tasks.

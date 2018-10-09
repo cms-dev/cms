@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 CMS_RANKING_CONFIG_ENV_VAR = "CMS_RANKING_CONFIG"
 
 
-class Config(object):
+class Config:
     """An object holding the current configuration.
 
     """

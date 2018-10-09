@@ -45,7 +45,7 @@ from functools import total_ordering
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
-class QueueItem(object):
+class QueueItem:
 
     """Payload of an item in the queue.
 
@@ -59,7 +59,7 @@ class QueueItem(object):
 
 
 @total_ordering
-class QueueEntry(object):
+class QueueEntry:
 
     """Type of the actual objects in the queue.
 
@@ -92,7 +92,7 @@ class QueueEntry(object):
                < (other.priority, other.timestamp, other.index)
 
 
-class PriorityQueue(object):
+class PriorityQueue:
 
     """A priority queue.
 

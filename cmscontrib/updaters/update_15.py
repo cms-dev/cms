@@ -36,7 +36,7 @@ def split_dict(src, *keys):
     return ret
 
 
-class Updater(object):
+class Updater:
     def __init__(self, data):
         assert data["_version"] == 14
         self.objs = data

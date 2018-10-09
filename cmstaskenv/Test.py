@@ -65,7 +65,7 @@ def mem_human(mem):
     return "%4d" % mem
 
 
-class NullLogger(object):
+class NullLogger:
     def __init__(self):
         def p(*args):
             pass

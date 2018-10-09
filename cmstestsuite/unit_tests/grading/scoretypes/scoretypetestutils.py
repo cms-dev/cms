@@ -21,7 +21,7 @@
 from unittest.mock import Mock
 
 
-class ScoreTypeTestMixin(object):
+class ScoreTypeTestMixin:
     """A test mixin to make it easier to test score types."""
 
     def assertComputeScore(self, scores, total, public, rws_scores):

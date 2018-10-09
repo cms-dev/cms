@@ -26,7 +26,7 @@ announcements.
 """
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 38

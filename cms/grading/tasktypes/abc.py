@@ -35,7 +35,7 @@ from abc import ABCMeta, abstractmethod
 from cms.grading.Job import CompilationJob, EvaluationJob
 
 
-class TaskType(object, metaclass=ABCMeta):
+class TaskType(metaclass=ABCMeta):
     """Base class with common operation that (more or less) all task
     types must do sometimes.
 

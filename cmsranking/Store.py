@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 LOCK = RLock()
 
 
-class Store(object):
+class Store:
     """A store for entities.
 
     Provide methods to perform the CRUD operations (create, retrieve,

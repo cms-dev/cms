@@ -121,7 +121,7 @@ def decode_value(type_, value):
             "Unknown SQLAlchemy column type: %s" % type_)
 
 
-class DumpImporter(object):
+class DumpImporter:
 
     """This service imports data from a directory that has been
     the target of a DumpExport. The process of exporting and

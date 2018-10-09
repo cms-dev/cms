@@ -87,7 +87,7 @@ def encode_codename(s, extra=""):
     return encoded_s
 
 
-class Updater(object):
+class Updater:
 
     def __init__(self, data):
         assert data["_version"] == 25

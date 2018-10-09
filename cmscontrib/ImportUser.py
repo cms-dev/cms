@@ -50,7 +50,7 @@ from cmscontrib.loaders import choose_loader, build_epilog
 logger = logging.getLogger(__name__)
 
 
-class UserImporter(object):
+class UserImporter:
 
     """This script creates a user
 

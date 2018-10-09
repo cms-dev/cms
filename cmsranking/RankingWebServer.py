@@ -70,7 +70,7 @@ class CustomUnauthorized(Unauthorized):
         return response
 
 
-class StoreHandler(object):
+class StoreHandler:
 
     def __init__(self, store, username, password, realm_name):
         self.store = store
@@ -284,7 +284,7 @@ class DataWatcher(EventSource):
         self.send("score", "%s %s %0.2f" % (user, task, score))
 
 
-class SubListHandler(object):
+class SubListHandler:
 
     def __init__(self, stores):
         self.task_store = stores["task"]
@@ -330,7 +330,7 @@ class SubListHandler(object):
         return response(environ, start_response)
 
 
-class HistoryHandler(object):
+class HistoryHandler:
 
     def __init__(self, stores):
         self.scoring_store = stores["scoring"]
@@ -355,7 +355,7 @@ class HistoryHandler(object):
         return response(environ, start_response)
 
 
-class ScoreHandler(object):
+class ScoreHandler:
 
     def __init__(self, stores):
         self.scoring_store = stores["scoring"]
@@ -385,7 +385,7 @@ class ScoreHandler(object):
         return response(environ, start_response)
 
 
-class ImageHandler(object):
+class ImageHandler:
     EXT_TO_MIME = {
         'png': 'image/png',
         'jpg': 'image/jpeg',
@@ -446,7 +446,7 @@ class ImageHandler(object):
         return response
 
 
-class RootHandler(object):
+class RootHandler:
 
     def __init__(self, location):
         self.path = os.path.join(location, "Ranking.html")
@@ -472,7 +472,7 @@ class RootHandler(object):
         return response
 
 
-class RoutingHandler(object):
+class RoutingHandler:
 
     def __init__(self, root_handler, event_handler, logo_handler,
                  score_handler, history_handler):

@@ -36,7 +36,7 @@ from cmscommon.digest import Digester, bytes_digest
 from cms.db.filecacher import FileCacher
 
 
-class RandomFile(object):
+class RandomFile:
     """Simulate a random file with dim bytes, calculating its
     SHA1 hash.
 
@@ -79,7 +79,7 @@ class RandomFile(object):
         return self.digester.digest()
 
 
-class HashingFile(object):
+class HashingFile:
     """Hashes the content written to this files.
 
     """
@@ -114,7 +114,7 @@ class HashingFile(object):
         pass
 
 
-class TestFileCacherBase(object):
+class TestFileCacherBase:
     """Base class for performing tests for the FileCacher service.
 
     """
