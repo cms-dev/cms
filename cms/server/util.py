@@ -165,7 +165,7 @@ class CommonRequestHandler(RequestHandler):
     refresh_cookie = True
 
     def __init__(self, *args, **kwargs):
-        super(CommonRequestHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.timestamp = make_datetime()
         self.sql_session = Session()
         self.r_params = None
@@ -176,7 +176,7 @@ class CommonRequestHandler(RequestHandler):
         """This method is executed at the beginning of each request.
 
         """
-        super(CommonRequestHandler, self).prepare()
+        super().prepare()
         self.url = Url(get_url_root(self.request.path))
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
@@ -196,7 +196,7 @@ class CommonRequestHandler(RequestHandler):
             except Exception as error:
                 logger.warning("Couldn't close SQL connection: %r", error)
         try:
-            super(CommonRequestHandler, self).finish(*args, **kwargs)
+            super().finish(*args, **kwargs)
         except OSError:
             # When the client closes the connection before we reply,
             # Tornado raises an OSError exception, that would pollute

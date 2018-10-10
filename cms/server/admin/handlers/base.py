@@ -275,7 +275,7 @@ class BaseHandler(CommonRequestHandler):
         """This method is executed at the beginning of each request.
 
         """
-        super(BaseHandler, self).prepare()
+        super().prepare()
         self.contest = None
 
     def render(self, template_name, **params):

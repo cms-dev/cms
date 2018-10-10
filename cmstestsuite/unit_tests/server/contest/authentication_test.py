@@ -40,7 +40,7 @@ from cmscommon.datetime import make_datetime
 class TestValidateLogin(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestValidateLogin, self).setUp()
+        super().setUp()
         self.timestamp = make_datetime()
         self.add_contest()
         self.contest = self.add_contest(allow_password_authentication=True)
@@ -154,7 +154,7 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
 class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAuthenticateRequest, self).setUp()
+        super().setUp()
         self.timestamp = make_datetime()
         self.add_contest()
         self.contest = self.add_contest()

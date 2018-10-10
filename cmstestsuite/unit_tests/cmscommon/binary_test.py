@@ -39,7 +39,7 @@ class TestBinToHex(unittest.TestCase):
 class TestHexToBin(unittest.TestCase):
 
     def setUp(self):
-        super(TestHexToBin, self).setUp()
+        super().setUp()
         # The exception type depend on Python's version.
         self.error = binascii.Error
 

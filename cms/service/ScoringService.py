@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 class ScoringExecutor(Executor):
     def __init__(self, proxy_service):
-        super(ScoringExecutor, self).__init__()
+        super().__init__()
         self.proxy_service = proxy_service
 
     def execute(self, entry):
@@ -131,7 +131,7 @@ class ScoringService(TriggeredService):
         """Initialize the ScoringService.
 
         """
-        super(ScoringService, self).__init__(shard)
+        super().__init__(shard)
 
         # Set up communication with ProxyService.
         ranking_enabled = len(config.rankings) > 0

@@ -30,7 +30,7 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
     """Test the GroupThreshold score type."""
 
     def setUp(self):
-        super(TestGroupThreshold, self).setUp()
+        super().setUp()
         self._public_testcases = {
             "1_0": True,
             "1_1": True,

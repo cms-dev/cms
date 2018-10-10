@@ -168,7 +168,7 @@ class ParameterTypeChoice(ParameterType):
         values (dict): dictionary mapping each choice to a short description.
 
         """
-        super(ParameterTypeChoice, self).__init__(
+        super().__init__(
             name, short_name, description)
         self.values = values
 
@@ -209,7 +209,7 @@ class ParameterTypeCollection(ParameterType):
         subparameters ([ParameterType]): list of types of each sub-parameter.
 
         """
-        super(ParameterTypeCollection, self).__init__(
+        super().__init__(
             name, short_name, description)
         self.subparameters = subparameters
 

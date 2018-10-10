@@ -157,7 +157,7 @@ MockHTTPFile = namedtuple("MockHTTPFile", ["filename", "body"])
 class TestExtractFilesFromTornado(unittest.TestCase):
 
     def setUp(self):
-        super(TestExtractFilesFromTornado, self).setUp()
+        super().setUp()
 
         patcher = patch(
             "cms.server.contest.submission.file_retrieval"

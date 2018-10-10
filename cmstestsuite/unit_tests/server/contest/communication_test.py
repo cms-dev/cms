@@ -35,7 +35,7 @@ from cmscommon.datetime import make_datetime, make_timestamp
 class TestAcceptQuestion(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAcceptQuestion, self).setUp()
+        super().setUp()
         self.timestamp = make_datetime()
         self.contest = self.add_contest(allow_questions=True)
         self.user = self.add_user()
@@ -68,7 +68,7 @@ class TestAcceptQuestion(DatabaseMixin, unittest.TestCase):
 class TestGetCommunications(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestGetCommunications, self).setUp()
+        super().setUp()
         self.timestamp = make_datetime()
         self.contest = self.add_contest()
         self.user = self.add_user()
@@ -81,7 +81,7 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
     def add_announcement(self, subject, text, timestamp, contest=None):
         if contest is None:
             contest = self.contest
-        super(TestGetCommunications, self).add_announcement(
+        super().add_announcement(
             subject=subject, text=text, timestamp=self.at(timestamp),
             contest=contest)
         d = {"type": "announcement", "subject": subject, "text": text,
@@ -91,7 +91,7 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
     def add_message(self, subject, text, timestamp, participation=None):
         if participation is None:
             participation = self.participation
-        super(TestGetCommunications, self).add_message(
+        super().add_message(
             subject=subject, text=text, timestamp=self.at(timestamp),
             participation=participation)
         d = {"type": "message", "subject": subject, "text": text,
@@ -101,7 +101,7 @@ class TestGetCommunications(DatabaseMixin, unittest.TestCase):
     def add_question(self, subject, text, timestamp, participation=None):
         if participation is None:
             participation = self.participation
-        q = super(TestGetCommunications, self).add_question(
+        q = super().add_question(
             subject=subject, text=text, question_timestamp=self.at(timestamp),
             participation=participation)
         return q

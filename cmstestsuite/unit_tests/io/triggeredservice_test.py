@@ -42,7 +42,7 @@ class Notifier:
 
 class FakeExecutor(Executor):
     def __init__(self, notifier, batch_executions=False):
-        super(FakeExecutor, self).__init__(batch_executions)
+        super().__init__(batch_executions)
         self._notifier = notifier
 
     def execute(self, operation):
@@ -51,27 +51,26 @@ class FakeExecutor(Executor):
 
 class FakeSlowExecutor(FakeExecutor):
     def __init__(self, notifier, slowness):
-        super(FakeSlowExecutor, self).__init__(notifier)
+        super().__init__(notifier)
         self._slowness = slowness
 
     def execute(self, operation):
         gevent.sleep(self._slowness)
-        super(FakeSlowExecutor, self).execute(operation)
+        super().execute(operation)
 
 
 class FakeBatchExecutor(FakeExecutor):
     def __init__(self, notifier):
-        super(FakeBatchExecutor, self).__init__(notifier,
-                                                batch_executions=True)
+        super().__init__(notifier, batch_executions=True)
 
     def execute(self, operations):
         # Notifying only once per call, not once per operation.
-        super(FakeBatchExecutor, self).execute(operations[0])
+        super().execute(operations[0])
 
 
 class FakeTriggeredService(TriggeredService):
     def __init__(self, shard, timeout):
-        super(FakeTriggeredService, self).__init__(shard)
+        super().__init__(shard)
         self._timeout = timeout
 
         # Operations scheduled to be returned at the next

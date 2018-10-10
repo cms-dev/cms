@@ -50,7 +50,7 @@ class WebService(Service):
 
     def __init__(self, listen_port, handlers, parameters, shard=0,
                  listen_address=""):
-        super(WebService, self).__init__(shard)
+        super().__init__(shard)
 
         static_files = parameters.pop('static_files', [])
         rpc_enabled = parameters.pop('rpc_enabled', False)

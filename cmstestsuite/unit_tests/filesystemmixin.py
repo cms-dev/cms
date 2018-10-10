@@ -29,12 +29,12 @@ class FileSystemMixin:
     """Mixin for tests with filesystem access."""
 
     def setUp(self):
-        super(FileSystemMixin, self).setUp()
+        super().setUp()
         self.base_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.base_dir)
-        super(FileSystemMixin, self).tearDown()
+        super().tearDown()
 
     def get_path(self, inner_path):
         "Return the full path for a given inner path within the temp dir."

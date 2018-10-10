@@ -46,7 +46,7 @@ FILE_DIGEST = bytes_digest(FILE_CONTENT)
 class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAcceptPrintJob, self).setUp()
+        super().setUp()
         self.file_cacher = Mock()
         self.file_cacher.put_file_content.return_value = FILE_DIGEST
         self.timestamp = make_datetime()

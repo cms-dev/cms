@@ -304,7 +304,7 @@ class DetailedFormatter(CustomFormatter):
         present.
 
         """
-        coordinates = super(DetailedFormatter, self).get_coordinates(record)
+        coordinates = super().get_coordinates(record)
 
         # Thread name, trying to shorten it removing useless values.
         coordinates += " %s" % (

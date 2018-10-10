@@ -59,7 +59,7 @@ class AdminWebServer(WebService):
             "rpc_auth": self.is_rpc_authorized,
             "xsrf_cookies": True,
         }
-        super(AdminWebServer, self).__init__(
+        super().__init__(
             config.admin_listen_port,
             HANDLERS,
             parameters,

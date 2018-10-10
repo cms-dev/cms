@@ -117,7 +117,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
     }
 
     def setUp(self):
-        super(TestDumpImporter, self).setUp()
+        super().setUp()
 
         # Another contest, to make sure it's not wiped on import.
         self.other_contest = self.add_contest()
@@ -128,7 +128,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestDumpImporter, self).tearDown()
+        super().tearDown()
 
     def do_import(self, drop=False, load_files=True,
                   skip_generated=False, skip_submissions=False):

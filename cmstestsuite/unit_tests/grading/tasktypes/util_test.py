@@ -56,7 +56,7 @@ class TestIsManagerForCompilation(unittest.TestCase):
     """Test the function is_manager_for_compilation."""
 
     def setUp(self):
-        super(TestIsManagerForCompilation, self).setUp()
+        super().setUp()
         # We will always use this language.
         self.lang = TestLanguage()
 

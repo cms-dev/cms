@@ -37,7 +37,7 @@ from cmscontrib.DumpExporter import DumpExporter
 class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestDumpExporter, self).setUp()
+        super().setUp()
 
         self.target = self.get_path("target")
         self.dump = None
@@ -84,7 +84,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestDumpExporter, self).tearDown()
+        super().tearDown()
 
     def do_export(self, contest_ids, dump_files=True, skip_generated=False,
                   skip_submissions=False):

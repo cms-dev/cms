@@ -32,7 +32,7 @@ from cmscommon.datetime import make_datetime
 class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestGetSubmissionCount, self).setUp()
+        super().setUp()
         self.contest = self.add_contest()
         self.task1 = self.add_task(contest=self.contest)
         self.task2 = self.add_task(contest=self.contest)
@@ -143,7 +143,7 @@ class TestGetSubmissionCount(DatabaseMixin, unittest.TestCase):
 class TestCheckMaxNumber(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestCheckMaxNumber, self).setUp()
+        super().setUp()
 
         patcher = patch(
             "cms.server.contest.submission.check.get_submission_count")
@@ -203,7 +203,7 @@ class TestCheckMaxNumber(DatabaseMixin, unittest.TestCase):
 class TestGetLatestSubmission(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestGetLatestSubmission, self).setUp()
+        super().setUp()
         self.contest = self.add_contest()
         self.task1 = self.add_task(contest=self.contest)
         self.task2 = self.add_task(contest=self.contest)
@@ -322,7 +322,7 @@ class TestGetLatestSubmission(DatabaseMixin, unittest.TestCase):
 class TestCheckMinInterval(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestCheckMinInterval, self).setUp()
+        super().setUp()
 
         patcher = \
             patch("cms.server.contest.submission.check.get_latest_submission")

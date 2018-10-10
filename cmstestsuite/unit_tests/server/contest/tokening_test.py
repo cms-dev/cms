@@ -36,7 +36,7 @@ from cmscommon.datetime import make_datetime
 class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestTokensAvailable, self).setUp()
+        super().setUp()
 
         self.timestamp = make_datetime()
 
@@ -245,7 +245,7 @@ class TestTokensAvailable(DatabaseMixin, unittest.TestCase):
 class TestAcceptToken(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAcceptToken, self).setUp()
+        super().setUp()
 
         self.contest = self.add_contest()
         self.participation = self.add_participation(contest=self.contest)
