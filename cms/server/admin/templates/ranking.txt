@@ -3,6 +3,7 @@
 {% for p in contest.participations|sort(attribute="total_score")|reverse %}
 {% if not p.hidden %}
 {{ "%20s"|format(p.user.username) }} {{ "%30s"|format("%s %s"|format(p.user.first_name, p.user.last_name)) }}{% if show_teams %}{{ "%30s"|format(p.team.name if p.team else "") }}{% endif %} {% for task in contest.tasks %}{% set t_score, t_partial = p.scores[loop.index0] %}{{ "%%13.%dlf"|format(task.score_precision)|format(t_score) }}{% if t_partial %}*{% else %} {% endif %} {% endfor %}{% set total_score, partial = p.total_score %}{{ "%%7.%dlf"|format(contest.score_precision)|format(total_score) }}{% if partial %}*{% else %} {% endif %}
+
 {% endif %}
 {% endfor %}
 {% endblock core %}
