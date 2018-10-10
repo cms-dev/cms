@@ -48,7 +48,7 @@ def fake_loader_factory(team):
 class TestImportTeam(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestImportTeam, self).setUp()
+        super().setUp()
 
         # DB already contains a team.
         self.team = self.add_team()
@@ -59,7 +59,7 @@ class TestImportTeam(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestImportTeam, self).tearDown()
+        super().tearDown()
 
     @staticmethod
     def do_import(team):

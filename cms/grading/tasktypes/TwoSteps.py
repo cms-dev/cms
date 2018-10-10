@@ -92,7 +92,7 @@ class TwoSteps(TaskType):
         return "Two steps"
 
     def __init__(self, parameters):
-        super(TwoSteps, self).__init__(parameters)
+        super().__init__(parameters)
         self.output_eval = self.parameters[0]
 
     def get_compilation_commands(self, submission_format):

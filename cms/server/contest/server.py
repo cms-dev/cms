@@ -93,7 +93,7 @@ class ContestWebServer(WebService):
             HANDLERS.append((r"/", MainHandler))
             handlers = HANDLERS
 
-        super(ContestWebServer, self).__init__(
+        super().__init__(
             listen_port,
             handlers,
             parameters,

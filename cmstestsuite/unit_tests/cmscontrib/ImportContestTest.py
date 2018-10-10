@@ -82,7 +82,7 @@ def fake_loader_factory(contest, contest_has_changed=False,
 class TestImportContest(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestImportContest, self).setUp()
+        super().setUp()
 
         # DB already contains a contest in a contest with a submission.
         self.contest = self.add_contest()
@@ -107,7 +107,7 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestImportContest, self).tearDown()
+        super().tearDown()
 
     @staticmethod
     def do_import(contest, tasks, participations,

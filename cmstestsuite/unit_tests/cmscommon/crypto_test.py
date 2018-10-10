@@ -51,7 +51,7 @@ class TestEncryptAndDecryptBinary(unittest.TestCase):
     """Tests for the functions encrypt_binary and decrypt_binary."""
 
     def setUp(self):
-        super(TestEncryptAndDecryptBinary, self).setUp()
+        super().setUp()
         self.key = get_hex_random_key()
 
     def test_encrypt_and_decrypt(self):
@@ -97,7 +97,7 @@ class TestEncryptAndDecryptNumber(unittest.TestCase):
     """Tests for the functions encrypt_number and decrypt_number."""
 
     def setUp(self):
-        super(TestEncryptAndDecryptNumber, self).setUp()
+        super().setUp()
         self.key = get_hex_random_key()
 
     def test_encrypt_and_decrypt(self):

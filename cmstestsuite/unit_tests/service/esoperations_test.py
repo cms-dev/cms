@@ -33,7 +33,7 @@ from cms.service.esoperations import ESOperation, get_submissions_operations, \
 class TestESOperations(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestESOperations, self).setUp()
+        super().setUp()
 
         # First set up the interesting contest, with a few copies
         # of everything.
@@ -64,7 +64,7 @@ class TestESOperations(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.session.close()
-        super(TestESOperations, self).tearDown()
+        super().tearDown()
 
     # Testing get_submissions_operations.
 

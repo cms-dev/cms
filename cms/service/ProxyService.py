@@ -162,7 +162,7 @@ class ProxyExecutor(Executor):
             supposed to listen.
 
         """
-        super(ProxyExecutor, self).__init__(batch_executions=True)
+        super().__init__(batch_executions=True)
 
         self._ranking = ranking
 
@@ -246,7 +246,7 @@ class ProxyService(TriggeredService):
         contest_id (int): the ID of the contest to manage.
 
         """
-        super(ProxyService, self).__init__(shard)
+        super().__init__(shard)
 
         self.contest_id = contest_id
 

@@ -56,7 +56,7 @@ class Executor(metaclass=ABCMeta):
             at a time.
 
         """
-        super(Executor, self).__init__()
+        super().__init__()
 
         self._batch_executions = batch_executions
         self._operation_queue = PriorityQueue()

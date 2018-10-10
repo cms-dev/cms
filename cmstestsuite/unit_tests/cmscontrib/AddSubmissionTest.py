@@ -51,7 +51,7 @@ class TestAddSubmissionMixin(DatabaseMixin, FileSystemMixin):
     """Mixin for testing AddSubmission with different tasks."""
 
     def setUp(self):
-        super(TestAddSubmissionMixin, self).setUp()
+        super().setUp()
 
         self.write_file(_FILENAME_1, _CONTENT_1)
         self.write_file(_FILENAME_2, _CONTENT_2)
@@ -69,7 +69,7 @@ class TestAddSubmissionMixin(DatabaseMixin, FileSystemMixin):
 
     def tearDown(self):
         self.delete_data()
-        super(TestAddSubmissionMixin, self).tearDown()
+        super().tearDown()
 
     def assertSubmissionInDb(self, timestamp, task, language, files):
         """Assert that the submission with the given data is in the DB."""
@@ -99,7 +99,7 @@ class TestAddSubmissionSingleSourceWithLanguage(
     """Tests for AddSubmission when the task has a single source file."""
 
     def setUp(self):
-        super(TestAddSubmissionSingleSourceWithLanguage, self).setUp()
+        super().setUp()
 
         self.task = self.add_task(submission_format=["source.%l"],
                                   contest=self.contest)
@@ -176,7 +176,7 @@ class TestAddSubmissionTwoSourcesWithLanguage(
     """Tests for AddSubmission when the task has two source files."""
 
     def setUp(self):
-        super(TestAddSubmissionTwoSourcesWithLanguage, self).setUp()
+        super().setUp()
 
         self.task = self.add_task(
             submission_format=["source1.%l", "source2.%l"],
@@ -227,7 +227,7 @@ class TestAddSubmissionTwoSourcesOneLanguage(
     """Tests for AddSubmission with one source with language and one not."""
 
     def setUp(self):
-        super(TestAddSubmissionTwoSourcesOneLanguage, self).setUp()
+        super().setUp()
 
         self.task = self.add_task(
             submission_format=["source1.%l", "source2"],
@@ -269,7 +269,7 @@ class TestAddSubmissionOutputOnly(
     """Tests for AddSubmission when there the submission has no language."""
 
     def setUp(self):
-        super(TestAddSubmissionOutputOnly, self).setUp()
+        super().setUp()
 
         self.task = self.add_task(submission_format=["source"],
                                   contest=self.contest)

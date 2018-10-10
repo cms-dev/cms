@@ -34,7 +34,7 @@ class TestAddAdmin(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestAddAdmin, self).tearDown()
+        super().tearDown()
 
     def assertAdminInDb(self, username, pwd, name, enabled, permission_all):
         """Assert that the admin with the given data is in the DB."""

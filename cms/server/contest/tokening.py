@@ -305,7 +305,7 @@ class UnacceptableToken(Exception):
     """Raised when a token request can't be accepted."""
 
     def __init__(self, subject, text):
-        super(UnacceptableToken, self).__init__(subject, text)
+        super().__init__(subject, text)
         self.subject = subject
         self.text = text
 
@@ -314,7 +314,7 @@ class TokenAlreadyPlayed(Exception):
     """Raised when the same token request is received more than once."""
 
     def __init__(self, subject, text):
-        super(TokenAlreadyPlayed, self).__init__(subject, text)
+        super().__init__(subject, text)
         self.subject = subject
         self.text = text
 

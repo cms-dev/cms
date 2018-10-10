@@ -54,7 +54,7 @@ class TestFetchFileDigestsFromPreviousSubmission(DatabaseMixin,
                                                  unittest.TestCase):
 
     def setUp(self):
-        super(TestFetchFileDigestsFromPreviousSubmission, self).setUp()
+        super().setUp()
 
         self.contest = self.add_contest()
         self.participation = self.add_participation(contest=self.contest)
@@ -178,7 +178,7 @@ class TestFetchFileDigestsFromPreviousSubmission(DatabaseMixin,
 class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestStoreLocalCopy, self).setUp()
+        super().setUp()
 
         self.contest = self.add_contest()
         self.participation = self.add_participation(contest=self.contest)

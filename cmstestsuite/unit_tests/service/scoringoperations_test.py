@@ -31,7 +31,7 @@ from cms.service.scoringoperations import ScoringOperation, get_operations
 class TestScoringOperations(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestScoringOperations, self).setUp()
+        super().setUp()
 
         # First set up the interesting contest, with a few copies
         # of everything.
@@ -60,7 +60,7 @@ class TestScoringOperations(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.session.close()
-        super(TestScoringOperations, self).tearDown()
+        super().tearDown()
 
     # Testing get_operations.
 

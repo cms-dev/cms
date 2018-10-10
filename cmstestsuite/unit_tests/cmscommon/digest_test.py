@@ -32,7 +32,7 @@ _CONTENT_DIGEST = "040f06fd774092478d450774f5ba30c5da78acc8"
 class TestDigester(unittest.TestCase):
 
     def setUp(self):
-        super(TestDigester, self).setUp()
+        super().setUp()
         self.d = Digester()
 
     def test_success(self):
@@ -65,7 +65,7 @@ class TestBytesDigest(unittest.TestCase):
 class TestPathDigest(FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestPathDigest, self).setUp()
+        super().setUp()
         self.filename = "f"
         self.path = self.get_path(self.filename)
 

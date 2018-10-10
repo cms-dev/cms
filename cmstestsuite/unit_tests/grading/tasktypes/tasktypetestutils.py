@@ -149,7 +149,7 @@ class TaskTypeTestMixin:
         return patched
 
     def tearDown(self):
-        super(TaskTypeTestMixin, self).tearDown()
+        super().tearDown()
         # Make sure the test used all declared sandboxes.
         self.assertEqual(len(self.sandboxes), 0)
 

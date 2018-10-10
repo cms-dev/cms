@@ -40,7 +40,7 @@ from cmscommon.constants import SCORE_MODE_MAX
 class TestProxyService(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestProxyService, self).setUp()
+        super().setUp()
 
         patcher = patch("cms.db.Dataset.score_type_object",
                         new_callable=PropertyMock)

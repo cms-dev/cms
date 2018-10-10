@@ -122,7 +122,7 @@ class Communication(TaskType):
         return "Communication"
 
     def __init__(self, parameters):
-        super(Communication, self).__init__(parameters)
+        super().__init__(parameters)
 
         self.num_processes = self.parameters[0]
         self.compilation = self.parameters[1]

@@ -42,7 +42,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
     """
 
     def setUp(self):
-        super(TestEvaluate, self).setUp()
+        super().setUp()
         self.setUpMocks("OutputOnly")
         self.file_cacher = MagicMock()
 

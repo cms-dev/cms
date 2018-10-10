@@ -49,7 +49,7 @@ class UnacceptablePrintJob(Exception):
     """Raised when a printout request can't be accepted."""
 
     def __init__(self, subject, text):
-        super(UnacceptablePrintJob, self).__init__(subject, text)
+        super().__init__(subject, text)
         self.subject = subject
         self.text = text
 

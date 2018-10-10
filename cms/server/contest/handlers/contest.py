@@ -62,7 +62,7 @@ class ContestHandler(BaseHandler):
 
     """
     def __init__(self, *args, **kwargs):
-        super(ContestHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.contest_url = None
 
     def prepare(self):
@@ -76,7 +76,7 @@ class ContestHandler(BaseHandler):
                 (k, v) for k, v in self.available_translations.items()
                 if k in lang_codes)
 
-        super(ContestHandler, self).prepare()
+        super().prepare()
 
         if self.is_multi_contest():
             self.contest_url = self.url[self.contest.name]
@@ -108,7 +108,7 @@ class ContestHandler(BaseHandler):
                 # render_params in this class assumes the contest is loaded,
                 # so we cannot call it without a fully defined contest. Luckily
                 # the one from the base class is enough to display a 404 page.
-                self.r_params = super(ContestHandler, self).render_params()
+                self.r_params = super().render_params()
                 raise tornado.web.HTTPError(404)
         else:
             # Select the contest specified on the command line
@@ -162,7 +162,7 @@ class ContestHandler(BaseHandler):
         return participation
 
     def render_params(self):
-        ret = super(ContestHandler, self).render_params()
+        ret = super().render_params()
 
         ret["contest"] = self.contest
 

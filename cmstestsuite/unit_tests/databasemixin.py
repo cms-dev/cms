@@ -259,7 +259,7 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
 
     @classmethod
     def setUpClass(cls):
-        super(DatabaseMixin, cls).setUpClass()
+        super().setUpClass()
         assert "fortesting" in str(engine), \
             "Monkey patching of DB connection string failed"
         drop_db()
@@ -268,15 +268,15 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
     @classmethod
     def tearDownClass(cls):
         drop_db()
-        super(DatabaseMixin, cls).tearDownClass()
+        super().tearDownClass()
 
     def setUp(self):
-        super(DatabaseMixin, self).setUp()
+        super().setUp()
         self.session = Session()
 
     def tearDown(self):
         self.session.rollback()
-        super(DatabaseMixin, self).tearDown()
+        super().tearDown()
 
     def delete_data(self):
         """Delete all the data in the DB.

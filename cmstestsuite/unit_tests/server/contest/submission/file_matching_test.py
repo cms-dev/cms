@@ -56,7 +56,7 @@ EGGS_CONTENT = b"this is the content of a sixth file"
 class TestMatchFilesAndLanguages(unittest.TestCase):
 
     def setUp(self):
-        super(TestMatchFilesAndLanguages, self).setUp()
+        super().setUp()
 
         self.languages = set()
 

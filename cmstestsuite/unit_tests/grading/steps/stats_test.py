@@ -49,7 +49,7 @@ def get_stats(execution_time, execution_wall_clock_time, execution_memory,
 class TestExecutionStats(unittest.TestCase):
 
     def setUp(self):
-        super(TestExecutionStats, self).setUp()
+        super().setUp()
         self.sandbox = FakeIsolateSandbox(None)
         self.sandbox.stdout_file = "stdout.txt"
         self.sandbox.stderr_file = "stderr.txt"

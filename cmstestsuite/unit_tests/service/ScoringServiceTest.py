@@ -42,7 +42,7 @@ from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
 class TestScoringService(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestScoringService, self).setUp()
+        super().setUp()
 
         self.score_info = (unique_long_id(), unique_long_id(),
                            unique_long_id(), unique_long_id(),

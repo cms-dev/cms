@@ -37,7 +37,7 @@ TWO_COMMANDS = [["test", "command", "1"], ["command", "2"]]
 class TestGenericStep(unittest.TestCase):
 
     def setUp(self):
-        super(TestGenericStep, self).setUp()
+        super().setUp()
         self.sandbox = FakeIsolateSandbox(None)
 
     def test_single_command_success(self):

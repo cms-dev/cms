@@ -39,7 +39,7 @@ TWO_COMMANDS = [["test", "command", "1"], ["command", "2"]]
 class TestExtractOutcomeAndText(unittest.TestCase):
 
     def setUp(self):
-        super(TestExtractOutcomeAndText, self).setUp()
+        super().setUp()
         self.sandbox = FakeIsolateSandbox(None)
         self.sandbox.stdout_file = "o"
         self.sandbox.stderr_file = "e"
@@ -100,7 +100,7 @@ class TestExtractOutcomeAndText(unittest.TestCase):
 class TestTrustedStep(unittest.TestCase):
 
     def setUp(self):
-        super(TestTrustedStep, self).setUp()
+        super().setUp()
         self.sandbox = FakeIsolateSandbox(None)
 
         patcher = patch("cms.grading.steps.trusted.logger.error",
@@ -226,7 +226,7 @@ class TestTrustedStep(unittest.TestCase):
 class TestCheckerStep(unittest.TestCase):
 
     def setUp(self):
-        super(TestCheckerStep, self).setUp()
+        super().setUp()
         # By default, any file request succeeds.
         self.file_cacher = MagicMock()
         self.sandbox = FakeIsolateSandbox(self.file_cacher)

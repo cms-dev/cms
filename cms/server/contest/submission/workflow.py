@@ -50,7 +50,7 @@ def N_(msgid):
 
 class UnacceptableSubmission(Exception):
     def __init__(self, subject, text):
-        super(UnacceptableSubmission, self).__init__("%s: %s" % (subject, text))
+        super().__init__("%s: %s" % (subject, text))
         self.subject = subject
         self.text = text
 
@@ -210,7 +210,7 @@ class TestingNotAllowed(Exception):
 
 class UnacceptableUserTest(Exception):
     def __init__(self, subject, text):
-        super(UnacceptableUserTest, self).__init__("%s: %s" % (subject, text))
+        super().__init__("%s: %s" % (subject, text))
         self.subject = subject
         self.text = text
 

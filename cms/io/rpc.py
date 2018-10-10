@@ -304,14 +304,14 @@ class RemoteServiceServer(RemoteServiceBase):
         For other arguments see RemoteServiceBase.
 
         """
-        super(RemoteServiceServer, self).__init__(remote_address)
+        super().__init__(remote_address)
         self.local_service = local_service
 
         self.pending_incoming_requests_threads = WeakSet()
 
     def finalize(self, reason=""):
         """See RemoteServiceBase.finalize."""
-        super(RemoteServiceServer, self).finalize(reason)
+        super().finalize(reason)
 
         for thread in self.pending_incoming_requests_threads:
             thread.kill(RPCError(reason), block=False)
@@ -448,8 +448,7 @@ class RemoteServiceClient(RemoteServiceBase):
             configuration.
 
         """
-        super(RemoteServiceClient, self).__init__(
-            get_service_address(remote_service_coord))
+        super().__init__(get_service_address(remote_service_coord))
         self.remote_service_coord = remote_service_coord
 
         self.pending_outgoing_requests = dict()
@@ -466,7 +465,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
     def finalize(self, reason=""):
         """See RemoteServiceBase.finalize."""
-        super(RemoteServiceClient, self).finalize(reason)
+        super().finalize(reason)
 
         for result in self.pending_outgoing_requests_results.values():
             result.set_exception(RPCError(reason))
@@ -511,7 +510,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
     def disconnect(self, reason="Disconnection requested."):
         """See RemoteServiceBase.disconnect."""
-        if super(RemoteServiceClient, self).disconnect(reason=reason):
+        if super().disconnect(reason=reason):
             self._loop.kill()
             self._loop = None
 

@@ -42,7 +42,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
     """Tests for get_compilation_commands()."""
 
     def setUp(self):
-        super(TestGetCompilationCommands, self).setUp()
+        super().setUp()
         self.setUpMocks("Batch")
         self.languages.update({LANG_1, LANG_2})
 
@@ -103,7 +103,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
     """
 
     def setUp(self):
-        super(TestCompile, self).setUp()
+        super().setUp()
         self.setUpMocks("Batch")
         self.languages.update({LANG_1})
         self.file_cacher = MagicMock()
@@ -286,7 +286,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
     """
 
     def setUp(self):
-        super(TestEvaluate, self).setUp()
+        super().setUp()
         self.setUpMocks("Batch")
         self.languages.update({LANG_1})
         self.file_cacher = MagicMock()

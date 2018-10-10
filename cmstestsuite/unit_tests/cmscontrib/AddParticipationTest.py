@@ -34,7 +34,7 @@ from cmscontrib.AddParticipation import add_participation
 class TestAddParticipation(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAddParticipation, self).setUp()
+        super().setUp()
         self.contest = self.add_contest()
         self.user = self.add_user()
         self.team = self.add_team()
@@ -42,7 +42,7 @@ class TestAddParticipation(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestAddParticipation, self).tearDown()
+        super().tearDown()
 
     def assertParticipationInDb(self, user_id, contest_id, password,
                                 delay_time=0, extra_time=0,

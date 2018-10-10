@@ -54,7 +54,7 @@ class BaseHandler(CommonRequestHandler):
     """
 
     def __init__(self, *args, **kwargs):
-        super(BaseHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # The list of interface translations the user can choose from.
         self.available_translations = self.service.translations
         # The translation that best matches the user's system settings
@@ -77,7 +77,7 @@ class BaseHandler(CommonRequestHandler):
         """This method is executed at the beginning of each request.
 
         """
-        super(BaseHandler, self).prepare()
+        super().prepare()
         self.setup_locale()
 
     def setup_locale(self):

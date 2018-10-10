@@ -51,7 +51,7 @@ class UnacceptableQuestion(Exception):
     """Raised when a question can't be accepted."""
 
     def __init__(self, subject, text):
-        super(UnacceptableQuestion, self).__init__(subject, text)
+        super().__init__(subject, text)
         self.subject = subject
         self.text = text
 

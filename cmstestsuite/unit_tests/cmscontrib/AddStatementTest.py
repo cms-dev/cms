@@ -40,14 +40,14 @@ _DIGEST_2 = bytes_digest(_CONTENT_2)
 class TestAddStatement(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAddStatement, self).setUp()
+        super().setUp()
 
         self.task = self.add_task()
         self.session.commit()
 
     def tearDown(self):
         self.delete_data()
-        super(TestAddStatement, self).tearDown()
+        super().tearDown()
 
     def assertStatementInDb(self, language, digest):
         """Assert that the statement with the given data is in the DB."""

@@ -61,7 +61,7 @@ class PrintingOperation(QueueItem):
 
 class PrintingExecutor(Executor):
     def __init__(self, file_cacher):
-        super(PrintingExecutor, self).__init__()
+        super().__init__()
 
         self.file_cacher = file_cacher
         self.jinja2_env = GLOBAL_ENVIRONMENT.overlay(
@@ -222,7 +222,7 @@ class PrintingService(TriggeredService):
         """Initialize the PrintingService.
 
         """
-        super(PrintingService, self).__init__(shard)
+        super().__init__(shard)
 
         self.file_cacher = FileCacher(self)
 

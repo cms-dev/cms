@@ -58,7 +58,7 @@ INPUT_CONTENT = b"this is the content of an input file"
 class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAcceptSubmission, self).setUp()
+        super().setUp()
 
         # Set up patches and mocks for a successful run. These are all
         # controlled by the following values, which can be changed to
@@ -355,7 +355,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
 class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestAcceptUserTest, self).setUp()
+        super().setUp()
 
         # Set up patches and mocks for a successful run. These are all
         # controlled by the following values, which can be changed to

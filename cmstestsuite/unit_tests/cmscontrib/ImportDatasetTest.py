@@ -51,7 +51,7 @@ def fake_loader_factory(task, dataset):
 class TestImportDataset(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
-        super(TestImportDataset, self).setUp()
+        super().setUp()
 
         # DB already contains a dataset.
         self.task = self.add_task()
@@ -66,7 +66,7 @@ class TestImportDataset(DatabaseMixin, unittest.TestCase):
 
     def tearDown(self):
         self.delete_data()
-        super(TestImportDataset, self).tearDown()
+        super().tearDown()
 
     @staticmethod
     def do_import(task, dataset, description):

@@ -78,7 +78,7 @@ class OutputOnly(TaskType):
     testable = False
 
     def __init__(self, parameters):
-        super(OutputOnly, self).__init__(parameters)
+        super().__init__(parameters)
         self.output_eval = self.parameters[0]
 
     def get_compilation_commands(self, unused_submission_format):

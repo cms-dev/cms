@@ -361,7 +361,7 @@ class TestFileCacherDB(TestFileCacherBase, DatabaseMixin, unittest.TestCase):
     """Tests for the FileCacher service with a database backend."""
 
     def setUp(self):
-        super(TestFileCacherDB, self).setUp()
+        super().setUp()
         file_cacher = FileCacher()
         self._setUp(file_cacher)
 
@@ -373,7 +373,7 @@ class TestFileCacherFS(TestFileCacherBase, unittest.TestCase):
     """Tests for the FileCacher service with a filesystem backend."""
 
     def setUp(self):
-        super(TestFileCacherFS, self).setUp()
+        super().setUp()
         file_cacher = FileCacher(path="fs-storage")
         self._setUp(file_cacher)
 

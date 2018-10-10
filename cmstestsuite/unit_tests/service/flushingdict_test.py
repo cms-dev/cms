@@ -30,7 +30,7 @@ class TestFlushingDict(unittest.TestCase):
     FLUSH_LATENCY_SECONDS = 0.2
 
     def setUp(self):
-        super(TestFlushingDict, self).setUp()
+        super().setUp()
         self.received_data = []
         self.d = FlushingDict(
             TestFlushingDict.SIZE, TestFlushingDict.FLUSH_LATENCY_SECONDS,

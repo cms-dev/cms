@@ -117,7 +117,7 @@ class Batch(TaskType):
         return "Batch"
 
     def __init__(self, parameters):
-        super(Batch, self).__init__(parameters)
+        super().__init__(parameters)
 
         # Data in the parameters.
         self.compilation = self.parameters[0]

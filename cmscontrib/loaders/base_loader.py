@@ -79,7 +79,7 @@ class TaskLoader(BaseLoader):
     """
 
     def __init__(self, path, file_cacher):
-        super(TaskLoader, self).__init__(path, file_cacher)
+        super().__init__(path, file_cacher)
 
     @abstractmethod
     def get_task(self, get_statement):
@@ -127,7 +127,7 @@ class UserLoader(BaseLoader):
     """
 
     def __init__(self, path, file_cacher):
-        super(UserLoader, self).__init__(path, file_cacher)
+        super().__init__(path, file_cacher)
 
     @abstractmethod
     def get_user(self):
@@ -173,7 +173,7 @@ class TeamLoader(BaseLoader):
     """
 
     def __init__(self, path, file_cacher):
-        super(TeamLoader, self).__init__(path, file_cacher)
+        super().__init__(path, file_cacher)
 
     @abstractmethod
     def get_team(self):
@@ -219,7 +219,7 @@ class ContestLoader(BaseLoader):
     """
 
     def __init__(self, path, file_cacher):
-        super(ContestLoader, self).__init__(path, file_cacher)
+        super().__init__(path, file_cacher)
 
     @abstractmethod
     def get_contest(self):

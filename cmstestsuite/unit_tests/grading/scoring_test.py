@@ -36,7 +36,7 @@ class TaskScoreMixin(DatabaseMixin):
     """A mixin to test the task_score() function with various score modes."""
 
     def setUp(self):
-        super(TaskScoreMixin, self).setUp()
+        super().setUp()
         self.participation = self.add_participation()
         self.task = self.add_task(contest=self.participation.contest)
         dataset = self.add_dataset(task=self.task)
@@ -76,7 +76,7 @@ class TestTaskScoreMaxTokenedLast(TaskScoreMixin, unittest.TestCase):
     """Tests for task_score() using the max_tokened_last score mode."""
 
     def setUp(self):
-        super(TestTaskScoreMaxTokenedLast, self).setUp()
+        super().setUp()
         self.task.score_mode = SCORE_MODE_MAX_TOKENED_LAST
 
     def test_no_submissions(self):
@@ -165,7 +165,7 @@ class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
     """Tests for task_score() using the max_subtask score mode."""
 
     def setUp(self):
-        super(TestTaskScoreMaxSubtask, self).setUp()
+        super().setUp()
         self.task.score_mode = SCORE_MODE_MAX_SUBTASK
 
     @staticmethod
@@ -317,7 +317,7 @@ class TestTaskScoreMax(TaskScoreMixin, unittest.TestCase):
     """Tests for task_score() using the max score mode."""
 
     def setUp(self):
-        super(TestTaskScoreMax, self).setUp()
+        super().setUp()
         self.task.score_mode = SCORE_MODE_MAX
 
     def test_no_submissions(self):

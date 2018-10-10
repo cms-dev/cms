@@ -35,7 +35,7 @@ TWO_COMMANDS = [["test", "command", "1"], ["command", "2"]]
 class TestCompilationStep(unittest.TestCase):
 
     def setUp(self):
-        super(TestCompilationStep, self).setUp()
+        super().setUp()
         self.sandbox = FakeIsolateSandbox(None)
 
         patcher = patch("cms.grading.steps.compilation.logger.error")
