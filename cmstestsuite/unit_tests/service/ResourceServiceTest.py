@@ -18,11 +18,13 @@
 
 """Tests for ResourceService."""
 
+import os
 import sys
 import unittest
 from unittest.mock import patch
 
 from cms import ServiceCoord
+from cms.service import ResourceService
 from cms.service.ResourceService import ProcessMatcher
 
 
@@ -30,29 +32,31 @@ class TestProcessMatcher(unittest.TestCase):
 
     def setUp(self):
         self.pm = ProcessMatcher()
+
+        path = os.path.join(ResourceService.BIN_PATH, "cms")
         self.w0_cmdlines = [
-            "/usr/bin/python2 cmsWorker 0",
-            "/usr/bin/python2 cmsWorker",
-            "python2 cmsWorker 0 -c 1",
-            "python2 cmsWorker -c 1",
-            "python2 cmsWorker -c 1 0",
-            "/usr/bin/env python2 cmsWorker 0",
-            "/usr/bin/env python2 cmsWorker",
-            "/usr/bin/env python2 cmsWorker 0 -c 1",
-            "/usr/bin/env python2 cmsWorker -c 1",
-            "/usr/bin/env python2 cmsWorker -c 1 0",
-            sys.executable + " cmsWorker",
-            sys.executable + " cmsWorker 0",
-            sys.executable + " cmsWorker 0 -c 1",
-            sys.executable + " cmsWorker -c 1",
-            sys.executable + " cmsWorker -c 1 0",
+            "/usr/bin/python3 %sWorker 0" % path,
+            "/usr/bin/python3 %sWorker" % path,
+            "python3 %sWorker 0 -c 1" % path,
+            "python3 %sWorker -c 1" % path,
+            "python3 %sWorker -c 1 0" % path,
+            "/usr/bin/env python3 %sWorker 0" % path,
+            "/usr/bin/env python3 %sWorker" % path,
+            "/usr/bin/env python3 %sWorker 0 -c 1" % path,
+            "/usr/bin/env python3 %sWorker -c 1" % path,
+            "/usr/bin/env python3 %sWorker -c 1 0" % path,
+            sys.executable + " %sWorker" % path,
+            sys.executable + " %sWorker 0" % path,
+            sys.executable + " %sWorker 0 -c 1" % path,
+            sys.executable + " %sWorker -c 1" % path,
+            sys.executable + " %sWorker -c 1 0" % path,
         ]
         self.bad_cmdlines = [
             "ps",
-            "less cmsWorker 0",
-            "less /usr/bin/python2 cmsWorker 0",
-            "/usr/bin/python2 cmsWorker 1",
-            "/usr/bin/python2 cmsAdminWebServer 0",
+            "less %sWorker 0" % path,
+            "less /usr/bin/python3 %sWorker 0" % path,
+            "/usr/bin/python3 %sWorker 1" % path,
+            "/usr/bin/python3 %sAdminWebServer 0" % path,
         ]
         self.w0 = ServiceCoord("Worker", 0)
 
@@ -71,7 +75,7 @@ class TestProcessMatcher(unittest.TestCase):
             with patch.object(ProcessMatcher, '_get_all_processes') as f:
                 f.return_value = (TestProcessMatcher._get_all_processes_ret(
                     self.bad_cmdlines + [(c, "good")] + self.bad_cmdlines))
-                self.assertEquals(self.pm.find(self.w0), "good")
+                self.assertEqual(self.pm.find(self.w0), "good")
 
     def test_find_fails(self):
         service = ServiceCoord("EvaluationService", 0)
