@@ -303,7 +303,7 @@ def enumerate_files(
     queries.append(dataset_q.join(Dataset.testcases)
                    .with_entities(Testcase.input))
     queries.append(dataset_q.join(Dataset.testcases)
-                   .with_entities(Testcase.input))
+                   .with_entities(Testcase.output))
 
     if not skip_submissions:
         submission_q = task_q.join(Task.submissions)
