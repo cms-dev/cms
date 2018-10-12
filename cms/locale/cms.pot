@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Contest Management System 1.4.dev0\n"
+"Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
+"POT-Creation-Date: 2018-10-12 17:41+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -156,7 +156,7 @@ msgstr ""
 #, python-format
 msgid ""
 "Subject must be at most %(max_subject_length)d characters, content at most "
-"%(max_text_length)d.max_subject_length"
+"%(max_text_length)d."
 msgstr ""
 
 msgid "contest-token"
