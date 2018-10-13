@@ -213,7 +213,7 @@ def match_files_and_language(given_files, given_language_name,
         match.
 
     """
-    if len(given_files) == 0:
+    if not given_files:
         raise InvalidFilesOrLanguage("no files given")
 
     # If the submission format is language-agnostic the only "language"
@@ -266,7 +266,7 @@ def match_files_and_language(given_files, given_language_name,
             invalidity_reasons.append("%r: %s" % (
                 language.name if language is not None else None, err))
 
-    if len(matched_files_by_language) == 0:
+    if not matched_files_by_language:
         raise InvalidFilesOrLanguage(
             "there isn't any language that matches all the files:\n%s"
             % (";\n".join(invalidity_reasons)))

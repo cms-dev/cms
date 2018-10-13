@@ -111,7 +111,7 @@ def dictselect(ctx, d, test=None, *args, **kwargs):
     else:
         test = ctx.environment.tests[test]
     by = kwargs.pop("by", "key")
-    if len(kwargs) > 0:
+    if kwargs:
         raise ValueError("Invalid keyword argument: %s"
                          % next(iter(kwargs.keys())))
     if by not in {"key", "value"}:

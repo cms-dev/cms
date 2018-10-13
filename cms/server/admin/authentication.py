@@ -155,7 +155,7 @@ class AWSAuthMiddleware:
         """
         # Clearing an empty cookie marks it as modified and causes it
         # to be sent in the response. This check prevents it.
-        if len(self._cookie) == 0:
+        if not self._cookie:
             return
 
         admin_id = self._cookie.get("id", None)

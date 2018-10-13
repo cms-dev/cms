@@ -239,7 +239,7 @@ class DumpExporter:
                 # Specify the "root" of the data graph
                 data["_objects"] = list(self.ids.values())
 
-                while len(self.queue) > 0:
+                while self.queue:
                     obj = self.queue.pop(0)
                     data[self.ids[obj.sa_identity_key]] = \
                         self.export_object(obj)

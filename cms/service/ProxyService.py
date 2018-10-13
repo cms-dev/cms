@@ -194,7 +194,7 @@ class ProxyExecutor(Executor):
         try:
             for i in range(self.TYPE_COUNT):
                 # Send entities of type i.
-                if len(data[i]) > 0:
+                if data[i]:
                     # We abuse the resource path as the English
                     # (plural) name for the entity type.
                     name = self.RESOURCE_PATHS[i]

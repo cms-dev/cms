@@ -56,8 +56,7 @@ class Language(metaclass=ABCMeta):
     @property
     def source_extension(self):
         """Default source extension for the language."""
-        return self.source_extensions[0] \
-            if len(self.source_extensions) > 0 else None
+        return self.source_extensions[0] if self.source_extensions else None
 
     @property
     def header_extensions(self):
@@ -69,8 +68,7 @@ class Language(metaclass=ABCMeta):
     @property
     def header_extension(self):
         """Default header extension for the language."""
-        return self.header_extensions[0] \
-            if len(self.header_extensions) > 0 else None
+        return self.header_extensions[0] if self.header_extensions else None
 
     @property
     def object_extensions(self):
@@ -95,8 +93,7 @@ class Language(metaclass=ABCMeta):
     @property
     def object_extension(self):
         """Default object extension for the language."""
-        return self.object_extensions[0] \
-            if len(self.object_extensions) > 0 else None
+        return self.object_extensions[0] if self.object_extensions else None
 
     @abstractmethod
     def get_compilation_commands(self,

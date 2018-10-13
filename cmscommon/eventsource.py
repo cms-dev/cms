@@ -137,7 +137,7 @@ class Publisher:
         if last_event_id is not None and \
                 re.match("^[0-9A-Fa-f]+$", last_event_id):
             last_event_key = int(last_event_id, 16)
-            if len(self._cache) > 0 and last_event_key >= self._cache[0][0]:
+            if self._cache and last_event_key >= self._cache[0][0]:
                 # All missed events are in cache.
                 for key, msg in self._cache:
                     if key > last_event_key:

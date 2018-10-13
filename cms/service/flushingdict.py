@@ -91,9 +91,9 @@ class FlushingDict:
             while True:
                 with self.d_lock:
                     since_last_insert = monotonic_time() - self.last_insert
-                    if len(self.d) != 0 and (
-                            len(self.d) >= self.size or
-                            since_last_insert > self.flush_latency_seconds):
+                    if self.d and (len(self.d) >= self.size
+                                   or (since_last_insert
+                                       > self.flush_latency_seconds)):
                         break
                 gevent.sleep(0.05)
             self.flush()

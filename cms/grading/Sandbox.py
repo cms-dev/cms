@@ -97,7 +97,7 @@ def wait_without_std(procs):
     # because of insufficient buffering (and without allocating too
     # much memory). Unix specific.
     to_consume = get_to_consume()
-    while len(to_consume) > 0:
+    while to_consume:
         to_read = select.select(to_consume, [], [], 1.0)[0]
         for file_ in to_read:
             file_.read(8 * 1024)
