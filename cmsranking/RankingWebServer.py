@@ -36,6 +36,8 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
     DispatcherMiddleware
 
+# Needed for initialization. Do not remove.
+import cmsranking.Logger  # noqa
 from cmscommon.eventsource import EventSource
 from cmsranking.Config import Config
 from cmsranking.Contest import Contest
@@ -47,9 +49,6 @@ from cmsranking.Submission import Submission
 from cmsranking.Task import Task
 from cmsranking.Team import Team
 from cmsranking.User import User
-
-
-# Needed for initialization. Do not remove.
 
 
 logger = logging.getLogger(__name__)
