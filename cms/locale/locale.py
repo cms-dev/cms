@@ -170,7 +170,7 @@ class Translation:
             res.append(babel.units.format_unit(secs, "duration-second",
                                                locale=self.locale))
 
-        if len(res) == 0:
+        if not res:
             res.append(babel.units.format_unit(0, "duration-second",
                                                locale=self.locale))
 
@@ -340,7 +340,7 @@ def filter_language_codes(lang_codes, prefixes):
                 parsed_filtered_lang_codes.append(parsed_lang_code)
                 break
 
-    if len(parsed_filtered_lang_codes) == 0:
+    if not parsed_filtered_lang_codes:
         logger.warning("No allowed locale matches any installed one. "
                        "Resorting to %s.", DEFAULT_TRANSLATION.identifier)
         return [DEFAULT_TRANSLATION.identifier]

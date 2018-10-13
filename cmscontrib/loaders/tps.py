@@ -132,7 +132,7 @@ class TpsTaskLoader(TaskLoader):
                     filename
                     for filename in os.listdir(statements_dir)
                     if filename[-4:] == ".pdf"]
-                if len(statements) > 0:
+                if statements:
                     args['statements'] = dict()
                     logger.info('Statements found')
                 for statement in statements:
@@ -322,7 +322,7 @@ class TpsTaskLoader(TaskLoader):
         else:
             subtasks = sorted(os.listdir(subtasks_dir))
 
-        if len(subtasks) == 0:
+        if not subtasks:
             number_tests = max(len(testcase_codenames), 1)
             args["score_type"] = "Sum"
             args["score_type_parameters"] = 100 / number_tests

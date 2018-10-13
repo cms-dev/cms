@@ -59,9 +59,9 @@ def copyfileobj(source_fobj, destination_fobj,
     """
     while True:
         buffer = source_fobj.read(buffer_size)
-        if len(buffer) == 0:
+        if buffer == "":
             break
-        while len(buffer) > 0:
+        while buffer != "":
             gevent.sleep(0)
             written = destination_fobj.write(buffer)
             # FIXME remove this when we drop py2
@@ -716,9 +716,9 @@ class FileCacher:
                                          dir=self.temp_dir) as dst:
             d = Digester()
             buf = src.read(self.CHUNK_SIZE)
-            while len(buf) > 0:
+            while buf != "":
                 d.update(buf)
-                while len(buf) > 0:
+                while buf != "":
                     written = dst.write(buf)
                     # Cooperative yield.
                     gevent.sleep(0)
@@ -881,7 +881,7 @@ class FileCacher:
             d = Digester()
             with self.backend.get_file(digest) as fobj:
                 buf = fobj.read(self.CHUNK_SIZE)
-                while len(buf) > 0:
+                while buf != "":
                     d.update(buf)
                     buf = fobj.read(self.CHUNK_SIZE)
             computed_digest = d.digest()

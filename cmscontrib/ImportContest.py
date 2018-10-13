@@ -313,7 +313,7 @@ class ContestImporter:
         """
         participations = [p for p in contest.participations
                           if p.user.username not in usernames_to_keep]
-        if len(participations) > 0:
+        if participations:
             ans = "y"
             if not self.yes:
                 ans = input("There are %s stale participations. "

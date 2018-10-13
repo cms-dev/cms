@@ -135,7 +135,7 @@ class GenericRequest:
             self.status_code = self.response.status_code
             self.res_data = self.response.text
 
-            if len(self.response.history) > 0:
+            if self.response.history:
                 self.redirected_to = self.response.url
 
         # Catch possible exceptions

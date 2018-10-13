@@ -154,7 +154,7 @@ def _tokens_available(mode, gen_initial, gen_number, gen_interval, gen_max,
     # tokens played up to now have expired (i.e. the first time at
     # which another token can be played). If no tokens have been played
     # so far, this time is the start of the contest.
-    expiration = history[-1] + min_interval if len(history) > 0 else start
+    expiration = history[-1] + min_interval if history else start
 
     # Don't report expiration when it has already passed or it is of no
     # use because no more tokens will ever be available to be played.

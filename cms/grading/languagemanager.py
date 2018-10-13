@@ -66,12 +66,12 @@ def filename_to_language(filename):
     names = sorted(language.name
                    for language in LANGUAGES
                    if ext in language.source_extensions)
-    return None if len(names) == 0 else get_language(names[0])
+    return get_language(names[0]) if names else None
 
 
 def _load_languages():
     """Load the available languages and fills all other data structures."""
-    if len(LANGUAGES) > 0:
+    if LANGUAGES:
         return
 
     for cls in plugin_list("cms.grading.languages"):

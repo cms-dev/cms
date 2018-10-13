@@ -263,7 +263,7 @@ def _authenticate_request_by_ip_address(sql_session, contest, ip_address):
 
     participations = participations.all()
 
-    if len(participations) == 0:
+    if not participations:
         logger.info(
             "Unsuccessful IP authentication from IP address %s, on contest "
             "%s: no user matches the IP address", ip_address, contest.name)

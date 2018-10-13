@@ -133,7 +133,7 @@ class Score:
             self._history.append((change.time, score))
 
     def get_score(self):
-        return self._history[-1][1] if len(self._history) > 0 else 0.0
+        return self._history[-1][1] if self._history else 0.0
 
     def reset_history(self):
         # Delete everything except the submissions and the subchanges.
@@ -155,10 +155,9 @@ class Score:
         # Insert the subchange at the right position inside the
         # (sorted) list and call the appropriate method (append_change
         # or reset_history)
-        if len(self._changes) == 0 or \
-                subchange.time > self._changes[-1].time or \
-                (subchange.time == self._changes[-1].time and
-                 subchange.key > self._changes[-1].key):
+        if (not self._changes
+            or ((subchange.time, subchange.key)
+                > (self._changes[-1].time, self._changes[-1].key))):
             self._changes.append(subchange)
             self.append_change(subchange)
         else:
@@ -321,10 +320,9 @@ class ScoringStore:
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
-        if len(self._scores[submission.user][submission.task]
-               ._submissions) == 0:
+        if not self._scores[submission.user][submission.task]._submissions:
             del self._scores[submission.user][submission.task]
-        if len(self._scores[submission.user]) == 0:
+        if not self._scores[submission.user]:
             del self._scores[submission.user]
 
     def create_subchange(self, key, subchange):
@@ -396,7 +394,7 @@ class ScoringStore:
 
         # When an entry is popped, push the next entry for that
         # user/task (if any).
-        while len(queue) != 0:
+        while queue:
             (time, score), user, task, scoring, index = heapq.heappop(queue)
             yield (user, task, time, score)
             if len(scoring._history) > index + 1:

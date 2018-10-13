@@ -231,7 +231,7 @@ class RemoteServiceBase:
                 # If there weren't a "\r\n" between the last message
                 # and the EOF we would have a false positive here.
                 # Luckily there is one.
-                if len(data) > 0 and not data.endswith(b"\r\n"):
+                if data != "" and not data.endswith(b"\r\n"):
                     logger.error(
                         "The client sent a message larger than %d bytes (that "
                         "is MAX_MESSAGE_SIZE). Consider raising that value if "
@@ -337,7 +337,7 @@ class RemoteServiceServer(RemoteServiceBase):
             except OSError:
                 break
 
-            if len(data) == 0:
+            if data == "":
                 self.finalize("Connection closed.")
                 break
 
@@ -529,7 +529,7 @@ class RemoteServiceClient(RemoteServiceBase):
             except OSError:
                 break
 
-            if len(data) == 0:
+            if data == "":
                 self.finalize("Connection closed.")
                 break
 

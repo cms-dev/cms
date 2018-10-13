@@ -69,7 +69,7 @@ def path_digest(path):
     with open(path, 'rb') as fin:
         d = Digester()
         buf = fin.read(io.DEFAULT_BUFFER_SIZE)
-        while len(buf) > 0:
+        while buf != "":
             d.update(buf)
             buf = fin.read(io.DEFAULT_BUFFER_SIZE)
         return d.digest()

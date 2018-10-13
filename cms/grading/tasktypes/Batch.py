@@ -128,9 +128,9 @@ class Batch(TaskType):
         # where the output is checked, regardless of using redirects or not.
         self._actual_input = self.input_filename
         self._actual_output = self.output_filename
-        if len(self.input_filename) == 0:
+        if self.input_filename == "":
             self._actual_input = self.DEFAULT_INPUT_FILENAME
-        if len(self.output_filename) == 0:
+        if self.output_filename == "":
             self._actual_output = self.DEFAULT_OUTPUT_FILENAME
 
     def get_compilation_commands(self, submission_format):
@@ -270,9 +270,9 @@ class Batch(TaskType):
         files_allowing_write = []
         stdin_redirect = None
         stdout_redirect = None
-        if len(self.input_filename) == 0:
+        if self.input_filename == "":
             stdin_redirect = self._actual_input
-        if len(self.output_filename) == 0:
+        if self.output_filename == "":
             stdout_redirect = self._actual_output
         else:
             files_allowing_write.append(self._actual_output)

@@ -342,7 +342,7 @@ def main():
         users = contest_data['users']
         tasks = contest_data['tasks']
 
-    if len(users) == 0:
+    if not users:
         print("No viable users, terminating.")
         return
 

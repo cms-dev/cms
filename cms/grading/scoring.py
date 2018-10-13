@@ -134,7 +134,7 @@ def task_score(participation, task, public=False, only_tokened=False):
 
     submissions = [s for s in participation.submissions
                    if s.task is task and s.official]
-    if len(submissions) == 0:
+    if not submissions:
         return 0.0, False
 
     submissions_and_results = [

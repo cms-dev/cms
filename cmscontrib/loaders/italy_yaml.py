@@ -675,7 +675,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         if public_testcases == "all":
             for t in args["testcases"]:
                 t.public = True
-        elif len(public_testcases) > 0:
+        elif public_testcases:
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
         args["testcases"] = dict((tc.codename, tc) for tc in args["testcases"])

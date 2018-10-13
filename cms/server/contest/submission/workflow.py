@@ -141,7 +141,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
 
     digests = dict()
     missing_codenames = required_codenames.difference(files.keys())
-    if len(missing_codenames) > 0:
+    if missing_codenames:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
             digests = fetch_file_digests_from_previous_submission(
                 sql_session, participation, task, language,
@@ -305,7 +305,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
 
     digests = dict()
     missing_codenames = required_codenames.difference(files.keys())
-    if len(missing_codenames) > 0:
+    if missing_codenames:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
             digests = fetch_file_digests_from_previous_submission(
                 sql_session, participation, task, language,

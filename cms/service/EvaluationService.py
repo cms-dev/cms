@@ -132,10 +132,10 @@ class EvaluationExecutor(Executor):
                 # re-enqueue it.
                 operation.side_data = (entry.priority, entry.timestamp)
                 self._currently_executing.append(operation)
-        while len(self._currently_executing) > 0:
+        while self._currently_executing:
             self.pool.wait_for_workers()
             with self._current_execution_lock:
-                if len(self._currently_executing) == 0:
+                if not self._currently_executing:
                     break
                 res = self.pool.acquire_worker(self._currently_executing)
                 if res is not None:

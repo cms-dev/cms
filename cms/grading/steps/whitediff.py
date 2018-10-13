@@ -64,8 +64,7 @@ def _white_diff_canonicalize(string):
     # join again the string using just one copy of the first
     # whitespace; this way, runs of more than one whitespaces are
     # collapsed into just one copy.
-    string = _WHITES[0].join([x for x in string.split(_WHITES[0])
-                              if len(x) > 0])
+    string = _WHITES[0].join(x for x in string.split(_WHITES[0]) if x != "")
     return string
 
 
@@ -91,14 +90,14 @@ def _white_diff(output, res):
         lres = res.readline()
 
         # Both files finished: comparison succeded
-        if len(lres) == 0 and len(lout) == 0:
+        if lres == "" and lout == "":
             return True
 
         # Only one file finished: ok if the other contains only blanks
-        elif len(lres) == 0 or len(lout) == 0:
+        elif lres == "" or lout == "":
             lout = lout.strip(b''.join(_WHITES))
             lres = lres.strip(b''.join(_WHITES))
-            if len(lout) > 0 or len(lres) > 0:
+            if lout != "" or lres != "":
                 return False
 
         # Both file still have lines to go: ok if they agree except

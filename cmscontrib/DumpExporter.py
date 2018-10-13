@@ -162,7 +162,7 @@ class DumpExporter:
         self.export_target = export_target
 
         # If target is not provided, we use the contest's name.
-        if len(export_target) == 0:
+        if export_target == "":
             self.export_target = "dump_%s.tar.gz" % date.today().isoformat()
             logger.warning("export_target not given, using \"%s\"",
                            self.export_target)
@@ -239,7 +239,7 @@ class DumpExporter:
                 # Specify the "root" of the data graph
                 data["_objects"] = list(self.ids.values())
 
-                while len(self.queue) > 0:
+                while self.queue:
                     obj = self.queue.pop(0)
                     data[self.ids[obj.sa_identity_key]] = \
                         self.export_object(obj)
