@@ -139,7 +139,7 @@ class ProcessMatcher(object):
         if "python" not in cl_interpreter:
             return None
 
-        cl_service = re.search(r"\b%s([a-zA-Z]+)$" %
+        cl_service = re.search(r"^%s([a-zA-Z]+)$" %
                                re.escape(os.path.join(BIN_PATH, "cms")),
                                cmdline[start_index + 1])
         if not cl_service:
