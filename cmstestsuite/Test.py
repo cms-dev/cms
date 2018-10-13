@@ -19,6 +19,7 @@
 
 import os
 import re
+from abc import ABCMeta, abstractmethod
 
 from cms.grading.languagemanager import get_language
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
@@ -28,9 +29,10 @@ class TestFailure(Exception):
     pass
 
 
-class Check:
+class Check(metaclass=ABCMeta):
+    @abstractmethod
     def check(self, *args, **kwargs):
-        raise NotImplementedError
+        pass
 
 
 class CheckOverallScore(Check):
