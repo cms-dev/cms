@@ -38,7 +38,7 @@ class TestTruncator(unittest.TestCase):
         truncator = Truncator(back_file, trunc_len)
         buf = truncator.read(read_chunk_size)
         read_len = 0
-        while len(buf) > 0:
+        while buf != "":
             read_len += len(buf)
             buf = truncator.read(read_chunk_size)
         self.assertEqual(read_len, min(trunc_len, orig_len))

@@ -28,7 +28,7 @@ from cms.grading import format_status_text
 class DummyTranslation:
     @staticmethod
     def gettext(s):
-        if len(s) == 0:
+        if s == "":
             return "the headers of the po file"
         return s.replace("A", "E")
 

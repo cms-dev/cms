@@ -87,7 +87,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             if allowed_localizations:
                 attrs["allowed_localizations"] = \
                     [x.strip() for x in allowed_localizations.split(",")
-                     if len(x) > 0 and not x.isspace()]
+                     if x != "" and not x.isspace()]
             else:
                 attrs["allowed_localizations"] = []
 

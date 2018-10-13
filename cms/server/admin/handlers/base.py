@@ -73,7 +73,7 @@ def argument_reader(func, empty=None):
         value = self.get_argument(name, None)
         if value is None:
             return
-        if len(value) == 0:
+        if value == "":
             dest[name] = empty
         else:
             dest[name] = func(value)
@@ -400,7 +400,7 @@ class BaseHandler(CommonRequestHandler):
         value = self.get_argument(field, None)
         if value is None:
             return
-        if len(value) == 0:
+        if value == "":
             dest["time_limit"] = None
         else:
             try:
@@ -424,7 +424,7 @@ class BaseHandler(CommonRequestHandler):
         value = self.get_argument(field, None)
         if value is None:
             return
-        if len(value) == 0:
+        if value == "":
             dest["memory_limit"] = None
         else:
             try:
@@ -529,7 +529,7 @@ class BaseHandler(CommonRequestHandler):
         method = self.get_argument("method")
 
         # If a password is given, we use that.
-        if len(password) > 0:
+        if password != "":
             dest["password"] = hash_password(password, method)
         # If the password was set and was hashed, and the admin kept
         # the method unchanged and didn't specify anything, they must
