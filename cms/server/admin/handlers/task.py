@@ -227,7 +227,7 @@ class AddStatementHandler(BaseHandler):
         task = self.safe_get_item(Task, task_id)
 
         language = self.get_argument("language", "")
-        if language != "":
+        if language == "":
             self.service.add_notification(
                 make_datetime(),
                 "No language code specified",
