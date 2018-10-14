@@ -85,6 +85,7 @@ class FileCacherBackend(metaclass=ABCMeta):
 
     """
 
+    @abstractmethod
     def get_file(self, digest):
         """Retrieve a file from the storage.
 
