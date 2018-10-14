@@ -19,8 +19,7 @@
 """Tests for the Batch task type."""
 
 import unittest
-
-from mock import MagicMock, call, ANY
+from unittest.mock import MagicMock, call, ANY
 
 from cms.db import File, Manager, Executable
 from cms.grading.Job import CompilationJob, EvaluationJob
