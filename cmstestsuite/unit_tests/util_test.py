@@ -20,8 +20,7 @@
 
 import netifaces
 import unittest
-
-from mock import Mock
+from unittest.mock import Mock
 
 import cms.util
 from cms import Address, ServiceCoord, \
