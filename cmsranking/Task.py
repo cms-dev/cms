@@ -81,9 +81,9 @@ class Task(Entity):
             assert isinstance(data['order'], int), \
                 "Field 'order' isn't an integer"
         except KeyError as exc:
-            raise InvalidData("Field %s is missing" % exc.message)
+            raise InvalidData("Field %s is missing" % exc)
         except AssertionError as exc:
-            raise InvalidData(exc.message)
+            raise InvalidData(str(exc))
 
     def set(self, data):
         self.validate(data)
