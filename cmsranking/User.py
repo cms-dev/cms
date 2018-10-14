@@ -55,9 +55,9 @@ class User(Entity):
                 isinstance(data['team'], str), \
                 "Field 'team' isn't a string (or null)"
         except KeyError as exc:
-            raise InvalidData("Field %s is missing" % exc.message)
+            raise InvalidData("Field %s is missing" % exc)
         except AssertionError as exc:
-            raise InvalidData(exc.message)
+            raise InvalidData(str(exc))
 
     def set(self, data):
         self.validate(data)

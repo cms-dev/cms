@@ -93,7 +93,7 @@ class Store:
             logger.error("Invalid JSON", exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
         except InvalidData as exc:
-            logger.error(exc.message, exc_info=False,
+            logger.error(str(exc), exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
 
     def add_create_callback(self, callback):
@@ -231,8 +231,7 @@ class Store:
                     item.key = key
                     item_dict[key] = item
                 except InvalidData as exc:
-                    exc.message = "[entity %s] %s" % (key, exc)
-                    exc.args = exc.message,
+                    raise InvalidData("[entity %s] %s" % (key, exc))
                     raise exc
 
             for key, value in item_dict.items():

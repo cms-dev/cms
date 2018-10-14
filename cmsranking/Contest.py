@@ -62,9 +62,9 @@ class Contest(Entity):
             assert data['score_precision'] >= 0, \
                 "Field 'score_precision' is negative"
         except KeyError as exc:
-            raise InvalidData("Field %s is missing" % exc.message)
+            raise InvalidData("Field %s is missing" % exc)
         except AssertionError as exc:
-            raise InvalidData(exc.message)
+            raise InvalidData(str(exc))
 
     def set(self, data):
         self.validate(data)
