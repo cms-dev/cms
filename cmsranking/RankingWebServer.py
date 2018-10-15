@@ -173,7 +173,7 @@ class StoreHandler:
             else:
                 self.store.update(key, data)
         except InvalidData:
-            logger.warning("Invalid data.", exc_info=True,
+            logger.warning("Invalid data.", exc_info=False,
                            extra={'location': request.url,
                                   'details': pprint.pformat(data)})
             raise BadRequest()
@@ -202,7 +202,7 @@ class StoreHandler:
         try:
             self.store.merge_list(data)
         except InvalidData:
-            logger.warning("Invalid data.", exc_info=True,
+            logger.warning("Invalid data.", exc_info=False,
                            extra={'location': request.url,
                                   'details': pprint.pformat(data)})
             raise BadRequest()

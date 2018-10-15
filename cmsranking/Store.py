@@ -231,7 +231,7 @@ class Store:
                     item.key = key
                     item_dict[key] = item
                 except InvalidData as exc:
-                    raise InvalidData("[entity %s] %s" % (key, exc)) from exc
+                    raise InvalidData("[entity %s] %s" % (key, exc))
 
             for key, value in item_dict.items():
                 is_new = key not in self._store
