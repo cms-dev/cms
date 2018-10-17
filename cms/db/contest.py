@@ -8,6 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -109,6 +110,12 @@ class Contest(Base):
         Boolean,
         nullable=False,
         default=True)
+
+    # Whether the registration of new users is enabled.
+    allow_registration = Column(
+        Boolean,
+        nullable=False,
+        default=False)
 
     # Whether to enforce that the IP address of the request matches
     # the IP address or subnet specified for the participation (if

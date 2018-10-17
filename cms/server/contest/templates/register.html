@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ contest.description }}
+{% endblock title %}
+
+{% block body %}
+
+<script>
+function validatePassword() {
+    if (document.getElementById("password").value !== document.getElementById("password_confirm").value) {
+        alert("The passwords do not match!");
+    } else {
+        document.forms["signup"].submit();
+    }
+}
+</script>
+
+<div class="login_container">
+    <div class="login_box hero-unit" style="margin-top: -260px;">
+
+    {% if username is defined %}
+
+        <h1>{% trans %}New User{% endtrans %}</h1>
+
+        <p>The user was created successfully!</p>
+
+        <p>Your assigned username is:</p>
+
+        <p style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
+            {{ username }}
+        </p>
+
+        <p>The password you chose was securely stored.</p>
+
+        <a href="{{ contest_url() }}" class="btn btn-success btn-large">Back to login</a>
+
+    {% else %}
+
+        <h1>{% trans %}New User{% endtrans %}</h1>
+        <p>Please fill in the fields to register</p>
+        <form name="signup" class="form-horizontal" action="{{ contest_url("register") }}" method="POST" onsubmit="event.preventDefault(); validatePassword()">
+            {{ xsrf_form_html|safe }}
+            {% set next_page = handler.get_argument("next", none) %}
+            {% if next_page is not none %}
+            <input type="hidden" name="next" value="{{ next_page }}">
+            {% endif %}
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="first_name">First Name</label>
+                    <div class="controls">
+                        <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="first_name" id="first_name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="last_name">Last Name</label>
+                    <div class="controls">
+                        <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="last_name" id="last_name">
+                    </div>
+                </div>
+
+                {% if teams %}
+                <div class="control-group">
+                    <label class="control-label" for="team">Representing</label>
+                    <div class="controls">
+                        <select id="team" name="team">
+                        {% for t in teams %}
+                            <option value="{{ t.code }}">{{ t.name }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+
+                <hr>
+
+                <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                        <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password" id="password">
+                        <span class="help-block">Must be 6 characters or more.</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="password_confirm">Confirm Password</label>
+                    <div class="controls">
+                        <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password_confirm" id="password_confirm">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+
+    {% endif %}
+
+    </div>
+</div>
+
+{% endblock body %}

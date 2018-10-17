@@ -29,6 +29,7 @@ from .communication import \
 from .main import \
     LoginHandler, \
     LogoutHandler, \
+    RegisterHandler, \
     StartHandler, \
     NotificationsHandler, \
     PrintingHandler, \
@@ -59,6 +60,7 @@ HANDLERS = [
 
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/register", RegisterHandler),
     (r"/start", StartHandler),
     (r"/notifications", NotificationsHandler),
     (r"/printing", PrintingHandler),

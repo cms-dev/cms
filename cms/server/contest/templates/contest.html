@@ -70,7 +70,7 @@ $(document).ready(function () {
                         {% trans first_name=user.first_name,
                                  last_name=user.last_name,
                                  username=user.username %}
-                            Logged in as <strong>{{ first_name }} {{ last_name }}</strong> <em>({{ username }})</em>
+                            Logged in as <strong><abbr style="border-bottom: none;" title="{{ last_name }}">{{ first_name }}</abbr></strong> <em>({{ username }})</em>
                         {% endtrans %}
                     </p>
 {% endif %}
@@ -117,6 +117,11 @@ $(document).ready(function () {
                         </div>
                     </fieldset>
                 </form>
+                {% if contest.allow_registration %}
+                <p style="margin: 9px 0 0;">
+                    {% trans %}Don't have an account?{% endtrans %} <a href="{{ contest_url('register') }}">{% trans %}Register{% endtrans %}</a>
+                </p>
+                {% endif %}
             </div>
         </div>
 {% else %}

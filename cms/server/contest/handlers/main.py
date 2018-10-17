@@ -30,17 +30,21 @@
 import ipaddress
 import json
 import logging
+import string
 
 import tornado.web
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from cms import config
-from cms.db import PrintJob
+from cms.db import PrintJob, User, Participation, Team
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
+from cmscommon.crypto import hash_password
 from cmscommon.datetime import make_datetime, make_timestamp
 from .contest import ContestHandler
 from ..phase_management import actual_phase_required
@@ -61,6 +65,87 @@ class MainHandler(ContestHandler):
     @multi_contest
     def get(self):
         self.render("overview.html", **self.r_params)
+
+
+class RegisterHandler(ContestHandler):
+    """Register handler.
+    """
+
+    TRUNCATE_FIRSTNAME_AT = 1
+    TRUNCATE_LASTNAME_AT = 10
+
+    @multi_contest
+    def post(self):
+        try:
+            first_name = "".join(self.get_argument("first_name").split())\
+                           .title()
+            last_name = "".join(self.get_argument("last_name").split())\
+                          .title()
+            password = self.get_argument("password")
+
+            filtered_first_name = "".join(filter(
+                                          lambda c: c in string.ascii_lowercase,
+                                          first_name.lower()))
+            filtered_last_name = "".join(filter(
+                                         lambda c: c in string.ascii_lowercase,
+                                         last_name.lower()))
+
+            assert 1 <= len(filtered_first_name) <= 50
+            assert 1 <= len(filtered_last_name) <= 50
+            assert 6 <= len(password) <= 50
+        except (tornado.web.MissingArgumentError, AssertionError) as e:
+            raise tornado.web.HTTPError(400)
+
+        # Override password with its hash
+        password = hash_password(password)
+
+        # If we have teams, we assume that the 'team' field is mandatory
+        if self.sql_session.query(Team).count() > 0:
+            try:
+                team_code = self.get_argument("team")
+                team = self.sql_session.query(Team)\
+                           .filter(Team.code == team_code)\
+                           .one()
+            except (tornado.web.MissingArgumentError, NoResultFound) as e:
+                raise tornado.web.HTTPError(400)
+        else:
+            team = None
+
+        # Assign username
+        username = "%s%s" % (filtered_first_name[:self.TRUNCATE_FIRSTNAME_AT],
+                             filtered_last_name[:self.TRUNCATE_LASTNAME_AT])
+        username = username.lower()
+
+        if len(username) < 1:
+            raise tornado.web.HTTPError(400)
+
+        # Disambiguate duplicate username if needed
+        tot_users = self.sql_session.query(User)\
+                        .filter(User.username.op('~')
+                                ("^" + username + "\d*$")).count()
+        if tot_users > 0:
+            username = username + str(tot_users)
+
+        # Store new user and participation
+        user = User(first_name, last_name, username, password=password)
+        self.sql_session.add(user)
+
+        participation = Participation(user=user, contest=self.contest,
+                                      team=team)
+        self.sql_session.add(participation)
+
+        self.sql_session.commit()
+
+        self.r_params["username"] = username
+        self.render("register.html", **self.r_params)
+
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration:
+            return tornado.web.HTTPError(403)
+
+        self.r_params["teams"] = self.sql_session.query(Team).all()
+        self.render("register.html", **self.r_params)
 
 
 class LoginHandler(ContestHandler):
