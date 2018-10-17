@@ -9,6 +9,7 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -98,6 +99,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "allow_user_tests")
             self.get_bool(attrs, "block_hidden_participations")
             self.get_bool(attrs, "allow_password_authentication")
+            self.get_bool(attrs, "allow_registration")
             self.get_bool(attrs, "ip_restriction")
             self.get_bool(attrs, "ip_autologin")
 

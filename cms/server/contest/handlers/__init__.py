@@ -8,7 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,6 +29,7 @@ from .communication import \
 from .main import \
     LoginHandler, \
     LogoutHandler, \
+    RegistrationHandler, \
     StartHandler, \
     NotificationsHandler, \
     PrintingHandler, \
@@ -59,6 +60,7 @@ HANDLERS = [
 
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/register", RegistrationHandler),
     (r"/start", StartHandler),
     (r"/notifications", NotificationsHandler),
     (r"/printing", PrintingHandler),

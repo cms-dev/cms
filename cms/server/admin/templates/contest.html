@@ -103,6 +103,15 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="If checked, contestants will be able to autonomously create a user account and a participation in the contest."></span>
+        <label for="allow_registration">Allow registration</label>
+      </td>
+      <td>
+        <input type="checkbox" id="allow_registration" name="allow_registration" {{ "checked" if contest.allow_registration else "" }}/>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="If true, contestants with an IP address specified for this contest will only be able to log in from that address."></span>
         <label for="ip_restriction">IP based login restriction</label>
       </td>
