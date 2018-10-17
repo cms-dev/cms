@@ -117,6 +117,11 @@ $(document).ready(function () {
                         </div>
                     </fieldset>
                 </form>
+                {% if contest.allow_registration %}
+                <p style="margin: 9px 0 0;">
+                    {% trans %}Don't have an account?{% endtrans %} <a href="{{ contest_url('register') }}">{% trans %}Register{% endtrans %}</a>
+                </p>
+                {% endif %}
             </div>
         </div>
 {% else %}

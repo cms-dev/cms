@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Contest Management System 1.4.dev0\n"
+"Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
+"POT-Creation-Date: 2018-12-08 22:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -478,6 +478,12 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
+msgid "Don't have an account?"
+msgstr ""
+
+msgid "Register"
+msgstr ""
+
 msgid "New message"
 msgstr ""
 
@@ -580,159 +586,6 @@ msgid ""
 " administrators."
 msgstr ""
 
-msgid "General information"
-msgstr ""
-
-msgid "The contest hasn't started yet."
-msgstr ""
-
-#, python-format
-msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-
-msgid "The contest is currently running."
-msgstr ""
-
-#, python-format
-msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-
-msgid "The contest has already ended."
-msgstr ""
-
-#, python-format
-msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
-msgstr ""
-
-msgid "The analysis mode hasn't started yet."
-msgstr ""
-
-#, python-format
-msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-
-msgid "The analysis mode is currently running."
-msgstr ""
-
-#, python-format
-msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-
-msgid "The analysis mode has already ended."
-msgstr ""
-
-#, python-format
-msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
-msgstr ""
-
-msgid "You have an infinite number of tokens."
-msgstr ""
-
-msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
-
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-
-msgid "You have a distinct set of tokens for each task."
-msgstr ""
-
-#, python-format
-msgid "You can find the rules for the %(type_pl)s on each task's description page."
-msgstr ""
-
-msgid "You have a set of tokens shared among all tasks."
-msgstr ""
-
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-
-#, python-format
-msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr ""
-
-#, python-format
-msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr ""
-
-#, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted"
-" time frame of %(per_user_time)s."
-msgstr ""
-
-msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr ""
-
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-
-msgid "By clicking on the button below you can start your time frame."
-msgstr ""
-
-#, python-format
-msgid "You started your time frame at %(start_time)s."
-msgstr ""
-
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of"
-" the contest, whatever comes first."
-msgstr ""
-
-#, python-format
-msgid "You started your time frame at %(start_time)s and you already finished it."
-msgstr ""
-
-msgid "There's nothing you can do now."
-msgstr ""
-
-msgid "You never started your time frame. Now it's too late."
-msgstr ""
-
-msgid "Start!"
-msgstr ""
-
-msgid "Task overview"
-msgstr ""
-
-msgid "Task"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "Time limit"
-msgstr ""
-
-msgid "Memory limit"
-msgstr ""
-
-msgid "Type"
-msgstr ""
-
-msgid "Files"
-msgstr ""
-
-msgid "Tokens"
-msgstr ""
-
-msgid "Yes"
-msgstr ""
-
-msgid "No"
-msgstr ""
-
 msgid "Print"
 msgstr ""
 
@@ -781,6 +634,45 @@ msgstr ""
 msgid "no print jobs yet"
 msgstr ""
 
+msgid "The passwords do not match!"
+msgstr ""
+
+msgid "This username is already taken, please choose a different one."
+msgstr ""
+
+msgid "New user"
+msgstr ""
+
+msgid "Please fill in the fields to register"
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Last name"
+msgstr ""
+
+msgid "Representing"
+msgstr ""
+
+msgid "Must be 6 characters or more."
+msgstr ""
+
+msgid "Confirm password"
+msgstr ""
+
+msgid "The user was created successfully!"
+msgstr ""
+
+msgid "Your username is:"
+msgstr ""
+
+msgid "The password you chose was stored securely."
+msgstr ""
+
+msgid "Back to login"
+msgstr ""
+
 msgid "Compilation output"
 msgstr ""
 
@@ -799,6 +691,12 @@ msgstr ""
 msgid "Standard error"
 msgstr ""
 
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
 msgid "None"
 msgstr ""
 
@@ -815,66 +713,6 @@ msgid "Wait..."
 msgstr ""
 
 msgid "No tokens"
-msgstr ""
-
-#, python-format
-msgid "%(name)s (%(short_name)s) <small>description</small>"
-msgstr ""
-
-msgid "no statement available"
-msgstr ""
-
-msgid "Download task statement"
-msgstr ""
-
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
-msgstr ""
-
-msgid "You can see (and download) all of them using the list on the right."
-msgstr ""
-
-msgid "Some suggested translations follow."
-msgstr ""
-
-#, python-format
-msgid "Statement in <b>%(lang)s</b>"
-msgstr ""
-
-#, python-format
-msgid "Statement in %(lang)s"
-msgstr ""
-
-#, python-format
-msgid "<b>%(lang)s</b>"
-msgstr ""
-
-#, python-format
-msgid "%(lang)s"
-msgstr ""
-
-msgid "Some details"
-msgstr ""
-
-msgid "Compilation commands"
-msgstr ""
-
-#, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a "
-"href=\"%(contest_root)s\">contest overview page</a>."
-msgstr ""
-
-msgid ""
-"Remember that to see the detailed result of a submission you need to use "
-"both a contest-token and a task-token."
-msgstr ""
-
-msgid "Attachments"
-msgstr ""
-
-msgid "unknown"
 msgstr ""
 
 msgid "loading..."
@@ -953,6 +791,9 @@ msgid "Score"
 msgstr ""
 
 msgid "Official"
+msgstr ""
+
+msgid "Files"
 msgstr ""
 
 msgid "Token"
