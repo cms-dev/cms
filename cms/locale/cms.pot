@@ -156,7 +156,7 @@ msgstr ""
 #, python-format
 msgid ""
 "Subject must be at most %(max_subject_length)d characters, content at most "
-"%(max_text_length)d.max_subject_length"
+"%(max_text_length)d."
 msgstr ""
 
 msgid "contest-token"

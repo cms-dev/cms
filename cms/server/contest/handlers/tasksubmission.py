@@ -84,8 +84,8 @@ class SubmitHandler(ContestHandler):
                 self.get_argument("language", None), official)
             self.sql_session.commit()
         except UnacceptableSubmission as e:
-            logger.info("Sent error: `%s' - `%s'", e.subject, e.text)
-            self.notify_error(e.subject, e.text)
+            logger.info("Sent error: `%s' - `%s'", e.subject, e.formatted_text)
+            self.notify_error(e.subject, e.text, e.text_params)
         else:
             self.service.evaluation_service.new_submission(
                 submission_id=submission.id)
