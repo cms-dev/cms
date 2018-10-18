@@ -210,7 +210,7 @@ class PrintingHandler(ContestHandler):
         except PrintingDisabled:
             raise tornado.web.HTTPError(404)
         except UnacceptablePrintJob as e:
-            self.notify_error(e.subject, e.text)
+            self.notify_error(e.subject, e.text, e.text_params)
         else:
             self.service.printing_service.new_printjob(printjob_id=printjob.id)
             self.notify_success(N_("Print job received"),

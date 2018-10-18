@@ -71,7 +71,7 @@ class QuestionHandler(ContestHandler):
         except QuestionsNotAllowed:
             raise tornado.web.HTTPError(404)
         except UnacceptableQuestion as e:
-            self.notify_error(e.subject, e.text)
+            self.notify_error(e.subject, e.text, e.text_params)
         else:
             self.notify_success(N_("Question received"),
                                 N_("Your question has been received, you "

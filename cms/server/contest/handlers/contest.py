@@ -264,19 +264,22 @@ class ContestHandler(BaseHandler):
             .offset(int(user_test_num) - 1) \
             .first()
 
-    def add_notification(self, subject, text, level):
-        self.service.add_notification(
-            self.current_user.user.username, self.timestamp,
-            self._(subject), self._(text), level)
+    def add_notification(self, subject, text, level, text_params=None):
+        subject = self._(subject)
+        text = self._(text)
+        if text_params is not None:
+            text %= text_params
+        self.service.add_notification(self.current_user.user.username,
+                                      self.timestamp, subject, text, level)
 
-    def notify_success(self, subject, text):
-        self.add_notification(subject, text, NOTIFICATION_SUCCESS)
+    def notify_success(self, subject, text, text_params=None):
+        self.add_notification(subject, text, NOTIFICATION_SUCCESS, text_params)
 
-    def notify_warning(self, subject, text):
-        self.add_notification(subject, text, NOTIFICATION_WARNING)
+    def notify_warning(self, subject, text, text_params=None):
+        self.add_notification(subject, text, NOTIFICATION_WARNING, text_params)
 
-    def notify_error(self, subject, text):
-        self.add_notification(subject, text, NOTIFICATION_ERROR)
+    def notify_error(self, subject, text, text_params=None):
+        self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
 
 
 class FileHandler(ContestHandler, FileHandlerMixin):
