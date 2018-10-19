@@ -115,9 +115,9 @@ class Score:
             self._last = self._submissions[s_id]
 
         if self._score_mode == SCORE_MODE_MAX:
-            score = max([0.0] +
-                        [submission.score
-                         for submission in self._submissions.values()])
+            score = max((submission.score
+                         for submission in self._submissions.values()),
+                        default=0.0)
         elif self._score_mode == SCORE_MODE_MAX_SUBTASK:
             scores_by_submission = (map(float, s.extra or [])
                                     for s in self._submissions.values())
