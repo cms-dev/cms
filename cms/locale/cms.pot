@@ -338,6 +338,85 @@ msgstr ""
 msgid "Executed"
 msgstr ""
 
+msgid "Too many submissions!"
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr ""
+
+msgid "Submissions too frequent!"
+msgstr ""
+
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr ""
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr ""
+
+msgid "Invalid archive format!"
+msgstr ""
+
+msgid "The submitted archive could not be opened."
+msgstr ""
+
+msgid "Invalid submission format!"
+msgstr ""
+
+msgid "Submission too big!"
+msgstr ""
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr ""
+
+msgid "Submission storage failed!"
+msgstr ""
+
+msgid "Too many tests!"
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr ""
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr ""
+
+msgid "Tests too frequent!"
+msgstr ""
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr ""
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr ""
+
+msgid "Invalid test format!"
+msgstr ""
+
+msgid "Test too big!"
+msgstr ""
+
+msgid "Input too big!"
+msgstr ""
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr ""
+
+msgid "Test storage failed!"
+msgstr ""
+
 msgid "Communication"
 msgstr ""
 
