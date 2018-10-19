@@ -4,6 +4,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -127,7 +128,7 @@ class Score(object):
                         [submission.score
                          for submission in itervalues(self._submissions)])
         elif self._score_mode == SCORE_MODE_MAX_SUBTASK:
-            scores_by_submission = (s.extra or []
+            scores_by_submission = (map(float, s.extra or [])
                                     for s in itervalues(self._submissions))
             scores_by_subtask = zip_longest(*scores_by_submission,
                                             fillvalue=0.0)
