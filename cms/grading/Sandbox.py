@@ -1086,15 +1086,15 @@ class IsolateSandbox(SandboxBase):
         for var, value in self.set_env.items():
             res += ["--env=%s=%s" % (var, value)]
         if self.fsize is not None:
-            # Isolate wants file sizes as KiB.
+            # Isolate wants file size as KiB.
             res += ["--fsize=%d" % (self.fsize // 1024)]
         if self.stdin_file is not None:
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
-            # Isolate wants memory sizes as KiB.
+            # Isolate wants stack size as KiB.
             res += ["--stack=%d" % (self.stack_space // 1024)]
         if self.address_space is not None:
-            # Isolate wants memory sizes as KiB.
+            # Isolate wants memory size as KiB.
             if self.cgroup:
                 res += ["--cg-mem=%d" % (self.address_space // 1024)]
             else:
