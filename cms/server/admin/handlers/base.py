@@ -433,7 +433,7 @@ class BaseHandler(CommonRequestHandler):
                 raise ValueError("Can't cast %s to int." % value)
             if not 0 < value:
                 raise ValueError("Invalid memory limit.")
-            # AWS displays the value in MiB, but it is stored in bytes.
+            # AWS displays the value as MiB, but it is stored as bytes.
             dest["memory_limit"] = value * 1024 * 1024
 
     def get_task_type(self, dest, name, params):

@@ -381,7 +381,7 @@ class Dataset(Base):
         nullable=False,
         default=False)
 
-    # Time and memory limits for every testcase.
+    # Time and memory limits (in seconds and bytes) for every testcase.
     time_limit = Column(
         Float,
         CheckConstraint("time_limit > 0"),
