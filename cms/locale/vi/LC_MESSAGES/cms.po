@@ -20,6 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
+"X-Generator: Poedit 1.8.9\n"
 
 msgid "N/A"
 msgstr "N/A"
@@ -91,7 +92,8 @@ msgid ""
 "in turn by an excessive use of C++ templates, for example."
 msgstr ""
 "Bài nộp của bạn đã bị ngắt bởi tín hiệu nêu trên. Lỗi này có thể do vượt quá "
-"giới hạn bộ nhớ cho quá trình biên dịch hoặc sử dụng quá nhiều template của C++."
+"giới hạn bộ nhớ cho quá trình biên dịch hoặc sử dụng quá nhiều template của "
+"C++."
 
 msgid "Output is correct"
 msgstr "Kết quả đúng"
@@ -146,9 +148,9 @@ msgid ""
 "memory usage visible in the submission details is the usage before the "
 "allocation that caused the signal."
 msgstr ""
-"Quá trình chấm bài bị ngắt. Hiện tượng này xảy ra có thể do sử dụng quá giới"
-"hạn bộ nhớ. Trong trường hợp đó, lượng bộ nhớ sử dụng được hiển thị là lượng"
-"bộ nhớ ngay trước thao tác cấp phát gây ra tín hiệu ngắt."
+"Quá trình chấm bài bị ngắt. Lỗi  này xảy ra có thể do sử dụng quá giới hạn "
+"bộ nhớ. Trong trường hợp đó, lượng bộ nhớ sử dụng được hiển thị là lượng bộ"
+"nhớ ngay trước thao tác cấp phát gây ra tín hiệu ngắt."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Chương trình chạy không thành công vì exitcode khác 0"
@@ -209,7 +211,7 @@ msgstr "Ban đầu, bạn không có %(type_pl)s nào."
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "Ban đầu, bạn có một %(type_pl)s."
+msgstr[0] "Ban đầu, bạn có một %(type_s)s."
 msgstr[1] "Ban đầu, bạn có %(gen_initial)d %(type_pl)s."
 
 #, python-format
@@ -221,19 +223,19 @@ msgstr[1] "Mỗi %(gen_interval)g phút "
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "bạn có thêm một %(type_pl)s, "
+msgstr[0] "bạn có thêm một %(type_s)s, "
 msgstr[1] "bạn có thêm %(gen_number)d %(type_pl)s, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] "tối đa là một %(type_pl)s."
+msgstr[0] "tối đa là một %(type_s)s."
 msgstr[1] "tối đa là %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "bạn có thêm một %(type_pl)s, "
+msgstr[0] "bạn có thêm một %(type_s)s, "
 msgstr[1] "bạn có thêm %(gen_number)d %(type_pl)s, "
 
 #, python-format
@@ -249,7 +251,7 @@ msgstr[1] "Bạn có thể sử dụng một %(type_s)s trong mỗi %(min_interv
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "và tổng cộng tối đa một %(type_pl)s."
+msgstr[0] "và tổng cộng tối đa một %(type_s)s."
 msgstr[1] "và tổng cộng tối đa %(max_number)d %(type_pl)s."
 
 #, python-format
@@ -261,7 +263,7 @@ msgstr[1] "Bạn có thể sử dụng một %(type_s)s trong mỗi %(min_interv
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "Bạn có thể sử dụng tổng cộng không quá một %(type_pl)s."
+msgstr[0] "Bạn có thể sử dụng tổng cộng không quá một %(type_s)s."
 msgstr[1] "Bạn có thể sử dụng tổng cộng không quá %(max_number)d %(type_pl)s."
 
 msgid "You have no limitations on how you use them."
@@ -743,7 +745,9 @@ msgstr ""
 
 #, python-format
 msgid "You started your time frame at %(start_time)s and you already finished it."
-msgstr "Bạn đã bắt đầu làm bài từ thời điểm %(start_time)s và đã hết thời gian quy định."
+msgstr ""
+"Bạn đã bắt đầu làm bài từ thời điểm %(start_time)s và đã hết thời gian quy"
+"định."
 
 msgid "There's nothing you can do now."
 msgstr "Hiện giờ bạn không thể làm gì được nữa."
