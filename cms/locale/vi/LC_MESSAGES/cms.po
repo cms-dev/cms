@@ -14,7 +14,7 @@ msgstr ""
 "Last-Translator: Trung Dang Doan Duc <bill081001@gmail.com>\n"
 "Language: vi\n"
 "Language-Team: Vietnamese\n"
-"Plural-Forms: nplurals=2; plural=(n==1 ? 0 : 1)\n"
+"Plural-Forms: nplurals=2; plural=(n==1 ? 0 : 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -48,7 +48,7 @@ msgid "Memory used"
 msgstr "Bộ nhớ"
 
 msgid "Score details temporarily unavailable."
-msgstr "Hiện không có điểm chi tiết"
+msgstr "Hiện không có điểm chi tiết."
 
 #, python-format
 msgid "Subtask %(index)s"
@@ -637,7 +637,7 @@ msgstr ""
 "%(stop_time)s."
 
 msgid "The analysis mode hasn't started yet."
-msgstr "Nộp bài không chính thức chưa bắt đầu"
+msgstr "Nộp bài không chính thức chưa bắt đầu."
 
 #, python-format
 msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
@@ -646,7 +646,7 @@ msgstr ""
 " thời điểm %(stop_time)s."
 
 msgid "The analysis mode is currently running."
-msgstr "Nộp bài không chính thức đang diễn ra"
+msgstr "Nộp bài không chính thức đang diễn ra."
 
 #, python-format
 msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
