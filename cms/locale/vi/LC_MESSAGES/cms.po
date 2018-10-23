@@ -91,8 +91,7 @@ msgid ""
 "in turn by an excessive use of C++ templates, for example."
 msgstr ""
 "Bài nộp của bạn đã bị ngắt bởi tín hiệu nêu trên. Lỗi này có thể do vượt quá "
-"giới hạn bộ nhớ cho quá trình biên dịch hoặc sử dụng quá nhiều template của C"
-"++."
+"giới hạn bộ nhớ cho quá trình biên dịch hoặc sử dụng quá nhiều template của C++."
 
 msgid "Output is correct"
 msgstr "Kết quả đúng"
@@ -833,6 +832,9 @@ msgstr "Tình trạng"
 
 msgid "Preparing..."
 msgstr "Đang chuẩn bị..."
+
+msgid "no print jobs yet"
+msgstr "chưa có yêu cầu in nào"
 
 msgid "Compilation output"
 msgstr "Thông báo từ trình biên dịch"
