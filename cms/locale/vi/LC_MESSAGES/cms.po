@@ -1,23 +1,60 @@
-# Vietnamese translations for CMS package.
-# Copyright © 2014 THE CMS'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the CMS package.
+# Vietnamese translations for Contest Management System.
+# Copyright (C) 2018 CMS development group
+# This file is distributed under the same license as the Contest Management
+# System project.
 # Khanh Do Ngoc <dongockhanh1997@gmail.com>, 2014.
 # Kien Nguyen Tien Trung <kc97ble@gmail.com>, 2017.
+# Trung Dang Doan Duc <bill081001@gmail.com>, 2018.
 
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-29 19:38+0000\n"
-"PO-Revision-Date: 2017-03-13 16:09+0800\n"
-"Last-Translator: Kien Nguyen Tien Trung <kc97ble@gmail.com>\n"
-"Language-Team: Vietnamese\n"
+"Project-Id-Version: Contest Management System 1.4.dev0\n"
+"Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
+"POT-Creation-Date: 2018-10-01 09:06+0100\n"
+"PO-Revision-Date: 2018-10-22 22:43+0700\n"
+"Last-Translator: Trung Dang Doan Duc <bill081001@gmail.com>\n"
 "Language: vi\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=2; plural=(n==1 ? 0 : 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
 "X-Generator: Poedit 1.8.9\n"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Not correct"
+msgstr "Sai"
+
+msgid "Correct"
+msgstr "Đúng"
+
+msgid "Partially correct"
+msgstr "Đúng một phần"
+
+msgid "#"
+msgstr "#"
+
+msgid "Outcome"
+msgstr "Kết quả"
+
+msgid "Details"
+msgstr "Chi tiết"
+
+msgid "Execution time"
+msgstr "Thời gian chạy"
+
+msgid "Memory used"
+msgstr "Bộ nhớ"
+
+msgid "Score details temporarily unavailable."
+msgstr "Hiện không có điểm chi tiết"
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "Subtask %(index)s"
 
 msgid "Compilation succeeded"
 msgstr "Biên dịch thành công"
@@ -32,7 +69,7 @@ msgid "Your submission did not compile correctly."
 msgstr "Quá trình biên dịch bài nộp của bạn không thành công."
 
 msgid "Compilation timed out"
-msgstr "Biên dịch quá lâu"
+msgstr "Biên dịch quá thời gian"
 
 msgid ""
 "Your submission exceeded the time limit while compiling. This might be "
@@ -55,8 +92,8 @@ msgid ""
 "in turn by an excessive use of C++ templates, for example."
 msgstr ""
 "Bài nộp của bạn đã bị ngắt bởi tín hiệu nêu trên. Lỗi này có thể do vượt quá "
-"giới hạn bộ nhớ cho quá trình biên dịch hoặc sử dụng quá nhiều template của C"
-"++."
+"giới hạn bộ nhớ cho quá trình biên dịch hoặc sử dụng quá nhiều template của "
+"C++."
 
 msgid "Output is correct"
 msgstr "Kết quả đúng"
@@ -81,11 +118,10 @@ msgid "Evaluation didn't produce file %s"
 msgstr "Không tìm thấy file %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
-"Bài nộp của bạn chạy thành công nhưng không ghi kết quả vào file được yêu cầu"
+msgstr "Bài nộp của bạn chạy thành công nhưng không ghi kết quả vào file được yêu cầu"
 
 msgid "Execution timed out"
-msgstr "Chạy quá lâu"
+msgstr "Chạy quá thời gian"
 
 msgid "Your submission used too much CPU time."
 msgstr "Bài nộp của bạn sử dụng quá nhiều thời gian CPU."
@@ -103,60 +139,24 @@ msgstr ""
 "bộ đệm. Lưu ý rằng trong trường hợp này, thời gian CPU được hiển thị có thể "
 "nhỏ hơn rất nhiều so với giới hạn thời gian."
 
-#, python-format
-msgid ""
-"Execution killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Chương trình bị ngắt bởi tín hiệu %s (có thể do vượt quá giới hạn bộ nhớ)"
+msgid "Execution killed (could be triggered by violating memory limits)"
+msgstr "Chương trình bị ngắt (có thể do vượt quá giới hạn bộ nhớ)"
 
 msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit. Note that if this is the "
-"reason, the memory usage visible in the submission details is the usage "
-"before the allocation that caused the signal."
+"The evaluation was killed by a signal. Among other things, this might be "
+"caused by exceeding the memory limit. Note that if this is the reason, the "
+"memory usage visible in the submission details is the usage before the "
+"allocation that caused the signal."
 msgstr ""
-"Bài nộp của bạn bị ngắt bởi tín hiệu nêu trên. Lỗi này có thể do sử dụng quá "
-"giới hạn bộ nhớ. Trong trường hợp đó, lượng bộ nhớ sử dụng được hiển thị là "
-"lượng bộ nhớ ngay trước thao tác cấp phát gây ra tín hiệu ngắt."
+"Quá trình chấm bài bị ngắt. Lỗi  này xảy ra có thể do sử dụng quá giới hạn "
+"bộ nhớ. Trong trường hợp đó, lượng bộ nhớ sử dụng được hiển thị là lượng bộ"
+"nhớ ngay trước thao tác cấp phát gây ra tín hiệu ngắt."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Chương trình chạy không thành công vì exitcode khác 0"
 
-msgid ""
-"Your submission failed because it exited with a return code different from 0."
+msgid "Your submission failed because it exited with a return code different from 0."
 msgstr "Bài nộp của bạn không thành công vì trả về exitcode khác 0."
-
-msgid "N/A"
-msgstr "N/A"
-
-#, python-format
-msgid "Subtask %(index)s"
-msgstr "Subtask %(index)s"
-
-msgid "Outcome"
-msgstr "Kết quả"
-
-msgid "Details"
-msgstr "Chi tiết"
-
-msgid "Execution time"
-msgstr "Thời gian chạy"
-
-msgid "Memory used"
-msgstr "Bộ nhớ"
-
-msgid "Not correct"
-msgstr "Sai"
-
-msgid "Correct"
-msgstr "Đúng"
-
-msgid "Partially correct"
-msgstr "Đúng một phần"
-
-msgid "Invalid files in submission"
-msgstr "Bài nộp chứa file không hợp lệ"
 
 msgid "Execution completed successfully"
 msgstr "Chạy thành công"
@@ -167,11 +167,16 @@ msgstr "Không cần biên dịch"
 msgid "File not submitted"
 msgstr "File chưa được nộp"
 
-msgid "loading..."
-msgstr "đang tải..."
+msgid "Question too long!"
+msgstr "Độ dài câu hỏi quá lớn!"
 
-msgid "unknown"
-msgstr "không xác định"
+#, python-format
+msgid ""
+"Subject must be at most %(max_subject_length)d characters, content at most "
+"%(max_text_length)d."
+msgstr ""
+"Tiêu đề có độ dài tối đa là %(max_subject_length)d kí tự, và nội dung có độ"
+"dài tối đa là %(max_text_length)d kí tự."
 
 msgid "contest-token"
 msgstr "contest-token"
@@ -206,7 +211,7 @@ msgstr "Ban đầu, bạn không có %(type_pl)s nào."
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "Ban đầu, bạn có một %(type_pl)s."
+msgstr[0] "Ban đầu, bạn có một %(type_s)s."
 msgstr[1] "Ban đầu, bạn có %(gen_initial)d %(type_pl)s."
 
 #, python-format
@@ -218,19 +223,19 @@ msgstr[1] "Mỗi %(gen_interval)g phút "
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "bạn có thêm một %(type_pl)s, "
+msgstr[0] "bạn có thêm một %(type_s)s, "
 msgstr[1] "bạn có thêm %(gen_number)d %(type_pl)s, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] "tối đa là một %(type_pl)s."
+msgstr[0] "tối đa là một %(type_s)s."
 msgstr[1] "tối đa là %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "bạn có thêm một %(type_pl)s, "
+msgstr[0] "bạn có thêm một %(type_s)s, "
 msgstr[1] "bạn có thêm %(gen_number)d %(type_pl)s, "
 
 #, python-format
@@ -246,7 +251,7 @@ msgstr[1] "Bạn có thể sử dụng một %(type_s)s trong mỗi %(min_interv
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "và tổng cộng tối đa một %(type_pl)s."
+msgstr[0] "và tổng cộng tối đa một %(type_s)s."
 msgstr[1] "và tổng cộng tối đa %(max_number)d %(type_pl)s."
 
 #, python-format
@@ -258,25 +263,11 @@ msgstr[1] "Bạn có thể sử dụng một %(type_s)s trong mỗi %(min_interv
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "Bạn có thể sử dụng tổng cộng không quá một %(type_pl)s."
+msgstr[0] "Bạn có thể sử dụng tổng cộng không quá một %(type_s)s."
 msgstr[1] "Bạn có thể sử dụng tổng cộng không quá %(max_number)d %(type_pl)s."
 
 msgid "You have no limitations on how you use them."
 msgstr "Bạn có thể tự do sử dụng chúng."
-
-msgid "Question too big!"
-msgstr "Độ dài câu hỏi quá lớn!"
-
-msgid "You have reached the question length limit."
-msgstr "Đã đạt đến độ dài tối đa cho phép đối với một câu hỏi."
-
-msgid "Question received"
-msgstr "Câu hỏi đã được tiếp nhận"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr ""
-"Câu hỏi của bạn đã được tiếp nhận, bạn sẽ được thông báo khi có câu trả lời."
 
 msgid "Too many print jobs!"
 msgstr "Quá nhiều yêu cầu in!"
@@ -304,27 +295,6 @@ msgstr "Không thể lưu trữ yêu cầu in!"
 msgid "Please try again."
 msgstr "Hãy thử lại."
 
-msgid "Print job received"
-msgstr "Yêu cầu in đã được tiếp nhận"
-
-msgid "Your print job has been received."
-msgstr "Yêu cầu in của bạn đã được tiếp nhận."
-
-msgid "Compiling..."
-msgstr "Đang biên dịch..."
-
-msgid "details"
-msgstr "chi tiết"
-
-msgid "Evaluating..."
-msgstr "Đang chấm..."
-
-msgid "Scoring..."
-msgstr "Đang tính điểm..."
-
-msgid "Evaluated"
-msgstr "Đã chấm xong"
-
 msgid "Token request discarded"
 msgstr "Yêu cầu sử dụng token không được chấp nhận"
 
@@ -338,40 +308,78 @@ msgstr ""
 "Yêu cầu sử dụng token không được chấp nhận do bạn đã sử dụng token cho bài "
 "nộp đó."
 
+msgid "Question received"
+msgstr "Đã nhận được câu hỏi"
+
+msgid "Your question has been received, you will be notified when it is answered."
+msgstr "Câu hỏi của bạn đã được tiếp nhận, bạn sẽ được thông báo khi có câu trả lời."
+
+msgid "Print job received"
+msgstr "Đã nhận được yêu cầu in"
+
+msgid "Your print job has been received."
+msgstr "Yêu cầu in của bạn đã được tiếp nhận."
+
+msgid "Submission received"
+msgstr "Đã nhận được bài nộp"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Bài nộp của bạn đã được tiếp nhận và đang được chấm."
+
+msgid "Compiling..."
+msgstr "Đang biên dịch..."
+
+msgid "Evaluating..."
+msgstr "Đang chấm..."
+
+msgid "Scoring..."
+msgstr "Đang tính điểm..."
+
+msgid "Evaluated"
+msgstr "Đã chấm xong"
+
 msgid "Token request received"
-msgstr "Yêu cầu sử dụng token đã được tiếp nhận"
+msgstr "Đã nhận được yêu cầu sử dụng token"
 
 msgid "Your request has been received and applied to the submission."
 msgstr "Yêu cầu của bạn đã được tiếp nhận và áp dụng vào bài nộp."
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho tất cả các bài."
+msgid "Test received"
+msgstr "Đã nhận được yêu cầu chạy thử"
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho bài này."
+msgid "Your test has been received and is currently being executed."
+msgstr "Yêu cầu chạy thử của bạn đã được tiếp nhận và đang được chạy."
+
+msgid "details"
+msgstr "chi tiết"
+
+msgid "Executing..."
+msgstr "Đang chạy..."
+
+msgid "Executed"
+msgstr "Đã chạy xong"
 
 msgid "Too many submissions!"
 msgstr "Quá nhiều bài nộp!"
 
 #, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "Với tất cả các bài, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho tất cả các bài."
 
 #, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr "Với bài này, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Bạn đã đạt đến giới hạn %d lần nộp cho bài này."
 
 msgid "Submissions too frequent!"
 msgstr "Thời gian nộp bài quá gần nhau!"
 
-msgid "Invalid submission format!"
-msgstr "Định dạng bài nộp không hợp lệ!"
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Với tất cả các bài, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Với bài này, khoảng cách giữa hai lần nộp tối thiểu là %d giây."
 
 msgid "Invalid archive format!"
 msgstr "Định dạng file nén không hợp lệ!"
@@ -379,15 +387,8 @@ msgstr "Định dạng file nén không hợp lệ!"
 msgid "The submitted archive could not be opened."
 msgstr "Không mở được file nén đã nộp."
 
-msgid "Cannot recognize the submission language."
-msgstr "Không nhận diện được ngôn ngữ sử dụng trong bài nộp."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Ngôn ngữ %s không được sử dụng trong kì thi này."
-
-msgid "Invalid submission!"
-msgstr "Bài nộp không hợp lệ!"
+msgid "Invalid submission format!"
+msgstr "Định dạng bài nộp không hợp lệ!"
 
 msgid "Submission too big!"
 msgstr "Kích thước bài nộp quá lớn!"
@@ -399,11 +400,8 @@ msgstr "Mỗi file mã nguồn có độ dài tối đa là %d byte."
 msgid "Submission storage failed!"
 msgstr "Không thể lưu trữ lại bài nộp!"
 
-msgid "Submission received"
-msgstr "Nộp bài thành công"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "Bài nộp của bạn đã được tiếp nhận và đang được chấm."
+msgid "Too many tests!"
+msgstr "Quá nhiều lần chạy thử!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
@@ -413,29 +411,19 @@ msgstr "Bạn đã đạt đến giới hạn %d lần chạy thử cho tất c�
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Bạn đã đạt đến giới hạn %d lần chạy thử cho bài này."
 
-msgid "Too many tests!"
-msgstr "Quá nhiều lần chạy thử!"
+msgid "Tests too frequent!"
+msgstr "Thời gian chạy thử quá gần nhau!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"Với tất cả các bài, khoảng cách giữa hai lần chạy thử tối thiểu là %d giây."
+msgstr "Với tất cả các bài, khoảng cách giữa hai lần chạy thử tối thiểu là %d giây."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
 msgstr "Với bài này, khoảng cách giữa hai lần chạy thử tối thiểu là %d giây."
 
-msgid "Tests too frequent!"
-msgstr "Thời gian chạy thử quá gần nhau!"
-
 msgid "Invalid test format!"
 msgstr "Định dạng yêu cầu chạy thử không hợp lệ!"
-
-msgid "Cannot recognize the user test language."
-msgstr "Không nhận diện được ngôn ngữ sử dụng trong yêu cầu chạy thử."
-
-msgid "Invalid test!"
-msgstr "Yêu cầu chạy thử không hợp lệ!"
 
 msgid "Test too big!"
 msgstr "Kích thước yêu cầu chạy thử quá lớn!"
@@ -448,19 +436,37 @@ msgid "The input file must be at most %d bytes long."
 msgstr "File dữ liệu vào có kích thước tối đa là %d byte."
 
 msgid "Test storage failed!"
-msgstr "Không thể lưu trữ yêu cầu chạy thử! "
+msgstr "Không thể lưu trữ yêu cầu chạy thử!"
 
-msgid "Test received"
-msgstr "Yêu cầu chạy thử đã được tiếp nhận"
+msgid "Communication"
+msgstr "Thông báo"
 
-msgid "Your test has been received and is currently being executed."
-msgstr "Yêu cầu chạy thử của bạn đã được tiếp nhận và đang được chạy."
+msgid "Announcements"
+msgstr "Thông báo"
 
-msgid "Executing..."
-msgstr "Đang chạy..."
+msgid "(no subject)"
+msgstr "(không có tiêu đề)"
 
-msgid "Executed"
-msgstr "Đã chạy xong"
+msgid "Questions"
+msgstr "Câu hỏi"
+
+msgid "Subject"
+msgstr "Tiêu đề"
+
+msgid "Text"
+msgstr "Nội dụng"
+
+msgid "Ask question"
+msgstr "Đặt câu hỏi"
+
+msgid "Reset"
+msgstr "Huỷ bỏ"
+
+msgid "no answer yet"
+msgstr "chưa có câu trả lời"
+
+msgid "Messages"
+msgstr "Tin nhắn"
 
 #, python-format
 msgid "Automatic (%(lang)s)"
@@ -474,7 +480,7 @@ msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
 msgstr ""
-"Đăng nhập dưới tên <strong>%(first_name)s %(last_name)s</strong> "
+"Đăng nhập dưới tên <strong>%(last_name)s %(first_name)s</strong> "
 "<em>(%(username)s)</em>"
 
 msgid "Failed to log in."
@@ -495,11 +501,8 @@ msgstr "Mật khẩu"
 msgid "Login"
 msgstr "Đăng nhập"
 
-msgid "Reset"
-msgstr "Hủy"
-
 msgid "New message"
-msgstr "Tin mới"
+msgstr "Tin nhắn mới"
 
 msgid "New announcement"
 msgstr "Thông báo mới"
@@ -517,6 +520,12 @@ msgstr "Kì thi bắt đầu sau:"
 msgid "Until contest ends:"
 msgstr "Kì thi kết thúc sau:"
 
+msgid "Until analysis starts:"
+msgstr "Nộp bài không chính thức bắt đầu sau:"
+
+msgid "Until analysis ends:"
+msgstr "Nộp bài không chính thức kết thúc sau:"
+
 msgid "Time left:"
 msgstr "Thời gian còn lại:"
 
@@ -525,9 +534,6 @@ msgstr "Thời gian của máy chủ:"
 
 msgid "Overview"
 msgstr "Tổng quan"
-
-msgid "Communication"
-msgstr "Thông báo"
 
 msgid "Statement"
 msgstr "Đề bài"
@@ -553,29 +559,8 @@ msgstr "được phát hành theo"
 msgid "GNU Affero General Public License"
 msgstr "Giấy phép Công cộng GNU Affero"
 
-msgid "Announcements"
-msgstr "Thông báo"
-
-msgid "(no subject)"
-msgstr "(không có tiêu đề)"
-
-msgid "Questions"
-msgstr "Câu hỏi"
-
-msgid "Subject"
-msgstr "Tiêu đề"
-
-msgid "Text"
-msgstr "Nội dung"
-
-msgid "Ask question"
-msgstr "Hỏi"
-
-msgid "no answer yet"
-msgstr "chưa có câu trả lời"
-
-msgid "Messages"
-msgstr "Tin nhắn"
+msgid "Choose a contest"
+msgstr "Chọn kì thi"
 
 msgid "Programming languages and libraries"
 msgstr "Ngôn ngữ lập trình và thư viện"
@@ -584,10 +569,9 @@ msgid "Standard Template Library"
 msgstr "Standard Template Library"
 
 msgid ""
-"The main Java class of the solution should have exactly the same name as the "
-"task."
-msgstr ""
-"Lớp chính trong một bài nộp bằng Java phải được đặt tên trùng với tên bài."
+"The main Java class of the solution should have exactly the same name as the"
+" task."
+msgstr "Lớp chính trong một bài nộp bằng Java phải được đặt tên trùng với tên bài."
 
 msgid "Submission details for compilation"
 msgstr "Chi tiết biên dịch bài nộp"
@@ -606,23 +590,23 @@ msgid "Error %(status_code)s"
 msgstr "Lỗi %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
-msgstr "Có lỗi xảy ra khi xử lí yêu cầu của bạn."
+msgstr "Đã có lỗi xảy ra khi xử lí yêu cầu của bạn."
 
 msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing "
-"the server with customized URLs) may be considered cheating and may lead to "
-"disqualification."
+"Note that attempts to tamper with Contest Management System (such as probing"
+" the server with customized URLs) may be considered cheating and may lead to"
+" disqualification."
 msgstr ""
-"Việc làm sai lệch quá trình hoạt động của Contest Management System (ví dụ "
-"thăm dò máy chủ với URL tuỳ chỉnh) có thể bị coi là gian lận và có thể dẫn "
-"tới huỷ bỏ quyền dự thi."
+"Việc làm sai lệch quá trình hoạt động của Contest Management System (ví dụ"
+" thăm dò máy chủ với URL tuỳ chỉnh) có thể bị coi là gian lận và có thể dẫn"
+" tới huỷ bỏ quyền dự thi."
 
 msgid ""
-"If you encountered this error during normal usage, please notify the contest "
-"administrators."
+"If you encountered this error during normal usage, please notify the contest"
+" administrators."
 msgstr ""
-"Nếu bạn gặp lỗi này khi đang sử dụng bình thường, hãy thông báo với ban tổ "
-"chức kì thi."
+"Nếu bạn gặp lỗi này khi đang sử dụng bình thường, hãy thông báo với ban tổ"
+" chức kì thi."
 
 msgid "General information"
 msgstr "Thông tin chung"
@@ -654,12 +638,38 @@ msgstr ""
 "Kì thi đã bắt đầu tại thời điểm %(start_time)s và kết thúc tại thời điểm "
 "%(stop_time)s."
 
+msgid "The analysis mode hasn't started yet."
+msgstr "Nộp bài không chính thức chưa bắt đầu"
+
+#, python-format
+msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr ""
+"Nộp bài không chính thức sẽ đầu tại thời điểm %(start_time)s và kết thúc "
+"tại thời điểm %(stop_time)s."
+
+msgid "The analysis mode is currently running."
+msgstr "Nộp bài không chính thức đang diễn ra"
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr ""
+"Nộp bài không chính thức đã bắt đầu tại thời điểm %(start_time)s và sẽ "
+"kết thúc tại thời điểm %(stop_time)s."
+
+msgid "The analysis mode has already ended."
+msgstr "Nộp bài không chính thức đã kết thúc."
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
+msgstr ""
+"Nộp bài không chính thức đã bắt đầu tại thời điểm %(start_time)s và kết "
+"thúc tại thời điểm %(stop_time)s."
+
 msgid "You have an infinite number of tokens."
 msgstr "Bạn có vô số token."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
-"Bạn có thể xem chi tiết chấm của một bài nộp bằng cách sử dụng một token."
+msgstr "Bạn có thể xem chi tiết chấm của một bài nộp bằng cách sử dụng một token."
 
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
@@ -672,10 +682,8 @@ msgid "You have a distinct set of tokens for each task."
 msgstr "Với mỗi bài, bạn có một bộ token khác nhau."
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on each task's description page."
-msgstr ""
-"Xem trang tổng quan của mỗi bài để biết về quy định sử dụng %(type_pl)s."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "Xem trang tổng quan của mỗi bài để biết về quy định sử dụng %(type_pl)s."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Bạn có một bộ token dùng chung cho tất cả các bài."
@@ -685,7 +693,7 @@ msgid ""
 "all tasks and a distinct set of <em>task-tokens</em> for each task."
 msgstr ""
 "Bạn có hai loại token: một bộ <em>contest-token</em> dùng chung cho tất cả "
-"các bài và mỗi bài có có một bộ <em>task-token</em>."
+"các bài và một bộ <em>task-token</em> cho mỗi bài riêng lẻ."
 
 msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
@@ -700,16 +708,15 @@ msgstr "Bạn có thể nộp tối đa %(submissions)s bài nộp trong kì thi
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr ""
-"Bạn có thể yêu cầu tối đa %(user_tests)s lần chạy thử trong kì thi này."
+msgstr "Bạn có thể yêu cầu tối đa %(user_tests)s lần chạy thử trong kì thi này."
 
 #, python-format
 msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
-"time frame of %(per_user_time)s."
+"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted"
+" time frame of %(per_user_time)s."
 msgstr ""
-"Mỗi thí sinh được dự thi (nộp bài) trong khoảng thời gian %(per_user_time)s "
-"liên tiếp."
+"Mỗi thí sinh được dự thi (nộp bài) trong khoảng thời gian %(per_user_time)s"
+" liên tiếp."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Bạn có thể bắt đầu tính giờ cho mình ngay sau khi kì thi bắt đầu."
@@ -719,7 +726,7 @@ msgid ""
 "until the end of the contest, whatever comes first."
 msgstr ""
 "Khi đã bắt đầu, bạn có thể nộp bài cho tới khi hết khoảng thời gian quy "
-"định, hoặc khi kì thi kết thúc, tuy theo sự kiện nào xảy ra trước."
+"định, hoặc khi kì thi kết thúc, tuỳ theo sự kiện nào xảy ra trước."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Nhấn vào nút dưới đây để bắt đầu tính giờ làm bài."
@@ -729,17 +736,16 @@ msgid "You started your time frame at %(start_time)s."
 msgstr "Bạn đã bắt đầu làm bài từ %(start_time)s."
 
 msgid ""
-"You can submit solutions until the end of the time frame or until the end of "
-"the contest, whatever comes first."
+"You can submit solutions until the end of the time frame or until the end of"
+" the contest, whatever comes first."
 msgstr ""
 "Bạn có thể nộp bài cho tới khi hết khoảng thời gian quy định, hoặc khi kì "
 "thi kết thúc, tuỳ theo sự kiện nào xảy ra trước."
 
 #, python-format
-msgid ""
-"You started your time frame at %(start_time)s and you already finished it."
+msgid "You started your time frame at %(start_time)s and you already finished it."
 msgstr ""
-"Bạn đã bắt đầu làm bài từ thời điểm %(start_time)s và đã hết thời gian quy "
+"Bạn đã bắt đầu làm bài từ thời điểm %(start_time)s và đã hết thời gian quy"
 "định."
 
 msgid "There's nothing you can do now."
@@ -809,8 +815,7 @@ msgstr "File (văn bản)"
 msgid "Submit"
 msgstr "Nộp"
 
-msgid ""
-"You cannot print anything any more as you have used up your printing quota."
+msgid "You cannot print anything any more as you have used up your printing quota."
 msgstr "Bạn đã sử dụng hết số lần in cho phép."
 
 msgid "Previous print jobs"
@@ -828,23 +833,23 @@ msgstr "Tên file"
 msgid "Status"
 msgstr "Tình trạng"
 
-msgid "no print jobs yet"
-msgstr "chưa có yêu cầu in nào"
-
 msgid "Preparing..."
 msgstr "Đang chuẩn bị..."
+
+msgid "no print jobs yet"
+msgstr "chưa có yêu cầu in nào"
 
 msgid "Compilation output"
 msgstr "Thông báo từ trình biên dịch"
 
 msgid "Compilation outcome:"
-msgstr "Kết quả biên dịch"
+msgstr "Kết quả biên dịch:"
 
 msgid "Compilation time:"
-msgstr "Thời gian biên dịch"
+msgstr "Thời gian biên dịch:"
 
 msgid "Memory used:"
-msgstr "Bộ nhớ:"
+msgstr "Bộ nhớ đã dùng:"
 
 msgid "Standard output"
 msgstr "Luồng ra chuẩn"
@@ -883,7 +888,7 @@ msgstr "Tải xuống đề bài"
 msgid ""
 "The statement for this task is available in multiple versions, in different "
 "languages."
-msgstr "Bài này có nhiều phiên bản đề bài, dưới nhiều ngôn ngữ khác nhau."
+msgstr "Bài này có nhiều phiên bản đề bài, bằng nhiều ngôn ngữ khác nhau."
 
 msgid "You can see (and download) all of them using the list on the right."
 msgstr "Bạn có thể xem (và tải xuống) sử dụng danh sách bên phải."
@@ -893,11 +898,11 @@ msgstr "Một số bản dịch gợi ý."
 
 #, python-format
 msgid "Statement in <b>%(lang)s</b>"
-msgstr "Đề bài theo ngôn ngữ <b>%(lang)s</b>"
+msgstr "Đề bài bằng ngôn ngữ <b>%(lang)s</b>"
 
 #, python-format
 msgid "Statement in %(lang)s"
-msgstr "Đề bài theo ngôn ngữ %(lang)s"
+msgstr "Đề bài bằng ngôn ngữ %(lang)s"
 
 #, python-format
 msgid "<b>%(lang)s</b>"
@@ -915,28 +920,51 @@ msgstr "Lệnh biên dịch"
 
 #, python-format
 msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
-"\">contest overview page</a>."
+"You can find the rules for the %(type_pl)s on the <a "
+"href=\"%(contest_root)s\">contest overview page</a>."
 msgstr ""
 "Bạn có thể đọc quy định về %(type_pl)s tại <a href=\"%(contest_root)s/\">trang "
 "tổng quan kì thi</a>."
 
 msgid ""
-"Remember that to see the detailed result of a submission you need to use both "
-"a contest-token and a task-token."
+"Remember that to see the detailed result of a submission you need to use "
+"both a contest-token and a task-token."
 msgstr ""
-"Chú ý rằng để xem chi tiết chấm của một bài nộp bạn cần sử dụng một contest-"
-"token và một task-token."
+"Chú ý rằng để xem chi tiết chấm của một bài nộp bạn cần sử dụng một "
+"contest-token và một task-token."
 
 msgid "Attachments"
 msgstr "Đính kèm"
+
+msgid "unknown"
+msgstr "không xác định"
+
+msgid "loading..."
+msgstr "đang tải..."
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "<small>Bài nộp</small> %(name)s (%(short_name)s)"
 
+msgid "Score:"
+msgstr "Điểm:"
+
+msgid "Public score:"
+msgstr "Điểm công khai:"
+
+msgid "Score of tokened submissions:"
+msgstr "Điểm của các bài nộp đã dùng token:"
+
+msgid "Total score:"
+msgstr "Điểm:"
+
 msgid "Submit a solution"
 msgstr "Nộp bài"
+
+msgid "You may submit any subset of outputs in a single submission."
+msgstr ""
+"Bạn có thể nộp file kết quả bất kể số lượng và thứ tự trong "
+"một lần nộp duy nhất."
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
@@ -948,11 +976,14 @@ msgstr "submission.zip"
 msgid "Previous submissions"
 msgstr "Các bài nộp"
 
+msgid "Tokens are not allowed on this task."
+msgstr "Bạn không được sử dụng token cho bài này."
+
 msgid "Right now, you have infinite tokens available on this task."
 msgstr "Tại thời điểm này, với bài này, bạn có vô số token."
 
 msgid "Right now, you have one token available on this task."
-msgstr "Tại thời điểm này, với bài này, bạn có 1 token."
+msgstr "Tại thời điểm này, với bài này, bạn có một token."
 
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
@@ -985,6 +1016,9 @@ msgstr "Điểm tổng"
 
 msgid "Score"
 msgstr "Điểm"
+
+msgid "Official"
+msgstr "Chính thức"
 
 msgid "Token"
 msgstr "Token"
@@ -1026,5 +1060,3 @@ msgstr "Chi tiết chạy thử"
 msgid "Evaluation outcome"
 msgstr "Kết quả chấm"
 
-#~ msgid "All sources must be in the same language."
-#~ msgstr "Tất cả mã nguồn cần sử dụng chung một ngôn ngữ."
