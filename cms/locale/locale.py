@@ -223,7 +223,8 @@ class Translation:
             if n < self.PREFIX_FACTOR:
                 f = copy.copy(self.locale.decimal_formats[None])
                 # We need int because floor returns a float in py2.
-                d = int(2 - math.floor(math.log10(n)))
+                # if 1000 <= n < 1024 d can be negative, cap to 0 decimals
+                d = max(0, int(2 - math.floor(math.log10(n))))
                 f.frac_prec = (d, d)
                 return (self.gettext(unit)
                         % babel.numbers.format_decimal(n, format=f,
