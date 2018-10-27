@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -472,6 +473,8 @@ class TestFormatSize(unittest.TestCase):
                          "1,000 bytes")
         self.assertEqual(ENGLISH.format_size(1024),
                          "1.00 KiB")
+        self.assertEqual(ENGLISH.format_size(1000 * 1024),
+                         "1,000 KiB")
 
     def test_large(self):
         # Ensure larger units are used for larger values, with rounding
@@ -554,7 +557,7 @@ class TestTranslateMimetype(unittest.TestCase):
 
     @unittest.skipIf(not os.path.isfile(
         "/usr/share/locale/it/LC_MESSAGES/shared-mime-info.mo"),
-                     reason="need Italian shared-mime-info translation")
+        reason="need Italian shared-mime-info translation")
     def test_translate_mimetype(self):
         self.assertEqual(ENGLISH.translate_mimetype("PDF document"),
                          "PDF document")
