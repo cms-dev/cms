@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -471,15 +472,33 @@ class TestFormatSize(unittest.TestCase):
         self.assertEqual(ENGLISH.format_size(2),
                          "2 bytes")
 
-    def test_cutoff(self):
-        # Cutoff is at 1000, not 1024, as we use kilo, mega, ... rather
-        # than kibi, mebi, ...
+    def test_cutoff_kib(self):
         self.assertEqual(ENGLISH.format_size(999),
                          "999 bytes")
         self.assertEqual(ENGLISH.format_size(1000),
                          "1,000 bytes")
+        self.assertEqual(ENGLISH.format_size(1001),
+                         "1,001 bytes")
+        self.assertEqual(ENGLISH.format_size(1023),
+                         "1,023 bytes")
         self.assertEqual(ENGLISH.format_size(1024),
                          "1.00 KiB")
+        self.assertEqual(ENGLISH.format_size(1025),
+                         "1.00 KiB")
+
+    def test_cutoff_mib(self):
+        self.assertEqual(ENGLISH.format_size(999 * 1024),
+                         "999 KiB")
+        self.assertEqual(ENGLISH.format_size(1000 * 1024),
+                         "1,000 KiB")
+        self.assertEqual(ENGLISH.format_size(1001 * 1024),
+                         "1,001 KiB")
+        self.assertEqual(ENGLISH.format_size(1023 * 1024),
+                         "1,023 KiB")
+        self.assertEqual(ENGLISH.format_size(1024 * 1024),
+                         "1.00 MiB")
+        self.assertEqual(ENGLISH.format_size(1025 * 1024),
+                         "1.00 MiB")
 
     def test_large(self):
         # Ensure larger units are used for larger values, with rounding
@@ -505,13 +524,34 @@ class TestFormatSize(unittest.TestCase):
         self.assertEqual(FRENCH.format_size(2),
                          "2 octets")
 
-    def test_localized_cutoff(self):
+    def test_localized_cutoff_kib(self):
         self.assertEqual(FRENCH.format_size(999),
                          "999 octets")
         self.assertEqual(FRENCH.format_size(1000),
                          "1\N{NO-BREAK SPACE}000 octets")
+        self.assertEqual(FRENCH.format_size(1001),
+                         "1\N{NO-BREAK SPACE}001 octets")
+        self.assertEqual(FRENCH.format_size(1023),
+                         "1\N{NO-BREAK SPACE}023 octets")
         self.assertEqual(FRENCH.format_size(1024),
                          "1,00 Kio")
+        self.assertEqual(FRENCH.format_size(1025),
+                         "1,00 Kio")
+
+    def test_localized_cutoff_mib(self):
+        self.assertEqual(FRENCH.format_size(999 * 1024),
+                         "999 Kio")
+        self.assertEqual(FRENCH.format_size(1000 * 1024),
+                         "1\N{NO-BREAK SPACE}000 Kio")
+        self.assertEqual(FRENCH.format_size(1001 * 1024),
+                         "1\N{NO-BREAK SPACE}001 Kio")
+        self.assertEqual(FRENCH.format_size(1023 * 1024),
+                         "1\N{NO-BREAK SPACE}023 Kio")
+        self.assertEqual(FRENCH.format_size(1024 * 1024),
+                         "1,00 Mio")
+        self.assertEqual(FRENCH.format_size(1025 * 1024),
+                         "1,00 Mio")
+
 
     def test_localized_large(self):
         self.assertEqual(FRENCH.format_size(2.345 * 1000000),
