@@ -117,6 +117,10 @@ def find_version():
 class build_py_and_l10n(build_py):
     def run(self):
         self.run_command("compile_catalog")
+        # The build command of distutils/setuptools searches the tree
+        # and compiles a list of data files before run() is called and
+        # then stores that value. Hence we need to refresh it.
+        self.data_files = self._get_data_files()
         # Can't use super here as in Py2 it isn't a new-style class.
         build_py.run(self)
 
