@@ -522,14 +522,19 @@ def main():
                         help="override config file")
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop the data already stored")
+    parser.add_argument("-y", "--yes", action="store_true",
+                        help="do not require confirmation on dropping data")
     args = parser.parse_args()
 
     config = Config()
     config.load(args.config)
 
     if args.drop:
-        ans = input("Are you sure you want to delete directory %s? [y/N] " %
-                    config.lib_dir).strip().lower()
+        if args.yes:
+            ans = 'y'
+        else:
+            ans = input("Are you sure you want to delete directory %s? [y/N] " %
+                        config.lib_dir).strip().lower()
         if ans in ['y', 'yes']:
             print("Removing directory %s." % config.lib_dir)
             shutil.rmtree(config.lib_dir)
