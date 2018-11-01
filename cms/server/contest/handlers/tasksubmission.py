@@ -264,7 +264,9 @@ class SubmissionStatusHandler(ContestHandler):
                     sr.public_score, score_type.max_public_score,
                     sr.public_score_details, task.score_precision,
                     translation=self.translation)
-            if submission.token is not None:
+            if score_type.max_public_score < score_type.max_score \
+                    and (submission.token is not None
+                         or self.r_params["actual_phase"] == 3):
                 data["max_score"] = \
                     round(score_type.max_score, task.score_precision)
                 data["score"] = \
@@ -297,22 +299,22 @@ class SubmissionDetailsHandler(ContestHandler):
         score_type = task.active_dataset.score_type_object
 
         details = None
-        if sr is not None:
-            if submission.tokened():
-                details = sr.score_details
+        if sr is not None and sr.scored():
+            # During analysis mode we show the full feedback regardless of
+            # what the task says.
+            is_analysis_mode = self.r_params["actual_phase"] == 3
+            if submission.tokened() or is_analysis_mode:
+                raw_details = sr.score_details
             else:
-                details = sr.public_score_details
+                raw_details = sr.public_score_details
 
-            if sr.scored():
-                feedback_level = task.feedback_level
-                # During analysis mode we show the full feedback regardless of
-                # what the task says.
-                if self.r_params["actual_phase"] == 3:
-                    feedback_level = FEEDBACK_LEVEL_FULL
-                details = score_type.get_html_details(
-                    details, feedback_level, translation=self.translation)
+            if is_analysis_mode:
+                feedback_level = FEEDBACK_LEVEL_FULL
             else:
-                details = None
+                feedback_level = task.feedback_level
+
+            details = score_type.get_html_details(
+                raw_details, feedback_level, translation=self.translation)
 
         self.render("submission_details.html", sr=sr, details=details,
                     **self.r_params)
