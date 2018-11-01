@@ -54,9 +54,9 @@ class UserHandler(BaseHandler):
                 .all()
         self.r_params["unassigned_contests"] = \
             self.sql_session.query(Contest)\
-                .filter(not Contest.id.in_(
+                .filter(Contest.id.notin_(
                     self.sql_session.query(Participation.contest_id)
-                        .filter(Participation.user is user)
+                        .filter(Participation.user == user)
                         .all()))\
                 .all()
         self.render("user.html", **self.r_params)
