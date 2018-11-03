@@ -34,8 +34,8 @@
     <div class="main_statements">
         <p>
             {% trans %}The statement for this task is available in multiple versions, in different languages.{% endtrans %}
-            {% trans %}You can see (and download) all of them using the list on the right.{% endtrans %}
-            {% trans %}Some suggested translations follow.{% endtrans %}
+            {%+ trans %}You can see (and download) all of them using the list on the right.{% endtrans %}
+            {%+ trans %}Some suggested translations follow.{% endtrans %}
         </p>
     {% for statement in task.statements.values()|sort(attribute="language") %}
         {% if statement.language in task.primary_statements %}
@@ -152,7 +152,7 @@
 
         <p>
         {% trans %}Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token.{% endtrans %}
-        {% trans type_pl=_("contest-tokens"), contest_root=contest_url() %}You can find the rules for the {{ type_pl }} on the <a href="{{ contest_root }}">contest overview page</a>.{% endtrans %}
+        {%+ trans type_pl=_("contest-tokens"), contest_root=contest_url() %}You can find the rules for the {{ type_pl }} on the <a href="{{ contest_root }}">contest overview page</a>.{% endtrans %}
         </p>
     {% endif %}
     </td>
