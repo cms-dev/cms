@@ -82,17 +82,17 @@
 
         <p>
         {% trans %}You can see the detailed result of a submission by using a token on it.{% endtrans %}
-        {% trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
+        {%+ trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
         </p>
     {% elif tokens_contest == TOKEN_MODE_INFINITE %}
         <p>
         {% trans %}You have a distinct set of tokens for each task.{% endtrans %}
-        {% trans type_pl=_("tokens") %}You can find the rules for the {{ type_pl }} on each task's description page.{% endtrans %}
+        {%+ trans type_pl=_("tokens") %}You can find the rules for the {{ type_pl }} on each task's description page.{% endtrans %}
         </p>
 
         <p>
         {% trans %}You can see the detailed result of a submission by using a token on it.{% endtrans %}
-        {% trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
+        {%+ trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
         </p>
     {% elif tokens_tasks == TOKEN_MODE_INFINITE %}
         <p>
@@ -102,7 +102,7 @@
 
         <p>
         {% trans %}You can see the detailed result of a submission by using a token on it.{% endtrans %}
-        {% trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
+        {%+ trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
         </p>
     {% else %}
         <p>
@@ -113,7 +113,7 @@
 
         <p>
         {% trans %}You can see the detailed result of a submission by using two tokens on it, one of each type.{% endtrans %}
-        {% trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
+        {%+ trans %}Your score for each task will be the maximum among the tokened submissions and the last one.{% endtrans %}
         </p>
     {% endif %}
 {% endif %}
@@ -142,23 +142,23 @@
             <p>
     {% if actual_phase == -2 %}
         {% trans %}As soon as the contest starts you can choose to start your time frame.{% endtrans %}
-        {% trans %}Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.{% endtrans %}
+        {%+ trans %}Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.{% endtrans %}
     {% elif actual_phase == -1 %}
         {% trans %}By clicking on the button below you can start your time frame.{% endtrans %}
-        {% trans %}Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.{% endtrans %}
+        {%+ trans %}Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.{% endtrans %}
     {% elif actual_phase == 0 %}
         {% trans start_time=participation.starting_time|format_datetime_smart %}You started your time frame at {{ start_time }}.{% endtrans %}
-        {% trans %}You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.{% endtrans %}
+        {%+ trans %}You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first.{% endtrans %}
     {% elif actual_phase == +1 %}
         {% trans start_time=participation.starting_time|format_datetime_smart %}You started your time frame at {{ start_time }} and you already finished it.{% endtrans %}
-        {% trans %}There's nothing you can do now.{% endtrans %}
+        {%+ trans %}There's nothing you can do now.{% endtrans %}
     {% elif actual_phase == +2 %}
         {% if participation.starting_time is none %}
             {% trans %}You never started your time frame. Now it's too late.{% endtrans %}
         {% else %}
             {% trans start_time=participation.starting_time|format_datetime_smart %}You started your time frame at {{ start_time }} and you already finished it.{% endtrans %}
         {% endif %}
-        {% trans %}There's nothing you can do now.{% endtrans %}
+        {%+ trans %}There's nothing you can do now.{% endtrans %}
     {% endif %}
             </p>
 
