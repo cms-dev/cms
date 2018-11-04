@@ -34,6 +34,7 @@ import pwd
 import shutil
 import subprocess
 import sys
+import multiprocessing
 from glob import glob
 
 
@@ -195,11 +196,10 @@ def build_isolate():
     assert_not_root()
 
     print("===== Compiling isolate")
-    os.chdir("isolate")
     # We make only the executable isolate, otherwise the tool a2x
     # is needed and we have to add more compilation dependencies.
-    subprocess.call(["make", "isolate"])
-    os.chdir("..")
+    ncpu = multiprocessing.cpu_count()
+    subprocess.check_call(["make", "-C", "isolate", "-j%d" % ncpu, "isolate"])
 
 
 def install_isolate():
@@ -305,9 +305,8 @@ def install():
         build()
     else:
         # Run build() command as not root
-        if subprocess.call(["sudo", "-E", "-u", real_user,
-                            sys.executable, sys.argv[0], "build"]):
-            exit(1)
+        subprocess.check_call(["sudo", "-E", "-u", real_user,
+                               sys.executable, sys.argv[0], "build"])
 
     install_isolate()
 
@@ -344,7 +343,7 @@ def install():
         print("===== Adding yourself to the %s group" % CMSUSER)
         if ask("Type Y if you want me to automatically add "
                "\"%s\" to the %s group: " % (real_user, CMSUSER)):
-            subprocess.call(["usermod", "-a", "-G", CMSUSER, real_user])
+            subprocess.check_call(["usermod", "-a", "-G", CMSUSER, real_user])
             print("""
 ###########################################################################
 ###                                                                     ###
