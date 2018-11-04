@@ -996,6 +996,13 @@ td.token_rules p:last-child {
     width: 100px;
 }
 
+/** Printing interface */
+
+#printjob_list tbody tr td.no_printjobs {
+    font-style: italic;
+    text-align: center !important;
+}
+
 /* Contest selection page */
 
 .contest-list {
