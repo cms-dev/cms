@@ -25,22 +25,36 @@
 
 <form action="{{ url("contest", contest.id, "tasks") }}" method="POST">
   {{ xsrf_form_html|safe }}
-  Edit selected task:
-  <input type="submit" name="operation"
-{% if not admin.permission_all %}
-         disabled
-{% endif %}
-         value="Move up" />
-  <input type="submit" name="operation"
-{% if not admin.permission_all %}
-         disabled
-{% endif %}
-         value="Move down" />
+  Remove selected task from the contest:
   <input type="submit" name="operation"
 {% if not admin.permission_all %}
          disabled
 {% endif %}
          value="Remove from contest" />
+
+  <br>
+
+  Move selected task:
+  <input type="submit" name="operation"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         value="to the top" />
+  <input type="submit" name="operation"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         value="up by 1" />
+  <input type="submit" name="operation"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         value="down by 1" />
+  <input type="submit" name="operation"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         value="to the bottom" />
   <table class="bordered">
     <thead>
       <tr>

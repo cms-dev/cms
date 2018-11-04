@@ -33,8 +33,10 @@ from .base import BaseHandler, require_permission
 
 class ContestTasksHandler(BaseHandler):
     REMOVE_FROM_CONTEST = "Remove from contest"
-    MOVE_UP = "Move up"
-    MOVE_DOWN = "Move down"
+    MOVE_UP = "up by 1"
+    MOVE_DOWN = "down by 1"
+    MOVE_TOP = "to the top"
+    MOVE_BOTTOM = "to the bottom"
 
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id):
@@ -60,7 +62,9 @@ class ContestTasksHandler(BaseHandler):
             assert operation in (
                 self.REMOVE_FROM_CONTEST,
                 self.MOVE_UP,
-                self.MOVE_DOWN
+                self.MOVE_DOWN,
+                self.MOVE_TOP,
+                self.MOVE_BOTTOM
             ), "Please select a valid operation"
         except Exception as error:
             self.service.add_notification(
@@ -71,20 +75,24 @@ class ContestTasksHandler(BaseHandler):
         task = self.safe_get_item(Task, task_id)
         task2 = None
 
-        if operation == self.REMOVE_FROM_CONTEST:
-            # Save the current task_num (position in the contest).
-            task_num = task.num
+        # Save the current task_num (position in the contest).
+        task_num = task.num
 
+        if operation == self.REMOVE_FROM_CONTEST:
             # Unassign the task to the contest.
             task.contest = None
             task.num = None  # not strictly necessary
+
+            self.sql_session.flush()
 
             # Decrease by 1 the num of every subsequent task.
             for t in self.sql_session.query(Task)\
                          .filter(Task.contest == self.contest)\
                          .filter(Task.num > task_num)\
+                         .order_by(Task.num)\
                          .all():
                 t.num -= 1
+                self.sql_session.flush()
 
         elif operation == self.MOVE_UP:
             task2 = self.sql_session.query(Task)\
@@ -97,6 +105,37 @@ class ContestTasksHandler(BaseHandler):
                         .filter(Task.contest == self.contest)\
                         .filter(Task.num == task.num + 1)\
                         .first()
+
+        elif operation == self.MOVE_TOP:
+            task.num = None
+            self.sql_session.flush()
+
+            # Increase by 1 the num of every previous task.
+            for t in self.sql_session.query(Task)\
+                         .filter(Task.contest == self.contest)\
+                         .filter(Task.num < task_num)\
+                         .order_by(Task.num.desc())\
+                         .all():
+                t.num += 1
+                self.sql_session.flush()
+
+            task.num = 0
+
+        elif operation == self.MOVE_BOTTOM:
+            task.num = None
+            self.sql_session.flush()
+
+            # Decrease by 1 the num of every subsequent task.
+            for t in self.sql_session.query(Task)\
+                         .filter(Task.contest == self.contest)\
+                         .filter(Task.num > task_num)\
+                         .order_by(Task.num)\
+                         .all():
+                t.num -= 1
+                self.sql_session.flush()
+
+            self.sql_session.flush()
+            task.num = len(self.contest.tasks) - 1
 
         # Swap task.num and task2.num, if needed
         if task2 is not None:
