@@ -86,13 +86,16 @@ class ContestTasksHandler(BaseHandler):
             # Unassign the task to the contest.
             task.contest = None
             task.num = None  # not strictly necessary
+            self.sql_session.flush()
 
             # Decrease by 1 the num of every subsequent task.
             for t in self.sql_session.query(Task)\
                          .filter(Task.contest == self.contest)\
                          .filter(Task.num > task_num)\
+                         .order_by(Task.num)\
                          .all():
                 t.num -= 1
+                self.sql_session.flush()
 
         elif operation == self.MOVE_UP:
             task2 = self.sql_session.query(Task)\
