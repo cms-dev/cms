@@ -166,7 +166,7 @@
         <form action="{{ contest_url("start") }}" method="POST" style="margin: 0">
             {{ xsrf_form_html|safe }}
             <input type="hidden" name="next" value="{{ contest_url() }}">
-            <button type="submit" class="btn btn-danger btn-large" style="width:100%;-moz-box-sizing:border-box;box-sizing:border-box;" type="submit">{% trans %}Start!{% endtrans %}</button>
+            <button type="submit" class="btn btn-danger btn-large" style="width:100%;-moz-box-sizing:border-box;box-sizing:border-box;">{% trans %}Start!{% endtrans %}</button>
         </form>
     {% endif %}
 
