@@ -69,6 +69,7 @@ class MainHandler(ContestHandler):
 
 class RegisterHandler(ContestHandler):
     """Register handler.
+
     """
 
     MAX_INPUT_LENGTH = 50
@@ -79,13 +80,11 @@ class RegisterHandler(ContestHandler):
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
-            raise tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(404)
 
         try:
-            first_name = "".join(self.get_argument("first_name").split())\
-                           .title()
-            last_name = "".join(self.get_argument("last_name").split())\
-                          .title()
+            first_name = "".join(self.get_argument("first_name").split())
+            last_name = "".join(self.get_argument("last_name").split())
             password = self.get_argument("password")
 
             filtered_first_name = "".join(filter(
@@ -149,7 +148,7 @@ class RegisterHandler(ContestHandler):
     @multi_contest
     def get(self):
         if not self.contest.allow_registration:
-            raise tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(404)
 
         self.r_params["teams"] = self.sql_session.query(Team)\
                                      .order_by(Team.name).all()
