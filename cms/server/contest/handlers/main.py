@@ -8,7 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -71,11 +71,16 @@ class RegisterHandler(ContestHandler):
     """Register handler.
     """
 
+    MAX_INPUT_LENGTH = 50
+    MIN_PASSWORD_LENGTH = 6
     TRUNCATE_FIRSTNAME_AT = 1
     TRUNCATE_LASTNAME_AT = 10
 
     @multi_contest
     def post(self):
+        if not self.contest.allow_registration:
+            raise tornado.web.HTTPError(403)
+
         try:
             first_name = "".join(self.get_argument("first_name").split())\
                            .title()
@@ -90,10 +95,16 @@ class RegisterHandler(ContestHandler):
                                          lambda c: c in string.ascii_lowercase,
                                          last_name.lower()))
 
-            assert 1 <= len(filtered_first_name) <= 50
-            assert 1 <= len(filtered_last_name) <= 50
-            assert 6 <= len(password) <= 50
-        except (tornado.web.MissingArgumentError, AssertionError) as e:
+            input_length_range = range(1, self.MAX_INPUT_LENGTH + 1)
+
+            if len(filtered_first_name) not in input_length_range:
+                raise ValueError()
+            if len(filtered_last_name) not in input_length_range:
+                raise ValueError()
+            if len(password) not in range(self.MIN_PASSWORD_LENGTH,
+                                          self.MAX_INPUT_LENGTH + 1):
+                raise ValueError()
+        except (tornado.web.MissingArgumentError, ValueError):
             raise tornado.web.HTTPError(400)
 
         # Override password with its hash
@@ -106,7 +117,7 @@ class RegisterHandler(ContestHandler):
                 team = self.sql_session.query(Team)\
                            .filter(Team.code == team_code)\
                            .one()
-            except (tornado.web.MissingArgumentError, NoResultFound) as e:
+            except (tornado.web.MissingArgumentError, NoResultFound):
                 raise tornado.web.HTTPError(400)
         else:
             team = None
@@ -114,10 +125,6 @@ class RegisterHandler(ContestHandler):
         # Assign username
         username = "%s%s" % (filtered_first_name[:self.TRUNCATE_FIRSTNAME_AT],
                              filtered_last_name[:self.TRUNCATE_LASTNAME_AT])
-        username = username.lower()
-
-        if len(username) < 1:
-            raise tornado.web.HTTPError(400)
 
         # Disambiguate duplicate username if needed
         tot_users = self.sql_session.query(User)\
@@ -142,9 +149,10 @@ class RegisterHandler(ContestHandler):
     @multi_contest
     def get(self):
         if not self.contest.allow_registration:
-            return tornado.web.HTTPError(403)
+            raise tornado.web.HTTPError(403)
 
-        self.r_params["teams"] = self.sql_session.query(Team).all()
+        self.r_params["teams"] = self.sql_session.query(Team)\
+                                     .order_by(Team.name).all()
         self.render("register.html", **self.r_params)
 
 
