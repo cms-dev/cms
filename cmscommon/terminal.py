@@ -3,6 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
+# Copyright © 2018 Luca Chiodini <luca@chiodini.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -119,17 +120,18 @@ def move_cursor(direction, amount=1, stream=sys.stdout, erase=False):
     """
     if stream.isatty():
         if direction == directions.UP:
-            print(curses.tparm(curses.tigetstr("cuu"), amount),
+            print(curses.tparm(curses.tigetstr("cuu"), amount).decode('ascii'),
                   file=stream, end='')
         elif direction == directions.DOWN:
-            print(curses.tparm(curses.tigetstr("cud"), amount),
+            print(curses.tparm(curses.tigetstr("cud"), amount).decode('ascii'),
                   file=stream, end='')
         elif direction == directions.LEFT:
-            print(curses.tparm(curses.tigetstr("cub"), amount),
+            print(curses.tparm(curses.tigetstr("cub"), amount).decode('ascii'),
                   file=stream, end='')
         elif direction == directions.RIGHT:
-            print(curses.tparm(curses.tigetstr("cuf"), amount),
+            print(curses.tparm(curses.tigetstr("cuf"), amount).decode('ascii'),
                   file=stream, end='')
         if erase:
-            print(curses.tparm(curses.tigetstr("el")), file=stream, end='')
+            print(curses.tparm(curses.tigetstr("el")).decode('ascii'),
+                  file=stream, end='')
         stream.flush()
