@@ -34,9 +34,9 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
 });
 
 function get_score_class (score, max_score) {
-    if (Number.parseFloat(score).toPrecision(6) <= 0) {
+    if (Number.parseFloat(score).toFixed(6) <= 0) {
         return "score_0";
-    } else if (Number.parseFloat(score).toPrecision(6) >= Number.parseFloat(max_score).toPrecision(6)) {
+    } else if (Number.parseFloat(score).toFixed(6) >= Number.parseFloat(max_score).toFixed(6)) {
         return "score_100";
     } else {
         return "score_0_100";
