@@ -20,7 +20,7 @@
 
 Used by DumpImporter and DumpUpdater.
 
-This updater is no-op as we only introduced a field that has a default.
+Add default value for Contest.allow_registration
 
 """
 
@@ -32,4 +32,10 @@ class Updater:
         self.objs = data
 
     def run(self):
+        for k, v in self.objs.items():
+            if k.startswith("_"):
+                continue
+            if v["_class"] == "Contest":
+                v["allow_registration"] = False
+
         return self.objs

@@ -30,8 +30,7 @@
 import ipaddress
 import json
 import logging
-import string
-
+import re
 import tornado.web
 
 from sqlalchemy.orm.exc import NoResultFound
@@ -85,23 +84,19 @@ class RegisterHandler(ContestHandler):
         try:
             first_name = "".join(self.get_argument("first_name").split())
             last_name = "".join(self.get_argument("last_name").split())
+            username = self.get_argument("username")
             password = self.get_argument("password")
 
-            filtered_first_name = "".join(filter(
-                                          lambda c: c in string.ascii_lowercase,
-                                          first_name.lower()))
-            filtered_last_name = "".join(filter(
-                                         lambda c: c in string.ascii_lowercase,
-                                         last_name.lower()))
-
-            input_length_range = range(1, self.MAX_INPUT_LENGTH + 1)
-
-            if len(filtered_first_name) not in input_length_range:
+            if not (1 <= len(first_name) <= self.MAX_INPUT_LENGTH):
                 raise ValueError()
-            if len(filtered_last_name) not in input_length_range:
+            if not (1 <= len(last_name) <= self.MAX_INPUT_LENGTH):
                 raise ValueError()
-            if len(password) not in range(self.MIN_PASSWORD_LENGTH,
-                                          self.MAX_INPUT_LENGTH + 1):
+            if not (1 <= len(username) <= self.MAX_INPUT_LENGTH):
+                raise ValueError()
+            if not re.match(r"^[A-Za-z0-9_-]+$", username):
+                raise ValueError()
+            if not (self.MIN_PASSWORD_LENGTH <= len(password) <=
+                    self.MAX_INPUT_LENGTH):
                 raise ValueError()
         except (tornado.web.MissingArgumentError, ValueError):
             raise tornado.web.HTTPError(400)
@@ -121,19 +116,15 @@ class RegisterHandler(ContestHandler):
         else:
             team = None
 
-        # Assign username
-        username = "%s%s" % (filtered_first_name[:self.TRUNCATE_FIRSTNAME_AT],
-                             filtered_last_name[:self.TRUNCATE_LASTNAME_AT])
-
-        # Disambiguate duplicate username if needed
+        # Check if the username is available
         tot_users = self.sql_session.query(User)\
-                        .filter(User.username.op('~')
-                                ("^" + username + "\d*$")).count()
-        if tot_users > 0:
-            username = username + str(tot_users)
+                        .filter(User.username == username).count()
+        if tot_users != 0:
+            # HTTP 409: Conflict
+            raise tornado.web.HTTPError(409)
 
         # Store new user and participation
-        user = User(first_name, last_name, username, password=password)
+        user = User(first_name, last_name, username, password)
         self.sql_session.add(user)
 
         participation = Participation(user=user, contest=self.contest,
@@ -142,8 +133,7 @@ class RegisterHandler(ContestHandler):
 
         self.sql_session.commit()
 
-        self.r_params["username"] = username
-        self.render("register.html", **self.r_params)
+        self.finish(username)
 
     @multi_contest
     def get(self):
