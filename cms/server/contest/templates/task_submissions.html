@@ -8,9 +8,9 @@
 
 {% block additional_js %}
 
-$(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
+$(document).on("click", ".submission_list tbody tr td.status .details", function (event) {
     var submission_id = $(this).parent().parent().attr("data-submission");
-    var modal = $("#submission_detail");
+    var modal = $(".submission_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
     modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function() {
@@ -82,7 +82,7 @@ update_score = function(score_elem, task_score_elem,
 };
 
 update_scores = function (submission_id, data) {
-    var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
+    var row = $(".submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").text(data["status_text"]);
     if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}
@@ -134,7 +134,7 @@ schedule_update_scores = function (submission_id) {
 };
 
 $(document).ready(function () {
-    $('#submission_list tbody tr[data-status][data-status!="{{ SubmissionResult.COMPILATION_FAILED }}"][data-status!="{{ SubmissionResult.SCORED }}"]').each(function (idx, elem) {
+    $('.submission_list tbody tr[data-status][data-status!="{{ SubmissionResult.COMPILATION_FAILED }}"][data-status!="{{ SubmissionResult.SCORED }}"]').each(function (idx, elem) {
         schedule_update_scores($(this).attr("data-submission"));
     });
 });
@@ -328,7 +328,7 @@ $(document).ready(function () {
 {% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
 
-<table id="submission_list" class="table table-bordered table-striped">
+<table class="submission_list table table-bordered table-striped">
 {% set num_cols = 2 %}
     <colgroup>
 {% if show_date %}
