@@ -73,8 +73,6 @@ class RegisterHandler(ContestHandler):
 
     MAX_INPUT_LENGTH = 50
     MIN_PASSWORD_LENGTH = 6
-    TRUNCATE_FIRSTNAME_AT = 1
-    TRUNCATE_LASTNAME_AT = 10
 
     @multi_contest
     def post(self):
