@@ -122,6 +122,18 @@
           {% endif %}
         </td>
       </tr>
+      {% if status == SubmissionResult.SCORED and st is defined %}
+      <tr>
+        <td>Score as seen by user</td>
+        <td>
+          {% if s.token is not none %}
+            {{ st.format_score(sr.score, st.max_score, sr.score_details, s.task.score_precision) }}
+          {% else %}
+            {{ st.format_score(sr.public_score, st.max_public_score, sr.public_score_details, s.task.score_precision) }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endif %}
       {% if sr is not none %}
       <tr>
         <td>Failures during compilation</td>
