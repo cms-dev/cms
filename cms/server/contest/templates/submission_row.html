@@ -25,7 +25,7 @@
     </td>
 {% if score_type is defined and score_type.max_public_score > 0 %}
     {% if status == SubmissionResult.SCORED %}
-    <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score) }}">
+    <td class="public_score {{ get_score_class(sr.public_score, score_type.max_public_score, task.score_precision) }}">
         {{ score_type.format_score(sr.public_score, score_type.max_public_score, sr.public_score_details, task.score_precision, translation=translation) }}
     </td>
     {% else %}
@@ -36,7 +36,7 @@
 {% endif %}
 {% if score_type is defined and score_type.max_public_score < score_type.max_score %}
     {% if status == SubmissionResult.SCORED and (s.token is not none or actual_phase == 3) %}
-    <td class="total_score {{ get_score_class(sr.score, score_type.max_score) }}">
+    <td class="total_score {{ get_score_class(sr.score, score_type.max_score, task.score_precision) }}">
         {{ score_type.format_score(sr.score, score_type.max_score, sr.score_details, task.score_precision, translation=translation) }}
     </td>
     {% else %}
