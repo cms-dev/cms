@@ -38,7 +38,8 @@ class TaskScoreMixin(DatabaseMixin):
     def setUp(self):
         super().setUp()
         self.participation = self.add_participation()
-        self.task = self.add_task(contest=self.participation.contest)
+        self.task = self.add_task(contest=self.participation.contest,
+                                  score_precision=2)
         dataset = self.add_dataset(task=self.task)
         self.task.active_dataset = dataset
         self.timestamp = make_datetime()
@@ -46,9 +47,10 @@ class TaskScoreMixin(DatabaseMixin):
     def at(self, timestamp):
         return self.timestamp + timedelta(seconds=timestamp)
 
-    def call(self, public=False, only_tokened=False):
+    def call(self, public=False, only_tokened=False, rounded=False):
         return task_score(self.participation, self.task,
-                          public=public, only_tokened=only_tokened)
+                          public=public, only_tokened=only_tokened,
+                          rounded=rounded)
 
     def add_result(self, timestamp, score, tokened=False, score_details=None,
                    public_score=None, public_score_details=None):
@@ -366,6 +368,18 @@ class TestTaskScoreMax(TaskScoreMixin, unittest.TestCase):
         self.add_result(self.at(2), 66.6, tokened=False)
         self.session.flush()
         self.assertEqual(self.call(only_tokened=True), (44.4, False))
+
+    def test_unrounded(self):
+        self.add_result(self.at(1), 44.44444, tokened=False)
+        self.add_result(self.at(2), 44.44443, tokened=False)
+        self.session.flush()
+        self.assertEqual(self.call(), (44.44444, False))
+
+    def test_rounded(self):
+        self.add_result(self.at(1), 44.44444, tokened=False)
+        self.add_result(self.at(2), 44.44443, tokened=False)
+        self.session.flush()
+        self.assertEqual(self.call(rounded=True), (44.44, False))
 
 
 if __name__ == "__main__":

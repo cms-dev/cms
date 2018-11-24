@@ -162,7 +162,7 @@ $(document).ready(function () {
     {% if score_type.max_public_score > 0 %}
         {# Show the public score (alone, if everything is public or tokens are disabled, or together with the tokened score). #}
     <div id="task_score_public"
-         class="{{ "span6" if two_task_scores else "span12" }} well well-small task_score {{ get_score_class(public_score, score_type.max_public_score) }}">
+         class="{{ "span6" if two_task_scores else "span12" }} well well-small task_score {{ get_score_class(public_score, score_type.max_public_score, task.score_precision) }}">
         <span>
         {% if score_type.max_public_score == score_type.max_score %}
             {% trans %}Score:{% endtrans %}
@@ -183,7 +183,7 @@ $(document).ready(function () {
     {% if score_type.max_public_score < score_type.max_score %}
         {# Show the tokened score (alone if everything is non-public, or together with the public score). #}
     <div id="task_score_tokened"
-         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) if can_use_tokens else "undefined" }}">
+         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score, task.score_precision) if can_use_tokens else "undefined" }}">
         <span>
         {% if can_use_tokens %}
             {% trans %}Score of tokened submissions:{% endtrans %}

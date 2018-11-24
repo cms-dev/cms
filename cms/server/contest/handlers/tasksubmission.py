@@ -124,9 +124,9 @@ class TaskSubmissionsHandler(ContestHandler):
             .all()
 
         public_score, is_public_score_partial = task_score(
-            participation, task, public=True)
+            participation, task, public=True, rounded=True)
         tokened_score, is_tokened_score_partial = task_score(
-            participation, task, only_tokened=True)
+            participation, task, only_tokened=True, rounded=True)
         # These two should be the same, anyway.
         is_score_partial = is_public_score_partial or is_tokened_score_partial
 
@@ -202,9 +202,9 @@ class SubmissionStatusHandler(ContestHandler):
             .options(joinedload(Submission.results))\
             .all()
         data["task_public_score"], public_score_is_partial = \
-            task_score(participation, task, public=True)
+            task_score(participation, task, public=True, rounded=True)
         data["task_tokened_score"], tokened_score_is_partial = \
-            task_score(participation, task, only_tokened=True)
+            task_score(participation, task, only_tokened=True, rounded=True)
         # These two should be the same, anyway.
         data["task_score_is_partial"] = \
             public_score_is_partial or tokened_score_is_partial

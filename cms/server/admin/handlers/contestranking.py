@@ -64,8 +64,7 @@ class RankingHandler(BaseHandler):
             total_score = 0.0
             partial = False
             for task in self.contest.tasks:
-                t_score, t_partial = task_score(p, task)
-                t_score = round(t_score, task.score_precision)
+                t_score, t_partial = task_score(p, task, rounded=True)
                 p.scores.append((t_score, t_partial))
                 total_score += t_score
                 partial = partial or t_partial
