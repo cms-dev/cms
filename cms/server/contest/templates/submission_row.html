@@ -48,9 +48,9 @@
 {% if actual_phase >= +3 %}
     <td class="considered_in_score">
       {% if s.official %}
-      Yes
+          {% trans %}Yes{% endtrans %}
       {% else %}
-      No
+          {% trans %}No{% endtrans %}
       {% endif %}
     </td>
 {% endif %}
