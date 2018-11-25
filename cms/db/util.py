@@ -24,6 +24,7 @@
 """
 
 import sys
+import logging
 
 from sqlalchemy import union
 from sqlalchemy.exc import OperationalError
@@ -33,6 +34,9 @@ from . import SessionGen, Digest, Contest, Participation, Statement, \
     Attachment, Task, Manager, Dataset, Testcase, Submission, File, \
     SubmissionResult, Executable, UserTest, UserTestFile, UserTestManager, \
     UserTestResult, UserTestExecutable, PrintJob
+
+
+logger = logging.getLogger(__name__)
 
 
 def test_db_connection():
@@ -47,7 +51,8 @@ def test_db_connection():
         # use it to ensure that the DB is accessible.
         with SessionGen() as session:
             session.execute("select 0;")
-    except OperationalError:
+    except OperationalError as e:
+        logger.error(e)
         raise ConfigError("Operational error while talking to the DB. "
                           "Is the connection string in cms.conf correct?")
 
