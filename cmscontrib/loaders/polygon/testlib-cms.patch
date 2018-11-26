@@ -1,124 +1,108 @@
-*** testlib.h.orig	2018-08-22 12:26:04.104893746 +0300
---- testlib.h	2018-08-22 12:27:59.172759328 +0300
-***************
-*** 36,51 ****
---- 36,67 ----
-   * Permission to use or copy this software for any purpose is hereby granted 
-   * without fee, provided the above notices are retained on all copies.
-   * Permission to modify the code and to distribute modified code is granted,
-   * provided the above notices are retained, and a notice that the code was
-   * modified is included with the above copyright notice.
-   *
-   */
-  
-+ /*
-+  * Artem Iglikov
-+  *
-+  * This software has been modified to make it possible to use it with CMS. More
-+  * precisely, at termination it now output the "outcome" to stdout and the
-+  * "message" to stderr.
-+  */
-+ 
-+ /*
-+  * Alexander Kernozhitsky
-+  *
-+  * Ported patch from CMS to the new version.
-+  * Also added conditional compilation for CMS checker outcome format (with #ifdef CMS)
-+  *
-+  */
-+ 
-  /* NOTE: This file contains testlib library for C++.
-   *
-   *   Check, using testlib running format:
-   *     check.exe <Input_File> <Output_File> <Answer_File> [<Result_File> [-appes]],
-   *   If result file is specified it will contain results.
-   *
-   *   Validator, using testlib running format:                                          
-   *     validator.exe < input.txt,
-***************
-*** 2463,2478 ****
---- 2479,2536 ----
-      {
-          if (testlibMode != _interactor && !ouf.seekEof())
-              quit(_dirt, "Extra information in the output file");
-      }
-  
-      int pctype = result - _partially;
-      bool isPartial = false;
-  
-+     #ifdef CMS
-+         inf.close();
-+         ouf.close();
-+         ans.close();
-+         if (tout.is_open())
-+             tout.close();
-+ 
-+         if (result == _ok) {
-+             std::fprintf(stdout, "1.0\n");
-+             std::fprintf(stderr, "OK\n");
-+         } else if (result == _wa) {
-+             std::fprintf(stdout, "0.0\n");
-+             std::fprintf(stderr, "Wrong Answer\n");
-+         } else if (result == _pe) {
-+             std::fprintf(stdout, "0.0\n");
-+             std::fprintf(stderr, "Presentation Error\n");
-+         } else if (result == _dirt) {
-+             std::fprintf(stdout, "0.0\n");
-+             std::fprintf(stderr, "Wrong Output Format\n");
-+         } else if (result == _points) {
-+             std::fprintf(stdout, "%f\n", __testlib_points);
-+             std::fprintf(stderr, "Partial Score\n");
-+         } else if (result == _unexpected_eof) {
-+             std::fprintf(stdout, "0.0\n");
-+             std::fprintf(stderr, "Wrong Output Format\n");
-+         } else if (result >= _partially) {
-+             double score = (double)pctype / 200.0;
-+             std::fprintf(stdout, "%.3f\n", score);
-+             std::fprintf(stderr, "Partial Score\n");
-+         } else if (result == _fail) {
-+           std::fprintf(stdout, "0.0\n");
-+           std::fprintf(stderr, "FAILURE, CONTACT JURY, ERROR 1\n");
-+           halt(1);
-+         } else {
-+           std::fprintf(stdout, "0.0\n");
-+           std::fprintf(stderr, "FAILURE, CONTACT JURY, ERROR 2 %d\n", result);
-+           halt(1);
-+         }
-+ 
-+         halt(0);
-+     #endif
-+ 
-      switch (result)
-      {
-      case _ok:
-          errorName = "ok ";
-          quitscrS(LightGreen, errorName);
-          break;
-      case _wa:
-          errorName = "wrong answer ";
-***************
-*** 4076,4093 ****
---- 4134,4156 ----
-          else
-          {
-              resultName = argv[4];
-              appesMode = true;
-          }
-      }
-  
-      inf.init(argv[1], _input);
-+     #ifdef CMS
-+     ouf.init(argv[3], _output);
-+     ans.init(argv[2], _answer);
-+     #else
-      ouf.init(argv[2], _output);
-      ans.init(argv[3], _answer);
-+     #endif
-  }
-  
-  void registerTestlib(int argc, ...)
-  {
-      if (argc  < 3 || argc > 5)
-          quit(_fail, std::string("Program must be run with the following arguments: ") +
-              "<input-file> <output-file> <answer-file> [<report-file> [<-appes>]]");
-  
+--- testlib.h.orig	2018-12-03 23:31:33.532335025 +0200
++++ testlib.h	2018-12-04 19:00:42.933212959 +0200
+@@ -41,6 +41,22 @@
+  *
+  */
+ 
++/*
++ * Artem Iglikov
++ * Alexander Kernozhitsky
++ * Andrey Vihrov
++ *
++ * Modifications for Contest Management System (CMS) support:
++ *   - Write checker outcome to stdout and message to stderr
++ *   - Use special localizable message strings by default
++ *   - Adjust checker exit code
++ *   - Adjust checker argument order (except in help and comments)
++ *   - Add the "CMS" conditional macro for CMS checker format
++ *   - Add the "CMS_VERBOSE_FEEDBACK" conditional macro to enable
++ *     testlib-style messages
++ *   - Interactors are not supported
++ */
++
+ /* NOTE: This file contains testlib library for C++.
+  *
+  *   Check, using testlib running format:
+@@ -2468,6 +2484,57 @@
+     int pctype = result - _partially;
+     bool isPartial = false;
+ 
++#ifdef CMS
++    inf.close();
++    ouf.close();
++    ans.close();
++    if (tout.is_open())
++        tout.close();
++
++#  define CMS_SUCCESS "success"
++#  define CMS_PARTIAL "partial"
++#  define CMS_WRONG   "wrong"
++#  ifndef CMS_VERBOSE_FEEDBACK
++#    define CMS_MSG(code, text) "translate:" code "\n"
++#  else
++#    define CMS_MSG(code, text) text " %s\n", msg
++#  endif
++
++    if (result == _ok) {
++        std::fprintf(stdout, "1.0\n");
++        std::fprintf(stderr, CMS_MSG(CMS_SUCCESS, "OK"));
++    } else if (result == _wa) {
++        std::fprintf(stdout, "0.0\n");
++        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Wrong Answer"));
++    } else if (result == _pe) {
++        std::fprintf(stdout, "0.0\n");
++        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Presentation Error"));
++    } else if (result == _dirt) {
++        std::fprintf(stdout, "0.0\n");
++        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Wrong Output Format"));
++    } else if (result == _points) {
++        std::string stringPoints(removeDoubleTrailingZeroes(
++            format("%.10f", __testlib_points)));
++        std::fprintf(stdout, "%s\n", stringPoints.c_str());
++        std::fprintf(stderr, CMS_MSG(CMS_PARTIAL, "Partial Score"));
++    } else if (result == _unexpected_eof) {
++        std::fprintf(stdout, "0.0\n");
++        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Unexpected EOF"));
++    } else if (result >= _partially) {
++        double score = (double)pctype / 200.0;
++        std::fprintf(stdout, "%.3f\n", score);
++        std::fprintf(stderr, CMS_MSG(CMS_PARTIAL, "Partial Score"));
++    } else if (result == _fail) {
++        std::fprintf(stderr, "FAIL %s\n", msg);
++        halt(1);
++    } else {
++        std::fprintf(stderr, "FAIL unknown result %d\n", (int)result);
++        halt(1);
++    }
++
++    halt(0);
++#endif
++
+     switch (result)
+     {
+     case _ok:
+@@ -3922,6 +3989,10 @@
+ 
+ void registerInteraction(int argc, char* argv[])
+ {
++#ifdef CMS
++    quit(_fail, "Interactors are not supported");
++#endif
++
+     __testlib_ensuresPreconditions();
+ 
+     testlibMode = _interactor;
+@@ -4081,8 +4152,13 @@
+     }
+ 
+     inf.init(argv[1], _input);
++#ifdef CMS
++    ouf.init(argv[3], _output);
++    ans.init(argv[2], _answer);
++#else
+     ouf.init(argv[2], _output);
+     ans.init(argv[3], _answer);
++#endif
+ }
+ 
+ void registerTestlib(int argc, ...)
