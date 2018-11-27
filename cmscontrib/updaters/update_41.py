@@ -20,8 +20,8 @@
 
 Used by DumpImporter and DumpUpdater.
 
-This updater makes sure filenames contain no percent sign, except in a
-trailing ".%l", if any.
+This updater makes sure that the constraints on codenames, filenames,
+filename schemas and digests hold.
 
 """
 
@@ -81,28 +81,28 @@ class Updater:
         assert data["_version"] == 40
         self.objs = data
 
-        self.bad_codename = False
-        self.bad_filename = False
-        self.bad_filename_schema = False
-        self.bad_digest = False
+        self.bad_codenames = []
+        self.bad_filenames = []
+        self.bad_filename_schemas = []
+        self.bad_digests = []
 
-    def check_codename(self, codename):
+    def check_codename(self, class_, attr, codename):
         if not re.match("^[A-Za-z0-9_-]+$", codename):
-            self.bad_codename = True
+            self.bad_codenames.append("%s.%s" % (class_, attr))
 
-    def check_filename(self, filename):
+    def check_filename(self, class_, attr, filename):
         if not re.match('^[A-Za-z0-9_.-]+$', filename) \
                 or filename in {',', '..'}:
-            self.bad_filename = True
+            self.bad_filenames.append("%s.%s" % (class_, attr))
 
-    def check_filename_schema(self, schema):
+    def check_filename_schema(self, class_, attr, schema):
         if not re.match('^[A-Za-z0-9_.-]+(\.%%l)?$', schema) \
                 or schema in {'.', '..'}:
-            self.bad_filename_schema = True
+            self.bad_filename_schemas.append("%s.%s" % (class_, attr))
 
-    def check_digest(self, digest):
+    def check_digest(self, class_, attr, digest):
         if not re.match('^([0-9a-f]{40}|x)$', digest):
-            self.bad_digest = True
+            self.bad_digests.append("%s.%s" % (class_, attr))
 
     def run(self):
         for k, v in self.objs.items():
@@ -110,35 +110,54 @@ class Updater:
                 continue
             if v["_class"] in CODENAME_FIELDS:
                 for attr in CODENAME_FIELDS[v["_class"]]:
-                    self.check_codename(v[attr])
+                    self.check_codename(v["_class"], attr, v[attr])
             if v["_class"] in FILENAME_FIELDS:
                 for attr in FILENAME_FIELDS[v["_class"]]:
-                    self.check_filename(v[attr])
+                    self.check_filename(v["_class"], attr, v[attr])
             if v["_class"] in FILENAME_SCHEMA_FIELDS:
                 for attr in FILENAME_SCHEMA_FIELDS[v["_class"]]:
-                    self.check_filename_schema(v[attr])
+                    self.check_filename_schema(v["_class"], attr, v[attr])
             if v["_class"] in FILENAME_SCHEMA_ARRAY_FIELDS:
                 for attr in FILENAME_SCHEMA_ARRAY_FIELDS[v["_class"]]:
                     for schema in v[attr]:
-                        self.check_filename_schema(schema)
+                        self.check_filename_schema(v["_class"], attr, schema)
             if v["_class"] in DIGEST_FIELDS:
                 for attr in DIGEST_FIELDS[v["_class"]]:
-                    self.check_digest(v[attr])
+                    self.check_digest(v["_class"], attr, v[attr])
 
-        if self.bad_codename:
-            logger.error("Some codenames were invalid.")
+        bad = False
 
-        if self.bad_filename:
-            logger.error("Some filenames were invalid.")
+        if self.bad_codenames:
+            logger.error(
+                "The following fields contained invalid codenames: %s. "
+                "They can only contain letters, digits, underscores and dashes."
+                % ", ".join(self.bad_codenames))
+            bad = True
 
-        if self.bad_filename_schema:
-            logger.error("Some filename schemas were invalid.")
+        if self.bad_filenames:
+            logger.error(
+                "The following fields contained invalid filenames: %s. "
+                "They can only contain letters, digits, underscores, dashes "
+                "and periods and cannot be '.' or '..'."
+                % ", ".join(self.bad_filenames))
+            bad = True
 
-        if self.bad_digest:
-            logger.error("Some digests were invalid.")
+        if self.bad_filename_schemas:
+            logger.error(
+                "The following fields contained invalid filename schemas: %s. "
+                "They can only contain letters, digits, underscores, dashes "
+                "and periods, end with '.%%l' and cannot be '.' or '..'."
+                % ", ".join(self.bad_filename_schemas))
+            bad = True
 
-        if self.bad_codename or self.bad_filename \
-                or self.bad_filename_schema or self.bad_digest:
+        if self.bad_digests:
+            logger.error(
+                "The following fields contained invalid digests: %s. "
+                "They must be 40-character long lowercase hex values, or 'x'."
+                % ", ".join(self.bad_digests))
+            bad = True
+
+        if bad:
             raise ValueError("Some data was invalid.")
 
         return self.objs
