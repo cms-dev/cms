@@ -80,8 +80,8 @@ class RegisterHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         try:
-            first_name = "".join(self.get_argument("first_name").split())
-            last_name = "".join(self.get_argument("last_name").split())
+            first_name = " ".join(self.get_argument("first_name").split())
+            last_name = " ".join(self.get_argument("last_name").split())
             username = self.get_argument("username")
             password = self.get_argument("password")
 
