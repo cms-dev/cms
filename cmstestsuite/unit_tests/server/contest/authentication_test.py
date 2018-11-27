@@ -253,14 +253,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         # Cookies are of no use if one cannot login by password.
         self.contest.allow_password_authentication = False
         self.assertFailure()
-
-        # The cookie works with all methods as it holds the plaintext password.
         self.contest.allow_password_authentication = True
-        self.user.password = hash_password("mypass", method="bcrypt")
-        self.assertSuccessAndCookieRefreshed()
-
-        self.user.password = hash_password("mypass", method="plaintext")
-        self.assertSuccessAndCookieRefreshed()
 
         # Cookies contain the password, which is validated every time.
         self.user.password = build_password("newpass")

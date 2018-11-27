@@ -44,35 +44,18 @@ __all__ = ["validate_login", "authenticate_request"]
 logger = logging.getLogger(__name__)
 
 
-def safe_validate_password(participation, password):
-    """Check that the password is correct for the authentication.
-
-    Validate the given password against the participation (using either
-    the global or the contest-specific password that is stored in the
-    database), and guard against a misconfiguration.
+def get_password(participation):
+    """Return the password the participation can log in with.
 
     participation (Participation): a participation.
-    password (str): a password provided by someone trying to log in
-        claiming to be the given participation.
 
-    return (bool): whether the password matches the expected one.
+    return (str): the password that is on record for them.
 
     """
     if participation.password is None:
-        correct_password = participation.user.password
+        return participation.user.password
     else:
-        correct_password = participation.password
-
-    try:
-        password_valid = validate_password(correct_password, password)
-    except ValueError as e:
-        # This is either a programming or a configuration error.
-        logger.warning(
-            "Invalid password stored in database for user %s in contest %s: "
-            "%s", participation.user.username, participation.contest.name, e)
-        return False
-
-    return password_valid
+        return participation.password
 
 
 def validate_login(
@@ -124,7 +107,18 @@ def validate_login(
         log_failed_attempt("user not registered to contest")
         return None, None
 
-    if not safe_validate_password(participation, password):
+    correct_password = get_password(participation)
+
+    try:
+        password_valid = validate_password(correct_password, password)
+    except ValueError as e:
+        # This is either a programming or a configuration error.
+        logger.warning(
+            "Invalid password stored in database for user %s in contest %s: "
+            "%s", participation.user.username, participation.contest.name, e)
+        return None, None
+
+    if not password_valid:
         log_failed_attempt("wrong password")
         return None, None
 
@@ -141,8 +135,10 @@ def validate_login(
                 "contest %s, at %s", ip_address, username, contest.name,
                 timestamp)
 
+    # If hashing is used, the cookie stores the hashed password so that
+    # the expensive bcrypt call doesn't need to be done at every request.
     return (participation,
-            json.dumps([username, password, make_timestamp(timestamp)])
+            json.dumps([username, correct_password, make_timestamp(timestamp)])
                 .encode("utf-8"))
 
 
@@ -341,7 +337,11 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
         log_failed_attempt("user not registered to contest")
         return None, None
 
-    if not safe_validate_password(participation, password):
+    correct_password = get_password(participation)
+
+    # We compare hashed password because it would be too expensive to
+    # re-hash the user-provided plaintext password at every request.
+    if password != correct_password:
         log_failed_attempt("wrong password")
         return None, None
 
@@ -349,6 +349,8 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
                 "returning from %s, at %s", username, contest.name, last_update,
                 timestamp)
 
+    # We store the hashed password (if hashing is used) so that the
+    # expensive bcrypt hashing doesn't need to be done at every request.
     return (participation,
-            json.dumps([username, password, make_timestamp(timestamp)])
+            json.dumps([username, correct_password, make_timestamp(timestamp)])
                 .encode("utf-8"))
