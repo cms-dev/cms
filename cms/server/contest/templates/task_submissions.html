@@ -33,6 +33,11 @@ $(document).on("click", ".submission_list tbody tr td.status .details", function
     modal.modal("show");
 });
 
+function is_status_terminal (status) {
+    return status == {{ SubmissionResult.COMPILATION_FAILED }}
+        || status == {{ SubmissionResult.SCORED }};
+};
+
 function get_score_class (score, max_score) {
     if (score <= 0) {
         return "score_0";
@@ -85,15 +90,15 @@ update_scores = function (submission_id, data) {
     var row = $(".submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").text(data["status_text"]);
-    if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}
-            && data["status"] != {{ SubmissionResult.SCORED }}) {
+    var terminal_status = is_status_terminal(data["status"]);
+    if (!terminal_status) {
         row.children("td.status").append(
             $("<img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>"));
     } else {
         row.children("td.status").append(
             $("<a class=\"details\">{% trans %}details{% endtrans %}</a>"));
     }
-    if (data["status"] == {{ SubmissionResult.SCORED }}) {
+    if (terminal_status) {
         update_score(
             row.children("td.public_score"), $("#task_score_public"),
             data["public_score"], data["public_score_message"],
@@ -106,7 +111,7 @@ update_scores = function (submission_id, data) {
             data["task_tokened_score"], data["task_tokened_score_message"],
             data["task_score_is_partial"], data["max_score"]);
 {% endif %}
-    } else if (data["status"] != {{ SubmissionResult.COMPILATION_FAILED }}) {
+    } else {
         schedule_update_scores(submission_id);
     }
 };
