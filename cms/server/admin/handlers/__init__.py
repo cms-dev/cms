@@ -5,6 +5,7 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -87,6 +88,8 @@ from .task import \
     StatementHandler, \
     AddAttachmentHandler, \
     AttachmentHandler, \
+    AddStatementAssetHandler, \
+    StatementAssetHandler, \
     TaskListHandler, \
     RemoveTaskHandler
 from .user import \
@@ -171,6 +174,8 @@ HANDLERS = [
     (r"/task/([0-9]+)/statement/([0-9]+)", StatementHandler),
     (r"/task/([0-9]+)/attachments/add", AddAttachmentHandler),
     (r"/task/([0-9]+)/attachment/([0-9]+)", AttachmentHandler),
+    (r"/task/([0-9]+)/assets/add", AddStatementAssetHandler),
+    (r"/task/([0-9]+)/asset/([0-9]+)", StatementAssetHandler),
 
     # Datasets
 

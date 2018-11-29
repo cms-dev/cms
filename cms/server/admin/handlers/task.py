@@ -8,6 +8,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,7 +32,8 @@ import traceback
 
 import tornado.web
 
-from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
+from cms.db import Attachment, Dataset, Session, Statement, Submission, \
+    Task, StatementAsset
 from cmscommon.datetime import make_datetime
 from .base import BaseHandler, SimpleHandler, require_permission
 
@@ -289,6 +291,76 @@ class StatementHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(statement)
+        self.try_commit()
+
+        # Page to redirect to.
+        self.write("%s" % task.id)
+
+
+class AddStatementAssetHandler(BaseHandler):
+    """Add an asset to a task.
+
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, task_id):
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.render("add_asset.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self, task_id):
+        fallback_page = self.url("task", task_id, "assets", "add")
+
+        task = self.safe_get_item(Task, task_id)
+
+        asset = self.request.files["asset"][0]
+        task_name = task.name
+        self.sql_session.close()
+
+        try:
+            digest = self.service.file_cacher.put_file_content(
+                asset["body"],
+                "Task statement asset for %s" % task_name)
+        except Exception as error:
+            self.service.add_notification(
+                make_datetime(),
+                "StatementAsset storage failed",
+                repr(error))
+            self.redirect(fallback_page)
+            return
+
+        # TODO verify that there's no other StatementAsset with that filename
+        # otherwise we'd trigger an IntegrityError for constraint violation
+
+        self.sql_session = Session()
+        task = self.safe_get_item(Task, task_id)
+
+        asset = StatementAsset(asset["filename"], digest, task=task)
+        self.sql_session.add(asset)
+
+        if self.try_commit():
+            self.redirect(self.url("task", task_id))
+        else:
+            self.redirect(fallback_page)
+
+
+class StatementAssetHandler(BaseHandler):
+    """Delete an asset.
+
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, task_id, asset_id):
+        asset = self.safe_get_item(StatementAsset, asset_id)
+        task = self.safe_get_item(Task, task_id)
+
+        # Protect against URLs providing incompatible parameters.
+        if asset.task is not task:
+            raise tornado.web.HTTPError(404)
+
+        self.sql_session.delete(asset)
         self.try_commit()
 
         # Page to redirect to.

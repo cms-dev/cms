@@ -8,7 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@ import logging
 
 import tornado.web
 
+from cms import STATEMENT_TYPE_HTML, STATEMENT_TYPE_MD, STATEMENT_TYPE_PDF
 from cms.server import multi_contest
 from cmscommon.mimetypes import get_type_for_file_name
 from .contest import ContestHandler, FileHandler
@@ -53,7 +54,29 @@ class TaskDescriptionHandler(ContestHandler):
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        self.render("task_description.html", task=task, **self.r_params)
+        main_languages = set()
+        other_languages = set()
+        statements = dict()
+        for statement in task.statements.values():
+            if statement.language in self.r_params["participation"]\
+                                         .user.preferred_languages \
+                    or statement.language in task.primary_statements:
+                main_languages.add(statement.language)
+            else:
+                other_languages.add(statement.language)
+
+            if statement.language not in statements:
+                statements[statement.language] = []
+
+            statements[statement.language].append(statement.statement_type)
+
+        main_languages = list(sorted(main_languages))
+        other_languages = list(sorted(other_languages))
+
+        self.render("task_description.html", task=task,
+                    main_languages=main_languages,
+                    other_languages=other_languages,
+                    statements=statements, **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -63,23 +86,30 @@ class TaskStatementViewHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
-    def get(self, task_name, lang_code):
+    def get(self, task_name, lang_code, statement_type):
         task = self.get_task(task_name)
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        if lang_code not in task.statements:
+        if (lang_code, statement_type) not in task.statements:
             raise tornado.web.HTTPError(404)
 
-        statement = task.statements[lang_code].digest
+        statement = task.statements[(lang_code, statement_type)].digest
         self.sql_session.close()
 
-        if len(lang_code) > 0:
-            filename = "%s (%s).pdf" % (task.name, lang_code)
-        else:
-            filename = "%s.pdf" % task.name
+        if statement_type == STATEMENT_TYPE_PDF:
+            if len(lang_code) > 0:
+                filename = "%s (%s).pdf" % (task.name, lang_code)
+            else:
+                filename = "%s.pdf" % task.name
 
-        self.fetch(statement, "application/pdf", filename)
+            self.fetch(statement, "application/pdf", filename)
+        elif statement_type == STATEMENT_TYPE_HTML:
+            self.fetch(statement, "text/html", "statement.html")
+        elif statement_type == STATEMENT_TYPE_MD:
+            self.fetch(statement, "text/html", "statement.md")
+        else:
+            raise tornado.web.HTTPError(404)
 
 
 class TaskAttachmentViewHandler(FileHandler):
@@ -105,3 +135,28 @@ class TaskAttachmentViewHandler(FileHandler):
             mimetype = 'application/octet-stream'
 
         self.fetch(attachment, mimetype, filename)
+
+
+class TaskAssetViewHandler(FileHandler):
+    """Return an asset file of a task statement in the contest.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(0, 3)
+    @multi_contest
+    def get(self, task_name, filename):
+        task = self.get_task(task_name)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+
+        if filename not in task.statement_assets:
+            raise tornado.web.HTTPError(404)
+
+        asset = task.statement_assets[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(asset, mimetype, filename)

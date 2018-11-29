@@ -8,7 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
-# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,7 +36,8 @@ from .main import \
 from .task import \
     TaskDescriptionHandler, \
     TaskStatementViewHandler, \
-    TaskAttachmentViewHandler
+    TaskAttachmentViewHandler, \
+    TaskAssetViewHandler
 from .tasksubmission import \
     SubmitHandler, \
     TaskSubmissionsHandler, \
@@ -67,8 +68,9 @@ HANDLERS = [
     # Tasks
 
     (r"/tasks/(.*)/description", TaskDescriptionHandler),
-    (r"/tasks/(.*)/statements/(.*)", TaskStatementViewHandler),
+    (r"/tasks/(.*)/statements/(.*)/(.*)", TaskStatementViewHandler),
     (r"/tasks/(.*)/attachments/(.*)", TaskAttachmentViewHandler),
+    (r"/tasks/(.*)/assets/(.*)", TaskAssetViewHandler),
 
     # Task submissions
 

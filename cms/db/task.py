@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,7 +37,8 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum, BigInteger
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, STATEMENT_TYPE_PDF, \
+    STATEMENT_TYPE_MD, STATEMENT_TYPE_HTML
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
@@ -232,7 +234,14 @@ class Task(Base):
 
     statements = relationship(
         "Statement",
-        collection_class=attribute_mapped_collection("language"),
+        collection_class=attribute_mapped_collection("statement_key"),
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="task")
+
+    statement_assets = relationship(
+        "StatementAsset",
+        collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="task")
@@ -272,7 +281,7 @@ class Statement(Base):
     """
     __tablename__ = 'statements'
     __table_args__ = (
-        UniqueConstraint('task_id', 'language'),
+        UniqueConstraint('task_id', 'language', 'statement_type'),
     )
 
     # Auto increment primary key.
@@ -300,7 +309,54 @@ class Statement(Base):
         Unicode,
         nullable=False)
 
+    # The type of statement: this information is used by web servers to decide
+    # how to render the statement.
+    statement_type = Column(
+        Enum(STATEMENT_TYPE_PDF, STATEMENT_TYPE_MD, STATEMENT_TYPE_HTML,
+             name="statement_type"),
+        nullable=False)
+
     # Digest of the file.
+    digest = Column(
+        Digest,
+        nullable=False)
+
+    @property
+    def statement_key(self):
+        return (self.language, self.statement_type)
+
+
+class StatementAsset(Base):
+    """Class to store statement assets that are supposed to be accessible from
+    the statement page in a way that makes it possible to link them from the
+    statement itself.
+
+    """
+    __tablename__ = 'statement_assets'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Task (id and object) owning the asset.
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    task = relationship(
+        Task,
+        back_populates="statement_assets")
+
+    # Filename and digest of the provided asset.
+    filename = Column(
+        Filename,
+        nullable=False)
     digest = Column(
         Digest,
         nullable=False)

@@ -259,6 +259,10 @@ div.login_box {
 
 /*** Task statement */
 
+#statement-view {
+    font-size: larger;
+}
+
 .task_description .statement.no_statement {
     font-size: 1.2em;
     font-style: italic;

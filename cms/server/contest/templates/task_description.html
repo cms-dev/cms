@@ -4,16 +4,11 @@
 
 {% block core %}
 
-
 <div class="span9 task_description">
-
 
 <div class="page-header">
     <h1>{% trans name=task.title, short_name=task.name %}{{ name }} ({{ short_name }}) <small>description</small>{% endtrans %}</h1>
 </div>
-
-
-<h2>{% trans %}Statement{% endtrans %}</h2>
 
 {% if task.statements|length == 0 %}
 <div class="row statement no_statements">
@@ -21,70 +16,32 @@
         {% trans %}no statement available{% endtrans %}
     </div>
 </div>
-{% elif task.statements|length == 1 %}
-<div class="row statement one_statement">
-    <div class="span9">
-    {% for lang_code in task.statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", lang_code) }}" class="btn btn-large btn-success">{% trans %}Download task statement{% endtrans %}</a>
-    {% endfor %}
-    </div>
-</div>
 {% else %}
-<div class="statement many_statements">
-    <div class="main_statements">
-        <p>
-            {% trans %}The statement for this task is available in multiple versions, in different languages.{% endtrans %}
-            {%+ trans %}You can see (and download) all of them using the list on the right.{% endtrans %}
-            {%+ trans %}Some suggested translations follow.{% endtrans %}
-        </p>
-    {% for statement in task.statements.values()|sort(attribute="language") %}
-        {% if statement.language in task.primary_statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
-            {% set language_name = statement.language|format_locale %}
-            {% if statement.language != language_name %}
-                {% trans lang=language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
-            {% else %}
-                {% trans lang=language_name %}Statement in {{ lang }}{% endtrans %}
-            {% endif %}
-        </a>
+<div>
+    <select id="statement-language-selection">
+        {% for language in main_languages %}
+            {% set language_name = language|format_locale %}
+            <option value="{{ language }}">{{ language_name }}</option>
+        {% endfor %}
+
+        {% if main_languages|length > 0 and other_languages|length > 0 %}
+            <option disabled>&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</option>
         {% endif %}
-    {% endfor %}
-    {% for statement in task.statements.values()|sort(attribute="language") %}
-        {% if statement.language in participation.user.preferred_languages and statement.language not in task.primary_statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
-            {% set language_name = statement.language|format_locale %}
-            {% if statement.language != language_name %}
-                {% trans lang=language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
-            {% else %}
-                {% trans lang=language_name %}Statement in {{ lang }}{% endtrans %}
-            {% endif %}
-        </a>
-        {% endif %}
-    {% endfor %}
-    </div>
-    <div class="all_statements well">
-        <div>
-            <ul>
-    {% for statement in task.statements.values()|sort(attribute="language") %}
-                <li>
-                    <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
-        {% set language_name = statement.language|format_locale %}
-        {% if statement.language != language_name %}
-            {% trans lang=language_name %}<b>{{ lang }}</b>{% endtrans %}
-        {% else %}
-            {% trans lang=language_name %}{{ lang }}{% endtrans %}
-        {% endif %}
-                    </a>
-                </li>
-    {% endfor %}
-            </ul>
-        </div>
-    </div>
+
+        {% for language in other_languages %}
+            {% set language_name = language|format_locale %}
+            <option value="{{ language }}">{{ language_name }}</option>
+        {% endfor %}
+    </select>
+
+    <a style="float: right;" id="download-as-pdf" href="#" class="btn btn-success">Download as PDF</a>
 </div>
+
+<div id="statement-view"></div>
 {% endif %}
 
 
-<h2>{% trans %}Some details{% endtrans %}</h2>
+<h2>{% trans %}Evaluation details{% endtrans %}</h2>
 
 <table class="table table-bordered table-nohover" style="table-layout: fixed">
     <colgroup>
@@ -199,4 +156,72 @@
 {% endif %}
 
 </div>
+
+<script>
+$(document).ready(function() {
+    var statements = {{ statements|safe }};
+
+    function updateStatement(language) {
+        if (statements[language].includes("pdf")) {
+            $("#download-as-pdf").show().attr("href", "statements/" + language + "/pdf");
+        } else {
+            $("#download-as-pdf").hide();
+        }
+
+        if (statements[language].includes("html")) {
+            $("#statement-view").text("Loading...");
+            $.get("statements/" + language + "/html")
+                .done(function(data) {
+                    $("#statement-view").html(data);
+                });
+
+        } else if (statements[language].includes("md")) {
+            $("#statement-view").text("Loading...");
+            $.get("statements/" + language + "/md")
+                .done(function(data) {
+                    $("#statement-view").html(marked(data));
+                    renderMathInElement(document.getElementById("statement-view"), {
+                        delimiters: [
+                            {left: "$", right: "$", display: false},
+                            {left: "$$", right: "$$", display: true},
+                            {left: "\\(", right: "\\)", display: false},
+                            {left: "\\[", right: "\\]", display: true}
+                        ]
+                    });
+                });
+        } else if (statements[language].includes("pdf")) {
+            $("#download-as-pdf").hide();
+
+            $("#statement-view").empty().append(
+                '<div style="text-align: center"><a href="statements/' + language + '/pdf" class="btn btn-success btn-large">Download PDF task statement</a></div>'
+            );
+        } else {
+            $("#statement-view").text("error");
+        }
+    }
+
+    // Get statement language setting
+    var userSetting = localStorage.getItem("statement-language");
+    if (userSetting != null) {
+        // If the setting makes sense
+        if (statements.hasOwnProperty(userSetting)) {
+            $("#statement-language-selection").val(userSetting);
+        } else {
+            // Otherwise, reset the setting
+            localStorage.removeItem("statement-language");
+        }
+    }
+
+    // Load statement for the first time
+    updateStatement($("#statement-language-selection").val());
+
+    $("#statement-language-selection").change(function() {
+        // Update local storage
+        localStorage.setItem("statement-language", $("#statement-language-selection").val());
+        // Reload statement
+        updateStatement($("#statement-language-selection").val());
+    });
+});
+</script>
+
 {% endblock core %}

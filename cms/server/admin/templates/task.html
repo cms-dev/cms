@@ -84,7 +84,11 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <tbody>
             {% for statement in task.statements.values() %}
               <tr>
-                <td><a href="{{ url("file", statement.digest, "statement.pdf") }}">Statement for language "{{ statement.language }}"</a></td>
+                <td>
+                  <a href="{{ url("file", statement.digest, "statement.pdf") }}">
+                    {{ statement.statement_type.upper() }} Statement for language "{{ statement.language }}"
+                  </a>
+                </td>
                 <td>
                   <label>
                     <input type="checkbox" name="primary_statement_{{ statement.language }}" {% if statement.language in primary_statements %}checked{% endif %} />
@@ -96,6 +100,27 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             {% endfor %}
             </tbody>
           </table>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Statement assets for this task. They are files which are accessible from the task page and possibly required by HTML statements or similar."></span>
+          Statement assets
+{% if admin.permission_all %}
+          [<a href="{{ url("task", task.id, "assets", "add") }}">add</a>]
+{% endif %}
+        </td>
+        <td>
+          {% if task.statement_assets|length == 0 %}
+            No statement assets.
+          {% else %}
+            {% for asset in task.statement_assets.values() %}
+              <div class="attachment">
+                <a href="{{ url("file", asset.digest, asset.filename) }}">{{ asset.filename }}</a>
+                - <a onclick="CMS.AWSUtils.ajax_delete('{{ url("task", task.id, "asset", asset.id) }}'); ">Delete</a>
+              </div>
+            {% endfor %}
           {% endif %}
         </td>
       </tr>

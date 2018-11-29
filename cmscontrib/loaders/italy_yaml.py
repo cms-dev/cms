@@ -31,9 +31,10 @@ from datetime import timedelta
 
 import yaml
 
-from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
+from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
+    STATEMENT_TYPE_PDF, STATEMENT_TYPE_MD, STATEMENT_TYPE_HTML
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
-    Manager, Testcase
+    Manager, Testcase, StatementAsset
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
@@ -301,6 +302,18 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         return Team(**args)
 
+    def _import_statement(self, args, path, statement_type, language):
+        if os.path.isfile(path):
+            digest = self.file_cacher.put_file_from_path(
+                path,
+                "%s Statement (lang: %s) for task %s" % (
+                    statement_type.upper(),
+                    language,
+                    args["name"]))
+
+            args["statements"][(language, statement_type)] = \
+                Statement(language, statement_type, digest)
+
     def get_task(self, get_statement=True):
         """See docstring in class TaskLoader."""
         name = os.path.split(self.path)[1]
@@ -353,24 +366,53 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         logger.info("Loading parameters for task %s.", name)
 
         if get_statement:
+            # TODO: allow to specify one language per statement
+            #       (e.g. in the file name?)
             primary_language = load(conf, None, "primary_language")
             if primary_language is None:
                 primary_language = 'it'
-            paths = [os.path.join(self.path, "statement", "statement.pdf"),
-                     os.path.join(self.path, "testo", "testo.pdf")]
-            for path in paths:
-                if os.path.exists(path):
-                    digest = self.file_cacher.put_file_from_path(
-                        path,
-                        "Statement for task %s (lang: %s)" %
-                        (name, primary_language))
+
+            args["statements"] = dict()
+            for statement_dir_name in ["statement", "testo"]:
+                statement_dir = os.path.join(self.path, statement_dir_name)
+
+                if os.path.isdir(statement_dir):
+                    statement_path = os.path.join(statement_dir,
+                                                  statement_dir_name)
+
+                    # Try to import PDF statements
+                    self._import_statement(args, statement_path + ".pdf",
+                                           STATEMENT_TYPE_PDF,
+                                           primary_language)
+                    self._import_statement(args, statement_path + ".md",
+                                           STATEMENT_TYPE_MD,
+                                           primary_language)
+                    self._import_statement(args, statement_path + ".html",
+                                           STATEMENT_TYPE_HTML,
+                                           primary_language)
+
+                    # Try to import statement assets
+                    assets_path = os.path.join(statement_dir, "assets")
+                    args["statement_assets"] = dict()
+                    if os.path.isdir(assets_path):
+                        for filename in os.listdir(assets_path):
+                            if not os.path.isfile(os.path.join(assets_path,
+                                                               filename)):
+                                continue  # ignore subdirectories
+
+                            digest = self.file_cacher.put_file_from_path(
+                                os.path.join(assets_path, filename),
+                                "StatementAsset %s for task %s" % (filename,
+                                                                   name))
+
+                            args["statement_assets"][filename] = \
+                                StatementAsset(filename, digest)
+
                     break
             else:
-                logger.critical("Couldn't find any task statement, aborting.")
+                logger.critical("Couldn't find task statements directory, "
+                                "aborting.")
                 sys.exit(1)
-            args["statements"] = {
-                primary_language: Statement(primary_language, digest)
-            }
 
             args["primary_statements"] = [primary_language]
 
