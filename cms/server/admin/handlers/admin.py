@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2015-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -129,7 +129,7 @@ class AdminHandler(BaseHandler):
         admin = self.safe_get_item(Admin, admin_id)
 
         self.r_params = self.render_params()
-        self.r_params["admin"] = admin
+        self.r_params["admin_being_edited"] = admin
         self.render("admin.html", **self.r_params)
 
     @require_permission(BaseHandler.PERMISSION_ALL, self_allowed=True)

@@ -3,11 +3,11 @@
 {% block core %}
 
 <div class="core_title">
-  <h1>{{ admin.username }} ({{ admin.name }})</h1>
+  <h1>{{ admin_being_edited.username }} ({{ admin_being_edited.name }})</h1>
 </div>
 
 <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
-<form enctype="multipart/form-data" action="{{ url("admin", admin.id) }}" method="POST">
+<form enctype="multipart/form-data" action="{{ url("admin", admin_being_edited.id) }}" method="POST">
   {{ xsrf_form_html|safe }}
   <h2>Admin information</h2>
 
@@ -24,7 +24,7 @@
 {% if admin.permission_all %}
 <hr/>
 
-<a onclick="CMS.AWSUtils.ajax_delete('{{ url("admin", admin.id) }}'); ">Delete this admin</a>
+<a onclick="CMS.AWSUtils.ajax_delete('{{ url("admin", admin_being_edited.id) }}'); ">Delete this admin</a>
 {% endif %}
 
 {% endblock core %}
