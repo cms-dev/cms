@@ -1,11 +1,11 @@
-{# This snippet shows a form to add/edit an admin; if admin is set, its data will be used as defaults. #}
+{# This snippet shows a form to add/edit an admin; if admin_being_edited is set, its data will be used as defaults. #}
 
-{% if admin is defined %}
-  {% set admin_username = admin.username %}
-  {% set admin_name = admin.name %}
-  {% set admin_permission_all = admin.permission_all %}
-  {% set admin_permission_messaging = admin.permission_messaging %}
-  {% set admin_enabled = admin.enabled %}
+{% if admin_being_edited is defined %}
+  {% set admin_username = admin_being_edited.username %}
+  {% set admin_name = admin_being_edited.name %}
+  {% set admin_permission_all = admin_being_edited.permission_all %}
+  {% set admin_permission_messaging = admin_being_edited.permission_messaging %}
+  {% set admin_enabled = admin_being_edited.enabled %}
 {% else %}
   {% set admin_username = "" %}
   {% set admin_name = "" %}
