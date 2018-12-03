@@ -343,13 +343,11 @@ class ResourceService(Service):
         data["cpu"]["num_cpu"] = psutil.cpu_count()
         self._prev_cpu_times = cpu_times
 
-        # Memory. The following relations hold (I think... I only
-        # verified them experimentally on a swap-less system):
-        # * vmem.free == vmem.available - vmem.cached - vmem.buffers
-        # * vmem.total == vmem.used + vmem.free
-        # That means that cache & buffers are counted both in .used
-        # and in .available. We want to partition the memory into
-        # types that sum up to vmem.total.
+        # Memory. The following equality should hold, as per psutil >= 4.4:
+        #   vmem.total = vmem.used + vmem.buffers + vmem.cached + vmem.free
+        # Although psutil documentation describes the "used" field as
+        # platform-dependent, on Linux specifically it matches the output
+        # of the free(1) utility.
         vmem = psutil.virtual_memory()
         swap = psutil.swap_memory()
         data["memory"] = {
@@ -357,7 +355,7 @@ class ResourceService(Service):
             "ram_available": vmem.free / B_TO_MB,
             "ram_cached": vmem.cached / B_TO_MB,
             "ram_buffers": vmem.buffers / B_TO_MB,
-            "ram_used": (vmem.used - vmem.cached - vmem.buffers) / B_TO_MB,
+            "ram_used": vmem.used / B_TO_MB,
             "swap_total": swap.total / B_TO_MB,
             "swap_available": swap.free / B_TO_MB,
             "swap_used": swap.used / B_TO_MB,
