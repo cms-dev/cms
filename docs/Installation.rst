@@ -147,6 +147,7 @@ Assuming you have ``pip`` installed, you can do this:
 .. sourcecode:: bash
 
     sudo pip3 install -r requirements.txt
+    sudo pip3 install -r dev-requirements.txt
     sudo python3 setup.py install
 
 This command installs python dependencies globally. Note that on some distros, like Arch Linux, this might interfere with the system package manager. If you want to perform the installation in your home folder instead, then you can do this instead:
@@ -154,6 +155,7 @@ This command installs python dependencies globally. Note that on some distros, l
 .. sourcecode:: bash
 
     pip3 install --user -r requirements.txt
+    pip3 install --user -r dev-requirements.txt
     python3 setup.py install --user
 
 Method 2: Virtual environment
@@ -178,6 +180,7 @@ After the activation, the ``pip`` command will *always* be available (even if it
 .. sourcecode:: bash
 
     pip3 install -r requirements.txt
+    pip3 install -r dev-requirements.txt
     python3 setup.py install
 
 .. note::
