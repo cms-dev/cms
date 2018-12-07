@@ -25,6 +25,7 @@ import psycopg2.extras
 import sqlalchemy
 from sqlalchemy import DDL, event, TypeDecorator, Unicode
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.ext.compiler import compiles
 
 from . import metadata
 
@@ -59,10 +60,6 @@ class Codename(TypeDecorator):
     impl = Unicode
 
     @classmethod
-    def compile(cls, dialect=None):
-        return cls.domain_name
-
-    @classmethod
     def get_create_command(cls):
         return DDL("CREATE DOMAIN %(domain)s VARCHAR "
                    "CHECK (VALUE ~ '^[A-Za-z0-9_-]+$')",
@@ -78,6 +75,11 @@ event.listen(metadata, "before_create", Codename.get_create_command())
 event.listen(metadata, "after_drop", Codename.get_drop_command())
 
 
+@compiles(Codename)
+def compile_codename(element, compiler, **kw):
+    return Codename.domain_name
+
+
 class Filename(TypeDecorator):
     """Check that the column is a filename using a simple alphabet.
 
@@ -90,10 +92,6 @@ class Filename(TypeDecorator):
 
     domain_name = "FILENAME"
     impl = Unicode
-
-    @classmethod
-    def compile(cls, dialect=None):
-        return cls.domain_name
 
     @classmethod
     def get_create_command(cls):
@@ -111,6 +109,11 @@ class Filename(TypeDecorator):
 
 event.listen(metadata, "before_create", Filename.get_create_command())
 event.listen(metadata, "after_drop", Filename.get_drop_command())
+
+
+@compiles(Filename)
+def compile_filename(element, compiler, **kw):
+    return Filename.domain_name
 
 
 class FilenameSchema(TypeDecorator):
@@ -133,10 +136,6 @@ class FilenameSchema(TypeDecorator):
     impl = Unicode
 
     @classmethod
-    def compile(cls, dialect=None):
-        return cls.domain_name
-
-    @classmethod
     def get_create_command(cls):
         return DDL("CREATE DOMAIN %(domain)s VARCHAR "
                    "CHECK (VALUE ~ '^[A-Za-z0-9_.-]+(\.%%l)?$') "
@@ -148,6 +147,11 @@ class FilenameSchema(TypeDecorator):
     def get_drop_command(cls):
         return DDL("DROP DOMAIN %(domain)s",
                    context={"domain": cls.domain_name})
+
+
+@compiles(FilenameSchema)
+def compile_filename_schema(element, compiler, **kw):
+    return FilenameSchema.domain_name
 
 
 event.listen(metadata, "before_create", FilenameSchema.get_create_command())
@@ -169,10 +173,6 @@ class FilenameSchemaArray(TypeDecorator):
 
     domain_name = "FILENAME_SCHEMA_ARRAY"
     impl = CastingArray(Unicode)
-
-    @classmethod
-    def compile(cls, dialect=None):
-        return cls.domain_name
 
     @classmethod
     def get_create_command(cls):
@@ -203,6 +203,11 @@ event.listen(metadata, "before_create",
 event.listen(metadata, "after_drop", FilenameSchemaArray.get_drop_command())
 
 
+@compiles(FilenameSchemaArray)
+def compile_filename_schema_array(element, compiler, **kw):
+    return FilenameSchemaArray.domain_name
+
+
 class Digest(TypeDecorator):
     """Check that the column is a valid SHA1 hex digest.
 
@@ -222,10 +227,6 @@ class Digest(TypeDecorator):
     TOMBSTONE = "x"
 
     @classmethod
-    def compile(cls, dialect=None):
-        return cls.domain_name
-
-    @classmethod
     def get_create_command(cls):
         return DDL("CREATE DOMAIN %(domain)s VARCHAR "
                    "CHECK (VALUE ~ '^([0-9a-f]{40}|%(tombstone)s)$')",
@@ -240,3 +241,8 @@ class Digest(TypeDecorator):
 
 event.listen(metadata, "before_create", Digest.get_create_command())
 event.listen(metadata, "after_drop", Digest.get_drop_command())
+
+
+@compiles(Digest)
+def compile_digest(element, compiler, **kw):
+    return Digest.domain_name
