@@ -34,8 +34,8 @@ $(document).on("click", ".submission_list tbody tr td.status .details", function
 });
 
 function is_status_terminal (status) {
-    return status == {{ SubmissionResult.COMPILATION_FAILED}}
-        || status == {{ SubmissionResult.SCORED}};
+    return status == {{ SubmissionResult.COMPILATION_FAILED }}
+        || status == {{ SubmissionResult.SCORED }};
 };
 
 function get_score_class (score, max_score) {
