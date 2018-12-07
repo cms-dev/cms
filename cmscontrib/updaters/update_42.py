@@ -28,7 +28,7 @@ Add default value for Contest.allow_registration
 class Updater:
 
     def __init__(self, data):
-        assert data["_version"] == 40
+        assert data["_version"] == 41
         self.objs = data
 
     def run(self):

@@ -18,7 +18,7 @@ $(document).ready(function() {
         // Check that passwords are the same
         if ($("#password").val() !== $("#password-confirm").val()) {
             $("#password-confirm-input").addClass("error");
-            $("#password-confirm-input span.help-block").text("The passwords do not match!");
+            $("#password-confirm-input span.help-block").text("{% trans %}The passwords do not match!{% endtrans %}");
             $("#password-confirm").focus();
         } else {
             var data = $(this).serialize();
@@ -34,7 +34,7 @@ $(document).ready(function() {
                 // Check if username is already used
                 if (data.status === 409) {
                     $("#username-input").addClass("error");
-                    $("#username-input span.help-block").text("This username is already taken, please choose a different one.");
+                    $("#username-input span.help-block").text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
                     $("#username").focus();
                 }
             }).always(function() {
@@ -52,7 +52,7 @@ $(document).ready(function() {
 
         <div id="signup-mask">
             <h1>{% trans %}New user{% endtrans %}</h1>
-            <p>Please fill in the fields to register</p>
+            <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
             <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
                 {{ xsrf_form_html|safe }}
                 {% set next_page = handler.get_argument("next", none) %}
@@ -61,13 +61,13 @@ $(document).ready(function() {
                 {% endif %}
                 <fieldset>
                     <div class="control-group">
-                        <label class="control-label" for="first_name">First name</label>
+                        <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="first_name" id="first_name">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="last_name">Last name</label>
+                        <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="last_name" id="last_name">
                         </div>
@@ -75,7 +75,7 @@ $(document).ready(function() {
 
                     {% if teams %}
                     <div class="control-group">
-                        <label class="control-label" for="team">Representing</label>
+                        <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
                         <div class="controls">
                             <select id="team" name="team">
                             {% for t in teams %}
@@ -89,21 +89,21 @@ $(document).ready(function() {
                     <hr>
 
                     <div id="username-input" class="control-group">
-                        <label class="control-label" for="username">Username</label>
+                        <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="1" maxlength="50" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
                             <span class="help-block"></span>
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="password">Password</label>
+                        <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
-                            <span class="help-block">Must be 6 characters or more.</span>
+                            <span class="help-block">{% trans %}Must be 6 characters or more.{% endtrans %}</span>
                         </div>
                     </div>
                     <div id="password-confirm-input" class="control-group">
-                        <label class="control-label" for="password-confirm">Confirm password</label>
+                        <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
                             <span class="help-block"></span>
@@ -122,16 +122,16 @@ $(document).ready(function() {
         <div id="confirmed-mask" style="display: none;">
             <h1>{% trans %}New user{% endtrans %}</h1>
 
-            <p>The user was created successfully!</p>
+            <p>{% trans %}The user was created successfully!{% endtrans %}</p>
 
-            <p>Your username is:</p>
+            <p>{% trans %}Your username is:{% endtrans %}</p>
 
             <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
             </p>
 
-            <p>The password you chose was stored securely.</p>
+            <p>{% trans %}The password you chose was stored securely.{% endtrans %}</p>
 
-            <a href="{{ contest_url() }}" class="btn btn-success btn-large">Back to login</a>
+            <a href="{{ contest_url() }}" class="btn btn-success btn-large">{% trans %}Back to login{% endtrans %}</a>
         </div>
 
     </div>
