@@ -6,7 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
-# Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -238,11 +238,14 @@ def build_frontend():
     """
     assert_not_root()
 
-    print("===== Running \"npm install\" to get front-end dependencies")
+    print("===== Running \"npm install\" to get CMS's front-end dependencies")
     os.chdir(os.path.join("cms", "server"))
-    os.system("npm install")
+    subprocess.check_call(["npm", "install"])
     os.chdir(os.path.join("..", "..", "cmsranking", "static"))
-    os.system("npm install")
+
+    print("===== Running \"npm install\" to get RWS's front-end dependencies")
+    subprocess.check_call(["npm", "install"])
+    os.chdir(os.path.join("..", ".."))
 
 
 def build():
