@@ -63,24 +63,24 @@ $(document).ready(function() {
                     <div class="control-group">
                         <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="first_name" id="first_name">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="50" type="text" class="input-xlarge" name="last_name" id="last_name">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
                         </div>
                     </div>
 
-                    {% if teams %}
+                    {% if teams|length > 0 %}
                     <div class="control-group">
                         <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
                         <div class="controls">
                             <select id="team" name="team">
                             {% for t in teams %}
                                 <option value="{{ t.code }}">{{ t.name }}</option>
-                                {% endfor %}
+                            {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -91,21 +91,21 @@ $(document).ready(function() {
                     <div id="username-input" class="control-group">
                         <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="50" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
                             <span class="help-block"></span>
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
+                            <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
                             <span class="help-block">{% trans %}Must be 6 characters or more.{% endtrans %}</span>
                         </div>
                     </div>
                     <div id="password-confirm-input" class="control-group">
                         <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="6" maxlength="50" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
+                            <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
                             <span class="help-block"></span>
                         </div>
                     </div>

@@ -31,8 +31,8 @@ import ipaddress
 import json
 import logging
 import re
-import tornado.web
 
+import tornado.web
 from sqlalchemy.orm.exc import NoResultFound
 
 from cms import config
@@ -66,8 +66,10 @@ class MainHandler(ContestHandler):
         self.render("overview.html", **self.r_params)
 
 
-class RegisterHandler(ContestHandler):
-    """Register handler.
+class RegistrationHandler(ContestHandler):
+    """Registration handler.
+
+    Used to create a user account (and participation) when this is allowed.
 
     """
 
@@ -85,16 +87,16 @@ class RegisterHandler(ContestHandler):
             username = self.get_argument("username")
             password = self.get_argument("password")
 
-            if not (1 <= len(first_name) <= self.MAX_INPUT_LENGTH):
+            if not 1 <= len(first_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
-            if not (1 <= len(last_name) <= self.MAX_INPUT_LENGTH):
+            if not 1 <= len(last_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
-            if not (1 <= len(username) <= self.MAX_INPUT_LENGTH):
+            if not 1 <= len(username) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
             if not re.match(r"^[A-Za-z0-9_-]+$", username):
                 raise ValueError()
-            if not (self.MIN_PASSWORD_LENGTH <= len(password) <=
-                    self.MAX_INPUT_LENGTH):
+            if not self.MIN_PASSWORD_LENGTH <= len(password) \
+                    <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
         except (tornado.web.MissingArgumentError, ValueError):
             raise tornado.web.HTTPError(400)
@@ -138,8 +140,11 @@ class RegisterHandler(ContestHandler):
         if not self.contest.allow_registration:
             raise tornado.web.HTTPError(404)
 
+        self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
+        self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
         self.r_params["teams"] = self.sql_session.query(Team)\
                                      .order_by(Team.name).all()
+
         self.render("register.html", **self.r_params)
 
 
