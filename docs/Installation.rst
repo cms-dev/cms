@@ -18,7 +18,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Python <http://www.python.org/>`_ >= 3.6;
 
-* `npm <https://www.npmjs.com/>`_ (to manage front-ent dependencies)
+* `npm <https://www.npmjs.com/>`_ (to manage front-end dependencies)
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
