@@ -45,15 +45,6 @@
     </td>
     {% endif %}
 {% endif %}
-{% if actual_phase >= +3 %}
-    <td class="considered_in_score">
-      {% if s.official %}
-          {% trans %}Yes{% endtrans %}
-      {% else %}
-          {% trans %}No{% endtrans %}
-      {% endif %}
-    </td>
-{% endif %}
 {% if submissions_download_allowed %}
     <td class="files">
         {# We replace '.%l' with the actual language only when it occurs as an extension at the end of the string and only when #}
