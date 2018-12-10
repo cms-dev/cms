@@ -17,10 +17,6 @@
         {% set num_cols = num_cols + 1 %}
     {% endif %}
 {% endif %}
-{% if actual_phase >= +3 %}
-        <col class="considered_in_score"/>
-    {% set num_cols = num_cols + 1 %}
-{% endif %}
 {% if submissions_download_allowed %}
         <col class="files"/>
     {% set num_cols = num_cols + 1 %}
