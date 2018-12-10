@@ -46,9 +46,6 @@
             <th class="total_score">{% trans %}Score{% endtrans %}</th>
     {% endif %}
 {% endif %}
-{% if actual_phase >= +3 %}
-            <th class="considered_in_score">{% trans %}Official{% endtrans %}</th>
-{% endif %}
 {% if submissions_download_allowed %}
             <th class="files">{% trans %}Files{% endtrans %}</th>
 {% endif %}
@@ -58,15 +55,16 @@
         </tr>
     </thead>
     <tbody>
-    {% if submissions|length == 0 %}
+    {% if submission_table_submissions|length == 0 %}
         <tr>
-            <td colspan="{{ num_cols }}" class="no_submissions">{% trans %}no submissions yet{% endtrans %}</td>
+            <td colspan="{{ num_cols }}" class="no_submissions">{% trans %}no submissions{% endtrans %}</td>
         </tr>
     {% else %}
-        {% for s in submissions|sort(attribute="timestamp")|reverse %}
+        {% for s in submission_table_submissions|sort(attribute="timestamp")|reverse %}
             {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
             {% set s_idx = submissions|length - loop.index0 %}
             {% set sr = s.get_result(s.task.active_dataset) or undefined %}
+            {% set submission_row_show_date = submission_table_show_date %}
             {% include "submission_row.html" %}
         {% endfor %}
     {% endif %}
