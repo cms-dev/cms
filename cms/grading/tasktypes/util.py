@@ -78,7 +78,7 @@ def delete_sandbox(sandbox, success=True, keep_sandbox=False):
     """
     # If the job was not successful, we keep the sandbox around.
     if not success:
-        logger.warning("Sandbox %s kept around because job did not succeeded.",
+        logger.warning("Sandbox %s kept around because job did not succeed.",
                        sandbox.get_root_path())
 
     delete = success and not config.keep_sandbox and not keep_sandbox
