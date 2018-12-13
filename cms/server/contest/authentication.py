@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_password(participation):
-    """Find out what password a participation is expected to provide.
+    """Return the password the participation can log in with.
 
     participation (Participation): a participation.
 
@@ -135,8 +135,8 @@ def validate_login(
                 "contest %s, at %s", ip_address, username, contest.name,
                 timestamp)
 
-    # We store the hashed password (if hashing is used) so that the
-    # expensive bcrypt hashing doesn't need to be done at every request.
+    # If hashing is used, the cookie stores the hashed password so that
+    # the expensive bcrypt call doesn't need to be done at every request.
     return (participation,
             json.dumps([username, correct_password, make_timestamp(timestamp)])
                 .encode("utf-8"))
