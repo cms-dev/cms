@@ -26,7 +26,7 @@ __all__ = ["Php"]
 
 class Php(Language):
     """This defines the PHP programming language, interpreted with the
-    standard PHP interpret available in the system.
+    standard PHP interpreter available in the system.
 
     """
 
