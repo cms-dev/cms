@@ -223,7 +223,7 @@ CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
     }
     else {
 	// otherwise only return the number of days.
-        return days + " days ";
+        return days + $("#translation_days").text();
     }
 };
 
