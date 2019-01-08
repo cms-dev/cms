@@ -216,13 +216,13 @@ CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
     var seconds = Math.floor(timedelta);
 
     if (days <= 2) {
-	// if less than 72 hours left, return the exact number of hours.
+        // If less than 72 hours left, return the exact number of hours, minutes and seconds.
         return this.two_digits(days * 24 + hours) + ":"
             + this.two_digits(minutes) + ":"
             + this.two_digits(seconds);
     }
     else {
-	// otherwise only return the number of days.
+        // Otherwise only return the number of days.
         return days + $("#translation_days").text();
     }
 };
