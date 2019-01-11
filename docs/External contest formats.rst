@@ -65,6 +65,8 @@ The following are optional keys.
 
 - ``stop`` (integer; also accepted: ``fine``): the UNIX timestamp of the end of the contest (copied in the ``stop`` field); defaults to zero, meaning that contest times haven't yet been decided.
 
+- ``timezone`` (string): the timezone for the contest (e.g., "Europe/Rome").
+
 - ``per_user_time`` (integer): if set, the contest will be USACO-like (as explained in :ref:`configuringacontest_usaco-like-contests`); if unset, the contest will be traditional (not USACO-like).
 
 - ``token_*``: additional token parameters for the contest, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there).
