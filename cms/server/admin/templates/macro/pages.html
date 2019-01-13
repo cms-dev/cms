@@ -10,13 +10,31 @@ pages (int): total number of pages.
   {% if pages > 1 %}
 <div>
   Pages:
-    {% for i in range(pages) %}
-      {% if i != page %}
-  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
-      {% else %}
-  {{ i + 1 }}
+    {% if pages <= 20 %}
+      {{ range_selector(page_url, page, pages, 0, pages) }}
+    {% else %}
+      {% if page != 0 %}
+  <a href="{{ page_url(page=0) }}">First</a>
       {% endif %}
-    {% endfor %}
+      {{ range_selector(page_url, page, pages, page - 2, pages + 3) }}
+      {% if page != pages - 1 %}
+  <a href="{{ page_url(page=pages - 1) }}">Last</a>
+      {% endif %}
+    {% endif %}
 </div>
   {% endif %}
+{%- endmacro %}
+
+
+{% macro range_selector(page_url, page, pages, start, end) -%}
+{#
+Show a page range selector from start (included) to end (excluded).
+#}
+  {% for i in range([0, start]|max, [pages, end]|min) %}
+    {% if i != page %}
+  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
+    {% else %}
+  {{ i + 1 }}
+    {% endif %}
+  {% endfor %}
 {%- endmacro %}
