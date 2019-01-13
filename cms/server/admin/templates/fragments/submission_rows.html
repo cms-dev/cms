@@ -1,21 +1,12 @@
+{% import 'macro/pages.html' as macro_pages %}
+
 {# This snippet shows a table using the list submissions as input #}
 {% if submission_count == 0 %}
 <p>No submissions found.</p>
 
 {% else %}
 
-{% if submission_count > submissions|length %}
-<div>
-  Pages:
-  {% for i in range(submission_pages) %}
-    {% if i != submission_page %}
-  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
-    {% else %}
-  {{ i + 1 }}
-    {% endif %}
-  {% endfor %}
-</div>
-{% endif %}
+{{ macro_pages.selector(page_url, submission_page, submission_pages) }}
 
 <table class="bordered">
   <thead>
