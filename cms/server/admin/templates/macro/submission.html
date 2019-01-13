@@ -1,10 +1,17 @@
-{# This snippet shows a row of a submission table using the variable s as input #}
-
 {% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
 
-{% if shown_dataset is defined %}
-  {% set dataset = shown_dataset %}
-{% else %}
+{% macro row(admin, url, s, dataset=None) -%}
+{#
+Render a table's row containing a submission data.
+
+admin (Admin): the logged in admin.
+url (Url): the URL instance referring to the root of AWS.
+s (Submission): the submission to render.
+dataset (Dataset|None): the dataset to show results for, or if not defined use
+    the active one.
+#}
+
+{% if dataset is none %}
   {% set dataset = s.task.active_dataset %}
 {% endif %}
 
@@ -122,3 +129,5 @@
            dataset_id=dataset.id) }}
   </td>
 </tr>
+
+{%- endmacro %}
