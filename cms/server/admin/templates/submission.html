@@ -1,3 +1,5 @@
+{% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
+
 {% extends "base.html" %}
 
 {% block core %}
@@ -164,7 +166,8 @@
       <tr>
         <td>Reevaluate</td>
         <td>
-          {{ ReevaluationButtons(
+          {{ macro_reevaluation_buttons.reevaluation_buttons(
+                 admin.permission_all,
                  url("submission", s.id, shown_dataset.id),
                  submission_id=s.id,
                  dataset_id=shown_dataset.id) }}

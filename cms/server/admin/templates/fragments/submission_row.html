@@ -1,5 +1,7 @@
 {# This snippet shows a row of a submission table using the variable s as input #}
 
+{% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
+
 {% if shown_dataset is defined %}
   {% set dataset = shown_dataset %}
 {% else %}
@@ -113,7 +115,8 @@
     {{ s.short_comment }}
   </td>
   <td>
-    {{ ReevaluationButtons(
+    {{ macro_reevaluation_buttons.reevaluation_buttons(
+           admin.permission_all,
            url("submission", s.id, dataset.id),
            submission_id=s.id,
            dataset_id=dataset.id) }}

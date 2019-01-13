@@ -1,8 +1,9 @@
-{% macro ReevaluationButtons(next_page,
-                             submission_id=None,
-                             dataset_id=None,
-                             participation_id=None,
-                             contest_id=None) %}
+{% macro reevaluation_buttons(allowed,
+                              next_page,
+                              submission_id=None,
+                              dataset_id=None,
+                              participation_id=None,
+                              contest_id=None) %}
 {#
 Render reevaluation buttons for the given filters.
 
@@ -16,6 +17,7 @@ These are the possible configuration of not-none arguments received:
 - contest_id: reevaluate all submission results of the contest (of all
   participations and tasks, for all datasets).
 
+allowed (bool): whether the logged in admin is allowed to reevaluate.
 next_page (str): the URL to redirect to after the invalidation request
     has been sent.
 submission_id (int|None): id of the submission to invalidate.
@@ -42,7 +44,7 @@ contest_id (int|None): the id of the contest to invalidate.
                   'level': 'compilation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                  );"
-{% if not admin.permission_all %}
+{% if not allowed %}
         disabled
 {% endif %}
         title="Compilation" >C</button>
@@ -55,7 +57,7 @@ contest_id (int|None): the id of the contest to invalidate.
                   'level': 'evaluation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                   );"
-{% if not admin.permission_all %}
+{% if not allowed %}
         disabled
 {% endif %}
         title="Evaluation" >E</button>
@@ -68,7 +70,7 @@ contest_id (int|None): the id of the contest to invalidate.
                  },
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
                  );"
-{% if not admin.permission_all %}
+{% if not allowed %}
         disabled
 {% endif %}
         title="Score" >S</button>
