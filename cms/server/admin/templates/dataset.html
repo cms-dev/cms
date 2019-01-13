@@ -1,3 +1,5 @@
+{% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
+
 {% extends "base.html" %}
 
 {% block core %}
@@ -13,7 +15,8 @@
 <div id="submissions">
   <p>
     Reevaluate all {{ submission_count }} submissions for this dataset
-    {{ ReevaluationButtons(
+    {{ macro_reevaluation_buttons.reevaluation_buttons(
+           admin.permission_all,
            url("dataset", shown_dataset.id),
            dataset_id=shown_dataset.id) }}
   </p>

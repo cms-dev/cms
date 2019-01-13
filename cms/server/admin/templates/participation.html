@@ -1,3 +1,5 @@
+{% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
+
 {% extends "base.html" %}
 
 {% block js %}
@@ -36,7 +38,8 @@ function update_additional_answer(element, invoker)
 <div id="submissions">
   <p>
     Reevaluate all {{ submission_count }} submissions for this user in this contest (for all datasets)
-    {{ ReevaluationButtons(
+    {{ macro_reevaluation_buttons.reevaluation_buttons(
+           admin.permission_all,
            url("contest", contest.id, "user", participation.user_id, "edit"),
            participation_id=participation.id) }}
   </p>
