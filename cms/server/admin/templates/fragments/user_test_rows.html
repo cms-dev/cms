@@ -1,21 +1,12 @@
+{% import 'macro/pages.html' as macro_pages %}
+
 {# This snippet shows a table using the list user_tests as input #}
 {% if user_test_count == 0 %}
 <p>No user tests found.</p>
 
 {% else %}
 
-{% if user_test_count > user_tests|length %}
-<div>
-  Pages:
-  {% for i in range(user_test_pages) %}
-    {% if i != user_test_page %}
-  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
-    {% else %}
-  {{ i + 1 }}
-    {% endif %}
-  {% endfor %}
-</div>
-{% endif %}
+{{ macro_pages.selector(page_url, user_test_page, user_test_pages) }}
 
 <table class="bordered">
   <thead>

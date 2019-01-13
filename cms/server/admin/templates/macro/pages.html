@@ -1,0 +1,22 @@
+{% macro selector(page_url, page, pages) -%}
+{#
+Show a page selector for a paginated view.
+
+page_url (Url): the URL instance referring to the page displaying the table.
+page (int): 0-based number of the current page.
+pages (int): total number of pages.
+#}
+
+  {% if pages > 1 %}
+<div>
+  Pages:
+    {% for i in range(pages) %}
+      {% if i != page %}
+  <a href="{{ page_url(page=i) }}">{{ i + 1 }}</a>
+      {% else %}
+  {{ i + 1 }}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+</div>
+{%- endmacro %}
