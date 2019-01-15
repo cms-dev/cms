@@ -83,7 +83,8 @@ def get_type_for_file_name(filename):
         e.g., "application/pdf".
 
     """
-    mimetype = xdg.Mime.get_type_by_name(filename).canonical()
+    mimetype = xdg.Mime.get_type_by_name(filename)
     if mimetype is None:
         return None
+    mimetype = mimetype.canonical()
     return "%s/%s" % (mimetype.media, mimetype.subtype)
