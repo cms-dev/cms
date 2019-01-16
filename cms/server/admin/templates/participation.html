@@ -1,6 +1,7 @@
 {% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
 
 {% extends "base.html" %}
+{% import 'macro/submission.html' as macro_submission %}
 
 {% block js %}
 function question_reply_toggle(element, invoker)
@@ -44,8 +45,13 @@ function update_additional_answer(element, invoker)
            participation_id=participation.id) }}
   </p>
 
-  {% set page_url = url["contest"][contest.id]["user"][selected_user.id]["edit"] %}
-  {% include "fragments/submission_rows.html" %}
+  {{ macro_submission.rows(
+         admin,
+         url,
+         url["contest"][contest.id]["user"][selected_user.id]["edit"],
+         submissions,
+         submission_page,
+         submission_pages) }}
 
   <div class="hr"></div>
 </div>
