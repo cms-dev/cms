@@ -1,4 +1,51 @@
 {% import "macro/reevaluation_buttons.html" as macro_reevaluation_buttons %}
+{% import 'macro/pages.html' as macro_pages %}
+
+
+{% macro rows(admin, url, page_url, submissions, page, pages, dataset=none) -%}
+{#
+Render a table of submission data.
+
+admin (Admin): the logged in admin.
+url (Url): the URL instance referring to the root of AWS.
+page_url (Url): the URL instance referring to the page displaying the table.
+submissions ([Submissions]): the list of submissions to display in the table
+    (current page only).
+page (int): 0-based number of the current page.
+pages (int): total number of pages.
+dataset (Dataset|None): the dataset to show results for, or if not defined use
+    the active one.
+#}
+{% if pages == 0 %}
+<p>No submissions found.</p>
+
+{% else %}
+
+{{ macro_pages.selector(page_url, page, pages) }}
+
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Task</th>
+      <th>Status</th>
+      <th>Files</th>
+      <th>Token</th>
+      <th>Official</th>
+      <th>Comment</th>
+      <th>Reevaluate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in submissions|sort(attribute="timestamp")|reverse %}
+      {{ row(admin, url, s, dataset) }}
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{%- endmacro %}
+
 
 {% macro row(admin, url, s, dataset=None) -%}
 {#
