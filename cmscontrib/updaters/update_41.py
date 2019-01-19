@@ -96,7 +96,7 @@ class Updater:
             self.bad_filenames.append("%s.%s" % (class_, attr))
 
     def check_filename_schema(self, class_, attr, schema):
-        if not re.match('^[A-Za-z0-9_.-]+(\.%%l)?$', schema) \
+        if not re.match('^[A-Za-z0-9_.-]+(\.%l)?$', schema) \
                 or schema in {'.', '..'}:
             self.bad_filename_schemas.append("%s.%s" % (class_, attr))
 
