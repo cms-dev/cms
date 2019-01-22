@@ -366,10 +366,18 @@ class ProxyService(TriggeredService):
                         "score_mode": task.score_mode,
                     }
 
-                self.enqueue(ProxyOperation(contest_id ,ProxyExecutor.CONTEST_TYPE, contests))
-                self.enqueue(ProxyOperation(contest_id, ProxyExecutor.TEAM_TYPE, teams))
-                self.enqueue(ProxyOperation(contest_id, ProxyExecutor.USER_TYPE, users))
-                self.enqueue(ProxyOperation(contest_id, ProxyExecutor.TASK_TYPE, tasks))
+                self.enqueue(ProxyOperation(contest_id,
+                                            ProxyExecutor.CONTEST_TYPE,
+                                            contests))
+                self.enqueue(ProxyOperation(contest_id,
+                                            ProxyExecutor.TEAM_TYPE,
+                                            teams))
+                self.enqueue(ProxyOperation(contest_id,
+                                            ProxyExecutor.USER_TYPE,
+                                            users))
+                self.enqueue(ProxyOperation(contest_id,
+                                            ProxyExecutor.TASK_TYPE,
+                                            tasks))
 
     def operations_for_score(self, submission):
         """Send the score for the given submission to all rankings.
