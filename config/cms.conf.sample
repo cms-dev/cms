@@ -151,12 +151,14 @@
 
     "_section": "ScoringService",
 
-    "_help": "List of URLs (with embedded username and password) of the",
+    "_help": "List of [contest id, URL] tuples.",
+    "_help": "Contest id specifies which contest scores to send.",
+    "_help": "URL (with embedded username and password) of the",
     "_help": "RWSs where the scores are to be sent. Don't include the",
     "_help": "load balancing proxy (if any), just the backends. If any",
     "_help": "of them uses HTTPS specify a file with the certificates",
     "_help": "you trust.",
-    "rankings": ["http://usern4me:passw0rd@localhost:8890/"],
+    "rankings": [[1, "http://usern4me:passw0rd@localhost:8890/"]],
     "https_certfile": null,
 
 

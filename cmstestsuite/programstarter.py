@@ -244,7 +244,7 @@ class Program:
 
     def _check_ranking_web_server(self):
         """Health checker for RWS."""
-        url = urlsplit(self.cms_config["rankings"][0])
+        url = urlsplit(self.cms_config["rankings"][0][1])
         sock = socket.socket()
         sock.connect((url.hostname, url.port))
         sock.close()

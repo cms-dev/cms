@@ -39,8 +39,7 @@ def main():
     """
     test_db_connection()
     success = default_argument_parser("Ranking relayer for CMS.",
-                                      ProxyService,
-                                      ask_contest=ask_for_contest).run()
+                                      ProxyService).run()
     return 0 if success is True else 1
 
 

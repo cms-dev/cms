@@ -33,6 +33,7 @@ import gevent
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
+from cms.conf import config
 from cms.service.ProxyService import ProxyService
 from cmscommon.constants import SCORE_MODE_MAX
 
@@ -76,6 +77,8 @@ class TestProxyService(DatabaseMixin, unittest.TestCase):
 
         self.session.commit()
 
+        config.rankings[0][0] = self.contest.id
+
     def new_sr_unscored(self):
         submission = self.add_submission(task=self.task,
                                          participation=self.participation)
@@ -96,7 +99,7 @@ class TestProxyService(DatabaseMixin, unittest.TestCase):
 
     def test_startup(self):
         """Test that data is sent in the right order at startup."""
-        ProxyService(0, self.contest.id)
+        ProxyService(0)
 
         gevent.sleep(0.1)
 
