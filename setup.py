@@ -44,7 +44,7 @@ PACKAGE_DATA = {
         "admin/static/sh/*.*",
         "admin/templates/*.*",
         "admin/templates/fragments/*.*",
-        "admin/templates/views/*.*",
+        "admin/templates/macro/*.*",
         "contest/static/*.*",
         "contest/static/css/*.*",
         "contest/static/img/*.*",
