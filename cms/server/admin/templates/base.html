@@ -40,7 +40,7 @@ function init()
 
     {% if phase < 3 %}
     utils.update_remaining_time();
-    setInterval(function() { utils.update_remaining_time(); }, 1000);
+    var timer = setInterval(function() { utils.update_remaining_time(timer); }, 1000);
     {% endif %}
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);

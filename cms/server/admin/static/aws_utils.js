@@ -445,8 +445,10 @@ CMS.AWSUtils.prototype.two_digits = function(n) {
 
 /**
  * Update the remaining time showed in the "remaining" div.
+ *
+ * timer (int): handle for the timer that called this function, or -1 if none
  */
-CMS.AWSUtils.prototype.update_remaining_time = function() {
+CMS.AWSUtils.prototype.update_remaining_time = function(timer = -1) {
     // We assume this.phase always is the correct phase (since this
     // method also refreshes the page when the phase changes).
     var relevant_timestamp = null;
@@ -476,8 +478,8 @@ CMS.AWSUtils.prototype.update_remaining_time = function() {
     var countdown_sec =
         relevant_timestamp - this.timestamp - (now - this.first_date) / 1000;
     if (countdown_sec <= 0) {
+        clearInterval(timer);
         location.reload();
-        return;
     }
 
     $("#remaining_text").text(text);
