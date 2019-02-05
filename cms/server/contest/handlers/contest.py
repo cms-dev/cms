@@ -106,6 +106,7 @@ class ContestHandler(BaseHandler):
                 # render_params in this class assumes the contest is loaded,
                 # so we cannot call it without a fully defined contest. Luckily
                 # the one from the base class is enough to display a 404 page.
+                super().prepare()
                 self.r_params = super().render_params()
                 raise tornado.web.HTTPError(404)
         else:
