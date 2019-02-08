@@ -86,6 +86,9 @@ class RegistrationHandler(ContestHandler):
             last_name = self.get_argument("last_name")
             username = self.get_argument("username")
             password = self.get_argument("password")
+            email = self.get_argument("email")
+            if len(email) == 0:
+                email = None
 
             if not 1 <= len(first_name) <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
@@ -124,7 +127,7 @@ class RegistrationHandler(ContestHandler):
             raise tornado.web.HTTPError(409)
 
         # Store new user and participation
-        user = User(first_name, last_name, username, password)
+        user = User(first_name, last_name, username, password, email=email)
         self.sql_session.add(user)
 
         participation = Participation(user=user, contest=self.contest,

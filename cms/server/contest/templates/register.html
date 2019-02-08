@@ -72,6 +72,12 @@ $(document).ready(function() {
                             <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
                         </div>
                     </div>
+                    <div class="control-group">
+                        <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
+                        <div class="controls">
+                            <input minlength="0" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
+                        </div>
+                    </div>
 
                     {% if teams|length > 0 %}
                     <div class="control-group">
