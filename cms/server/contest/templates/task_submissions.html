@@ -331,14 +331,14 @@ $(document).ready(function () {
 
 {% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
-{% set submission_table_submissions = submissions|rejectattr("official")|list %}
-{% if submission_table_submissions|length > 0 %}
+{% if submissions|rejectattr("official")|list|length > 0 %}
 <h3>{% trans %}Unofficial submissions{% endtrans %}</h3>
+  {% set submission_table_official = false %}
   {% include "submission_table.html" %}
 <h3>{% trans %}Official submissions{% endtrans %}</h3>
 {% endif %}
 
-{% set submission_table_submissions = submissions|selectattr("official")|list %}
+{% set submission_table_official = true %}
 {% include "submission_table.html" %}
 
 <div class="modal fade hide wide" id="submission_detail">

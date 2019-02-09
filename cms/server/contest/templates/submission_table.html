@@ -51,16 +51,18 @@
         </tr>
     </thead>
     <tbody>
-    {% if submission_table_submissions|length == 0 %}
+    {% if submissions|length == 0 %}
         <tr>
             <td colspan="{{ num_cols }}" class="no_submissions">{% trans %}no submissions{% endtrans %}</td>
         </tr>
     {% else %}
-        {% for s in submission_table_submissions|sort(attribute="timestamp")|reverse %}
-            {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
-            {% set s_idx = submissions|length - loop.index0 %}
-            {% set sr = s.get_result(s.task.active_dataset) or undefined %}
-            {% include "submission_row.html" %}
+        {% for s in submissions|sort(attribute="timestamp")|reverse %}
+            {% if s.official == submission_table_official %}
+                {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
+                {% set s_idx = submissions|length - loop.index0 %}
+                {% set sr = s.get_result(s.task.active_dataset) or undefined %}
+                {% include "submission_row.html" %}
+            {% endif %}
         {% endfor %}
     {% endif %}
     </tbody>
