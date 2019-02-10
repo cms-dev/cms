@@ -1,3 +1,98 @@
+{% macro rows(url, translation, actual_phase, submissions,
+              can_use_tokens, submissions_download_allowed, official) -%}
+{#
+Render a submission table with all (un)official submissions passed.
+
+url (Url): the URL instance referring to the root of CWS.
+translation (Translation): locale to use to show messages.
+actual_phase (int): phase of the contest.
+submissions ([Submission]): all the submissions of the participation on this
+    task.
+can_use_tokens (boolean): whether tokens are allowed for this task.
+submissions_download_allowed (boolean): whether to allow users to download
+    their submissions.
+official (boolean): whether to display only the official (true) or unofficial
+    (false) submissions in the submissions list.
+#}
+{% set gettext = translation.gettext %}
+{% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
+<table class="submission_list table table-bordered table-striped">
+{% set num_cols = 2 %}
+    <colgroup>
+{% if show_date %}
+        <col class="datetime"/>
+{% else %}
+        <col class="time"/>
+{% endif %}
+        <col class="status"/>
+{% if score_type is defined %}
+    {% if 0 < score_type.max_public_score < score_type.max_score %}
+        <col class="public_score"/>
+        <col class="total_score"/>
+        {% set num_cols = num_cols + 2 %}
+    {% else %}
+        <col class="total_score"/>
+        {% set num_cols = num_cols + 1 %}
+    {% endif %}
+{% endif %}
+{% if submissions_download_allowed %}
+        <col class="files"/>
+    {% set num_cols = num_cols + 1 %}
+{% endif %}
+{% if can_use_tokens and actual_phase == 0 %}
+        <col class="token"/>
+    {% set num_cols = num_cols + 1 %}
+{% endif %}
+    </colgroup>
+    <thead>
+        <tr>
+{% if show_date %}
+            <th class="datetime">{% trans %}Date and time{% endtrans %}</th>
+{% else %}
+            <th class="time">{% trans %}Time{% endtrans %}</th>
+{% endif %}
+            <th class="status">{% trans %}Status{% endtrans %}</th>
+{% if score_type is defined %}
+    {% if 0 < score_type.max_public_score < score_type.max_score %}
+            <th class="public_score">{% trans %}Public score{% endtrans %}</th>
+            <th class="total_score">{% trans %}Total score{% endtrans %}</th>
+    {% else %}
+            <th class="total_score">{% trans %}Score{% endtrans %}</th>
+    {% endif %}
+{% endif %}
+{% if submissions_download_allowed %}
+            <th class="files">{% trans %}Files{% endtrans %}</th>
+{% endif %}
+{% if can_use_tokens and actual_phase == 0 %}
+            <th class="token">{% trans %}Token{% endtrans %}</th>
+{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+    {% if submissions|length == 0 %}
+        <tr>
+            <td colspan="{{ num_cols }}" class="no_submissions">{% trans %}no submissions{% endtrans %}</td>
+        </tr>
+    {% else %}
+        {% for s in submissions|sort(attribute="timestamp")|reverse %}
+            {% if s.official == official %}
+                {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
+                {{ row(
+                    url,
+                    translation,
+                    actual_phase,
+                    s,
+                    submissions|length - loop.index0,
+                    show_date,
+                    can_use_tokens,
+                    submissions_download_allowed) }}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    </tbody>
+</table>
+{%- endmacro %}
+
 {% macro row(url, translation, actual_phase, s, s_num, show_date,
              can_use_tokens, submissions_download_allowed) -%}
 {#

@@ -1,3 +1,5 @@
+{% import 'macro/submission.html' as macro_submission %}
+
 {% extends "contest.html" %}
 
 {% set page = "task_submissions" %}
@@ -285,7 +287,7 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{% trans %}Previous submissions{% endtrans %}</h2>
 
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED and actual_phase == 0 %}
+{% if can_use_tokens and actual_phase == 0 %}
 <div style="padding-bottom:10px">
     {% set can_play_token = actual_phase == 0 and (tokens_info[0] > 0 or tokens_info[0] == -1) %}
     {% set need_to_wait = tokens_info[2] is not none %}
@@ -329,17 +331,28 @@ $(document).ready(function () {
 </div>
 {% endif %}
 
-{% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
 {% if submissions|rejectattr("official")|list|length > 0 %}
 <h3>{% trans %}Unofficial submissions{% endtrans %}</h3>
-  {% set submission_table_official = false %}
-  {% include "submission_table.html" %}
+  {{ macro_submission.rows(
+      url,
+      translation,
+      actual_phase,
+      submissions,
+      can_use_tokens,
+      submissions_download_allowed,
+      false) }}
 <h3>{% trans %}Official submissions{% endtrans %}</h3>
 {% endif %}
 
-{% set submission_table_official = true %}
-{% include "submission_table.html" %}
+{{ macro_submission.rows(
+    url,
+    translation,
+    actual_phase,
+    submissions,
+    can_use_tokens,
+    submissions_download_allowed,
+    true) }}
 
 <div class="modal fade hide wide" id="submission_detail">
     <div class="modal-header">
