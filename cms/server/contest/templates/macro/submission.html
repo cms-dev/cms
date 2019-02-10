@@ -1,5 +1,26 @@
+{% macro row(url, translation, actual_phase, s, s_num, show_date,
+             can_use_tokens, submissions_download_allowed) -%}
+{#
+Render a row in a submission table.
+
+url (Url): the URL instance referring to the root of CWS.
+translation (Translation): locale to use to show messages.
+actual_phase (int): phase of the contest.
+s (Submission): the submission to display.
+s_num (int): 1-based position of the submission in the list of
+    submissions of the currently logged in participaiton on this task.
+show_date (boolean): whether to display only the time or also the date.
+can_use_tokens (boolean): whether tokens are allowed for this task.
+submissions_download_allowed (boolean): whether to allow users to download
+    their submissions.
+#}
+
+{% set gettext = translation.gettext %}
+{% set task = s.task %}
+{% set score_type = get_score_type(dataset=task.active_dataset) %}
+{% set sr = s.get_result(task.active_dataset) or undefined %}
 {% set status = sr.get_status() if sr is defined else SubmissionResult.COMPILING  %}
-<tr data-submission="{{ s_idx }}" data-status="{{ status }}">
+<tr data-submission="{{ s_num }}" data-status="{{ status }}">
 {% if show_date %}
     <td class="datetime">{{ s.timestamp|format_datetime }}</td>
 {% else %}
@@ -59,7 +80,7 @@
             {% if s.language is not none %}
                 {% set filename = filename|replace(".%l", (s.language|to_language).source_extension) %}
             {% endif %}
-        <a class="btn" href="{{ contest_url("tasks", task.name, "submissions", s_idx, "files", filename) }}">
+        <a class="btn" href="{{ contest_url("tasks", task.name, "submissions", s_num, "files", filename) }}">
             {% trans %}Download{% endtrans %}
         </a>
         {% else %}
@@ -77,7 +98,7 @@
                     {% endif %}
                 {% endif %}
                 <li>
-                    <a href="{{ contest_url("tasks", task.name, "submissions", s_idx, "files", filename) }}">
+                    <a href="{{ contest_url("tasks", task.name, "submissions", s_num, "files", filename) }}">
                         {{ filename }}
                     </a>
                 </li>
@@ -94,7 +115,7 @@
         {% else %}
             {# TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. #}
             {% if can_play_token and not need_to_wait %}
-        <form action="{{ contest_url("tasks", task.name, "submissions", s_idx, "token") }}" method="POST">
+        <form action="{{ contest_url("tasks", task.name, "submissions", s_num, "token") }}" method="POST">
             {{ xsrf_form_html|safe }}
             <button type="submit" class="btn btn-warning">{% trans %}Play!{% endtrans %}</button>
         </form>
@@ -107,3 +128,4 @@
     </td>
 {% endif %}
 </tr>
+{%- endmacro %}

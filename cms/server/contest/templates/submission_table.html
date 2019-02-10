@@ -1,3 +1,5 @@
+{% import 'macro/submission.html' as macro_submission %}
+
 <table class="submission_list table table-bordered table-striped">
 {% set num_cols = 2 %}
     <colgroup>
@@ -59,9 +61,15 @@
         {% for s in submissions|sort(attribute="timestamp")|reverse %}
             {% if s.official == submission_table_official %}
                 {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
-                {% set s_idx = submissions|length - loop.index0 %}
-                {% set sr = s.get_result(s.task.active_dataset) or undefined %}
-                {% include "submission_row.html" %}
+                {{ macro_submission.row(
+                    url,
+                    translation,
+                    actual_phase,
+                    s,
+                    submissions|length - loop.index0,
+                    show_date,
+                    can_use_tokens,
+                    submissions_download_allowed) }}
             {% endif %}
         {% endfor %}
     {% endif %}

@@ -51,6 +51,7 @@ PACKAGE_DATA = {
         "contest/static/img/mimetypes/*.*",
         "contest/static/js/*.*",
         "contest/templates/*.*",
+        "contest/templates/macro/*.*",
     ],
     "cms.service": [
         "templates/printing/*.*",
