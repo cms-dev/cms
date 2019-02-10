@@ -1,3 +1,5 @@
+{% import 'macro/submission.html' as macro_submission %}
+
 {% extends "contest.html" %}
 
 {% set page = "task_submissions" %}
@@ -342,17 +344,38 @@ $(document).ready(function () {
 </div>
 {% endif %}
 
-{% set show_date = not submissions|map(attribute="timestamp")|all("today") %}
 
 {% if submissions|rejectattr("official")|list|length > 0 %}
 <h3>{% trans %}Unofficial submissions{% endtrans %}</h3>
-  {% set submission_table_official = false %}
-  {% include "submission_table.html" %}
+  {{ macro_submission.rows(
+      url,
+      contest_url,
+      translation,
+      xsrf_form_html,
+      actual_phase,
+      task,
+      submissions,
+      can_use_tokens,
+      can_play_token,
+      can_play_token_now,
+      submissions_download_allowed,
+      false) }}
 <h3>{% trans %}Official submissions{% endtrans %}</h3>
 {% endif %}
 
-{% set submission_table_official = true %}
-{% include "submission_table.html" %}
+{{ macro_submission.rows(
+    url,
+    contest_url,
+    translation,
+    xsrf_form_html,
+    actual_phase,
+    task,
+    submissions,
+    can_use_tokens,
+    can_play_token,
+    can_play_token_now,
+    submissions_download_allowed,
+    true) }}
 
 <div class="modal fade hide wide" id="submission_detail">
     <div class="modal-header">
