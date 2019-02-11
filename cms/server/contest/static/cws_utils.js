@@ -218,7 +218,7 @@ CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
 };
 
 
-CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
+CMS.CWSUtils.prototype.update_time = function(usaco_like_contest, timer = -1) {
     var now = $.now() / 1000;
 
     // FIXME This may cause some problems around DST boundaries, as it
@@ -228,6 +228,12 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
 
     var server_time = now - this.client_timestamp + this.server_timestamp;
 
+    var contest_url = this.contest_url();
+    var reload_overview = function() {
+        clearInterval(timer);
+        window.location.href = contest_url;
+    };
+
     // TODO consider possible null values of this.current_phase_begin
     // and this.current_phase_end (they mean -inf and +inf
     // respectively)
@@ -236,7 +242,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case -2:
         // Contest hasn't started yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_url();
+            reload_overview();
         }
         $("#countdown_label").text(
             $("#translation_until_contest_starts").text());
@@ -260,7 +266,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case 0:
         // Contest is currently running.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_url();
+            reload_overview();
         }
         $("#countdown_label").text($("#translation_time_left").text());
         $("#countdown").text(
@@ -270,7 +276,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
         // User has already finished its time but contest hasn't
         // finished yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_url();
+            reload_overview();
         }
         $("#countdown_label").text(
             $("#translation_until_contest_ends").text());
@@ -280,7 +286,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case +2:
         // Contest has already finished but analysis mode hasn't started yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_url();
+            reload_overview();
         }
         $("#countdown_label").text(
             $("#translation_until_analysis_starts").text());
@@ -290,7 +296,7 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest) {
     case +3:
         // Contest has already finished. Analysis mode is running.
         if (server_time >= this.current_phase_end) {
-            window.location.href = this.contest_url();
+            reload_overview();
         }
         $("#countdown_label").text(
             $("#translation_until_analysis_ends").text());

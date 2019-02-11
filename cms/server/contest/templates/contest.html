@@ -32,8 +32,8 @@ var utils = new CMS.CWSUtils("{{ url() }}", "{{ contest_url() }}", "{{ contest.n
                              {{ actual_phase }});
 $(document).ready(function () {
     utils.update_time({% if contest.per_user_time is not none %}true{% else %}false{% endif %});
-    setInterval(function() {
-        utils.update_time({% if contest.per_user_time is not none %}true{% else %}false{% endif %});
+    var timer = setInterval(function() {
+        utils.update_time({% if contest.per_user_time is not none %}true{% else %}false{% endif %}, timer);
     }, 1000);
     utils.update_unread_count(0{% if page == "communication" %}, 0{% endif %});
     utils.update_notifications(true);
