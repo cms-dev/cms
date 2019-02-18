@@ -1,15 +1,15 @@
 # Translations template for Contest Management System.
-# Copyright (C) 2018 CMS development group
+# Copyright (C) 2019 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Contest Management System 1.4.dev0\n"
+"Project-Id-Version: Contest Management System 1.4rc1\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
+"POT-Creation-Date: 2019-02-18 21:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -315,6 +315,9 @@ msgid "Scoring..."
 msgstr ""
 
 msgid "Evaluated"
+msgstr ""
+
+msgid "status"
 msgstr ""
 
 msgid "Token request received"
