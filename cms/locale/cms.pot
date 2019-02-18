@@ -1,15 +1,15 @@
 # Translations template for Contest Management System.
-# Copyright (C) 2018 CMS development group
+# Copyright (C) 2019 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Contest Management System 1.4.dev0\n"
+"Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
+"POT-Creation-Date: 2019-02-23 11:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -317,6 +317,9 @@ msgstr ""
 msgid "Evaluated"
 msgstr ""
 
+msgid "status"
+msgstr ""
+
 msgid "Token request received"
 msgstr ""
 
@@ -476,6 +479,12 @@ msgid "Password"
 msgstr ""
 
 msgid "Login"
+msgstr ""
+
+msgid "Don't have an account?"
+msgstr ""
+
+msgid "Register"
 msgstr ""
 
 msgid "New message"
@@ -781,6 +790,51 @@ msgstr ""
 msgid "no print jobs yet"
 msgstr ""
 
+msgid "The passwords do not match!"
+msgstr ""
+
+msgid "This username is already taken, please choose a different one."
+msgstr ""
+
+msgid "New user"
+msgstr ""
+
+msgid "Please fill in the fields to register"
+msgstr ""
+
+msgid "First name"
+msgstr ""
+
+msgid "Last name"
+msgstr ""
+
+msgid "E-mail"
+msgstr ""
+
+msgid "Representing"
+msgstr ""
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Confirm password"
+msgstr ""
+
+msgid "The user was created successfully!"
+msgstr ""
+
+msgid "Your username is:"
+msgstr ""
+
+msgid "The password you chose was stored securely."
+msgstr ""
+
+msgid "Back to login"
+msgstr ""
+
 msgid "Compilation output"
 msgstr ""
 
@@ -815,6 +869,21 @@ msgid "Wait..."
 msgstr ""
 
 msgid "No tokens"
+msgstr ""
+
+msgid "Public score"
+msgstr ""
+
+msgid "Total score"
+msgstr ""
+
+msgid "Score"
+msgstr ""
+
+msgid "Token"
+msgstr ""
+
+msgid "no submissions"
 msgstr ""
 
 #, python-format
@@ -943,22 +1012,10 @@ msgstr ""
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr ""
 
-msgid "Public score"
+msgid "Unofficial submissions"
 msgstr ""
 
-msgid "Total score"
-msgstr ""
-
-msgid "Score"
-msgstr ""
-
-msgid "Official"
-msgstr ""
-
-msgid "Token"
-msgstr ""
-
-msgid "no submissions yet"
+msgid "Official submissions"
 msgstr ""
 
 msgid "Submission details"
