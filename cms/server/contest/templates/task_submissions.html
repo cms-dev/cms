@@ -302,7 +302,7 @@ $(document).ready(function () {
 
 {% if can_use_tokens_in_contest and actual_phase == 0 %}
 <div style="padding-bottom:10px">
-    {% if tokens_task == TOKEN_MODE_DISABLED %}
+    {% if not can_use_tokens %}
         {% trans %}Tokens are not allowed on this task.{% endtrans %}
     {% elif can_play_token %}
         {% if tokens_info[0] == -1 %}
