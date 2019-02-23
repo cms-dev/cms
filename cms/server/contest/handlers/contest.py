@@ -235,9 +235,10 @@ class ContestHandler(BaseHandler):
         task (Task): a task for the contest that is being served.
         submission_num (str): a positive number, in decimal encoding.
 
-        return (Submission|None): the submission_num-th submission, in
-            chronological order, that was sent by the currently logged
-            in contestant on the given task (None if not found).
+        return (Submission|None): the submission_num-th submission
+            (1-based), in chronological order, that was sent by the
+            currently logged in contestant on the given task (None if
+            not found).
 
         """
         return self.sql_session.query(Submission) \
