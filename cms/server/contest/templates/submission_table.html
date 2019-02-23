@@ -21,7 +21,7 @@
         <col class="files"/>
     {% set num_cols = num_cols + 1 %}
 {% endif %}
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_task != TOKEN_MODE_DISABLED and actual_phase == 0 %}
+{% if can_use_tokens and actual_phase == 0 %}
         <col class="token"/>
     {% set num_cols = num_cols + 1 %}
 {% endif %}
@@ -45,7 +45,7 @@
 {% if submissions_download_allowed %}
             <th class="files">{% trans %}Files{% endtrans %}</th>
 {% endif %}
-{% if tokens_contest != TOKEN_MODE_DISABLED and tokens_task != TOKEN_MODE_DISABLED and actual_phase == 0 %}
+{% if can_use_tokens and actual_phase == 0 %}
             <th class="token">{% trans %}Token{% endtrans %}</th>
 {% endif %}
         </tr>

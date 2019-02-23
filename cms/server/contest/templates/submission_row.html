@@ -92,15 +92,19 @@
         {% if s.token is not none %}
         <a class="btn disabled">{% trans %}Played{% endtrans %}</a>
         {% else %}
-            {# TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. #}
-            {% if can_play_token and not need_to_wait %}
+            {% if can_play_token_now %}
+              {# Can play a token right now: show the button. #}
         <form action="{{ contest_url("tasks", task.name, "submissions", s_idx, "token") }}" method="POST">
             {{ xsrf_form_html|safe }}
             <button type="submit" class="btn btn-warning">{% trans %}Play!{% endtrans %}</button>
         </form>
-            {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not none) %}
+            {% elif can_play_token or tokens_info[1] is not none %}
+              {# Can play a token, but only after a min_interval expires,
+                 or after the next token generation: ask to wait. #}
         <a class="btn btn-warning disabled">{% trans %}Wait...{% endtrans %}</a>
             {% else %}
+              {# No tokens to play at this moment, nor more will be
+                 generated: tell the user there are no tokens. #}
         <a class="btn disabled">{% trans %}No tokens{% endtrans %}</a>
             {% endif %}
         {% endif %}
