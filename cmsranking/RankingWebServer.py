@@ -57,10 +57,11 @@ logger = logging.getLogger(__name__)
 class CustomUnauthorized(Unauthorized):
 
     def __init__(self, realm_name):
+        super().__init__()
         self.realm_name = realm_name
 
     def get_response(self, environ=None):
-        response = Unauthorized.get_response(self, environ)
+        response = super().get_response(environ)
         # XXX With werkzeug-0.9 a full-featured Response object is
         # returned: there is no need for this.
         response = Response.force_type(response)
