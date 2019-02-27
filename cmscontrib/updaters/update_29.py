@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2019 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -79,7 +80,9 @@ class Updater:
                 v["evaluation_text"] = fix_text(v["evaluation_text"])
 
             if v["_class"] == "User":
-                v["preferred_languages"] = json.loads(v["preferred_languages"])
+                v["preferred_languages"] = \
+                    json.loads(v["preferred_languages"]) \
+                    if "preferred_languages" in v else []
 
             if v["_class"] == "Task":
                 v["primary_statements"] = json.loads(v["primary_statements"])
