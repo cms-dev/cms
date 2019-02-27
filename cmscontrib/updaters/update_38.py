@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2019 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,8 +26,6 @@ newly-introduced fields 'compilation' and 'user_io'.
 
 """
 
-import json
-
 
 class Updater:
 
@@ -39,13 +38,9 @@ class Updater:
             if k.startswith("_"):
                 continue
             if v["_class"] == "Dataset" and v["task_type"] == "Communication":
-                try:
-                    params = json.loads(v["task_type_parameters"])
-                except json.JSONDecodeError:
-                    pass
-                else:
-                    if len(params) == 1:
-                        params.extend(["stub", "fifo_io"])
-                    v["task_type_parameters"] = json.dumps(params)
+                params = v["task_type_parameters"]
+                if len(params) == 1:
+                    params.extend(["stub", "fifo_io"])
+                v["task_type_parameters"] = params
 
         return self.objs
