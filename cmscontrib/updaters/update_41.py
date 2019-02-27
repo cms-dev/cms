@@ -2,7 +2,8 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-
+# Copyright © 2019 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -96,12 +97,12 @@ class Updater:
             self.bad_filenames.append("%s.%s" % (class_, attr))
 
     def check_filename_schema(self, class_, attr, schema):
-        if not re.match('^[A-Za-z0-9_.-]+(\.%l)?$', schema) \
+        if not re.match('^[A-Za-z0-9_.-]+(\\.%l)?$', schema) \
                 or schema in {'.', '..'}:
             self.bad_filename_schemas.append("%s.%s" % (class_, attr))
 
     def check_digest(self, class_, attr, digest):
-        if not re.match('^([0-9a-f]{40}|x)$', digest):
+        if digest is not None and not re.match('^([0-9a-f]{40}|x)$', digest):
             self.bad_digests.append("%s.%s" % (class_, attr))
 
     def run(self):
@@ -130,7 +131,8 @@ class Updater:
         if self.bad_codenames:
             logger.error(
                 "The following fields contained invalid codenames: %s. "
-                "They can only contain letters, digits, underscores and dashes."
+                "They can only contain letters, digits, underscores and "
+                "dashes."
                 % ", ".join(self.bad_codenames))
             bad = True
 
