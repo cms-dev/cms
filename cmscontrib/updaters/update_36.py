@@ -31,17 +31,36 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Fields that contain filenames.
-FILENAME_FIELDS = {"Executable": "filename",
-                   "UserTestManager": "filename",
-                   "UserTestExecutable": "filename",
-                   "PrintJob": "filename",
-                   "Attachment": "filename",
-                   "Manager": "filename"}
+FILENAME_FIELDS = {
+    "Executable": "filename",
+    "UserTestManager": "filename",
+    "UserTestExecutable": "filename",
+    "PrintJob": "filename",
+    "Attachment": "filename",
+    "Manager": "filename",
+}
+# Fields that contain a dictionary keyed by filename.
+FILENAME_DICT_FIELDS = {
+    "SubmissionResult": "executables",
+    "UserTest": "managers",
+    "UserTestResult": "executables",
+    "Task": "attachments",
+    "Dataset": "managers",
+}
 # Fields that contain filename schemas.
-FILENAME_SCHEMA_FIELDS = {"File": "filename",
-                          "UserTestFile": "filename"}
+FILENAME_SCHEMA_FIELDS = {
+    "File": "filename",
+    "UserTestFile": "filename",
+}
+# Fields that contain a dictionary keyed by filename schema.
+FILENAME_SCHEMA_DICT_FIELDS = {
+    "Submission": "files",
+    "UserTest": "files",
+}
 # Fields that contain arrays of filename schemas.
-FILENAME_SCHEMA_ARRAY_FIELDS = {"Task": "submission_format"}
+FILENAME_SCHEMA_ARRAY_FIELDS = {
+    "Task": "submission_format",
+}
 
 
 class Updater:
@@ -75,13 +94,21 @@ class Updater:
             if v["_class"] in FILENAME_FIELDS:
                 attr = FILENAME_FIELDS[v["_class"]]
                 v[attr] = self.check_filename(v[attr])
+            if v["_class"] in FILENAME_DICT_FIELDS:
+                attr = FILENAME_DICT_FIELDS[v["_class"]]
+                v[attr] = {self.check_filename(k): v
+                           for k, v in v[attr].items()}
             if v["_class"] in FILENAME_SCHEMA_FIELDS:
                 attr = FILENAME_SCHEMA_FIELDS[v["_class"]]
                 v[attr] = self.check_filename_schema(v[attr])
+            if v["_class"] in FILENAME_SCHEMA_DICT_FIELDS:
+                attr = FILENAME_SCHEMA_DICT_FIELDS[v["_class"]]
+                v[attr] = {self.check_filename_schema(k): v
+                           for k, v in v[attr].items()}
             if v["_class"] in FILENAME_SCHEMA_ARRAY_FIELDS:
                 attr = FILENAME_SCHEMA_ARRAY_FIELDS[v["_class"]]
-                v[attr] = list(self.check_filename_schema(schema)
-                               for schema in v[attr])
+                v[attr] = [self.check_filename_schema(schema)
+                           for schema in v[attr]]
 
         if self.warn:
             logger.warning("Some files contained '%' (the percent sign) in "

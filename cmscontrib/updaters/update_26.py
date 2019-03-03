@@ -40,7 +40,8 @@ CODENAMES = [
     ("Task", "name"),
     ("Testcase", "codename"),
     ("User", "username"),
-    ("Team", "code")]
+    ("Team", "code"),
+]
 
 
 FILENAMES = [
@@ -52,7 +53,19 @@ FILENAMES = [
     ("Manager", "filename"),
     ("UserTestFile", "filename"),
     ("UserTestManager", "filename"),
-    ("UserTestExecutable", "filename")]
+    ("UserTestExecutable", "filename"),
+]
+
+
+FILENAME_DICTS = [
+    ("Submission", "files"),
+    ("SubmissionResult", "executables"),
+    ("Task", "attachments"),
+    ("Dataset", "managers"),
+    ("UserTest", "files"),
+    ("UserTest", "managers"),
+    ("UserTestResult", "executables"),
+]
 
 
 DIGESTS = [
@@ -68,11 +81,13 @@ DIGESTS = [
     ("UserTestFile", "digest"),
     ("UserTestManager", "digest"),
     ("UserTestResult", "output"),
-    ("UserTestExecutable", "digest")]
+    ("UserTestExecutable", "digest"),
+]
 
 
 IP_ADDRESSES = [
-    ("Participation", "ip")]
+    ("Participation", "ip"),
+]
 
 
 # Encodes any unicode string using only "A-Za-z0-9_-". The encoding is
@@ -117,6 +132,18 @@ class Updater:
                             "field contains an invalid filename: `%s'.",
                             cls, col, v[col])
                         sys.exit(1)
+
+            for cls, col in FILENAME_DICTS:
+                if v["_class"] == cls and v[col] is not None:
+                    v[col] = {encode_codename(k, extra="%."): v
+                              for k, v in v[col].items()}
+                    for k in v[col]:
+                        if k in {"", ".", ".."}:
+                            logger.critical(
+                                "The dump contains an instance of %s whose %s "
+                                "field contains an invalid filename: `%s'.",
+                                cls, col, v[col])
+                            sys.exit(1)
 
             for cls, col in DIGESTS:
                 if v["_class"] == cls and v[col] is not None:
