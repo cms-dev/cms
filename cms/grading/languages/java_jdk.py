@@ -78,10 +78,10 @@ class JavaJDK(Language):
         if JavaJDK.USE_JAR:
             # executable_filename is a jar file, main is the name of
             # the main java class
-            return [["/usr/bin/java", "-Deval=true", "-Xmx512M", "-Xss64M",
+            return [["/usr/bin/java", "-Deval=true", "-Xmx1024M", "-Xss1024M",
                      "-cp", executable_filename, main] + args]
         else:
             unzip_command = ["/usr/bin/unzip", executable_filename]
-            command = ["/usr/bin/java", "-Deval=true", "-Xmx512M", "-Xss64M",
+            command = ["/usr/bin/java", "-Deval=true", "-Xmx1024M", "-Xss1024M",
                        main] + args
             return [unzip_command, command]
