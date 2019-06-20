@@ -1,0 +1,1055 @@
+# Azerbaijani translations for CMS:
+# Jamal Hasanov <jhasanov@gmail.com>, 2019.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-30 18:53+0400\n"
+"PO-Revision-Date: 2019-04-30 18:53+0400\n"
+"Last-Translator: Jamal Hasanov <jhasanov@gmail.com>\n"
+"Language-Team: Azerbaijan\n"
+"Language: az\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
+"X-Language: az_AZ\n"
+"X-Source-Language: C\n"
+
+msgid "Compilation succeeded"
+msgstr "Uğurlu kompilyasiya"
+
+msgid "Your submission successfully compiled to an executable."
+msgstr "Sizin yükləməniz uğurla işlək proqrama çevrildi."
+
+msgid "Compilation failed"
+msgstr "Kompilyasiya səhvi"
+
+msgid "Your submission did not compile correctly."
+msgstr "Sizin teqdiminiz duzgun kompilyasiya olunmur"
+
+msgid "Compilation timed out"
+msgstr "Kompilyasiya ayrılmış vaxt limiti aşıb"
+
+msgid ""
+"Your submission exceeded the time limit while compiling. This might be "
+"caused by an excessive use of C++ templates, for example."
+msgstr "sizin teqdim kompilyasiya zamanı vaxt limitini keçmişdir. Bu artıq işledilmiş C++ şablonundan neticelene biler."
+
+#, fuzzy, python-format
+msgid ""
+"Compilation killed with signal %s (could be triggered by violating memory "
+"limits)"
+msgstr "Kompilyasiya %s siqnalı ilə dayandırılmışdır (yaddaş limiti ilə bağlı ola bilər)."
+
+msgid "Output is correct"
+msgstr "Netice düzgündür"
+
+msgid "Your submission ran and gave the correct answer"
+msgstr "Sizin həll işledi ve düzgün cavab verdi"
+
+#, fuzzy
+msgid "Output is partially correct"
+msgstr "Netice qismen düzgündür"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr "Sizin həll işlədi ve qismən düzgün cavab verdi"
+
+msgid "Output isn't correct"
+msgstr  "Nəticə düzgün deyil"
+
+msgid "Your submission ran, but gave the wrong answer"
+msgstr "Sizin həll işledi ve yanlış cavab verdi"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "Yoxlama %s faylını yarada bilmədi"
+
+msgid "Your submission ran, but did not write on the correct output file"
+msgstr "Sizin həll işlədi lakin düzgün nəticə faylinda yazılmadı"
+
+msgid "Execution timed out"
+msgstr "İcraya ayrılan limit aşıb"
+
+msgid "Your submission used too much CPU time."
+msgstr "Sizin teqdim heddinden artıq CPU vaxtı işledib"
+
+msgid "Execution timed out (wall clock limit exceeded)"
+msgstr "İcra dayandırılmışdır (divar saatı limiti icra edildi"
+
+msgid ""
+"Your submission used too much total time. This might be triggered by "
+"undefined code, or buffer overflow, for example. Note that in this case the "
+"CPU time visible in the submission details might be much smaller than the "
+"time limit."
+msgstr ""
+"Sizin həll həddindən artıq zaman istifadə edib. Bu yanlış kodlaşdırma, buferin dolması kimi "
+"səbələrdən ola bilər. Nəzərə alın ki, bu halda həllin təfərrüatlarında göstərilən "
+"CPU zamanı işləmə zamanından kiçik ola bilər."
+
+#, python-format
+msgid ""
+"Execution killed with signal %s (could be triggered by violating memory "
+"limits)"
+msgstr ""
+"İcra %s siqnalı ilə dayandırılmışdır (yaddaş limiti ilə bağlı ola bilər)"
+
+msgid ""
+"Your submission was killed with the specified signal. Among other things, "
+"this might be caused by exceeding the memory limit. Note that if this is the "
+"reason, the memory usage visible in the submission details is the usage "
+"before the allocation that caused the signal."
+msgstr ""
+"İcra məcburi şəkildə dayandırılmışdır. Bu ifrat yaddaş istifadəsi ilə bağlı ola bilər."
+
+msgid "Execution failed because the return code was nonzero"
+msgstr "Cavab kodu sıfırdan fərqli olduğu üçün icra səhvi qeydə alındı"
+
+msgid ""
+"Your submission failed because it exited with a return code different from 0."
+msgstr "Sizin təqdim 0-dan fərqli kod qaytardığı üçün uğursuzdur"
+
+msgid "N/A"
+msgstr "məlumat yoxdur"
+
+msgid "Score details temporarily unavailable."
+msgstr "Hesab detalları müvəqqəti olaraq əlçatan deyildir."
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "Altməsələ %(index)s"
+
+msgid "Outcome"
+msgstr "Nəticə"
+
+msgid "Details"
+msgstr "Təfərrüatlar"
+
+msgid "Execution time"
+msgstr "İcra vaxtı"
+
+msgid "Memory used"
+msgstr "Yaddaş istifadəsi"
+
+msgid "Not correct"
+msgstr "Düzgün deyil"
+
+msgid "Correct"
+msgstr "Düzgün"
+
+msgid "Partially correct"
+msgstr "Qismən düzgün"
+
+msgid "Invalid files in submission"
+msgstr "Teqdimde yanlış fayl"
+
+msgid "Execution completed successfully"
+msgstr "İcra müvəffəqiyyətlə başa çatıb"
+
+msgid "No compilation needed"
+msgstr "Kompilyasiyaya ehtiyac yoxdur"
+
+msgid "File not submitted"
+msgstr "Fayl yuklənməyib"
+
+msgid "loading..."
+msgstr "yuklenir..."
+
+msgid "unknown"
+msgstr "naməlum"
+
+msgid "contest-token"
+msgstr "müsabiqə-açar"
+
+msgid "contest-tokens"
+msgstr "müsabiqə-açarları"
+
+msgid "task-token"
+msgstr "tapşırıq-açar"
+
+msgid "task-tokens"
+msgstr "tapşırıq-açarları"
+
+msgid "token"
+msgstr "açar"
+
+msgid "tokens"
+msgstr "açarlar"
+
+#, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "Sizin bu tapşırıq üçün uyğun %(type_pl)s yoxdur."
+
+#, python-format
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "Для этой задачи у вас неограниченное количество %(type_pl)s."
+
+#, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "Вы начинаете без %(type_pl)s."
+
+#, python-format
+msgid "You start with one %(type_s)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
+msgstr[0] "Siz %(type_s)s ilə başlayırsınız."
+msgstr[1] "Siz %(type_s)s ilə başlayırsınız."
+
+#, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_interval)g minutes "
+msgstr[0] "Hər dəqiqə "
+msgstr[2] "Hər %(gen_interval)g dəqiqədən bir "
+
+#, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "siz daha bir %(type_s)s alırsınız,"
+msgstr[0] "siz əlavə %(type_s)s alırsınız,"
+
+#, python-format
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
+msgstr[0] "maksimum bir  %(type_s)s"
+msgstr[1] "maksimal olaraq %(type_s)s"
+
+#, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "siz əlavə %(type_s)s alırsınız."
+msgstr[1] "siz əlavə %(type_s)s alırsınız."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Sizdə artıq %(type_pl)s yoxdur."
+
+#, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
+msgstr[0] "Siz hər saniiyədə bir %(type_s)s istifadə edə bilərsiniz"
+msgstr[1] "Siz hər %(min_interval)g saniyədə bir %(type_s)s istifadə edə bilərsiniz"
+
+#, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "və maksimum bir %(type_s)s"
+msgstr[1] "və maksimum %(max_number)d sayda %(type_s)s"
+
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "Siz hər saniyədə bir %(type_s)s istifadə edə bilərsiniz"
+msgstr[1] "Siz hər %(min_interval)g saniyədə bir %(type_s)s istifadə edə bilərsiniz"
+
+#, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "Siz cəmi bir %(type_s)s istifadə edə bilərsiniz."
+msgstr[1] "Siz maksimum %(max_number)d sayda %(type_s)s. istifadə edə bilərsiniz"
+
+#, fuzzy
+msgid "You have no limitations on how you use them."
+msgstr "İstifadə üçün limitlenmə yoxdur."
+
+#, fuzzy
+msgid "Question too big!"
+msgstr "Sual çox böyükdür!"
+
+msgid "You have reached the question length limit."
+msgstr "Siz sual ölçü limitinə çatdınız"
+
+msgid "Question received"
+msgstr "Sual qəbul edildi"
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr "Sizin sual qəbul edildi ve siz cavablandıqda bildiriş alacaqsınız."
+
+#, fuzzy
+msgid "Too many print jobs!"
+msgstr "Çoxlu çap etmə işləri!"
+
+#, fuzzy, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Siz maksimum çap etme %d işlerine çatmısınız."
+
+#, fuzzy
+msgid "Invalid format!"
+msgstr "Etibarsız format!"
+
+msgid "Please select the correct files."
+msgstr "Zəhmət olmasa düzgün faylı seçin."
+
+#, fuzzy
+msgid "File too big!"
+msgstr "Fayl çox böyükdür!"
+
+#, fuzzy, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Her fayl en çoxu %d baytlar uzunluğunda olmalıdır ."
+
+#, fuzzy
+msgid "Print job storage failed!"
+msgstr "çap işi saxlanması uğursuzdur!"
+
+msgid "Please try again."
+msgstr "Zəhmət olmasa yeniden cəhd edin."
+
+#, fuzzy
+msgid "Print job received"
+msgstr "çap işi qəbul edildi"
+
+msgid "Your print job has been received."
+msgstr " Sizin çap işiniz əldə edildi"
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr ""
+"Siz butun tapşırıqlar boyunca maksimum teqdim limitinə çatmısınız %d."
+
+#, python-format
+msgid ""
+"You have reached the maximum limit of at most %d submissions on this task."
+msgstr ""
+"Siz bu tapşırıqda maksimum teqdim limitinə çatmısınız %d."
+
+msgid "Too many submissions!"
+msgstr "Çoxlu teqdim!"
+
+#, python-format
+msgid ""
+"Among all tasks, you can submit again after %d seconds from last submission."
+msgstr ""
+"Butun tapşırıqlar arasında axırıncı təqdim etdiyinizden dərhal sonra siz yenidən təqdim edə bilərsiniz."
+
+#, python-format
+msgid ""
+"For this task, you can submit again after %d seconds from last submission."
+msgstr "Bu tapşırığı, axırıncı yükləmədən %d saniyə sonra yenidən yükləyə bilərsiniz. "
+
+msgid "Submissions too frequent!"
+msgstr "Yükləmələr çox tez-tez baş verir!"
+
+msgid "Invalid submission format!"
+msgstr "Yüklənilən fayl yanlış formatdadır!"
+
+msgid "Invalid archive format!"
+msgstr "Yanlış formatda arxiv faylı!"
+
+msgid "The submitted archive could not be opened."
+msgstr "Göndərilən arxiv fayl açıla bilmir."
+
+#, fuzzy
+msgid "Cannot recognize the submission language."
+msgstr "Yüklənmiş faylın proqramlaşdırma dili tanınmır."
+
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr "%s dili yarışmada icazə verilmir."
+
+msgid "Invalid submission!"
+msgstr "Yanlış yükləmə!"
+
+msgid "Submission too big!"
+msgstr "Yüklənilən faylın həcmi çox böyükdür!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Hər bir mənbə faylı maksimum %d bayt uzunluğunda olmalıdır."
+
+msgid "Submission storage failed!"
+msgstr "Fayl yaddaşa yazılmadı!"
+
+msgid "Submission received"
+msgstr "Fayl qəbul olundu"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Yükləməniz qəbul olundu və hal hazırda qiymətləndirmə mərhəsindədir."
+
+msgid "Compiling..."
+msgstr "Emal olunur..."
+
+msgid "details"
+msgstr "Detallar"
+
+msgid "Evaluating..."
+msgstr "Qiymətləndirilir..."
+
+msgid "Scoring..."
+msgstr "Xallar verilir..."
+
+msgid "Evaluated"
+msgstr "Qiymətləndirildi"
+
+msgid "Token request discarded"
+msgstr "Açar müraciəti ləğv edildi"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Sizin müraciət ləğv olundu çünki, sizdə kifayət qədər açar yoxdur"
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"Sizin müraciət qəbul edilmədi, çünki siz artıq açarı istifadə etmisiniz."
+
+msgid "Token request received"
+msgstr "Açar müraciəti qəbul olundu."
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Sizin müraciət qəbul olundu və yüklənmə üçün təqdim edildi."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "Siz bütün tapşırıqlar arasında maximum %d test sayına çatmısınız."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "Siz maximum %d test sayına çatmısınız."
+
+msgid "Too many tests!"
+msgstr "Həddindən çox testlər!"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr ""
+"Bütün tapşırıqlar arasından yenidən test etməyi axırıncı testdən %d saniyə sonra edə bilərsiniz. "
+
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr ""
+"Bu tapşırıq üçün, yenidən test etməyi axırıncı testdən %d saniyə sonra edə bilərsiniz. "
+
+
+msgid "Tests too frequent!"
+msgstr "Testlər tez-tez baş verir!"
+
+msgid "Invalid test format!"
+msgstr "Yanlış test formatı!"
+
+#, fuzzy
+msgid "Cannot recognize the user test language."
+msgstr "İstifadəçinin daxil etdiyiest dili müəyyən edilmədi"
+
+msgid "Invalid test!"
+msgstr "Yanlış test!"
+
+msgid "Test too big!"
+msgstr "Testin həcmi çox böyükdür!"
+
+msgid "Input too big!"
+msgstr "Daxil edilən fayl çox böyükdür!"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "Daxil edilən fayl ən azı %d bayt olmalıdır."
+
+msgid "Test storage failed!"
+msgstr "Testin yaddaşa yazılmasında səhv baş verdi!"
+
+msgid "Test received"
+msgstr "Test qəbul olundu"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Sizin test qəbul olundu və hal-hazırda icra olunur."
+
+msgid "Executing..."
+msgstr "İcra olunur..."
+
+msgid "Executed"
+msgstr "İcra olundu"
+
+msgid "Communication"
+msgstr "Kommunikasiya"
+
+msgid "Announcements"
+msgstr "Elanlar"
+
+msgid "(no subject)"
+msgstr "(mövzsuz)"
+
+msgid "Questions"
+msgstr "Suallar"
+
+msgid "Subject"
+msgstr "Mövzu"
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Ask question"
+msgstr "Sual soruş"
+
+msgid "Reset"
+msgstr "Təmizlə"
+
+msgid "no answer yet"
+msgstr "Hələlik cavab yoxdur."
+
+msgid "Messages"
+msgstr "Mesajlar"
+
+#, python-format
+msgid "Automatic (%(lang)s)"
+msgstr "Avtomatik (%(lang)s)"
+
+msgid "Logout"
+msgstr "Çıxış"
+
+#, python-format
+msgid ""
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
+msgstr ""
+"Daxil oldu <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+
+msgid "Failed to log in."
+msgstr "Daxil oluna bilinmədi."
+
+msgid "Welcome"
+msgstr "Xoş gəlmişsiniz"
+
+msgid "Please log in"
+msgstr "Zəhmət olmasa daxil olun"
+
+msgid "Username"
+msgstr "İstifadəçi adı"
+
+msgid "Password"
+msgstr "Şifrə"
+
+msgid "Login"
+msgstr "Daxil ol"
+
+msgid "New message"
+msgstr "Yeni ismarıc"
+
+msgid "New announcement"
+msgstr "Yeni elan"
+
+msgid "New answer"
+msgstr "Yeni cavab"
+
+#, python-format
+msgid "%d unread"
+msgstr "%d oxunmamış"
+
+msgid "Until contest starts:"
+msgstr "Yarışın başlanmasına:"
+
+msgid "Until contest ends:"
+msgstr "Yarışın sonuna:"
+
+#, fuzzy
+msgid "Until analysis starts:"
+msgstr "Təhlilin başlanmasına:"
+
+#, fuzzy
+msgid "Until analysis ends:"
+msgstr "Təhlilin sonuna:"
+
+msgid "Time left:"
+msgstr "Qalmiş vaxt:"
+
+msgid "Server time:"
+msgstr "Server vaxtı:"
+
+msgid "Overview"
+msgstr "Baxış"
+
+msgid "Statement"
+msgstr "Məsələnin şərti"
+
+msgid "Submissions"
+msgstr "Məsələnin həlli"
+
+msgid "Documentation"
+msgstr "Sənədlər"
+
+msgid "Testing"
+msgstr "Yoxlama"
+
+msgid "Printing"
+msgstr "Çap etmə"
+
+msgid "Contest Management System"
+msgstr "Contest Management System"
+
+msgid "is released under the"
+msgstr "is released under the"
+
+msgid "GNU Affero General Public License"
+msgstr "GNU Affero General Public License"
+
+msgid "Programming languages and libraries"
+msgstr "Proqramlaşdırma dillləri və kitabxanaları"
+
+msgid "Standard Template Library"
+msgstr "Standard Template Library"
+
+msgid ""
+"The main Java class of the solution should have exactly the same name as the "
+"task."
+msgstr Əsas Java classın adı eyniylə tapşırıq adı kimi olmalıdır 
+
+#, fuzzy
+msgid "Submission details for compilation"
+msgstr "Kompilyasiya üçün dəqiqləşmələr"
+
+#, fuzzy
+msgid "Message"
+msgstr "İsmarıc"
+
+msgid "Explanation"
+msgstr "İzah"
+
+#, fuzzy
+msgid "Submission details for evaluation"
+msgstr "Göndərişin detalları"
+
+#, python-format
+msgid "Error %(status_code)s"
+msgstr "Xəta %(status_code)s"
+
+msgid "An error occured while the server was handling your request."
+msgstr "Emal zamanı xəta baş verdi."
+
+
+msgid "An error occured while the server was handling your request."
+msgstr "Emal zamanı xəta baş verdi."
+
+msgid ""
+"Note that attempts to tamper with Contest Management System (such as probing "
+"the server with customized URLs) may be considered cheating and may lead to "
+"disqualification."
+msgstr "  "
+"Nəzərə alın ki, sistəmə müdaxilə etmək cəhdləri köçürmə kimi qiymətləndrilə bilər "
+"və bu səbəbdən diskvalifikasiya oluna bilərsiniz."
+
+msgid ""
+"If you encountered this error during normal usage, please notify the contest "
+"administrators."
+msgstr " Əgər normal istifadə zamanı bu səhvlə qarşılaşsanızç zəhmət olmasa "
+" administratorlara bildirin"
+
+msgid "General information"
+msgstr "Ümumi məlumat"
+
+msgid "The contest hasn't started yet."
+msgstr "Yarış hələ başlamayıb."
+
+#, python-format
+msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "Yarışın başlama vaxtı %(start_time)s, bitmə vaxtı isə %(stop_time)s."
+
+msgid "The contest is currently running."
+msgstr "Yarış gedir."
+
+#, python-format
+msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
+msgstr "Yarışın başlama vaxtı %(start_time)s və bitmə vaxtı %(stop_time)s."
+
+msgid "The contest has already ended."
+msgstr "Yarış artıq bitmişdir."
+
+#, python-format
+msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr "Yarış başlama vaxtı %(start_time)s və bitmə vaxtı в %(stop_time)s."
+
+#, fuzzy
+msgid "The analysis mode hasn't started yet."
+msgstr "Analiz üsulu hələ başlamayıb."
+
+#, fuzzy, python-format
+msgid ""
+"The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "Analiz modu bashlayacaq vaxtı  %(start_time)s ve bitecek vaxtı %(stop_time)s."
+
+#, fuzzy
+msgid "The analysis mode is currently running."
+msgstr "Analiz üsulu davam edir."
+
+#, fuzzy, python-format
+msgid ""
+"The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr "Analizin başlama vaxtı %(start_time)s ve bitme vaxtı %(stop_time)s."
+
+#, fuzzy
+msgid "The analysis mode has already ended."
+msgstr "Analiz üsulu artıq sona çatıb."
+
+#, fuzzy, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
+msgstr "Analiz modun başlama vaxtı %(start_time)s ve bitme vaxtı %(stop_time)s."
+
+msgid "You have an infinite number of tokens."
+msgstr "Sizin sonsuz sayda açarlarınız var."
+
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr "Açar istifadə edərək siz detallı teqdim neticələrini gorə bilersiniz"
+
+msgid ""
+"Your score for each task will be the maximum among the tokened submissions "
+"and the last one."
+msgstr "Açarla göndərilmiş yukləmələr arasında hər bir tapşırıq üçün "
+"sizin hesabınız maksimum olacaqdır"
+
+msgid "You have a distinct set of tokens for each task."
+msgstr "Sizin hər bir tapşırıq üçün fərqli açar toplusu var."
+
+#, python-format
+msgid ""
+"You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "Siz hər bir %(type_pl)s üçün qayda ilə müvafiq tapşırığın səhifəsində tanış ola bilərsiniz."
+
+msgid "You have a set of tokens shared among all tasks."
+msgstr "Paylaşılan tapşırıqlar boyunca sizin açarlar dəstiniz var."
+
+msgid ""
+"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
+"all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr ""
+"Sizin iki növ açar mövcuddur: bütün tapşırıqlar üçün <em>contest-token</em> toplusu, "
+" və hər bir tapşırıq üçün olan <em>task-token</em>."
+
+msgid ""
+"You can see the detailed result of a submission by using two tokens on it, "
+"one of each type."
+msgstr "Siz yukləmələrin detallı nəticələrini iki açarı istifadə edərək gorə bilersiniz"
+
+
+#, fuzzy, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr ""
+"Siz yarış müddətində en çoxu %(submissions)s heller yukləyə bilərsiniz "
+
+#, python-format
+msgid "You can submit at most %(user_tests)s user tests during this contest."
+msgstr "Siz yarış müddətində en çoxu %(user_tests)s admin testləri yukləyə bilərsiniz"
+
+#, python-format
+msgid ""
+"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
+"time frame of %(per_user_time)s."
+msgstr ""
+"Hər bir iştirakçı %(per_user_time)s zaman ərzində öz həllərini göndərə bilər."
+
+msgid "As soon as the contest starts you can choose to start your time frame."
+msgstr "Yarış başladıqda siz öz vaxt limitinizi seçə bilərsiniz."
+
+msgid ""
+"Once you start, you can submit solutions until the end of the time frame or "
+"until the end of the contest, whatever comes first."
+msgstr "Yarış başladıqdan sonra siz həllərinizi vaxt limitinin və ya "
+"yarış vaxtı bitənə qədər göndərə bilərsniz."
+
+
+msgid "By clicking on the button below you can start your time frame."
+msgstr "Siz düyməyə basmaqla vaxt limitinizə başlaya bilərsiniz."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s."
+msgstr "Siz vaxt limitinizə %(start_time)s də başladınız."
+
+msgid ""
+"You can submit solutions until the end of the time frame or until the end of "
+"the contest, whatever comes first."
+msgstr ""
+"Siz həllərinizi vaxt limitinin və ya yarış vaxtı bitənə qədər göndərə bilərsniz."
+
+#, python-format
+msgid ""
+"You started your time frame at %(start_time)s and you already finished it."
+msgstr "siz vaxt limitinə başladınız %(start_time)s və artıq bitirdiniz."
+
+msgid "There's nothing you can do now."
+msgstr "Sizin edə biləcəyiniz heçnə yoxdur."
+
+msgid "You never started your time frame. Now it's too late."
+msgstr "Siz heç vaxt vaxt limitinizə başlamadınız. İndi isə çox gecdir"
+
+msgid "Start!"
+msgstr "Başla!"
+
+msgid "Task overview"
+msgstr "Tapşırığa ümumi baxış"
+
+msgid "Task"
+msgstr "Tapşırıq"
+
+msgid "Name"
+msgstr "Ad"
+
+msgid "Time limit"
+msgstr "Vaxt limiti"
+
+msgid "Memory limit"
+msgstr "Yaddaş limiti"
+
+msgid "Type"
+msgstr "Növ"
+
+msgid "Files"
+msgstr "Fayllar"
+
+msgid "Tokens"
+msgstr "Açarlar"
+
+msgid "Yes"
+msgstr "Bəli"
+
+msgid "No"
+msgstr "Xeyr"
+
+msgid "Print"
+msgstr "Çap Et"
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)s more text or PDF files of up to "
+"%(max_pages)s pages each."
+msgstr " Siz daha çox metn və yaxud PDF faylları çap ede %(remaining_jobs)s bilərsiniz "
+" - maksimum %(max_pages)s səhifə."
+
+#, python-format
+msgid ""
+"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
+"pages each."
+msgstr ""
+"Siz səhifə sayı maksimum %(max_pages)s olan %(remaining_jobs)s sənəd "
+"çap edə bilərsiniz."
+
+msgid "File (text or PDF)"
+msgstr "Fayl (mətn və ya PDF)"
+
+msgid "File (text)"
+msgstr "Fayl (məzmun)"
+
+msgid "Submit"
+msgstr "Göndər"
+
+msgid ""
+"You cannot print anything any more as you have used up your printing quota."
+msgstr "Siz çap etmə normasına qədər istifadə etdiyiniz heçnəyi artıq çap edə bilməzsiniz"
+
+#, fuzzy
+msgid "Previous print jobs"
+msgstr "Əvvəlki çap işləri"
+
+msgid "Date and time"
+msgstr "Tarix və vaxt"
+
+msgid "Time"
+msgstr "Vaxt"
+
+msgid "File name"
+msgstr "Faylın adı"
+
+msgid "Status"
+msgstr "Status"
+
+#, fuzzy
+msgid "no print jobs yet"
+msgstr "çap işi yoxdur"
+
+#, fuzzy
+msgid "Preparing..."
+msgstr "Hazırlanır..."
+
+msgid "Compilation output"
+msgstr "Kompilyasiya nəticəsi"
+
+msgid "Compilation outcome:"
+msgstr "Kompilyasiya nəticəsi:"
+
+msgid "Compilation time:"
+msgstr "Kompilyasiya vaxtı:"
+
+msgid "Memory used:"
+msgstr "Yaddaş işledildi:"
+
+msgid "Standard output"
+msgstr "Standart nəticə"
+
+msgid "Standard error"
+msgstr "Standart səhv"
+
+msgid "None"
+msgstr "Heç biri"
+
+msgid "Download"
+msgstr "Yüklə"
+
+msgid "Played"
+msgstr "İcrada"
+
+msgid "Play!"
+msgstr "İcra et!"
+
+msgid "Wait..."
+msgstr "Gözlə..."
+
+msgid "No tokens"
+msgstr "Açar yoxdur"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>təsvir</small>"
+
+msgid "no statement available"
+msgstr "şərt verilməyib"
+
+msgid "Download task statement"
+msgstr "Tapşiriq şərtlərini yüklə"
+
+msgid ""
+"The statement for this task is available in multiple versions, in different "
+"languages."
+msgstr "Bu tapşırıq üçün şərt müxtətlif versiyalarda və müxtəlif dillərdə mövcuddur."
+
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "Sağdakı siyahıdan onlari istifadə edə (yukləyə) bilərsiniz."
+
+msgid "Some suggested translations follow."
+msgstr "Bəzi teklif edilmiş tərcumeləri izlə."
+
+#, python-format
+msgid "Statement in <b>%(lang)s</b>"
+msgstr " <b>%(lang)s</b> də şərh"
+
+#, python-format
+msgid "Statement in %(lang)s"
+msgstr " %(lang)s də şərt"
+
+#, python-format
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
+
+#, python-format
+msgid "%(lang)s"
+msgstr "%(lang)s"
+
+msgid "Some details"
+msgstr "Bəzi məqamlar"
+
+msgid "Compilation commands"
+msgstr "Kompilyasiya əmrləri"
+
+#, fuzzy, python-format
+msgid ""
+"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
+"\">contest overview page</a>."
+msgstr ""
+"Siz %(type_pl)s üçün qaydaları burda oxuya bilərsiniz: <a href=\"%(contest_root)s/"
+"\">yarış səhifəsi</a>."
+
+msgid ""
+"Remember that to see the detailed result of a submission you need to use both "
+"a contest-token and a task-token."
+msgstr ""
+"Nəzərə alın ki, siz ətraflı nəticələr üçün həm contest-token, "
+"həm də task-token açarlarından istifadə etməlisiniz
+
+msgid "Attachments"
+msgstr "Yüklənənlər"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>submissions</small>"
+msgstr "%(name)s (%(short_name)s) <small>göndərilmiş həllər</small>"
+
+msgid "Submit a solution"
+msgstr "Həlli təqdim et"
+
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr "Siz daha %(submissions_left)s həll yollaya edə bilərsiniz."
+
+msgid "submission.zip"
+msgstr "submission.zip"
+
+msgid "Previous submissions"
+msgstr "Əvvelki həllər"
+
+msgid "Right now, you have infinite tokens available on this task."
+msgstr "Hal-hazırda sizin bu tapşırıqla bağlı sonsuz sayda açarlarınız vardır."
+
+msgid "Right now, you have one token available on this task."
+msgstr "Hal-hazırda sizin bu tapşırıqla bağlı bir açarınız var."
+
+#, python-format
+msgid "Right now, you have %(tokens)s tokens available on this task."
+msgstr "Hal-hazırda sizin bu tapşırıqla bağlı %(tokens)s  açarınız var."
+
+#, python-format
+msgid "But you have to wait until %(expiration_time)s to use them."
+msgstr "Lakin siz onları %(expiration_time)s qədər istifadə edə bilərsiniz."
+
+#, python-format
+msgid "You will receive a new token at %(gen_time)s."
+msgstr "Yeni açarı alacağınız vaxt: %(gen_time)s."
+
+msgid "In the current situation, no more tokens will be generated."
+msgstr "Cari vəziyyətde heç bir açar yaradılmayacaq."
+
+msgid "Right now, you do not have tokens available for this task."
+msgstr "Hal hazırda bu tapşırıqda sizin uyğun açar yoxdur."
+
+#, python-format
+msgid "But you will have to wait until %(expiration_time)s to use it."
+msgstr "Lakin siz  %(expiration_time)s zamanına qədər gözləməlisiniz."
+
+msgid "Public score"
+msgstr "İctimai xal"
+
+msgid "Total score"
+msgstr "Yekun xal"
+
+msgid "Score"
+msgstr "Xal"
+
+msgid "Official"
+msgstr "Rəsmi"
+
+msgid "Token"
+msgstr "Açar"
+
+msgid "no submissions yet"
+msgstr "həll təqdim olunmayıb"
+
+msgid "Submission details"
+msgstr "Təqdimat detalları"
+
+msgid "Close"
+msgstr "Bağla"
+
+msgid "Submit a test"
+msgstr "Test təqdim et"
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
+msgstr "Siz daha %(user_tests_left)s test yükləyə bilərsiniz."
+
+msgid "input"
+msgstr "giriş"
+
+msgid "Previous tests"
+msgstr "Əvvəlki testlər"
+
+msgid "Input"
+msgstr "Giriş"
+
+msgid "Output"
+msgstr "Nəticə"
+
+msgid "no tests yet"
+msgstr "testlər verilməyib"
+
+msgid "Test details"
+msgstr "Test təfərrüatları""
+
+msgid "Evaluation outcome"
+msgstr "Qiymətləndirmə nəticəsi"
+
+#~ msgid "All sources must be in the same language."
+#~ msgstr "Bütün kodlar eyni dildə olmalıdır."
