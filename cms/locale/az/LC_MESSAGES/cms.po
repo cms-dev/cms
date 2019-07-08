@@ -198,13 +198,13 @@ msgstr[1] "Siz %(type_s)s ilə başlayırsınız."
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Hər dəqiqə "
-msgstr[2] "Hər %(gen_interval)g dəqiqədən bir "
+msgstr[1] "Hər %(gen_interval)g dəqiqədən bir "
 
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "siz daha bir %(type_s)s alırsınız,"
-msgstr[0] "siz əlavə %(type_s)s alırsınız,"
+msgstr[1] "siz əlavə %(type_s)s alırsınız,"
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
