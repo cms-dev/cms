@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
@@ -18,13 +19,17 @@
 
 """C++ programming language definition."""
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from cms.grading import CompiledLanguage
 
 
-__all__ = ["Cpp11Gpp"]
+__all__ = ["Cpp14Gpp"]
 
 
-class Cpp11Gpp(CompiledLanguage):
+class Cpp14Gpp(CompiledLanguage):
     """This defines the C++ programming language, compiled with g++ (the
     version available on the system) using the C++11 standard.
 
@@ -33,7 +38,7 @@ class Cpp11Gpp(CompiledLanguage):
     @property
     def name(self):
         """See Language.name."""
-        return "C++11 / g++"
+        return "C++14 / g++"
 
     @property
     def source_extensions(self):
@@ -57,7 +62,7 @@ class Cpp11Gpp(CompiledLanguage):
         command = ["/usr/bin/g++"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-std=gnu++11", "-O2", "-pipe", "-static",
+        command += ["-std=gnu++14", "-O2", "-pipe", "-static",
                     "-s", "-o", executable_filename]
         command += source_filenames
         return [command]
@@ -65,8 +70,7 @@ class Cpp11Gpp(CompiledLanguage):
     def get_compilation_no_link_command(self, source_filenames):
         """See Language.get_compilation_no_link_command."""
         command = ["/usr/bin/g++"]
-        command += ["-std=c++11", "-O2", "-pipe", "-static",
+        command += ["-std=gnu++14", "-O2", "-pipe", "-static",
                     "-s", "-c"]
         command += source_filenames
         return [command]
-
