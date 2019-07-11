@@ -283,7 +283,9 @@ class TwoSteps2019(TaskType):
         box_success = box_success_first and box_success_second
         evaluation_success = \
             evaluation_success_first and evaluation_success_second
-        stats = merge_execution_stats(first_stats, second_stats)
+
+        if first_stats and second_stats:
+        	stats = merge_execution_stats(first_stats, second_stats)
 
         outcome = None
         text = None
