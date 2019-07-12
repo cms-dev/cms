@@ -210,6 +210,7 @@ class TwoSteps2019(TaskType):
         if not check_executables_number(job, 1):
             return
 
+        language = get_language(job.language)
         executable_filename = next(iter(job.executables.keys()))
         executable_digest = job.executables[executable_filename].digest
 
@@ -225,7 +226,7 @@ class TwoSteps2019(TaskType):
         os.chmod(fifo, 0o666)
 
         # First step: we start the first manager.
-        first_command = ["./%s" % executable_filename, "0", "/fifo/fifo"]
+        first_command = language.get_evaluation_commands(executable_filename, main="grader", args=["0", "/fifo/fifo"])[0]
         first_executables_to_get = {executable_filename: executable_digest}
         first_files_to_get = {
             TwoSteps2019.INPUT_FILENAME: job.input
@@ -250,7 +251,7 @@ class TwoSteps2019(TaskType):
             wait=False)
 
         # Second step: we start the second manager.
-        second_command = ["./%s" % executable_filename, "1", "/fifo/fifo"]
+        second_command = language.get_evaluation_commands(executable_filename, main="grader", args=["1", "/fifo/fifo"])[0]
         second_executables_to_get = {executable_filename: executable_digest}
         second_files_to_get = {}
 
@@ -283,9 +284,7 @@ class TwoSteps2019(TaskType):
         box_success = box_success_first and box_success_second
         evaluation_success = \
             evaluation_success_first and evaluation_success_second
-
-        if first_stats and second_stats:
-        	stats = merge_execution_stats(first_stats, second_stats)
+        stats = merge_execution_stats(first_stats, second_stats) if second_stats is not None else first_stats
 
         outcome = None
         text = None
