@@ -218,7 +218,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     {% endif %}
     <div class="subtask-head">
         <span class="title">
-            {% trans index=st["idx"] %}Subtask {{ index }}{% endtrans %}
+            {% trans index=st["idx"]-1 %}Subtask {{ index }}{% endtrans %}
         </span>
     {% if "score_fraction" in st and "max_score" in st %}
         {% set score = st["score_fraction"] * st["max_score"] %}
