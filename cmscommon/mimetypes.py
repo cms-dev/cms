@@ -85,7 +85,7 @@ def get_type_for_file_name(filename):
     """
 
     # Temporary fix from IOI 2019, not sure if needed anymore
-    if filename.endswith(".out"):
+    if filename.endswith(".out") or filename.endswith(".in"):
         filename = "hack.txt"
 
     mimetype = xdg.Mime.get_type_by_name(filename)
