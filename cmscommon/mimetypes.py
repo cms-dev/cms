@@ -83,6 +83,11 @@ def get_type_for_file_name(filename):
         e.g., "application/pdf".
 
     """
+
+    # Temporary fix from IOI 2019, not sure if needed anymore
+    if filename.endswith(".out"):
+        filename = "hack.txt"
+
     mimetype = xdg.Mime.get_type_by_name(filename)
     if mimetype is None:
         return None
