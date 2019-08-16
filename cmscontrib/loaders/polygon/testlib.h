@@ -55,6 +55,9 @@
  *   - Add the "CMS_VERBOSE_FEEDBACK" conditional macro to enable
  *     testlib-style messages
  *   - Interactors are not supported
+ *
+ * Backports:
+ *   - 1bcfacc3a97667b38a3aef9d95b97edc6a9db688 (MikeMirzayanov/testlib#79)
  */
 
 /* NOTE: This file contains testlib library for C++.
@@ -79,6 +82,7 @@
  */
 
 const char* latestFeatures[] = {
+                          "Fixed issue #79: fixed missed guard against repeated header include",
                           "Fixed stringstream repeated usage issue",
                           "Fixed compilation in g++ (for std=c++03)",
                           "Batch of println functions (support collections, iterator ranges)",
@@ -4564,8 +4568,6 @@ NORETURN void expectedButFound<long double>(TResult result, long double expected
     __testlib_expectedButFound(result, double(expected), double(found), prepend.c_str());
 }
 
-#endif
-
 #if __cplusplus > 199711L || defined(_MSC_VER)
 template <typename T>
 struct is_iterable
@@ -4754,4 +4756,5 @@ void println(const A& a, const B& b, const C& c, const D& d, const E& e, const F
     __testlib_print_one(g);
     std::cout << std::endl;
 }
+#endif
 #endif
