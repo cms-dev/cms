@@ -104,11 +104,8 @@ def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
         env = {}
     env2 = copy.copy(os.environ)
     env2.update(env)
-    res = subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr,
+    subprocess.check_call(args, stdin=stdin, stdout=stdout, stderr=stderr,
                           cwd=base_dir, env=env2)
-    if res != 0:
-        print("Subprocess returned with error", file=sys.stderr)
-        sys.exit(1)
 
 
 def detect_task_name(base_dir):

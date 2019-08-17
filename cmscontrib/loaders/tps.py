@@ -228,10 +228,13 @@ class TpsTaskLoader(TaskLoader):
         if os.path.exists(checker_src):
             logger.info("Checker found, compiling")
             checker_exe = os.path.join(checker_dir, "checker")
-            subprocess.call([
+            ret = subprocess.call([
                 "g++", "-x", "c++", "-std=gnu++14", "-O2", "-static",
                 "-o", checker_exe, checker_src
             ])
+            if ret != 0:
+                logger.critical("Could not compile checker")
+                return None
             digest = self.file_cacher.put_file_from_path(
                 checker_exe,
                 "Manager for task %s" % name)
@@ -283,10 +286,13 @@ class TpsTaskLoader(TaskLoader):
         if os.path.exists(manager_src):
             logger.info("Manager found, compiling")
             manager_exe = os.path.join(graders_dir, "manager")
-            subprocess.call([
+            ret = subprocess.call([
                 "g++", "-x", "c++", "-O2", "-static",
                 "-o", manager_exe, manager_src
             ])
+            if ret != 0:
+                logger.critical("Could not compile manager")
+                return None
             digest = self.file_cacher.put_file_from_path(
                 manager_exe,
                 "Manager for task %s" % name)
