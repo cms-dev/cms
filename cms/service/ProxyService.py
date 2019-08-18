@@ -99,6 +99,19 @@ def safe_put_data(ranking, resource, data, operation):
         raise CannotSendError(msg)
 
 
+def safe_url(url):
+    """Return a sanitized URL without sensitive information.
+
+       url (unicode): the URL to sanitize.
+       return (unicode): sanitized URL.
+
+    """
+    parts = urlsplit(url)
+    netloc = parts.hostname if parts.hostname is not None else ""
+    netloc += ":%d" % parts.port if parts.port is not None else ""
+    return parts._replace(netloc=netloc).geturl()
+
+
 class ProxyOperation(QueueItem):
     def __init__(self, type_, data):
         self.type_ = type_
@@ -165,6 +178,7 @@ class ProxyExecutor(Executor):
         super().__init__(batch_executions=True)
 
         self._ranking = ranking
+        self._visible_ranking = safe_url(ranking)
 
     def execute(self, entries):
         """Consume (i.e. send) the data put in the queue, forever.
@@ -198,8 +212,8 @@ class ProxyExecutor(Executor):
                     # We abuse the resource path as the English
                     # (plural) name for the entity type.
                     name = self.RESOURCE_PATHS[i]
-                    operation = "sending %s to ranking %s" % (name,
-                                                              self._ranking)
+                    operation = "sending %s to ranking %s" % (
+                                    name, self._visible_ranking)
 
                     logger.debug(operation.capitalize())
                     safe_put_data(
