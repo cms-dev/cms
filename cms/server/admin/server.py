@@ -53,6 +53,7 @@ class AdminWebServer(WebService):
                              ("cms.server.admin", "static")],
             "cookie_secret": hex_to_bin(config.secret_key),
             "debug": config.tornado_debug,
+            "num_proxies_used": config.admin_num_proxies_used,
             "auth_middleware": AWSAuthMiddleware,
             "rpc_enabled": True,
             "rpc_auth": self.is_rpc_authorized,

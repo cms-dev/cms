@@ -147,6 +147,12 @@
     "_help": "The duration is refreshed on every manual request.",
     "admin_cookie_duration": 36000,
 
+    "_help": "The number of proxies that will be crossed before AWS gets",
+    "_help": "the request. This is used to determine the request's real",
+    "_help": "source IP address. For example, if you're using nginx as",
+    "_help": "a proxy, you will likely want to set this value to 1.",
+    "admin_num_proxies_used": 0,
+
 
 
     "_section": "ScoringService",
