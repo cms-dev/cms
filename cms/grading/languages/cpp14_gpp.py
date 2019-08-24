@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2019 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,24 +17,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""C++11 programming language definition."""
+"""C++14 programming language definition."""
 
 from cms.grading import CompiledLanguage
 
 
-__all__ = ["Cpp11Gpp"]
+__all__ = ["Cpp14Gpp"]
 
 
-class Cpp11Gpp(CompiledLanguage):
+class Cpp14Gpp(CompiledLanguage):
     """This defines the C++ programming language, compiled with g++ (the
-    version available on the system) using the C++11 standard.
+    version available on the system) using the C++14 standard.
 
     """
 
     @property
     def name(self):
         """See Language.name."""
-        return "C++11 / g++"
+        return "C++14 / g++"
 
     @property
     def source_extensions(self):
@@ -42,12 +43,12 @@ class Cpp11Gpp(CompiledLanguage):
 
     @property
     def header_extensions(self):
-        """See Language.source_extensions."""
+        """See Language.header_extensions."""
         return [".h"]
 
     @property
     def object_extensions(self):
-        """See Language.source_extensions."""
+        """See Language.object_extensions."""
         return [".o"]
 
     def get_compilation_commands(self,
@@ -57,7 +58,7 @@ class Cpp11Gpp(CompiledLanguage):
         command = ["/usr/bin/g++"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-std=gnu++11", "-O2", "-pipe", "-static",
+        command += ["-std=gnu++14", "-O2", "-pipe", "-static",
                     "-s", "-o", executable_filename]
         command += source_filenames
         return [command]
