@@ -40,6 +40,7 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 
 
 LANG_CPP = "C++11 / g++"
+LANG_CPP14 = "C++14 / g++" # TODO: Enable C++14 tests with GCC 5+
 LANG_C = "C11 / gcc"
 LANG_HS = "Haskell / ghc"
 LANG_JAVA = "Java / JDK"
@@ -408,5 +409,13 @@ ALL_TESTS = [
          task=batch_fileio, filenames=['write-big-fileio.%l'],
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
+
+    # Language-specific tests
+
+    # TODO: Enable C++14 tests with GCC 5+
+    #Test('correct-stdio-cxx14',
+    #     task=batch_stdio, filenames=['correct-stdio-cxx14.%l'],
+    #     languages=(LANG_CPP14,),
+    #     checks=[CheckOverallScore(100, 100)]),
 
 ]
