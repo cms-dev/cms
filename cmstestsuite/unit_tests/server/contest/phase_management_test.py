@@ -178,6 +178,8 @@ class TestComputeActualPhase(unittest.TestCase):
              ("4", -1, "6", 0, "14"))
         test("4", "12", None, None, None, None, "2", "2",
              ("4", -1, "6", 0, "16"))
+        test("4", "8", None, None, None, None, "5", "0",
+             ("4", -1, "9", 0, "13"))
 
         # Almost identical, with starting_time set to make sure it
         # doesn't affect anything.
@@ -189,6 +191,8 @@ class TestComputeActualPhase(unittest.TestCase):
              ("4", -1, "6", 0, "14"))
         test("4", "12", None, None, None, "7", "2", "2",
              ("4", -1, "6", 0, "16"))
+        test("4", "8", None, None, None, "7", "5", "0",
+             ("4", -1, "9", 0, "13"))
 
         # Test analysis mode. Almost identical to above
         test("4", "12", "17", "20", None, None, "0", "0",
@@ -199,6 +203,8 @@ class TestComputeActualPhase(unittest.TestCase):
              ("4", -1, "6", 0, "14", 2, "17", 3, "20"))
         test("4", "12", "17", "20", None, None, "2", "2",
              ("4", -1, "6", 0, "16", 2, "17", 3, "20"))
+        test("4", "8", "17", "20", None, None, "5", "0",
+             ("4", -1, "9", 0, "13", 2, "17", 3, "20"))
         test("4", "12", "17", "20", None, "7", "0", "0",
              ("4", 0, "12", 2, "17", 3, "20"))
         test("4", "12", "17", "20", None, "7", "0", "2",
@@ -207,14 +213,24 @@ class TestComputeActualPhase(unittest.TestCase):
              ("4", -1, "6", 0, "14", 2, "17", 3, "20"))
         test("4", "12", "17", "20", None, "7", "2", "2",
              ("4", -1, "6", 0, "16", 2, "17", 3, "20"))
+        test("4", "8", "17", "20", None, "7", "5", "0",
+             ("4", -1, "9", 0, "13", 2, "17", 3, "20"))
 
-        # Test for overlapping of contest and analysis for this users
+        # Test for overlapping of contest and analysis for this user
         test("4", "12", "12", "20", None, None, "2", "0",
              ("4", -1, "6", 0, "14", 3, "20"))
         test("4", "12", "12", "20", None, None, "0", "2",
              ("4", 0, "14", 3, "20"))
         test("4", "12", "12", "20", None, None, "1", "1",
              ("4", -1, "5", 0, "14", 3, "20"))
+        test("4", "8", "8", "12", None, None, "0", "5",
+             ("4", 0, "13"))
+        test("4", "8", "8", "12", None, None, "5", "0",
+             ("4", -1, "9", 0, "13"))
+        test("4", "8", "8", "12", None, None, "9", "0",
+             ("4", -1, "13", 0, "17"))
+        test("4", "8", "8", "16", None, None, "5", "1",
+             ("4", -1, "9", 0, "14", 3, "16"))
 
     @staticmethod
     def test_usaco_like():
