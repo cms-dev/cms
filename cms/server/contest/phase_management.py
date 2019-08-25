@@ -175,6 +175,8 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
                 actual_phase = +3
             elif analysis_stop < timestamp:
                 current_phase_begin = analysis_stop
+                if actual_stop is not None:
+                    current_phase_begin = max(analysis_stop, actual_stop)
                 current_phase_end = None
                 actual_phase = +4
             else:
