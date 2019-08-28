@@ -119,17 +119,18 @@ class CheckForbiddenSyscall(CheckAbstractEvaluationFailure):
 
 
 class CheckSignal(CheckAbstractEvaluationFailure):
-    def __init__(self, signal_number):
+    def __init__(self):
         CheckAbstractEvaluationFailure.__init__(
             self, "died on a signal",
-            "Execution killed with signal %s" % signal_number)
+            "Execution killed (runtime error)")
 
 
 class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
     def __init__(self):
         CheckAbstractEvaluationFailure.__init__(
             self, "nonzero return",
-            "Execution failed because the return code was nonzero")
+            "Execution failed with non-zero exit code "
+            "(could be caused by exception)")
 
 
 class Test:

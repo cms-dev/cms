@@ -62,23 +62,27 @@ EVALUATION_MESSAGES = MessageCollection([
     HumanMessage("walltimeout",
                  N_("Execution timed out (wall clock limit exceeded)"),
                  N_("Your submission used too much total time. This might "
-                    "be triggered by undefined code, or buffer overflow, "
-                    "for example. Note that in this case the CPU time "
-                    "visible in the submission details might be much smaller "
-                    "than the time limit.")),
+                    "happen if your submission is waiting for an event "
+                    "(e.g., a timer) or has entered undefined behavior. "
+                    "Note that in this case the CPU time visible in "
+                    "the submission details might be much smaller than "
+                    "the time limit.")),
     HumanMessage("signal",
-                 N_("Execution killed (could be triggered by violating memory "
-                    "limits)"),
+                 N_("Execution killed (runtime error)"),
                  N_("The evaluation was killed by a signal. "
-                    "Among other things, this might be caused by exceeding "
-                    "the memory limit. Note that if this is the reason, "
-                    "the memory usage visible in the submission details is "
-                    "the usage before the allocation that caused the "
+                    "Among other things, this might be caused by undefined "
+                    "behavior (e.g., out-of-bounds array access) or by "
+                    "exceeding the memory limit. Note that in the latter "
+                    "case the memory usage visible in the submission details "
+                    "is the usage before the allocation that caused the "
                     "signal.")),
     HumanMessage("returncode",
-                 N_("Execution failed because the return code was nonzero"),
-                 N_("Your submission failed because it exited with a return "
-                    "code different from 0.")),
+                 N_("Execution failed with non-zero exit code "
+                    "(could be caused by exception)"),
+                 N_("Your submission failed because it returned an exit "
+                    "code other than 0. In some programming languages "
+                    "this might be caused by an unhandled exception "
+                    "(e.g., <code>NullPointerException</code>).")),
 ])
 
 
