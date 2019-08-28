@@ -111,13 +111,6 @@ class CheckTimeoutWall(CheckAbstractEvaluationFailure):
             "Execution timed out (wall clock limit exceeded)")
 
 
-class CheckForbiddenSyscall(CheckAbstractEvaluationFailure):
-    def __init__(self, syscall_name=''):
-        CheckAbstractEvaluationFailure.__init__(
-            self, "executed a forbidden syscall",
-            "Execution killed because of forbidden syscall %s" % syscall_name)
-
-
 class CheckSignal(CheckAbstractEvaluationFailure):
     def __init__(self):
         CheckAbstractEvaluationFailure.__init__(
