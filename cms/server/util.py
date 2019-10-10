@@ -80,6 +80,7 @@ class FileHandlerMixin(RequestHandler):
         self.set_header(FileServerMiddleware.DIGEST_HEADER, digest)
         self.set_header(FileServerMiddleware.FILENAME_HEADER, filename)
         self.set_header("Content-Type", content_type)
+        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.finish()
 
 
