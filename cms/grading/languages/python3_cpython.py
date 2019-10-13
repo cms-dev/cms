@@ -45,11 +45,16 @@ class Python3CPython(CompiledLanguage):
         """See Language.source_extensions."""
         return [".py"]
 
+    @property
+    def executable_extension(self):
+        """See Language.executable.extension."""
+        # Defined in PEP 441 (https://www.python.org/dev/peps/pep-0441/).
+        return ".pyz"
+
     def get_compilation_commands(self,
                                  source_filenames, executable_filename,
                                  for_evaluation=True):
         """See Language.get_compilation_commands."""
-        zip_filename = "%s.zip" % executable_filename
 
         commands = []
         files_to_package = []
@@ -64,10 +69,8 @@ class Python3CPython(CompiledLanguage):
             else:
                 files_to_package.append(pyc_filename)
 
-        # zip does not support writing to a file without extension.
-        commands.append(["/usr/bin/zip", "-r", zip_filename]
+        commands.append(["/usr/bin/zip", executable_filename]
                         + files_to_package)
-        commands.append(["/bin/mv", zip_filename, executable_filename])
 
         return commands
 
