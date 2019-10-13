@@ -48,6 +48,11 @@ class JavaJDK(Language):
         return [".java"]
 
     @property
+    def executable_extension(self):
+        """See Language.executable_extension."""
+        return ".jar" if JavaJDK.USE_JAR else ".zip"
+
+    @property
     def requires_multithreading(self):
         """See Language.requires_multithreading."""
         return True
@@ -67,8 +72,9 @@ class JavaJDK(Language):
             return [compile_command, jar_command]
         else:
             zip_command = ["/bin/sh", "-c",
-                           " ".join(["zip", "-r", "-", "*.class", ">",
-                                     shell_quote(executable_filename)])]
+                           " ".join(["zip",
+                                     shell_quote(executable_filename),
+                                     "*.class"])]
             return [compile_command, zip_command]
 
     def get_evaluation_commands(
