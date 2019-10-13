@@ -98,6 +98,11 @@ class Language(metaclass=ABCMeta):
         return self.object_extensions[0] \
             if len(self.object_extensions) > 0 else None
 
+    @property
+    def executable_extension(self):
+        """Executable file extension for this language (including the dot)."""
+        return ""
+
     @abstractmethod
     def get_compilation_commands(self,
                                  source_filenames, executable_filename,

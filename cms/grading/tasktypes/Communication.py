@@ -134,10 +134,11 @@ class Communication(TaskType):
         if self._uses_stub():
             codenames_to_compile.append(self.STUB_BASENAME + ".%l")
         codenames_to_compile.extend(submission_format)
-        executable_filename = self._executable_filename(submission_format)
         res = dict()
         for language in LANGUAGES:
             source_ext = language.source_extension
+            executable_filename = self._executable_filename(submission_format,
+                                                            language)
             res[language.name] = language.get_compilation_commands(
                 [codename.replace(".%l", source_ext)
                  for codename in codenames_to_compile],
@@ -162,17 +163,19 @@ class Communication(TaskType):
         return self.io == self.USER_IO_FIFOS
 
     @staticmethod
-    def _executable_filename(codenames):
+    def _executable_filename(codenames, language):
         """Return the chosen executable name computed from the codenames.
 
         codenames ([str]): submission format or codename of submitted files,
             may contain %l.
+        language (Language): the programming language of the submission.
 
         return (str): a deterministic executable name.
 
         """
-        return "_".join(sorted(codename.replace(".%l", "")
+        name = "_".join(sorted(codename.replace(".%l", "")
                                for codename in codenames))
+        return name + language.executable_extension
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -205,7 +208,8 @@ class Communication(TaskType):
                 filenames_and_digests_to_get[filename] = manager.digest
 
         # Prepare the compilation command
-        executable_filename = self._executable_filename(job.files.keys())
+        executable_filename = self._executable_filename(job.files.keys(),
+                                                        language)
         commands = language.get_compilation_commands(
             filenames_to_compile, executable_filename)
 
@@ -322,7 +326,8 @@ class Communication(TaskType):
 
         # Start the user submissions compiled with the stub.
         language = get_language(job.language)
-        main = self.STUB_BASENAME if self._uses_stub() else executable_filename
+        main = self.STUB_BASENAME if self._uses_stub() \
+               else os.path.splitext(executable_filename)[0]
         processes = [None for i in indices]
         for i in indices:
             args = []

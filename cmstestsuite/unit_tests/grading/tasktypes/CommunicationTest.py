@@ -55,7 +55,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["stub.l2", "foo.l2"], "foo"),
+                COMPILATION_COMMAND_2, ["stub.l2", "foo.l2"], "foo.ext"),
         })
 
     def test_two_processes(self):
@@ -67,7 +67,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["stub.l2", "foo.l2"], "foo"),
+                COMPILATION_COMMAND_2, ["stub.l2", "foo.l2"], "foo.ext"),
         })
 
     def test_many_files(self):
@@ -81,7 +81,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
                 "bar_foo"),
             "L2": fake_compilation_commands(
                 COMPILATION_COMMAND_2, ["stub.l2", "foo.l2", "bar.l2"],
-                "bar_foo"),
+                "bar_foo.ext"),
         })
 
     def test_no_stub(self):
@@ -93,7 +93,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["foo.l1"], "foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["foo.l2"], "foo"),
+                COMPILATION_COMMAND_2, ["foo.l2"], "foo.ext"),
         })
 
     def test_std_io(self):
@@ -105,7 +105,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["stub.l2", "foo.l2"], "foo"),
+                COMPILATION_COMMAND_2, ["stub.l2", "foo.l2"], "foo.ext"),
         })
 
 

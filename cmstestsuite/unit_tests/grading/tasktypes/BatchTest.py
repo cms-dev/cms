@@ -53,7 +53,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["foo.l1"], "foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["foo.l2"], "foo"),
+                COMPILATION_COMMAND_2, ["foo.l2"], "foo.ext"),
         })
 
     def test_grader(self):
@@ -63,7 +63,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["foo.l1", "grader.l1"], "foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["foo.l2", "grader.l2"], "foo"),
+                COMPILATION_COMMAND_2, ["foo.l2", "grader.l2"], "foo.ext"),
         })
 
     def test_alone_two_files(self):
@@ -73,7 +73,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L1": fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["foo.l1", "bar.l1"], "bar_foo"),
             "L2": fake_compilation_commands(
-                COMPILATION_COMMAND_2, ["foo.l2", "bar.l2"], "bar_foo"),
+                COMPILATION_COMMAND_2, ["foo.l2", "bar.l2"], "bar_foo.ext"),
         })
 
     def test_grader_two_files(self):
@@ -87,7 +87,7 @@ class TestGetCompilationCommands(TaskTypeTestMixin, unittest.TestCase):
             "L2": fake_compilation_commands(
                 COMPILATION_COMMAND_2,
                 ["foo.l2", "bar.l2", "grader.l2"],
-                "bar_foo"),
+                "bar_foo.ext"),
         })
 
 
