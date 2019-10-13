@@ -21,6 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os
 
 from cms.db import Executable
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
@@ -139,10 +140,11 @@ class Batch(TaskType):
         if self._uses_grader():
             codenames_to_compile.append(self.GRADER_BASENAME + ".%l")
         codenames_to_compile.extend(submission_format)
-        executable_filename = self._executable_filename(submission_format)
         res = dict()
         for language in LANGUAGES:
             source_ext = language.source_extension
+            executable_filename = self._executable_filename(submission_format,
+                                                            language)
             res[language.name] = language.get_compilation_commands(
                 [codename.replace(".%l", source_ext)
                  for codename in codenames_to_compile],
@@ -169,17 +171,19 @@ class Batch(TaskType):
         return self.output_eval == self.OUTPUT_EVAL_CHECKER
 
     @staticmethod
-    def _executable_filename(codenames):
+    def _executable_filename(codenames, language):
         """Return the chosen executable name computed from the codenames.
 
         codenames ([str]): submission format or codename of submitted files,
             may contain %l.
+        language (Language): the programming language of the submission.
 
         return (str): a deterministic executable name.
 
         """
-        return "_".join(sorted(codename.replace(".%l", "")
-                               for codename in codenames))
+        name =  "_".join(sorted(codename.replace(".%l", "")
+                                for codename in codenames))
+        return name + language.executable_extension
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -214,7 +218,8 @@ class Batch(TaskType):
                 filenames_and_digests_to_get[filename] = manager.digest
 
         # Prepare the compilation command.
-        executable_filename = self._executable_filename(job.files.keys())
+        executable_filename = self._executable_filename(job.files.keys(),
+                                                        language)
         commands = language.get_compilation_commands(
             filenames_to_compile, executable_filename)
 
@@ -253,8 +258,8 @@ class Batch(TaskType):
         # Prepare the execution
         executable_filename = next(iter(job.executables.keys()))
         language = get_language(job.language)
-        main = self.GRADER_BASENAME \
-            if self._uses_grader() else executable_filename
+        main = self.GRADER_BASENAME if self._uses_grader() \
+               else os.path.splitext(executable_filename)[0]
         commands = language.get_evaluation_commands(
             executable_filename, main=main)
         executables_to_get = {

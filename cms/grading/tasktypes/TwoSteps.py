@@ -119,7 +119,7 @@ class TwoSteps(TaskType):
                     source_filenames.append(header_filename)
 
             # Get compilation command and compile.
-            executable_filename = "manager"
+            executable_filename = "manager" + language.executable_extension
             commands = language.get_compilation_commands(
                 source_filenames, executable_filename)
             res[language.name] = commands
@@ -179,7 +179,7 @@ class TwoSteps(TaskType):
                     job.managers[header_filename].digest
 
         # Get compilation command.
-        executable_filename = "manager"
+        executable_filename = "manager" + language.executable_extension
         commands = language.get_compilation_commands(
             source_filenames, executable_filename)
 

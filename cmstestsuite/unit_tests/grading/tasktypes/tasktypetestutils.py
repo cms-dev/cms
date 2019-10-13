@@ -39,14 +39,16 @@ def fake_evaluation_commands(base, exe, main=None, args=None):
 
 
 def make_language(name, source_extensions, header_extensions,
-                  compilation_command, evaluation_command):
+                  executable_extension, compilation_command,
+                  evaluation_command):
     """Create a language (actually a MagicMock) with the given data."""
     language = MagicMock()
     language.configure_mock(name=name,
                             source_extensions=source_extensions,
                             source_extension=source_extensions[0],
                             header_extensions=header_extensions,
-                            header_extension=header_extensions[0])
+                            header_extension=header_extensions[0],
+                            executable_extension=executable_extension)
     language.get_compilation_commands.side_effect = \
         functools.partial(fake_compilation_commands, compilation_command)
     language.get_evaluation_commands.side_effect = \
@@ -59,9 +61,9 @@ COMPILATION_COMMAND_1 = ["comp", "comm1"]
 COMPILATION_COMMAND_2 = ["comp", "comm2"]
 EVALUATION_COMMAND_1 = ["run1"]
 EVALUATION_COMMAND_2 = ["run2"]
-LANG_1 = make_language("L1", [".l1"], [".hl1"],
+LANG_1 = make_language("L1", [".l1"], [".hl1"], "",
                        COMPILATION_COMMAND_1, EVALUATION_COMMAND_1)
-LANG_2 = make_language("L2", [".l2"], [".hl2"],
+LANG_2 = make_language("L2", [".l2"], [".hl2"], ".ext",
                        COMPILATION_COMMAND_2, EVALUATION_COMMAND_2)
 
 
