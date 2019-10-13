@@ -44,6 +44,11 @@ class CSharpMono(Language):
         return [".cs"]
 
     @property
+    def executable_extension(self):
+        """See Language.executable_extension."""
+        return ".exe"
+
+    @property
     def requires_multithreading(self):
         """See Language.requires_multithreading."""
         return True
