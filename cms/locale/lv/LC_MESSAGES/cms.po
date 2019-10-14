@@ -8,18 +8,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
-"PO-Revision-Date: 2018-10-22 22:34+0300\n"
+"POT-Creation-Date: 2021-02-08 16:20+0000\n"
+"PO-Revision-Date: 2021-02-12 18:42+0200\n"
 "Last-Translator: Andrey Vihrov <andrey.vihrov@gmail.com>\n"
-"Language-Team: Latvian\n"
 "Language: lv\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: Latvian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
 "2);\n"
-"Generated-By: Babel 2.4.0\n"
-"X-Generator: Poedit 2.2\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+"X-Generator: Poedit 2.4.1\n"
 
 msgid "N/A"
 msgstr "Nav pieejams"
@@ -117,7 +117,7 @@ msgstr "Jūsu iesūtījums tika izpildīts, bet izdeva nepareizu atbildi"
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
-msgstr "Vērtēšanas laikā netika izveidota datne %s"
+msgstr "Izpildes laikā netika izveidota datne %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
 msgstr ""
@@ -153,7 +153,7 @@ msgid ""
 "memory usage visible in the submission details is the usage before the "
 "allocation that caused the signal."
 msgstr ""
-"Vērtēšana tika pārtraukta ar signālu. Citu iemeslu starpā, to varētu būt "
+"Izpilde tika pārtraukta ar signālu. Citu iemeslu starpā, to varētu būt "
 "izraisījusi atmiņas ierobežojuma pārsniegšana. Šajā gadījumā atmiņas "
 "patēriņš, kas ir redzams iesūtījuma detaļās, atbilst stāvoklim pirms signālu "
 "izraisījušās atmiņas iedalīšanas."
@@ -253,7 +253,7 @@ msgstr[2] "jums tiek piešķirti vēl %(gen_number)d %(type_pl)s."
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "Jums netiek piešķirti %(type_pl)s."
+msgstr "Jums netiek piešķirti citi %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -337,7 +337,7 @@ msgid "Print job received"
 msgstr "Drukas uzdevums saņemts"
 
 msgid "Your print job has been received."
-msgstr "Jūsu drukas uzdevums saņemts."
+msgstr "Jūsu drukas uzdevums ir saņemts."
 
 msgid "Submission received"
 msgstr "Iesūtījums saņemts"
@@ -356,6 +356,9 @@ msgstr "Vērtē…"
 
 msgid "Evaluated"
 msgstr "Izpildīts"
+
+msgid "status"
+msgstr "statuss"
 
 msgid "Token request received"
 msgstr "Žetona pieprasījums saņemts"
@@ -532,6 +535,12 @@ msgstr "Parole"
 
 msgid "Login"
 msgstr "Pieteikties"
+
+msgid "Don't have an account?"
+msgstr "Nav lietotāja konta?"
+
+msgid "Register"
+msgstr "Reģistrēties"
 
 msgid "New message"
 msgstr "Jauns ziņojums"
@@ -874,6 +883,52 @@ msgstr "Sagatavojas…"
 msgid "no print jobs yet"
 msgstr "pagaidām nav drukas uzdevumu"
 
+msgid "The passwords do not match!"
+msgstr "Paroles nesakrīt!"
+
+msgid "This username is already taken, please choose a different one."
+msgstr "Šis lietotājvārds jau ir aizņemts; lūdzu, izvēlieties citu."
+
+msgid "New user"
+msgstr "Jauns lietotājs"
+
+msgid "Please fill in the fields to register"
+msgstr "Lai reģistrētos, lūdzu, aizpildiet laukus"
+
+msgid "First name"
+msgstr "Vārds"
+
+msgid "Last name"
+msgstr "Uzvārds"
+
+msgid "E-mail"
+msgstr "E-pasts"
+
+msgid "Representing"
+msgstr "Pārstāv"
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] "Jābūt vismaz %(min_length)s simbolam."
+msgstr[1] "Jābūt vismaz %(min_length)s simboliem."
+msgstr[2] "Jābūt vismaz %(min_length)s simbolu."
+
+msgid "Confirm password"
+msgstr "Apstipriniet paroli"
+
+msgid "The user was created successfully!"
+msgstr "Lietotājs sekmīgi izveidots!"
+
+msgid "Your username is:"
+msgstr "Jūsu lietotājvārds ir:"
+
+msgid "The password you chose was stored securely."
+msgstr "Jūsu izvēlētā parole tika saglabāta drošā veidā."
+
+msgid "Back to login"
+msgstr "Atpakaļ uz pieteikšanos"
+
 msgid "Compilation output"
 msgstr "Kompilēšanas izvads"
 
@@ -892,24 +947,6 @@ msgstr "Standarta izvads"
 msgid "Standard error"
 msgstr "Standarta kļūdu izvads"
 
-msgid "None"
-msgstr "Nav"
-
-msgid "Download"
-msgstr "Lejuplādēt"
-
-msgid "Played"
-msgstr "Izmantots"
-
-msgid "Play!"
-msgstr "Izmantot!"
-
-msgid "Wait..."
-msgstr "Gaidiet…"
-
-msgid "No tokens"
-msgstr "Nav žetonu"
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr "%(name)s (%(short_name)s) <small>apraksts</small>"
@@ -924,7 +961,7 @@ msgid ""
 "The statement for this task is available in multiple versions, in different "
 "languages."
 msgstr ""
-"Šī uzdevuma formulējums ir pieejums vairākās versijās, dažādās valodās."
+"Šī uzdevuma formulējums ir pieejams vairākās versijās, dažādās valodās."
 
 msgid "You can see (and download) all of them using the list on the right."
 msgstr ""
@@ -998,7 +1035,6 @@ msgstr "Kopējais rezultāts:"
 msgid "Submit a solution"
 msgstr "Iesūtīt risinājumu"
 
-# kombināciju?
 msgid "You may submit any subset of outputs in a single submission."
 msgstr "Jūs varat iesūtīt jebkuru izvadu apakškopu vienā iesūtījumā."
 
@@ -1044,29 +1080,20 @@ msgstr "Šobrīd jums šim uzdevumam nav žetonu."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Bet, lai to izmantotu, nepieciešams pagaidīt līdz %(expiration_time)s."
 
-msgid "Public score"
-msgstr "Publiski redzamais rezultāts"
+msgid "Unofficial submissions"
+msgstr "Neoficiāli iesūtījumi"
 
-msgid "Total score"
-msgstr "Kopējais rezultāts"
-
-msgid "Score"
-msgstr "Rezultāts"
-
-msgid "Official"
-msgstr "Ieskaitīts"
-
-msgid "Token"
-msgstr "Žetons"
-
-msgid "no submissions yet"
-msgstr "pagaidām nav iesūtījumu"
+msgid "Official submissions"
+msgstr "Oficiāli iesūtījumi"
 
 msgid "Submission details"
 msgstr "Iesūtījuma detaļas"
 
 msgid "Close"
 msgstr "Aizvērt"
+
+msgid "Download"
+msgstr "Lejuplādēt"
 
 msgid "Submit a test"
 msgstr "Iesūtīt testu"
@@ -1095,3 +1122,42 @@ msgstr "Testa detaļas"
 
 msgid "Evaluation outcome"
 msgstr "Izpildes iznākums"
+
+msgid "Wait..."
+msgstr "Gaidiet…"
+
+msgid "None"
+msgstr "Nav"
+
+msgid "Public score"
+msgstr "Publiski redzamais rezultāts"
+
+msgid "Total score"
+msgstr "Kopējais rezultāts"
+
+msgid "Score"
+msgstr "Rezultāts"
+
+msgid "Token"
+msgstr "Žetons"
+
+msgid "no submissions"
+msgstr "nav iesūtījumu"
+
+msgid "Played"
+msgstr "Izmantots"
+
+msgid "Play!"
+msgstr "Izmantot!"
+
+msgid "No tokens"
+msgstr "Nav žetonu"
+
+msgid "Invalid file"
+msgstr "Nepareiza datne"
+
+msgid "Print job has too many pages"
+msgstr "Drukas uzdevumam ir pārāk daudz lappušu"
+
+msgid "Sent to printer"
+msgstr "Nosūtīts drukāšanai"
