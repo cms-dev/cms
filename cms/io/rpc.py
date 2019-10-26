@@ -5,6 +5,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2019 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -478,8 +479,12 @@ class RemoteServiceClient(RemoteServiceBase):
 
         """
         try:
-            sock = gevent.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(self.remote_address)
+            # Find the family (AF_INET or AF_INET6) of the IPv4/6 address.
+            addresses = gevent.socket.getaddrinfo(
+                self.remote_address.ip, self.remote_address.port)
+            family, *rest, sockaddr = addresses[0]
+            sock = gevent.socket.socket(family, socket.SOCK_STREAM)
+            sock.connect(sockaddr)
         except OSError as error:
             logger.debug("Couldn't connect to %s: %s.",
                          self._repr_remote(), error)
