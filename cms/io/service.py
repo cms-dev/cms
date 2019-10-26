@@ -5,6 +5,7 @@
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2019 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -157,9 +158,11 @@ class Service:
 
         """
         try:
-            ipaddr, port = address
-            ipaddr = gevent.socket.gethostbyname(ipaddr)
-            address = Address(ipaddr, port)
+            # In case of IPv6 address is (ip, port, flow info, scope id).
+            ipaddr, port = address[:2]
+            addresses = gevent.socket.getaddrinfo(ipaddr, port)
+            *rest, sockaddr = addresses[0]
+            address = Address(sockaddr[0], sockaddr[1])
         except OSError:
             logger.warning("Unexpected error.", exc_info=True)
             return
