@@ -9,6 +9,7 @@
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
 # Copyright © 2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2019 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -386,6 +387,10 @@ class ProxyService(TriggeredService):
         queues for them to be sent to rankings.
 
         """
+        # ScoringService sent us a submission of another contest.
+        if submission.task.contest_id != self.contest_id:
+            return []
+
         submission_result = submission.get_result()
 
         # Data to send to remote rankings.
@@ -422,6 +427,9 @@ class ProxyService(TriggeredService):
         queues for them to be sent to rankings.
 
         """
+        # ScoringService sent us a submission of another contest.
+        if submission.task.contest_id != self.contest_id:
+            return []
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
