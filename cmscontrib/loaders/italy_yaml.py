@@ -31,7 +31,8 @@ from datetime import timedelta
 
 import yaml
 
-from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
+from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
     Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
@@ -376,6 +377,13 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["primary_statements"] = [primary_language]
 
         args["submission_format"] = ["%s.%%l" % name]
+
+        # Import the feedback level when explicitly set to full
+        # (default behaviour is restricted)
+        if conf.get("feedback_level", None) == FEEDBACK_LEVEL_FULL:
+            args["feedback_level"] = FEEDBACK_LEVEL_FULL
+        elif conf.get("feedback_level", None) == FEEDBACK_LEVEL_RESTRICTED:
+            args["feedback_level"] = FEEDBACK_LEVEL_RESTRICTED
 
         if conf.get("score_mode", None) == SCORE_MODE_MAX:
             args["score_mode"] = SCORE_MODE_MAX
