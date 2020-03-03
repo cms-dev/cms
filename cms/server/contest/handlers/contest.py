@@ -138,7 +138,7 @@ class ContestHandler(BaseHandler):
             user logged in for the running contest.
 
         """
-        cookie_name = self.contest.name + "_login"
+        cookie_name = self.contest.name.replace(" ", "_") + "_login"
         cookie = self.get_secure_cookie(cookie_name)
 
         try:
