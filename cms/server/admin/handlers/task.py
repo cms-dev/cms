@@ -132,7 +132,7 @@ class TaskHandler(BaseHandler):
             primary_statements = {}
             for statement in task.statements:
                 self.get_bool(primary_statements,
-                              "primary_statement_%s" % statement)
+                              "primary_statement_%s" % statement[0])
             attrs["primary_statements"] = list(sorted([
                 k.replace("primary_statement_", "", 1)
                 for k in primary_statements
@@ -163,6 +163,7 @@ class TaskHandler(BaseHandler):
             task.set_attrs(attrs)
 
         except Exception as error:
+            logger.warning("Invalid field: %s" % (traceback.format_exc()))
             self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(self.url("task", task_id))
