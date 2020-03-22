@@ -291,7 +291,7 @@ class ContestImporter:
         if "hidden" in new_p:
             args["hidden"] = new_p["hidden"]
         if "ip" in new_p and new_p["ip"] is not None:
-            args["ip"] = [ipaddress.ip_network(new_p["ip"])]
+            args["ip"] = list(map(ipaddress.ip_network, new_p["ip"].split(",")))
         if "password" in new_p:
             args["password"] = new_p["password"]
 
