@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2020 Manuel Gundlach <manuel.gundlach@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,9 +22,6 @@ from werkzeug.wrappers import Response, Request
 from werkzeug.wsgi import responder, wrap_file
 
 from cms.db.filecacher import FileCacher, TombstoneError
-
-
-SECONDS_IN_A_YEAR = 365 * 24 * 60 * 60
 
 
 class FileServerMiddleware:
@@ -105,7 +103,8 @@ class FileServerMiddleware:
             response.headers.add(
                 "Content-Disposition", "attachment", filename=filename)
         response.set_etag(digest)
-        response.cache_control.max_age = SECONDS_IN_A_YEAR
+        response.cache_control.no_cache = True
+        response.cache_control.max_age = 0
         response.cache_control.private = True
         response.response = \
             wrap_file(environ, fobj, buffer_size=FileCacher.CHUNK_SIZE)
