@@ -190,13 +190,11 @@ class PrintingExecutor(Executor):
                     "(error %d)" % (pretty_print_cmdline(cmd), ret))
 
             pdfmerger = PdfFileMerger()
-            with open(title_pdf, "rb") as file_:
-                pdfmerger.append(file_)
-            with open(source_pdf, "rb") as file_:
-                pdfmerger.append(file_)
+            pdfmerger.append(title_pdf)
+            pdfmerger.append(source_pdf)
             result = os.path.join(directory, "document.pdf")
-            with open(result, "wb") as file_:
-                pdfmerger.write(file_)
+            pdfmerger.write(result)
+            pdfmerger.close()
 
             try:
                 printer_connection = cups.Connection()
