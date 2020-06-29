@@ -339,6 +339,13 @@ CMS.CWSUtils.prototype.switch_lang = function() {
 };
 
 CMS.CWSUtils.filter_languages = function(options, inputs) {
+    // Remove all disable if reset button is pressed
+		if (inputs === undefined) {
+        return options.each(function(i, option) {
+            $(option).removeAttr('disabled');
+        });
+    }
+
     var exts = [];
     for (var i = 0; i < inputs.length; i++) {
         exts.push('.' + inputs[i].value.match(/[^.]*$/)[0]);
