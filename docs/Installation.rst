@@ -49,17 +49,17 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 18.04, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 20.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
     # Feel free to change OpenJDK packages with your preferred JDK.
-    sudo apt-get install build-essential openjdk-8-jdk-headless fp-compiler \
-        postgresql postgresql-client python3.6 cppreference-doc-en-html \
+    sudo apt-get install build-essential openjdk-11-jdk-headless fp-compiler \
+        postgresql postgresql-client python3.8 cppreference-doc-en-html \
         cgroup-lite libcap-dev zip
 
     # Only if you are going to use pip/venv to install python dependencies
-    sudo apt-get install python3.6-dev libpq-dev libcups2-dev libyaml-dev \
+    sudo apt-get install python3.8-dev libpq-dev libcups2-dev libyaml-dev \
         libffi-dev python3-pip
 
     # Optional
