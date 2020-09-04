@@ -84,6 +84,8 @@ class UserTestInterfaceHandler(ContestHandler):
         for task in self.contest.tasks:
             if self.get_argument("task_name", None) == task.name:
                 default_task = task
+            if default_task is None and task.active_dataset.task_type_object.testable:
+                default_task = task
             user_tests[task.id] = self.sql_session.query(UserTest)\
                 .filter(UserTest.participation == participation)\
                 .filter(UserTest.task == task)\

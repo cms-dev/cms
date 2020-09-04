@@ -34,6 +34,7 @@ def N_(message):
 class Notice(TaskType):
 
     ACCEPTED_PARAMETERS = []
+    ALLOW_SUBMISSION = False
 
     testable = False
 
