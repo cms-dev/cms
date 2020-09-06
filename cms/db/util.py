@@ -274,8 +274,8 @@ def get_datasets_to_judge(task):
 
 def enumerate_files(
         session, contest=None,
-        skip_submissions=False, skip_user_tests=False, skip_print_jobs=False,
-        skip_generated=False):
+        skip_submissions=False, skip_user_tests=False, skip_users=False,
+        skip_print_jobs=False, skip_generated=False):
     """Enumerate all the files (by digest) referenced by the
     contest.
 
@@ -302,7 +302,7 @@ def enumerate_files(
     queries.append(dataset_q.join(Dataset.testcases)
                    .with_entities(Testcase.output))
 
-    if not skip_submissions:
+    if not skip_submissions and not skip_users:
         submission_q = task_q.join(Task.submissions)
         queries.append(submission_q.join(Submission.files)
                        .with_entities(File.digest))
@@ -312,7 +312,7 @@ def enumerate_files(
                            .join(SubmissionResult.executables)
                            .with_entities(Executable.digest))
 
-    if not skip_user_tests:
+    if not skip_user_tests and not skip_users:
         user_test_q = task_q.join(Task.user_tests)
         queries.append(user_test_q.with_entities(UserTest.input))
         queries.append(user_test_q.join(UserTest.files)
@@ -327,7 +327,7 @@ def enumerate_files(
             queries.append(user_test_result_q
                            .with_entities(UserTestResult.output))
 
-    if not skip_print_jobs:
+    if not skip_print_jobs and not skip_users:
         queries.append(contest_q.join(Contest.participations)
                        .join(Participation.printjobs)
                        .with_entities(PrintJob.digest))
