@@ -224,6 +224,19 @@ def install_isolate():
              os.path.join(USR_ROOT, "bin", "isolate"),
              root, 0o4750, group=cmsuser_grp)
 
+def install_isolate_conf():
+    """This function installs the configuration files for isolate
+
+    """
+    assert_root()
+    root = pwd.getpwnam("root")
+    try:
+        cmsuser_grp = grp.getgrnam(CMSUSER)
+    except:
+        print("[Error] The user %s doesn't exist yet" % CMSUSER)
+        print("[Error] You need to run the install command at least once")
+        exit(1)
+
     print("===== Copying isolate config to /usr/local/etc/")
     makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
     copyfile(os.path.join(".", "isolate", "default.cf"),
@@ -313,6 +326,7 @@ def install():
     old_umask = os.umask(0o000)
 
     if not NO_CONF:
+        install_isolate_conf()
         install_conf()
 
     print("===== Creating directories")
