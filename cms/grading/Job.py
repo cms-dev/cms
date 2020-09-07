@@ -378,6 +378,15 @@ class CompilationJob(Job):
                     managers[manager_filename] = \
                         dataset.managers[manager_filename]
 
+        # Copy header files from dataset.
+        # FIXME This bypasses get_auto_managers() logic
+        if language is not None:
+            for manager_filename in dataset.managers:
+                if any(manager_filename.endswith(header)
+                       for header in language.header_extensions):
+                    managers[manager_filename] = \
+                        dataset.managers[manager_filename]
+
         return CompilationJob(
             operation=operation,
             task_type=dataset.task_type,
