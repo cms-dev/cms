@@ -224,8 +224,15 @@
         {% trans %}N/A{% endtrans %}
     {% endif %}
             </td>
-            <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
-            <td>{{ t_iter.submission_format|map("replace", ".%l", extensions)|join(" ") }}</td>
+            {% set task_type = get_task_type(dataset=t_iter.active_dataset) %}
+            <td>{{ task_type.name }}</td>
+            <td>
+    {% if task_type.ALLOW_SUBMISSION %}
+        {{ t_iter.submission_format|map("replace", ".%l", extensions)|join(" ") }}
+    {% else %}
+        {% trans %}N/A{% endtrans %}
+    {% endif %}
+            </td>
     {% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
             <td>
         {% if t_iter.token_mode == TOKEN_MODE_FINITE or t_iter.token_mode == TOKEN_MODE_INFINITE %}
