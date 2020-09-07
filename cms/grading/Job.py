@@ -377,6 +377,15 @@ class CompilationJob(Job):
                 if manager_filename not in managers:
                     managers[manager_filename] = \
                         dataset.managers[manager_filename]
+        
+        # Copy header files from submission
+        if language is not None:
+            for manager_filename in dataset.managers:
+                if any(manager_filename.endswith(header) 
+                       for header in language.header_extensions):
+                    managers[manager_filename] = \
+                        dataset.managers[manager_filename]
+        
 
         return CompilationJob(
             operation=operation,
