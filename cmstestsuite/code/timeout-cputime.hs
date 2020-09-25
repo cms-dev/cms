@@ -1,4 +1,8 @@
+loop :: Int -> Int
+loop x = loop x
+
+main :: IO ()
 main = do
     n <- (read :: String -> Int) `fmap` getLine
     putStrLn $ "correct " ++ show n
-    last [0 ..] `seq` return ()
+    loop 1 `seq` return ()
