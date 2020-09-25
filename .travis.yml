@@ -1,20 +1,15 @@
-dist: trusty
+dist: bionic
 sudo: required
 
 language: python
 python:
   - 3.6
 
-# Use the PostgreSQL version that is provided in Ubuntu 16.04.
-# We need at least version 9.4 as that is the one that introduced the
-# JSONB type. By default Ubuntu 14.04 comes with version 9.3.
 addons:
-  postgresql: "9.5"
-
   apt:
     packages:
       - build-essential
-      - php5-cli
+      - php7.2-cli
       - haskell-platform
       - fp-compiler
       - postgresql-client
@@ -28,6 +23,11 @@ addons:
       - libyaml-dev
       - rustc
       - mono-mcs
+
+# Note: We need at least PostgreSQL version 9.4 as
+# that is the one that introduced the JSONB type.
+services:
+  - postgresql
 
 install:
   - pip install -r requirements.txt
