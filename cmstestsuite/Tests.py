@@ -41,6 +41,7 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 
 LANG_CPP = "C++11 / g++"
 LANG_CPP14 = "C++14 / g++"
+LANG_CPP17 = "C++17 / g++"
 LANG_C = "C11 / gcc"
 LANG_HS = "Haskell / ghc"
 LANG_JAVA = "Java / JDK"
@@ -50,13 +51,15 @@ LANG_PYTHON = "Python 2 / CPython"
 LANG_RUST = "Rust"
 LANG_C_SHARP = "C# / Mono"
 ALL_LANGUAGES = (
-    LANG_CPP, LANG_CPP14, LANG_C, LANG_HS, LANG_JAVA, LANG_PASCAL, LANG_PHP,
-    LANG_PYTHON, LANG_RUST, LANG_C_SHARP
+    LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_C, LANG_HS, LANG_JAVA, LANG_PASCAL,
+    LANG_PHP, LANG_PYTHON, LANG_RUST, LANG_C_SHARP
 )
-NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_CPP14, LANG_PASCAL)
+NON_INTERPRETED_LANGUAGES = (
+    LANG_C, LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_PASCAL
+)
 COMPILED_LANGUAGES = (
-    LANG_C, LANG_CPP, LANG_CPP14, LANG_PASCAL, LANG_JAVA, LANG_PYTHON,
-    LANG_HS, LANG_RUST, LANG_C_SHARP
+    LANG_C, LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_PASCAL, LANG_JAVA,
+    LANG_PYTHON, LANG_HS, LANG_RUST, LANG_C_SHARP
 )
 
 ALL_TESTS = [
@@ -415,6 +418,11 @@ ALL_TESTS = [
     Test('correct-stdio-cxx14',
          task=batch_stdio, filenames=['correct-stdio-cxx14.%l'],
          languages=(LANG_CPP14,),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('correct-stdio-cxx17',
+         task=batch_stdio, filenames=['correct-stdio-cxx17.%l'],
+         languages=(LANG_CPP17,),
          checks=[CheckOverallScore(100, 100)]),
 
 ]
