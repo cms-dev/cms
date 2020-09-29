@@ -70,6 +70,10 @@ ALL_TESTS = [
 
     Test('correct-stdio',
          task=batch_stdio, filenames=['correct-stdio.%l'],
+         alt_filenames={
+             LANG_CPP14: ['correct-stdio-cxx14.%l'],
+             LANG_CPP17: ['correct-stdio-cxx17.%l'],
+         },
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(100, 100)]),
 
@@ -414,17 +418,5 @@ ALL_TESTS = [
          task=batch_fileio, filenames=['write-big-fileio.%l'],
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
-
-    # Language-specific tests
-
-    Test('correct-stdio-cxx14',
-         task=batch_stdio, filenames=['correct-stdio-cxx14.%l'],
-         languages=(LANG_CPP14,),
-         checks=[CheckOverallScore(100, 100)]),
-
-    Test('correct-stdio-cxx17',
-         task=batch_stdio, filenames=['correct-stdio-cxx17.%l'],
-         languages=(LANG_CPP17,),
-         checks=[CheckOverallScore(100, 100)]),
 
 ]

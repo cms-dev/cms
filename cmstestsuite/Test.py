@@ -3,6 +3,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2020 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -134,12 +135,13 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
 
 class Test:
     def __init__(self, name, task, filenames, languages, checks,
-                 user_tests=False):
+                 user_tests=False, alt_filenames={}):
         self.framework = FunctionalTestFramework()
 
         self.name = name
         self.task_module = task
         self.filenames = filenames
+        self.alt_filenames = alt_filenames
         self.languages = languages
         self.checks = checks
         submission_format = list(
@@ -157,9 +159,14 @@ class Test:
 
         # Choose the correct file to submit.
         if language is not None:
+            # First check if language is in alt_filenames. This allows to
+            # submit different sources for languages that would otherwise
+            # have matching source extensions.
+            filenames = self.alt_filenames.get(language, self.filenames)
+
             ext = get_language(language).source_extension
             filenames = [filename.replace(".%l", ext)
-                         for filename in self.filenames]
+                         for filename in filenames]
         else:
             filenames = self.filenames
 
