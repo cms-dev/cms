@@ -81,7 +81,7 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 42
+version = 43
 
 engine = create_engine(config.database, echo=config.database_debug,
                        pool_timeout=60, pool_recycle=120)

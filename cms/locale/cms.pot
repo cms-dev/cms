@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2019-02-23 11:44+0100\n"
+"POT-Creation-Date: 2019-08-28 19:13+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -119,26 +119,30 @@ msgid "Execution timed out (wall clock limit exceeded)"
 msgstr ""
 
 msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
+"Your submission used too much total time. This might happen if your "
+"submission is waiting for an event (e.g., a timer) or has entered undefined "
+"behavior. Note that in this case the CPU time visible in the submission "
+"details might be much smaller than the time limit."
 msgstr ""
 
-msgid "Execution killed (could be triggered by violating memory limits)"
+msgid "Execution killed (runtime error)"
 msgstr ""
 
 msgid ""
 "The evaluation was killed by a signal. Among other things, this might be "
-"caused by exceeding the memory limit. Note that if this is the reason, the "
-"memory usage visible in the submission details is the usage before the "
-"allocation that caused the signal."
+"caused by undefined behavior (e.g., out-of-bounds array access) or by "
+"exceeding the memory limit. Note that in the latter case the memory usage "
+"visible in the submission details is the usage before the allocation that "
+"caused the signal."
 msgstr ""
 
-msgid "Execution failed because the return code was nonzero"
+msgid "Execution failed with non-zero exit code (could be caused by exception)"
 msgstr ""
 
-msgid "Your submission failed because it exited with a return code different from 0."
+msgid ""
+"Your submission failed because it returned an exit code other than 0. In "
+"some programming languages this might be caused by an unhandled exception "
+"(e.g., <code>NullPointerException</code>)."
 msgstr ""
 
 msgid "Execution completed successfully"
@@ -853,39 +857,6 @@ msgstr ""
 msgid "Standard error"
 msgstr ""
 
-msgid "None"
-msgstr ""
-
-msgid "Download"
-msgstr ""
-
-msgid "Played"
-msgstr ""
-
-msgid "Play!"
-msgstr ""
-
-msgid "Wait..."
-msgstr ""
-
-msgid "No tokens"
-msgstr ""
-
-msgid "Public score"
-msgstr ""
-
-msgid "Total score"
-msgstr ""
-
-msgid "Score"
-msgstr ""
-
-msgid "Token"
-msgstr ""
-
-msgid "no submissions"
-msgstr ""
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr ""
@@ -1024,6 +995,9 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+msgid "Download"
+msgstr ""
+
 msgid "Submit a test"
 msgstr ""
 
@@ -1050,5 +1024,35 @@ msgid "Test details"
 msgstr ""
 
 msgid "Evaluation outcome"
+msgstr ""
+
+msgid "Wait..."
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Public score"
+msgstr ""
+
+msgid "Total score"
+msgstr ""
+
+msgid "Score"
+msgstr ""
+
+msgid "Token"
+msgstr ""
+
+msgid "no submissions"
+msgstr ""
+
+msgid "Played"
+msgstr ""
+
+msgid "Play!"
+msgstr ""
+
+msgid "No tokens"
 msgstr ""
 
