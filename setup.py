@@ -188,7 +188,6 @@ setup(
             "C11 / gcc=cms.grading.languages.c11_gcc:C11Gcc",
             "C# / Mono=cms.grading.languages.csharp_mono:CSharpMono",
             "Haskell / ghc=cms.grading.languages.haskell_ghc:HaskellGhc",
-            "Java 1.4 / gcj=cms.grading.languages.java14_gcj:Java14Gcj",
             "Java / JDK=cms.grading.languages.java_jdk:JavaJDK",
             "Pascal / fpc=cms.grading.languages.pascal_fpc:PascalFpc",
             "PHP=cms.grading.languages.php:Php",
