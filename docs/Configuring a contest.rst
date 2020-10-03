@@ -201,17 +201,17 @@ Programming languages
 
 CMS allows to restrict the set of programming languages available to contestants in a certain contest; the configuration is in the contest page in AWS.
 
-CMS offers out of the box the following combination of languages: C, C++, Pascal, Java (in two flavours, either compiled with gcj or using a JDK), Python 2, PHP.
+CMS offers out of the box the following combination of languages: C, C++, Pascal, Java (using a JDK), Python 2 and 3, PHP, Haskell, Rust, C#.
 
-C, C++ and Pascal are the default languages, and, together with Java with gcj, have been tested thoroughly in many contests.
+C, C++ and Pascal are the default languages, and have been tested thoroughly in many contests.
 
 PHP and Python have only been tested with Batch task types, and have not thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
 
-Java with JDK works with Batch and Communication task types. Under usual conditions (default submission format) contestants must name their class as the short name of the task.
+Java works with Batch and Communication task types. Under usual conditions (default submission format) contestants must name their class as the short name of the task.
 
 .. warning::
 
-   Java with JDK uses multithreading even for simple programs. Therefore, if this language is allowed in the contest, multithreading and multiprocessing will be allowed in the sandbox for *all* evaluations (even with other languages).
+   Java uses multithreading even for simple programs. Therefore, if this language is allowed in the contest, multithreading and multiprocessing will be allowed in the sandbox for *all* evaluations (even with other languages).
 
    If a solution uses multithreading or multiprocessing, the time limit is checked against the sum of the user times of all threads and processes.
 
@@ -219,15 +219,13 @@ Java with JDK works with Batch and Communication task types. Under usual conditi
 Language details
 ----------------
 
-* C and C++ are supported through the GNU Compiler Collection. Submissions are optimized with ``-O2``, and use the 2011 standards for C and C++.
+* C and C++ are supported through the GNU Compiler Collection. Submissions are optimized with ``-O2``. Multiple C and C++ language revisions are supported.
 
-* Java with gcj is also supported through the GNU Compiled Collection. Programs are compiled with ``gcj``, optimized with ``-O3``, and then run as normal executables. Notice that gcj only fully supports Java 1.4.
-
-* Java with JDK uses the system version of the Java compiler and JVM.
+* Java uses the system version of the Java compiler and JVM.
 
 * Pascal support is provided by ``fpc``, and submissions are optimized with ``-O2``.
 
-* Python submissions are interpreted using Python 2 (you need to have ``/usr/bin/python2``).
+* Python submissions are executed using the system Python interpreter (you need to have ``/usr/bin/python2`` or ``/usr/bin/python3``, respectively).
 
 * PHP submissions are interpreted by ``/usr/bin/php``.
 

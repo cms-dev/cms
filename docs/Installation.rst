@@ -28,9 +28,9 @@ You will also require a Linux kernel with support for control groups and namespa
 
 Then you require the compilation and execution environments for the languages you will use in your contest:
 
-* `GNU compiler collection <https://gcc.gnu.org/>`_ (for C, C++ and Java, respectively with executables ``gcc``, ``g++`` and ``gcj``);
+* `GNU compiler collection <https://gcc.gnu.org/>`_ (for C and C++, respectively with executables ``gcc`` and ``g++``);
 
-* alternatively, for Java, your choice of a JDK, for example OpenJDK (but any other JDK behaving similarly is fine, for example Oracle's);
+* for Java, your choice of a JDK, for example OpenJDK (but any other JDK behaving similarly is fine, for example Oracle's);
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
@@ -64,8 +64,7 @@ On Ubuntu 18.04, one will need to run the following script to satisfy all depend
 
     # Optional
     sudo apt-get install nginx-full python2.7 php7.2-cli php7.2-fpm \
-        phppgadmin texlive-latex-base a2ps gcj-jdk haskell-platform rustc \
-        mono-mcs
+        phppgadmin texlive-latex-base a2ps haskell-platform rustc mono-mcs
 
 The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
 
