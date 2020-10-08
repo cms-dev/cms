@@ -26,6 +26,7 @@ import resource
 import select
 import stat
 import tempfile
+import time
 from abc import ABCMeta, abstractmethod
 from functools import wraps, partial
 
@@ -34,7 +35,6 @@ from gevent import subprocess
 
 from cms import config, rmtree
 from cmscommon.commands import pretty_print_cmdline
-from cmscommon.datetime import monotonic_time
 
 
 logger = logging.getLogger(__name__)
@@ -594,7 +594,7 @@ class StupidSandbox(SandboxBase):
         if self.exec_time:
             return self.exec_time
         if self.popen_time:
-            self.exec_time = monotonic_time() - self.popen_time
+            self.exec_time = time.monotonic() - self.popen_time
             return self.exec_time
         return None
 
@@ -765,7 +765,7 @@ class StupidSandbox(SandboxBase):
             stderr_fd = subprocess.PIPE
 
         # Note down execution time
-        self.popen_time = monotonic_time()
+        self.popen_time = time.monotonic()
 
         # Actually call the Popen
         self.popen = self._popen(command,
@@ -995,8 +995,8 @@ class IsolateSandbox(SandboxBase):
                 os.path.realpath(os.path.join(self._home_dest, inner_path))
             # If an inner path is absolute (e.g., /fifo0/u0_to_m) then
             # it may be outside home and we should ignore it.
-            # FIXME: In Py3 use os.path.commonpath.
-            if not abs_inner_path.startswith(self._home_dest + "/"):
+            if os.path.commonpath([abs_inner_path,
+                                   self._home_dest]) != self._home_dest:
                 continue
             rel_inner_path = os.path.relpath(abs_inner_path, self._home_dest)
             outer_path = os.path.join(self._home, rel_inner_path)

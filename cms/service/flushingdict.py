@@ -18,11 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import time
 
 import gevent
 from gevent.lock import RLock
-
-from cmscommon.datetime import monotonic_time
 
 
 logger = logging.getLogger(__name__)
@@ -66,13 +65,13 @@ class FlushingDict:
         self.d_lock = RLock()
 
         # Time when an item was last inserted in the dict
-        self.last_insert = monotonic_time()
+        self.last_insert = time.monotonic()
 
     def add(self, key, value):
         logger.debug("Adding item %s", key)
         with self.d_lock:
             self.d[key] = value
-            self.last_insert = monotonic_time()
+            self.last_insert = time.monotonic()
 
     def flush(self):
         logger.debug("Flushing items")
@@ -90,7 +89,7 @@ class FlushingDict:
         while True:
             while True:
                 with self.d_lock:
-                    since_last_insert = monotonic_time() - self.last_insert
+                    since_last_insert = time.monotonic() - self.last_insert
                     if len(self.d) != 0 and (
                             len(self.d) >= self.size or
                             since_last_insert > self.flush_latency_seconds):

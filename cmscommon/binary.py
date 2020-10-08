@@ -34,8 +34,7 @@ def hex_to_bin(hex):
 
 
 def bin_to_b64(bin):
-    # TODO: use newline=False instead of strip() when we get rid of Python 2.
-    return binascii.b2a_base64(bin).strip().decode('ascii')
+    return binascii.b2a_base64(bin, newline=False).decode('ascii')
 
 
 def b64_to_bin(b64):

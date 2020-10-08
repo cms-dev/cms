@@ -30,8 +30,6 @@ __all__ = [
     "get_timezone", "get_system_timezone",
 
     "utc", "local_tz",
-
-    "monotonic_time",
     ]
 
 
@@ -105,59 +103,3 @@ def get_system_timezone():
     if hasattr(local_tz, 'zone'):
         return local_tz.zone
     return local_tz.tzname(make_datetime())
-
-
-if sys.version_info >= (3, 3):
-    def monotonic_time():
-        """Get the number of seconds passed since a fixed past moment.
-
-        A monotonic clock measures the time elapsed since an arbitrary
-        but immutable instant in the past. The value itself has no
-        direct intrinsic meaning but the difference between two such
-        values does, as it is guaranteed to accurately represent the
-        amount of time passed between when those two measurements were
-        taken, no matter the adjustments to the clock that occurred in
-        between.
-
-        return (float): the value of the clock, in seconds.
-
-        """
-        return time.monotonic()
-
-# Taken from http://bugs.python.org/file19461/monotonic.py and
-# http://stackoverflow.com/questions/1205722/how-do-i-get-monotonic-time-durations-in-python
-# and modified.
-else:
-    from ctypes import Structure, c_long, CDLL, c_int, get_errno, POINTER, \
-        pointer
-    from ctypes.util import find_library
-
-    # Raw means it's immune even to NTP time adjustments.
-    CLOCK_MONOTONIC_RAW = 4
-
-    class timespec(Structure):
-        _fields_ = [
-            ('tv_sec', c_long),
-            ('tv_nsec', c_long)
-            ]
-
-    librt_filename = find_library('rt')
-    if not librt_filename:
-        # On Debian Lenny (Python 2.5.2), find_library() is unable
-        # to locate /lib/librt.so.1
-        librt_filename = 'librt.so.1'
-    librt = CDLL(librt_filename, use_errno=True)
-    _clock_gettime = librt.clock_gettime
-    _clock_gettime.argtypes = (c_int, POINTER(timespec))
-
-    def monotonic_time():
-        """Get the number of seconds passed since a fixed past moment.
-
-        return (float): the value of a monotonic clock, in seconds.
-
-        """
-        t = timespec()
-        if _clock_gettime(CLOCK_MONOTONIC_RAW, pointer(t)) != 0:
-            errno_ = get_errno()
-            raise OSError(errno_, os.strerror(errno_))
-        return t.tv_sec + t.tv_nsec / 1e9

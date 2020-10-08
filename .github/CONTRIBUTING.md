@@ -17,7 +17,7 @@ For Python code, we generally follow [PEP 8](https://www.python.org/dev/peps/pep
 We get around Python flexible type system in several ways:
 * we try to avoid "magic" (e.g., generating or changing classes on the fly);
 * we are fairly verbose with naming, trying to help the reader with following the types;
-* we follow our type annotation system for method and function docstrings (planning to switch to [PEP 484](https://www.python.org/dev/peps/pep-0484/) when we will remove support for Python 2); see later for the format.
+* we follow our type annotation system for method and function docstrings (planning to switch to [PEP 484](https://www.python.org/dev/peps/pep-0484/)); see later for the format.
 
 We support Python 3 only, requiring at least version 3.6.
 

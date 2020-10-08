@@ -25,6 +25,8 @@
 import logging
 import subprocess
 
+from cmscommon.commands import pretty_print_cmdline
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,16 +42,16 @@ class TestException(Exception):
 
 
 def sh(cmdline, ignore_failure=False):
-    """Execute a simple shell command.
+    """Execute a simple command.
 
-    If cmdline is a string, it is passed to sh -c verbatim.  All escaping must
-    be performed by the user. If cmdline is an array, then no escaping is
-    required.
+    cmd ([str]): the (unescaped) command to execute.
+    ignore_failure (bool): whether to suppress failures.
+
+    raise (TestException): if the command failed and ignore_failure was False.
 
     """
     if CONFIG["VERBOSITY"] >= 1:
-        # TODO Use shlex.quote in Python 3.3.
-        logger.info('$ %s', ' '.join(cmdline))
+        logger.info('$ %s', pretty_print_cmdline(cmdline))
     kwargs = dict()
     if CONFIG["VERBOSITY"] >= 3:
         kwargs["stdout"] = subprocess.DEVNULL
@@ -57,6 +59,5 @@ def sh(cmdline, ignore_failure=False):
     ret = subprocess.call(cmdline, **kwargs)
     if not ignore_failure and ret != 0:
         raise TestException(
-            # TODO Use shlex.quote in Python 3.3.
             "Execution failed with %d/%d. Tried to execute:\n%s\n" %
-            (ret & 0xff, ret >> 8, ' '.join(cmdline)))
+            (ret & 0xff, ret >> 8, pretty_print_cmdline(cmdline)))

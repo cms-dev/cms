@@ -18,11 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    from shlex import quote
-except ImportError:
-    # Python 2
-    from pipes import quote
+from shlex import quote
 
 
 __all__ = [

@@ -51,9 +51,6 @@ def import_testcases_from_zipfile(
             tests = dict()
             # Match input/output file names to testcases' codenames.
             for filename in archive_zfp.namelist():
-                # In py2, filename is either str (if ASCII) or unicode.
-                # Cast it to a consistent type, compatible with py3.
-                filename = str(filename)
                 match = input_re.match(filename)
                 if match:
                     codename = match.group(1)

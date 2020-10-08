@@ -43,7 +43,6 @@ from cms import ConfigError, config, mkdir, ServiceCoord, Address, \
     get_service_address
 from cms.log import root_logger, shell_handler, ServiceFilter, \
     DetailedFormatter, LogServiceHandler, FileHandler
-from cmscommon.datetime import monotonic_time
 from .rpc import rpc_method, RemoteServiceServer, RemoteServiceClient, \
     FakeRemoteServiceClient
 
@@ -64,14 +63,14 @@ def repeater(func, period):
 
     """
     while True:
-        call = monotonic_time()
+        call = time.monotonic()
 
         try:
             func()
         except Exception:
             logger.error("Unexpected error.", exc_info=True)
 
-        gevent.sleep(max(call + period - monotonic_time(), 0))
+        gevent.sleep(max(call + period - time.monotonic(), 0))
 
 
 class Service:

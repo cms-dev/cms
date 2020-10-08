@@ -74,7 +74,7 @@ def has_color_support(stream):
             # See `man terminfo` for capabilities' names and meanings.
             if curses.tigetnum("colors") > 0:
                 return True
-        # fileno() can raise OSError (since Python 3.3).
+        # fileno() can raise OSError.
         except Exception:
             pass
     return False

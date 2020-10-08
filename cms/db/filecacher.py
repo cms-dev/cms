@@ -65,9 +65,6 @@ def copyfileobj(source_fobj, destination_fobj,
         while len(buffer) > 0:
             gevent.sleep(0)
             written = destination_fobj.write(buffer)
-            # FIXME remove this when we drop py2
-            if written is None:
-                break
             buffer = buffer[written:]
         gevent.sleep(0)
 

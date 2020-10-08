@@ -88,9 +88,8 @@ def any_(ctx, l, test=None, *args):
     return False
 
 
-# FIXME once we drop py2 do dictselect(ctx, d, test=None, *args, by="key")
 @contextfilter
-def dictselect(ctx, d, test=None, *args, **kwargs):
+def dictselect(ctx, d, test=None, *args, by="key"):
     """Filter the given dict: keep only items that pass the given test.
 
     ctx (Context): a Jinja2 context, needed to retrieve the test
@@ -110,10 +109,6 @@ def dictselect(ctx, d, test=None, *args, **kwargs):
         test = bool
     else:
         test = ctx.environment.tests[test]
-    by = kwargs.pop("by", "key")
-    if len(kwargs) > 0:
-        raise ValueError("Invalid keyword argument: %s"
-                         % next(iter(kwargs.keys())))
     if by not in {"key", "value"}:
         raise ValueError("Invalid value of \"by\" keyword argument: %s" % by)
     return dict((k, v) for k, v in d.items()
@@ -168,10 +163,8 @@ def instrument_generic_toolbox(env):
     env.tests["today"] = today
 
 
-# TODO When dropping py2, let the arguments be `env, *, dataset` in
-# order to force the users to pass the dataset as a keyword argument.
 @environmentfunction
-def safe_get_task_type(env, dataset):
+def safe_get_task_type(env, *, dataset):
     try:
         return dataset.task_type_object
     # The task type's constructor is called, which may raise any
@@ -180,10 +173,8 @@ def safe_get_task_type(env, dataset):
         return env.undefined("TaskType not found: %s" % err)
 
 
-# TODO When dropping py2, let the arguments be `env, *, dataset` in
-# order to force the users to pass the dataset as a keyword argument.
 @environmentfunction
-def safe_get_score_type(env, dataset):
+def safe_get_score_type(env, *, dataset):
     try:
         return dataset.score_type_object
     # The score type's constructor is called, which may raise any
