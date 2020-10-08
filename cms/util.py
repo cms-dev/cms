@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2020 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +27,7 @@ import itertools
 import logging
 import netifaces
 import os
+import stat
 import sys
 
 import chardet
@@ -63,10 +65,9 @@ def mkdir(path):
             return True
 
 
-# This function is vulnerable to a symlink attack, see:
-# https://bugs.python.org/issue4489
-# It appears the only bulletproof fix requires the ability to traverse
-# directories using file descriptors (like fwalk) which is only in py3.
+# This function uses os.fwalk() to avoid the symlink attack, see:
+# - https://bugs.python.org/issue4489
+# - https://bugs.python.org/issue13734
 def rmtree(path):
     """Recursively delete a directory tree.
 
@@ -79,20 +80,20 @@ def rmtree(path):
     raise (OSError): in case of errors in the elementary operations.
 
     """
-    if os.path.islink(path):
-        raise OSError("unsafe to call rmtree on a symlink")
-
-    for dirpath, subdirnames, filenames in os.walk(path, topdown=False):
+    # If path is a symlink, fwalk() yields no entries.
+    for _, subdirnames, filenames, dirfd in os.fwalk(path, topdown=False):
         for filename in filenames:
-            os.remove(os.path.join(dirpath, filename))
+            os.remove(filename, dir_fd=dirfd)
             gevent.sleep(0)
         for subdirname in subdirnames:
-            subdirpath = os.path.join(dirpath, subdirname)
-            if os.path.islink(subdirpath):
-                os.remove(subdirpath)
-                gevent.sleep(0)
-        os.rmdir(dirpath)
-        gevent.sleep(0)
+            if stat.S_ISLNK(os.lstat(subdirname, dir_fd=dirfd).st_mode):
+                os.remove(subdirname, dir_fd=dirfd)
+            else:
+                os.rmdir(subdirname, dir_fd=dirfd)
+            gevent.sleep(0)
+
+    # Remove the directory itself. An exception is raised if path is a symlink.
+    os.rmdir(path)
 
 
 def utf8_decoder(value):

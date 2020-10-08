@@ -2,6 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2020 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,12 +20,14 @@
 """Tests for general utility functions."""
 
 import netifaces
+import os
+import tempfile
 import unittest
 from unittest.mock import Mock
 
 import cms.util
 from cms import Address, ServiceCoord, \
-    get_safe_shard, get_service_address, get_service_shards
+    get_safe_shard, get_service_address, get_service_shards, rmtree
 
 
 class FakeAsyncConfig:
@@ -150,6 +153,47 @@ class TestGetServiceShards(unittest.TestCase):
         """Test success cases."""
         self.assertEqual(get_service_shards("Service"), 2)
         self.assertEqual(get_service_shards("ServiceNotPresent"), 0)
+
+
+class TestRmtree(unittest.TestCase):
+    """Test the function cms.util.rmtree.
+
+    """
+    def setUp(self):
+        """Set up temporary directory."""
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        """Remove temporary directory."""
+        os.rmdir(self.tmpdir)
+
+    def test_success(self):
+        """Test success case."""
+        testdir = os.path.join(self.tmpdir, "test")
+        os.makedirs(os.path.join(testdir, "a"))
+        os.makedirs(os.path.join(testdir, "b", "c"))
+        open(os.path.join(testdir, "x"), "w").close()
+        os.symlink("foo", os.path.join(testdir, "a", "y"))
+        os.symlink(self.tmpdir, os.path.join(testdir, "b", "z"))
+
+        rmtree(testdir)
+        self.assertFalse(os.path.exists(testdir))
+        self.assertTrue(os.path.isdir(self.tmpdir))
+
+    def test_symlink(self):
+        """Test failure on a symlink."""
+        link = os.path.join(self.tmpdir, "link")
+        os.symlink(self.tmpdir, link)
+
+        with self.assertRaises(NotADirectoryError):
+            rmtree(link)
+
+        os.remove(link)
+
+    def test_missing(self):
+        """Test failure on a missing directory."""
+        with self.assertRaises(FileNotFoundError):
+            rmtree(os.path.join(self.tmpdir, "missing"))
 
 
 if __name__ == "__main__":
