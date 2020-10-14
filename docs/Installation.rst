@@ -201,7 +201,7 @@ To install CMS and its Python dependencies on Ubuntu, you can issue:
     sudo python3 setup.py install
 
     sudo apt-get install python3-setuptools python3-tornado python3-psycopg2 \
-         python3-sqlalchemy python3-psutil python3-netifaces python3-crypto \
+         python3-sqlalchemy python3-psutil python3-netifaces python3-pycryptodome \
          python3-bs4 python3-coverage python3-requests python3-werkzeug \
          python3-gevent python3-bcrypt python3-chardet patool python3-babel \
          python3-xdg python3-jinja2
@@ -223,7 +223,7 @@ To install CMS python dependencies on Arch Linux (again: assuming you did not us
     sudo python3 setup.py install
 
     sudo pacman -S --needed python-setuptools python-tornado python-psycopg2 \
-         python-sqlalchemy python-psutil python-netifaces python-crypto \
+         python-sqlalchemy python-psutil python-netifaces python-pycryptodome \
          python-beautifulsoup4 python-coverage python-requests python-werkzeug \
          python-gevent python-bcrypt python-chardet python-babel python-xdg \
          python-jinja
