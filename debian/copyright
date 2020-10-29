@@ -40,7 +40,7 @@ License: Expat
 
 Files: cms/server/static/jq/jquery.jqplot*
        cms/server/static/jq/jqplot*
-Copyright: 2009-2011 Chris Leonello
+Copyright: 2009-2016 Chris Leonello
 License: Expat or GPL-2
 
 Files: cms/server/static/css/bootstrap.css
