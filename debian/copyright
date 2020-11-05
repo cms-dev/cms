@@ -29,10 +29,11 @@ License: Expat
 Comment: See http://rem.mit-license.org/
 
 Files: cmsranking/static/lib/raphael.js
-Copyright: 2008-2012 Dmitry Baranovskiy (http://raphaeljs.com)
-           2008-2012 Sencha Labs (http://sencha.com)
-License: Expat
-Comment: See http://raphaeljs.com/license.html
+Copyright: 2008-2016 Dmitry Baranovskiy (http://raphaeljs.com)
+           2008-2016 Sencha Labs (http://sencha.com)
+           2013 Adobe Systems Incorporated. All rights reserved.
+License: Expat and Apache-2.0
+Comment: See https://dmitrybaranovskiy.github.io/raphael/license.html
 
 Files: cms/server/static/jq/jquery-1.12.4.min.js
 Copyright: 2016 jQuery Foundation and other contributors, http://jquery.org/
