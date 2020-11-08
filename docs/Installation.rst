@@ -16,7 +16,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (in particular the C compiler ``gcc``);
 
-* `Python <http://www.python.org/>`_ >= 3.;
+* `Python <http://www.python.org/>`_ >= 3.8;
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
