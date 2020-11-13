@@ -142,6 +142,8 @@ class Config:
         # necessary to change it.
         # [1] http://freedesktop.org/wiki/Software/shared-mime-info
         self.shared_mime_info_prefix = "/usr"
+        self.telegram_bot_token = None
+        self.telegram_bot_chat_id = None
 
         # AdminWebServer.
         self.admin_listen_address = ""
@@ -201,6 +203,13 @@ class Config:
 
         # Attempt to load a config file.
         self._load(paths)
+
+        if bool(self.telegram_bot_token) ^ bool(self.telegram_bot_chat_id):
+            raise ConfigError("Both telegram_bot_token and telegram_bot_chat_id "
+                              "should be set or left null")
+        if self.telegram_bot_chat_id:
+            if type(self.telegram_bot_chat_id) != int:
+                raise ConfigError("telegram_bot_chat_id should be an integer")
 
         # If the configuration says to print detailed log on stdout,
         # change the log configuration.

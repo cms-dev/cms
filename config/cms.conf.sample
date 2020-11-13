@@ -133,6 +133,13 @@
     "_help": "STL documentation path in the system (exposed in CWS).",
     "stl_path": "/usr/share/cppreference/doc/html/",
 
+    "_help": "Telegram bot configuration for posting notifications for the",
+    "_help": "questions. The token is a string obtained from @BotFather and",
+    "_help": "the chat_id (an int) is the chat id of a conversation where the",
+    "_help": "bot has access to: a chat where the user started the bot or a",
+    "_help": "channel where the bot has been authorized.",
+    "telegram_bot_token": null,
+    "telegram_bot_chat_id": null,
 
 
     "_section": "AdminWebServer",
