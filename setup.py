@@ -168,6 +168,7 @@ setup(
             "cmsRemoveUser=cmscontrib.RemoveUser:main",
             "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
             "cmsMake=cmstaskenv.cmsMake:main",
+            "cmsPrometheusExporter=cmscontrib.PrometheusExporter:main",
         ],
         "cms.grading.tasktypes": [
             "Batch=cms.grading.tasktypes.Batch:Batch",
