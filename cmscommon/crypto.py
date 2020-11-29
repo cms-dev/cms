@@ -27,8 +27,8 @@ import random
 from string import ascii_lowercase
 
 import bcrypt
-from Crypto import Random
-from Crypto.Cipher import AES
+from Cryptodome import Random
+from Cryptodome.Cipher import AES
 
 from cmscommon.binary import bin_to_hex, hex_to_bin, bin_to_b64, b64_to_bin
 
