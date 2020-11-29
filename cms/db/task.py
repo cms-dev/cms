@@ -389,8 +389,7 @@ class Dataset(Base):
     memory_limit = Column(
         BigInteger,
         CheckConstraint("memory_limit > 0"),
-        # Double % is needed because Alchemy formats this string.
-        CheckConstraint("memory_limit %% 1048576 = 0"),
+        CheckConstraint("MOD(memory_limit, 1048576) = 0"),
         nullable=True)
 
     # Name of the TaskType child class suited for the task.
