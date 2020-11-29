@@ -1,6 +1,6 @@
 # Only for testing
-beautifulsoup4>=4.6,<4.7
+beautifulsoup4>=4.8,<4.9
 coverage>=4.5,<4.6
 
 # Only for building documentation
-Sphinx>=1.6,<1.7
+Sphinx>=1.8,<1.9

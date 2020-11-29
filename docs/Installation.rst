@@ -63,7 +63,7 @@ On Ubuntu 20.04, one will need to run the following script to satisfy all depend
         libffi-dev python3-pip
 
     # Optional
-    sudo apt-get install nginx-full python2.7 php7.2-cli php7.2-fpm \
+    sudo apt-get install nginx-full python2.7 php7.4-cli php7.4-fpm \
         phppgadmin texlive-latex-base a2ps haskell-platform rustc mono-mcs
 
 The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
@@ -200,7 +200,7 @@ To install CMS and its Python dependencies on Ubuntu, you can issue:
 
     sudo python3 setup.py install
 
-    sudo apt-get install python3-setuptools python3-tornado python3-psycopg2 \
+    sudo apt-get install python3-setuptools python3-tornado4 python3-psycopg2 \
          python3-sqlalchemy python3-psutil python3-netifaces python3-pycryptodome \
          python3-bs4 python3-coverage python3-requests python3-werkzeug \
          python3-gevent python3-bcrypt python3-chardet patool python3-babel \
