@@ -194,6 +194,10 @@ Method 3: Using ``apt-get`` on Ubuntu
 
   It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. **On Ubuntu, this is generally not the case** since we try to build on the python packages that are available for the current LTS version.
 
+.. warning::
+
+  On Ubuntu 20.04, the shipped version of ``python3-gevent`` is too old to support the system Python 3 version. After installing other packages from the repositories, you should still install ``gevent>=1.5,<1.6``, for example, using the ``pip`` method above.
+
 To install CMS and its Python dependencies on Ubuntu, you can issue:
 
 .. sourcecode:: bash
