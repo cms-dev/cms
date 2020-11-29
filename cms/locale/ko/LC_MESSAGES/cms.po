@@ -2,7 +2,7 @@
 # Copyright (C) 2020 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
-# Hyun-seok Jeon <melongist@gmail.com>, 2020.11.28
+# Hyun-seok Jeon <melongist@gmail.com>, 2020.11.29
 # Myungwoo Chun <mc.tamaki@gmail.com>, 2016-2017.
 # Hyungsuk Yoon <youhanmir@gmail.com>, 2016.
 # Hyunmin Choi <auxiliarycode@gmail.com>, 2015.
@@ -23,7 +23,7 @@ msgstr ""
 "Generated-By: Babel 2.4.0\n"
 
 msgid "N/A"
-msgstr "N/A"
+msgstr "없음"
 
 msgid "Not correct"
 msgstr "틀림"
@@ -95,26 +95,26 @@ msgid "Output is correct"
 msgstr "모두 맞음"
 
 msgid "Your submission ran and gave the correct answer"
-msgstr "제출한 프로그램이 실행되었으며 모두 정확한 답을 출력하였습니다."
+msgstr "제출한 프로그램이 실행되어 채점되었으며 모두 정확한 답을 출력하였습니다."
 
 msgid "Output is partially correct"
 msgstr "부분 맞음"
 
 msgid "Your submission ran and gave the partially correct answer"
-msgstr "제출한 프로그램이 실행되었지만 부분적으로만 정확한 답을 출력하였습니다."
+msgstr "제출한 프로그램이 실행되어 채점되었지만 부분적으로만 정확한 답을 출력하였습니다."
 
 msgid "Output isn't correct"
 msgstr "틀림"
 
 msgid "Your submission ran, but gave the wrong answer"
-msgstr "제출한 프로그램이 실행되었지만 모두 틀린 답을 출력하였습니다."
+msgstr "제출한 프로그램이 실행되어 채점되었지만 모두 틀린 답을 출력하였습니다."
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
 msgstr "%s 파일 생성 실패"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr "제출한 프로그램이 실행되었지만 정확한 출력 파일을 생성하지 못했습니다."
+msgstr "제출한 프로그램이 실행되어 채점되었지만 정확한 출력 파일을 생성하지 못했습니다."
 
 msgid "Execution timed out"
 msgstr "시간제한 초과"
@@ -340,10 +340,10 @@ msgid "Your request has been received and applied to the submission."
 msgstr "토큰을 사용해서 채점을 제출했습니다."
 
 msgid "Test received"
-msgstr "테스트 제출 완료"
+msgstr "채점 테스트 제출 완료"
 
 msgid "Your test has been received and is currently being executed."
-msgstr "테스트가 제출되었으며, 현재 실행중입니다."
+msgstr "채점 테스트가 제출되었으며, 현재 실행중입니다."
 
 msgid "details"
 msgstr "세부사항"
@@ -396,32 +396,32 @@ msgid "Submission storage failed!"
 msgstr "제출 파일 저장 실패!"
 
 msgid "Too many tests!"
-msgstr "테스트 제출 불가능!"
+msgstr "채점 테스트 불가능!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr "누적 최대 테스트 횟수(%d)를 모두 사용했습니다."
+msgstr "채점 테스트 최대 횟수(%d)를 모두 사용했습니다."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "이 문제에 대해서, 최대 테스트 횟수(%d)를 모두 사용했습니다."
+msgstr "이 문제에 대한, 채점 테스트 최대 횟수(%d)를 모두 사용했습니다."
 
 msgid "Tests too frequent!"
-msgstr "테스트 제출이 너무 빠릅니다!"
+msgstr "채점 테스트 제출이 너무 빠릅니다!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "누적 마지막 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
+msgstr "마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 채점 테스트를 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr "이 문제에 대해서, 마지막 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
+msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 채점 테스트를 제출할 수 있습니다."
 
 msgid "Invalid test format!"
-msgstr "테스트 파일 오류!"
+msgstr "채점 테스트 파일 오류!"
 
 msgid "Test too big!"
-msgstr "테스트 파일 용량 초과"
+msgstr "채점 테스트 파일 용량 초과"
 
 msgid "Input too big!"
 msgstr "입력데이터 파일 용량 초과"
@@ -431,7 +431,7 @@ msgid "The input file must be at most %d bytes long."
 msgstr "입력데이터 파일의 최대 크기는 %d bytes 입니다."
 
 msgid "Test storage failed!"
-msgstr "테스트 파일 저장 실패!"
+msgstr "채점 테스트 파일 저장 실패!"
 
 msgid "Communication"
 msgstr "질문하기"
@@ -497,7 +497,7 @@ msgid "Login"
 msgstr "로그인"
 
 msgid "Don't have an account?"
-msgstr "사용자ID가 없나요?"
+msgstr "사용자ID가 없는 경우 : "
 
 msgid "Register"
 msgstr "사용자ID 등록하기"
@@ -534,10 +534,10 @@ msgid "Server time:"
 msgstr "서버 시간:"
 
 msgid "Overview"
-msgstr "대회"
+msgstr "대회 안내"
 
 msgid "Statement"
-msgstr "대회 설명"
+msgstr "문제 확인"
 
 msgid "Submissions"
 msgstr "채점 제출"
@@ -546,7 +546,7 @@ msgid "Documentation"
 msgstr "참고자료"
 
 msgid "Testing"
-msgstr "테스트"
+msgstr "재점 테스트"
 
 msgid "Printing"
 msgstr "프린트"
@@ -575,7 +575,7 @@ msgid ""
 msgstr "채점 제출시 Java main class 의 이름은 해당 문제와 일치해야 합니다."
 
 msgid "Submission details for compilation"
-msgstr "컴파일 결과 설명"
+msgstr "컴파일 메시지 설명"
 
 msgid "Message"
 msgstr "메시지"
@@ -584,7 +584,7 @@ msgid "Explanation"
 msgstr "설명"
 
 msgid "Submission details for evaluation"
-msgstr "채점 결과 설명"
+msgstr "채점 메시지 설명"
 
 #, python-format
 msgid "Error %(status_code)s"
@@ -608,7 +608,7 @@ msgstr ""
 "정상적인 사용 과정에서 이 메시지를 받는 경우에는 반드시 대회 운영진에게 알려주세요."
 
 msgid "General information"
-msgstr "대회 정보"
+msgstr "일반 사항"
 
 msgid "The contest hasn't started yet."
 msgstr "대회 시작전입니다."
@@ -747,7 +747,7 @@ msgid "Task"
 msgstr "문제"
 
 msgid "Name"
-msgstr "제목"
+msgstr "이름"
 
 msgid "Time limit"
 msgstr "시간제한"
@@ -756,13 +756,13 @@ msgid "Memory limit"
 msgstr "메모리제한"
 
 msgid "Type"
-msgstr "문제유형"
+msgstr "채점 방식"
 
 msgid "Files"
-msgstr "제출파일"
+msgstr "채점 파일"
 
 msgid "Tokens"
-msgstr "토큰"
+msgstr "토큰 사용"
 
 msgid "Yes"
 msgstr "예"
@@ -796,7 +796,7 @@ msgid "File (text)"
 msgstr "(text) 파일"
 
 msgid "Submit"
-msgstr "제출"
+msgstr "제출하기"
 
 msgid "You cannot print anything any more as you have used up your printing quota."
 msgstr "더 이상 프린트 할 수 없습니다. 개인별 프린트 최대 횟수를 모두 사용하였습니다."
@@ -885,6 +885,103 @@ msgstr "표준 출력"
 msgid "Standard error"
 msgstr "표준 에러"
 
+msgid "None"
+msgstr "없음"
+
+msgid "Download"
+msgstr "다운로드"
+
+msgid "Played"
+msgstr "제출됨"
+
+msgid "Play!"
+msgstr "채점 제출하기!"
+
+msgid "Wait..."
+msgstr "대기..."
+
+msgid "No tokens"
+msgstr "토큰 없음"
+
+msgid "Public score:"
+msgstr "공식 점수:"
+
+msgid "Total score:"
+msgstr "총점"
+
+msgid "Score"
+msgstr "점수"
+
+msgid "Token"
+msgstr "토큰"
+
+msgid "no submissions"
+msgstr "채점 제출 기록 없음"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>문제 설명</small>"
+
+msgid "no statement available"
+msgstr "문제 없음"
+
+msgid "Download task statement"
+msgstr "문제 다운로드"
+
+msgid ""
+"The statement for this task is available in multiple versions, in different "
+"languages."
+msgstr ""
+"이 문제는 여러 가지 언어로 제공됩니다."
+
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "오른쪽 리스트를 통해 여러 가지 언어로 제공되는 문제들을 살펴볼 수 있습니다. (다운로드 가능)"
+
+msgid "Some suggested translations follow."
+msgstr "언어별 문제"
+
+#, python-format
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b> 문제"
+
+#, python-format
+msgid "Statement in %(lang)s"
+msgstr "%(lang)s 문제"
+
+#, python-format
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
+
+#, python-format
+msgid "%(lang)s"
+msgstr "%(lang)s"
+
+msgid "Some details"
+msgstr "세부사항"
+
+msgid "Compilation commands"
+msgstr "컴파일 명령어"
+
+#, python-format
+msgid ""
+"You can find the rules for the %(type_pl)s on the <a "
+"href=\"%(contest_root)s\">contest overview page</a>."
+msgstr ""
+"%(type_pl)s과 관련한 규칙들은 <a "
+"href=\"%(contest_root)s\">대회 규칙</a> 페이지에서 찾아볼 수 있습니다."
+
+msgid ""
+"Remember that to see the detailed result of a submission you need to use "
+"both a contest-token and a task-token."
+msgstr ""
+"채점을 제출하고 그 결과를 확인하기 위해서는 대회-토큰과 문제-토큰이 각각 1개씩 필요합니다."
+
+msgid "Attachments"
+msgstr "첨부파일"
+
+msgid "unknown"
+msgstr "알 수 없음"
+
 msgid "loading..."
 msgstr "로딩중..."
 
@@ -895,14 +992,8 @@ msgstr "%(name)s (%(short_name)s) <small>채점 제출</small>"
 msgid "Score:"
 msgstr "점수:"
 
-msgid "Public score:"
-msgstr "공식 점수:"
-
 msgid "Score of tokened submissions:"
 msgstr "득점"
-
-msgid "Total score:"
-msgstr "총점"
 
 msgid "Submit a solution"
 msgstr "채점 제출"
@@ -918,7 +1009,7 @@ msgid "submission.zip"
 msgstr "submission.zip"
 
 msgid "Previous submissions"
-msgstr "이전 채점 기록"
+msgstr "채점 기록"
 
 msgid "Tokens are not allowed on this task."
 msgstr "이 문제는 토큰을 사용할 수 없습니다."
@@ -963,21 +1054,18 @@ msgstr "채점 제출 세부사항"
 msgid "Close"
 msgstr "닫기"
 
-msgid "Download"
-msgstr "다운로드"
-
 msgid "Submit a test"
-msgstr "테스트 제출"
+msgstr "채점 테스트 제출"
 
 #, python-format
 msgid "You can submit %(user_tests_left)s more test(s)."
-msgstr "앞으로 %(user_tests_left)s 번 더 테스트를 제출할 수 있습니다."
+msgstr "앞으로 %(user_tests_left)s 번 더 채점 테스트를 제출할 수 있습니다."
 
 msgid "input"
 msgstr "입력"
 
 msgid "Previous tests"
-msgstr "이전 테스트"
+msgstr "채점 테스트 기록"
 
 msgid "Input"
 msgstr "입력"
@@ -989,43 +1077,19 @@ msgid "Files"
 msgstr "파일"
 
 msgid "no tests yet"
-msgstr "테스트 기록 없음"
+msgstr "채점 테스트 기록 없음"
 
 msgid "Test details"
-msgstr "테스트 세부사항"
+msgstr "채점 테스트 세부사항"
 
 msgid "Evaluation outcome"
 msgstr "결과 출력"
-
-msgid "Wait..."
-msgstr "대기..."
-
-msgid "None"
-msgstr "없음"
 
 msgid "Public score"
 msgstr "공식 점수"
 
 msgid "Total score"
 msgstr "총점"
-
-msgid "Score"
-msgstr "점수"
-
-msgid "Token"
-msgstr "토큰"
-
-msgid "no submissions"
-msgstr "채점 제출 기록 없음"
-
-msgid "Played"
-msgstr "시작됨"
-
-msgid "Play!"
-msgstr "시작!"
-
-msgid "No tokens"
-msgstr "토큰 없음"
 
 msgid "Invalid file"
 msgstr "파일 오류"
