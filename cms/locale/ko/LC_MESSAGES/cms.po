@@ -434,10 +434,10 @@ msgid "Test storage failed!"
 msgstr "채점 테스트 파일 저장 실패!"
 
 msgid "Communication"
-msgstr "질문하기"
+msgstr "공지 및 질문"
 
 msgid "Announcements"
-msgstr "공지사항"
+msgstr "공지"
 
 msgid "(no subject)"
 msgstr "(제목 없음)"
@@ -475,7 +475,7 @@ msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
 msgstr ""
-"로그인 사용자 <strong>%(first_name)s %(last_name)s</strong> "
+"사용자 : <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
 
 msgid "Failed to log in."
@@ -759,7 +759,7 @@ msgid "Type"
 msgstr "채점 방식"
 
 msgid "Files"
-msgstr "채점 파일"
+msgstr "파일"
 
 msgid "Tokens"
 msgstr "토큰 사용"
@@ -892,10 +892,10 @@ msgid "Download"
 msgstr "다운로드"
 
 msgid "Played"
-msgstr "제출됨"
+msgstr "확인함"
 
 msgid "Play!"
-msgstr "채점 제출하기!"
+msgstr "확인하기!"
 
 msgid "Wait..."
 msgstr "대기..."
@@ -916,7 +916,7 @@ msgid "Token"
 msgstr "토큰"
 
 msgid "no submissions"
-msgstr "채점 제출 기록 없음"
+msgstr "채점 기록 없음"
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
