@@ -1,18 +1,17 @@
-dist: bionic
-sudo: required
+dist: focal
 
 language: python
 python:
+  - 3.8
   - 3.6
 
 addons:
   apt:
     packages:
       - build-essential
-      - php7.2-cli
+      - php7.4-cli
       - haskell-platform
       - fp-compiler
-      - postgresql-client
       - python2.7
       - cppreference-doc-en-html
       - cgroup-lite
@@ -23,6 +22,7 @@ addons:
       - libyaml-dev
       - rustc
       - mono-mcs
+  postgresql: "13"  # Default version is broken on focal in Travis
 
 # Note: We need at least PostgreSQL version 9.4 as
 # that is the one that introduced the JSONB type.
