@@ -26,7 +26,10 @@
 
 """
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 
 from cms.db import Contest, Announcement
 from cmscommon.datetime import make_datetime
@@ -67,7 +70,7 @@ class AnnouncementHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if self.contest is not ann.contest:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         self.sql_session.delete(ann)
         self.try_commit()

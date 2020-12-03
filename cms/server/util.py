@@ -30,7 +30,10 @@ import logging
 from functools import wraps
 from urllib.parse import quote, urlencode
 
-from tornado.web import RequestHandler
+try:
+    from tornado4.web import RequestHandler
+except ImportError:
+    from tornado.web import RequestHandler
 
 from cms.db import Session
 from cms.server.file_middleware import FileServerMiddleware

@@ -29,7 +29,10 @@
 import logging
 import traceback
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 
 from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
 from cmscommon.datetime import make_datetime
@@ -286,7 +289,7 @@ class StatementHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if task is not statement.task:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         self.sql_session.delete(statement)
         self.try_commit()
@@ -358,7 +361,7 @@ class AttachmentHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if attachment.task is not task:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         self.sql_session.delete(attachment)
         self.try_commit()

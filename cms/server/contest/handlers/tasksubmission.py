@@ -32,7 +32,10 @@
 import logging
 import re
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 from sqlalchemy.orm import joinedload
 
 from cms import config, FEEDBACK_LEVEL_FULL
@@ -63,13 +66,13 @@ class SubmitHandler(ContestHandler):
 
     """
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
     def post(self, task_name):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         # Only set the official bit when the user can compete and we are not in
         # analysis mode.
@@ -106,7 +109,7 @@ class TaskSubmissionsHandler(ContestHandler):
     """Shows the data of a task in the contest.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name):
@@ -114,7 +117,7 @@ class TaskSubmissionsHandler(ContestHandler):
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         submissions = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)\
@@ -217,17 +220,17 @@ class SubmissionStatusHandler(ContestHandler):
             data["task_tokened_score"], score_type.max_score, None,
             task.score_precision, translation=self.translation)
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, submission_num):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         submission = self.get_submission(task, submission_num)
         if submission is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
 
@@ -277,17 +280,17 @@ class SubmissionDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, submission_num):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         submission = self.get_submission(task, submission_num)
         if submission is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
         score_type = task.active_dataset.score_type_object
@@ -318,20 +321,20 @@ class SubmissionFileHandler(FileHandler):
     """Send back a submission file.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         submission = self.get_submission(task, submission_num)
         if submission is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         # The following code assumes that submission.files is a subset
         # of task.submission_format. CWS will always ensure that for new
@@ -348,7 +351,7 @@ class SubmissionFileHandler(FileHandler):
             stored_filename = re.sub(r'%s$' % extension, '.%l', filename)
 
         if stored_filename not in submission.files:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         digest = submission.files[stored_filename].digest
         self.sql_session.close()
@@ -364,17 +367,17 @@ class UseTokenHandler(ContestHandler):
     """Called when the user try to use a token on a submission.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def post(self, task_name, submission_num):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         submission = self.get_submission(task, submission_num)
         if submission is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         try:
             accept_token(self.sql_session, submission, self.timestamp)

@@ -21,9 +21,10 @@
 
 import logging
 
-import tornado.escape
-import tornado.web
-import tornado.wsgi
+try:
+    import tornado4.wsgi as tornado_wsgi
+except ImportError:
+    import tornado.wsgi as tornado_wsgi
 from gevent.pywsgi import WSGIServer
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.wsgi import DispatcherMiddleware, SharedDataMiddleware
@@ -56,7 +57,7 @@ class WebService(Service):
         is_proxy_used = parameters.pop('is_proxy_used', None)
         num_proxies_used = parameters.pop('num_proxies_used', None)
 
-        self.wsgi_app = tornado.wsgi.WSGIApplication(handlers, **parameters)
+        self.wsgi_app = tornado_wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self
 
         for entry in static_files:

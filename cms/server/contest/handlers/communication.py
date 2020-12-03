@@ -29,7 +29,10 @@
 
 import logging
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 
 from cms.server import multi_contest
 from cms.server.contest.communication import accept_question, \
@@ -50,7 +53,7 @@ class CommunicationHandler(ContestHandler):
     and the contest managers..
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @multi_contest
     def get(self):
         self.render("communication.html", **self.r_params)
@@ -60,7 +63,7 @@ class QuestionHandler(ContestHandler):
     """Called when the user submits a question.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @multi_contest
     def post(self):
         try:
@@ -69,7 +72,7 @@ class QuestionHandler(ContestHandler):
                             self.get_argument("question_text", ""))
             self.sql_session.commit()
         except QuestionsNotAllowed:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
         except UnacceptableQuestion as e:
             self.notify_error(e.subject, e.text, e.text_params)
         else:

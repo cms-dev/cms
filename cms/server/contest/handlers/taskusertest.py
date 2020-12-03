@@ -31,7 +31,10 @@
 import logging
 import re
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 
 from cms import config
 from cms.db import UserTest, UserTestResult
@@ -57,14 +60,14 @@ class UserTestInterfaceHandler(ContestHandler):
     """Serve the interface to test programs.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self):
         participation = self.current_user
 
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         user_tests = dict()
         user_tests_left = dict()
@@ -113,16 +116,16 @@ class UserTestHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def post(self, task_name):
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         query_args = dict()
 
@@ -135,7 +138,7 @@ class UserTestHandler(ContestHandler):
         except TestingNotAllowed:
             logger.warning("User %s tried to make test on task %s.",
                            self.current_user.user.username, task_name)
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
         except UnacceptableUserTest as e:
             logger.info("Sent error: `%s' - `%s'", e.subject, e.formatted_text)
             self.notify_error(e.subject, e.text, e.text_params)
@@ -159,20 +162,20 @@ class UserTestStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num):
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         ur = user_test.get_result(task.active_dataset)
         data = dict()
@@ -214,20 +217,20 @@ class UserTestDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num):
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         tr = user_test.get_result(task.active_dataset)
 
@@ -239,20 +242,20 @@ class UserTestIOHandler(FileHandler):
     """Send back a submission file.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num, io):
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         if io == "input":
             digest = user_test.input
@@ -262,7 +265,7 @@ class UserTestIOHandler(FileHandler):
         self.sql_session.close()
 
         if digest is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         mimetype = 'text/plain'
 
@@ -273,20 +276,20 @@ class UserTestFileHandler(FileHandler):
     """Send back a submission file.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self, task_name, user_test_num, filename):
         if not self.r_params["testing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task = self.get_task(task_name)
         if task is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         user_test = self.get_user_test(task, user_test_num)
         if user_test is None:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         # filename is the name used by the browser, hence is something
         # like 'foo.c' (and the extension is CMS's preferred extension
@@ -302,7 +305,7 @@ class UserTestFileHandler(FileHandler):
         elif stored_filename in user_test.managers:
             digest = user_test.managers[stored_filename].digest
         else:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
         self.sql_session.close()
 
         mimetype = get_type_for_file_name(filename)

@@ -32,7 +32,10 @@
 import logging
 import traceback
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
 
@@ -137,7 +140,7 @@ class BaseHandler(CommonRequestHandler):
 
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
-                kwargs["exc_info"][0] != tornado.web.HTTPError:
+                kwargs["exc_info"][0] != tornado_web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
                 "Uncaught exception (%r) while processing a request: %s",

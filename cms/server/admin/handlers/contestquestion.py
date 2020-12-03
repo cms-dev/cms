@@ -27,7 +27,10 @@
 
 import logging
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 
 from cms.db import Contest, Question, Participation
 from cmscommon.datetime import make_datetime
@@ -74,7 +77,7 @@ class QuestionReplyHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         reply_subject_code = self.get_argument("reply_question_quick_answer",
                                                "")
@@ -115,7 +118,7 @@ class QuestionIgnoreHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
@@ -144,11 +147,11 @@ class QuestionClaimHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         # Can claim/unclaim only a question not ignored or answered.
         if question.ignored or question.reply_timestamp is not None:
-            raise tornado.web.HTTPError(405)
+            raise tornado_web.HTTPError(405)
 
         should_claim = self.get_argument("claim", "no") == "yes"
 

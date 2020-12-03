@@ -32,7 +32,10 @@ import logging
 import re
 import zipfile
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 
 from cms.db import Dataset, Manager, Message, Participation, \
     Session, Submission, Task, Testcase
@@ -92,7 +95,7 @@ class CloneDatasetHandler(BaseHandler):
                 self.safe_get_item(Dataset, dataset_id_to_copy)
             description = "Copy of %s" % original_dataset.description
         except ValueError:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
@@ -115,7 +118,7 @@ class CloneDatasetHandler(BaseHandler):
             original_dataset = \
                 self.safe_get_item(Dataset, dataset_id_to_copy)
         except ValueError:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         try:
             attrs = dict()
@@ -396,7 +399,7 @@ class DeleteManagerHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if manager.dataset is not dataset:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task_id = dataset.task_id
 
@@ -553,7 +556,7 @@ class DeleteTestcaseHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if dataset is not testcase.dataset:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         task_id = testcase.dataset.task_id
 

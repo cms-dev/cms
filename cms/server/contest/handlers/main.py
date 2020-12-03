@@ -32,7 +32,10 @@ import json
 import logging
 import re
 
-import tornado.web
+try:
+    import tornado4.web as tornado_web
+except ImportError:
+    import tornado.web as tornado_web
 from sqlalchemy.orm.exc import NoResultFound
 
 from cms import config
@@ -79,7 +82,7 @@ class RegistrationHandler(ContestHandler):
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         try:
             first_name = self.get_argument("first_name")
@@ -101,8 +104,8 @@ class RegistrationHandler(ContestHandler):
             if not self.MIN_PASSWORD_LENGTH <= len(password) \
                     <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
-        except (tornado.web.MissingArgumentError, ValueError):
-            raise tornado.web.HTTPError(400)
+        except (tornado_web.MissingArgumentError, ValueError):
+            raise tornado_web.HTTPError(400)
 
         # Override password with its hash
         password = hash_password(password)
@@ -114,8 +117,8 @@ class RegistrationHandler(ContestHandler):
                 team = self.sql_session.query(Team)\
                            .filter(Team.code == team_code)\
                            .one()
-            except (tornado.web.MissingArgumentError, NoResultFound):
-                raise tornado.web.HTTPError(400)
+            except (tornado_web.MissingArgumentError, NoResultFound):
+                raise tornado_web.HTTPError(400)
         else:
             team = None
 
@@ -124,7 +127,7 @@ class RegistrationHandler(ContestHandler):
                         .filter(User.username == username).count()
         if tot_users != 0:
             # HTTP 409: Conflict
-            raise tornado.web.HTTPError(409)
+            raise tornado_web.HTTPError(409)
 
         # Store new user and participation
         user = User(first_name, last_name, username, password, email=email)
@@ -141,7 +144,7 @@ class RegistrationHandler(ContestHandler):
     @multi_contest
     def get(self):
         if not self.contest.allow_registration:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
         self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
@@ -201,7 +204,7 @@ class StartHandler(ContestHandler):
     Used by a user who wants to start their per_user_time.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(-1)
     @multi_contest
     def post(self):
@@ -231,7 +234,7 @@ class NotificationsHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @multi_contest
     def get(self):
         participation = self.current_user
@@ -262,14 +265,14 @@ class PrintingHandler(ContestHandler):
     """Serve the interface to print and handle submitted print jobs.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self):
         participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
 
         printjobs = self.sql_session.query(PrintJob)\
             .filter(PrintJob.participation == participation)\
@@ -284,7 +287,7 @@ class PrintingHandler(ContestHandler):
                     pdf_printing_allowed=config.pdf_printing_allowed,
                     **self.r_params)
 
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def post(self):
@@ -294,7 +297,7 @@ class PrintingHandler(ContestHandler):
                 self.timestamp, self.request.files)
             self.sql_session.commit()
         except PrintingDisabled:
-            raise tornado.web.HTTPError(404)
+            raise tornado_web.HTTPError(404)
         except UnacceptablePrintJob as e:
             self.notify_error(e.subject, e.text, e.text_params)
         else:
@@ -310,7 +313,7 @@ class DocumentationHandler(ContestHandler):
     ...) of the contest.
 
     """
-    @tornado.web.authenticated
+    @tornado_web.authenticated
     @multi_contest
     def get(self):
         self.render("documentation.html",
