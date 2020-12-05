@@ -51,7 +51,7 @@ BRITISH_ENGLISH = Translation("en_GB")
 FRENCH = Translation("fr", mofile=FRENCH_CATALOG_BUF)
 HINDI = Translation("hi")
 ITALIAN = Translation("it")
-NORWEGIAN = Translation("no")
+DANISH = Translation("da")
 CHINESE = Translation("zh_CN")
 
 
@@ -125,19 +125,19 @@ class TestFormatDatetime(unittest.TestCase):
         self.assertEqual(
             ITALIAN.format_datetime(datetime(2018, 1, 1, 12, 34, 56),
                                     timezone=UTC),
-            "01 gen 2018, 12:34:56")
+            "1 gen 2018, 12:34:56")
 
     def test_localized_other_timezone_winter(self):
         self.assertEqual(
             ITALIAN.format_datetime(datetime(2018, 1, 1, 12, 34, 56),
                                     timezone=ROME),
-            "01 gen 2018, 13:34:56")
+            "1 gen 2018, 13:34:56")
 
     def test_localized_other_timezone_summer(self):
         self.assertEqual(
             ITALIAN.format_datetime(datetime(2018, 7, 1, 12, 34, 56),
                                     timezone=ROME),
-            "01 lug 2018, 14:34:56")
+            "1 lug 2018, 14:34:56")
 
 
 class TestFormatTime(unittest.TestCase):
@@ -160,22 +160,22 @@ class TestFormatTime(unittest.TestCase):
                                              timezone=ROME),
                          "2:34:56 PM")
 
-    # As above, localized (use Norwegian as they use periods rather
+    # As above, localized (use Danish as they use periods rather
     # than colons and have a 24h clock).
 
     def test_localized_utc(self):
-        self.assertEqual(NORWEGIAN.format_time(datetime(2018, 1, 1, 12, 34, 56),
-                                               timezone=UTC),
+        self.assertEqual(DANISH.format_time(datetime(2018, 1, 1, 12, 34, 56),
+                                            timezone=UTC),
                          "12.34.56")
 
     def test_localized_other_timezone_winter(self):
-        self.assertEqual(NORWEGIAN.format_time(datetime(2018, 1, 1, 12, 34, 56),
-                                               timezone=ROME),
+        self.assertEqual(DANISH.format_time(datetime(2018, 1, 1, 12, 34, 56),
+                                            timezone=ROME),
                          "13.34.56")
 
     def test_localized_other_timezone_summer(self):
-        self.assertEqual(NORWEGIAN.format_time(datetime(2018, 7, 1, 12, 34, 56),
-                                               timezone=ROME),
+        self.assertEqual(DANISH.format_time(datetime(2018, 7, 1, 12, 34, 56),
+                                            timezone=ROME),
                          "14.34.56")
 
 
@@ -247,12 +247,12 @@ class TestFormatDatetimeSmart(unittest.TestCase):
             ITALIAN.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2018, 1, 2, 0, 30),
                                           timezone=UTC),
-            "01 gen 2018, 12:34:56")
+            "1 gen 2018, 12:34:56")
         self.assertEqual(
             ITALIAN.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2017, 12, 31, 23, 30),
                                           timezone=UTC),
-            "01 gen 2018, 12:34:56")
+            "1 gen 2018, 12:34:56")
 
     def test_localized_other_timezone_winter(self):
         self.assertEqual(
@@ -264,12 +264,12 @@ class TestFormatDatetimeSmart(unittest.TestCase):
             ITALIAN.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2018, 1, 1, 23, 30),
                                           timezone=ROME),
-            "01 gen 2018, 13:34:56")
+            "1 gen 2018, 13:34:56")
         self.assertEqual(
             ITALIAN.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2017, 12, 31, 22, 30),
                                           timezone=ROME),
-            "01 gen 2018, 13:34:56")
+            "1 gen 2018, 13:34:56")
 
     def test_localized_other_timezone_summer(self):
         self.assertEqual(
@@ -281,12 +281,12 @@ class TestFormatDatetimeSmart(unittest.TestCase):
             ITALIAN.format_datetime_smart(datetime(2018, 7, 1, 12, 34, 56),
                                           datetime(2018, 7, 1, 22, 30),
                                           timezone=ROME),
-            "01 lug 2018, 14:34:56")
+            "1 lug 2018, 14:34:56")
         self.assertEqual(
             ITALIAN.format_datetime_smart(datetime(2018, 7, 1, 12, 34, 56),
                                           datetime(2018, 6, 30, 21, 30),
                                           timezone=ROME),
-            "01 lug 2018, 14:34:56")
+            "1 lug 2018, 14:34:56")
 
 
 class TestFormatTimedelta(unittest.TestCase):
