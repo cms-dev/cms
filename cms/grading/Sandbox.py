@@ -928,6 +928,11 @@ class IsolateSandbox(SandboxBase):
         # symlink to one out of many alternatives.
         self.maybe_add_mapped_directory("/etc/alternatives")
 
+        # Likewise, needed by C# programs. The Mono runtime looks in
+        # /etc/mono/config to obtain the default DllMap, which includes, in
+        # particular, the System.Native assembly.
+        self.maybe_add_mapped_directory("/etc/mono", options="noexec")
+
         # Tell isolate to get the sandbox ready. We do our best to cleanup
         # after ourselves, but we might have missed something if a previous
         # worker was interrupted in the middle of an execution, so we issue an
