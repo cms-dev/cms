@@ -21,6 +21,7 @@
 
 """
 
+import contextlib
 import cups
 import logging
 import os
@@ -189,12 +190,11 @@ class PrintingExecutor(Executor):
                     "Failed to create title page with command: %s"
                     "(error %d)" % (pretty_print_cmdline(cmd), ret))
 
-            pdfmerger = PdfFileMerger()
-            pdfmerger.append(title_pdf)
-            pdfmerger.append(source_pdf)
-            result = os.path.join(directory, "document.pdf")
-            pdfmerger.write(result)
-            pdfmerger.close()
+            with contextlib.closing(PdfFileMerger()) as pdfmerger:
+                pdfmerger.append(title_pdf)
+                pdfmerger.append(source_pdf)
+                result = os.path.join(directory, "document.pdf")
+                pdfmerger.write(result)
 
             try:
                 printer_connection = cups.Connection()
