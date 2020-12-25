@@ -45,6 +45,7 @@ from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.locale import get_translations
 from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
+from cms.util import is_shard_ephemeral
 from cmscommon.binary import hex_to_bin
 from .handlers import HANDLERS
 from .handlers.base import ContestListHandler
@@ -73,8 +74,12 @@ class ContestWebServer(WebService):
         }
 
         try:
-            listen_address = config.contest_listen_address[shard]
-            listen_port = config.contest_listen_port[shard]
+            if is_shard_ephemeral(shard):
+                index = 0
+            else:
+                index = shard
+            listen_address = config.contest_listen_address[index]
+            listen_port = config.contest_listen_port[index]
         except IndexError:
             raise ConfigError("Wrong shard number for %s, or missing "
                               "address/port configuration. Please check "

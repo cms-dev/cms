@@ -106,6 +106,8 @@ class WebService(Service):
         if num_proxies_used > 0:
             self.wsgi_app = ProxyFix(self.wsgi_app, num_proxies_used)
 
+        logger.info("%s listening on '%s' at port %d",
+            type(self).__name__, listen_address, listen_port)
         self.web_server = WSGIServer((listen_address, listen_port), self)
 
     def __call__(self, environ, start_response):

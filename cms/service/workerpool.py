@@ -140,17 +140,20 @@ class WorkerPool:
         """Wait until a worker might be available."""
         self._workers_available_event.wait()
 
-    def add_worker(self, worker_coord):
+    def add_worker(self, worker_coord, ephemeral=False):
         """Add a new worker to the worker pool.
 
         worker_coord (ServiceCoord): the coordinates of the worker.
+        ephemeral (bool): remove the worker from the pool after the
+            disconnection.
 
         """
         shard = worker_coord.shard
         # Instruct GeventLibrary to connect ES to the Worker.
         self._worker[shard] = self._service.connect_to(
             worker_coord,
-            on_connect=self.on_worker_connected)
+            on_connect=self.on_worker_connected,
+            on_disconnect=lambda: self.on_worker_disconnected(worker_coord, ephemeral))
 
         # And we fill all data.
         self._operations[shard] = WorkerPool.WORKER_INACTIVE
@@ -182,6 +185,24 @@ class WorkerPool:
         # which the worker is). But the worker could have been idling,
         # so we wake up the consumers.
         self._workers_available_event.set()
+
+    def on_worker_disconnected(self, worker_coord, ephemeral):
+        """If the worker is ephemeral, disable and the remove the worker
+        form the pool.
+        """
+        if not ephemeral:
+            return
+        shard = worker_coord.shard
+        if self._operations[shard] != WorkerPool.WORKER_DISABLED:
+            # disable the worker and re-enqueue the lost operations
+            lost_operations = self.disable_worker(shard)
+            for operation in lost_operations:
+                logger.info("Operation %s put again in the queue because "
+                            "the worker disconnected.", operation)
+                priority, timestamp = operation.side_data
+                self._service.enqueue(operation, priority, timestamp)
+        del self._worker[shard]
+        logger.info("Worker %s removed", worker_coord)
 
     def acquire_worker(self, operations):
         """Tries to assign an operation to an available worker. If no workers

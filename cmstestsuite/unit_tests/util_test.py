@@ -24,6 +24,7 @@ import os
 import tempfile
 import unittest
 from unittest.mock import Mock
+from cms.conf import EphemeralServiceConfig
 
 import cms.util
 from cms import Address, ServiceCoord, \
@@ -35,8 +36,10 @@ class FakeAsyncConfig:
     core_services = {
         ServiceCoord("Service", 0): Address("0.0.0.0", 0),
         ServiceCoord("Service", 1): Address("0.0.0.1", 1),
-        }
+    }
     other_services = {}
+    ephemeral_services = {"Service":
+                          EphemeralServiceConfig("1.0.0.0/8", 1, 1000)}
 
 
 def _set_up_async_config(restore=False):
@@ -66,6 +69,7 @@ def _set_up_ip_addresses(addresses=None, restore=False):
 
 class TestGetSafeShard(unittest.TestCase):
     """Test the function cms.util.get_safe_shard."""
+
     def setUp(self):
         """Set up the default mocks."""
         _set_up_async_config()
@@ -109,6 +113,7 @@ class TestGetServiceAddress(unittest.TestCase):
     """Test the function cms.util.get_service_address.
 
     """
+
     def setUp(self):
         """Set up the default mocks."""
         _set_up_async_config()
@@ -128,7 +133,7 @@ class TestGetServiceAddress(unittest.TestCase):
 
     def test_shard_not_present(self):
         """Test failure when the shard of the service is invalid."""
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ValueError):
             get_service_address(ServiceCoord("Service", 2))
 
     def test_service_not_present(self):
@@ -136,11 +141,17 @@ class TestGetServiceAddress(unittest.TestCase):
         with self.assertRaises(KeyError):
             get_service_address(ServiceCoord("ServiceNotPresent", 0))
 
+    def test_ephemeral(self):
+        """Test ephemeral service case."""
+        self.assertEqual(get_service_address(ServiceCoord(
+            "Service", EphemeralServiceConfig.EPHEMERAL_SHARD_OFFSET + 1000)), Address("1.0.0.1", 1))
+
 
 class TestGetServiceShards(unittest.TestCase):
     """Test the function cms.util.get_service_shards.
 
     """
+
     def setUp(self):
         """Set up the default mocks."""
         _set_up_async_config()
@@ -159,6 +170,7 @@ class TestRmtree(unittest.TestCase):
     """Test the function cms.util.rmtree.
 
     """
+
     def setUp(self):
         """Set up temporary directory."""
         self.tmpdir = tempfile.mkdtemp()
