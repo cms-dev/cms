@@ -101,6 +101,17 @@ class Executor(metaclass=ABCMeta):
 
         """
         self._operation_queue.remove(item)
+        self.removing(item)
+
+    def removing(self, item):
+        """This function is called right after the given item has been
+        removed from the queue. We need this call-back to update cumulative
+        "statistics" of the queue status.
+
+        item (QueueItem): the item that was removed.
+
+        """
+        pass
 
     def run(self):
         """Monitor the queue, and dispatch operations when available.
@@ -115,12 +126,14 @@ class Executor(metaclass=ABCMeta):
         while True:
             # Wait for the queue to be non-empty.
             to_execute = [self._operation_queue.pop(wait=True)]
+            self.removing(to_execute[0].item)
             if self._batch_executions:
                 max_operations = self.max_operations_per_batch()
                 while not self._operation_queue.empty() and (
                         max_operations == 0 or
                         len(to_execute) < max_operations):
                     to_execute.append(self._operation_queue.pop())
+                    self.removing(to_execute[-1].item)
 
             assert len(to_execute) > 0, "Expected at least one element."
             if self._batch_executions:

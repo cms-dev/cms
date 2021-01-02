@@ -557,3 +557,12 @@ class ESOperation(QueueItem):
             "dataset_id": self.dataset_id,
             "testcase_codename": self.testcase_codename
         }
+
+    def short_key(self):
+        """Return a short tuple (type, object_id, dataset_id) that omits
+        the testcase codename.
+
+        """
+        return (str(self.type_),
+                str(self.object_id),
+                str(self.dataset_id))
