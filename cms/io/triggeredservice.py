@@ -99,8 +99,22 @@ class Executor(metaclass=ABCMeta):
 
         item (QueueItem): the item to remove.
 
+        return (QueueEntry): the corresponding queue entry.
+
         """
-        self._operation_queue.remove(item)
+        return self._operation_queue.remove(item)
+
+    def _pop(self, wait=False):
+        """Extract (and return) the first element in the queue.
+
+        wait (bool): if True, block until an element is present.
+
+        return (QueueEntry): first element in the queue.
+
+        raise (LookupError): on empty queue, if wait was false.
+
+        """
+        return self._operation_queue.pop(wait=wait)
 
     def run(self):
         """Monitor the queue, and dispatch operations when available.
@@ -114,13 +128,13 @@ class Executor(metaclass=ABCMeta):
         """
         while True:
             # Wait for the queue to be non-empty.
-            to_execute = [self._operation_queue.pop(wait=True)]
+            to_execute = [self._pop(wait=True)]
             if self._batch_executions:
                 max_operations = self.max_operations_per_batch()
                 while not self._operation_queue.empty() and (
                         max_operations == 0 or
                         len(to_execute) < max_operations):
-                    to_execute.append(self._operation_queue.pop())
+                    to_execute.append(self._pop())
 
             assert len(to_execute) > 0, "Expected at least one element."
             if self._batch_executions:

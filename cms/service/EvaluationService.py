@@ -40,6 +40,7 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from cms import ServiceCoord, get_service_shards
+from cmscommon.datetime import make_timestamp
 from cms.db import SessionGen, Digest, Dataset, Evaluation, Submission, \
     SubmissionResult, Testcase, UserTest, UserTestResult, get_submissions, \
     get_submission_results, get_datasets_to_judge
@@ -78,6 +79,13 @@ class EvaluationExecutor(Executor):
 
         # Lock used to guard the currently executing operations
         self._current_execution_lock = gevent.lock.RLock()
+
+        # As evaluate operations are split by testcases, there are too
+        # many entries in the queue to display, so we just take only one
+        # operation of each (type, object_id, dataset_id, priority) tuple.
+        # This dictionary maps any such tuple to a "queue entry" (lacking
+        # the testcase codename) and keeps track of multiplicity.
+        self.queue_status_cumulative = dict()
 
         for i in range(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
@@ -142,6 +150,21 @@ class EvaluationExecutor(Executor):
                     self._currently_executing = []
                     break
 
+    def enqueue(self, item, priority, timestamp):
+        success = super().enqueue(item, priority, timestamp)
+        if success:
+            # Add the item to the cumulative status dictionary.
+            key = item.short_key() + (priority,)
+            if key in self.queue_status_cumulative:
+                self.queue_status_cumulative[key]["item"]["multiplicity"] += 1
+            else:
+                item_entry = item.to_dict()
+                del item_entry["testcase_codename"]
+                item_entry["multiplicity"] = 1
+                entry = {"item": item_entry, "priority": priority, "timestamp": make_timestamp(timestamp)}
+                self.queue_status_cumulative[key] = entry
+        return success
+
     def dequeue(self, operation):
         """Remove an item from the queue.
 
@@ -152,7 +175,8 @@ class EvaluationExecutor(Executor):
 
         """
         try:
-            super().dequeue(operation)
+            queue_entry = super().dequeue(operation)
+            self._remove_from_cumulative_status(queue_entry)
         except KeyError:
             with self._current_execution_lock:
                 for i in range(len(self._currently_executing)):
@@ -160,6 +184,18 @@ class EvaluationExecutor(Executor):
                         del self._currently_executing[i]
                         return
             raise
+
+    def _pop(self, wait=False):
+        queue_entry = super()._pop(wait=wait)
+        self._remove_from_cumulative_status(queue_entry)
+        return queue_entry
+
+    def _remove_from_cumulative_status(self, queue_entry):
+        # Remove the item from the cumulative status dictionary.
+        key = queue_entry.item.short_key() + (queue_entry.priority,)
+        self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
+        if self.queue_status_cumulative[key]["item"]["multiplicity"] == 0:
+            del self.queue_status_cumulative[key]
 
 
 def with_post_finish_lock(func):
@@ -989,12 +1025,10 @@ class EvaluationService(TriggeredService):
         the first queue.
 
         As evaluate operations are split by testcases, there are too
-        many entries in the queue to display, so we just take only one
-        operation of each (type, object_id, dataset_id)
-        tuple. Generally, we will see only one evaluate operation for
-        each submission in the queue status with the number of
-        testcase which will be evaluated next. Moreover, we pass also
-        the number of testcases in the queue.
+        many entries in the queue to display, so we collect entries with the
+        same (type, object_id, dataset_id, priority) tuple.
+        Generally, we will see only one evaluate operation for each submission
+        in the queue status.
 
         The entries are then ordered by priority and timestamp (the
         same criteria used to look at what to complete next).
@@ -1002,17 +1036,6 @@ class EvaluationService(TriggeredService):
         return ([QueueEntry]): the list with the queued elements.
 
         """
-        entries = super().queue_status()[0]
-        entries_by_key = dict()
-        for entry in entries:
-            key = (str(entry["item"]["type"]),
-                   str(entry["item"]["object_id"]),
-                   str(entry["item"]["dataset_id"]))
-            if key in entries_by_key:
-                entries_by_key[key]["item"]["multiplicity"] += 1
-            else:
-                entries_by_key[key] = entry
-                entries_by_key[key]["item"]["multiplicity"] = 1
         return sorted(
-            entries_by_key.values(),
+            self.get_executor().queue_status_cumulative.values(),
             key=lambda x: (x["priority"], x["timestamp"]))
