@@ -537,7 +537,7 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
             + ' the <a href="' + this.url("submission", job["object_id"], job["dataset_id"]) + '">result</a>'
             + ' of <a href="' + this.url("submission", job["object_id"]) + '">submission ' + job["object_id"] + '</a>'
             + ' on <a href="' + this.url("dataset", job["dataset_id"]) + '">dataset ' + job["dataset_id"] + '</a>'
-            + (job["multiplicity"]
+            + (job_type == 'Evaluating' && job["multiplicity"]
                ? " [" + job["multiplicity"] + " time(s) in queue]"
                : "")
             + (job["testcase_codename"]
