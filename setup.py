@@ -174,6 +174,7 @@ setup(
             "Communication=cms.grading.tasktypes.Communication:Communication",
             "OutputOnly=cms.grading.tasktypes.OutputOnly:OutputOnly",
             "TwoSteps=cms.grading.tasktypes.TwoSteps:TwoSteps",
+            "Notice=cms.grading.tasktypes.Notice:Notice",
         ],
         "cms.grading.scoretypes": [
             "Sum=cms.grading.scoretypes.Sum:Sum",

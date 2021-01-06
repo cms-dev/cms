@@ -56,6 +56,7 @@ class TaskType(metaclass=ABCMeta):
     # submit only some of the required files; moreover, we try to fill
     # the non-provided files with the one in the previous submission.
     ALLOW_PARTIAL_SUBMISSION = False
+    ALLOW_SUBMISSION = True
 
     # A list of all the accepted parameters for this task type.
     # Each item is an instance of TaskTypeParameter.

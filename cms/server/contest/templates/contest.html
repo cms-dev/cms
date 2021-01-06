@@ -185,9 +185,12 @@ $(document).ready(function () {
                             <li{% if page == "task_description" and task == t_iter %} class="active"{% endif %}>
                                 <a href="{{ contest_url("tasks", t_iter.name, "description") }}">{% trans %}Statement{% endtrans %}</a>
                             </li>
-                            <li{% if page == "task_submissions" and task == t_iter %} class="active"{% endif %}>
-                                <a href="{{ contest_url("tasks", t_iter.name, "submissions") }}">{% trans %}Submissions{% endtrans %}</a>
-                            </li>
+                            {% set task_type = get_task_type(dataset=t_iter.active_dataset) %}
+                            {% if task_type.ALLOW_SUBMISSION %}
+                                <li{% if page == "task_submissions" and task == t_iter %} class="active"{% endif %}>
+                                    <a href="{{ contest_url("tasks", t_iter.name, "submissions") }}">{% trans %}Submissions{% endtrans %}</a>
+                                </li>
+                            {% endif %}
         {% endfor %}
     {% endif %}
                             <li class="divider"></li>
