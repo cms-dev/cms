@@ -83,6 +83,9 @@ def get_type_for_file_name(filename):
         e.g., "application/pdf".
 
     """
+    if filename.endswith(".out") or filename.endswith(".in"):
+        # Use .txt mimetype for .out and .in.
+        filename = filename[:filename.rindex(".")] + ".txt"
     mimetype = xdg.Mime.get_type_by_name(filename)
     if mimetype is None:
         return None

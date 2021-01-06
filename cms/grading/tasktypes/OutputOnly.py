@@ -51,7 +51,7 @@ class OutputOnly(TaskType):
     CHECKER_CODENAME = "checker"
     # Template for the filename of the output files provided by the user; %s
     # represent the testcase codename.
-    USER_OUTPUT_FILENAME_TEMPLATE = "output_%s.txt"
+    USER_OUTPUT_FILENAME_TEMPLATE = "%s.out"
 
     # Constants used in the parameter definition.
     OUTPUT_EVAL_DIFF = "diff"
