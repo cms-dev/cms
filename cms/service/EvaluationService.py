@@ -1026,12 +1026,8 @@ class EvaluationService(TriggeredService):
         the first queue.
 
         As evaluate operations are split by testcases, there are too
-        many entries in the queue to display, so we just take only one
-        operation of each (type, object_id, dataset_id)
-        tuple. Generally, we will see only one evaluate operation for
-        each submission in the queue status with the number of
-        testcase which will be evaluated next. Moreover, we pass also
-        the number of testcases in the queue.
+        many entries in the queue to display, so we collect entries with the
+        same (type, object_id, dataset_id) tuple.
 
         The entries are then ordered by priority and timestamp (the
         same criteria used to look at what to complete next).
