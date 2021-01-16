@@ -177,7 +177,7 @@ class EvaluationExecutor(Executor):
         """
         try:
             super().dequeue(operation)
-            self.removing(operation)
+            self.remove_from_cumulative_status(operation)
         except KeyError:
             with self._current_execution_lock:
                 for i in range(len(self._currently_executing)):
@@ -188,10 +188,10 @@ class EvaluationExecutor(Executor):
 
     def _pop(self, wait=False):
         operation = super()._pop(wait=wait)
-        self.removing(operation.item)
+        self.remove_from_cumulative_status(operation.item)
         return operation
 
-    def removing(self, operation):
+    def remove_from_cumulative_status(self, operation):
         # Remove the item from the cumulative status dictionary.
         key = operation.short_key()
         self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
