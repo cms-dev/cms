@@ -155,7 +155,7 @@ class EvaluationExecutor(Executor):
         success = super().enqueue(item, priority, timestamp)
         if success:
             # Add the item to the cumulative status dictionary.
-            key = item.short_key()
+            key = item.short_key() + (str(priority),)
             if key in self.queue_status_cumulative:
                 self.queue_status_cumulative[key]["item"]["multiplicity"] += 1
             else:
@@ -176,8 +176,8 @@ class EvaluationExecutor(Executor):
 
         """
         try:
-            super().dequeue(operation)
-            self.remove_from_cumulative_status(operation)
+            queue_entry = super().dequeue(operation)
+            self.remove_from_cumulative_status(queue_entry)
         except KeyError:
             with self._current_execution_lock:
                 for i in range(len(self._currently_executing)):
@@ -187,13 +187,13 @@ class EvaluationExecutor(Executor):
             raise
 
     def _pop(self, wait=False):
-        operation = super()._pop(wait=wait)
-        self.remove_from_cumulative_status(operation.item)
-        return operation
+        queue_entry = super()._pop(wait=wait)
+        self.remove_from_cumulative_status(queue_entry)
+        return queue_entry
 
-    def remove_from_cumulative_status(self, operation):
+    def remove_from_cumulative_status(self, queue_entry):
         # Remove the item from the cumulative status dictionary.
-        key = operation.short_key()
+        key = queue_entry.item.short_key() + (str(queue_entry.priority),)
         self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
         if self.queue_status_cumulative[key]["item"]["multiplicity"] == 0:
             del self.queue_status_cumulative[key]

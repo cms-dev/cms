@@ -99,8 +99,10 @@ class Executor(metaclass=ABCMeta):
 
         item (QueueItem): the item to remove.
 
+        return (QueueEntry): the corresponding queue entry.
+
         """
-        self._operation_queue.remove(item)
+        return self._operation_queue.remove(item)
 
     def _pop(self, wait=False):
         """Extract (and return) the first element in the queue.
