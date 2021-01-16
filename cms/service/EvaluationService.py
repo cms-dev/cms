@@ -151,7 +151,7 @@ class EvaluationExecutor(Executor):
                     self._currently_executing = []
                     break
 
-    def enqueue(self, item, priority=None, timestamp=None):
+    def enqueue(self, item, priority, timestamp):
         success = super().enqueue(item, priority, timestamp)
         if success:
             # Add the item to the cumulative status dictionary.
