@@ -152,7 +152,8 @@ class EvaluationExecutor(Executor):
                     break
 
     def enqueue(self, item, priority=None, timestamp=None):
-        if super().enqueue(item, priority, timestamp):
+        success = super().enqueue(item, priority, timestamp)
+        if success:
             # Add the item to the cumulative status dictionary.
             key = item.short_key()
             if key in self.queue_status_cumulative:
@@ -163,6 +164,7 @@ class EvaluationExecutor(Executor):
                 item_entry["multiplicity"] = 1
                 entry = {"item": item_entry, "priority": priority, "timestamp": make_timestamp(timestamp)}
                 self.queue_status_cumulative[key] = entry
+        return success
 
     def dequeue(self, operation):
         """Remove an item from the queue.
