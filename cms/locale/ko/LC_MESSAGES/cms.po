@@ -2,7 +2,8 @@
 # Copyright (C) 2020 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
-# Hyun-seok Jeon <melongist@gmail.com>, 2020.11.29
+# Junu Kwon <junukwon7@gmail.com>, 2021.01.12.
+# Hyun-seok Jeon <melongist@gmail.com>, 2020.11.29.
 # Myungwoo Chun <mc.tamaki@gmail.com>, 2016-2017.
 # Hyungsuk Yoon <youhanmir@gmail.com>, 2016.
 # Hyunmin Choi <auxiliarycode@gmail.com>, 2015.
@@ -11,9 +12,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2020-11-28 10:30+0900\n"
-"PO-Revision-Date: 2020-11-28 10:34+0900\n"
-"Last-Translator: Hyun-seok Jeon <melongist@gmail.com>\n"
+"POT-Creation-Date: 2021-01-12 11:45+0900\n"
+"PO-Revision-Date: 2020-01-12 11:45+0900\n"
+"Last-Translator: Junu Kwon <junukwon7@gmail.com>\n"
 "Language: ko\n"
 "Language-Team: \n"
 "Plural-Forms: nplurals=1; plural=0\n"
@@ -26,13 +27,13 @@ msgid "N/A"
 msgstr "없음"
 
 msgid "Not correct"
-msgstr "틀림"
+msgstr "틀렸습니다"
 
 msgid "Correct"
-msgstr "맞음"
+msgstr "맞았습니다"
 
 msgid "Partially correct"
-msgstr "일부 맞음"
+msgstr "일부 맞았습니다"
 
 msgid "#"
 msgstr "#"
@@ -44,17 +45,17 @@ msgid "Details"
 msgstr "세부사항"
 
 msgid "Execution time"
-msgstr "실행시간"
+msgstr "실행 시간"
 
 msgid "Memory used"
-msgstr "메모리사용량"
+msgstr "메모리 사용량"
 
 msgid "Score details temporarily unavailable."
 msgstr "점수에 대한 세부사항들을 현재 확인할 수 없습니다."
 
 #, python-format
 msgid "Subtask %(index)s"
-msgstr "서브테스크 %(index)s"
+msgstr "부분문제 %(index)s"
 
 msgid "Compilation succeeded"
 msgstr "컴파일 성공"
@@ -92,19 +93,19 @@ msgstr ""
 "오류가 발생하여 채점이 취소되었습니다.\n 컴파일 과정에서 메모리제한을 초과했거나, C++ 템플릿을 너무 많이 사용한 경우에 주로 발생합니다."
 
 msgid "Output is correct"
-msgstr "모두 맞음"
+msgstr "맞았습니다"
 
 msgid "Your submission ran and gave the correct answer"
 msgstr "제출한 프로그램이 실행되어 채점되었으며 모두 정확한 답을 출력하였습니다."
 
 msgid "Output is partially correct"
-msgstr "부분 맞음"
+msgstr "부분적으로 맞았습니다"
 
 msgid "Your submission ran and gave the partially correct answer"
 msgstr "제출한 프로그램이 실행되어 채점되었지만 부분적으로만 정확한 답을 출력하였습니다."
 
 msgid "Output isn't correct"
-msgstr "틀림"
+msgstr "틀렸습니다"
 
 msgid "Your submission ran, but gave the wrong answer"
 msgstr "제출한 프로그램이 실행되어 채점되었지만 모두 틀린 답을 출력하였습니다."
@@ -117,7 +118,7 @@ msgid "Your submission ran, but did not write on the correct output file"
 msgstr "제출한 프로그램이 실행되어 채점되었지만 정확한 출력 파일을 생성하지 못했습니다."
 
 msgid "Execution timed out"
-msgstr "시간제한 초과"
+msgstr "시간 초과"
 
 msgid "Your submission used too much CPU time."
 msgstr "제출한 프로그램이 너무 많은 CPU 시간을 사용했습니다."
@@ -147,7 +148,7 @@ msgstr ""
 "채점 세부사항에 나타나는 메모리사용량은 메모리사용 제한 초과가 발생하기 전의 사용량입니다."
 
 msgid "Execution failed because the return code was nonzero"
-msgstr "return 0 오류"
+msgstr "실행 파일이 0을 return하지 않았습니다."
 
 msgid "Your submission failed because it exited with a return code different from 0."
 msgstr "제출한 프로그램이 0 이 아닌 다른 값을 return 하고 종료되었기 때문에 채점이 중단되었습니다."
@@ -313,10 +314,10 @@ msgid "Your print job has been received."
 msgstr "프린트 작업이 성공적으로 전송되었습니다."
 
 msgid "Submission received"
-msgstr "채점 제출 완료"
+msgstr "제출 완료"
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr "채점이 제출되었으며, 현재 채점 대기중입니다."
+msgstr "제출이 완료되었으며 현재 채점중입니다."
 
 msgid "Compiling..."
 msgstr "컴파일 중..."
@@ -340,10 +341,10 @@ msgid "Your request has been received and applied to the submission."
 msgstr "토큰을 사용해서 채점을 제출했습니다."
 
 msgid "Test received"
-msgstr "채점 테스트 제출 완료"
+msgstr "테스트 제출 완료"
 
 msgid "Your test has been received and is currently being executed."
-msgstr "채점 테스트가 제출되었으며, 현재 실행중입니다."
+msgstr "테스트가 제출되었으며, 현재 실행중입니다."
 
 msgid "details"
 msgstr "세부사항"
@@ -355,26 +356,26 @@ msgid "Executed"
 msgstr "실행 완료"
 
 msgid "Too many submissions!"
-msgstr "더 이상 채점을 제출할 수 없습니다!"
+msgstr "더 이상 제출할 수 없습니다!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "누적 최대 채점 횟수(%d)를 모두 사용했습니다."
+msgstr "누적 최대 제출 횟수(%d)를 모두 사용했습니다."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr "이 문제에 대해서, 최대 채점 횟수(%d)를 모두 사용했습니다."
+msgstr "이 문제에 대해서, 최대 제출 횟수(%d)를 모두 사용했습니다."
 
 msgid "Submissions too frequent!"
-msgstr "채점 제출이 너무 빠릅니다!"
+msgstr "너무 자주 제출했습니다."
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "누적 마지막 제출 시간을 기준으로 %d 초 이후에 다시 채점을 제출할 수 있습니다."
+msgstr "누적 마지막 제출 시간을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr "이 문제에 대해서, 마지막 제출 시간을 기준으로 %d 초 이후에 다시 채점을 제출할 수 있습니다."
+msgstr "이 문제에 대해서, 마지막 제출 시간을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
 msgid "Invalid archive format!"
 msgstr "압축 파일 오류!"
@@ -404,18 +405,18 @@ msgstr "채점 테스트 최대 횟수(%d)를 모두 사용했습니다."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "이 문제에 대한, 채점 테스트 최대 횟수(%d)를 모두 사용했습니다."
+msgstr "이 문제에 대한 채점 테스트 최대 횟수(%d)를 모두 사용했습니다."
 
 msgid "Tests too frequent!"
-msgstr "채점 테스트 제출이 너무 빠릅니다!"
+msgstr "너무 자주 테스트했습니다."
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 채점 테스트를 제출할 수 있습니다."
+msgstr "마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 채점 테스트를 제출할 수 있습니다."
+msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
 
 msgid "Invalid test format!"
 msgstr "채점 테스트 파일 오류!"
@@ -497,10 +498,10 @@ msgid "Login"
 msgstr "로그인"
 
 msgid "Don't have an account?"
-msgstr "사용자ID가 없는 경우 : "
+msgstr "계정이 없으신가요?"
 
 msgid "Register"
-msgstr "사용자ID 등록하기"
+msgstr "사용자 등록하기"
 
 msgid "New message"
 msgstr "새 메시지"
@@ -513,7 +514,7 @@ msgstr "새 답변"
 
 #, python-format
 msgid "%d unread"
-msgstr "미확인 %d 개"
+msgstr "미확인 메시지 %d 개"
 
 msgid "Until contest starts:"
 msgstr "대회 시작까지 남은 시간:"
@@ -522,10 +523,10 @@ msgid "Until contest ends:"
 msgstr "대회 종료까지 남은 시간:"
 
 msgid "Until analysis starts:"
-msgstr "대회 분석 모드 시작까지 남은 시간:"
+msgstr "리뷰 시작까지 남은 시간:"
 
 msgid "Until analysis ends:"
-msgstr "대회 분석 모드 종료까지 남은 시간:"
+msgstr "리뷰 종료까지 남은 시간:"
 
 msgid "Time left:"
 msgstr "남은 시간:"
@@ -537,16 +538,16 @@ msgid "Overview"
 msgstr "대회 안내"
 
 msgid "Statement"
-msgstr "문제 확인"
+msgstr "문제"
 
 msgid "Submissions"
-msgstr "채점 제출"
+msgstr "제출"
 
 msgid "Documentation"
 msgstr "참고자료"
 
 msgid "Testing"
-msgstr "재점 테스트"
+msgstr "채점 테스트"
 
 msgid "Printing"
 msgstr "프린트"
@@ -564,7 +565,7 @@ msgid "Choose a contest"
 msgstr "대회 선택"
 
 msgid "Programming languages and libraries"
-msgstr "프로그래밍언어 및 라이브러리"
+msgstr "프로그래밍 언어 및 라이브러리"
 
 msgid "Standard Template Library"
 msgstr "STL(Standard Template Library)"
@@ -572,7 +573,7 @@ msgstr "STL(Standard Template Library)"
 msgid ""
 "The main Java class of the solution should have exactly the same name as the"
 " task."
-msgstr "채점 제출시 Java main class 의 이름은 해당 문제와 일치해야 합니다."
+msgstr "답안 제출시 Java main class 의 이름은 해당 문제와 일치해야 합니다."
 
 msgid "Submission details for compilation"
 msgstr "컴파일 메시지 설명"
@@ -584,7 +585,7 @@ msgid "Explanation"
 msgstr "설명"
 
 msgid "Submission details for evaluation"
-msgstr "채점 메시지 설명"
+msgstr "제출 메시지"
 
 #, python-format
 msgid "Error %(status_code)s"
@@ -632,25 +633,25 @@ msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr "대회가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료되었습니다."
 
 msgid "The analysis mode hasn't started yet."
-msgstr "대회 분석 모드 시작전입니다."
+msgstr "대회 리뷰 시작전입니다."
 
 #, python-format
 msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
-msgstr "대회 분석 모드는 %(start_time)s 에 시작되어\n %(stop_time)s 에 종료될 예정입니다."
+msgstr "대회 리뷰는 %(start_time)s 에 시작되어\n %(stop_time)s 에 종료될 예정입니다."
 
 msgid "The analysis mode is currently running."
-msgstr "대회 분석 모드가 진행중입니다."
+msgstr "대회 리뷰가 진행중입니다."
 
 #, python-format
 msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
-msgstr "대회 분석 모드가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료될 예정입니다."
+msgstr "대회 리뷰가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료될 예정입니다."
 
 msgid "The analysis mode has already ended."
-msgstr "대회 분석 모드가 종료되었습니다."
+msgstr "대회 리뷰가 종료되었습니다."
 
 #, python-format
 msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
-msgstr "대회 분석 모드가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료되었습니다."
+msgstr "대회 리뷰가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료되었습니다."
 
 msgid "You have an infinite number of tokens."
 msgstr "토큰을 무한히 가지고 있습니다."
@@ -689,11 +690,11 @@ msgstr ""
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr "대회중 채점을 제출할 수 있는 횟수는 최대 %(submissions)s 회 입니다."
+msgstr "대회중 제출할 수 있는 최대 횟수는 %(submissions)s 회 입니다."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr "대회중 테스트를 제출할 수 있는 횟수는 최대 %(user_tests)s 회 입니다."
+msgstr "대회중 테스트를 제출할 수 있는 최대 횟수는 %(user_tests)s 회 입니다."
 
 #, python-format
 msgid ""
@@ -704,17 +705,17 @@ msgstr ""
 "(이 개인별 타임 프레임 이내에서만 대회에 참여할 수 있습니다.)"
 
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr "대회가 시작되면, 자신의 타임 프레임을 시작 시킬 수 있습니다."
+msgstr "대회가 시작되면, 자신의 타임 프레임을 시작할 수 있습니다."
 
 msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
 msgstr ""
-"자신의 타임 프레임을 시작시켜야만 채점을 제출할 수 있습니다. 하지만, 자신의 타임 프레임이 남아있다고 "
+"자신의 타임 프레임을 시작해야만 채점을 제출할 수 있습니다. 하지만, 자신의 타임 프레임이 남아있다고 "
 "하더라도 대회 종료전까지만 채점을 제출할 수 있습니다."
 
 msgid "By clicking on the button below you can start your time frame."
-msgstr "아래의 대회 참가 시작! 버튼을 누르면, 자신의 타임 프레임이 시작됩니다.\n\n "
+msgstr "아래의 대회 참가 버튼을 누르면 자신의 타임 프레임이 시작됩니다.\n\n "
 
 #, python-format
 msgid "You started your time frame at %(start_time)s."
@@ -738,7 +739,7 @@ msgid "You never started your time frame. Now it's too late."
 msgstr "아직까지 타임 프레임을 시작시키지 않았습니다. 너무 늦습니다."
 
 msgid "Start!"
-msgstr "대회 참가 시작!"
+msgstr "대회 참가"
 
 msgid "Task overview"
 msgstr "문제"
@@ -750,10 +751,10 @@ msgid "Name"
 msgstr "이름"
 
 msgid "Time limit"
-msgstr "시간제한"
+msgstr "시간 제한"
 
 msgid "Memory limit"
-msgstr "메모리제한"
+msgstr "메모리 제한"
 
 msgid "Type"
 msgstr "채점 방식"
