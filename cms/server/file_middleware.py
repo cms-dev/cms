@@ -104,7 +104,6 @@ class FileServerMiddleware:
                 "Content-Disposition", "attachment", filename=filename)
         response.set_etag(digest)
         response.cache_control.no_cache = True
-        response.cache_control.max_age = 0
         response.cache_control.private = True
         response.response = \
             wrap_file(environ, fobj, buffer_size=FileCacher.CHUNK_SIZE)
