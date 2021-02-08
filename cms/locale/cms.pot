@@ -1,22 +1,22 @@
 # Translations template for Contest Management System.
-# Copyright (C) 2020 CMS development group
+# Copyright (C) 2021 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2020-02-24 15:23+0100\n"
+"POT-Creation-Date: 2021-02-08 16:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.8.0\n"
+"Generated-By: Babel 2.6.0\n"
 
 msgid "N/A"
 msgstr ""
@@ -853,39 +853,6 @@ msgstr ""
 msgid "Standard error"
 msgstr ""
 
-msgid "None"
-msgstr ""
-
-msgid "Download"
-msgstr ""
-
-msgid "Played"
-msgstr ""
-
-msgid "Play!"
-msgstr ""
-
-msgid "Wait..."
-msgstr ""
-
-msgid "No tokens"
-msgstr ""
-
-msgid "Public score"
-msgstr ""
-
-msgid "Total score"
-msgstr ""
-
-msgid "Score"
-msgstr ""
-
-msgid "Token"
-msgstr ""
-
-msgid "no submissions"
-msgstr ""
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr ""
@@ -1024,6 +991,9 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
+msgid "Download"
+msgstr ""
+
 msgid "Submit a test"
 msgstr ""
 
@@ -1050,6 +1020,36 @@ msgid "Test details"
 msgstr ""
 
 msgid "Evaluation outcome"
+msgstr ""
+
+msgid "Wait..."
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Public score"
+msgstr ""
+
+msgid "Total score"
+msgstr ""
+
+msgid "Score"
+msgstr ""
+
+msgid "Token"
+msgstr ""
+
+msgid "no submissions"
+msgstr ""
+
+msgid "Played"
+msgstr ""
+
+msgid "Play!"
+msgstr ""
+
+msgid "No tokens"
 msgstr ""
 
 msgid "Invalid file"
