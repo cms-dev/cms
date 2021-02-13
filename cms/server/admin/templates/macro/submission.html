@@ -30,6 +30,7 @@ dataset (Dataset|None): the dataset to show results for, or if not defined use
       <th>User</th>
       <th>Task</th>
       <th>Status</th>
+      <th>First Scored At</th>
       <th>Files</th>
       <th>Token</th>
       <th>Official</th>
@@ -144,6 +145,9 @@ dataset (Dataset|None): the dataset to show results for, or if not defined use
     </div>
 
     {% endif %}
+  </td>
+  <td>
+    {{ sr.scored_at }}
   </td>
   <td>
     {% for filename, sub_file in s.files|dictsort(by="key") %}

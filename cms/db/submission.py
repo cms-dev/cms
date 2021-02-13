@@ -363,6 +363,11 @@ class SubmissionResult(Base):
         JSONB,
         nullable=True)
 
+    # Time when the submission is scored for the first time
+    scored_at = Column(
+        DateTime,
+        nullable=True)
+
     # The same as the last two fields, but only showing information
     # visible to the user (assuming they did not use a token on this
     # submission).

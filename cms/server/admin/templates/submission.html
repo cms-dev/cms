@@ -105,23 +105,29 @@
         <td>Status</td>
         <td id="submission_status">
           {% if status == SubmissionResult.COMPILING %}
-          Compiling...
+            Compiling...
           {% elif status == SubmissionResult.COMPILATION_FAILED %}
-          Compilation failed
+            Compilation failed
           {% elif status == SubmissionResult.EVALUATING %}
-          Evaluating...
+            Evaluating...
           {% elif status == SubmissionResult.SCORING %}
-          Scoring...
+            Scoring...
           {% elif status == SubmissionResult.SCORED %}
             {% if st is defined %}
               {% set max_score = st.max_score %}
             {% else %}
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% endif %}
-          Scored ({{ sr.score }} / {{ max_score }})
+            Scored ({{ sr.score }} / {{ max_score }})
           {% else %}
-          N/A
+            N/A
           {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>First Scored At</td>
+        <td id="submission_first_scored_at">
+            {{ sr.scored_at }}
         </td>
       </tr>
       {% if status == SubmissionResult.SCORED and st is defined %}
