@@ -394,6 +394,10 @@ table td.partial::after {
     content: "*";
 }
 
+table td#latency {
+    text-align: right;
+}
+
 table.sortable th {
     white-space: nowrap;
 }

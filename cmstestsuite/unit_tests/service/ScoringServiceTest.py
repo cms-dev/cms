@@ -24,6 +24,7 @@
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
+
 gevent.monkey.patch_all()  # noqa
 
 import unittest
@@ -35,6 +36,7 @@ import gevent
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.service.ScoringService import ScoringService
+from cmscommon.datetime import make_datetime
 from cmstestsuite.unit_tests.testidgenerator import unique_long_id, \
     unique_unicode_id
 
@@ -101,6 +103,7 @@ class TestScoringService(DatabaseMixin, unittest.TestCase):
                           sr.public_score, sr.public_score_details,
                           sr.ranking_score_details),
                          self.score_info)
+        self.assertIsNotNone(sr.scored_at)
 
     def test_new_evaluation_two(self):
         """More than one submissions in the queue.
@@ -126,6 +129,8 @@ class TestScoringService(DatabaseMixin, unittest.TestCase):
 
         """
         sr = self.new_sr_scored()
+        current_time = make_datetime()
+        sr.scored_at = current_time
         self.session.commit()
 
         service = ScoringService(0)
@@ -135,6 +140,7 @@ class TestScoringService(DatabaseMixin, unittest.TestCase):
 
         # Asserts that compute_score was called.
         self.score_type.compute_score.assert_not_called()
+        self.assertEqual(current_time, sr.scored_at)
 
 
 if __name__ == "__main__":
