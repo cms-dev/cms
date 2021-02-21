@@ -802,62 +802,62 @@ abbr {
 }
 
 .score_0 {
-    background-color: #F40000;
+    background-color: #ffffff;
     /*background-image: linear-gradient(rgb(204, 0, 0), rgb(244, 0, 0));*/
 }
 
 .score_0_10 {
-    background-color: #EB1D00;
+    background-color: #ecf4e4;
     /*background-image: linear-gradient(rgb(210, 38, 0), rgb(235, 29, 0));*/
 }
 
 .score_10_20 {
-    background-color: #E23A00;
+    background-color: #e5f0da;
     /*background-image: linear-gradient(rgb(216, 77, 0), rgb(226, 58, 0));*/
 }
 
 .score_20_30 {
-    background-color: #D95700;
+    background-color: #cfe4bc;
     /*background-image: linear-gradient(rgb(222, 115, 0), rgb(217, 87, 0));*/
 }
 
 .score_30_40 {
-    background-color: #D17400;
+    background-color: #c3ddaa;
     /*background-image: linear-gradient(rgb(228, 154, 0), rgb(209, 116, 0));*/
 }
 
 .score_40_50 {
-    background-color: #C89100;
+    background-color: #daeacb;
     /*background-image: linear-gradient(rgb(234, 192, 0), rgb(200, 145, 0));*/
 }
 
 .score_50_60 {
-    background-color: #B99F00;
+    background-color: #b5d596;
     /*background-image: linear-gradient(rgb(225, 211, 2), rgb(185, 159, 0));*/
 }
 
 .score_60_70 {
-    background-color: #A39E01;
+    background-color: #a7cd82;
     /*background-image: linear-gradient(rgb(203, 211, 6), rgb(163, 158, 1));*/
 }
 
 .score_70_80 {
-    background-color: #8E9D02;
+    background-color: #7ab444;
     /*background-image: linear-gradient(rgb(181, 211, 10), rgb(142, 157, 2));*/
 }
 
 .score_80_90 {
-    background-color: #789C03;
+    background-color: #8cbe5d;
     /*background-image: linear-gradient(rgb(159, 210, 14), rgb(120, 156, 3));*/
 }
 
 .score_90_100 {
-    background-color: #639B04;
+    background-color: #68aa2b;
     /*background-image: linear-gradient(rgb(137, 210, 18), rgb(99, 155, 4));*/
 }
 
 .score_100 {
-    background-color: #4E9A05;
+    background-color: #4e9a05;
     /*background-image: linear-gradient(rgb(115, 210, 22), rgb(78, 154, 5));*/
 }
 
