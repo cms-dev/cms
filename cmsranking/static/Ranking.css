@@ -922,6 +922,7 @@ abbr {
     right: 470px;
     font-size: 2em;
     line-height: 1.5em;
+    width: 100px;
 }
 
 #UserDetail_f_name {
