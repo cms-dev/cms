@@ -197,10 +197,10 @@ class UserTestStatusHandler(ContestHandler):
                 self._("Executed"), self._("details"))
 
             if ur.execution_time is not None:
-                data["time"] = \
+                data["execution_time"] = \
                     self.translation.format_duration(ur.execution_time)
             else:
-                data["time"] = None
+                data["execution_time"] = None
 
             if ur.execution_memory is not None:
                 data["memory"] = \

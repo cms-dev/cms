@@ -27,9 +27,9 @@ update_user_test_row = function (task_id, user_test_id, data) {
         } else {
             row.children("td.output").children("a.btn").text("{% trans %}N/A{% endtrans %}");
         }
-        if (data["time"] != null) {
-            row.children("td.time").removeClass("undefined");
-            row.children("td.time").text(data["time"]);
+        if (data["execution_time"] != null) {
+            row.children("td.execution_time").removeClass("undefined");
+            row.children("td.execution_time").text(data["execution_time"]);
         }
         if (data["memory"] != null) {
             row.children("td.memory").removeClass("undefined");

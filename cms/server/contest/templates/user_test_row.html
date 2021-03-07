@@ -19,11 +19,11 @@
 {% endif %}
     </td>
 {% if tr is undefined or tr.execution_time is none %}
-    <td class="time undefined">
+    <td class="execution_time undefined">
         {% trans %}N/A{% endtrans %}
     </td>
 {% else %}
-    <td class="time">
+    <td class="execution_time">
         {{ tr.execution_time|format_duration }}
     </td>
 {% endif %}
