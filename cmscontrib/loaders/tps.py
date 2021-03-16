@@ -26,6 +26,7 @@ import subprocess
 from datetime import timedelta
 
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
+from cmscommon.constants import SCORE_MODE_MAX_SUBTASK
 from .base_loader import TaskLoader
 
 
@@ -123,6 +124,7 @@ class TpsTaskLoader(TaskLoader):
 
         args["name"] = name
         args["title"] = data['name']
+        args["score_mode"] = SCORE_MODE_MAX_SUBTASK
 
         # Statements
         if get_statement:
