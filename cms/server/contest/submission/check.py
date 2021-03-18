@@ -33,10 +33,12 @@ the current situation. Also include some support functions, which are
 exported as they may be of general interest.
 
 """
+from datetime import datetime, timedelta
 
 from sqlalchemy import desc, func
 
 from cms.db import Task, Submission
+from cms.db.user import Participation
 
 
 def _filter_submission_query(q, participation, contest, task, cls):
@@ -174,3 +176,22 @@ def check_min_interval(
         sql_session, participation, contest=contest, task=task, cls=cls)
     return (submission is None
             or timestamp - submission.timestamp >= min_interval)
+
+
+def is_last_minutes(timestamp: datetime, participation: Participation, delta=timedelta(minutes=15)):
+    """
+    timestamp (datetime): the current timestamp.
+    participation (Participation): the participation to be checked.
+    delta (timedelta): length of the last time section to be checked.
+
+    return (bool): whether it is the last `delta` of the participation.
+    """
+
+    if participation.contest.per_user_time is None:
+        end_time = participation.contest.stop
+    else:
+        end_time = participation.starting_time + participation.contest.per_user_time
+
+    end_time += participation.delay_time + participation.extra_time
+    time_left = end_time - timestamp
+    return time_left <= delta
