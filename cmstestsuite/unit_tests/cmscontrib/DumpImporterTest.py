@@ -25,7 +25,7 @@ import unittest
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
-from cms.db import Contest, FSObject, Session, version
+from cms.db import Contest, User, FSObject, Session, version
 from cmscommon.digest import bytes_digest
 from cmscontrib.DumpImporter import DumpImporter
 from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
@@ -136,7 +136,8 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         super().tearDown()
 
     def do_import(self, drop=False, load_files=True,
-                  skip_generated=False, skip_submissions=False):
+                  skip_generated=False, skip_submissions=False,
+                  skip_users=False):
         """Create an importer and call do_import in a convenient way"""
         return DumpImporter(
             drop,
@@ -146,6 +147,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             skip_generated=skip_generated,
             skip_submissions=skip_submissions,
             skip_user_tests=False,
+            skip_users=skip_users,
             skip_print_jobs=False).do_import()
 
     def write_dump(self, dump):
@@ -194,6 +196,12 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         db_contests = self.session.query(Contest)\
             .filter(Contest.name == name).all()
         self.assertEqual(len(db_contests), 0)
+
+    def assertUserNotInDb(self, username):
+        """Assert that the user with the given username is not in the DB."""
+        db_users = self.session.query(User)\
+            .filter(User.username == username).all()
+        self.assertEqual(len(db_users), 0)
 
     def assertFileInDb(self, digest, description, content):
         """Assert that the file with the given data is in the DB."""
@@ -278,6 +286,24 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
         self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
         self.assertFileNotInDb(TestDumpImporter.NON_GENERATED_FILE_DIGEST)
+
+    def test_import_skip_users(self):
+        """Test importing everything but not the users."""
+        self.write_dump(TestDumpImporter.DUMP)
+        self.write_files(TestDumpImporter.FILES)
+
+        self.assertTrue(self.do_import(skip_users=True))
+
+        self.assertContestInDb("contestname", "contest description 你好",
+                               [("taskname", "task title")],
+                               [])
+        self.assertContestInDb(
+            self.other_contest_name, self.other_contest_description, [], [])
+
+        self.assertUserNotInDb("username")
+        self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
+        self.assertFileNotInDb(TestDumpImporter.NON_GENERATED_FILE_DIGEST)
+
 
     def test_import_old(self):
         """Test importing an old dump.
