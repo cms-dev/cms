@@ -378,7 +378,7 @@ class CompilationJob(Job):
                     managers[manager_filename] = \
                         dataset.managers[manager_filename]
         
-        # Copy header files from submission
+        # Copy header files from dataset
         if language is not None:
             for manager_filename in dataset.managers:
                 if any(manager_filename.endswith(header) 
