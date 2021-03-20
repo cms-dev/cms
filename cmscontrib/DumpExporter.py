@@ -145,10 +145,10 @@ class DumpExporter:
                 if not skip_users:
                   users = session.query(User).all()
                   self.users_ids = [user.id for user in users]
-                  tasks = session.query(Task)\
-                      .filter(Task.contest_id.is_(None)).all()
                 else:
-                  self.user_ids = []
+                  self.users_ids = []
+                tasks = session.query(Task)\
+                    .filter(Task.contest_id.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
         else:
             # FIXME: this is ATM broken, because if you export a contest, you
