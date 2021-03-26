@@ -2,7 +2,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2021 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Luca Versari <veluca93@gmail.com>
@@ -21,9 +21,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Some code snippets have been taken and readapted from the logging
-# package of Python 2.7. For such pieces this copyright applies:
+# package of Python 3. For such pieces this copyright applies:
 #
-# Copyright 2001-2013 by Vinay Sajip. All Rights Reserved.
+# Copyright 2001-2016 by Vinay Sajip. All Rights Reserved.
 #
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for any purpose and without fee is hereby granted,
@@ -40,8 +40,8 @@
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 # You can find the original files at:
-# http://hg.python.org/cpython/file/69ee9b554eca/Lib/logging/__init__.py
-# http://hg.python.org/cpython/file/69ee9b554eca/Lib/logging/handlers.py
+# https://hg.python.org/cpython/file/4243df51fe43/Lib/logging/__init__.py
+# https://hg.python.org/cpython/file/4243df51fe43/Lib/logging/handlers.py
 
 import logging
 import sys
@@ -116,28 +116,30 @@ class LogServiceHandler(logging.Handler):
         """
         self.lock = gevent.lock.RLock()
 
-    # Taken from CPython, combining emit and makePickle, and adapted to
-    # not pickle the dictionary and use its items as keyword parameters
-    # for LogService.Log.
     def emit(self, record):
+        """Pickle and emit a record to LogService.
+
+        Taken from CPython's SocketHandler (see link in the file header),
+        combining emit and makePickle, and adapted to not pickle the dictionary
+        and use its items as keyword parameters for LogService.Log.
+
+        """
         try:
             ei = record.exc_info
             if ei:
                 # just to get traceback text into record.exc_text ...
                 self.format(record)
-                record.exc_info = None  # to avoid Unpickleable error
             # See issue #14436: If msg or args are objects, they may not be
             # available on the receiving end. So we convert the msg % args
             # to a string, save it as msg and zap the args.
             d = dict(record.__dict__)
             d['msg'] = record.getMessage()
             d['args'] = None
-            if ei:
-                record.exc_info = ei  # for next handler
+            d['exc_info'] = None
+            # Issue #25685: delete 'message' if present: redundant with 'msg'
+            d.pop('message', None)
             self._log_service.Log(**d)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
+        except Exception:
             self.handleError(record)
 
 
@@ -196,11 +198,13 @@ class CustomFormatter(logging.Formatter):
         logging.Formatter.__init__(self, "")
         self.colors = colors
 
-    # Taken from CPython and adapted to remove assumptions that there
-    # was a constant format string stored in _fmt. This meant removing
-    # the call to usesTime() and substituing the _fmt % record.__dict__
-    # expression with the more powerful do_format(record).
     def format(self, record):
+        """Format the specified record as text.
+
+        Taken from CPython (see link in the file header) and adapted to use our
+        own do_format().
+
+        """
         record.message = record.getMessage()
         record.asctime = self.formatTime(record, self.datefmt)
         s = self.do_format(record)
@@ -212,17 +216,11 @@ class CustomFormatter(logging.Formatter):
         if record.exc_text:
             if s[-1:] != "\n":
                 s = s + "\n"
-            try:
-                s = s + record.exc_text
-            except UnicodeError:
-                # Sometimes filenames have non-ASCII chars, which can lead
-                # to errors when s is Unicode and record.exc_text is str
-                # See issue 8924.
-                # We also use replace for when there are multiple
-                # encodings, e.g. UTF-8 for the filesystem and latin-1
-                # for a script. See issue 13232.
-                s = s + record.exc_text.decode(sys.getfilesystemencoding(),
-                                               'replace')
+            s = s + record.exc_text
+        if record.stack_info:
+            if s[-1:] != "\n":
+                s = s + "\n"
+            s = s + self.formatStack(record.stack_info)
         return s
 
     def do_format(self, record):
