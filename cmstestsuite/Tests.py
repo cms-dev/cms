@@ -37,7 +37,7 @@ import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
 import cmstestsuite.tasks.twosteps as twosteps
 import cmstestsuite.tasks.twosteps_comparator as twosteps_comparator
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
-    CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn
+    CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn, CheckUserTestEvaluated
 
 
 LANG_CPP = "C++11 / g++"
@@ -81,7 +81,8 @@ ALL_TESTS = [
          task=batch_fileio, filenames=['correct-freopen.%l'],
          languages=(LANG_C,),
          checks=[CheckOverallScore(100, 100)],
-         user_tests=True),
+         user_tests=True,
+         user_checks=[CheckUserTestEvaluated()]),
 
     Test('correct-stdio-inner-class',
          task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
@@ -250,7 +251,9 @@ ALL_TESTS = [
          task=batch_fileio_managed, filenames=['managed-correct.%l'],
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON3, LANG_JAVA,
                     LANG_C_SHARP),
-         checks=[CheckOverallScore(100, 100)]),
+         checks=[CheckOverallScore(100, 100)],
+         user_tests=True, user_managers=['grader.%l'],
+         user_checks=[CheckUserTestEvaluated()]),
 
     Test('managed-incorrect',
          task=batch_fileio_managed, filenames=['managed-incorrect.%l'],

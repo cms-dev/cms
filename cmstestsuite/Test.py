@@ -3,7 +3,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright © 2020 Andrey Vihrov <andrey.vihrov@gmail.com>
+# Copyright © 2020-2021 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,7 +20,7 @@
 
 import os
 import re
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 from cms.grading.languagemanager import get_language
 from cmstestsuite.functionaltestframework import FunctionalTestFramework
@@ -30,7 +30,7 @@ class TestFailure(Exception):
     pass
 
 
-class Check(metaclass=ABCMeta):
+class Check(ABC):
     @abstractmethod
     def check(self, *args, **kwargs):
         pass
@@ -133,9 +133,22 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
             "Execution failed because the return code was nonzero")
 
 
+class CheckUserTest(ABC):
+    @abstractmethod
+    def check(self, *args, **kwargs):
+        pass
+
+
+class CheckUserTestEvaluated(CheckUserTest):
+    def check(self, result_info):
+        if "Evaluated" not in result_info["status"]:
+            raise TestFailure("Expected a successful evaluation, got: %s" %
+                              result_info["status"])
+
+
 class Test:
-    def __init__(self, name, task, filenames, languages, checks,
-                 user_tests=False, alt_filenames={}):
+    def __init__(self, name, *, task, filenames, alt_filenames={}, languages,
+            checks, user_tests=False, user_managers=[], user_checks=[]):
         self.framework = FunctionalTestFramework()
 
         self.name = name
@@ -149,27 +162,44 @@ class Test:
         self.submission_format = submission_format
 
         self.user_tests = user_tests
+        self.user_checks = user_checks
+        # Some tasks may require additional user test managers.
+        self.user_managers = user_managers
+        user_manager_format = list(e.strip()
+            for e in task.task_info.get("user_manager_format", "").split(","))
+        self.user_manager_format = user_manager_format
 
         self.submission_id = {}
         self.user_test_id = {}
+
+    def _filenames_for_language(self, language, filenames, alt_filenames={}):
+        if language is not None:
+            # First check if language is in alt_filenames. This allows to
+            # submit different sources for languages that would otherwise
+            # have matching source extensions.
+            filenames = alt_filenames.get(language, filenames)
+
+            ext = get_language(language).source_extension
+            return [filename.replace(".%l", ext) for filename in filenames]
+        else:
+            return filenames
 
     def _sources_names(self, language):
         # Source files are stored under cmstestsuite/code/.
         path = os.path.join(os.path.dirname(__file__), 'code')
 
-        # Choose the correct file to submit.
-        if language is not None:
-            # First check if language is in alt_filenames. This allows to
-            # submit different sources for languages that would otherwise
-            # have matching source extensions.
-            filenames = self.alt_filenames.get(language, self.filenames)
+        filenames = self._filenames_for_language(language, self.filenames,
+                                                 self.alt_filenames)
+        full_paths = [os.path.join(path, filename) for filename in filenames]
 
-            ext = get_language(language).source_extension
-            filenames = [filename.replace(".%l", ext)
-                         for filename in filenames]
-        else:
-            filenames = self.filenames
+        return full_paths
 
+    def _user_managers_names(self, language):
+        # Currently we select the same managers that are used for submission
+        # evaluation. These are located under <task>/code/.
+        path = os.path.join(os.path.dirname(self.task_module.__file__), "code")
+
+        filenames = self._filenames_for_language(language, self.user_managers)
         full_paths = [os.path.join(path, filename) for filename in filenames]
 
         return full_paths
@@ -199,10 +229,11 @@ class Test:
                 raise
 
     def submit_user_test(self, task_id, user_id, language):
-        full_paths = self._sources_names(language)
+        submission_format = self.submission_format + self.user_manager_format
+        full_paths = self._sources_names(language) + \
+                     self._user_managers_names(language)
         self.user_test_id[language] = self.framework.cws_submit_user_test(
-            task_id, user_id,
-            self.submission_format, full_paths, language)
+            task_id, user_id, submission_format, full_paths, language)
 
     def wait_user_test(self, contest_id, language):
         # This means we were not able to submit, hence the error
@@ -210,6 +241,10 @@ class Test:
         if self.user_test_id.get(language) is None:
             return
 
-        # Wait for evaluation to complete. We do not do any other check.
-        self.framework.get_user_test_result(
+        # Wait for evaluation to complete.
+        result_info = self.framework.get_user_test_result(
             contest_id, self.user_test_id[language])
+
+        # Run checks.
+        for check in self.user_checks:
+            check.check(result_info)

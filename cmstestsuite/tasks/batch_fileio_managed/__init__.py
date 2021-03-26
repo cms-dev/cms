@@ -23,6 +23,7 @@ task_info = {
     "official_language": "",
     "submission_format_choice": "other",
     "submission_format": "batchfileiomanaged.%l",
+    "user_manager_format": "grader.%l",
     "time_limit_{{dataset_id}}": "0.5",
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Batch",
@@ -35,6 +36,7 @@ task_info = {
 }
 
 managers = [
+    "task.h",
     "grader.c",
     "grader.cpp",
     "grader.pas",
