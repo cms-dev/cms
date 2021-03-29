@@ -42,6 +42,7 @@ import typing
 if typing.TYPE_CHECKING:
     from . import Task, Participation
 
+
 class Contest(Base):
     """Class to store a contest (which is a single day of a
     programming competition).
@@ -252,6 +253,10 @@ class Contest(Base):
     min_submission_interval: timedelta | None = Column(
         Interval,
         CheckConstraint("min_submission_interval > '0 seconds'"),
+        nullable=True)
+    min_submission_interval_grace_period: timedelta | None = Column(
+        Interval,
+        CheckConstraint("min_submission_interval_grace_period > '0 seconds'"),
         nullable=True)
     min_user_test_interval: timedelta | None = Column(
         Interval,

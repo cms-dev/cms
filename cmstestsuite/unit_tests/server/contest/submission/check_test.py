@@ -25,7 +25,7 @@ from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import UserTest, Submission
 from cms.server.contest.submission import get_submission_count, \
-    check_max_number, get_latest_submission, check_min_interval
+    check_max_number, get_latest_submission, check_min_interval, is_last_minutes
 from cmscommon.datetime import make_datetime
 
 
@@ -397,6 +397,87 @@ class TestCheckMinInterval(DatabaseMixin, unittest.TestCase):
             4, 11, contest=self.contest, task=self.task, cls=UserTest))
         # Having calls signals an inefficiency.
         self.get_latest_submission.assert_not_called()
+
+
+class TestIsLastMinutes(DatabaseMixin, unittest.TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.contest = self.add_contest()
+        self.task = self.add_task(contest=self.contest)
+        self.participation = self.add_participation(unrestricted=False,
+                                                    contest=self.contest)
+
+        self.timestamp = make_datetime()
+
+    def test_unconfigured_min_submission_interval_grace_period(self):
+        self.setup_contest_with_no_user_time()
+
+        self.assertFalse(
+            is_last_minutes(self.timestamp, self.participation))
+
+    def test_no_per_user_time_and_last_minutes(self):
+        self.setup_contest_with_no_user_time()
+        self.contest.min_submission_interval_grace_period = timedelta(minutes=15)
+
+        self.assertTrue(
+            is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
+
+    def test_no_per_user_time_and_not_last_minutes(self):
+        self.setup_contest_with_no_user_time()
+        self.contest.min_submission_interval_grace_period = timedelta(minutes=10)
+
+        self.assertFalse(
+            is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
+
+    def test_per_user_time_and_last_minutes(self):
+        self.participation.contest.per_user_time = timedelta(hours=5)
+        self.participation.contest.start = self.timestamp - timedelta(hours=10)
+        self.participation.contest.stop = self.timestamp
+        self.participation.starting_time = self.timestamp - timedelta(hours=5)
+        self.contest.min_submission_interval_grace_period = timedelta(minutes=15)
+
+        self.assertTrue(
+            is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
+
+    def test_per_user_time_and_not_last_minutes(self):
+        self.participation.contest.per_user_time = timedelta(hours=5)
+        self.participation.contest.start = self.timestamp - timedelta(hours=10)
+        self.participation.contest.stop = self.timestamp
+        self.participation.starting_time = self.timestamp - timedelta(hours=5)
+        self.contest.min_submission_interval_grace_period = timedelta(minutes=10)
+
+        self.assertFalse(
+            is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
+
+    def test_consider_extra_time(self):
+        self.setup_contest_with_no_user_time()
+
+        self.participation.extra_time = timedelta(seconds=1)
+        self.contest.min_submission_interval_grace_period = timedelta(minutes=15)
+
+        self.assertFalse(
+            is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
+
+    def test_consider_delay(self):
+        self.setup_contest_with_no_user_time()
+
+        self.participation.delay_time = timedelta(seconds=1)
+        self.contest.min_submission_interval_grace_period = timedelta(minutes=15)
+
+        self.assertFalse(
+            is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
+
+    def test_unrestricted_participation(self):
+        self.setup_contest_with_no_user_time()
+        self.participation.unrestricted = True
+
+        self.assertFalse(is_last_minutes(self.timestamp, self.participation))
+
+    def setup_contest_with_no_user_time(self):
+        self.participation.contest.per_user_time = None
+        self.participation.contest.start = self.timestamp - timedelta(hours=5)
+        self.participation.contest.stop = self.timestamp
 
 
 if __name__ == "__main__":
