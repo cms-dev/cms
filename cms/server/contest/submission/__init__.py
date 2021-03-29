@@ -27,7 +27,7 @@ is irrelevant and duplicates are allowed.
 """
 
 from .check import get_submission_count, check_max_number, \
-    get_latest_submission, check_min_interval
+    get_latest_submission, check_min_interval, is_last_minutes
 from .file_matching import InvalidFilesOrLanguage, match_files_and_language
 from .file_retrieval import ReceivedFile, InvalidArchive, \
     extract_files_from_archive, extract_files_from_tornado
@@ -40,7 +40,7 @@ from .workflow import UnacceptableSubmission, accept_submission, \
 __all__ = [
     # check.py
     "get_submission_count", "check_max_number", "get_latest_submission",
-    "check_min_interval",
+    "check_min_interval", "is_last_minutes",
     # file_retrieval.py
     "ReceivedFile", "InvalidArchive", "extract_files_from_archive",
     "extract_files_from_tornado",

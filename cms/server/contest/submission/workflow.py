@@ -47,7 +47,7 @@ from cms.db import (
 )
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
-from .check import check_max_number, check_min_interval
+from .check import check_max_number, check_min_interval, is_last_minutes
 from .file_matching import InvalidFilesOrLanguage, match_files_and_language
 from .file_retrieval import InvalidArchive, extract_files_from_tornado
 from .utils import fetch_file_digests_from_previous_submission, StorageFailed, \
@@ -134,21 +134,22 @@ def accept_submission(
                "at most %d submissions on this task."),
             task.max_submission_number)
 
-    if not check_min_interval(sql_session, contest.min_submission_interval,
-                              timestamp, participation, contest=contest):
-        raise UnacceptableSubmission(
-            N_("Submissions too frequent!"),
-            N_("Among all tasks, you can submit again "
-               "after %d seconds from last submission."),
-            contest.min_submission_interval.total_seconds())
+    if not is_last_minutes(timestamp, participation):
+        if not check_min_interval(sql_session, contest.min_submission_interval,
+                                  timestamp, participation, contest=contest):
+            raise UnacceptableSubmission(
+                N_("Submissions too frequent!"),
+                N_("Among all tasks, you can submit again "
+                   "after %d seconds from last submission."),
+                contest.min_submission_interval.total_seconds())
 
-    if not check_min_interval(sql_session, task.min_submission_interval,
-                              timestamp, participation, task=task):
-        raise UnacceptableSubmission(
-            N_("Submissions too frequent!"),
-            N_("For this task, you can submit again "
-               "after %d seconds from last submission."),
-            task.min_submission_interval.total_seconds())
+        if not check_min_interval(sql_session, task.min_submission_interval,
+                                  timestamp, participation, task=task):
+            raise UnacceptableSubmission(
+                N_("Submissions too frequent!"),
+                N_("For this task, you can submit again "
+                   "after %d seconds from last submission."),
+                task.min_submission_interval.total_seconds())
 
     # Process the data we received and ensure it's valid.
 

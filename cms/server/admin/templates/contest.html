@@ -255,6 +255,13 @@
     </tr>
     <tr>
       <td>
+        <span class="info" title="The amount of time (in seconds) until the end of participation in which the minimum interval between submissions is not enforced."></span>
+        Minimum submission interval grace period
+      </td>
+      <td><input type="text" name="min_submission_interval_grace_period" value="{{ contest.min_submission_interval_grace_period.total_seconds()|int if contest.min_submission_interval_grace_period is not none else "" }}"></td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="The minimum amount of time (in seconds) that a contestant needs to wait after a user test before being able to send another.
                                   Leave empty for no limits."></span>
         Minimum interval between user tests
