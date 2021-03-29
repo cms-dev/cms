@@ -114,6 +114,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_int(attrs, "max_submission_number")
             self.get_int(attrs, "max_user_test_number")
             self.get_timedelta_sec(attrs, "min_submission_interval")
+            self.get_timedelta_sec(attrs, "min_submission_interval_grace_period")
             self.get_timedelta_sec(attrs, "min_user_test_interval")
 
             self.get_datetime(attrs, "start")
