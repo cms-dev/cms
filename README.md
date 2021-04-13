@@ -3,7 +3,7 @@ Contest Management System
 
 Homepage: <http://cms-dev.github.io/>
 
-[![Build Status](https://travis-ci.org/cms-dev/cms.svg?branch=master)](https://travis-ci.org/cms-dev/cms)
+[![Build Status](https://github.com/cms-dev/cms/workflows/ci/badge.svg)](https://github.com/cms-dev/cms/actions)
 [![codecov](https://codecov.io/gh/cms-dev/cms/branch/master/graph/badge.svg)](https://codecov.io/gh/cms-dev/cms)
 [![Join the chat at https://gitter.im/cms-dev/cms](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cms-dev/cms?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
