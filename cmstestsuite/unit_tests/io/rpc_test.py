@@ -262,7 +262,7 @@ class TestRPC(unittest.TestCase):
         self.sleep()
         self.assertTrue(client.connected)
         self.disconnect_servers()
-        gevent.sleep(0.01)
+        gevent.sleep(0.1)
         self.assertTrue(client.connected,
                         "Autoreconnect didn't kick in "
                         "after server disconnected")
