@@ -22,11 +22,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import grp
 import itertools
 import logging
 import netifaces
 import os
+import pwd
 import stat
 import sys
 
@@ -56,7 +56,7 @@ def mkdir(path):
     else:
         try:
             os.chmod(path, 0o770)
-            cmsuser_gid = grp.getgrnam(config.cmsuser).gr_gid
+            cmsuser_gid = pwd.getpwnam(config.cmsuser).pw_gid
             os.chown(path, -1, cmsuser_gid)
         except OSError:
             os.rmdir(path)
