@@ -207,7 +207,7 @@ def install_isolate():
     assert_root()
     root = pwd.getpwnam("root")
     try:
-        cmsuser_grp = grp.getgrnam(CMSUSER)
+        cmsuser_grp = grp.getgrgid(pwd.getpwnam(CMSUSER).pw_gid)
     except:
         print("[Error] The user %s doesn't exist yet" % CMSUSER)
         print("[Error] You need to run the install command at least once")
@@ -280,21 +280,14 @@ def install():
     real_user = get_real_user()
 
     try:
-        cmsuser_gr = grp.getgrnam(CMSUSER)
-    except KeyError:
-        print("===== Creating group %s" % CMSUSER)
-        subprocess.check_call(["groupadd", CMSUSER, "--system"])
-        cmsuser_gr = grp.getgrnam(CMSUSER)
-
-    try:
         cmsuser_pw = pwd.getpwnam(CMSUSER)
     except KeyError:
         print("===== Creating user %s" % CMSUSER)
         subprocess.check_call(["useradd", CMSUSER, "--system",
                                "--comment", "CMS default user",
-                               "--shell", "/bin/false", "--no-create-home",
-                               "--no-user-group", "--gid", CMSUSER])
+                               "--shell", "/bin/false", "-U"])
         cmsuser_pw = pwd.getpwnam(CMSUSER)
+    cmsuser_gr = grp.getgrgid(cmsuser_pw.pw_gid)
 
     root_pw = pwd.getpwnam("root")
 
@@ -338,10 +331,11 @@ def install():
     os.umask(old_umask)
 
     if real_user != "root":
-        print("===== Adding yourself to the %s group" % CMSUSER)
+        gr_name = cmsuser_gr.gr_name
+        print("===== Adding yourself to the %s group" % gr_name)
         if ask("Type Y if you want me to automatically add "
-               "\"%s\" to the %s group: " % (real_user, CMSUSER)):
-            subprocess.check_call(["usermod", "-a", "-G", CMSUSER, real_user])
+               "\"%s\" to the %s group: " % (real_user, gr_name)):
+            subprocess.check_call(["usermod", "-a", "-G", gr_name, real_user])
             print("""
 ###########################################################################
 ###                                                                     ###
@@ -349,7 +343,7 @@ def install():
 ###    effective ("the change" is: being in the %s group).         ###
 ###                                                                     ###
 ###########################################################################
-            """ % CMSUSER)
+            """ % gr_name)
         else:
             print("""
 ###########################################################################
@@ -361,7 +355,7 @@ def install():
 ###    You must also logout to make the change effective.               ###
 ###                                                                     ###
 ###########################################################################
-            """ % (CMSUSER, CMSUSER))
+            """ % (gr_name, gr_name))
 
 
 def uninstall():
@@ -407,7 +401,8 @@ def uninstall():
         if ask("Do you want to delete user %s? [y/N] " % CMSUSER):
             subprocess.check_call(["userdel", CMSUSER])
     try:
-        # Just to check whether it exists.
+        # Just to check whether it exists. If CMSUSER had a different primary
+        # group, we'll do nothing here.
         grp.getgrnam(CMSUSER)
     except KeyError:
         pass
