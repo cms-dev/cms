@@ -154,7 +154,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Adds a submission to a contest in CMS.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
-                        help="id of contest where to add the user")
+                        help="id of contest where to add the submission")
     parser.add_argument("-f", "--file", action="append", type=utf8_decoder,
                         help="in the form <name>:<file>, where name is the "
                         "name as required by CMS, and file is the name of "
