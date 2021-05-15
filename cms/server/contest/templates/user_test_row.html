@@ -87,7 +87,7 @@
                     {% set real_filename = filename %}
                 {% endif %}
                 <li>
-                    <a href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", filename) }}">
+                    <a href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
                         {{ real_filename }}
                     </a>
                 </li>
