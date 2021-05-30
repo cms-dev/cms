@@ -520,9 +520,7 @@ class FileCacher:
             # won't be used again.
             atexit.register(lambda: rmtree(self.file_dir))
         else:
-            self.file_dir = os.path.join(
-                config.cache_dir,
-                "fs-cache-%s-%d" % (service.name, service.shard))
+            self.file_dir = os.path.join(config.cache_dir, "fs-cache-shared")
         self._create_directory_or_die(self.file_dir)
 
         # Temp dir must be a subdirectory of file_dir to avoid cross-filesystem
@@ -596,15 +594,19 @@ class FileCacher:
 
         logger.debug("Getting file %s.", digest)
 
-        if not os.path.exists(cache_file_path):
-            logger.debug("File %s not in cache, downloading "
-                         "from database.", digest)
+        # The cached file might be deleted after we load it but before we
+        # open it. (If something keeps deleting the cached file, this could
+        # become an infinite loop.)
+        while True:
+            try:
+                return open(cache_file_path, 'rb')
+            except FileNotFoundError:
+                logger.debug("File %s not in cache, downloading "
+                            "from database.", digest)
 
-            self.load(digest)
+                self.load(digest)
 
-            logger.debug("File %s downloaded.", digest)
-
-        return open(cache_file_path, 'rb')
+                logger.debug("File %s downloaded.", digest)
 
     def get_file_content(self, digest):
         """Retrieve a file from the storage.
@@ -663,13 +665,15 @@ class FileCacher:
             with open(dst_path, 'wb') as dst:
                 copyfileobj(src, dst, self.CHUNK_SIZE)
 
-    def save(self, digest, desc=""):
+    def save(self, digest, src, desc=""):
         """Save the file with the given digest into the backend.
 
         Use to local copy, available in the file-system cache, to store
         the file in the backend, if it's not already there.
 
         digest (unicode): the digest of the file to load.
+        src (fileobj): a readable binary file-like object from which
+            to read the contents of the file.
         desc (unicode): the (optional) description to associate to the
             file.
 
@@ -685,8 +689,7 @@ class FileCacher:
         if fobj is None:
             return
 
-        with open(cache_file_path, 'rb') as src:
-            copyfileobj(src, fobj, self.CHUNK_SIZE)
+        copyfileobj(src, fobj, self.CHUNK_SIZE)
 
         self.backend.commit_file(fobj, digest, desc)
 
@@ -738,16 +741,17 @@ class FileCacher:
 
             cache_file_path = os.path.join(self.file_dir, digest)
 
-            if not os.path.exists(cache_file_path):
-                os.rename(dst.name, cache_file_path)
-            else:
-                os.unlink(dst.name)
+            # Store the file in the backend. We do that even if the file
+            # was already in the cache (that is, we ignore the check above)
+            # because there's a (small) chance that the file got removed
+            # from the backend but somehow remained in the cache.
+            # We read from the temporary file before moving it to
+            # cache_file_path because the latter might be deleted before
+            # we get a chance to open it.
+            with open(dst.name, 'rb') as src:
+                self.save(digest, src, desc)
 
-        # Store the file in the backend. We do that even if the file
-        # was already in the cache (that is, we ignore the check above)
-        # because there's a (small) chance that the file got removed
-        # from the backend but somehow remained in the cache.
-        self.save(digest, desc)
+            os.rename(dst.name, cache_file_path)
 
         return digest
 
