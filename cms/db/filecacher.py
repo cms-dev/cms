@@ -542,35 +542,74 @@ class FileCacher:
             logger.error(msg)
             raise RuntimeError(msg)
 
-    def load(self, digest, if_needed=False):
-        """Load the file with the given digest into the cache.
+    def _load(self, digest, cache_only):
+        """Load a file into the cache and open it for reading.
 
-        Ask the backend to provide the file and, if it's available,
-        copy its content into the file-system cache.
+        cache_only (bool): don't open the file for reading.
 
-        digest (unicode): the digest of the file to load.
-        if_needed (bool): only load the file if it is not present in
-            the local cache.
+        return (fileobj): a readable binary file-like object from which
+            to read the contents of the file (None if cache_only is True).
 
-        raise (KeyError): if the backend cannot find the file.
+        raise (KeyError): if the file cannot be found.
+
+        """
+        cache_file_path = os.path.join(self.file_dir, digest)
+
+        if cache_only:
+            if os.path.exists(cache_file_path):
+                return
+        else:
+            try:
+                return open(cache_file_path, 'rb')
+            except FileNotFoundError:
+                pass
+
+        logger.debug("File %s not in cache, downloading "
+                     "from database.", digest)
+
+        ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
+                                                       text=False)
+        # We keep the file descriptor open as it is still needed later.
+        with open(ftmp_handle, 'wb') as ftmp, \
+                self.backend.get_file(digest) as fobj:
+            copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
+
+        if not cache_only:
+            # We allow anyone to delete files from the cache directory
+            # self.file_dir at any time. Hence, cache_file_path might no
+            # longer exist an instant after we create it. Opening the
+            # temporary file before renaming it circumvents this issue.
+            # (Note that the temporary file may not be manually deleted!)
+            fd = open(temp_file_path, 'rb')
+
+        # Then move it to its real location (this operation is atomic
+        # by POSIX requirement)
+        os.rename(temp_file_path, cache_file_path)
+
+        logger.debug("File %s downloaded.", digest)
+
+        if not cache_only:
+            return fd
+
+    def cache_file(self, digest):
+        """Load a file into the cache.
+
+        Ask the backend to provide the file and store it in the cache for the
+        benefit of future accesses, unless the file is already cached.
+        Note that the cached file might still be deleted at any time, so it
+        cannot be assumed to actually exist after this function completes.
+        Always use the get_file* functions to access a file.
+
+        digest (unicode): the digest of the file to get.
+
+        raise (KeyError): if the file cannot be found.
         raise (TombstoneError): if the digest is the tombstone
 
         """
         if digest == Digest.TOMBSTONE:
             raise TombstoneError()
-        cache_file_path = os.path.join(self.file_dir, digest)
-        if if_needed and os.path.exists(cache_file_path):
-            return
 
-        ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
-                                                       text=False)
-        with open(ftmp_handle, 'wb') as ftmp, \
-                self.backend.get_file(digest) as fobj:
-            copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
-
-        # Then move it to its real location (this operation is atomic
-        # by POSIX requirement)
-        os.rename(temp_file_path, cache_file_path)
+        self._load(digest, True)
 
     def get_file(self, digest):
         """Retrieve a file from the storage.
@@ -594,23 +633,10 @@ class FileCacher:
         """
         if digest == Digest.TOMBSTONE:
             raise TombstoneError()
-        cache_file_path = os.path.join(self.file_dir, digest)
 
         logger.debug("Getting file %s.", digest)
 
-        # The cached file might be deleted after we load it but before we
-        # open it. (If something keeps deleting the cached file, this could
-        # become an infinite loop.)
-        while True:
-            try:
-                return open(cache_file_path, 'rb')
-            except FileNotFoundError:
-                logger.debug("File %s not in cache, downloading "
-                            "from database.", digest)
-
-                self.load(digest)
-
-                logger.debug("File %s downloaded.", digest)
+        return self._load(digest, False)
 
     def get_file_content(self, digest):
         """Retrieve a file from the storage.
