@@ -325,6 +325,7 @@ def enumerate_files(
             queries.append(user_test_result_q.join(UserTestResult.executables)
                            .with_entities(UserTestExecutable.digest))
             queries.append(user_test_result_q
+                           .filter(UserTestResult.output != None)
                            .with_entities(UserTestResult.output))
 
     if not skip_print_jobs:
