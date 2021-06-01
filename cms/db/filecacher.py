@@ -514,7 +514,7 @@ class FileCacher:
         self._create_directory_or_die(config.temp_dir)
         self._create_directory_or_die(config.cache_dir)
 
-        if service is None:
+        if not self.is_shared():
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
             # Delete this directory on exit since it has a random name and
             # won't be used again.
@@ -529,6 +529,10 @@ class FileCacher:
         atexit.register(lambda: rmtree(self.temp_dir))
         # Just to make sure it was created.
         self._create_directory_or_die(self.file_dir)
+
+    def is_shared(self):
+        """Return whether the cache directory is shared with other services."""
+        return self.service is not None
 
     @staticmethod
     def _create_directory_or_die(directory):
@@ -847,6 +851,8 @@ class FileCacher:
     def purge_cache(self):
         """Empty the local cache.
 
+        This function must not be called if the cache directory is shared.
+
         """
         self.destroy_cache()
         if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
@@ -859,7 +865,11 @@ class FileCacher:
         Nothing that could have been created by this object will be
         left on disk. After that, this instance isn't usable anymore.
 
+        This function must not be called if the cache directory is shared.
+
         """
+        if self.is_shared():
+            raise Exception("You may not destroy a shared cache.")
         rmtree(self.file_dir)
 
     def list(self):
