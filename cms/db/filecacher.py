@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Luca Versari <veluca93@gmail.com>
+# Copyright © 2021 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -569,7 +570,6 @@ class FileCacher:
 
         ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
                                                        text=False)
-        # We keep the file descriptor open as it is still needed later.
         with open(ftmp_handle, 'wb') as ftmp, \
                 self.backend.get_file(digest) as fobj:
             copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
@@ -695,34 +695,6 @@ class FileCacher:
             with open(dst_path, 'wb') as dst:
                 copyfileobj(src, dst, self.CHUNK_SIZE)
 
-    def save(self, digest, src, desc=""):
-        """Save the file with the given digest into the backend.
-
-        Use to local copy, available in the file-system cache, to store
-        the file in the backend, if it's not already there.
-
-        digest (unicode): the digest of the file to load.
-        src (fileobj): a readable binary file-like object from which
-            to read the contents of the file.
-        desc (unicode): the (optional) description to associate to the
-            file.
-
-        raise (TombstoneError): if the digest is the tombstone
-
-        """
-        if digest == Digest.TOMBSTONE:
-            raise TombstoneError()
-        cache_file_path = os.path.join(self.file_dir, digest)
-
-        fobj = self.backend.create_file(digest)
-
-        if fobj is None:
-            return
-
-        copyfileobj(src, fobj, self.CHUNK_SIZE)
-
-        self.backend.commit_file(fobj, digest, desc)
-
     def put_file_from_fobj(self, src, desc=""):
         """Store a file in the storage.
 
@@ -772,14 +744,17 @@ class FileCacher:
             cache_file_path = os.path.join(self.file_dir, digest)
 
             # Store the file in the backend. We do that even if the file
-            # was already in the cache (that is, we ignore the check above)
+            # was already in the cache
             # because there's a (small) chance that the file got removed
             # from the backend but somehow remained in the cache.
             # We read from the temporary file before moving it to
             # cache_file_path because the latter might be deleted before
             # we get a chance to open it.
             with open(dst.name, 'rb') as src:
-                self.save(digest, src, desc)
+                fobj = self.backend.create_file(digest)
+                if fobj is not None:
+                    copyfileobj(src, fobj, self.CHUNK_SIZE)
+                    self.backend.commit_file(fobj, digest, desc)
 
             os.rename(dst.name, cache_file_path)
 
