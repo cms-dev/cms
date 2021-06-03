@@ -322,6 +322,9 @@ def install():
         makedir(_dir, root_pw, 0o755)
         _dir = os.path.join(_dir, "cms")
         makedir(_dir, cmsuser_pw, 0o770)
+    extra_dirs = [os.path.join(VAR_ROOT, "cache", "cms", "fs-cache-shared")]
+    for _dir in extra_dirs:
+        makedir(_dir, cmsuser_pw, 0o770)
 
     print("===== Copying Polygon testlib")
     path = os.path.join("cmscontrib", "loaders", "polygon", "testlib.h")
@@ -378,6 +381,10 @@ def uninstall():
             try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
 
     print("===== Deleting empty directories")
+    extra_dirs = [os.path.join(VAR_ROOT, "cache", "cms", "fs-cache-shared")]
+    for _dir in extra_dirs:
+        if os.listdir(_dir) == []:
+            try_delete(_dir)
     dirs = [os.path.join(VAR_ROOT, "log"),
             os.path.join(VAR_ROOT, "cache"),
             os.path.join(VAR_ROOT, "lib"),
