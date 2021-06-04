@@ -26,7 +26,7 @@ import logging
 import sys
 
 from cms import ConfigError, default_argument_parser
-from cms.db import test_db_connection
+from cms.db import ask_for_contest, test_db_connection
 from cms.service.EvaluationService import EvaluationService
 
 
@@ -40,7 +40,8 @@ def main():
     test_db_connection()
     success = default_argument_parser(
         "Submission's compiler and evaluator for CMS.",
-        EvaluationService).run()
+        EvaluationService,
+        ask_contest=ask_for_contest).run()
     return 0 if success is True else 1
 
 
