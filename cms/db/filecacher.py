@@ -30,6 +30,7 @@ import io
 import logging
 import os
 import tempfile
+import fcntl
 from abc import ABCMeta, abstractmethod
 
 import gevent
@@ -542,6 +543,36 @@ class FileCacher:
             msg = "Cannot create required directory '%s'." % directory
             logger.error(msg)
             raise RuntimeError(msg)
+
+    def precache_lock(self):
+        """Lock the (shared) cache for precaching if it is currently unlocked.
+
+        Locking is optional: Any process can perform normal cache operations
+        at any time whether the cache is locked or not.
+
+        The locking mechanism's only purpose is to avoid wasting resources by
+        ensuring that on each machine, only one worker precaches at any time.
+
+        return (fileobj|None): The lock file if the cache was previously
+            unlocked. Closing the file object will release the lock.
+            None if the cache was already locked.
+
+        """
+        lock_file = os.path.join(self.file_dir, "cache_lock")
+        fobj = open(lock_file, 'w')
+        returned = False
+        try:
+            fcntl.flock(fobj, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            # This exception is raised only if the errno is EWOULDBLOCK,
+            # which means that the file is already locked.
+            return None
+        else:
+            returned = True
+            return fobj
+        finally:
+            if not returned:
+                fobj.close()
 
     def _load(self, digest, cache_only):
         """Load a file into the cache and open it for reading.
