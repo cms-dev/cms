@@ -15,7 +15,7 @@ Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: CC-BY-SA-3.0
 
 Files: cmsranking/static/lib/jquery.js
-Copyright: 2016 jQuery Foundation and other contributors, http://jquery.org/
+Copyright: 2021 OpenJS Foundation and other contributors, http://jquery.org/
 License: Expat
 Comment: See http://jquery.org/license
 
@@ -35,8 +35,9 @@ Copyright: 2008-2016 Dmitry Baranovskiy (http://raphaeljs.com)
 License: Expat and Apache-2.0
 Comment: See https://dmitrybaranovskiy.github.io/raphael/license.html
 
-Files: cms/server/static/jq/jquery-1.12.4.min.js
-Copyright: 2016 jQuery Foundation and other contributors, http://jquery.org/
+Files: cms/server/static/jq/jquery-3.6.0.min.js
+       cms/server/static/jq/jquery-migrate-3.3.2.min.js
+Copyright: 2021 OpenJS Foundation and other contributors, http://jquery.org/
 License: Expat
 
 Files: cms/server/static/jq/jquery.jqplot*
