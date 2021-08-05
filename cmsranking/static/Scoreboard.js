@@ -384,7 +384,7 @@ var Scoreboard = new function () {
         user["index"] = self.user_list.length;
         self.user_list.push(user);
 
-        self.tbody_el.append(row);
+        self.tbody_el.append($row);
         // The row will be at the bottom (since it has a score of zero and thus
         // the maximum rank), but we may still need to sort it due to other
         // users having that score and the sort-by-name clause.
