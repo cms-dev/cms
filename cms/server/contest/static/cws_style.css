@@ -219,6 +219,21 @@ div.login_box {
     }
 }
 
+/** Register **/
+
+div.register_box form {
+    margin-bottom: 0;
+}
+
+div.register_box form fieldset div.control-group:last-child {
+    margin-bottom: 0;
+}
+
+div.register_box {
+    max-width: 450px;
+    margin: 20px auto;
+}
+
 /* Some fixes and enhancements of Bootstrap */
 
 @media (max-width: 767px) {
