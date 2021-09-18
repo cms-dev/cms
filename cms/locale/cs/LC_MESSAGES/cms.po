@@ -880,7 +880,7 @@ msgid "New user"
 msgstr "Nový uživatel"
 
 msgid "Please fill in the fields to register"
-msgstr "Prosíme vyplňte pole, abyste se mohli zaregistrovat"
+msgstr "Prosíme vyplňte tato pole k registraci"
 
 msgid "First name"
 msgstr "Křestní jméno"
@@ -897,9 +897,9 @@ msgstr "V týmu"
 #, python-format
 msgid "Must be one character or more."
 msgid_plural "Must be %(min_length)s characters or more."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Musí mít alespoň %(min_length)s znak."
+msgstr[1] "Musí mít alespoň %(min_length)s znaky."
+msgstr[2] "Musí mít alespoň %(min_length)s znaků."
 
 msgid "Confirm password"
 msgstr "Zopakujte heslo"
