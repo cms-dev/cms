@@ -121,7 +121,7 @@ class TaskSubmissionsHandler(ContestHandler):
 
     """
     @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name):
         participation: Participation = self.current_user
@@ -234,7 +234,7 @@ class SubmissionStatusHandler(ContestHandler):
             task.score_precision, translation=self.translation)
 
     @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name, submission_num):
         task = self.get_task(task_name)
@@ -294,7 +294,7 @@ class SubmissionDetailsHandler(ContestHandler):
     refresh_cookie = False
 
     @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name, submission_num):
         task = self.get_task(task_name)
@@ -335,7 +335,7 @@ class SubmissionFileHandler(FileHandler):
 
     """
     @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name, submission_num, filename):
         if not self.contest.submissions_download_allowed:
