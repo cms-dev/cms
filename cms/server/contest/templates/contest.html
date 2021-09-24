@@ -177,7 +177,7 @@ $(document).ready(function () {
                                     <span id="unread_count" class="label label-warning no_unread"></span>
                                 </a>
                             </li>
-    {% if actual_phase == 0 or actual_phase == 3 or participation.unrestricted %}
+    {% if actual_phase >= 0 or participation.unrestricted %}
         {% for t_iter in contest.tasks %}
                             <li class="nav-header">
                                 {{ t_iter.name }}

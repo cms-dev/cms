@@ -225,27 +225,29 @@ $(document).ready(function () {
 </div>
 {% endif %}
 
+{% if actual_phase == 0 or actual_phase == 3 or participation.unrestricted %}
+
 <h2 style="margin-bottom: 10px">{% trans %}Submit a solution{% endtrans %}</h2>
 
-{% set task_type = get_task_type(dataset=task.active_dataset) %}
-{% if task_type.ALLOW_PARTIAL_SUBMISSION %}
+  {% set task_type = get_task_type(dataset=task.active_dataset) %}
+  {% if task_type.ALLOW_PARTIAL_SUBMISSION %}
   <p><strong>{% trans %}You may submit any subset of outputs in a single submission.{% endtrans %}</strong></p>
-{% endif %}
+  {% endif %}
 
-{% if submissions_left is not none %}
+  {% if submissions_left is not none %}
     <div class="span5">
         <p>
         {% trans submissions_left=submissions_left %}You can submit {{ submissions_left }} more solution(s).{% endtrans %}
         </p>
     </div>
-{% endif %}
+  {% endif %}
 
 <div id="submit_solution" class="row">
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {{ xsrf_form_html|safe }}
             <fieldset>
-{% for filename in task.submission_format %}
+  {% for filename in task.submission_format %}
                 <div class="control-group">
                     <label class="control-label" for="input{{ loop.index0 }}">{{ filename|replace(".%l", ": ") }}</label>
                     <div class="controls">
@@ -255,18 +257,18 @@ $(document).ready(function () {
                                                                        $(this).parents('form').find('input[type=file]'))"/>
                     </div>
                 </div>
-{% endfor %}
-{% if task.submission_format|any("endswith", ".%l") %}
+  {% endfor %}
+  {% if task.submission_format|any("endswith", ".%l") %}
                 <div class="control-group">
                     <div class="controls">
                         <select name="language">
-{% for lang in contest.languages %}
+  {% for lang in contest.languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
-{% endfor %}
+  {% endfor %}
                         </select>
                     </div>
                 </div>
-{% endif %}
+  {% endif %}
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-success">{% trans %}Submit{% endtrans %}</button>
@@ -276,7 +278,7 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% if task.submission_format|length > 1 and not task.submission_format|any("endswith", ".%l") %}
+  {% if task.submission_format|length > 1 and not task.submission_format|any("endswith", ".%l") %}
     <div class="span4">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ contest_url("tasks", task.name, "submit") }}" method="POST">
             {{ xsrf_form_html|safe }}
@@ -296,9 +298,10 @@ $(document).ready(function () {
             </fieldset>
         </form>
     </div>
-{% endif %}
+  {% endif %}
 </div>
 
+{% endif %}
 
 <h2 style="margin: 40px 0 10px">{% trans %}Previous submissions{% endtrans %}</h2>
 
