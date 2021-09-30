@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the CMS package.
 # Karry <karry@karryanna.cz>, 2015.
 # Martin Mareš <mj@ucw.cz>, 2018.
+# Benjamin Swart <Benjaminswart@email.cz>, 2020.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2018-03-11 17:10+0100\n"
+"POT-Creation-Date: 2021-02-08 16:20+0000\n"
 "PO-Revision-Date: 2015-03-24 15:57+0100\n"
-"Last-Translator: Martin Mareš <mj@ucw.cz>\n"
+"Last-Translator: Benjamin Swart <Benjaminswart@email.cz>\n"
 "Language-Team: Czech\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -18,11 +19,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-msgid "Score details temporarily unavailable."
-msgstr "Detaily skóre momentálně nejsou dostupné."
+msgid "N/A"
+msgstr "N/A"
 
-msgid "Subtask %(index)s"
-msgstr "Podúloha %(index)s"
+msgid "Not correct"
+msgstr "Nesprávně"
+
+msgid "Correct"
+msgstr "Správně"
+
+msgid "Partially correct"
+msgstr "Částečně správně"
 
 msgid "#"
 msgstr "#"
@@ -39,8 +46,12 @@ msgstr "Doba běhu"
 msgid "Memory used"
 msgstr "Použitá paměť"
 
-msgid "N/A"
-msgstr "N/A"
+msgid "Score details temporarily unavailable."
+msgstr "Detaily skóre momentálně nejsou dostupné."
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "Podúloha %(index)s"
 
 msgid "Compilation succeeded"
 msgstr "Úspěšně zkompilováno"
@@ -127,24 +138,20 @@ msgstr ""
 "si, že v tomto případě může být procesorový čas zobrazený v detailech "
 "odevzdaného řešení mnohem menší než časový limit."
 
-#, python-format
-msgid ""
-"Execution killed with signal %s (could be triggered by violating memory "
-"limits)"
+msgid "Execution killed (could be triggered by violating memory limits)"
 msgstr ""
-"Program byl ukončen signálem %s (to mohlo být způsobeno překročením "
-"paměťových limitů)"
+"Program byl ukončen (to mohlo být způsobeno překročením paměťových limitů)"
 
 msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit. Note that if this is the "
-"reason, the memory usage visible in the submission details is the usage "
-"before the allocation that caused the signal."
+"The evaluation was killed by a signal. Among other things, this might be "
+"caused by exceeding the memory limit. Note that if this is the reason, the "
+"memory usage visible in the submission details is the usage before the "
+"allocation that caused the signal."
 msgstr ""
-"Odevzdané řešení bylo ukončeno uvedeným signálem. To může být způsobeno "
-"překročením paměťového limitu. Uvědomte si, že je-li to způsobeno tím, "
-"použitá paměť zobrazená v detailech odevzdaného řešení je použitá paměť před "
-"alokací, která způsobila poslání signálu."
+"Vyhodnocování bylo ukončeno signálem. To může být způsobeno překročením "
+"paměťového limitu. Uvědomte si, že je-li to způsobeno tím, použitá paměť "
+"zobrazená v detailech odevzdaného řešení je použitá paměť před alokací, "
+"která způsobila poslání signálu."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Program selhal kvůli nenulové návratové hodnotě"
@@ -155,18 +162,6 @@ msgstr ""
 "Odevzdané řešení selhalo, protože skončilo s návratovou hodnotou odlišnou od "
 "0."
 
-msgid "Not correct"
-msgstr "Nesprávně"
-
-msgid "Correct"
-msgstr "Správně"
-
-msgid "Partially correct"
-msgstr "Částečně správně"
-
-msgid "Invalid files in submission"
-msgstr "Neplatné soubory v odevzdaném řešení"
-
 msgid "Execution completed successfully"
 msgstr "Spuštění programu skončilo úspěšně"
 
@@ -175,6 +170,17 @@ msgstr "Kompilace není potřeba"
 
 msgid "File not submitted"
 msgstr "Soubor neodevzdán"
+
+msgid "Question too long!"
+msgstr "Příliš dlouhá otázka!"
+
+#, python-format
+msgid ""
+"Subject must be at most %(max_subject_length)d characters, content at most "
+"%(max_text_length)d."
+msgstr ""
+"Předmět může mít maximálně %(max_subject_length)d znaků a text maximálně "
+"%(max_text_length)d znaků."
 
 msgid "contest-token"
 msgstr "soutěžní token"
@@ -277,19 +283,6 @@ msgstr[2] "Počet použití %(type_s)s máte omezený na %(max_number)d."
 msgid "You have no limitations on how you use them."
 msgstr "Nemáte žádná omezení na to, jak je použijete."
 
-msgid "Question too big!"
-msgstr "Příliš dlouhá otázka!"
-
-msgid "You have reached the question length limit."
-msgstr "Byl dosažený limit na počet otázek."
-
-msgid "Question received"
-msgstr "Otázka přijata"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr "Otázka byla přijata, budete upozorněni, až bude zodpovězena."
-
 msgid "Too many print jobs!"
 msgstr "Příliš mnoho tiskových úloh!"
 
@@ -316,11 +309,76 @@ msgstr "Nepodařilo se uložit tiskovou úlohu."
 msgid "Please try again."
 msgstr "Prosím zkuste to znovu."
 
+msgid "Token request discarded"
+msgstr "Požadavek na token nesplněn."
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Požadavek nebyl splněn, protože nemáte k dispozici žádné tokeny."
+
+msgid ""
+"Your request has been discarded because you already used a token on that "
+"submission."
+msgstr ""
+"Požadavek nebyl splněn, protože pro toto odevzdané řešení jste už token "
+"použili."
+
+msgid "Question received"
+msgstr "Otázka přijata"
+
+msgid ""
+"Your question has been received, you will be notified when it is answered."
+msgstr "Otázka byla přijata, budete upozorněni, až bude zodpovězena."
+
 msgid "Print job received"
 msgstr "Tisková úloha přijata"
 
 msgid "Your print job has been received."
 msgstr "Vaše tisková úloha byla přijata."
+
+msgid "Submission received"
+msgstr "Řešení přijato"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Řešení bylo přijato a právě se vyhodnocuje."
+
+msgid "Compiling..."
+msgstr "Kompilace..."
+
+msgid "Evaluating..."
+msgstr "Vyhodnocování..."
+
+msgid "Scoring..."
+msgstr "Přidělování bodů..."
+
+msgid "Evaluated"
+msgstr "Vyhodnoceno"
+
+msgid "status"
+msgstr "stav"
+
+msgid "Token request received"
+msgstr "Obdržen požadavek o token"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Váš požadavek byl použit na odevzdané řešení."
+
+msgid "Test received"
+msgstr "Test přijat"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Test byl přijatý a právě se provádí."
+
+msgid "details"
+msgstr "detaily"
+
+msgid "Executing..."
+msgstr "Provádění..."
+
+msgid "Executed"
+msgstr "Provedeno"
+
+msgid "Too many submissions!"
+msgstr "Příliš mnoho odevzdaných řešení!"
 
 #, python-format
 msgid ""
@@ -332,8 +390,8 @@ msgid ""
 "You have reached the maximum limit of at most %d submissions on this task."
 msgstr "Byl dosažený limit maximálně %d odevzdání této úlohy."
 
-msgid "Too many submissions!"
-msgstr "Příliš mnoho odevzdání!"
+msgid "Submissions too frequent!"
+msgstr "Příliš časté odevzdávání!"
 
 #, python-format
 msgid ""
@@ -349,27 +407,14 @@ msgstr ""
 "Řešení této úlohy můžete znovu odevzdat po %d vteřinách od posledního "
 "odevzdání."
 
-msgid "Submissions too frequent!"
-msgstr "Příliš časté odevzdávání!"
-
-msgid "Invalid submission format!"
-msgstr "Neplatný formát odevzdaného řešení!"
-
 msgid "Invalid archive format!"
 msgstr "Neplatný formát archivu!"
 
 msgid "The submitted archive could not be opened."
 msgstr "Odevzdaný archiv nemohl být otevřen."
 
-msgid "Cannot recognize the submission language."
-msgstr "Nepodařilo se určit jazyk odevzdaného řešení."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Jazyk %s není v této soutěži povolený."
-
-msgid "Invalid submission!"
-msgstr "Neplatné odevzdání!"
+msgid "Invalid submission format!"
+msgstr "Neplatný formát odevzdaného řešení!"
 
 msgid "Submission too big!"
 msgstr "Příliš velké odevzdané řešení!"
@@ -381,43 +426,8 @@ msgstr "Každý zdrojový soubor smí být maximálně %d bytů velký."
 msgid "Submission storage failed!"
 msgstr "Nepodařilo se uložit odevzdané řešení!"
 
-msgid "Submission received"
-msgstr "Řešení přijato"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "Řešení bylo přijato a právě se vyhodnocuje."
-
-msgid "Compiling..."
-msgstr "Kompilace..."
-
-msgid "details"
-msgstr "detaily"
-
-msgid "Evaluating..."
-msgstr "Vyhodnocování..."
-
-msgid "Scoring..."
-msgstr "Přidělování bodů..."
-
-msgid "Evaluated"
-msgstr "Vyhodnoceno"
-
-msgid "Token request discarded"
-msgstr "Požadavek na token nesplněn."
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Požadavek nebyl splněn, protože nemáte k dispozici žádné tokeny."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr "Požadavek nebyl splněn, protože pro toto odevzdané řešení jste už token použili."
-
-msgid "Token request received"
-msgstr "Obdržen požadavek o token"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "Váš požadavek byl použit na odevzdané řešení."
+msgid "Too many tests!"
+msgstr "Příliš mnoho testů!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
@@ -427,8 +437,8 @@ msgstr "Byl dosažený limit maximálně %d testů pro všechny úlohy."
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Byl dosažený limit maximálně %d testů pro tuto úlohu."
 
-msgid "Too many tests!"
-msgstr "Příliš mnoho testů!"
+msgid "Tests too frequent!"
+msgstr "Přílič časté testování!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
@@ -441,17 +451,8 @@ msgid "For this task, you can test again after %d seconds from last test."
 msgstr ""
 "Test k této úloze můžete znovu spustit po %d vteřinách od posledního testu."
 
-msgid "Tests too frequent!"
-msgstr "Přílič časté testování!"
-
 msgid "Invalid test format!"
 msgstr "Neplatný formát testu!"
-
-msgid "Cannot recognize the user test language."
-msgstr "Nepodařilo se určit jazyk testu."
-
-msgid "Invalid test!"
-msgstr "Neplatný test!"
 
 msgid "Test too big!"
 msgstr "Příliš velký test!"
@@ -465,18 +466,6 @@ msgstr "Vstupní soubor smí být maximálně %d bytů velký."
 
 msgid "Test storage failed!"
 msgstr "Nedodařilo se uložit test!"
-
-msgid "Test received"
-msgstr "Test přijat"
-
-msgid "Your test has been received and is currently being executed."
-msgstr "Test byl přijatý a právě se provádí."
-
-msgid "Executing..."
-msgstr "Provádění..."
-
-msgid "Executed"
-msgstr "Provedeno"
 
 msgid "Communication"
 msgstr "Komunikace"
@@ -540,6 +529,12 @@ msgstr "Heslo"
 
 msgid "Login"
 msgstr "Přihlásit se"
+
+msgid "Don't have an account?"
+msgstr "Nemáte účet?"
+
+msgid "Register"
+msgstr "Registrovat"
 
 msgid "New message"
 msgstr "Nová zpráva"
@@ -875,6 +870,52 @@ msgstr "Příprava..."
 msgid "no print jobs yet"
 msgstr "zatím žádné tiskové úlohy"
 
+msgid "The passwords do not match!"
+msgstr "Hesla se neshodují!"
+
+msgid "This username is already taken, please choose a different one."
+msgstr "Toto uživatelské jméno je již zabrané, prosíme vyberte jiné."
+
+msgid "New user"
+msgstr "Nový uživatel"
+
+msgid "Please fill in the fields to register"
+msgstr "Prosíme vyplňte tato pole k registraci"
+
+msgid "First name"
+msgstr "Křestní jméno"
+
+msgid "Last name"
+msgstr "Příjmení"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "Representing"
+msgstr "V týmu"
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] "Musí mít alespoň %(min_length)s znak."
+msgstr[1] "Musí mít alespoň %(min_length)s znaky."
+msgstr[2] "Musí mít alespoň %(min_length)s znaků."
+
+msgid "Confirm password"
+msgstr "Zopakujte heslo"
+
+msgid "The user was created successfully!"
+msgstr "Uživatel byl úspěšně vytvořen!"
+
+msgid "Your username is:"
+msgstr "Vaše uživatelské jméno je:"
+
+msgid "The password you chose was stored securely."
+msgstr "Heslo bylo bezpečně uloženo."
+
+msgid "Back to login"
+msgstr "Zpět na přihlášení"
+
 msgid "Compilation output"
 msgstr "Výstup kompilace"
 
@@ -892,24 +933,6 @@ msgstr "Standardní výstup"
 
 msgid "Standard error"
 msgstr "Chybový výstup"
-
-msgid "None"
-msgstr "Žádné"
-
-msgid "Download"
-msgstr "Stáhnout"
-
-msgid "Played"
-msgstr "Zahráno"
-
-msgid "Play!"
-msgstr "Zahrát!"
-
-msgid "Wait..."
-msgstr "Počkejte..."
-
-msgid "No tokens"
-msgstr "Žádné tokeny"
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
@@ -961,8 +984,8 @@ msgid ""
 "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
 "\">contest overview page</a>."
 msgstr ""
-"Pravidla pro %(type_pl)s můžete najít v <a href=\"%(contest_root)s/\">přehledu "
-"soutěže</a>."
+"Pravidla pro %(type_pl)s můžete najít v <a href=\"%(contest_root)s/"
+"\">přehledu soutěže</a>."
 
 msgid ""
 "Remember that to see the detailed result of a submission you need to use "
@@ -984,6 +1007,18 @@ msgstr "nahrávám..."
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>odevzdaná řešení</small>"
 
+msgid "Score:"
+msgstr "Skóre:"
+
+msgid "Public score:"
+msgstr "Veřejné skóre:"
+
+msgid "Score of tokened submissions:"
+msgstr "Skóre řešení s tokeny:"
+
+msgid "Total score:"
+msgstr "Celkové skóre:"
+
 msgid "Submit a solution"
 msgstr "Odevzdat řešení"
 
@@ -999,6 +1034,9 @@ msgstr "submission.zip"
 
 msgid "Previous submissions"
 msgstr "Předchozí odevzdaná řešení"
+
+msgid "Tokens are not allowed on this task."
+msgstr "Tokeny nejsou u této úlohy povoleny."
 
 msgid "Right now, you have infinite tokens available on this task."
 msgstr "Právě teď máte pro tuto úlohu k dispozici neomezený počet tokenů."
@@ -1028,29 +1066,20 @@ msgstr "Právě teď nemáte pro tuto úlohu k dispozici žádný token."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Ale k jeho použití musíte počkat do %(expiration_time)s."
 
-msgid "Public score"
-msgstr "Veřejné skóre"
+msgid "Unofficial submissions"
+msgstr "Neoficiální řešení"
 
-msgid "Total score"
-msgstr "Celkové skóre"
-
-msgid "Score"
-msgstr "Skóre"
-
-msgid "Official"
-msgstr "Oficiální"
-
-msgid "Token"
-msgstr "Token"
-
-msgid "no submissions yet"
-msgstr "zatím žádná odevzdaná řešení"
+msgid "Official submissions"
+msgstr "Oficiální řešení"
 
 msgid "Submission details"
 msgstr "Detaily odevzdaného řešení"
 
 msgid "Close"
 msgstr "Zavřít"
+
+msgid "Download"
+msgstr "Stáhnout"
 
 msgid "Submit a test"
 msgstr "Nahrát test"
@@ -1079,6 +1108,60 @@ msgstr "Detaily testu"
 
 msgid "Evaluation outcome"
 msgstr "Výsledek vyhodnocení"
+
+msgid "Wait..."
+msgstr "Počkejte..."
+
+msgid "None"
+msgstr "Žádné"
+
+msgid "Public score"
+msgstr "Veřejné skóre"
+
+msgid "Total score"
+msgstr "Celkové skóre"
+
+msgid "Score"
+msgstr "Skóre"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "no submissions"
+msgstr "žádná odevzdaná řešení"
+
+msgid "Played"
+msgstr "Zahráno"
+
+msgid "Play!"
+msgstr "Zahrát!"
+
+msgid "No tokens"
+msgstr "Žádné tokeny"
+
+msgid "Invalid file"
+msgstr "Neplatný soubor"
+
+msgid "Print job has too many pages"
+msgstr "Tisková úloha má moc stránek"
+
+msgid "Sent to printer"
+msgstr "Odeslat do tiskárny"
+
+#~ msgid "Invalid files in submission"
+#~ msgstr "Neplatné soubory v odevzdaném řešení"
+
+#~ msgid "You have reached the question length limit."
+#~ msgstr "Byl dosažený limit na počet otázek."
+
+#~ msgid "Cannot recognize the submission language."
+#~ msgstr "Nepodařilo se určit jazyk odevzdaného řešení."
+
+#~ msgid "Cannot recognize the user test language."
+#~ msgstr "Nepodařilo se určit jazyk testu."
+
+#~ msgid "Official"
+#~ msgstr "Oficiální"
 
 #~ msgid "%Y-%m-%d"
 #~ msgstr "%d. %m. %Y"
