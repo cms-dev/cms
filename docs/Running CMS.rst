@@ -21,6 +21,12 @@ Then, to create the user (which does not need to be a superuser, nor be able to 
 
 The last two lines are required to give the PostgreSQL user some privileges which it does not have by default, despite being the database owner.
 
+After running these commands, log out to the initial shell:
+
+.. sourcecode:: bash
+
+    logout
+
 Then you may need to adjust the CMS configuration to contain the correct database parameters. See :ref:`running-cms_configuring-cms`.
 
 Finally you have to create the database schema for CMS, by running:
