@@ -219,7 +219,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         tasks = load(conf, None, ["tasks", "problemi"])
         participations = load(conf, None, ["users", "utenti"])
-        participations = [] if participations is None else participations;
+        participations = [] if participations is None else participations
         for p in participations:
             p["password"] = build_password(p["password"])
 
