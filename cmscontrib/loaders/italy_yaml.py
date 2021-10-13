@@ -626,10 +626,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     num_processes = load(conf, None, "num_processes")
                     if num_processes is None:
                         num_processes = 1
+                    io_type = load(conf, None, "user_io")
+                    if io_type is not None:
+                        if io_type not in ["std_io", "fifo_io"]:
+                            logger.warning("user_io incorrect. Valid options are 'std_io' and 'fifo_io'. Ignored.")
+                            io_type = None
                     logger.info("Task type Communication")
                     args["task_type"] = "Communication"
                     args["task_type_parameters"] = \
-                        [num_processes, "alone", "std_io"]
+                        [num_processes, "alone", io_type or "std_io"]
                     digest = self.file_cacher.put_file_from_path(
                         path,
                         "Manager for task %s" % task.name)
@@ -644,7 +649,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                                 "Stub for task %s and language %s" % (
                                     task.name, lang.name))
                             args["task_type_parameters"] = \
-                                [num_processes, "stub", "fifo_io"]
+                                [num_processes, "stub", io_type or "fifo_io"]
                             args["managers"] += [
                                 Manager(
                                     "stub%s" % lang.source_extension, digest)]
