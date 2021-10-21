@@ -629,7 +629,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     io_type = load(conf, None, "user_io")
                     if io_type is not None:
                         if io_type not in ["std_io", "fifo_io"]:
-                            logger.warning("user_io incorrect. Valid options are 'std_io' and 'fifo_io'. Ignored.")
+                            logger.warning("user_io incorrect. Valid options "
+                                           "are 'std_io' and 'fifo_io'. "
+                                           "Ignored.")
                             io_type = None
                     logger.info("Task type Communication")
                     args["task_type"] = "Communication"
