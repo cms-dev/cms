@@ -94,13 +94,14 @@ class RegistrationHandler(ContestHandler):
         else:
             user = self._get_user()
 
-        # Check if the participation exists
-        tot_participants = self.sql_session.query(Participation)\
-                               .filter(Participation.user == user)\
-                               .filter(Participation.contest == self.contest)\
-                               .count()
-        if tot_participants > 0:
-            raise tornado_web.HTTPError(409)
+            # Check if the participation exists
+            contest = self.contest
+            tot_participants = self.sql_session.query(Participation)\
+                                   .filter(Participation.user == user)\
+                                   .filter(Participation.contest == contest)\
+                                   .count()
+            if tot_participants > 0:
+                raise tornado_web.HTTPError(409)
 
         # Create participation
         team = self._get_team()
