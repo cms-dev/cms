@@ -225,7 +225,7 @@ $(document).ready(function () {
 </div>
 {% endif %}
 
-{% if actual_phase == 0 or actual_phase == 3 or participation.unrestricted %}
+{% if actual_phase == 0 or actual_phase == 3 or participation.unrestricted or (0 <= actual_phase <= 3 and contest.allow_unofficial_submission_before_analysis_mode) %}
 
 <h2 style="margin-bottom: 10px">{% trans %}Submit a solution{% endtrans %}</h2>
 
