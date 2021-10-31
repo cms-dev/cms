@@ -101,6 +101,12 @@ class Contest(Base):
         nullable=False,
         default=True)
 
+    # Allow unofficial submission before analysis mode
+    allow_unofficial_submission_before_analysis_mode = Column(
+        Boolean,
+        nullable=False,
+        default=False)
+
     # Whether to prevent hidden participations to log in.
     block_hidden_participations: bool = Column(
         Boolean,
