@@ -78,9 +78,15 @@ class SubmitHandler(ContestHandler):
     """
 
     @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @actual_phase_required(0, 1, 2, 3)
     @multi_contest
     def post(self, task_name):
+        # Reject submission if the contest disallow unofficial submission outside of official window or analysis mode
+        if 0 < self.r_params["actual_phase"] < 3 and \
+                not self.contest.allow_unofficial_submission_before_analysis_mode:
+            self.redirect(self.contest_url())
+            return
+
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)
