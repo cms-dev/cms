@@ -47,8 +47,7 @@ from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    Admin, Message, Question, Announcement, Participation, \
-    enumerate_files
+    Announcement, Participation, enumerate_files
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -143,10 +142,10 @@ class DumpExporter:
                 contests = session.query(Contest).all()
                 self.contests_ids = [contest.id for contest in contests]
                 if not skip_users:
-                  users = session.query(User).all()
-                  self.users_ids = [user.id for user in users]
+                    users = session.query(User).all()
+                    self.users_ids = [user.id for user in users]
                 else:
-                  self.users_ids = []
+                    self.users_ids = []
                 tasks = session.query(Task)\
                     .filter(Task.contest_id.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
@@ -312,7 +311,6 @@ class DumpExporter:
             val = getattr(obj, prp.key)
             data[prp.key] = encode_value(col.type, val)
 
-        user_related_classes = [User, Admin, UserTest, Submission, PrintJob, Message, Question, Announcement, Participation]
         for prp in cls._rel_props:
             other_cls = prp.mapper.class_
 
@@ -326,12 +324,14 @@ class DumpExporter:
 
             if self.skip_users:
                 skip = False
-                for rel_class in user_related_classes:
+                # User-related classes reachable from root
+                for rel_class in [Participation, Submission, UserTest,
+                                  Announcement]:
                     if other_cls is rel_class:
                         skip = True
-                        break                 
+                        break
                 if skip:
-                  continue
+                    continue
 
             # Skip print jobs if requested
             if self.skip_print_jobs and other_cls is PrintJob:

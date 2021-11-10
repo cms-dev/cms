@@ -50,7 +50,7 @@ from cms import utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
     Submission, SubmissionResult, User, Participation, UserTest, \
-    UserTestResult, PrintJob, init_db, drop_db, enumerate_files
+    UserTestResult, PrintJob, Announcement, init_db, drop_db, enumerate_files
 from cms.db.filecacher import FileCacher
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
@@ -234,7 +234,6 @@ class DumpImporter:
                 for id_, data in self.datas.items():
                     if not id_.startswith("_"):
                         self.objs[id_] = self.import_object(data)
-                    
 
                 for k, v in list(self.objs.items()):
 
@@ -248,7 +247,8 @@ class DumpImporter:
 
                     # Skip users if requested
                     elif self.skip_users and \
-                        isinstance(v, (User, Participation, Submission, UserTest)):
+                            isinstance(v, (User, Participation, Submission,
+                                           UserTest, Announcement)):
                         del self.objs[k]
 
                     # Skip print jobs if requested
@@ -259,7 +259,7 @@ class DumpImporter:
                     elif self.skip_generated and \
                             isinstance(v, (SubmissionResult, UserTestResult)):
                         del self.objs[k]
-                
+
                 for id_, data in self.datas.items():
                     if not id_.startswith("_") and id_ in self.objs:
                         self.add_relationships(data, self.objs[id_])
@@ -278,7 +278,7 @@ class DumpImporter:
                     # It could have been removed by request
                     if id_ not in self.objs:
                         continue
-                    
+
                     obj = self.objs[id_]
                     session.add(obj)
                     session.flush()
@@ -292,7 +292,6 @@ class DumpImporter:
                             skip_print_jobs=self.skip_print_jobs,
                             skip_users=self.skip_users,
                             skip_generated=self.skip_generated)
-                        
 
                 session.commit()
             else:

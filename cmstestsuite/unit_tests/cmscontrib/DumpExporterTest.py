@@ -275,7 +275,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
         Should not export users and depending objects.
         Should still export contest, tasks and their depending objects.
-        
+
         """
         self.assertTrue(self.do_export(None, skip_users=True))
 
@@ -288,7 +288,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertNotInDump(SubmissionResult)
         self.assertFileNotInDump(self.file_digest)
         self.assertFileNotInDump(self.exe_digest)
-    
+
 
 if __name__ == "__main__":
     unittest.main()
