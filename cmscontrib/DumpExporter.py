@@ -47,7 +47,7 @@ from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    enumerate_files
+    Announcement, Participation, enumerate_files
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -136,13 +136,16 @@ class DumpExporter:
 
     def __init__(self, contest_ids, export_target,
                  dump_files, dump_model, skip_generated,
-                 skip_submissions, skip_user_tests, skip_print_jobs):
+                 skip_submissions, skip_user_tests, skip_users, skip_print_jobs):
         if contest_ids is None:
             with SessionGen() as session:
                 contests = session.query(Contest).all()
                 self.contests_ids = [contest.id for contest in contests]
-                users = session.query(User).all()
-                self.users_ids = [user.id for user in users]
+                if not skip_users:
+                    users = session.query(User).all()
+                    self.users_ids = [user.id for user in users]
+                else:
+                    self.users_ids = []
                 tasks = session.query(Task)\
                     .filter(Task.contest_id.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
@@ -158,6 +161,7 @@ class DumpExporter:
         self.skip_generated = skip_generated
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
+        self.skip_users = skip_users
         self.skip_print_jobs = skip_print_jobs
         self.export_target = export_target
 
@@ -208,6 +212,7 @@ class DumpExporter:
                         session, contest,
                         skip_submissions=self.skip_submissions,
                         skip_user_tests=self.skip_user_tests,
+                        skip_users=self.skip_users,
                         skip_print_jobs=self.skip_print_jobs,
                         skip_generated=self.skip_generated)
                     for file_ in files:
@@ -317,6 +322,17 @@ class DumpExporter:
             if self.skip_user_tests and other_cls is UserTest:
                 continue
 
+            if self.skip_users:
+                skip = False
+                # User-related classes reachable from root
+                for rel_class in [Participation, Submission, UserTest,
+                                  Announcement]:
+                    if other_cls is rel_class:
+                        skip = True
+                        break
+                if skip:
+                    continue
+
             # Skip print jobs if requested
             if self.skip_print_jobs and other_cls is PrintJob:
                 continue
@@ -397,6 +413,8 @@ def main():
                         help="don't export submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
                         help="don't export user tests")
+    parser.add_argument("-X", "--no-users", action="store_true",
+                        help="don't export users")
     parser.add_argument("-P", "--no-print-jobs", action="store_true",
                         help="don't export print jobs")
     parser.add_argument("export_target", action="store",
@@ -412,6 +430,7 @@ def main():
                             skip_generated=args.no_generated,
                             skip_submissions=args.no_submissions,
                             skip_user_tests=args.no_user_tests,
+                            skip_users=args.no_users,
                             skip_print_jobs=args.no_print_jobs)
     success = exporter.do_export()
     return 0 if success is True else 1

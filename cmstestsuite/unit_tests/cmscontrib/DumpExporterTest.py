@@ -85,7 +85,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         super().tearDown()
 
     def do_export(self, contest_ids, dump_files=True, skip_generated=False,
-                  skip_submissions=False):
+                  skip_submissions=False, skip_users=False):
         """Create an exporter and call do_export in a convenient way"""
         r = DumpExporter(
             contest_ids,
@@ -95,6 +95,7 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             skip_generated=skip_generated,
             skip_submissions=skip_submissions,
             skip_user_tests=False,
+            skip_users=skip_users,
             skip_print_jobs=False).do_export()
         dump_path = os.path.join(self.target, "contest.json")
         try:
@@ -267,6 +268,25 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertFileInDump(self.file_digest, self.file_content)
 
         self.assertNotInDump(SubmissionResult)
+        self.assertFileNotInDump(self.exe_digest)
+
+    def test_skip_users(self):
+        """Test skipping users.
+
+        Should not export users and depending objects.
+        Should still export contest, tasks and their depending objects.
+
+        """
+        self.assertTrue(self.do_export(None, skip_users=True))
+
+        self.assertInDump(Statement, digest=self.st_digest)
+        self.assertFileInDump(self.st_digest, self.st_content)
+
+        self.assertNotInDump(User)
+        self.assertNotInDump(Participation)
+        self.assertNotInDump(Submission)
+        self.assertNotInDump(SubmissionResult)
+        self.assertFileNotInDump(self.file_digest)
         self.assertFileNotInDump(self.exe_digest)
 
 
