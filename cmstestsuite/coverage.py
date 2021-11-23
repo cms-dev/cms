@@ -8,6 +8,7 @@
 # Copyright © 2014 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2017 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2021 Andrey Vihrov <andrey.vihrov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,7 +23,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import logging
+import requests
 import subprocess
 import sys
 
@@ -64,12 +67,68 @@ def combine_coverage():
     if CONFIG.get('COVERAGE', False):
         logger.info("Combining coverage results.")
         sh([sys.executable, "-m", "coverage", "combine"])
+        sh([sys.executable, "-m", "coverage", "xml"])
+
+
+# Cache directory for subsequent runs.
+_CODECOV_DIR = os.path.join("cache", "cmstestsuite", "codecov")
+
+
+def _download_file(url, out):
+    """Download and save a binary file.
+
+    url (str): file to download.
+    out (str): output file name.
+
+    """
+    r = requests.get(url, stream=True)
+    r.raise_for_status()
+    with open(out, "wb") as f:
+        for chunk in r.iter_content(chunk_size=4096):
+            f.write(chunk)
+
+
+def _get_codecov_uploader():
+    """Fetch and return the Codecov uploader.
+
+    return (str): path to the stored uploader.
+
+    """
+    base_url = "https://uploader.codecov.io/latest/linux/"
+    executable = "codecov"
+    shasum = "codecov.SHA256SUM"
+    sigfile = "codecov.SHA256SUM.sig"
+
+    gpg_home = os.path.realpath(os.path.join(_CODECOV_DIR, "gnupg"))
+    # Codecov Uploader (Codecov Uploader Verification Key)
+    # <security@codecov.io>
+    fingerprint = "27034E7FDB850E0BBC2C62FF806BB28AED779869"
+
+    if not os.access(os.path.join(_CODECOV_DIR, executable), os.X_OK):
+        logger.info("Retrieving Codecov public PGP key.")
+        os.makedirs(gpg_home, mode=0o700)
+        subprocess.check_call(["gpg", "--homedir", gpg_home, "--keyring",
+                               "trustedkeys.gpg", "--no-default-keyring",
+                               "--keyserver", "hkps://pgp.mit.edu",
+                               "--recv-keys", fingerprint])
+
+        logger.info("Fetching Codecov uploader.")
+        for name in [executable, shasum, sigfile]:
+            _download_file(base_url + name, os.path.join(_CODECOV_DIR, name))
+
+        logger.info("Checking Codecov uploader integrity.")
+        subprocess.check_call(["gpgv", "--homedir", gpg_home, sigfile, shasum],
+                              cwd=_CODECOV_DIR)
+        subprocess.check_call(["sha256sum", "-c", shasum], cwd=_CODECOV_DIR)
+
+        os.chmod(os.path.join(_CODECOV_DIR, executable), 0o755)
+
+    return os.path.join(_CODECOV_DIR, executable)
 
 
 def send_coverage_to_codecov(flag):
     """Send the coverage report to Codecov with the given flag."""
     if CONFIG.get('COVERAGE', False):
         logger.info("Sending coverage results to codecov for flag %s." % flag)
-        subprocess.check_call(
-            "bash -c 'bash <(curl -s https://codecov.io/bash) -c -F %s'" %
-            flag, shell=True)
+        uploader = _get_codecov_uploader()
+        subprocess.check_call([uploader, "-F", flag])
