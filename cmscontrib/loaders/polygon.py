@@ -5,6 +5,7 @@
 # Copyright © 2014-2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 # Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,8 +41,68 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
-# TODO: add all languages.
-LANGUAGE_MAP = {'english': 'en', 'russian': 'ru', 'italian': 'it'}
+LANGUAGE_MAP = {
+    'afrikaans': 'af',
+    'arabic': 'ar',
+    'armenian': 'hy',
+    'azerbaijani': 'az',
+    'belarusian': 'be',
+    'bengali': 'bn',
+    'bosnian': 'bs',
+    'bulgarian': 'bg',
+    'catalan': 'ca',
+    'chinese': 'zh',
+    'croatian': 'hr',
+    'czech': 'cs',
+    'danish': 'da',
+    'dutch': 'nl',
+    'english': 'en',
+    'estonian': 'et',
+    'filipino': 'fil',
+    'finnish': 'fi',
+    'french': 'fr',
+    'georgian': 'ka',
+    'german': 'de',
+    'greek': 'el',
+    'hebrew': 'he',
+    'hindi': 'hi',
+    'hungarian': 'hu',
+    'icelandic': 'is',
+    'indonesian': 'id',
+    'irish': 'ga',
+    'italian': 'it',
+    'japanese': 'ja',
+    'kazakh': 'kk',
+    'korean': 'ko',
+    'kyrgyz': 'ky',
+    'latvian': 'lv',
+    'lithuanian': 'lt',
+    'macedonian': 'mk',
+    'malay': 'ms',
+    'mongolian': 'mn',
+    'norwegian': 'no',
+    'persian': 'fa',
+    'polish': 'pl',
+    'portuguese': 'pt',
+    'romanian': 'ro',
+    'russian': 'ru',
+    'serbian': 'sr',
+    'sinhala': 'si',
+    'slovak': 'sk',
+    'slovene': 'sl',
+    'spanish': 'es',
+    'swedish': 'sv',
+    'tajik': 'tg',
+    'tamil': 'ta',
+    'thai': 'th',
+    'turkish': 'tr',
+    'turkmen': 'tk',
+    'ukrainian': 'uk',
+    'urdu': 'ur',
+    'uzbek': 'uz',
+    'vietnamese': 'vi',
+    'other': 'other',
+}
 
 
 class PolygonTaskLoader(TaskLoader):
