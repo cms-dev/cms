@@ -7,85 +7,94 @@
 {% block body %}
 
 <script>
+const registerFields = [
+    "first_name",
+    "last_name",
+    "email",
+    "password-confirm",
+];
+
 $(document).ready(function() {
+    $("#register-pill").click(function(e) {
+        isNewUser = $('input[name=new_user]').val(true);
+        registerFields.forEach((fieldName) => {
+            $(`#${fieldName}`).prop("disabled", false);
+            $(`#${fieldName}`).closest(".control-group").show();
+        });
+        $("#form-divider").after($("#credentials"));
+        $("#form-divider").before($("#profile"));
+        $("#form-divider").show();
+    });
+
+    $("#join-pill").click(function(e) {
+        isNewUser = $('input[name=new_user]').val(false);
+        registerFields.forEach((fieldName) => {
+            $(`#${fieldName}`).prop("disabled", true);
+            $(`#${fieldName}`).closest(".control-group").hide();
+        });
+        $("#form-divider").after($("#profile"));
+        $("#form-divider").before($("#credentials"));
+        $("#form-divider").hide();
+    });
+
     $("#signup").submit(function(e) {
         // Reset error text
-        $("#signup #password-confirm-input").removeClass("error");
-        $("#signup #password-confirm-input span.help-block").text("");
-        $("#signup #username-input").removeClass("error");
-        $("#signup #username-input span.help-block").text("");
+        $("#password-input").removeClass("error");
+        $("#password-input span.help-block").text("");
+        $("#password-confirm-input").removeClass("error");
+        $("#password-confirm-input span.help-block").text("");
+        $("#username-input").removeClass("error");
+        $("#username-input span.help-block").text("");
+
+        let isNewUser = $('input[name=new_user]').val() == 'true';
 
         // Check that passwords are the same
-        if ($("#signup #password").val() !== $("#signup #password-confirm").val()) {
-            $("#signup #password-confirm-input").addClass("error");
-            $("#signup #password-confirm-input span.help-block").text("{% trans %}The passwords do not match!{% endtrans %}");
-            $("#signup #password-confirm").focus();
+        if (isNewUser && $("#password").val() !== $("#password-confirm").val()) {
+            $("#password-confirm-input").addClass("error");
+            $("#password-confirm-input span.help-block").text("{% trans %}The passwords do not match!{% endtrans %}");
+            $("#password-confirm").focus();
         } else {
             var data = $(this).serialize();
             var url = $(this).attr('action');
 
-            $("#signup #submit-button-loading").show();
+            $("#submit-button-loading").show();
 
             $.post(url, data).done(function(data) {
                 $("#signup-mask").hide();
                 $("#confirmed-mask").show();
                 $("#show-username").text(data);
             }).fail(function(data) {
-                // Check if username is already used
                 if (data.status === 409) {
-                    $("#signup #username-input").addClass("error");
-                    $("#signup #username-input span.help-block").text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
-                    $("#signup #username").focus();
+                    if (isNewUser) {
+                        // Username is already used
+                        $("#username-input").addClass("error");
+                        $("#username-input span.help-block").text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
+                        $("#username").focus();
+                    } else {
+                        // User is already participated in this contest
+                        $("#username-input").addClass("error");
+                        $("#username-input span.help-block").text("{% trans %}This user is already registered in the contest.{% endtrans %}");
+                        $("#username").focus();
+                    }
+                } else if (data.status === 404) {
+                    // Invalid username
+                    $("#username-input").addClass("error");
+                    $("#username-input span.help-block").text("{% trans %}No user with this username found.{% endtrans %}");
+                    $("#username").focus();
+                } else if (data.status === 403) {
+                    // Password does not match
+                    $("#password-input").addClass("error");
+                    $("#password-input span.help-block").text("{% trans %}The given password is not correct, try again.{% endtrans %}");
+                    $("#password").focus();
                 }
             }).always(function() {
-                $("#signup #submit-button-loading").hide();
+                $("#submit-button-loading").hide();
             });
         }
 
         e.preventDefault();
     });
 
-    $("#join").submit(function(e) {
-        // Reset error text
-        $("#join #password-input").removeClass("error");
-        $("#join #password-input span.help-block").text("");
-        $("#join #username-input").removeClass("error");
-        $("#join #username-input span.help-block").text("");
-
-        var data = $(this).serialize();
-        var url = $(this).attr('action');
-
-        $("#join #submit-button-loading").show();
-
-        $.post(url, data).done(function(data) {
-            $("#signup-mask").hide();
-            $("#confirmed-mask").show();
-            $("#show-username").text(data);
-        }).fail(function(data) {
-            // Check if this username exists
-            if (data.status === 404) {
-                $("#join #username-input").addClass("error");
-                $("#join #username-input span.help-block").text("{% trans %}No such user with this username found.{% endtrans %}");
-                $("#join #username").focus();
-            }
-            // Check if the password is correct
-            if (data.status === 403) {
-                $("#join #password-input").addClass("error");
-                $("#join #password-input span.help-block").text("{% trans %}The given password is not correct, try again.{% endtrans %}");
-                $("#join #password").focus();
-            }
-            // Check if the participation is not already added
-            if (data.status === 409) {
-                $("#join #username-input").addClass("error");
-                $("#join #username-input span.help-block").text("{% trans %}This user is already registered in the contest.{% endtrans %}");
-                $("#join #username").focus();
-            }
-        }).always(function() {
-            $("#join #submit-button-loading").hide();
-        });
-
-        e.preventDefault();
-    });
 });
 </script>
 
@@ -93,56 +102,12 @@ $(document).ready(function() {
     <div id="signup-mask">
         <h1>{% trans %}Register{% endtrans %}</h1>
         <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab_join" data-toggle="tab">Join Contest</a></li>
-            <li><a href="#tab_register" data-toggle="tab">New User</a></li>
+        <ul class="nav nav-pills">
+            <li class="active" id="register-pill"><a href="#" data-toggle="tab">New User</a></li>
+            <li id="join-pill"><a href="#" data-toggle="tab">Join Contest</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane active" id="tab_join">
-                <form id="join" class="form-horizontal" action="{{ contest_url('register') }}">
-                    {{ xsrf_form_html|safe }}
-                    {% set next_page = handler.get_argument("next", none) %}
-                    {% if next_page is not none %}
-                    <input type="hidden" name="next" value="{{ next_page }}">
-                    {% endif %}
-                    <input type="hidden" name="new_user" value="false" />
-                    <fieldset>
-                        <div id="username-input" class="control-group">
-                            <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
-                                <span class="help-block"></span>
-                            </div>
-                        </div>
-                        <div id="password-input" class="control-group">
-                            <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
-                                <span class="help-block"></span>
-                            </div>
-                        </div>
-                        {% if teams|length > 0 %}
-                        <div class="control-group">
-                            <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
-                            <div class="controls">
-                                <select id="team" name="team">
-                                    {% for t in teams %}
-                                    <option value="{{ t.code }}">{{ t.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        {% endif %}
-                        <div class="control-group">
-                            <div class="controls">
-                                <button type="submit" class="btn btn-primary btn-large">{% trans %}Join{% endtrans %}</button>
-                                <img id="submit-button-loading" style="display: none;" src="{{ url('static', 'loading.gif') }}" alt="loading..." />
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
-            <div class="tab-pane" id="tab_register">
+            <div class="tab-pane active">
                 <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
                     {{ xsrf_form_html|safe }}
                     {% set next_page = handler.get_argument("next", none) %}
@@ -151,67 +116,72 @@ $(document).ready(function() {
                     {% endif %}
                     <input type="hidden" name="new_user" value="true" />
                     <fieldset>
-                        <div class="control-group">
-                            <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
+                        <div id="profile">
+                            <div class="control-group">
+                                <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
+                                <div class="controls">
+                                    <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
+                                </div>
                             </div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
+                            <div class="control-group">
+                                <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
+                                <div class="controls">
+                                    <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
+                                </div>
                             </div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
-                            <div class="controls">
-                                <input minlength="0" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
+                            <div class="control-group">
+                                <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
+                                <div class="controls">
+                                    <input minlength="0" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
+                                </div>
                             </div>
+
+                            {% if teams|length > 0 %}
+                            <div class="control-group">
+                                <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
+                                <div class="controls">
+                                    <select id="team" name="team">
+                                        {% for t in teams %}
+                                        <option value="{{ t.code }}">{{ t.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
 
-                        {% if teams|length > 0 %}
-                        <div class="control-group">
-                            <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
-                            <div class="controls">
-                                <select id="team" name="team">
-                                    {% for t in teams %}
-                                    <option value="{{ t.code }}">{{ t.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        {% endif %}
+                        <hr id="form-divider">
 
-                        <hr>
-
-                        <div id="username-input" class="control-group">
-                            <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
-                                <span class="help-block"></span>
+                        <div id="credentials">
+                            <div id="username-input" class="control-group">
+                                <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
+                                <div class="controls">
+                                    <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
+                                    <span class="help-block"></span>
+                                </div>
+                            </div>
+                            <div id="password-input" class="control-group">
+                                <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
+                                <div class="controls">
+                                    <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
+                                    <span class="help-block">
+                                        {% trans min_length=MIN_PASSWORD_LENGTH %}
+                                        Must be one character or more.
+                                        {% pluralize %}
+                                        Must be {{ min_length }} characters or more.
+                                        {% endtrans %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="password-confirm-input" class="control-group">
+                                <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
+                                <div class="controls">
+                                    <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
+                                    <span class="help-block"></span>
+                                </div>
                             </div>
                         </div>
-                        <div class="control-group">
-                            <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
-                                <span class="help-block">
-                                    {% trans min_length=MIN_PASSWORD_LENGTH %}
-                                    Must be one character or more.
-                                    {% pluralize %}
-                                    Must be {{ min_length }} characters or more.
-                                    {% endtrans %}
-                                </span>
-                            </div>
-                        </div>
-                        <div id="password-confirm-input" class="control-group">
-                            <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
-                            <div class="controls">
-                                <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
-                                <span class="help-block"></span>
-                            </div>
-                        </div>
+                        <br>
                         <div class="control-group">
                             <div class="controls">
                                 <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
