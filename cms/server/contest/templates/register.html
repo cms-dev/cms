@@ -14,9 +14,23 @@ const registerFields = [
     "password-confirm",
 ];
 
+function clearErrors() {
+    // Reset error text
+    $("#password-input").removeClass("error");
+    $("#password-input span.help-block").text("");
+    $("#password-confirm-input").removeClass("error");
+    $("#password-confirm-input span.help-block").text("");
+    $("#username-input").removeClass("error");
+    $("#username-input span.help-block").text("");
+}
+
 $(document).ready(function() {
+    const passwordHelp = $("#password-input span.help-block").text();
+
     $("#register-pill").click(function(e) {
-        isNewUser = $('input[name=new_user]').val(true);
+        clearErrors();
+        $("#password-input span.help-block").text(passwordHelp);
+        $('input[name=new_user]').val(true);
         registerFields.forEach((fieldName) => {
             $(`#${fieldName}`).prop("disabled", false);
             $(`#${fieldName}`).closest(".control-group").show();
@@ -27,7 +41,8 @@ $(document).ready(function() {
     });
 
     $("#join-pill").click(function(e) {
-        isNewUser = $('input[name=new_user]').val(false);
+        clearErrors();
+        $('input[name=new_user]').val(false);
         registerFields.forEach((fieldName) => {
             $(`#${fieldName}`).prop("disabled", true);
             $(`#${fieldName}`).closest(".control-group").hide();
@@ -38,13 +53,7 @@ $(document).ready(function() {
     });
 
     $("#signup").submit(function(e) {
-        // Reset error text
-        $("#password-input").removeClass("error");
-        $("#password-input span.help-block").text("");
-        $("#password-confirm-input").removeClass("error");
-        $("#password-confirm-input span.help-block").text("");
-        $("#username-input").removeClass("error");
-        $("#username-input span.help-block").text("");
+        clearErrors();
 
         let isNewUser = $('input[name=new_user]').val() == 'true';
 
