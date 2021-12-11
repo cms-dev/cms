@@ -387,10 +387,6 @@ class ProxyService(TriggeredService):
         queues for them to be sent to rankings.
 
         """
-        # ScoringService sent us a submission of another contest.
-        if submission.task.contest_id != self.contest_id:
-            return []
-
         submission_result = submission.get_result()
 
         # Data to send to remote rankings.
@@ -427,9 +423,6 @@ class ProxyService(TriggeredService):
         queues for them to be sent to rankings.
 
         """
-        # ScoringService sent us a submission of another contest.
-        if submission.task.contest_id != self.contest_id:
-            return []
         # Data to send to remote rankings.
         submission_id = "%d" % submission.id
         submission_data = {
@@ -496,6 +489,11 @@ class ProxyService(TriggeredService):
                             submission_id)
                 return
 
+            # ScoringService sent us a submission of another contest, they
+            # do not know about our contest_id in multicontest setup.
+            if submission.task.contest_id != self.contest_id:
+                return
+
             # Update RWS.
             for operation in self.operations_for_score(submission):
                 self.enqueue(operation)
@@ -529,6 +527,11 @@ class ProxyService(TriggeredService):
                 logger.info("[submission_tokened] Token for submission %d "
                             "not sent because the submission is not official.",
                             submission_id)
+                return
+
+            # ScoringService sent us a submission of another contest, they
+            # do not know about our contest_id in multicontest setup.
+            if submission.task.contest_id != self.contest_id:
                 return
 
             # Update RWS.
