@@ -479,17 +479,27 @@ class RemoteServiceClient(RemoteServiceBase):
 
         """
         try:
-            # Find the family (AF_INET or AF_INET6) of the IPv4/6 address.
+            # Try to resolve the address, this can lead to many possible
+            # addresses, we'll try all of them.
             addresses = gevent.socket.getaddrinfo(
-                self.remote_address.ip, self.remote_address.port)
-            family, *rest, sockaddr = addresses[0]
-            sock = gevent.socket.socket(family, socket.SOCK_STREAM)
-            sock.connect(sockaddr)
-        except OSError as error:
-            logger.debug("Couldn't connect to %s: %s.",
-                         self._repr_remote(), error)
-        else:
-            self.initialize(sock, self.remote_service_coord)
+                self.remote_address.ip,
+                self.remote_address.port,
+                type=socket.SOCK_STREAM)
+        except socket.gaierror:
+            logger.warning("Cannot resolve %s.", self.remote_address)
+            raise
+
+        for family, *rest, sockaddr in addresses:
+            try:
+                host, port, *rest = sockaddr
+                logger.debug("Trying to connect to %s at port %d.", host, port)
+                sock = gevent.socket.socket(family, socket.SOCK_STREAM)
+                sock.connect(sockaddr)
+            except OSError as error:
+                logger.debug("Couldn't connect to %s at %s port %d: %s.",
+                             self._repr_remote(), host, port, error)
+            else:
+                self.initialize(sock, self.remote_service_coord)
 
     def _run(self):
         """Maintain the connection up, if required.

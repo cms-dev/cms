@@ -157,15 +157,7 @@ class Service:
         connection.
 
         """
-        try:
-            # In case of IPv6 address is (ip, port, flow info, scope id).
-            ipaddr, port = address[:2]
-            addresses = gevent.socket.getaddrinfo(ipaddr, port)
-            *rest, sockaddr = addresses[0]
-            address = Address(sockaddr[0], sockaddr[1])
-        except OSError:
-            logger.warning("Unexpected error.", exc_info=True)
-            return
+        address = Address(address[0], address[1])
         remote_service = RemoteServiceServer(self, address)
         remote_service.handle(sock)
 
