@@ -45,5 +45,7 @@ Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 Valentin Rosca <rosca.valentin2012@gmail.com>
 Alexander Kernozhitsky <sh200105@mail.ru>
 Benjamin Swart <Benjaminswart@email.cz>
+Andrey Vihrov <andrey.vihrov@gmail.com>
+
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
