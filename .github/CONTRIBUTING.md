@@ -19,7 +19,7 @@ We get around Python flexible type system in several ways:
 * we are fairly verbose with naming, trying to help the reader with following the types;
 * we follow our type annotation system for method and function docstrings (planning to switch to [PEP 484](https://www.python.org/dev/peps/pep-0484/)); see later for the format.
 
-We support Python 3 only, requiring at least version 3.6.
+We support Python 3 only, requiring at least version 3.8.
 
 # Docstring type annotation format
 
