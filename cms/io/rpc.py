@@ -500,6 +500,7 @@ class RemoteServiceClient(RemoteServiceBase):
                              self._repr_remote(), host, port, error)
             else:
                 self.initialize(sock, self.remote_service_coord)
+                break
 
     def _run(self):
         """Maintain the connection up, if required.
