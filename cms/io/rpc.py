@@ -489,11 +489,11 @@ class RemoteServiceClient(RemoteServiceBase):
             logger.warning("Cannot resolve %s.", self.remote_address)
             raise
 
-        for family, *rest, sockaddr in addresses:
+        for family, type, proto, _canonname, sockaddr in addresses:
             try:
                 host, port, *rest = sockaddr
                 logger.debug("Trying to connect to %s at port %d.", host, port)
-                sock = gevent.socket.socket(family, socket.SOCK_STREAM)
+                sock = gevent.socket.socket(family, type, proto)
                 sock.connect(sockaddr)
             except OSError as error:
                 logger.debug("Couldn't connect to %s at %s port %d: %s.",
