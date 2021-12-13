@@ -477,6 +477,14 @@ class ProxyService(TriggeredService):
                              "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
+            # ScoringService sent us a submission of another contest, they
+            # do not know about our contest_id in multicontest setup.
+            if submission.task.contest_id != self.contest_id:
+                logger.debug("Ignoring submission %s of contest %d "
+                             "(this ProxyService considers contest %d only)",
+                             submission.id, submission.task.contest_id, self.contest_id)
+                return
+
             if submission.participation.hidden:
                 logger.info("[submission_scored] Score for submission %d "
                             "not sent because the participation is hidden.",
@@ -487,11 +495,6 @@ class ProxyService(TriggeredService):
                 logger.info("[submission_scored] Score for submission %d "
                             "not sent because the submission is not official.",
                             submission_id)
-                return
-
-            # ScoringService sent us a submission of another contest, they
-            # do not know about our contest_id in multicontest setup.
-            if submission.task.contest_id != self.contest_id:
                 return
 
             # Update RWS.
@@ -517,6 +520,14 @@ class ProxyService(TriggeredService):
                              "unexistent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
+            # ScoringService sent us a submission of another contest, they
+            # do not know about our contest_id in multicontest setup.
+            if submission.task.contest_id != self.contest_id:
+                logger.debug("Ignoring submission %s of contest %d "
+                             "(this ProxyService considers contest %d only)",
+                             submission.id, submission.task.contest_id, self.contest_id)
+                return
+
             if submission.participation.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
                             "not sent because participation is hidden.",
@@ -527,11 +538,6 @@ class ProxyService(TriggeredService):
                 logger.info("[submission_tokened] Token for submission %d "
                             "not sent because the submission is not official.",
                             submission_id)
-                return
-
-            # ScoringService sent us a submission of another contest, they
-            # do not know about our contest_id in multicontest setup.
-            if submission.task.contest_id != self.contest_id:
                 return
 
             # Update RWS.
@@ -555,6 +561,14 @@ class ProxyService(TriggeredService):
         with SessionGen() as session:
             task = Task.get_from_id(task_id, session)
             dataset = task.active_dataset
+
+            # This ProxyService may focus on a different contest, and it should
+            # ignore this update.
+            if task.contest_id != self.contest_id:
+                logger.debug("Ignoring dataset change for task %d of contest %d "
+                             "(this ProxyService considers contest %d only)",
+                             task_id, task.contest.id, self.contest_id)
+                return
 
             logger.info("Dataset update for task %d (dataset now is %d).",
                         task.id, dataset.id)
