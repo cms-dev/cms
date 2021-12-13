@@ -38,8 +38,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt update -y
-          sudo apt install -y \
+          sudo apt-get update -y
+          sudo apt-get install -y \
             build-essential \
             php7.4-cli \
             haskell-platform \
