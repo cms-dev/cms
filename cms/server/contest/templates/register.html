@@ -80,7 +80,7 @@ $(document).ready(function() {
                         $("#username-input span.help-block").text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
                         $("#username").focus();
                     } else {
-                        // User is already participated in this contest
+                        // User is already participating in this contest
                         $("#username-input").addClass("error");
                         $("#username-input span.help-block").text("{% trans %}This user is already registered in the contest.{% endtrans %}");
                         $("#username").focus();
@@ -88,12 +88,12 @@ $(document).ready(function() {
                 } else if (data.status === 404) {
                     // Invalid username
                     $("#username-input").addClass("error");
-                    $("#username-input span.help-block").text("{% trans %}No user with this username found.{% endtrans %}");
+                    $("#username-input span.help-block").text("{% trans %}No such user.{% endtrans %}");
                     $("#username").focus();
                 } else if (data.status === 403) {
                     // Password does not match
                     $("#password-input").addClass("error");
-                    $("#password-input span.help-block").text("{% trans %}The given password is not correct, try again.{% endtrans %}");
+                    $("#password-input span.help-block").text("{% trans %}The password is not correct.{% endtrans %}");
                     $("#password").focus();
                 }
             }).always(function() {
@@ -109,102 +109,98 @@ $(document).ready(function() {
 
 <div class="register_box hero-unit">
     <div id="signup-mask">
-        <h1>{% trans %}Register{% endtrans %}</h1>
+        <h1>{% trans %}Registration{% endtrans %}</h1>
         <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
         <ul class="nav nav-pills">
-            <li class="active" id="register-pill"><a href="#" data-toggle="tab">New User</a></li>
-            <li id="join-pill"><a href="#" data-toggle="tab">Join Contest</a></li>
+            <li class="active" id="register-pill"><a href="#" data-toggle="tab">{% trans %}New user{% endtrans %}</a></li>
+            <li id="join-pill"><a href="#" data-toggle="tab">{% trans %}Join contest{% endtrans %}</a></li>
         </ul>
-        <div class="tab-content">
-            <div class="tab-pane active">
-                <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
-                    {{ xsrf_form_html|safe }}
-                    {% set next_page = handler.get_argument("next", none) %}
-                    {% if next_page is not none %}
-                    <input type="hidden" name="next" value="{{ next_page }}">
+        <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
+            {{ xsrf_form_html|safe }}
+            {% set next_page = handler.get_argument("next", none) %}
+            {% if next_page is not none %}
+            <input type="hidden" name="next" value="{{ next_page }}">
+            {% endif %}
+            <input type="hidden" name="new_user" value="true" />
+            <fieldset>
+                <div id="profile">
+                    <div class="control-group">
+                        <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
+                        <div class="controls">
+                            <input minlength="0" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
+                        </div>
+                    </div>
+
+                    {% if teams|length > 0 %}
+                    <div class="control-group">
+                        <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
+                        <div class="controls">
+                            <select id="team" name="team">
+                                {% for t in teams %}
+                                <option value="{{ t.code }}">{{ t.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                     {% endif %}
-                    <input type="hidden" name="new_user" value="true" />
-                    <fieldset>
-                        <div id="profile">
-                            <div class="control-group">
-                                <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
-                                <div class="controls">
-                                    <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="first_name" id="first_name">
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="last_name">{% trans %}Last name{% endtrans %}</label>
-                                <div class="controls">
-                                    <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="last_name" id="last_name">
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="email">{% trans %}E-mail{% endtrans %}</label>
-                                <div class="controls">
-                                    <input minlength="0" maxlength="{{ MAX_INPUT_LENGTH }}" type="text" class="input-xlarge" name="email" id="email" autocomplete="email">
-                                </div>
-                            </div>
+                </div>
 
-                            {% if teams|length > 0 %}
-                            <div class="control-group">
-                                <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
-                                <div class="controls">
-                                    <select id="team" name="team">
-                                        {% for t in teams %}
-                                        <option value="{{ t.code }}">{{ t.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
+                <hr id="form-divider">
 
-                        <hr id="form-divider">
-
-                        <div id="credentials">
-                            <div id="username-input" class="control-group">
-                                <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
-                                <div class="controls">
-                                    <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
-                                    <span class="help-block"></span>
-                                </div>
-                            </div>
-                            <div id="password-input" class="control-group">
-                                <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
-                                <div class="controls">
-                                    <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
-                                    <span class="help-block">
-                                        {% trans min_length=MIN_PASSWORD_LENGTH %}
-                                        Must be one character or more.
-                                        {% pluralize %}
-                                        Must be {{ min_length }} characters or more.
-                                        {% endtrans %}
-                                    </span>
-                                </div>
-                            </div>
-                            <div id="password-confirm-input" class="control-group">
-                                <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
-                                <div class="controls">
-                                    <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
-                                    <span class="help-block"></span>
-                                </div>
-                            </div>
+                <div id="credentials">
+                    <div id="username-input" class="control-group">
+                        <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
+                        <div class="controls">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
+                            <span class="help-block"></span>
                         </div>
-                        <br>
-                        <div class="control-group">
-                            <div class="controls">
-                                <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
-                                <img id="submit-button-loading" style="display: none;" src="{{ url('static', 'loading.gif') }}" alt="loading..." />
-                            </div>
+                    </div>
+                    <div id="password-input" class="control-group">
+                        <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
+                        <div class="controls">
+                            <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
+                            <span class="help-block">
+                                {% trans min_length=MIN_PASSWORD_LENGTH %}
+                                Must be one character or more.
+                                {% pluralize %}
+                                Must be {{ min_length }} characters or more.
+                                {% endtrans %}
+                            </span>
                         </div>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
+                    </div>
+                    <div id="password-confirm-input" class="control-group">
+                        <label class="control-label" for="password-confirm">{% trans %}Confirm password{% endtrans %}</label>
+                        <div class="controls">
+                            <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password-confirm" id="password-confirm" autocomplete="new-password">
+                            <span class="help-block"></span>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
+                        <img id="submit-button-loading" style="display: none;" src="{{ url('static', 'loading.gif') }}" alt="loading..." />
+                    </div>
+                </div>
+            </fieldset>
+        </form>
     </div>
 
     <div id="confirmed-mask" style="display: none;">
-        <h1>{% trans %}Register{% endtrans %}</h1>
+        <h1>{% trans %}Registration{% endtrans %}</h1>
 
         <p>{% trans %}Registered in the contest successfully!{% endtrans %}</p>
 
@@ -213,7 +209,7 @@ $(document).ready(function() {
         <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
         </p>
 
-        <p>{% trans %}Your password's stored securely.{% endtrans %}</p>
+        <p>{% trans %}Your password is stored securely.{% endtrans %}</p>
 
         <a href="{{ contest_url() }}" class="btn btn-success btn-large">{% trans %}Back to login{% endtrans %}</a>
     </div>
