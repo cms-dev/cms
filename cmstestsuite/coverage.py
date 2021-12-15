@@ -28,6 +28,7 @@ import logging
 import requests
 import subprocess
 import sys
+from urllib.parse import urlparse
 
 from cmstestsuite import CONFIG, sh
 
@@ -88,6 +89,32 @@ def _download_file(url, out):
             f.write(chunk)
 
 
+def _import_pgp_key(gpg_home, keyring, fingerprint):
+    """Import a PGP key from public keyservers.
+
+    gpg_home (str): GnuPG home directory.
+    keyring (str): Keyring file to use.
+    fingerprint (str): PGP key fingerprint.
+
+    """
+
+    keyservers = [ "hkps://keyserver.ubuntu.com", "hkps://pgp.mit.edu" ]
+
+    for keyserver in keyservers:
+        logger.info("Importing PGP key %s from %s." %
+                    (fingerprint[-8:], urlparse(keyserver).netloc))
+        try:
+            subprocess.check_call(["gpg", "--homedir", gpg_home, "--keyring",
+                                   keyring, "--no-default-keyring",
+                                   "--keyserver", keyserver,
+                                   "--recv-keys", fingerprint])
+            return
+        except subprocess.CalledProcessError:
+            logger.warning("PGP key import failed.", exc_info=True)
+
+    raise Exception("No usable keyservers left.")
+
+
 def _get_codecov_uploader():
     """Fetch and return the Codecov uploader.
 
@@ -105,12 +132,8 @@ def _get_codecov_uploader():
     fingerprint = "27034E7FDB850E0BBC2C62FF806BB28AED779869"
 
     if not os.access(os.path.join(_CODECOV_DIR, executable), os.X_OK):
-        logger.info("Retrieving Codecov public PGP key.")
         os.makedirs(gpg_home, mode=0o700)
-        subprocess.check_call(["gpg", "--homedir", gpg_home, "--keyring",
-                               "trustedkeys.gpg", "--no-default-keyring",
-                               "--keyserver", "hkps://pgp.mit.edu",
-                               "--recv-keys", fingerprint])
+        _import_pgp_key(gpg_home, "trustedkeys.gpg", fingerprint)
 
         logger.info("Fetching Codecov uploader.")
         for name in [executable, shasum, sigfile]:
