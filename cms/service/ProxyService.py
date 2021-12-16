@@ -480,9 +480,10 @@ class ProxyService(TriggeredService):
             # ScoringService sent us a submission of another contest, they
             # do not know about our contest_id in multicontest setup.
             if submission.task.contest_id != self.contest_id:
-                logger.debug("Ignoring submission %s of contest %d "
-                             "(this ProxyService considers contest %d only)",
-                             submission.id, submission.task.contest_id, self.contest_id)
+                logger.debug("Ignoring submission %d of contest %d "
+                             "(this ProxyService considers contest %d only).",
+                             submission.id, submission.task.contest_id,
+                             self.contest_id)
                 return
 
             if submission.participation.hidden:
@@ -523,9 +524,10 @@ class ProxyService(TriggeredService):
             # ScoringService sent us a submission of another contest, they
             # do not know about our contest_id in multicontest setup.
             if submission.task.contest_id != self.contest_id:
-                logger.debug("Ignoring submission %s of contest %d "
-                             "(this ProxyService considers contest %d only)",
-                             submission.id, submission.task.contest_id, self.contest_id)
+                logger.debug("Ignoring submission %d of contest %d "
+                             "(this ProxyService considers contest %d only).",
+                             submission.id, submission.task.contest_id,
+                             self.contest_id)
                 return
 
             if submission.participation.hidden:
@@ -565,9 +567,10 @@ class ProxyService(TriggeredService):
             # This ProxyService may focus on a different contest, and it should
             # ignore this update.
             if task.contest_id != self.contest_id:
-                logger.debug("Ignoring dataset change for task %d of contest %d "
-                             "(this ProxyService considers contest %d only)",
-                             task_id, task.contest.id, self.contest_id)
+                logger.debug("Ignoring dataset change for task %d of contest "
+                             "%d (this ProxyService considers contest %d "
+                             "only).", task_id, task.contest.id,
+                             self.contest_id)
                 return
 
             logger.info("Dataset update for task %d (dataset now is %d).",
