@@ -22,6 +22,7 @@
 
 """
 
+import socket
 import unittest
 from unittest.mock import Mock, patch
 
@@ -263,7 +264,8 @@ class TestRPC(unittest.TestCase):
         # event triggered.
         done_event.set()
         gevent.sleep()
-        getaddrinfo_mock.assert_called_once_with(self.host, self.port)
+        getaddrinfo_mock.assert_called_once_with(self.host, self.port,
+                                                 type=socket.SOCK_STREAM)
         connect_mock.assert_called_once_with((self.host, self.port))
 
     def test_autoreconnect1(self):
