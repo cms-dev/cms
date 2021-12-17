@@ -3,6 +3,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2014-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2019 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,6 +22,7 @@
 
 """
 
+import socket
 import unittest
 from unittest.mock import Mock, patch
 
@@ -231,7 +233,14 @@ class TestRPC(unittest.TestCase):
         self.assertEqual(result.value, ["Hello", 42, "World"])
 
     @patch("cms.io.rpc.gevent.socket.socket")
-    def test_background_connect(self, socket_mock):
+    @patch("cms.io.rpc.gevent.socket.getaddrinfo")
+    def test_background_connect(self, getaddrinfo_mock, socket_mock):
+        # Calling getaddrinfo breaks the mocking of the socket, so it is mocked
+        # as well. It returns the addresses associated with the service, in
+        # this case just one.
+        getaddrinfo_mock.return_value = [
+            (gevent.socket.AF_INET, gevent.socket.SOCK_STREAM, 6, "",
+                (self.host, self.port))]
         # Patch the connect method of sockets so that it blocks until
         # we set the done_event (we will do so at the end of the test).
         connect_mock = socket_mock.return_value.connect
@@ -255,7 +264,9 @@ class TestRPC(unittest.TestCase):
         # event triggered.
         done_event.set()
         gevent.sleep()
-        connect_mock.assert_called_once_with(Address(self.host, self.port))
+        getaddrinfo_mock.assert_called_once_with(self.host, self.port,
+                                                 type=socket.SOCK_STREAM)
+        connect_mock.assert_called_once_with((self.host, self.port))
 
     def test_autoreconnect1(self):
         client = self.get_client(ServiceCoord("Foo", 0), auto_retry=0.002)

@@ -5,6 +5,7 @@
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2019 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -478,13 +479,28 @@ class RemoteServiceClient(RemoteServiceBase):
 
         """
         try:
-            sock = gevent.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(self.remote_address)
-        except OSError as error:
-            logger.debug("Couldn't connect to %s: %s.",
-                         self._repr_remote(), error)
-        else:
-            self.initialize(sock, self.remote_service_coord)
+            # Try to resolve the address, this can lead to many possible
+            # addresses, we'll try all of them.
+            addresses = gevent.socket.getaddrinfo(
+                self.remote_address.ip,
+                self.remote_address.port,
+                type=socket.SOCK_STREAM)
+        except socket.gaierror:
+            logger.warning("Cannot resolve %s.", self.remote_address)
+            raise
+
+        for family, type, proto, _canonname, sockaddr in addresses:
+            try:
+                host, port, *rest = sockaddr
+                logger.debug("Trying to connect to %s at port %d.", host, port)
+                sock = gevent.socket.socket(family, type, proto)
+                sock.connect(sockaddr)
+            except OSError as error:
+                logger.debug("Couldn't connect to %s at %s port %d: %s.",
+                             self._repr_remote(), host, port, error)
+            else:
+                self.initialize(sock, self.remote_service_coord)
+                break
 
     def _run(self):
         """Maintain the connection up, if required.

@@ -5,6 +5,7 @@
 # Copyright © 2010-2016 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2019 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -156,13 +157,7 @@ class Service:
         connection.
 
         """
-        try:
-            ipaddr, port = address
-            ipaddr = gevent.socket.gethostbyname(ipaddr)
-            address = Address(ipaddr, port)
-        except OSError:
-            logger.warning("Unexpected error.", exc_info=True)
-            return
+        address = Address(address[0], address[1])
         remote_service = RemoteServiceServer(self, address)
         remote_service.handle(sock)
 
