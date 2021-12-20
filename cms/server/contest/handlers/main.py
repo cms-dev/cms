@@ -9,6 +9,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -46,7 +47,7 @@ from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
-from cmscommon.crypto import hash_password
+from cmscommon.crypto import hash_password, validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 from .contest import ContestHandler
 from ..phase_management import actual_phase_required
@@ -72,7 +73,8 @@ class MainHandler(ContestHandler):
 class RegistrationHandler(ContestHandler):
     """Registration handler.
 
-    Used to create a user account (and participation) when this is allowed.
+    Used to create a participation when this is allowed.
+    If `new_user` argument is true, it creates a new user too.
 
     """
 
@@ -84,6 +86,46 @@ class RegistrationHandler(ContestHandler):
         if not self.contest.allow_registration:
             raise tornado_web.HTTPError(404)
 
+        create_new_user = self.get_argument("new_user") == "true"
+
+        # Get or create user
+        if create_new_user:
+            user = self._create_user()
+        else:
+            user = self._get_user()
+
+            # Check if the participation exists
+            contest = self.contest
+            tot_participants = self.sql_session.query(Participation)\
+                                   .filter(Participation.user == user)\
+                                   .filter(Participation.contest == contest)\
+                                   .count()
+            if tot_participants > 0:
+                raise tornado_web.HTTPError(409)
+
+        # Create participation
+        team = self._get_team()
+        participation = Participation(user=user, contest=self.contest,
+                                      team=team)
+        self.sql_session.add(participation)
+
+        self.sql_session.commit()
+
+        self.finish(user.username)
+
+    @multi_contest
+    def get(self):
+        if not self.contest.allow_registration:
+            raise tornado_web.HTTPError(404)
+
+        self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
+        self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
+        self.r_params["teams"] = self.sql_session.query(Team)\
+                                     .order_by(Team.name).all()
+
+        self.render("register.html", **self.r_params)
+
+    def _create_user(self):
         try:
             first_name = self.get_argument("first_name")
             last_name = self.get_argument("last_name")
@@ -110,6 +152,37 @@ class RegistrationHandler(ContestHandler):
         # Override password with its hash
         password = hash_password(password)
 
+        # Check if the username is available
+        tot_users = self.sql_session.query(User)\
+                        .filter(User.username == username).count()
+        if tot_users != 0:
+            # HTTP 409: Conflict
+            raise tornado_web.HTTPError(409)
+
+        # Store new user
+        user = User(first_name, last_name, username, password, email=email)
+        self.sql_session.add(user)
+
+        return user
+
+    def _get_user(self):
+        username = self.get_argument("username")
+        password = self.get_argument("password")
+
+        # Find user if it exists
+        user = self.sql_session.query(User)\
+                        .filter(User.username == username)\
+                        .first()
+        if user is None:
+            raise tornado_web.HTTPError(404)
+
+        # Check if password is correct
+        if not validate_password(user.password, password):
+            raise tornado_web.HTTPError(403)
+
+        return user
+
+    def _get_team(self):
         # If we have teams, we assume that the 'team' field is mandatory
         if self.sql_session.query(Team).count() > 0:
             try:
@@ -122,36 +195,7 @@ class RegistrationHandler(ContestHandler):
         else:
             team = None
 
-        # Check if the username is available
-        tot_users = self.sql_session.query(User)\
-                        .filter(User.username == username).count()
-        if tot_users != 0:
-            # HTTP 409: Conflict
-            raise tornado_web.HTTPError(409)
-
-        # Store new user and participation
-        user = User(first_name, last_name, username, password, email=email)
-        self.sql_session.add(user)
-
-        participation = Participation(user=user, contest=self.contest,
-                                      team=team)
-        self.sql_session.add(participation)
-
-        self.sql_session.commit()
-
-        self.finish(username)
-
-    @multi_contest
-    def get(self):
-        if not self.contest.allow_registration:
-            raise tornado_web.HTTPError(404)
-
-        self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
-        self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
-        self.r_params["teams"] = self.sql_session.query(Team)\
-                                     .order_by(Team.name).all()
-
-        self.render("register.html", **self.r_params)
+        return team
 
 
 class LoginHandler(ContestHandler):

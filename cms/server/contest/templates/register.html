@@ -7,16 +7,58 @@
 {% block body %}
 
 <script>
+const registerFields = [
+    "first_name",
+    "last_name",
+    "email",
+    "password-confirm",
+];
+
+function clearErrors() {
+    // Reset error text
+    $("#password-input").removeClass("error");
+    $("#password-input span.help-block").text("");
+    $("#password-confirm-input").removeClass("error");
+    $("#password-confirm-input span.help-block").text("");
+    $("#username-input").removeClass("error");
+    $("#username-input span.help-block").text("");
+}
+
 $(document).ready(function() {
+    const passwordHelp = $("#password-input span.help-block").text();
+
+    $("#register-pill").click(function(e) {
+        clearErrors();
+        $("#password-input span.help-block").text(passwordHelp);
+        $('input[name=new_user]').val(true);
+        registerFields.forEach((fieldName) => {
+            $(`#${fieldName}`).prop("disabled", false);
+            $(`#${fieldName}`).closest(".control-group").show();
+        });
+        $("#form-divider").after($("#credentials"));
+        $("#form-divider").before($("#profile"));
+        $("#form-divider").show();
+    });
+
+    $("#join-pill").click(function(e) {
+        clearErrors();
+        $('input[name=new_user]').val(false);
+        registerFields.forEach((fieldName) => {
+            $(`#${fieldName}`).prop("disabled", true);
+            $(`#${fieldName}`).closest(".control-group").hide();
+        });
+        $("#form-divider").after($("#profile"));
+        $("#form-divider").before($("#credentials"));
+        $("#form-divider").hide();
+    });
+
     $("#signup").submit(function(e) {
-        // Reset error text
-        $("#password-confirm-input").removeClass("error");
-        $("#password-confirm-input span.help-block").text("");
-        $("#username-input").removeClass("error");
-        $("#username-input span.help-block").text("");
+        clearErrors();
+
+        let isNewUser = $('input[name=new_user]').val() == 'true';
 
         // Check that passwords are the same
-        if ($("#password").val() !== $("#password-confirm").val()) {
+        if (isNewUser && $("#password").val() !== $("#password-confirm").val()) {
             $("#password-confirm-input").addClass("error");
             $("#password-confirm-input span.help-block").text("{% trans %}The passwords do not match!{% endtrans %}");
             $("#password-confirm").focus();
@@ -31,11 +73,28 @@ $(document).ready(function() {
                 $("#confirmed-mask").show();
                 $("#show-username").text(data);
             }).fail(function(data) {
-                // Check if username is already used
                 if (data.status === 409) {
+                    if (isNewUser) {
+                        // Username is already used
+                        $("#username-input").addClass("error");
+                        $("#username-input span.help-block").text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
+                        $("#username").focus();
+                    } else {
+                        // User is already participating in this contest
+                        $("#username-input").addClass("error");
+                        $("#username-input span.help-block").text("{% trans %}This user is already registered in the contest.{% endtrans %}");
+                        $("#username").focus();
+                    }
+                } else if (data.status === 404) {
+                    // Invalid username
                     $("#username-input").addClass("error");
-                    $("#username-input span.help-block").text("{% trans %}This username is already taken, please choose a different one.{% endtrans %}");
+                    $("#username-input span.help-block").text("{% trans %}No such user.{% endtrans %}");
                     $("#username").focus();
+                } else if (data.status === 403) {
+                    // Password does not match
+                    $("#password-input").addClass("error");
+                    $("#password-input span.help-block").text("{% trans %}The password is not correct.{% endtrans %}");
+                    $("#password").focus();
                 }
             }).always(function() {
                 $("#submit-button-loading").hide();
@@ -44,22 +103,27 @@ $(document).ready(function() {
 
         e.preventDefault();
     });
+
 });
 </script>
 
-<div class="login_container">
-    <div class="login_box hero-unit" style="margin-top: -300px;">
-
-        <div id="signup-mask">
-            <h1>{% trans %}New user{% endtrans %}</h1>
-            <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
-            <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
-                {{ xsrf_form_html|safe }}
-                {% set next_page = handler.get_argument("next", none) %}
-                {% if next_page is not none %}
-                <input type="hidden" name="next" value="{{ next_page }}">
-                {% endif %}
-                <fieldset>
+<div class="register_box hero-unit">
+    <div id="signup-mask">
+        <h1>{% trans %}Registration{% endtrans %}</h1>
+        <p>{% trans %}Please fill in the fields to register{% endtrans %}</p>
+        <ul class="nav nav-pills">
+            <li class="active" id="register-pill"><a href="#" data-toggle="tab">{% trans %}New user{% endtrans %}</a></li>
+            <li id="join-pill"><a href="#" data-toggle="tab">{% trans %}Join contest{% endtrans %}</a></li>
+        </ul>
+        <form id="signup" class="form-horizontal" action="{{ contest_url('register') }}">
+            {{ xsrf_form_html|safe }}
+            {% set next_page = handler.get_argument("next", none) %}
+            {% if next_page is not none %}
+            <input type="hidden" name="next" value="{{ next_page }}">
+            {% endif %}
+            <input type="hidden" name="new_user" value="true" />
+            <fieldset>
+                <div id="profile">
                     <div class="control-group">
                         <label class="control-label" for="first_name">{% trans %}First name{% endtrans %}</label>
                         <div class="controls">
@@ -84,16 +148,18 @@ $(document).ready(function() {
                         <label class="control-label" for="team">{% trans %}Representing{% endtrans %}</label>
                         <div class="controls">
                             <select id="team" name="team">
-                            {% for t in teams %}
+                                {% for t in teams %}
                                 <option value="{{ t.code }}">{{ t.name }}</option>
-                            {% endfor %}
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
                     {% endif %}
+                </div>
 
-                    <hr>
+                <hr id="form-divider">
 
+                <div id="credentials">
                     <div id="username-input" class="control-group">
                         <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
                         <div class="controls">
@@ -101,7 +167,7 @@ $(document).ready(function() {
                             <span class="help-block"></span>
                         </div>
                     </div>
-                    <div class="control-group">
+                    <div id="password-input" class="control-group">
                         <label class="control-label" for="password">{% trans %}Password{% endtrans %}</label>
                         <div class="controls">
                             <input required minlength="{{ MIN_PASSWORD_LENGTH }}" maxlength="{{ MAX_INPUT_LENGTH }}" type="password" class="input-xlarge" name="password" id="password" autocomplete="new-password">
@@ -121,32 +187,33 @@ $(document).ready(function() {
                             <span class="help-block"></span>
                         </div>
                     </div>
-                    <div class="control-group">
-                        <div class="controls">
-                            <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
-                            <img id="submit-button-loading" style="display: none;" src="{{ url('static', 'loading.gif') }}" alt="loading..." />
-                        </div>
+                </div>
+                <br>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary btn-large">{% trans %}Register{% endtrans %}</button>
+                        <img id="submit-button-loading" style="display: none;" src="{{ url('static', 'loading.gif') }}" alt="loading..." />
                     </div>
-                </fieldset>
-            </form>
-        </div>
-
-        <div id="confirmed-mask" style="display: none;">
-            <h1>{% trans %}New user{% endtrans %}</h1>
-
-            <p>{% trans %}The user was created successfully!{% endtrans %}</p>
-
-            <p>{% trans %}Your username is:{% endtrans %}</p>
-
-            <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
-            </p>
-
-            <p>{% trans %}The password you chose was stored securely.{% endtrans %}</p>
-
-            <a href="{{ contest_url() }}" class="btn btn-success btn-large">{% trans %}Back to login{% endtrans %}</a>
-        </div>
-
+                </div>
+            </fieldset>
+        </form>
     </div>
+
+    <div id="confirmed-mask" style="display: none;">
+        <h1>{% trans %}Registration{% endtrans %}</h1>
+
+        <p>{% trans %}Registered in the contest successfully!{% endtrans %}</p>
+
+        <p>{% trans %}Your username is:{% endtrans %}</p>
+
+        <p id="show-username" style="font-size: xx-large; font-family: monospace; font-weight: bold; text-align: center;">
+        </p>
+
+        <p>{% trans %}Your password is stored securely.{% endtrans %}</p>
+
+        <a href="{{ contest_url() }}" class="btn btn-success btn-large">{% trans %}Back to login{% endtrans %}</a>
+    </div>
+
 </div>
 
 {% endblock body %}
