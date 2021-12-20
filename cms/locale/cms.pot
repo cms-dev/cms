@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2021-02-08 16:20+0000\n"
+"POT-Creation-Date: 2021-12-20 17:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -796,10 +796,25 @@ msgstr ""
 msgid "This username is already taken, please choose a different one."
 msgstr ""
 
-msgid "New user"
+msgid "This user is already registered in the contest."
+msgstr ""
+
+msgid "No such user."
+msgstr ""
+
+msgid "The password is not correct."
+msgstr ""
+
+msgid "Registration"
 msgstr ""
 
 msgid "Please fill in the fields to register"
+msgstr ""
+
+msgid "New user"
+msgstr ""
+
+msgid "Join contest"
 msgstr ""
 
 msgid "First name"
@@ -823,13 +838,13 @@ msgstr[1] ""
 msgid "Confirm password"
 msgstr ""
 
-msgid "The user was created successfully!"
+msgid "Registered in the contest successfully!"
 msgstr ""
 
 msgid "Your username is:"
 msgstr ""
 
-msgid "The password you chose was stored securely."
+msgid "Your password is stored securely."
 msgstr ""
 
 msgid "Back to login"
