@@ -145,13 +145,15 @@ Assuming you have ``pip`` installed, you can do this:
 
 .. sourcecode:: bash
 
-    sudo pip3 install -r requirements.txt
-    sudo python3 setup.py install
+    export SETUPTOOLS_USE_DISTUTILS="stdlib"
+    sudo --preserve-env=SETUPTOOLS_USE_DISTUTILS pip3 install -r requirements.txt
+    sudo --preserve-env=SETUPTOOLS_USE_DISTUTILS python3 setup.py install
 
 This command installs python dependencies globally. Note that on some distros, like Arch Linux, this might interfere with the system package manager. If you want to perform the installation in your home folder instead, then you can do this instead:
 
 .. sourcecode:: bash
 
+    export SETUPTOOLS_USE_DISTUTILS="stdlib"
     pip3 install --user -r requirements.txt
     python3 setup.py install --user
 
@@ -176,6 +178,7 @@ After the activation, the ``pip`` command will *always* be available (even if it
 
 .. sourcecode:: bash
 
+    export SETUPTOOLS_USE_DISTUTILS="stdlib"
     pip3 install -r requirements.txt
     python3 setup.py install
 
