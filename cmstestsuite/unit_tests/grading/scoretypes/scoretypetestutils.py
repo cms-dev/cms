@@ -24,8 +24,10 @@ from unittest.mock import Mock
 class ScoreTypeTestMixin:
     """A test mixin to make it easier to test score types."""
 
-    def assertComputeScore(self, scores, total, public, rws_scores):
+    def assertComputeScore(self, scores, total, public, rws_scores, subtasks):
         self.assertAlmostEqual(scores[0], total)
+        self.assertEqual([{"idx": s["idx"]} for s in scores[1]],
+                         subtasks)
         self.assertAlmostEqual(scores[2], public)
         self.assertEqual(scores[4], [str(score) for score in rws_scores])
 

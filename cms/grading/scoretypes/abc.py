@@ -394,7 +394,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             score += parameter[0]
             if all(self.public_testcases[tc_idx] for tc_idx in target):
                 public_score += parameter[0]
-            headers += ["Subtask %d (%g)" % (st_idx + 1, parameter[0])]
+            headers += ["Subtask %d (%g)" % (st_idx, parameter[0])]
 
         return score, public_score, headers
 
@@ -464,7 +464,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             score += st_score
             subtasks.append({
-                "idx": st_idx + 1,
+                "idx": st_idx,
                 # We store the fraction so that an "example" testcase
                 # with a max score of zero is still properly rendered as
                 # correct or incorrect.
@@ -475,7 +475,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 public_score += st_score
                 public_subtasks.append(subtasks[-1])
             else:
-                public_subtasks.append({"idx": st_idx + 1,
+                public_subtasks.append({"idx": st_idx,
                                         "testcases": public_testcases})
             ranking_details.append("%g" % round(st_score, 2))
 
