@@ -31,6 +31,7 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
     def setUp(self):
         super().setUp()
         self._public_testcases = {
+            "0_0": True,
             "1_0": True,
             "1_1": True,
             "2_0": True,
@@ -86,8 +87,9 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
     def test_max_scores_regexp(self):
         """Test max score is correct when groups are regexp-defined."""
         s1, s2, s3 = 10.5, 30.5, 59
-        parameters = [[s1, "1_*"], [s2, "2_*"], [s3, "3_*"]]
-        header = ["Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
+        parameters = [[0, "0_*"], [s1, "1_*"], [s2, "2_*"], [s3, "3_*"]]
+        header = ["Subtask 0 (0)",
+                  "Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
 
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
@@ -109,8 +111,9 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
     def test_max_scores_number(self):
         """Test max score is correct when groups are number-defined."""
         s1, s2, s3 = 10.5, 30.5, 59
-        parameters = [[s1, 2], [s2, 2], [s3, 2]]
-        header = ["Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
+        parameters = [[0, 1], [s1, 2], [s2, 2], [s3, 2]]
+        header = ["Subtask 0 (0)",
+                  "Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
 
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
@@ -131,31 +134,55 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
 
     def test_compute_score(self):
         s1, s2, s3 = 10.5, 30.5, 59
-        parameters = [[s1, "1_*"], [s2, "2_*"], [s3, "3_*"]]
+        parameters = [[0, "0_*"], [s1, "1_*"], [s2, "2_*"], [s3, "3_*"]]
         gmin = GroupMin(parameters, self._public_testcases)
         sr = self.get_submission_result(self._public_testcases)
 
         # All correct.
-        self.assertComputeScore(gmin.compute_score(sr),
-                                s1 + s2 + s3, s1, [s1, s2, s3])
+        self.assertComputeScore(
+            gmin.compute_score(sr),
+            s1 + s2 + s3, s1, [0, s1, s2, s3], [
+                {"idx": 0},
+                {"idx": 1},
+                {"idx": 2},
+                {"idx": 3}
+            ])
 
         # Some non-public subtask is incorrect.
         self.set_outcome(sr, "3_1", 0.0)
-        self.assertComputeScore(gmin.compute_score(sr),
-                                s1 + s2, s1, [s1, s2, 0])
+        self.assertComputeScore(
+            gmin.compute_score(sr),
+            s1 + s2, s1, [0, s1, s2, 0], [
+                {"idx": 0},
+                {"idx": 1},
+                {"idx": 2},
+                {"idx": 3}
+            ])
 
         # Also the public subtask is incorrect.
         self.set_outcome(sr, "1_0", 0.0)
         self.set_outcome(sr, "1_1", 0.0)
         sr.evaluations[1].outcome = 0.0
-        self.assertComputeScore(gmin.compute_score(sr),
-                                s2, 0.0, [0, s2, 0])
+        self.assertComputeScore(
+            gmin.compute_score(sr),
+            s2, 0.0, [0, 0, s2, 0], [
+                {"idx": 0},
+                {"idx": 1},
+                {"idx": 2},
+                {"idx": 3}
+            ])
 
         # Some partial results.
         self.set_outcome(sr, "3_0", 0.5)
         self.set_outcome(sr, "3_1", 0.1)
-        self.assertComputeScore(gmin.compute_score(sr),
-                                s2 + s3 * 0.1, 0.0, [0, s2, s3 * 0.1])
+        self.assertComputeScore(
+            gmin.compute_score(sr),
+            s2 + s3 * 0.1, 0.0, [0, 0, s2, s3 * 0.1], [
+                {"idx": 0},
+                {"idx": 1},
+                {"idx": 2},
+                {"idx": 3}
+            ])
 
 
 if __name__ == "__main__":
