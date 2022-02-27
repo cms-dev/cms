@@ -465,19 +465,20 @@ msgstr ""
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
-msgstr ""
+msgstr "Logat ca <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 
 msgid "Logout"
 msgstr "Iesire"
 
 msgid "Failed to log in."
-msgstr "Eroare de inregistrare"
+msgstr "Eroare de logare"
 
 msgid "Welcome"
 msgstr "Bine ati venit"
 
 msgid "Please log in"
-msgstr "Va rugam sa va inregistrati"
+msgstr "Va rugam sa va logati"
 
 msgid "Username"
 msgstr "Nume utilizator"
@@ -486,7 +487,7 @@ msgid "Password"
 msgstr "Parola"
 
 msgid "Login"
-msgstr "Inregistrare"
+msgstr "Logare"
 
 msgid "Reset"
 msgstr "Reseteaza"
@@ -825,7 +826,7 @@ msgid "None"
 msgstr "Lipsa"
 
 msgid "Download"
-msgstr "Discarca"
+msgstr "Descarca"
 
 msgid "Played"
 msgstr "Jucat"
