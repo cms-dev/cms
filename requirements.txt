@@ -19,6 +19,10 @@ babel>=2.6,<2.7  # http://babel.pocoo.org/en/latest/changelog.html
 pyxdg>=0.26,<0.27  # https://freedesktop.org/wiki/Software/pyxdg/
 Jinja2>=2.10,<2.11  # http://jinja.pocoo.org/docs/latest/changelog/
 
+# See https://github.com/pallets/markupsafe/issues/286 but breaking change in
+# MarkupSafe causes jinja to break
+MarkupSafe==2.0.1
+
 # Only for some importers:
 pyyaml>=5.3,<5.4  # http://pyyaml.org/wiki/PyYAML
 
