@@ -1,6 +1,6 @@
 body {
     /* FIXME: I'd suggest putting a 0.75em font-size */
-    font: 1em/1.5em sans-serif;
+    font: .85em/1.3em sans-serif;
 
     color: black;
 
@@ -25,7 +25,7 @@ a {
 }
 
 abbr {
-    border-bottom: 1px dotted black;
+    text-decoration: none;
 }
 
 /******************************************************************************\
@@ -37,15 +37,20 @@ abbr {
 
 #LogoPanel {
     position: absolute;
-    top: 24px;
+    top: 65px;
     left: 24px;
     width: 200px;
+}
+
+#LogoPanel img {
+    width: 160px;
+    margin-left: 10px;
 }
 
 #UpperPanel {
     position: absolute;
     top: 0;
-    left: 248px;
+    left: 0;
     right: 0;
     height: 3em;
     border-width: 0 0 2px 2px;
@@ -217,7 +222,7 @@ abbr {
 
 #TimeView.pre_cont + #SidePanel,
 #TimeView.cont + #SidePanel {
-    top: 280px;
+    top: 260px;
 }
 
 
@@ -374,7 +379,7 @@ abbr {
 #Scoreboard {
     width: 100%;
     table-layout: fixed;
-    margin: 3em 0;
+    margin: 20px 0;
 }
 
 #Scoreboard_cols col.sel {
@@ -1114,9 +1119,8 @@ abbr {
 #ConnectionStatus_label {
     display: inline-block;
     position: relative;
-    height: 1.5em;
+    height: 1.3em;
     padding: 0.25em 20px;
-    margin: -1px 0;
     z-index: 2;
     border-width: 1px;
     border-style: solid;
