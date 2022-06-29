@@ -283,7 +283,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         self.match_files_and_language.assert_called_with(
             self.received_files, self.language_name,
             {"foo.%l", "bar.%l", "baz.%l"},
-            ["MockLanguage", "AnotherMockLanguage"])
+            {"MockLanguage", "AnotherMockLanguage"})
 
     def test_failure_due_to_missing_files(self):
         self.task_type.ALLOW_PARTIAL_SUBMISSION = False
@@ -617,7 +617,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
             self.received_files, self.language_name,
             {"foo.%l", "bar.%l", "baz.%l", "spam.%l", "ham.%l", "eggs.%l",
              "input"},
-            ["MockLanguage", "AnotherMockLanguage"])
+            {"MockLanguage", "AnotherMockLanguage"})
 
     def test_success_without_missing_files(self):
         self.task_type.ALLOW_PARTIAL_SUBMISSION = False
