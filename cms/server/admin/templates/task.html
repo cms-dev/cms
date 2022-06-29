@@ -15,6 +15,17 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 });
 {% endfor %}
 
+function updateLanguageVisibility() {
+    if($("#limit-languages").is(':checked')) {
+        $("#language-list").show();
+    } else {
+        $("#language-list").hide();
+    }
+}
+
+$("#limit-languages").change(updateLanguageVisibility);
+$(document).ready(updateLanguageVisibility);
+
 {% endblock js_init %}
 
 {% block core %}
@@ -145,13 +156,13 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <tr>
         <td>
           <span class="info" title="Whether this task should accept only a subset of all allowed programming languages."></span>
-          <label for="limit_languages">Restrict programming languages</label>
+          <label for="limit-languages">Restrict programming languages</label>
         </td>
         <td>
-          <input type="checkbox" id="limit_languages" name="limit_languages" {{ "checked" if task.languages != None else "" }}/>
+          <input type="checkbox" id="limit-languages" name="limit_languages" {{ "checked" if task.languages != None else "" }}/>
         </td>
       </tr>
-      <tr>
+      <tr id="language-list">
         <td>
           <span class="info" title="Programming languages that contestants can use to solve this task. Only relevant if Restrict programming languages is checked."></span>
           Allowed programming languages
