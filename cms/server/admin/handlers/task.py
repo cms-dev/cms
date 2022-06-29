@@ -143,6 +143,10 @@ class TaskHandler(BaseHandler):
             self.get_submission_format(attrs)
             self.get_string(attrs, "feedback_level")
 
+            limit_languages = bool(self.get_argument("limit_languages", False))
+            attrs["languages"] = self.get_arguments(
+                "languages") if limit_languages else None
+
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")

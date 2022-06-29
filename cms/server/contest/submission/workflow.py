@@ -137,10 +137,14 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
             N_("Invalid archive format!"),
             N_("The submitted archive could not be opened."))
 
+    allowed_languages = set(contest.languages)
+    if (task.languages != None):
+        allowed_languages &= set(task.languages)
+
     try:
         files, language = match_files_and_language(
             received_files, language_name, required_codenames,
-            contest.languages)
+            allowed_languages)
     except InvalidFilesOrLanguage:
         raise UnacceptableSubmission(
             N_("Invalid submission format!"),
@@ -308,10 +312,14 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
             N_("Invalid archive format!"),
             N_("The submitted archive could not be opened."))
 
+    allowed_languages = set(contest.languages)
+    if (task.languages != None):
+        allowed_languages &= set(task.languages)
+
     try:
         files, language = match_files_and_language(
             received_files, language_name, required_codenames,
-            contest.languages)
+            allowed_languages)
     except InvalidFilesOrLanguage:
         raise UnacceptableUserTest(
             N_("Invalid test format!"),

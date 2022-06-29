@@ -119,7 +119,9 @@ $(document).ready(function () {
                     <div class="controls">
                         <select name="language">
 {% for lang in contest.languages %}
+{% if task.languages == None or lang in task.languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
+{% endif %}
 {% endfor %}
                         </select>
                     </div>

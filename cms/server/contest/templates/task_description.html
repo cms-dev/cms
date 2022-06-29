@@ -111,7 +111,8 @@
 {% endif %}
 {% set compilation_commands = task_type.get_compilation_commands(task.submission_format) %}
 {% if compilation_commands is not none %}
-{% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
+{% set languages = contest.languages|intersect(task.languages) if task.languages != None else contest.languages %}
+{% set compilation_commands = compilation_commands|dictselect("in", languages, by="key") %}
 <tr>
     <th rowspan="{{ compilation_commands|length }}">{% trans %}Compilation commands{% endtrans %}</th>
     {% for l, c in compilation_commands|dictsort(by="key") %}

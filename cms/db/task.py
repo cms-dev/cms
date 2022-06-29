@@ -102,6 +102,14 @@ class Task(Base):
         FilenameSchemaArray,
         nullable=False,
         default=[])
+    
+    # The list of names of languages allowed for this task.
+    # None means no limit
+    languages = Column(
+        ARRAY(String),
+        nullable=True,
+        default=None)
+
 
     # The language codes of the statements that will be highlighted to
     # all users for this task.

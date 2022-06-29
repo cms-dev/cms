@@ -182,6 +182,10 @@ def safe_get_score_type(env, *, dataset):
     except Exception as err:
         return env.undefined("ScoreType not found: %s" % err)
 
+def intersect(a, b):
+    """Calculates intersection of two lists."""
+    return list(set(a) & set(b))
+
 
 def instrument_cms_toolbox(env):
     env.globals["get_task_type"] = safe_get_task_type
@@ -192,6 +196,7 @@ def instrument_cms_toolbox(env):
     env.globals["get_icon_for_mimetype"] = get_icon_for_type
 
     env.filters["to_language"] = get_language
+    env.filters["intersect"] = intersect
 
 
 @contextfilter
