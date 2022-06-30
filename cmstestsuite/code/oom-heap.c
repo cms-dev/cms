@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+int *big;
 
 int main() {
-    int *big;
     int i;
     big = malloc(128 * 1024 * 1024);
     // If we don't do this cycle, the compiler is smart enough not to
