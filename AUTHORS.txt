@@ -47,7 +47,6 @@ Alexander Kernozhitsky <sh200105@mail.ru>
 Benjamin Swart <Benjaminswart@email.cz>
 Andrey Vihrov <andrey.vihrov@gmail.com>
 Grace Hawkins <amoomajid99@gmail.com>
-Benjamin Swart <Benjaminswart@email.cz>
 
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
