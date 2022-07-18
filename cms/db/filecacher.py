@@ -478,8 +478,7 @@ class FileCacher:
     """
 
     # This value is very arbitrary, and in this case we want it to be a
-    # one-size-fits-all, since we use it for many conversions. It has
-    # been chosen arbitrarily based on performance tests on my machine.
+    # one-size-fits-all, since we use it for many conversions.
     # A few consideration on the value it could assume follow:
     # - The page size of large objects is LOBLKSIZE, which is BLCKSZ/4
     #   (BLCKSZ is the block size of the PostgreSQL database, which is
@@ -489,7 +488,8 @@ class FileCacher:
     # - The `io' module defines a DEFAULT_BUFFER_SIZE constant, whose
     #   value is 8192.
     # CHUNK_SIZE should be a multiple of these values.
-    CHUNK_SIZE = 16 * 1024  # 16 KiB
+    # Note that a too-small value can cause issues on high-latency networks.
+    CHUNK_SIZE = 1024 * 1024  # 1 MiB
     backend: FileCacherBackend
 
     def __init__(self, service: "Service | None" = None, path: str | None = None, null: bool = False):
