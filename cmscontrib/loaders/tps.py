@@ -231,7 +231,7 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Checker found, compiling")
             checker_exe = os.path.join(checker_dir, "checker")
             ret = subprocess.call([
-                "g++", "-x", "c++", "-std=gnu++14", "-O2", "-static",
+                "g++", "-x", "c++", "-std=gnu++17", "-O2", "-static",
                 "-o", checker_exe, checker_src
             ])
             if ret != 0:
@@ -289,7 +289,7 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Manager found, compiling")
             manager_exe = os.path.join(graders_dir, "manager")
             ret = subprocess.call([
-                "g++", "-x", "c++", "-O2", "-static",
+                "g++", "-x", "c++", "-std=gnu++17", "-O2", "-static",
                 "-o", manager_exe, manager_src
             ])
             if ret != 0:
