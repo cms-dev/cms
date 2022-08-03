@@ -116,6 +116,21 @@ class TpsTaskLoader(TaskLoader):
         with open(json_src, 'rt', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
+        if "protocol_version" in data:
+            self.protocol_version = data["protocol_version"]
+            logger.info("protocol_version=%s" % str(self.protocol_version))
+        else:
+            self.protocol_version = 1
+            logger.info("The protocol_version is not defined. Setting to default value: %s" % str(self.protocol_version))
+
+        if not isinstance(self.protocol_version, int):
+            logger.critical("Given protocol_version is not an integer")
+            return None
+
+        if not (1 <= self.protocol_version <= 1):
+            logger.critical("Invalid protocol_version %d" % self.protocol_version)
+            return None
+
         name = data['code']
         logger.info("Loading parameters for task %s.", name)
 
