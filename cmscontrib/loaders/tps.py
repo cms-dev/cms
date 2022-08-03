@@ -58,6 +58,18 @@ class TpsTaskLoader(TaskLoader):
         return True
 
     def _get_task_type_parameters(self, data, task_type, evaluation_param):
+        if self.protocol_version >= 2:
+            # Task type parameters are completely specified in the json file.
+            task_type_params = data.get('task_type_params')
+            if task_type_params is None:
+                logger.critical("'task_type_params' is not provided.")
+                return None
+            if not isinstance(task_type_params, list):
+                logger.critical("Given 'task_type_params' is not a list.")
+                return None
+            return task_type_params
+
+        # protocol_version 1: Create the task type parameters manually...
         parameters_str = data['task_type_params']
         if parameters_str is None or parameters_str == '':
             parameters_str = '{}'
@@ -265,6 +277,9 @@ class TpsTaskLoader(TaskLoader):
         args["task_type_parameters"] = \
             self._get_task_type_parameters(
                 data, data['task_type'], evaluation_param)
+
+        if args["task_type_parameters"] is None:
+            return None
 
         # Graders
         graders_dir = os.path.join(self.path, 'graders')
