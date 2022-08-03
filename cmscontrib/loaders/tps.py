@@ -42,7 +42,7 @@ class TpsTaskLoader(TaskLoader):
     """
 
     short_name = 'tps_task'
-    description = 'TPS task format'
+    description = 'TPS task format (version 2)'
 
     @staticmethod
     def detect(path):
@@ -127,7 +127,7 @@ class TpsTaskLoader(TaskLoader):
             logger.critical("Given protocol_version is not an integer")
             return None
 
-        if not (1 <= self.protocol_version <= 1):
+        if not (1 <= self.protocol_version <= 2):
             logger.critical("Invalid protocol_version %d" % self.protocol_version)
             return None
 
