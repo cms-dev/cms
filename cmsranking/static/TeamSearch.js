@@ -18,7 +18,7 @@
 var TeamSearch = new function () {
     var self = this;
 
-    self.init = function () {
+    self.init = function (callback) {
         $("#TeamSearch_input").focus(function () {
             self.show();
         });
@@ -98,6 +98,7 @@ var TeamSearch = new function () {
         self.update();
 
         DataStore.select_events.add(self.select_handler);
+        callback();
     };
 
     self.generate = function () {
