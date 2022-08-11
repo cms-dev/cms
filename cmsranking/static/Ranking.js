@@ -40,7 +40,9 @@ $(document).ready(function() {
         HistoryStore.init();
         UserDetail.init();
         TimeView.init();
-        TeamSearch.init();
+        TeamSearch.init(function() {
+          DataStore.init_selections();
+        });
         Overview.init();
         Scoreboard.init();
     });
