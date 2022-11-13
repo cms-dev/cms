@@ -28,6 +28,7 @@ import os
 import os.path
 import sys
 from datetime import timedelta
+from copy import deepcopy
 
 import yaml
 
@@ -61,9 +62,15 @@ def getmtime(fname):
     return os.stat(fname).st_mtime
 
 
+yaml_cache = {}
+
 def load_yaml_from_path(path):
+    if path in yaml_cache:
+        return yaml_cache[path]
     with open(path, "rt", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        value = yaml.safe_load(f)
+    yaml_cache[path] = value
+    return deepcopy(value)
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
