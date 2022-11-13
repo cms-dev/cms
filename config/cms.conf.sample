@@ -130,8 +130,10 @@
     "max_submission_length": 100000,
     "max_input_length": 5000000,
 
-    "_help": "STL documentation path in the system (exposed in CWS).",
-    "stl_path": "/usr/share/cppreference/doc/html/",
+    "_help": "Path to the documentation exposed by CWS. To show a documentation",
+    "_help": "link add a folder for each language with index.html inside. For",
+    "_help": "example for C++ add 'cpp/index.html', for Java 'java/index.html'.",
+    "docs_path": "/usr/share/cms/docs",
 
 
 
