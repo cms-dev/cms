@@ -22,3 +22,5 @@ jobs:
           docker-compose -f docker-compose.test.yml run cms_test
 
       - uses: codecov/codecov-action@v3
+        with:
+          root_dir: ./codecov

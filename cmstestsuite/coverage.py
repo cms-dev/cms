@@ -50,7 +50,7 @@ _COVERAGE_CMDLINE = [
 
 def coverage_cmdline(cmdline):
     """Return a cmdline possibly decorated to record coverage."""
-    if CONFIG.get('COVERAGE', False):
+    if CONFIG.get('COVERAGE', None):
         return _COVERAGE_CMDLINE + cmdline
     else:
         return cmdline
@@ -58,17 +58,19 @@ def coverage_cmdline(cmdline):
 
 def clear_coverage():
     """Clear existing coverage reports."""
-    if CONFIG.get('COVERAGE', False):
+    if CONFIG.get('COVERAGE', None):
         logging.info("Clearing old coverage data.")
         sh([sys.executable, "-m", "coverage", "erase"])
 
 
 def combine_coverage():
     """Combine coverage reports from different programs."""
-    if CONFIG.get('COVERAGE', False):
+    coverage_file = CONFIG.get('COVERAGE', None)
+
+    if coverage_file:
         logger.info("Combining coverage results.")
         sh([sys.executable, "-m", "coverage", "combine"])
-        sh([sys.executable, "-m", "coverage", "xml"])
+        sh([sys.executable, "-m", "coverage", "xml", "-o", coverage_file])
 
 
 # Cache directory for subsequent runs.
@@ -151,7 +153,9 @@ def _get_codecov_uploader():
 
 def send_coverage_to_codecov(flag):
     """Send the coverage report to Codecov with the given flag."""
-    if CONFIG.get('COVERAGE', False):
+    coverage_file = CONFIG.get('COVERAGE', None)
+
+    if coverage_file:
         logger.info("Sending coverage results to codecov for flag %s." % flag)
         uploader = _get_codecov_uploader()
-        subprocess.check_call([uploader, "-F", flag])
+        subprocess.check_call([uploader, "-F", flag, "-f", coverage_file])

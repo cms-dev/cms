@@ -149,8 +149,8 @@ def main():
         help="send coverage results to Codecov (requires --coverage)")
     g = parser.add_mutually_exclusive_group()
     g.add_argument(
-        "--coverage", action="store_true",
-        help="compute line coverage information")
+        "--coverage", action="store", type=utf8_decoder,
+        help="path to the XML coverage report file (if not specified, coverage is not computed)")
     g.add_argument(
         "--profiler", choices=[PROFILER_YAPPI, PROFILER_KERNPROF],
         default=PROFILER_NONE, help="set profiler")

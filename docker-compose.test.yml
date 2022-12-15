@@ -17,14 +17,12 @@ services:
     environment:
       CMS_CONFIG: /usr/local/etc/cms-testdb.conf
     volumes:
-      - type: bind
-        source: ./coverage.xml
-        target: /home/cmsuser/cms/coverage.xml
+      - "./codecov:/home/cmsuser/codecov"
     privileged: true
     command: >
       wait-for-it db:5432 -- sh -c "
       createdb --host=db --username=postgres cmsdb ;
       createdb --host=db --username=postgres cmsdbfortesting ;
       cmsInitDB ;
-      cmsRunTests -v --coverage ;
+      cmsRunTests -v --coverage codecov/coverage.xml ;
       "
