@@ -16,6 +16,10 @@ services:
       - "db"
     environment:
       CMS_CONFIG: /usr/local/etc/cms-testdb.conf
+    volumes:
+      - type: bind
+        source: ./coverage.xml
+        target: /home/cmsuser/cms/coverage.xml
     privileged: true
     command: >
       wait-for-it db:5432 -- sh -c "
