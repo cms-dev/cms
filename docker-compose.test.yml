@@ -17,7 +17,7 @@ services:
     environment:
       CMS_CONFIG: /usr/local/etc/cms-testdb.conf
     volumes:
-      - "./codecov:/home/cmsuser/codecov"
+      - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
     command: >
       wait-for-it db:5432 -- sh -c "
