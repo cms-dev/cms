@@ -22,5 +22,5 @@ services:
       createdb --host=db --username=postgres cmsdb ;
       createdb --host=db --username=postgres cmsdbfortesting ;
       cmsInitDB ;
-      cmsRunTests -v --coverage --codecov ;
+      cmsRunTests -v --coverage ;
       "
