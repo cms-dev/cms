@@ -24,7 +24,6 @@ services:
       createdb --host=db --username=postgres cmsdb ;
       createdb --host=db --username=postgres cmsdbfortesting ;
       cmsInitDB ;
-      ls -l ;
-      chown cmsuser:cmsuser codecov ;
+      sudo chown cmsuser:cmsuser codecov ;
       cmsRunTests -v --coverage codecov/coverage.xml ;
       "
