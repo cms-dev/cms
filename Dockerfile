@@ -6,7 +6,7 @@ RUN apt-get install -y \
     build-essential \
     cgroup-lite \
     cppreference-doc-en-html \
-    # fp-compiler \
+    fp-compiler \
     git \
     haskell-platform \
     libcap-dev \
