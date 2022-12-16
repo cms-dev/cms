@@ -6,7 +6,7 @@ RUN apt-get install -y \
     build-essential \
     cgroup-lite \
     cppreference-doc-en-html \
-    fp-compiler \
+    # fp-compiler \
     git \
     haskell-platform \
     libcap-dev \
@@ -45,7 +45,7 @@ RUN sudo python3 setup.py install
 
 RUN sudo python3 prerequisites.py --yes --cmsuser=cmsuser install
 
-RUN sudo sed 's/cmsuser:your_password_here@localhost:5432/postgres@db/' ./config/cms.sample.conf | tee /usr/local/etc/cms-testdb.conf
+RUN sudo sed 's/cmsuser:your_password_here@localhost:5432/postgres@db/' ./config/cms.sample.conf | sudo tee /usr/local/etc/cms-testdb.conf
 
 ENV LANG C.UTF-8
 
