@@ -20,7 +20,7 @@ services:
       - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
     command: >
-      sudo chown cmsuser:cmsuser ./codecov
+      sudo chown cmsuser:cmsuser ./codecov ;
       wait-for-it db:5432 -- sh -c "
       createdb --host=db --username=postgres cmsdb ;
       createdb --host=db --username=postgres cmsdbfortesting ;
