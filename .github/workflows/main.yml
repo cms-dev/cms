@@ -23,4 +23,10 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          root_dir: ./codecov
+          files: ./codecov/unittests.xml
+          flags: unittests
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./codecov/functionaltests.xml
+          flags: functionaltests
