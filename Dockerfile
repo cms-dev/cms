@@ -45,7 +45,7 @@ RUN sudo python3 setup.py install
 
 RUN sudo python3 prerequisites.py --yes --cmsuser=cmsuser install
 
-RUN sudo cp config/cms-testdb.conf /usr/local/etc/cms-testdb.conf
+RUN sudo sed 's/cmsuser:your_password_here@localhost:5432/postgres@db/' ./config/cms.conf > /usr/local/etc/cms-testdb.conf
 
 ENV LANG C.UTF-8
 
