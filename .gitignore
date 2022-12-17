@@ -1,4 +1,5 @@
 *~
+.DS_Store
 *.mo
 .*.sw?
 *.pyc
@@ -11,3 +12,4 @@ cms.egg-info
 cache/
 lib/
 log/
+.vagrant/

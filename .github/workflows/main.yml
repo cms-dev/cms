@@ -8,78 +8,25 @@ jobs:
   test:
     runs-on: ubuntu-20.04
 
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-
-      - name: Install dependencies
+      - name: Check available cgroups
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y \
-            build-essential \
-            php7.4-cli \
-            haskell-platform \
-            fp-compiler \
-            python2.7 \
-            cppreference-doc-en-html \
-            cgroup-lite \
-            libcap-dev \
-            python-dev \
-            libpq-dev \
-            libcups2-dev \
-            libyaml-dev \
-            rustc \
-            mono-mcs
-
-      - name: Install requirements
-        run: |
-          # Use distutils from the standard library for 2to3 translation
-          export SETUPTOOLS_USE_DISTUTILS="stdlib"
-
-          pip install -U pip setuptools wheel
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
-
-          sudo $(which python) prerequisites.py -y --cmsuser=$USER install
-          python setup.py install
-
-      - name: Set up database
-        env:
-          PGPASSWORD: postgres
-        run: |
-          psql --host=localhost --username=postgres --command="CREATE USER cmsuser WITH PASSWORD 'your_password_here';"
-
-          createdb --host=localhost --username=postgres --owner=cmsuser cmsdb
-          psql --host=localhost --username=postgres --dbname=cmsdb --command='ALTER SCHEMA public OWNER TO cmsuser'
-          psql --host=localhost --username=postgres --dbname=cmsdb --command='GRANT SELECT ON pg_largeobject TO cmsuser'
-
-          createdb --host=localhost --username=postgres --owner=cmsuser cmsdbfortesting
-          psql --host=localhost --username=postgres --dbname=cmsdbfortesting --command='ALTER SCHEMA public OWNER TO cmsuser'
-          psql --host=localhost --username=postgres --dbname=cmsdbfortesting --command='GRANT SELECT ON pg_largeobject TO cmsuser'
-
-          cp ./config/cms.conf.sample ./config/cms.conf
-          sed -e "s/\"cmsuser\": \"cmsuser\"/\"cmsuser\": \"$USER\"/" -i ./config/cms.conf
-
-          cmsInitDB
+          mount | grep cgroup
 
       - name: Run tests
         run: |
-          cmsRunTests -v --coverage --codecov
+          docker-compose -f docker-compose.test.yml run cms_test
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./codecov/unittests.xml
+          flags: unittests
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./codecov/functionaltests.xml
+          flags: functionaltests

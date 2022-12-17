@@ -1,0 +1,4 @@
+.dockerignore
+Dockerfile
+docker-compose*.yml
+.vagrant/

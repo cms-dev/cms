@@ -5,6 +5,7 @@
 # Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Versari <veluca93@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2022 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,8 +29,7 @@ import sys
 from cms import utf8_decoder
 from cmstestsuite import CONFIG
 from cmstestsuite.Tests import ALL_TESTS
-from cmstestsuite.coverage import clear_coverage, combine_coverage, \
-    send_coverage_to_codecov
+from cmstestsuite.coverage import clear_coverage, combine_coverage
 from cmstestsuite.profiling import \
     PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI
 from cmstestsuite.testrunner import TestRunner
@@ -168,19 +168,16 @@ def main():
     parser.add_argument(
         "-v", "--verbose", action="count", default=0,
         help="print debug information (use multiple times for more)")
-    parser.add_argument(
-        "--codecov", action="store_true",
-        help="send coverage results to Codecov (requires --coverage)")
     g = parser.add_mutually_exclusive_group()
     g.add_argument(
-        "--coverage", action="store_true",
-        help="compute line coverage information")
+        "--coverage", action="store", type=utf8_decoder,
+        help="path to the XML coverage report file (if not specified, "
+             "coverage is not computed)")
     g.add_argument(
         "--profiler", choices=[PROFILER_YAPPI, PROFILER_KERNPROF],
         default=PROFILER_NONE, help="set profiler")
+
     args = parser.parse_args()
-    if args.codecov and not args.coverage:
-        parser.error("--codecov requires --coverage")
 
     CONFIG["VERBOSITY"] = args.verbose
     CONFIG["COVERAGE"] = args.coverage
@@ -238,9 +235,6 @@ def main():
     runner.shutdown()
     runner.log_elapsed_time()
     combine_coverage()
-
-    if args.codecov:
-        send_coverage_to_codecov("functionaltests")
 
     logger.info("Executed: %s", tests)
     logger.info("Failed: %s", len(failures))

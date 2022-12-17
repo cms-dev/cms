@@ -3,6 +3,7 @@
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2022 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,7 +29,7 @@ import sys
 from cms import utf8_decoder
 from cmstestsuite import CONFIG, TestException, sh
 from cmstestsuite.coverage import clear_coverage, combine_coverage, \
-    coverage_cmdline, send_coverage_to_codecov
+    coverage_cmdline
 from cmstestsuite.profiling import \
     PROFILER_KERNPROF, PROFILER_NONE, PROFILER_YAPPI, profiling_cmdline
 
@@ -144,13 +145,11 @@ def main():
         "-r", "--retry-failed", action="store_true",
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_UNITTEST_FILENAME)
-    parser.add_argument(
-        "--codecov", action="store_true",
-        help="send coverage results to Codecov (requires --coverage)")
     g = parser.add_mutually_exclusive_group()
     g.add_argument(
-        "--coverage", action="store_true",
-        help="compute line coverage information")
+        "--coverage", action="store", type=utf8_decoder,
+        help="path to the XML coverage report file (if not specified, "
+             "coverage is not computed)")
     g.add_argument(
         "--profiler", choices=[PROFILER_YAPPI, PROFILER_KERNPROF],
         default=PROFILER_NONE, help="set profiler")
@@ -164,8 +163,6 @@ def main():
         help="unused")
 
     args = parser.parse_args()
-    if args.codecov and not args.coverage:
-        parser.error("--codecov requires --coverage")
 
     CONFIG["VERBOSITY"] = args.verbose
     CONFIG["COVERAGE"] = args.coverage
@@ -226,9 +223,6 @@ def main():
 
     end_time = datetime.datetime.now()
     print("Time elapsed: %s" % (end_time - start_time))
-
-    if args.codecov:
-        send_coverage_to_codecov("unittests")
 
     if passed:
         return 0
