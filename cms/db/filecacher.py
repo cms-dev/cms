@@ -7,6 +7,7 @@
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2016 Luca Versari <veluca93@gmail.com>
 # Copyright © 2021 Fabian Gundlach <320pointsguy@gmail.com>
+# Copyright © 2023 Manuel Gundlach <manuel.gundlach@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -362,8 +363,12 @@ class DBBackend(FileCacherBackend):
             # If someone beat us to adding the same object to the database, we
             # should at least drop the large object.
             LargeObject.unlink(fobj.loid)
-            logger.warning("File %s (%s) caused an IntegrityError, ignoring.",
-                           digest, desc)
+            logger.info("File %s (%s) caused an IntegrityError, ignoring. "
+                        "Note: If the file is a compiled submission "
+                        "executable, this can occur when a contestant has "
+                        "submitted identical source code multiple times, "
+                        "and is harmless in that case.",
+                        digest, desc)
             return False
         return True
 
