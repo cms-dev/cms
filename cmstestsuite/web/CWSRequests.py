@@ -157,7 +157,7 @@ class SubmitRequest(GenericRequest):
             return None
         try:
             submission_id = decrypt_number(query["submission_id"][0],
-                                           config.secret_key)
+                                           config.webservers.secret_key)
         except Exception:
             logger.warning("Unable to decrypt submission id from page: `%s'",
                            self.redirected_to)
@@ -223,7 +223,7 @@ class SubmitUserTestRequest(GenericRequest):
             return None
         try:
             user_test_id = decrypt_number(query["user_test_id"][0],
-                                          config.secret_key)
+                                          config.webservers.secret_key)
         except Exception:
             logger.warning("Unable to decrypt user test id from page: `%s'",
                            self.redirected_to)

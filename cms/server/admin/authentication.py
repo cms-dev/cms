@@ -130,7 +130,7 @@ class AWSAuthMiddleware:
         self._local.request = Request(environ)
         self._local.cookie = JSONSecureCookie.load_cookie(
             self._request, AWSAuthMiddleware.COOKIE,
-            hex_to_bin(config.secret_key))
+            hex_to_bin(config.webservers.secret_key))
         self._verify_cookie()
 
         def my_start_response(status, headers, exc_info=None):
@@ -174,6 +174,6 @@ class AWSAuthMiddleware:
             self.clear()
             return
 
-        if make_timestamp() - timestamp > config.admin_cookie_duration:
+        if make_timestamp() - timestamp > config.aws.cookie_duration:
             self.clear()
             return

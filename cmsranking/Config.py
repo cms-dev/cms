@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
-import json
+import tomli
 import logging
 import os
 import sys
@@ -37,6 +37,7 @@ class Config:
     """An object holding the current configuration.
 
     """
+
     def __init__(self):
         """Fill this object with the default values for each key.
 
@@ -138,7 +139,7 @@ class Config:
         """
         for conf_path in conf_paths:
             try:
-                with open(conf_path, "rt", encoding="utf-8") as conf_fobj:
+                with open(conf_path, "rb") as conf_fobj:
                     logger.info("Using config file %s.", conf_path)
                     return self._load_one(conf_fobj)
             except FileNotFoundError:
@@ -164,10 +165,11 @@ class Config:
 
         """
         # Parse config file.
+        # TODO Advice if legacy JSON file detected
         try:
-            data = json.load(conf_fobj)
+            data = tomli.load(conf_fobj)
         except ValueError:
-            logger.critical("Config file is invalid JSON.")
+            logger.critical("Config file is invalid TOML.")
             return False
 
         # Store every config property.

@@ -223,7 +223,7 @@ class TwoSteps(TaskType):
         job.sandboxes.append(first_sandbox.get_root_path())
         job.sandboxes.append(second_sandbox.get_root_path())
 
-        fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        fifo_dir = tempfile.mkdtemp(dir=config.systemwide.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
         os.chmod(fifo_dir, 0o755)

@@ -105,7 +105,7 @@ class Archive:
             archive or None, if raw_data doesn't represent an archive.
 
         """
-        temp_file, temp_filename = tempfile.mkstemp(dir=config.temp_dir)
+        temp_file, temp_filename = tempfile.mkstemp(dir=config.systemwide.temp_dir)
         with open(temp_file, "wb") as temp_file:
             temp_file.write(raw_data)
 
@@ -135,7 +135,7 @@ class Archive:
         return (string): the path of the temporary directory.
 
         """
-        self.temp_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=config.systemwide.temp_dir)
         patoolib.extract_archive(self.path, outdir=self.temp_dir,
                                  interactive=False)
         return self.temp_dir

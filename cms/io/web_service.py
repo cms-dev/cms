@@ -56,7 +56,7 @@ class WebService(Service):
         rpc_auth = parameters.pop('rpc_auth', None)
         auth_middleware = parameters.pop('auth_middleware', None)
         is_proxy_used = parameters.pop('is_proxy_used', None)
-        num_proxies_used = parameters.pop('num_proxies_used', None)
+        num_proxies_used = parameters.pop('cws.num_proxies_used', None)
 
         self.wsgi_app = tornado_wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self

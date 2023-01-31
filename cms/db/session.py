@@ -39,7 +39,7 @@ from . import engine
 logger = logging.getLogger(__name__)
 
 
-Session = sessionmaker(engine, twophase=config.twophase_commit)
+Session = sessionmaker(engine, twophase=config.database.twophase_commit)
 ScopedSession = scoped_session(Session)
 
 # For two-phases transactions:
@@ -87,7 +87,7 @@ def custom_psycopg2_connection(**kwargs):
         configured to use psycopg2 as the DB-API driver.
 
     """
-    database_url = make_url(config.database)
+    database_url = make_url(config.database.database)
     assert database_url.get_dialect().driver == "psycopg2"
     # For Unix-domain socket we don't have a port nor a host and that's fine.
     if database_url.port is None and database_url.host is not None:

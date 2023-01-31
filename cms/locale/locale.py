@@ -69,7 +69,7 @@ class Translation:
         else:
             self.translation = babel.support.NullTranslations()
         self.mimetype_translation = babel.support.Translations.load(
-            os.path.join(config.shared_mime_info_prefix, "share", "locale"),
+            os.path.join(config.cws.shared_mime_info_prefix, "share", "locale"),
             [self.locale], "shared-mime-info")
 
     @property

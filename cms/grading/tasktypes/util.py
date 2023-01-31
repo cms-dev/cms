@@ -81,7 +81,7 @@ def delete_sandbox(sandbox, success=True, keep_sandbox=False):
         logger.warning("Sandbox %s kept around because job did not succeed.",
                        sandbox.get_root_path())
 
-    delete = success and not config.keep_sandbox and not keep_sandbox
+    delete = success and not config.worker.keep_sandbox and not keep_sandbox
     try:
         sandbox.cleanup(delete=delete)
     except OSError:

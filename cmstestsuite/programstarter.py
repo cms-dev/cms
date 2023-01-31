@@ -229,7 +229,7 @@ class Program:
         if self.service_name == "AdminWebServer":
             port = self.cms_config["admin_listen_port"]
         elif self.service_name == "ContestWebServer":
-            port = self.cms_config["contest_listen_port"][self.shard]
+            port = self.cms_config["cws.listen_port"][self.shard]
         else:
             return
 

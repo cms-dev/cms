@@ -321,9 +321,9 @@ def _authenticate_request_from_cookie(sql_session, contest, timestamp, cookie):
                     *args)
 
     # Check if the cookie is expired.
-    if timestamp - last_update > timedelta(seconds=config.cookie_duration):
+    if timestamp - last_update > timedelta(seconds=config.cws.cookie_duration):
         log_failed_attempt("cookie expired (lasts %d seconds)",
-                           config.cookie_duration)
+                           config.cws.cookie_duration)
         return None, None
 
     # Load participation from DB and make sure it exists.

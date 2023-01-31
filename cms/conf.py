@@ -22,11 +22,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
+import jinja2
+import jinja2.meta
 import json
 import logging
 import os
 import sys
+import tomli
+from dataclasses import dataclass, field
+from datetime import datetime
 from collections import namedtuple
+from typing import Optional
 
 from .log import set_detailed_logs
 
@@ -44,6 +50,7 @@ class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
     service (thus identifying it).
 
     """
+
     def __repr__(self):
         return "%s,%d" % (self.name, self.shard)
 
@@ -81,6 +88,94 @@ class Config:
     directory for information on the meaning of the fields.
 
     """
+
+    @dataclass
+    class Systemwide:
+        cmsuser: str = "cmsuser"
+        temp_dir: str = "/tmp"
+        backdoor: bool = False
+        file_log_debug: bool = False
+        stream_log_detailed: bool = False
+
+    @dataclass
+    class Database:
+        database: str = "postgresql+psycopg2://cmsuser@localhost/cms"
+        database_debug: bool = False
+        twophase_commit: bool = False
+
+    @dataclass
+    class Worker:
+        keep_sandbox: bool = True
+        use_cgroups: bool = True
+        sandbox_implementation: str = 'isolate'
+
+    @dataclass
+    class Sandbox:
+        # Max size of each writable file during an evaluation step, in KiB.
+        max_file_size: int = 1024 * 1024  # 1 GiB
+        # Max processes, CPU time (s), memory (KiB) for compilation runs.
+        compilation_sandbox_max_processes: int = 1000
+        compilation_sandbox_max_time_s: float = 10.0
+        compilation_sandbox_max_memory_kib: int = 512 * 1024  # 512 MiB
+
+        # Max processes, CPU time (s), memory (KiB) for trusted runs.
+        trusted_sandbox_max_processes: int = 1000
+        trusted_sandbox_max_time_s: float = 10.0
+        trusted_sandbox_max_memory_kib: int = 4 * 1024 * 1024  # 4 GiB
+
+    @dataclass
+    class WebServers:
+        secret_key_default: str = "8e045a51e4b102ea803c06f92841a1fb"
+        secret_key: str = secret_key_default
+        tornado_debug: bool = False
+
+    @dataclass
+    class ContestWebServer:
+        listen_address: list[str] = \
+            field(default_factory=lambda: [""])
+        listen_port: list[int] = \
+            field(default_factory=lambda: [8888])
+        cookie_duration: int = 30 * 60  # 30 minutes
+        submit_local_copy: bool = True
+        submit_local_copy_path: str = "%s/submissions/"
+        tests_local_copy: bool = True
+        tests_local_copy_path: str = "%s/tests/"
+        # (deprecated in favor of num_proxies_used)
+        is_proxy_used: Optional[bool] = None
+        num_proxies_used: Optional[int] = None
+        max_submission_length: int = 100_000  # 100 KB
+        max_input_length: int = 5_000_000  # 5 MB
+        stl_path: str = "/usr/share/cppreference/doc/html/"
+        # Prefix of 'shared-mime-info'[1] installation. It can be found
+        # out using `pkg-config --variable=prefix shared-mime-info`, but
+        # it's almost universally the same (i.e. '/usr') so it's hardly
+        # necessary to change it.
+        # [1] http://freedesktop.org/wiki/Software/shared-mime-info
+        shared_mime_info_prefix: str = "/usr"
+
+    @dataclass
+    class AdminWebServer:
+        listen_address: str = ""
+        listen_port: int = 8889
+        cookie_duration: int = 10 * 60 * 60  # 10 hours
+        num_proxies_used: Optional[int] = None
+
+    @dataclass
+    class ProxyService:
+        rankings: list[str] = \
+            field(default_factory=lambda:
+                  ["http://usern4me:passw0rd@localhost:8890/"])
+        https_certfile: Optional[str] = None
+
+    @dataclass
+    class PrintingService:
+        max_print_length: int = 10_000_000  # 10 MB
+        printer: Optional[str] = None
+        paper_size: str = "A4"
+        max_pages_per_job: int = 10
+        max_jobs_per_user: int = 10
+        pdf_printing_allowed: bool = False
+
     def __init__(self):
         """Default values for configuration, plus decide if this
         instance is running from the system path or from the source
@@ -89,77 +184,15 @@ class Config:
         """
         self.async_config = async_config
 
-        # System-wide
-        self.cmsuser = "cmsuser"
-        self.temp_dir = "/tmp"
-        self.backdoor = False
-        self.file_log_debug = False
-        self.stream_log_detailed = False
-
-        # Database.
-        self.database = "postgresql+psycopg2://cmsuser@localhost/cms"
-        self.database_debug = False
-        self.twophase_commit = False
-
-        # Worker.
-        self.keep_sandbox = True
-        self.use_cgroups = True
-        self.sandbox_implementation = 'isolate'
-
-        # Sandbox.
-        # Max size of each writable file during an evaluation step, in KiB.
-        self.max_file_size = 1024 * 1024  # 1 GiB
-        # Max processes, CPU time (s), memory (KiB) for compilation runs.
-        self.compilation_sandbox_max_processes = 1000
-        self.compilation_sandbox_max_time_s = 10.0
-        self.compilation_sandbox_max_memory_kib = 512 * 1024  # 512 MiB
-        # Max processes, CPU time (s), memory (KiB) for trusted runs.
-        self.trusted_sandbox_max_processes = 1000
-        self.trusted_sandbox_max_time_s = 10.0
-        self.trusted_sandbox_max_memory_kib = 4 * 1024 * 1024  # 4 GiB
-
-        # WebServers.
-        self.secret_key_default = "8e045a51e4b102ea803c06f92841a1fb"
-        self.secret_key = self.secret_key_default
-        self.tornado_debug = False
-
-        # ContestWebServer.
-        self.contest_listen_address = [""]
-        self.contest_listen_port = [8888]
-        self.cookie_duration = 30 * 60  # 30 minutes
-        self.submit_local_copy = True
-        self.submit_local_copy_path = "%s/submissions/"
-        self.tests_local_copy = True
-        self.tests_local_copy_path = "%s/tests/"
-        self.is_proxy_used = None  # (deprecated in favor of num_proxies_used)
-        self.num_proxies_used = None
-        self.max_submission_length = 100_000  # 100 KB
-        self.max_input_length = 5_000_000  # 5 MB
-        self.stl_path = "/usr/share/cppreference/doc/html/"
-        # Prefix of 'shared-mime-info'[1] installation. It can be found
-        # out using `pkg-config --variable=prefix shared-mime-info`, but
-        # it's almost universally the same (i.e. '/usr') so it's hardly
-        # necessary to change it.
-        # [1] http://freedesktop.org/wiki/Software/shared-mime-info
-        self.shared_mime_info_prefix = "/usr"
-
-        # AdminWebServer.
-        self.admin_listen_address = ""
-        self.admin_listen_port = 8889
-        self.admin_cookie_duration = 10 * 60 * 60  # 10 hours
-        self.admin_num_proxies_used = None
-
-        # ProxyService.
-        self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
-        self.https_certfile = None
-
-        # PrintingService
-        self.max_print_length = 10_000_000  # 10 MB
-        self.printer = None
-        self.paper_size = "A4"
-        self.max_pages_per_job = 10
-        self.max_jobs_per_user = 10
-        self.pdf_printing_allowed = False
+        self.systemwide = self.Systemwide()
+        self.database = self.Database()
+        self.worker = self.Worker()
+        self.sandbox = self.Sandbox()
+        self.webservers = self.WebServers()
+        self.cws = self.ContestWebServer()
+        self.aws = self.AdminWebServer()
+        self.proxyservice = self.ProxyService()
+        self.printingservice = self.PrintingService()
 
         # Installed or from source?
         # We declare we are running from installed if the program was
@@ -204,7 +237,7 @@ class Config:
 
         # If the configuration says to print detailed log on stdout,
         # change the log configuration.
-        set_detailed_logs(self.stream_log_detailed)
+        set_detailed_logs(self.systemwide.stream_log_detailed)
 
     def _load(self, paths):
         """Try to load the config files one at a time, until one loads
@@ -215,12 +248,12 @@ class Config:
             if self._load_unique(conf_file):
                 break
         else:
-            logging.warning("No configuration file found: "
+            logging.warning("No valid configuration file found: "
                             "falling back to default values.")
 
     def _load_unique(self, path):
         """Populate the Config class with everything that sits inside
-        the JSON file path (usually something like /etc/cms.conf). The
+        the TOML file path (usually something like /etc/cms.conf). The
         only pieces of data treated differently are the elements of
         core_services and other_services that are sent to async
         config.
@@ -228,13 +261,13 @@ class Config:
         Services whose name begins with an underscore are ignored, so
         they can be commented out in the configuration file.
 
-        path (string): the path of the JSON config file.
+        path (string): the path of the TOML config file.
 
         """
         # Load config file.
         try:
-            with open(path, 'rt', encoding='utf-8') as f:
-                data = json.load(f)
+            with open(path, 'rb') as f:
+                data = tomli.load(f)
         except FileNotFoundError:
             logger.debug("Couldn't find config file %s.", path)
             return False
@@ -249,33 +282,29 @@ class Config:
 
         logger.info("Using configuration file %s.", path)
 
+        import json
+        print(json.dumps(data,indent=2))
+
         if "is_proxy_used" in data:
             logger.warning("The 'is_proxy_used' setting is deprecated, please "
                            "use 'num_proxies_used' instead.")
 
         # Put core and test services in async_config, ignoring those
         # whose name begins with "_".
-        for service in data["core_services"]:
-            if service.startswith("_"):
-                continue
-            for shard_number, shard in \
-                    enumerate(data["core_services"][service]):
-                coord = ServiceCoord(service, shard_number)
-                self.async_config.core_services[coord] = Address(*shard)
-        del data["core_services"]
-
-        for service in data["other_services"]:
-            if service.startswith("_"):
-                continue
-            for shard_number, shard in \
-                    enumerate(data["other_services"][service]):
-                coord = ServiceCoord(service, shard_number)
-                self.async_config.other_services[coord] = Address(*shard)
-        del data["other_services"]
+        for part in ("core_services", "other_services"):
+            for service in data[part]:
+                if service.startswith("_"):
+                    continue
+                for shard_number, shard in \
+                        enumerate(data[part][service]):
+                    coord = ServiceCoord(service, shard_number)
+                    getattr(self.async_config, part)[coord] = Address(*shard)
+            del data[part]
 
         # Put everything else in self.
         for key, value in data.items():
-            setattr(self, key, value)
+            for key2, value2 in value.items():
+                setattr(getattr(self, key), key2, value2)
 
         return True
 

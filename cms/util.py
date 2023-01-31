@@ -56,7 +56,7 @@ def mkdir(path):
     else:
         try:
             os.chmod(path, 0o770)
-            cmsuser_gid = pwd.getpwnam(config.cmsuser).pw_gid
+            cmsuser_gid = pwd.getpwnam(config.systemwide.cmsuser).pw_gid
             os.chown(path, -1, cmsuser_gid)
         except OSError:
             os.rmdir(path)

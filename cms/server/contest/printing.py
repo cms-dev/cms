@@ -81,16 +81,16 @@ def accept_print_job(sql_session, file_cacher, participation, timestamp, files):
 
     """
 
-    if config.printer is None:
+    if config.printingservice.printer is None:
         raise PrintingDisabled()
 
     old_count = sql_session.query(func.count(PrintJob.id)) \
         .filter(PrintJob.participation == participation).scalar()
-    if config.max_jobs_per_user <= old_count:
+    if config.printingservice.max_jobs_per_user <= old_count:
         raise UnacceptablePrintJob(
             N_("Too many print jobs!"),
             N_("You have reached the maximum limit of at most %d print jobs."),
-            config.max_jobs_per_user)
+            config.printingservice.max_jobs_per_user)
 
     if len(files) != 1 or "file" not in files or len(files["file"]) != 1:
         raise UnacceptablePrintJob(
@@ -100,11 +100,11 @@ def accept_print_job(sql_session, file_cacher, participation, timestamp, files):
     filename = files["file"][0].filename
     data = files["file"][0].body
 
-    if len(data) > config.max_print_length:
+    if len(data) > config.printingservice.max_print_length:
         raise UnacceptablePrintJob(
             N_("File too big!"),
             N_("Each file must be at most %d bytes long."),
-            config.max_print_length)
+            config.printingservice.max_print_length)
 
     try:
         digest = file_cacher.put_file_content(

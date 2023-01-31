@@ -83,7 +83,7 @@ $(document).ready(init);
           <h1 class="child">{{ contest.name }}</h1>
           {% endif %}
         </div>
-        {% if config.secret_key == config.secret_key_default %}
+        {% if config.webservers.secret_key == config.webservers.secret_key_default %}
         <div class="secret_notice">
           Change secret_key in cms.conf!<br/>
           For example,<br/>

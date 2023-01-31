@@ -152,7 +152,7 @@ class UserTestHandler(ContestHandler):
             # (nor it discloses information to the user), but it is
             # useful for automatic testing to obtain the user test id).
             query_args["user_test_id"] = \
-                encrypt_number(user_test.id, config.secret_key)
+                encrypt_number(user_test.id, config.webservers.secret_key)
 
         self.redirect(self.contest_url("testing", task_name=task.name,
                                        **query_args))

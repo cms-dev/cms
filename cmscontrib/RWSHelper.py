@@ -49,7 +49,7 @@ ACTION_METHODS = {
     'create': 'PUT',  # Create is actually an update.
     'update': 'PUT',
     'delete': 'DELETE',
-    }
+}
 
 ENTITY_TYPES = ['contest',
                 'task',
@@ -61,7 +61,8 @@ ENTITY_TYPES = ['contest',
 
 
 def get_url(shard, entity_type, entity_id):
-    return urljoin(config.rankings[shard], '%ss/%s' % (entity_type, entity_id))
+    return urljoin(config.proxyservice.rankings[shard],
+                   '%ss/%s' % (entity_type, entity_id))
 
 
 def main():
@@ -73,7 +74,8 @@ def main():
     # and nargs='+' but it doesn't seem to work with subparsers...
     parser.add_argument(
         '-r', '--ranking', dest='rankings', action='append', type=int,
-        choices=list(range(len(config.rankings))), metavar='shard',
+        choices=list(range(len(config.proxyservice.rankings))),
+        metavar='shard',
         help="select which RWS to connect to (omit for 'all')")
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
@@ -124,7 +126,7 @@ def main():
     if args.rankings is not None:
         shards = args.rankings
     else:
-        shards = list(range(len(config.rankings)))
+        shards = list(range(len(config.proxyservice.rankings)))
 
     s = Session()
     had_error = False
@@ -154,7 +156,7 @@ def main():
             logger.info("Sending request")
 
         try:
-            res = s.send(req, verify=config.https_certfile)
+            res = s.send(req, verify=config.proxyservice.https_certfile)
         except RequestException:
             logger.error("Failed", exc_info=True)
             had_error = True

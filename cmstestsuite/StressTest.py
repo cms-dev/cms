@@ -361,7 +361,7 @@ def main():
     else:
         base_url = "http://%s:%d/" % \
             (get_service_address(ServiceCoord('ContestWebServer', 0))[0],
-             config.contest_listen_port[0])
+             config.cws.listen_port[0])
 
     metrics = DEFAULT_METRICS
     metrics["time_coeff"] = args.time_coeff
