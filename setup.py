@@ -10,6 +10,7 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
+# Copyright © 2021-2023 Manuel Gundlach <manuel.gundlach@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,6 +37,9 @@ from setuptools.command.build_py import build_py
 
 
 PACKAGE_DATA = {
+    "cms": [
+        "cms_conf_legacy_mapping.toml",
+    ],
     "cms.server": [
         "static/*.*",
         "static/jq/*.*",

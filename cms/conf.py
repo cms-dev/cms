@@ -7,6 +7,7 @@
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2022-2023 Manuel Gundlach <manuel.gundlach@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -105,7 +106,7 @@ class Config:
 
     @dataclass
     class Worker:
-        keep_sandbox: bool = True
+        keep_sandbox: bool = False
         use_cgroups: bool = True
         sandbox_implementation: str = 'isolate'
 
@@ -264,6 +265,24 @@ class Config:
         path (string): the path of the TOML config file.
 
         """
+        # Advice of incompatibility if config file is in legacy json format.
+        try:
+            with open(path, 'rb') as f:
+                legacy_data = json.load(f)
+        except (FileNotFoundError, ValueError):
+            pass
+        except OSError as error:
+            logger.warning("I/O error while opening file %s: [%s] %s",
+                           path, errno.errorcode[error.errno],
+                           os.strerror(error.errno))
+            return False
+        else:
+            # Found legacy config file.
+            # Parse it and try to create a TOML config from it that the user
+            # can replace it with
+            _suggest_updated_legacy_config(legacy_data)
+            return False
+
         # Load config file.
         try:
             with open(path, 'rb') as f:
@@ -281,9 +300,6 @@ class Config:
             return False
 
         logger.info("Using configuration file %s.", path)
-
-        import json
-        print(json.dumps(data,indent=2))
 
         if "is_proxy_used" in data:
             logger.warning("The 'is_proxy_used' setting is deprecated, please "
@@ -303,10 +319,99 @@ class Config:
 
         # Put everything else in self.
         for key, value in data.items():
+            # Handle keys that have not been put under a proper section yet
+            # and are instead in the generic "stray" section.
+            # Here, it is checked that the respective attribute does _not_
+            # exist to make sure nothing is overwritten inadvertently.
+            if key == "stray":
+                for key2, value2 in value.items():
+                    if hasattr(self, key2):
+                        logger.warning("Key %s in section stray can not be "
+                                       "used because the attribute already "
+                                       "exists.", key2)
+                        return False
+                    setattr(self, key2, value2)
+                continue
+
+            if not hasattr(self, key):
+                logger.warning("Section name %s unknown.", key)
+                return False
+            section = getattr(self, key)
+
             for key2, value2 in value.items():
-                setattr(getattr(self, key), key2, value2)
+                if not hasattr(section, key2):
+                    logger.warning("Key %s unknown in section %s.", key2, key)
+                    return False
+                setattr(section, key2, value2)
+
+        # A value of "" means None for these attributes
+        if self.proxyservice.https_certfile == "":
+            self.proxyservice.https_certfile = None
+        if self.printingservice.printer == "":
+            self.printingservice.printer = None
 
         return True
+
+    def _suggest_updated_legacy_config(legacy_data):
+        logger.info("Legacy json config file found at %s. "
+                    "Trying to heuristically update it to new toml "
+                    "format...", path)
+
+        # Load data into the TOML config template
+
+        # NOTE Values are rendered using json.dumps. This is only
+        # heuristically correct and might in some cases not adhere to the
+        # TOML specification. However, for the usual configuration values of
+        # CMS this should be fine.
+
+        jinja_env = jinja2.Environment(
+            loader=jinja2.PackageLoader("cms", ""))
+
+        ast = jinja_env.parse(
+            jinja_env.loader.get_source(jinja_env,
+                                        "cms_conf_legacy_mapping.toml")
+        )
+        attr_in_template = jinja2.meta.find_undeclared_variables(ast)
+
+        legacy_attr_not_in_template = {
+            k: v for k, v in legacy_data.items()
+            if k not in attr_in_template and not k.startswith('_')
+        }
+        template_attr_not_in_legacy = [
+            k for k in attr_in_template
+            if k not in legacy_data and k != "stray"
+        ]
+
+        for k in legacy_attr_not_in_template:
+            logger.warning("Key %s in legacy config is unknown and will "
+                           "be exported to the Stray section.", k)
+
+        # Attributes in the legacy config that don't appear in the TOML
+        # template will be put under their own 'stray' section.
+        if len(legacy_attr_not_in_template) == 0:
+            stray = ""
+        else:
+            stray = "\n\n[stray]\n\n" + \
+                '\n'.join("{} = {}".format(k, json.dumps(v))
+                          for k, v in legacy_attr_not_in_template.items())
+        legacy_data["stray"] = stray
+
+        for k in template_attr_not_in_legacy:
+            logger.warning("Key %s is missing in legacy config; "
+                           "the value will be set to the default.", k)
+
+        template = jinja_env.get_template("cms_conf_legacy_mapping.toml")
+        updated_config = template.render(legacy_data)
+
+        print("==== Heuristically updated config below ====")
+        print(updated_config)
+        print("==== Heuristically updated config above ====")
+
+        logger.info("You can find your legacy config updated to the "
+                    "current config format above. "
+                    "Please check the output and replace the legacy "
+                    "config file %s with it. It is recommended to backup "
+                    "the legacy config file first.", path)
 
 
 config = Config()
