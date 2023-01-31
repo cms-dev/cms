@@ -1,16 +1,11 @@
-{
-    "_help": "There is no way to put comments in a JSON file; the",
-    "_help": "fields starting with '_' are meant to be comments.",
+# Listening address for RankingWebServer.
+bind_address = ""
 
-    "_help": "Listening address for RankingWebServer.",
-    "bind_address": "",
+# Listening port for RankingWebServer.
+http_port = 8890
 
-    "_help": "Listening port for RankingWebServer.",
-    "http_port": 8890,
+# Login information for adding and editing data.
+username = "usern4me"
+password = "passw0rd"
 
-    "_help": "Login information for adding and editing data.",
-    "username":   "usern4me",
-    "password":   "passw0rd",
-
-    "_help": "This is the end of this file."
-}
+# This is the end of this file.
