@@ -227,9 +227,9 @@ class Program:
 
         # In case it is a server, we also check HTTP is serving.
         if self.service_name == "AdminWebServer":
-            port = self.cms_config["admin_listen_port"]
+            port = self.cms_config["aws"]["listen_port"]
         elif self.service_name == "ContestWebServer":
-            port = self.cms_config["cws.listen_port"][self.shard]
+            port = self.cms_config["cws"]["listen_port"][self.shard]
         else:
             return
 
@@ -239,7 +239,7 @@ class Program:
 
     def _check_ranking_web_server(self):
         """Health checker for RWS."""
-        url = urlsplit(self.cms_config["rankings"][0])
+        url = urlsplit(self.cms_config["proxyservice"]["rankings"][0])
         sock = socket.socket()
         sock.connect((url.hostname, url.port))
         sock.close()
