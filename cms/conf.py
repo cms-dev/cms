@@ -282,7 +282,7 @@ class Config:
             # Found legacy config file.
             # Parse it and try to create a TOML config from it that the user
             # can replace it with
-            _suggest_updated_legacy_config(legacy_data)
+            self._suggest_updated_legacy_config(path, legacy_data)
             return False
 
         # Load config file.
@@ -354,10 +354,14 @@ class Config:
 
         return True
 
-    def _suggest_updated_legacy_config(legacy_data):
-        logger.info("Legacy json config file found at %s. "
-                    "Trying to heuristically update it to new toml "
-                    "format...", path)
+    def _suggest_updated_legacy_config(self, path, legacy_data):
+        logger.error("Legacy json config file found at %s. "
+                     "The format for configuration files has changed to TOML. "
+                     "With this change, the attributes are also structured "
+                     "differently: They are put under sections, and variable "
+                     "names have changed. "
+                     "You should rewrite your configuration file for the new "
+                     "format. A suggested translation will follow.", path)
 
         # Load data into the TOML config template
 
@@ -405,15 +409,14 @@ class Config:
         template = jinja_env.get_template("cms_conf_legacy_mapping.toml")
         updated_config = template.render(legacy_data)
 
-        print("==== Heuristically updated config below ====")
-        print(updated_config)
-        print("==== Heuristically updated config above ====")
-
-        logger.info("You can find your legacy config updated to the "
+        logger.info("==== Config heuristically translated to new format below ====\n"
+                    "%s\n"
+                    "==== Config heuristically translated to new format above ====\n"
+                    "You can find your legacy config updated to the "
                     "current config format above. "
                     "Please check the output and replace the legacy "
                     "config file %s with it. It is recommended to backup "
-                    "the legacy config file first.", path)
+                    "the legacy config file first.", updated_config, path)
 
 
 config = Config()
