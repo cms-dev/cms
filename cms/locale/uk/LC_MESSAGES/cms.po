@@ -1253,5 +1253,5 @@ msgid "Print job has too many pages"
 msgstr "Завдання друку містить забагато сторінок"
 
 msgid "Sent to printer"
-msgstr "Відправити принтеру"
+msgstr "Відправлено принтеру"
 
