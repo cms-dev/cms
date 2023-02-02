@@ -96,7 +96,7 @@ msgstr "Ваша спроба була знищена вказаним сигн�
 
 #:
 msgid "Output is correct"
-msgstr "Вивід правильний"
+msgstr "Вихідні дані правильний"
 
 #:
 msgid "Your submission ran and gave the correct answer"
