@@ -808,11 +808,11 @@ msgstr "Почавши, ви можете надсилати рішення до
 
 #:
 msgid "By clicking on the button below you can start your time frame."
-msgstr "Натиснувши на кнопку нижче, ви можете почати свій часовий проміжок."
+msgstr "Натиснувши на кнопку нижче, ви можете запустити свій часовий проміжок."
 
 #:
 msgid "You started your time frame at %(start_time)s."
-msgstr "Ви почали свій часовий проміжок о %(start_time)s."
+msgstr "Ви запустили свій часовий проміжок о %(start_time)s."
 
 #:
 msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
@@ -820,7 +820,7 @@ msgstr "Ви можете надсилати рішення до кінця ві
 
 #:
 msgid "You started your time frame at %(start_time)s and you already finished it."
-msgstr "Ви почали свій часовий проміжок о %(start_time)s і вже завершили його."
+msgstr "Ви запустили свій часовий проміжок о %(start_time)s і вже завершили його."
 
 #:
 msgid "There's nothing you can do now."
@@ -828,7 +828,7 @@ msgstr "Ви нічого не можете зробити зараз."
 
 #:
 msgid "You never started your time frame. Now it's too late."
-msgstr "Ви ніколи не починали свій часовий проміжок. Тепер уже пізно."
+msgstr "Ви ніколи не запускали свій часовий проміжок. Тепер уже пізно."
 
 #:
 msgid "Start!"
