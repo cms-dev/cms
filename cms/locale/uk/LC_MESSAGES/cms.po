@@ -1115,7 +1115,7 @@ msgstr "Публічний бал:"
 
 #:
 msgid "Score of tokened submissions:"
-msgstr "Оцінка позначених спроб:"
+msgstr "Бали позначених спроб:"
 
 #:
 msgid "Total score:"
@@ -1223,13 +1223,13 @@ msgid "None"
 msgstr "Немає"
 
 msgid "Public score"
-msgstr "Публічна оцінка"
+msgstr "Публічний бал"
 
 msgid "Total score"
-msgstr "Сумарна оцінка"
+msgstr "Сумарний бал"
 
 msgid "Score"
-msgstr "Оцінка"
+msgstr "Бал"
 
 msgid "Token"
 msgstr "Токен"
