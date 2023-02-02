@@ -76,7 +76,7 @@ msgstr "Помилка компіляції"
 
 #:
 msgid "Your submission did not compile correctly."
-msgstr "Ваша спроба скомпільовано неправильно."
+msgstr "Ваша спроба скомпільована неправильно."
 
 #:
 msgid "Compilation timed out"
