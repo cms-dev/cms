@@ -92,7 +92,7 @@ msgstr "Компіляція припинена через сигнал %s (мо
 
 #:
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
-msgstr "Ваша спроба було знищена вказаним сигналом. Серед іншого, це може бути спричинено перевищенням обмеження пам’яті для компіляції та, у свою чергу, надмірним використанням шаблонів C++, наприклад."
+msgstr "Ваша спроба була знищена вказаним сигналом. Серед іншого, це може бути спричинено перевищенням обмеження пам’яті для компіляції та, у свою чергу, надмірним використанням шаблонів C++, наприклад."
 
 #:
 msgid "Output is correct"
