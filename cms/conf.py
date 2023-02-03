@@ -375,7 +375,7 @@ class Config:
 
         ast = jinja_env.parse(
             jinja_env.loader.get_source(jinja_env,
-                                        "cms_conf_legacy_mapping.toml")
+                                        "cms_conf_legacy_mapping.toml.jinja")
         )
         attr_in_template = jinja2.meta.find_undeclared_variables(ast)
 
@@ -406,7 +406,7 @@ class Config:
             logger.warning("Key %s is missing in legacy config; "
                            "the value will be set to the default.", k)
 
-        template = jinja_env.get_template("cms_conf_legacy_mapping.toml")
+        template = jinja_env.get_template("cms_conf_legacy_mapping.toml.jinja")
         updated_config = template.render(legacy_data)
 
         logger.info("==== Config heuristically translated to new format below ====\n"

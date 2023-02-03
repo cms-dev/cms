@@ -38,7 +38,7 @@ from setuptools.command.build_py import build_py
 
 PACKAGE_DATA = {
     "cms": [
-        "cms_conf_legacy_mapping.toml",
+        "cms_conf_legacy_mapping.toml.jinja",
     ],
     "cms.server": [
         "static/*.*",
