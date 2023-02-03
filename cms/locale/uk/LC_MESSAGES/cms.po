@@ -184,7 +184,7 @@ msgstr "токен змагання"
 
 #:
 msgid "contest-tokens"
-msgstr "токени контесту"
+msgstr "токени змагання"
 
 #:
 msgid "task-token"
