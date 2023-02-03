@@ -560,7 +560,7 @@ msgstr "Будь ласка, увійдіть"
 
 #:
 msgid "Username"
-msgstr "Логін користувача"
+msgstr "Логін"
 
 #:
 msgid "Password"
@@ -936,7 +936,7 @@ msgstr "Паролі не збігаються!"
 
 #:
 msgid "This username is already taken, please choose a different one."
-msgstr "Це ім’я користувача вже зайняте, виберіть інше."
+msgstr "Цей логін вже зайнятий, виберіть інше."
 
 #:
 msgid "This user is already registered in the contest."
@@ -999,7 +999,7 @@ msgstr "Успішна реєстрація в змаганні!"
 
 #:
 msgid "Your username is:"
-msgstr "Ваше ім'я користувача:"
+msgstr "Ваш логін:"
 
 #:
 msgid "Your password is stored securely."
