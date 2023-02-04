@@ -256,7 +256,7 @@ class Communication(TaskType):
         indices = range(self.num_processes)
 
         # Create FIFOs.
-        fifo_dir = [tempfile.mkdtemp(dir=config.systemwide.temp_dir) for i in indices]
+        fifo_dir = [tempfile.mkdtemp(dir=config.temp_dir) for i in indices]
         fifo_user_to_manager = [
             os.path.join(fifo_dir[i], "u%d_to_m" % i) for i in indices]
         fifo_manager_to_user = [
@@ -312,12 +312,12 @@ class Communication(TaskType):
         #     constraint on the total time can only be enforced after all user
         #     programs terminated.
         manager_time_limit = max(self.num_processes * (job.time_limit + 1.0),
-                                 config.sandbox.trusted_sandbox_max_time_s)
+                                 config.trusted_sandbox_max_time_s)
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
             manager_time_limit,
-            config.sandbox.trusted_sandbox_max_memory_kib * 1024,
+            config.trusted_sandbox_max_memory_kib * 1024,
             dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw"))
                           for i in indices),
             writable_files=[self.OUTPUT_FILENAME],
@@ -426,6 +426,6 @@ class Communication(TaskType):
         delete_sandbox(sandbox_mgr, job.success, job.keep_sandbox)
         for s in sandbox_user:
             delete_sandbox(s, job.success, job.keep_sandbox)
-        if job.success and not config.worker.keep_sandbox and not job.keep_sandbox:
+        if job.success and not config.keep_sandbox and not job.keep_sandbox:
             for d in fifo_dir:
                 rmtree(d)

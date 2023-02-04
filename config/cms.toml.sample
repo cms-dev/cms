@@ -1,4 +1,4 @@
-[systemwide]
+### System-wide ###
 
 temp_dir = "/tmp"
 
@@ -9,29 +9,7 @@ backdoor = false
 cmsuser = "cmsuser"
 
 
-[core_services]
-
-LogService         = [["localhost", 29000]]
-ResourceService    = [["localhost", 28000]]
-ScoringService     = [["localhost", 28500]]
-Checker            = [["localhost", 22000]]
-EvaluationService  = [["localhost", 25000]]
-Worker             = [["localhost", 26000],
-                      ["localhost", 26001],
-                      ["localhost", 26002],
-                      ["localhost", 26003]]
-ContestWebServer   = [["localhost", 21000]]
-AdminWebServer     = [["localhost", 21100]]
-ProxyService       = [["localhost", 28600]]
-PrintingService    = [["localhost", 25123]]
-
-
-[other_services]
-
-TestFileCacher     = [["localhost", 27501]]
-
-
-[database]
+### Database ###
 
 # Connection string for the database.
 database = "postgresql+psycopg2://cmsuser:your_password_here@localhost:5432/cmsdb"
@@ -43,7 +21,7 @@ database_debug = false
 twophase_commit = false
 
 
-[worker]
+### Worker ###
 
 # Don't delete the sandbox directory under /tmp/ when they
 # are not needed anymore. Warning: this can easily eat GB
@@ -51,14 +29,14 @@ twophase_commit = false
 keep_sandbox = false
 
 
-[sandbox]
+### Sandbox ###
 
 # Do not allow contestants' solutions to write files bigger
 # than this size (expressed in KB; defaults to 1 GB).
 max_file_size = 1048576
 
 
-[webservers]
+### WebServers ###
 
 # This key is used to encode information that can be seen
 # by the user, namely cookies and auto-incremented
@@ -73,19 +51,18 @@ secret_key = "8e045a51e4b102ea803c06f92841a1fb"
 tornado_debug = false
 
 
-# ContestWebServer
-[cws]
+### ContestWebServer ###
 
 # Listening HTTP addresses and ports for the CWSs listed above
 # in core_services. If you access them through a proxy (acting
 # as a load balancer) running on the same host you could put
 # 127.0.0.1 here for additional security.
-listen_address = [""]
-listen_port =    [8888]
+contest_listen_address = [""]
+contest_listen_port =    [8888]
 
 # Login cookie duration in seconds. The duration is refreshed
 # on every manual request.
-cookie_duration = 1800
+contest_cookie_duration = 1800
 
 # If CWSs write submissions to disk before storing them in
 # the DB, and where to save them. %s = DATA_DIR.
@@ -97,7 +74,7 @@ submit_local_copy_path = "%s/submissions/"
 # the real source IP address is the one listed in the request
 # headers or not. For example, if you're using nginx as a load
 # balancer, you will likely want to set this value to 1.
-num_proxies_used = 0
+contest_num_proxies_used = 0
 
 # Maximum size of a submission in bytes. If you use a proxy
 # and set these sizes to large values remember to change
@@ -109,18 +86,17 @@ max_input_length = 5000000
 stl_path = "/usr/share/cppreference/doc/html/"
 
 
-# AdminWebserver
-[aws]
+### AdminWebserver ###
 
 # Listening HTTP address and port for the AWS. If you access
 # it through a proxy running on the same host you could put
 # 127.0.0.1 here for additional security.
-listen_address = ""
-listen_port = 8889
+admin_listen_address = ""
+admin_listen_port = 8889
 
 # Login cookie duration for admins in seconds.
 # The duration is refreshed on every manual request.
-cookie_duration = 36000
+admin_cookie_duration = 36000
 
 # The number of proxies that will be crossed before AWS gets
 # the request. This is used to determine the request's real
@@ -129,7 +105,7 @@ cookie_duration = 36000
 num_proxies_used = 0
 
 
-[proxyservice]
+### ProxyService ###
 
 # List of URLs (with embedded username and password) of the
 # RWSs where the scores are to be sent. Don't include the
@@ -140,7 +116,7 @@ rankings = ["http://usern4me:passw0rd@localhost:8890/"]
 https_certfile = ""
 
 
-[printingservice]
+### PrintingService ###
 
 # Maximum size of a print job in bytes.
 max_print_length = 10000000
@@ -159,4 +135,25 @@ max_pages_per_job = 10
 max_jobs_per_user = 10
 pdf_printing_allowed = false
 
-# This is the end of this file.
+
+### Services ###
+
+[core_services]
+
+LogService         = [["localhost", 29000]]
+ResourceService    = [["localhost", 28000]]
+ScoringService     = [["localhost", 28500]]
+Checker            = [["localhost", 22000]]
+EvaluationService  = [["localhost", 25000]]
+Worker             = [["localhost", 26000],
+                      ["localhost", 26001],
+                      ["localhost", 26002],
+                      ["localhost", 26003]]
+ContestWebServer   = [["localhost", 21000]]
+AdminWebServer     = [["localhost", 21100]]
+ProxyService       = [["localhost", 28600]]
+PrintingService    = [["localhost", 25123]]
+
+[other_services]
+
+TestFileCacher     = [["localhost", 27501]]

@@ -199,7 +199,7 @@ class SandboxBase(metaclass=ABCMeta):
         """
         self.file_cacher = file_cacher
         self.name = name if name is not None else "unnamed"
-        self.temp_dir = temp_dir if temp_dir is not None else config.systemwide.temp_dir
+        self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
 
         self.cmd_file = "commands.log"
 
@@ -899,7 +899,7 @@ class IsolateSandbox(SandboxBase):
 
         # Default parameters for isolate
         self.box_id = box_id           # -b
-        self.cgroup = config.worker.use_cgroups  # --cg
+        self.cgroup = config.use_cgroups  # --cg
         self.chdir = self._home_dest   # -c
         self.dirs = []                 # -d
         self.preserve_env = False      # -e
@@ -1454,4 +1454,4 @@ class IsolateSandbox(SandboxBase):
 Sandbox = {
     'stupid': StupidSandbox,
     'isolate': IsolateSandbox,
-    }[config.worker.sandbox_implementation]
+    }[config.sandbox_implementation]

@@ -171,8 +171,8 @@ class RegistrationHandler(ContestHandler):
 
         # Find user if it exists
         user = self.sql_session.query(User)\
-            .filter(User.username == username)\
-            .first()
+                        .filter(User.username == username)\
+                        .first()
         if user is None:
             raise tornado_web.HTTPError(404)
 
@@ -322,16 +322,13 @@ class PrintingHandler(ContestHandler):
             .filter(PrintJob.participation == participation)\
             .all()
 
-        remaining_jobs = max(
-            0,
-            config.printingservice.max_jobs_per_user - len(printjobs)
-        )
+        remaining_jobs = max(0, config.max_jobs_per_user - len(printjobs))
 
         self.render("printing.html",
                     printjobs=printjobs,
                     remaining_jobs=remaining_jobs,
-                    max_pages=config.printingservice.max_pages_per_job,
-                    pdf_printing_allowed=config.printingservice.pdf_printing_allowed,
+                    max_pages=config.max_pages_per_job,
+                    pdf_printing_allowed=config.pdf_printing_allowed,
                     **self.r_params)
 
     @tornado_web.authenticated

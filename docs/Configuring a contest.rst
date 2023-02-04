@@ -135,16 +135,16 @@ In general, each user can have multiple ranges of IP addresses associated to it.
 
 .. warning::
 
-  If a reverse-proxy (like nginx) is in use then it is necessary to set ``cws.num_proxies_used`` (in :file:`cms.toml`) to ``1`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`). That configuration option can be set to a higher number if there are more proxies between the origin and the server.
+  If a reverse-proxy (like nginx) is in use then it is necessary to set ``contest_num_proxies_used`` (in :file:`cms.toml`) to ``1`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`). That configuration option can be set to a higher number if there are more proxies between the origin and the server.
 
 Logging in with credentials
 ---------------------------
 
 If the autologin is not enabled, users can log in with username and password, which have to be specified in the user configuration (in cleartext, for the moment). The password can also be overridden for a specific contest in the participation configuration. These credentials need to be inserted by the admins (i.e. there's no way to sign up, of log in as a "guest", etc.).
 
-A successfully logged in user needs to reauthenticate after ``cookie_duration`` seconds (specified in the :file:`cms.toml` file) from when they last visited a page.
+A successfully logged in user needs to reauthenticate after ``contest_cookie_duration`` seconds (specified in the :file:`cms.toml` file) from when they last visited a page.
 
-Even without autologin, it is possible to restrict the IP address or subnet that the user is using for accessing CWS, using the "IP-based login restriction" option in the contest configuration (in which case, admins need to set ``cws.num_proxies_used`` as before). If this is set, then the login will fail if the IP address that attempted it does not match at least one of the addresses or subnets specified in the participation settings. If the participation IP address is not set, then no restriction applies.
+Even without autologin, it is possible to restrict the IP address or subnet that the user is using for accessing CWS, using the "IP-based login restriction" option in the contest configuration (in which case, admins need to set ``contest_num_proxies_used`` as before). If this is set, then the login will fail if the IP address that attempted it does not match at least one of the addresses or subnets specified in the participation settings. If the participation IP address is not set, then no restriction applies.
 
 Failure to login
 ----------------

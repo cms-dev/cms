@@ -158,18 +158,18 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
                 N_("Invalid submission format!"),
                 N_("Please select the correct files."))
 
-    if any(len(content) > config.cws.max_submission_length
+    if any(len(content) > config.max_submission_length
            for content in files.values()):
         raise UnacceptableSubmission(
             N_("Submission too big!"),
             N_("Each source file must be at most %d bytes long."),
-            config.cws.max_submission_length)
+            config.max_submission_length)
 
     # All checks done, submission accepted.
 
-    if config.cws.submit_local_copy:
+    if config.submit_local_copy:
         try:
-            store_local_copy(config.cws.submit_local_copy_path, participation,
+            store_local_copy(config.submit_local_copy_path, participation,
                              task, timestamp, files)
         except StorageFailed:
             logger.error("Submission local copy failed.", exc_info=True)
@@ -337,24 +337,24 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
             N_("Invalid test format!"),
             N_("Please select the correct files."))
 
-    if any(len(content) > config.cws.max_submission_length
+    if any(len(content) > config.max_submission_length
            for codename, content in files.items()
            if codename != "input"):
         raise UnacceptableUserTest(
             N_("Test too big!"),
             N_("Each source file must be at most %d bytes long."),
-            config.cws.max_submission_length)
-    if "input" in files and len(files["input"]) > config.cws.max_input_length:
+            config.max_submission_length)
+    if "input" in files and len(files["input"]) > config.max_input_length:
         raise UnacceptableUserTest(
             N_("Input too big!"),
             N_("The input file must be at most %d bytes long."),
-            config.cws.max_input_length)
+            config.max_input_length)
 
     # All checks done, submission accepted.
 
-    if config.cws.tests_local_copy:
+    if config.tests_local_copy:
         try:
-            store_local_copy(config.cws.tests_local_copy_path, participation, task,
+            store_local_copy(config.tests_local_copy_path, participation, task,
                              timestamp, files)
         except StorageFailed:
             logger.error("Test local copy failed.", exc_info=True)

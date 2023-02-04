@@ -56,7 +56,7 @@ class WebService(Service):
         rpc_auth = parameters.pop('rpc_auth', None)
         auth_middleware = parameters.pop('auth_middleware', None)
         is_proxy_used = parameters.pop('is_proxy_used', None)
-        num_proxies_used = parameters.pop('cws.num_proxies_used', None)
+        contest_num_proxies_used = parameters.pop('contest_num_proxies_used', None)
 
         self.wsgi_app = tornado_wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self
@@ -90,14 +90,14 @@ class WebService(Service):
         # only if all requests come from a trusted source (if clients
         # were allowed to directlty communicate with the server they
         # could fake their IP and compromise the security of IP lock).
-        if num_proxies_used is None:
+        if contest_num_proxies_used is None:
             if is_proxy_used:
-                num_proxies_used = 1
+                contest_num_proxies_used = 1
             else:
-                num_proxies_used = 0
+                contest_num_proxies_used = 0
 
-        if num_proxies_used > 0:
-            self.wsgi_app = ProxyFix(self.wsgi_app, num_proxies_used)
+        if contest_num_proxies_used > 0:
+            self.wsgi_app = ProxyFix(self.wsgi_app, contest_num_proxies_used)
 
         self.web_server = WSGIServer((listen_address, listen_port), self)
 

@@ -518,11 +518,11 @@ class FileCacher:
             self.backend = FSBackend(path)
 
         # First we create the config directories.
-        self._create_directory_or_die(config.systemwide.temp_dir)
+        self._create_directory_or_die(config.temp_dir)
         self._create_directory_or_die(config.cache_dir)
 
         if not self.is_shared():
-            self.file_dir = tempfile.mkdtemp(dir=config.systemwide.temp_dir)
+            self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
             # Delete this directory on exit since it has a random name and
             # won't be used again.
             atexit.register(lambda: rmtree(self.file_dir))

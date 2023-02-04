@@ -32,8 +32,6 @@ import logging
 import os
 import sys
 import tomli
-from dataclasses import dataclass, field
-from datetime import datetime
 from collections import namedtuple
 from typing import Optional
 
@@ -92,93 +90,6 @@ class Config:
 
     """
 
-    @dataclass
-    class Systemwide:
-        cmsuser: str = "cmsuser"
-        temp_dir: str = "/tmp"
-        backdoor: bool = False
-        file_log_debug: bool = False
-        stream_log_detailed: bool = False
-
-    @dataclass
-    class Database:
-        database: str = "postgresql+psycopg2://cmsuser@localhost/cms"
-        database_debug: bool = False
-        twophase_commit: bool = False
-
-    @dataclass
-    class Worker:
-        keep_sandbox: bool = False
-        use_cgroups: bool = True
-        sandbox_implementation: str = 'isolate'
-
-    @dataclass
-    class Sandbox:
-        # Max size of each writable file during an evaluation step, in KiB.
-        max_file_size: int = 1024 * 1024  # 1 GiB
-        # Max processes, CPU time (s), memory (KiB) for compilation runs.
-        compilation_sandbox_max_processes: int = 1000
-        compilation_sandbox_max_time_s: float = 10.0
-        compilation_sandbox_max_memory_kib: int = 512 * 1024  # 512 MiB
-
-        # Max processes, CPU time (s), memory (KiB) for trusted runs.
-        trusted_sandbox_max_processes: int = 1000
-        trusted_sandbox_max_time_s: float = 10.0
-        trusted_sandbox_max_memory_kib: int = 4 * 1024 * 1024  # 4 GiB
-
-    @dataclass
-    class WebServers:
-        secret_key_default: str = "8e045a51e4b102ea803c06f92841a1fb"
-        secret_key: str = secret_key_default
-        tornado_debug: bool = False
-
-    @dataclass
-    class ContestWebServer:
-        listen_address: list[str] = \
-            field(default_factory=lambda: [""])
-        listen_port: list[int] = \
-            field(default_factory=lambda: [8888])
-        cookie_duration: int = 30 * 60  # 30 minutes
-        submit_local_copy: bool = True
-        submit_local_copy_path: str = "%s/submissions/"
-        tests_local_copy: bool = True
-        tests_local_copy_path: str = "%s/tests/"
-        # (deprecated in favor of num_proxies_used)
-        is_proxy_used: Optional[bool] = None
-        num_proxies_used: Optional[int] = None
-        max_submission_length: int = 100_000  # 100 KB
-        max_input_length: int = 5_000_000  # 5 MB
-        stl_path: str = "/usr/share/cppreference/doc/html/"
-        # Prefix of 'shared-mime-info'[1] installation. It can be found
-        # out using `pkg-config --variable=prefix shared-mime-info`, but
-        # it's almost universally the same (i.e. '/usr') so it's hardly
-        # necessary to change it.
-        # [1] http://freedesktop.org/wiki/Software/shared-mime-info
-        shared_mime_info_prefix: str = "/usr"
-
-    @dataclass
-    class AdminWebServer:
-        listen_address: str = ""
-        listen_port: int = 8889
-        cookie_duration: int = 10 * 60 * 60  # 10 hours
-        num_proxies_used: Optional[int] = None
-
-    @dataclass
-    class ProxyService:
-        rankings: list[str] = \
-            field(default_factory=lambda:
-                  ["http://usern4me:passw0rd@localhost:8890/"])
-        https_certfile: Optional[str] = None
-
-    @dataclass
-    class PrintingService:
-        max_print_length: int = 10_000_000  # 10 MB
-        printer: Optional[str] = None
-        paper_size: str = "A4"
-        max_pages_per_job: int = 10
-        max_jobs_per_user: int = 10
-        pdf_printing_allowed: bool = False
-
     def __init__(self):
         """Default values for configuration, plus decide if this
         instance is running from the system path or from the source
@@ -187,15 +98,79 @@ class Config:
         """
         self.async_config = async_config
 
-        self.systemwide = self.Systemwide()
-        self.database = self.Database()
-        self.worker = self.Worker()
-        self.sandbox = self.Sandbox()
-        self.webservers = self.WebServers()
-        self.cws = self.ContestWebServer()
-        self.aws = self.AdminWebServer()
-        self.proxyservice = self.ProxyService()
-        self.printingservice = self.PrintingService()
+        # System-wide.
+        self.cmsuser: str = "cmsuser"
+        self.temp_dir: str = "/tmp"
+        self.backdoor: bool = False
+        self.file_log_debug: bool = False
+        self.stream_log_detailed: bool = False
+
+        # Database.
+        self.database: str = "postgresql+psycopg2://cmsuser@localhost/cms"
+        self.database_debug: bool = False
+        self.twophase_commit: bool = False
+
+        # Worker.
+        self.keep_sandbox: bool = False
+        self.use_cgroups: bool = True
+        self.sandbox_implementation: str = 'isolate'
+
+        # Sandbox.
+        # Max size of each writable file during an evaluation step, in KiB.
+        self.max_file_size: int = 1024 * 1024  # 1 GiB
+        # Max processes, CPU time (s), memory (KiB) for compilation runs.
+        self.compilation_sandbox_max_processes: int = 1000
+        self.compilation_sandbox_max_time_s: float = 10.0
+        self.compilation_sandbox_max_memory_kib: int = 512 * 1024  # 512 MiB
+
+        # Max processes, CPU time (s), memory (KiB) for trusted runs.
+        self.trusted_sandbox_max_processes: int = 1000
+        self.trusted_sandbox_max_time_s: float = 10.0
+        self.trusted_sandbox_max_memory_kib: int = 4 * 1024 * 1024  # 4 GiB
+
+        # WebServers.
+        self.secret_key_default: str = "8e045a51e4b102ea803c06f92841a1fb"
+        self.secret_key: str = self.secret_key_default
+        self.tornado_debug: bool = False
+
+        # ContestWebServer.
+        self.contest_listen_address: list[str] = [""]
+        self.contest_listen_port: list[int] = [8888]
+        self.contest_cookie_duration: int = 30 * 60  # 30 minutes
+        self.submit_local_copy: bool = True
+        self.submit_local_copy_path: str = "%s/submissions/"
+        self.tests_local_copy: bool = True
+        self.tests_local_copy_path: str = "%s/tests/"
+        # Deprecated in favor of num_proxies_used:
+        self.is_proxy_used: Optional[bool] = None
+        self.contest_num_proxies_used: Optional[int] = None
+        self.max_submission_length: int = 100_000  # 100 KB
+        self.max_input_length: int = 5_000_000  # 5 MB
+        self.stl_path: str = "/usr/share/cppreference/doc/html/"
+        # Prefix of 'shared-mime-info'[1] installation. It can be found
+        # out using `pkg-config --variable=prefix shared-mime-info`, but
+        # it's almost universally the same (i.e. '/usr') so it's hardly
+        # necessary to change it.
+        # [1] http://freedesktop.org/wiki/Software/shared-mime-info
+        self.shared_mime_info_prefix: str = "/usr"
+
+        # AdminWebServer.
+        self.admin_listen_address: str = ""
+        self.admin_listen_port: int = 8889
+        self.admin_cookie_duration: int = 10 * 60 * 60  # 10 hours
+        self.admin_num_proxies_used: Optional[int] = None
+
+        # ProxyService.
+        self.rankings: list[str] = ["http://usern4me:passw0rd@localhost:8890/"]
+        self.https_certfile: Optional[str] = None
+
+        # PrintingService.
+        self.max_print_length: int = 10_000_000  # 10 MB
+        self.printer: Optional[str] = None
+        self.paper_size: str = "A4"
+        self.max_pages_per_job: int = 10
+        self.max_jobs_per_user: int = 10
+        self.pdf_printing_allowed: bool = False
 
         # Installed or from source?
         # We declare we are running from installed if the program was
@@ -215,7 +190,7 @@ class Config:
             self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
             self.run_dir = os.path.join("/", "var", "local", "run", "cms")
             etc_paths = [os.path.join("/", "usr", "local", "etc"),
-                     os.path.join("/", "etc")]
+                         os.path.join("/", "etc")]
         else:
             self.log_dir = "log"
             self.cache_dir = "cache"
@@ -224,10 +199,10 @@ class Config:
             etc_paths = [os.path.join(".", "config")]
             if '__file__' in globals():
                 etc_paths += [os.path.abspath(os.path.join(
-                          os.path.dirname(__file__),
-                          '..', 'config'))]
+                    os.path.dirname(__file__),
+                    '..', 'config'))]
             etc_paths += [os.path.join("/", "usr", "local", "etc"),
-                      os.path.join("/", "etc")]
+                          os.path.join("/", "etc")]
 
         legacy_paths = [os.path.join(p, "cms.conf") for p in etc_paths]
         paths = [os.path.join(p, "cms.toml") for p in etc_paths]
@@ -240,29 +215,25 @@ class Config:
             paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
 
         # Attempt to load a config file.
-        self._load(paths, legacy_paths)
+        self._load(legacy_paths + paths)
 
         # If the configuration says to print detailed log on stdout,
         # change the log configuration.
-        set_detailed_logs(self.systemwide.stream_log_detailed)
+        set_detailed_logs(self.stream_log_detailed)
 
-    def _load(self, paths, legacy_paths):
+    def _load(self, paths):
         """Try to load the config files one at a time, until one loads
         correctly.
 
         """
-        for conf_file in legacy_paths:
-            if self._load_unique(conf_file, True):
+        for conf_file in paths:
+            if self._load_unique(conf_file):
                 break
         else:
-            for conf_file in paths:
-                if self._load_unique(conf_file):
-                    break
-            else:
-                logging.warning("No valid configuration file found: "
-                                "falling back to default values.")
+            logging.warning("No valid configuration file found: "
+                            "falling back to default values.")
 
-    def _load_unique(self, path, is_legacy=False):
+    def _load_unique(self, path):
         """Populate the Config class with everything that sits inside
         the TOML file path (usually something like /etc/cms.toml). The
         only pieces of data treated differently are the elements of
@@ -273,54 +244,38 @@ class Config:
         they can be commented out in the configuration file.
 
         path (string): the path of the TOML (or JSON) config file.
-        is_legacy (boolean): Whether the file is a legacy JSON file.
 
         """
-        if is_legacy:
-            # Load legacy config file.
-            # Advice of incompatibility if config file is in legacy json format.
+
+        # Load config file.
+        for loader, loader_name, success_handler in \
+            ((tomli, "TOML", lambda: None),
+             (json, "JSON", self._suggest_updated_legacy_config)):
             try:
                 with open(path, 'rb') as f:
-                    legacy_data = json.load(f)
-            except FileNotFoundError:
-                return False
-            except OSError as error:
-                logger.warning("I/O error while opening file %s: [%s] %s",
-                            path, errno.errorcode[error.errno],
-                            os.strerror(error.errno))
-                return False
-            except ValueError as error:
-                # FIXME With ENV var, this would FAIL (as in, show a misguided warning).
-                logger.warning("Invalid syntax in file %s: %s", path, error)
-                return False
-            else:
-                # Found legacy config file.
-                # Parse it and try to create a TOML config from it that the user
-                # can replace it with
-                self._suggest_updated_legacy_config(path, legacy_data)
-                return False
-        else:
-            # Load config file.
-            try:
-                with open(path, 'rb') as f:
-                    data = tomli.load(f)
+                    data = loader.load(f)
             except FileNotFoundError:
                 logger.debug("Couldn't find config file %s.", path)
                 return False
             except OSError as error:
                 logger.warning("I/O error while opening file %s: [%s] %s",
-                            path, errno.errorcode[error.errno],
-                            os.strerror(error.errno))
+                               path, errno.errorcode[error.errno],
+                               os.strerror(error.errno))
                 return False
             except ValueError as error:
-                logger.warning("Invalid syntax in file %s: %s", path, error)
-                return False
+                logger.warning("Invalid syntax (assuming %s) in file %s: %s",
+                               loader_name, path, error)
+            else:
+                success_handler(path, data)
+                break
+        else:
+            return False
 
         logger.info("Using configuration file %s.", path)
 
         if "is_proxy_used" in data:
             logger.warning("The 'is_proxy_used' setting is deprecated, please "
-                           "use 'num_proxies_used' instead.")
+                           "use 'contest_num_proxies_used' instead.")
 
         # Put core and test services in async_config, ignoring those
         # whose name begins with "_".
@@ -334,47 +289,38 @@ class Config:
                     getattr(self.async_config, part)[coord] = Address(*shard)
             del data[part]
 
-        # Put everything else in self.
-        for key, value in data.items():
-            # Handle keys that have not been put under a proper section yet
-            # and are instead in the generic "stray" section.
-            # Here, it is checked that the respective attribute does _not_
-            # exist to make sure nothing is overwritten inadvertently.
-            if key == "stray":
-                for key2, value2 in value.items():
-                    if hasattr(self, key2):
-                        logger.warning("Key %s in section stray can not be "
-                                       "used because the attribute already "
-                                       "exists.", key2)
-                        return False
-                    setattr(self, key2, value2)
-                continue
-
-            if not hasattr(self, key):
-                logger.warning("Section name %s unknown.", key)
-                return False
-            section = getattr(self, key)
-
-            for key2, value2 in value.items():
-                if not hasattr(section, key2):
-                    logger.warning("Key %s unknown in section %s.", key2, key)
-                    return False
-                setattr(section, key2, value2)
+        # These keys have been renamed. If the old key name is still used, it
+        # is still regarded.
+        for key in ("cookie_duration", "num_proxies_used"):
+            if key in data:
+                new_key = "contest_" + key
+                if new_key in data:
+                    logger.error("Conflicting keys %s and %s.", key, new_key)
+                    continue
+                else:
+                    data[new_key] = data[key]
+                del data[key]
 
         # A value of "" means None for these attributes
-        if self.proxyservice.https_certfile == "":
-            self.proxyservice.https_certfile = None
-        if self.printingservice.printer == "":
-            self.printingservice.printer = None
+        for key in ("https_certfile", "printer"):
+            if key in data and data[key] == "":
+                data[key] = None
+
+        # Put everything else in self.
+        for key, value in data.items():
+            # Ignore keys whose name begins with "_".
+            if key.startswith("_"):
+                continue
+            # Warn about unknown keys.
+            if not hasattr(self, key):
+                logger.warning("Key %s unknown.", key)
+            setattr(self, key, value)
 
         return True
 
     def _suggest_updated_legacy_config(self, path, legacy_data):
         logger.error("Legacy json config file found at %s. "
                      "The format for configuration files has changed to TOML. "
-                     "With this change, the attributes are also structured "
-                     "differently: They are put under sections, and variable "
-                     "names have changed. "
                      "You should rewrite your configuration file for the new "
                      "format. A suggested translation will follow.", path)
 
@@ -404,34 +350,38 @@ class Config:
         ]
 
         for k in legacy_attr_not_in_template:
-            logger.warning("Key %s in legacy config is unknown and will "
-                           "be exported to the Stray section.", k)
+            logger.warning("Key %s in legacy config unknown (but will be "
+                           "exported).", k)
 
         # Attributes in the legacy config that don't appear in the TOML
-        # template will be put under their own 'stray' section.
+        # template will be put under a 'stray' "header".
         if len(legacy_attr_not_in_template) == 0:
             stray = ""
         else:
-            stray = "\n\n[stray]\n\n" + \
+            stray = "\n### stray ###\n\n" + \
                 '\n'.join("{} = {}".format(k, json.dumps(v))
-                          for k, v in legacy_attr_not_in_template.items())
-        legacy_data["stray"] = stray
+                          for k, v in legacy_attr_not_in_template.items()) + \
+                "\n"
+        assert "stray" not in legacy_data
+        template_data = legacy_data.copy()
+        template_data["stray"] = stray
 
         for k in template_attr_not_in_legacy:
             logger.warning("Key %s is missing in legacy config; "
                            "the value will be set to the default.", k)
 
         template = jinja_env.get_template("cms_conf_legacy_mapping.toml.jinja")
-        updated_config = template.render(legacy_data)
+        updated_config = template.render(template_data)
 
         logger.info("==== Config heuristically translated to new format below ====\n"
                     "%s\n"
                     "==== Config heuristically translated to new format above ====\n"
                     "You can find your legacy config updated to the "
                     "current config format above. "
-                    "Please check the output and save it as %s. ",
+                    "Please check the output, save it as %s and remove %s. ",
                     updated_config,
-                    os.path.join(os.path.dirname(path), "cms.toml"))
+                    os.path.join(os.path.dirname(path), "cms.toml"),
+                    path)
 
 
 config = Config()

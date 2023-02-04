@@ -132,7 +132,7 @@ class ScoringService(TriggeredService):
         super().__init__(shard)
 
         # Set up communication with ProxyService.
-        ranking_enabled = len(config.proxyservice.rankings) > 0
+        ranking_enabled = len(config.rankings) > 0
         self.proxy_service = self.connect_to(
             ServiceCoord("ProxyService", 0),
             must_be_present=ranking_enabled)

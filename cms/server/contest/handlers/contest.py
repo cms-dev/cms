@@ -171,7 +171,7 @@ class ContestHandler(BaseHandler):
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
-        ret["printing_enabled"] = (config.printingservice.printer is not None)
+        ret["printing_enabled"] = (config.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions
         ret["testing_enabled"] = self.contest.allow_user_tests
 
