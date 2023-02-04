@@ -88,7 +88,7 @@ msgstr "Ви перевищили ліміт часу під час компіл
 
 #:
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
-msgstr "Компіляція припинена через сигнал %s (може бути викликано порушенням обмежень пам’яті)"
+msgstr "Компіляція припинена сигналом %s (може бути викликано порушенням обмежень пам’яті)"
 
 #:
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
@@ -408,11 +408,11 @@ msgstr "Забагато спроб!"
 
 #:
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Ви досягли максимального ліміту (не більше ніж %d) спроб для всіх завдань."
+msgstr "Ви досягли максимального ліміту (не більше ніж %d спроб) для всіх завдань."
 
 #:
 msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Ви досягли максимального ліміту (не більше ніж %d) спроб для цього завдання."
+msgstr "Ви досягли максимального ліміту (не більше ніж %d спроб) для цього завдання."
 
 #:
 msgid "Submissions too frequent!"
@@ -432,7 +432,7 @@ msgstr "Невірний формат архіву!"
 
 #:
 msgid "The submitted archive could not be opened."
-msgstr "Не вдалося відкрити поданий архів."
+msgstr "Не вдалося відкрити надісланий архів."
 
 #:
 msgid "Invalid submission format!"
@@ -788,11 +788,11 @@ msgstr "Ви можете побачити детальний результат
 
 #:
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr "Під час цього змагання ви можете подати щонайбільше %(submissions)s рішень."
+msgstr "Під час цього змагання ви можете надіслати щонайбільше %(submissions)s рішень."
 
 #:
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr "Під час цього змагання ви можете подати щонайбільше %(user_tests)s тестів користувача."
+msgstr "Під час цього змагання ви можете надіслати щонайбільше %(user_tests)s тестів користувача."
 
 #:
 msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
@@ -800,11 +800,11 @@ msgstr "Кожному користувачеві дозволено змага�
 
 #:
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr "Щойно змагання розпочнеться, ви зможете вибрати час, який розпочнеться."
+msgstr "Як тільки змагання розпочнеться, ви зможете розпочати свій часовий проміжок."
 
 #:
 msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Почавши, ви можете надсилати рішення до кінця відведеного часу або до кінця змагання, залежно від того, що відбудеться раніше."
+msgstr "Почавши, ви можете надсилати рішення до кінця відведеного часового проміжку або до кінця змагання, залежно від того, що відбудеться раніше."
 
 #:
 msgid "By clicking on the button below you can start your time frame."
@@ -816,7 +816,7 @@ msgstr "Ви запустили свій часовий проміжок о %(st
 
 #:
 msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Ви можете надсилати рішення до кінця відведеного часу або до кінця змагання, залежно від того, що відбудеться раніше."
+msgstr "Ви можете надсилати рішення до кінця відведеного часового проміжку або до кінця змагання, залежно від того, що відбудеться раніше."
 
 #:
 msgid "You started your time frame at %(start_time)s and you already finished it."
@@ -936,7 +936,7 @@ msgstr "Паролі не збігаються!"
 
 #:
 msgid "This username is already taken, please choose a different one."
-msgstr "Цей логін вже зайнятий, виберіть інше."
+msgstr "Цей логін вже зайнятий, виберіть інший."
 
 #:
 msgid "This user is already registered in the contest."
@@ -1127,11 +1127,11 @@ msgstr "Надішліть рішення"
 
 #:
 msgid "You may submit any subset of outputs in a single submission."
-msgstr "Ви можете подати будь-яку підмножину виводів в одній спробі."
+msgstr "Ви можете надіслати будь-яку підмножину виводів в одній спробі."
 
 #:
 msgid "You can submit %(submissions_left)s more solution(s)."
-msgstr "Ви можете подати ще %(submissions_left)s рішення(ів)."
+msgstr "Ви можете надіслати ще %(submissions_left)s рішення(ів)."
 
 #:
 msgid "submission.zip"
@@ -1189,11 +1189,11 @@ msgid "Download"
 msgstr "Завантажити"
 
 msgid "Submit a test"
-msgstr "Відправити тест"
+msgstr "Надіслати тест"
 
 #, python-format
 msgid "You can submit %(user_tests_left)s more test(s)."
-msgstr ""
+msgstr "Ви можете надіслати ще %(user_tests_left)s тестів."
 
 msgid "input"
 msgstr "вхідні дані"
