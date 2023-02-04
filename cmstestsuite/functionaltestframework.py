@@ -73,7 +73,7 @@ class FunctionalTestFramework:
         return FunctionalTestFramework.__instance
 
     def __init__(self):
-        # This holds the decoded-TOML of the cms.conf configuration file.
+        # This holds the decoded-TOML of the cms.toml configuration file.
         # Lazily loaded, to be accessed through the getter method.
         self._cms_config = None
 

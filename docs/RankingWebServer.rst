@@ -13,7 +13,7 @@ To start RWS you have to execute ``cmsRankingWebServer``.
 Configuring it
 --------------
 
-The configuration file is named :file:`cms.ranking.conf` and RWS will search for it in :file:`/usr/local/etc` and in :file:`/etc` (in this order!). In case it's not found in any of these, RWS will use a hard-coded default configuration that can be found in :gh_blob:`cmsranking/Config.py`. If RWS is not installed then the :gh_tree:`config` directory will also be checked for configuration files (note that for this to work your working directory needs to be root of the repository). In any case, as soon as you start it, RWS will tell you which configuration file it's using.
+The configuration file is named :file:`cms.ranking.toml` and RWS will search for it in :file:`/usr/local/etc` and in :file:`/etc` (in this order!). In case it's not found in any of these, RWS will use a hard-coded default configuration that can be found in :gh_blob:`cmsranking/Config.py`. If RWS is not installed then the :gh_tree:`config` directory will also be checked for configuration files (note that for this to work your working directory needs to be root of the repository). In any case, as soon as you start it, RWS will tell you which configuration file it's using.
 
 The configuration file is a TOML document. The most important parameters are:
 
@@ -37,7 +37,7 @@ The configuration file is a TOML document. The most important parameters are:
 
     Remember to change the ``username`` and ``password`` every time you set up a RWS. Keeping the default ones will leave your scoreboard open to illegitimate access.
 
-To connect the rest of CMS to your new RWS you need to add its connection parameters to the configuration file of CMS (i.e. :file:`cms.conf`). Note that you can connect CMS to multiple RWSs, each on a different server and/or port. The parameter you need to change is ``rankings``, a list of URLs in the form::
+To connect the rest of CMS to your new RWS you need to add its connection parameters to the configuration file of CMS (i.e. :file:`cms.toml`). Note that you can connect CMS to multiple RWSs, each on a different server and/or port. The parameter you need to change is ``rankings``, a list of URLs in the form::
 
     <scheme>://<username>:<password>@<hostname>:<port>/<prefix>
 
@@ -70,9 +70,9 @@ We support the following extensions: .png, .jpg, .gif and .bmp.
 Removing data
 -------------
 
-PS is only able to create or update data on RWS, but not to delete it. This means that, for example, when a user or a task is removed from CMS it will continue to be shown on RWS. To fix this you will have to intervene manually. The ``cmsRWSHelper`` script is designed to make this operation straightforward. For example, calling :samp:`cmsRWSHelper delete user {username}` will cause the user *username* to be removed from all the RWSs that are specified in :file:`cms.conf`. See ``cmsRWSHelper --help`` and :samp:`cmsRWSHelper {action} --help` for more usage details.
+PS is only able to create or update data on RWS, but not to delete it. This means that, for example, when a user or a task is removed from CMS it will continue to be shown on RWS. To fix this you will have to intervene manually. The ``cmsRWSHelper`` script is designed to make this operation straightforward. For example, calling :samp:`cmsRWSHelper delete user {username}` will cause the user *username* to be removed from all the RWSs that are specified in :file:`cms.toml`. See ``cmsRWSHelper --help`` and :samp:`cmsRWSHelper {action} --help` for more usage details.
 
-In case using ``cmsRWSHelper`` is impossible (for example because no :file:`cms.conf` is available) there are alternative ways to achieve the same result, presented in decreasing order of difficulty and increasing order of downtime needed.
+In case using ``cmsRWSHelper`` is impossible (for example because no :file:`cms.toml` is available) there are alternative ways to achieve the same result, presented in decreasing order of difficulty and increasing order of downtime needed.
 
 * You can send a hand-crafted HTTP request to RWS (a ``DELETE`` method on the :samp:`/{entity_type}/{entity_id}` resource, giving credentials by Basic Auth) and it will, all by itself, delete that object and all the ones that depend on it, recursively (that is, when deleting a task or a user it will delete its submissions and, for each of them, its subchanges).
 

@@ -87,7 +87,7 @@ async_config = AsyncConfig()
 class Config:
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
-    default with some sane data. See cms.conf.sample in the config
+    default with some sane data. See cms.toml.sample in the config
     directory for information on the meaning of the fields.
 
     """
@@ -214,49 +214,57 @@ class Config:
             self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
             self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
             self.run_dir = os.path.join("/", "var", "local", "run", "cms")
-            paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                     os.path.join("/", "etc", "cms.conf")]
+            etc_paths = [os.path.join("/", "usr", "local", "etc"),
+                     os.path.join("/", "etc")]
         else:
             self.log_dir = "log"
             self.cache_dir = "cache"
             self.data_dir = "lib"
             self.run_dir = "run"
-            paths = [os.path.join(".", "config", "cms.conf")]
+            etc_paths = [os.path.join(".", "config")]
             if '__file__' in globals():
-                paths += [os.path.abspath(os.path.join(
+                etc_paths += [os.path.abspath(os.path.join(
                           os.path.dirname(__file__),
-                          '..', 'config', 'cms.conf'))]
-            paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                      os.path.join("/", "etc", "cms.conf")]
+                          '..', 'config'))]
+            etc_paths += [os.path.join("/", "usr", "local", "etc"),
+                      os.path.join("/", "etc")]
+
+        legacy_paths = [os.path.join(p, "cms.conf") for p in etc_paths]
+        paths = [os.path.join(p, "cms.toml") for p in etc_paths]
 
         # Allow user to override config file path using environment
         # variable 'CMS_CONFIG'.
         CMS_CONFIG_ENV_VAR = "CMS_CONFIG"
         if CMS_CONFIG_ENV_VAR in os.environ:
+            legacy_paths = [os.environ[CMS_CONFIG_ENV_VAR]] + legacy_paths
             paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
 
         # Attempt to load a config file.
-        self._load(paths)
+        self._load(paths, legacy_paths)
 
         # If the configuration says to print detailed log on stdout,
         # change the log configuration.
         set_detailed_logs(self.systemwide.stream_log_detailed)
 
-    def _load(self, paths):
+    def _load(self, paths, legacy_paths):
         """Try to load the config files one at a time, until one loads
         correctly.
 
         """
-        for conf_file in paths:
-            if self._load_unique(conf_file):
+        for conf_file in legacy_paths:
+            if self._load_unique(conf_file, True):
                 break
         else:
-            logging.warning("No valid configuration file found: "
-                            "falling back to default values.")
+            for conf_file in paths:
+                if self._load_unique(conf_file):
+                    break
+            else:
+                logging.warning("No valid configuration file found: "
+                                "falling back to default values.")
 
-    def _load_unique(self, path):
+    def _load_unique(self, path, is_legacy=False):
         """Populate the Config class with everything that sits inside
-        the TOML file path (usually something like /etc/cms.conf). The
+        the TOML file path (usually something like /etc/cms.toml). The
         only pieces of data treated differently are the elements of
         core_services and other_services that are sent to async
         config.
@@ -264,42 +272,49 @@ class Config:
         Services whose name begins with an underscore are ignored, so
         they can be commented out in the configuration file.
 
-        path (string): the path of the TOML config file.
+        path (string): the path of the TOML (or JSON) config file.
+        is_legacy (boolean): Whether the file is a legacy JSON file.
 
         """
-        # Advice of incompatibility if config file is in legacy json format.
-        try:
-            with open(path, 'rb') as f:
-                legacy_data = json.load(f)
-        except (FileNotFoundError, ValueError):
-            pass
-        except OSError as error:
-            logger.warning("I/O error while opening file %s: [%s] %s",
-                           path, errno.errorcode[error.errno],
-                           os.strerror(error.errno))
-            return False
+        if is_legacy:
+            # Load legacy config file.
+            # Advice of incompatibility if config file is in legacy json format.
+            try:
+                with open(path, 'rb') as f:
+                    legacy_data = json.load(f)
+            except FileNotFoundError:
+                return False
+            except OSError as error:
+                logger.warning("I/O error while opening file %s: [%s] %s",
+                            path, errno.errorcode[error.errno],
+                            os.strerror(error.errno))
+                return False
+            except ValueError as error:
+                # FIXME With ENV var, this would FAIL (as in, show a misguided warning).
+                logger.warning("Invalid syntax in file %s: %s", path, error)
+                return False
+            else:
+                # Found legacy config file.
+                # Parse it and try to create a TOML config from it that the user
+                # can replace it with
+                self._suggest_updated_legacy_config(path, legacy_data)
+                return False
         else:
-            # Found legacy config file.
-            # Parse it and try to create a TOML config from it that the user
-            # can replace it with
-            self._suggest_updated_legacy_config(path, legacy_data)
-            return False
-
-        # Load config file.
-        try:
-            with open(path, 'rb') as f:
-                data = tomli.load(f)
-        except FileNotFoundError:
-            logger.debug("Couldn't find config file %s.", path)
-            return False
-        except OSError as error:
-            logger.warning("I/O error while opening file %s: [%s] %s",
-                           path, errno.errorcode[error.errno],
-                           os.strerror(error.errno))
-            return False
-        except ValueError as error:
-            logger.warning("Invalid syntax in file %s: %s", path, error)
-            return False
+            # Load config file.
+            try:
+                with open(path, 'rb') as f:
+                    data = tomli.load(f)
+            except FileNotFoundError:
+                logger.debug("Couldn't find config file %s.", path)
+                return False
+            except OSError as error:
+                logger.warning("I/O error while opening file %s: [%s] %s",
+                            path, errno.errorcode[error.errno],
+                            os.strerror(error.errno))
+                return False
+            except ValueError as error:
+                logger.warning("Invalid syntax in file %s: %s", path, error)
+                return False
 
         logger.info("Using configuration file %s.", path)
 
@@ -414,9 +429,9 @@ class Config:
                     "==== Config heuristically translated to new format above ====\n"
                     "You can find your legacy config updated to the "
                     "current config format above. "
-                    "Please check the output and replace the legacy "
-                    "config file %s with it. It is recommended to backup "
-                    "the legacy config file first.", updated_config, path)
+                    "Please check the output and save it as %s. ",
+                    updated_config,
+                    os.path.join(os.path.dirname(path), "cms.toml"))
 
 
 config = Config()

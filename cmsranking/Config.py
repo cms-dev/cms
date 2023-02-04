@@ -76,15 +76,15 @@ class Config:
             self.lib_dir = os.path.join("/", "var", "local", "lib",
                                         "cms", "ranking")
             self.conf_paths = [os.path.join("/", "usr", "local", "etc",
-                                            "cms.ranking.conf"),
-                               os.path.join("/", "etc", "cms.ranking.conf")]
+                                            "cms.ranking.toml"),
+                               os.path.join("/", "etc", "cms.ranking.toml")]
         else:
             self.log_dir = os.path.join("log", "ranking")
             self.lib_dir = os.path.join("lib", "ranking")
-            self.conf_paths = [os.path.join(".", "config", "cms.ranking.conf"),
+            self.conf_paths = [os.path.join(".", "config", "cms.ranking.toml"),
                                os.path.join("/", "usr", "local", "etc",
-                                            "cms.ranking.conf"),
-                               os.path.join("/", "etc", "cms.ranking.conf")]
+                                            "cms.ranking.toml"),
+                               os.path.join("/", "etc", "cms.ranking.toml")]
 
         # Allow users to override config file path using environment
         # variable 'CMS_RANKING_CONFIG'.

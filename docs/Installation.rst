@@ -271,8 +271,8 @@ There are still a few steps to complete manually in this case. First, add CMS an
 
     export PATH=$PATH:./isolate/
     export PYTHONPATH=./
-    cp config/cms.conf.sample config/cms.conf
-    cp config/cms.ranking.conf.sample config/cms.ranking.conf
+    cp config/cms.toml.sample config/cms.toml
+    cp config/cms.ranking.toml.sample config/cms.ranking.toml
 
 Second, perform these tasks (that require root permissions):
 

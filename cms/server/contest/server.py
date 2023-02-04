@@ -79,7 +79,7 @@ class ContestWebServer(WebService):
             raise ConfigError("Wrong shard number for %s, or missing "
                               "address/port configuration. Please check "
                               "cws.listen_address and cws.listen_port "
-                              "in cms.conf." % __name__)
+                              "in cms.toml." % __name__)
 
         self.contest_id = contest_id
 
