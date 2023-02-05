@@ -24,7 +24,7 @@ msgstr "N/A"
 
 #:
 msgid "Not correct"
-msgstr "Не вірно"
+msgstr "Неправильно"
 
 #:
 msgid "Correct"
