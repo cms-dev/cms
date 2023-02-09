@@ -249,7 +249,7 @@ class Config:
 
         # Load config file.
         for loader, loader_name, success_handler in \
-            ((tomli, "TOML", lambda: None),
+            ((tomli, "TOML", lambda p, d: None),
              (json, "JSON", self._suggest_updated_legacy_config)):
             try:
                 with open(path, 'rb') as f:
