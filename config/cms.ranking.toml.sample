@@ -7,5 +7,3 @@ http_port = 8890
 # Login information for adding and editing data.
 username = "usern4me"
 password = "passw0rd"
-
-# This is the end of this file.

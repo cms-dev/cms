@@ -122,7 +122,6 @@ class Config:
         self.compilation_sandbox_max_processes: int = 1000
         self.compilation_sandbox_max_time_s: float = 10.0
         self.compilation_sandbox_max_memory_kib: int = 512 * 1024  # 512 MiB
-
         # Max processes, CPU time (s), memory (KiB) for trusted runs.
         self.trusted_sandbox_max_processes: int = 1000
         self.trusted_sandbox_max_time_s: float = 10.0
@@ -141,8 +140,7 @@ class Config:
         self.submit_local_copy_path: str = "%s/submissions/"
         self.tests_local_copy: bool = True
         self.tests_local_copy_path: str = "%s/tests/"
-        # Deprecated in favor of num_proxies_used:
-        self.is_proxy_used: Optional[bool] = None
+        self.is_proxy_used: Optional[bool] = None  # (deprecated)
         self.contest_num_proxies_used: Optional[int] = None
         self.max_submission_length: int = 100_000  # 100 KB
         self.max_input_length: int = 5_000_000  # 5 MB
@@ -204,18 +202,17 @@ class Config:
             etc_paths += [os.path.join("/", "usr", "local", "etc"),
                           os.path.join("/", "etc")]
 
-        legacy_paths = [os.path.join(p, "cms.conf") for p in etc_paths]
-        paths = [os.path.join(p, "cms.toml") for p in etc_paths]
+        paths = [os.path.join(p, "cms.conf") for p in etc_paths] + \
+                [os.path.join(p, "cms.toml") for p in etc_paths]
 
         # Allow user to override config file path using environment
         # variable 'CMS_CONFIG'.
         CMS_CONFIG_ENV_VAR = "CMS_CONFIG"
         if CMS_CONFIG_ENV_VAR in os.environ:
-            legacy_paths = [os.environ[CMS_CONFIG_ENV_VAR]] + legacy_paths
             paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
 
         # Attempt to load a config file.
-        self._load(legacy_paths + paths)
+        self._load(paths)
 
         # If the configuration says to print detailed log on stdout,
         # change the log configuration.
