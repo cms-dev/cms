@@ -102,7 +102,7 @@ admin_cookie_duration = 36000
 # the request. This is used to determine the request's real
 # source IP address. For example, if you're using nginx as
 # a proxy, you will likely want to set this value to 1.
-num_proxies_used = 0
+admin_num_proxies_used = 0
 
 
 ### ProxyService ###
