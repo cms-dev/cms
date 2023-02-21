@@ -521,10 +521,8 @@ class QueueService(TriggeredService):
         if error is not None:
             logger.warning("Operation %s writing error (%s); re-enqueuing.",
                            operation, error)
-            # The operation has been created by using from_dict.
-            # We can't use side_data here so we can't access
-            # priority, and timestamp of the operation.
-            self.enqueue(operation, PriorityQueue.PRIORITY_LOW, datetime.now())
+            priority, timestamp = operation.side_data
+            self.enqueue(operation, priority, timestamp)
         else:
             for new_operation, priority, timestamp in new_operations:
                 self.enqueue(
