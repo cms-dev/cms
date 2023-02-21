@@ -36,7 +36,7 @@ contest_id (int|None): the id of the contest to invalidate.
   {% set invalidate_arguments = {"contest_id": contest_id} %}
 {% endif %}
 <button onclick="cmsrpc_request(
-                 'EvaluationService', 0,
+                 'QueueService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
                  '{{ key }}': {{ value }},
@@ -49,7 +49,7 @@ contest_id (int|None): the id of the contest to invalidate.
 {% endif %}
         title="Compilation" >C</button>
 <button onclick="cmsrpc_request(
-                 'EvaluationService', 0,
+                 'QueueService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
                  '{{ key }}': {{ value }},

@@ -41,7 +41,7 @@ RPCS_ALLOWED_FOR_ALL = RPCS_ALLOWED_FOR_MESSAGING + [
     ("ResourceService", "toggle_autorestart"),
     ("QueueService", "enable_worker"),
     ("QueueService", "disable_worker"),
-    ("EvaluationService", "invalidate_submission"),
+    ("QueueService", "invalidate_submission"),
     ("ScoringService", "invalidate_submission"),
 ]
 
