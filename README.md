@@ -40,6 +40,22 @@ inside the repository:
 git submodule update --init
 ```
 
+Run With Docker Compose
+---------
+`docker compose -f docker-compose.dev.yml up -d`
+
+after the container `cms_dev`, `db` up
+
+enter the `cms_dev` container with `docker exec -it cms_dev bash`
+
+then run:
+
+`cmsAddAdmin <admin name>`
+
+it will print the password of the admin name
+
+browse <your_host_name>:8889, then use the admin name and the above password to login!
+
 
 Support
 -------
