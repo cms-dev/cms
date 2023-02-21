@@ -41,7 +41,8 @@ class TestRunner:
     # Tell pytest not to collect this class as test
     __test__ = False
 
-    def __init__(self, test_list, contest_id=None, workers=1, cpu_limits=None):
+    def __init__(self, test_list, contest_id=None, workers=1, cpu_limits=None,
+                 evaluations=4):
         self.start_time = datetime.datetime.now()
         self.last_end_time = self.start_time
 
@@ -61,6 +62,7 @@ class TestRunner:
 
         self.num_users = 0
         self.workers = workers
+        self.evaluations = evaluations
 
         if CONFIG["TEST_DIR"] is not None:
             # Set up our expected environment.
@@ -306,7 +308,9 @@ class TestRunner:
         # send the notification for all submissions.
         self.ps.start("ContestWebServer", contest=self.contest_id)
         if concurrent_submit_and_eval:
-            self.ps.start("EvaluationService", contest=self.contest_id)
+            self.ps.start("QueueService", contest=self.contest_id)
+            for shard in range(self.evaluations):
+                self.ps.start("EvaluationService", shard, contest=self.contest_id)
         self.ps.wait()
 
         self.ps.start("ProxyService", contest=self.contest_id)

@@ -41,7 +41,7 @@ import logging
 
 from werkzeug.middleware.shared_data import SharedDataMiddleware
 
-from cms import ConfigError, ServiceCoord, config
+from cms import ConfigError, ServiceCoord, config, get_service_shards
 from cms.io import WebService
 from cms.locale import get_translations
 from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
@@ -116,8 +116,10 @@ class ContestWebServer(WebService):
         # Retrieve the available translations.
         self.translations = get_translations()
 
-        self.evaluation_service = self.connect_to(
-            ServiceCoord("EvaluationService", 0))
+        self.evaluation_services = [
+            self.connect_to(ServiceCoord("EvaluationService", i))
+            for i in range(get_service_shards("EvaluationService"))]
+
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
 

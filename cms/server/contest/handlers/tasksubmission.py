@@ -38,7 +38,8 @@ except ImportError:
     import tornado.web as tornado_web
 from sqlalchemy.orm import joinedload
 
-from cms import config, FEEDBACK_LEVEL_FULL
+
+from cms import config, random_service, FEEDBACK_LEVEL_FULL
 from cms.db import Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
 from cms.grading.scoring import task_score
@@ -90,8 +91,8 @@ class SubmitHandler(ContestHandler):
             logger.info("Sent error: `%s' - `%s'", e.subject, e.formatted_text)
             self.notify_error(e.subject, e.text, e.text_params)
         else:
-            self.service.evaluation_service.new_submission(
-                submission_id=submission.id)
+            random_service(self.service.evaluation_services)\
+                .new_submission(submission_id=submission.id)
             self.notify_success(N_("Submission received"),
                                 N_("Your submission has been received "
                                    "and is currently being evaluated."))
@@ -103,7 +104,6 @@ class SubmitHandler(ContestHandler):
 
         self.redirect(self.contest_url("tasks", task.name, "submissions",
                                        **query_args))
-
 
 class TaskSubmissionsHandler(ContestHandler):
     """Shows the data of a task in the contest.
