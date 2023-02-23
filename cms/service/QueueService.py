@@ -44,7 +44,7 @@ from cms.io import Executor, TriggeredService, rpc_method
 from cms.db import SessionGen
 from cms.grading.Job import JobGroup
 from cms.io import PriorityQueue
-from cms.service import get_submissions, get_submission_results
+from cms.db.util import get_submissions, get_submission_results
 
 from .esoperations import ESOperation, get_relevant_operations, \
     get_submissions_operations, get_user_tests_operations
