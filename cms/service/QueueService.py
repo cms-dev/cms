@@ -506,11 +506,7 @@ class QueueService(TriggeredService):
                                    operation)
 
     @with_post_finish_lock
-    def result_written(self, success_new_operations, operation, error=None):
-        success, new_operations = None, []
-        if success_new_operations is not None:
-            success, new_operations = success_new_operations
-
+    def result_written(self, success, operation, error=None):
         logger.info("Result for operation %s written, success: %s",
                     operation, success)
         try:
@@ -524,9 +520,15 @@ class QueueService(TriggeredService):
             priority, timestamp = operation.side_data
             self.enqueue(operation, priority, timestamp)
         else:
-            for new_operation, priority, timestamp in new_operations:
-                self.enqueue(
-                    ESOperation.from_dict(new_operation), priority, timestamp)
+            if success:
+                logger.info("Adding next steps for operation %s", operation)
+                random_service(self.evaluation_services).enqueue_next_steps_for_operation(
+                    operation=operation.to_dict()
+                )
+            else:
+                logger.info("Not proceeding to next steps for operation %s "
+                            "due to unsuccessful write",
+                            operation)
 
     @rpc_method
     def disable_worker(self, shard):

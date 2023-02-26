@@ -65,7 +65,6 @@ def with_post_finish_lock(func):
     return wrapped
 
 
-
 class EvaluationService(Service):
     """Evaluation service.
 
@@ -216,7 +215,7 @@ class EvaluationService(Service):
             if dataset is None:
                 logger.error("Could not find dataset %d in the database.",
                              dataset_id)
-                return False, []
+                return False
 
             # Get submission or user test, and their results.
             if type_ in [ESOperation.COMPILATION, ESOperation.EVALUATION]:
@@ -224,7 +223,7 @@ class EvaluationService(Service):
                 if object_ is None:
                     logger.error("Could not find submission %d "
                                  "in the database.", object_id)
-                    return False, []
+                    return False
                 object_result = object_.get_result_or_create(dataset)
             else:
                 object_ = UserTest.get_from_id(object_id, session)
@@ -232,7 +231,7 @@ class EvaluationService(Service):
 
             logger.info("Writing result to db for %s", operation)
             try:
-                new_operations = self.write_results_one_row(
+                result_is_valid = self.write_results_one_row(
                     session, object_result, operation, job)
             except IntegrityError:
                 logger.warning(
@@ -240,7 +239,7 @@ class EvaluationService(Service):
                     exc_info=True)
                 # This is not an error condition, as the result is already
                 # in the DB.
-                return True, []
+                return False
             except Exception:
                 # Defend against any exception. A poisonous results that fails
                 # here is attempted again without limits, thus can enter in
@@ -249,21 +248,16 @@ class EvaluationService(Service):
                 logger.error(
                     "Unexpected exception while inserting worker result.",
                     exc_info=True)
-                return False, []
+                return False
 
             logger.debug("Committing evaluations...")
             session.commit()
 
-            # If we collected some new operations to do while writing
-            # the results, it means we had to invalidate the submission.
-            # We return immediately since we already have all the operations
-            # we need to do next.
-            if new_operations:
-                return True, [
-                    [op.to_dict(),
-                     priority,
-                     make_timestamp(timestamp)]
-                    for op, priority, timestamp in new_operations]
+            # If we are not successful, it means we had to invalidate the submission.
+            # We return immediately signaling that the queue should be populated with
+            # next steps for this submission.
+            if not result_is_valid:
+                return True
 
             if type_ == ESOperation.EVALUATION:
                 if len(object_result.evaluations) == len(dataset.testcases):
@@ -274,22 +268,34 @@ class EvaluationService(Service):
 
             logger.info("Ending operations...")
             if type_ == ESOperation.COMPILATION:
-                new_operations = self.compilation_ended(object_result)
+                self.compilation_ended(object_result)
             elif type_ == ESOperation.EVALUATION:
                 if object_result.evaluated():
-                    new_operations = self.evaluation_ended(object_result)
+                    self.evaluation_ended(object_result)
             elif type_ == ESOperation.USER_TEST_COMPILATION:
-                new_operations = \
-                    self.user_test_compilation_ended(object_result)
+                self.user_test_compilation_ended(object_result)
             elif type_ == ESOperation.USER_TEST_EVALUATION:
-                new_operations = self.user_test_evaluation_ended(object_result)
+                self.user_test_evaluation_ended(object_result)
+        return True
 
-        logger.debug("Done")
-        return True, [
-            [op.to_dict(),
-             priority,
-             make_timestamp(timestamp)]
-            for op, priority, timestamp in new_operations]
+    def enqueue_next_steps_for_operation(self, operation):
+        logger.debug("Adding next steps to queue...")
+        if isinstance(operation, dict):
+            operation = ESOperation.from_dict(operation)
+
+        with SessionGen() as session:
+            type_ = operation.type_
+            object_id = operation.object_id
+            if type_ in [ESOperation.COMPILATION, ESOperation.EVALUATION]:
+                object_ = Submission.get_from_id(object_id, session)
+                if object_ is None:
+                    logger.error("Could not find submission %d "
+                                 "in the database.", object_id)
+                    return False
+                self.enqueue_all(self.get_submission_operations(object_))
+            else:
+                object_ = UserTest.get_from_id(object_id, session)
+                self.enqueue_all(self.get_user_test_operations(object_))
 
     @with_post_finish_lock
     @rpc_method
@@ -456,8 +462,7 @@ class EvaluationService(Service):
                                     object_result.dataset_id)
                         with session.begin_nested():
                             object_result.invalidate_compilation()
-                        return self.get_submission_operations(
-                            object_result.submission)
+                        return False
                 else:
                     object_result.evaluation_tries += 1
 
@@ -476,7 +481,7 @@ class EvaluationService(Service):
         else:
             logger.error("Invalid operation type %r.", operation.type_)
 
-        return []
+        return True
 
     def compilation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
@@ -488,7 +493,6 @@ class EvaluationService(Service):
         submission_result (SubmissionResult): the submission result.
 
         """
-        submission = submission_result.submission
 
         # If compilation was ok, we emit a satisfied log message.
         if submission_result.compilation_succeeded():
@@ -525,8 +529,6 @@ class EvaluationService(Service):
             logger.error("Compilation outcome %r not recognized.",
                          submission_result.compilation_outcome)
 
-        # Enqueue next steps to be done
-        return self.get_submission_operations(submission)
 
     def evaluation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
@@ -536,7 +538,6 @@ class EvaluationService(Service):
         submission_result (SubmissionResult): the submission result.
 
         """
-        submission = submission_result.submission
 
         # Evaluation successful, we inform ScoringService so it can
         # update the score. We need to commit the session beforehand,
@@ -563,8 +564,6 @@ class EvaluationService(Service):
                              submission_result.submission_id,
                              submission_result.dataset_id)
 
-        # Enqueue next steps to be done (e.g., if evaluation failed).
-        return self.get_submission_operations(submission)
 
     def user_test_compilation_ended(self, user_test_result):
         """Actions to be performed when we have a user test that has
@@ -574,7 +573,6 @@ class EvaluationService(Service):
         user_test_result (UserTestResult): the user test result.
 
         """
-        user_test = user_test_result.user_test
 
         # If compilation was ok, we emit a satisfied log message.
         if user_test_result.compilation_succeeded():
@@ -606,8 +604,6 @@ class EvaluationService(Service):
             logger.error("Compilation outcome %r not recognized.",
                          user_test_result.compilation_outcome)
 
-        # Enqueue next steps to be done
-        return self.get_user_test_operations(user_test)
 
     def user_test_evaluation_ended(self, user_test_result):
         """Actions to be performed when we have a user test that has
@@ -617,7 +613,6 @@ class EvaluationService(Service):
         user_test_result (UserTestResult): the user test result.
 
         """
-        user_test = user_test_result.user_test
 
         # Evaluation successful, we emit a satisfied log message.
         if user_test_result.evaluated():
@@ -638,8 +633,6 @@ class EvaluationService(Service):
                              user_test_result.user_test_id,
                              user_test_result.dataset_id)
 
-        # Enqueue next steps to be done (e.g., if evaluation failed).
-        return self.get_user_test_operations(user_test)
 
     @rpc_method
     def new_submission(self, submission_id):
