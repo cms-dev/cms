@@ -488,7 +488,6 @@ class QueueService(TriggeredService):
             except IndexError:
                 continue
 
-
             logger.info("Sending results for operation %s to ES.", operation)
             try:
                 random_service(self.evaluation_services).write_single_result(
@@ -506,6 +505,7 @@ class QueueService(TriggeredService):
                                    "ignoring.",
                                    operation)
 
+    @with_post_finish_lock
     def result_written(self, success_new_operations, operation, error=None):
         success, new_operations = None, []
         if success_new_operations is not None:

@@ -230,7 +230,6 @@ class EvaluationService(Service):
                 object_ = UserTest.get_from_id(object_id, session)
                 object_result = object_.get_result_or_create(dataset)
 
-
             logger.info("Writing result to db for %s", operation)
             try:
                 new_operations = self.write_results_one_row(
@@ -263,7 +262,7 @@ class EvaluationService(Service):
                 return True, [
                     [op.to_dict(),
                      priority,
-                     (timestamp - EvaluationService.EPOCH).total_seconds()]
+                     make_timestamp(timestamp)]
                     for op, priority, timestamp in new_operations]
 
             if type_ == ESOperation.EVALUATION:
@@ -289,7 +288,7 @@ class EvaluationService(Service):
         return True, [
             [op.to_dict(),
              priority,
-             (timestamp - EvaluationService.EPOCH).total_seconds()]
+             make_timestamp(timestamp)]
             for op, priority, timestamp in new_operations]
 
     @with_post_finish_lock
@@ -396,7 +395,7 @@ class EvaluationService(Service):
         return True, [
             [op.to_dict(),
              priority,
-             (timestamp - EvaluationService.EPOCH).total_seconds()]
+             make_timestamp(timestamp)]
             for op, priority, timestamp in new_operations]
 
     def write_results_one_object_and_type(
