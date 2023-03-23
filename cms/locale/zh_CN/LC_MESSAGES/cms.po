@@ -1,19 +1,20 @@
 # Simplified Chinese translations for CMS.
-# Copyright ? 2010-2015 CMS authors
+# Copyright ? 2010-2023 CMS authors
 # This file is distributed under the same license as CMS.
 # vanshady <faceswilliam@gmail.com>, 2013.
+# psz2007 <panshizhao2007@163.com>, 2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-25 19:14+0000\n"
+"POT-Creation-Date: 2023-03-23 8:40+0800\n"
 "PO-Revision-Date: 2014-07-01 07:24+0100\n"
-"Last-Translator: vanshady <faceswilliam@gmail.com>\n"
+"Last-Translator: psz2007 <panshizhao2007@163.com>\n"
 "Language-Team: Simplified Chinese\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Compilation succeeded"
@@ -89,13 +90,13 @@ msgid ""
 "CPU time visible in the submission details might be much smaller than the "
 "time limit."
 msgstr "程序总耗时超时。这可能是因为代码中有未定义行为或者缓存溢出。"
-"注意如果是这样的话，在程序报告中的 CPU 用时可能会小于时限。"
+"注意如果是这样的话，在程序报告中的 CPU 时间可能会小于时限。"
 
 #, python-format
 msgid ""
 "Execution killed with signal %s (could be triggered by violating memory "
 "limits)"
-msgstr "测试程序因信号 %s 而被强制终止（可能因为内存溢出）"
+msgstr "测试程序因信号 %s 而被强制终止（可能因为内存溢出而触发）"
 
 msgid ""
 "Your submission was killed with the specified signal. Among other things, "
@@ -106,11 +107,11 @@ msgstr "程序因为特定的信号而被强制终止。这可能是因为内存
 "注意如果这是原因的话，程序报告中的内存使用信息是信号被发出前的信息。"
 
 msgid "Execution failed because the return code was nonzero"
-msgstr "执行失败: 程序返回值非零"
+msgstr "运行失败: 程序返回值非零"
 
 msgid ""
 "Your submission failed because it exited with a return code different from 0."
-msgstr "程序因退出时返回值非零而失败"
+msgstr "程序因退出时返回值非零而运行失败。"
 
 msgid "N/A"
 msgstr "N/A"
@@ -213,7 +214,7 @@ msgstr[1] "至多可以同时拥有 %(gen_max)d 个未使用的 %(type_pl)s。"
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "会产生一个额外的 %(type_s)s。"
-msgstr[1] "会产生%d个额外的 %(type_s)s。"
+msgstr[1] "会产生 %(gen_number)d 个额外的 %(type_s)s。"
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
@@ -380,7 +381,7 @@ msgstr "提交文件过大！"
 
 #, python-format
 msgid "Each source file must be at most %d bytes long."
-msgstr "每个文件长度不得超过 %d 字节。"
+msgstr "每个源文件长度不得超过 %d 字节。"
 
 msgid "Submission storage failed!"
 msgstr "提交文件存取错误！"
@@ -577,7 +578,7 @@ msgstr "STL 标准样板函数库"
 msgid ""
 "The main Java class of the solution should have exactly the same name as the "
 "task."
-msgstr "Java 的 main class 应该与题目名称保持一致"
+msgstr "Java 的 main class 应该与题目名称保持一致。"
 
 #, fuzzy
 msgid "Submission details for compilation"
@@ -605,7 +606,7 @@ msgid ""
 "Note that attempts to tamper with Contest Management System (such as probing "
 "the server with customized URLs) may be considered cheating and may lead to "
 "disqualification."
-msgstr "擅自以非正当方式操作本系统将导致取消竞赛资格。"
+msgstr "擅自以非正当方式操作本系统可能会被认定为作弊，并导致取消竞赛资格。"
 
 msgid ""
 "If you encountered this error during normal usage, please notify the contest "
@@ -664,13 +665,13 @@ msgid ""
 "You have two types of tokens: a set of <em>contest-tokens</em> shared among "
 "all tasks and a distinct set of <em>task-tokens</em> for each task."
 msgstr ""
-"Token 分为两类: 竞赛-Token (竞赛共用的 Token)，与题目-Token（每题各自独立的 "
+"Token 分为两类：竞赛-Token（竞赛共用的 Token），与题目-Token（每题各自独立的 "
 "Token）。"
 
 msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
 "one of each type."
-msgstr "对于每次上传而言, 使用两类 Token 各一枚即可查看该次详细的评测结果。"
+msgstr "对于每次上传而言，使用两类 Token 各一枚即可查看该次详细的评测结果。"
 
 #, fuzzy, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
@@ -687,7 +688,7 @@ msgid ""
 msgstr "每位参赛者可以选择连续的 %(per_user_time)s 参加本次计时竞赛。"
 
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr "当竞赛开启时, 您就可以参加竞赛并开始计时。"
+msgstr "当竞赛开启时，您就可以参加竞赛并开始计时。"
 
 msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
@@ -759,13 +760,13 @@ msgstr "打印"
 msgid ""
 "You can print %(remaining_jobs)s more text or PDF files of up to "
 "%(max_pages)s pages each."
-msgstr "您可以再打印 %(remaining_jobs)s 个文本文件或者PDF，每个文件最多 %(max_pages)s 页。"
+msgstr "您可以再打印 %(remaining_jobs)s 个文本文件或者 PDF，每个文件最多 %(max_pages)s 页。"
 
 #, python-format
 msgid ""
 "You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
 "pages each."
-msgstr "您可以打印 %(remaining_jobs)s 个文本文件，每个文件最多%(max_pages)s页。"
+msgstr "您可以打印 %(remaining_jobs)s 个文本文件，每个文件最多 %(max_pages)s 页。"
 
 msgid "File (text or PDF)"
 msgstr "文件（文字或 PDF）"
@@ -907,7 +908,7 @@ msgstr "提交解答"
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
-msgstr "您可以再上传 %(submissions_left)s 个解答"
+msgstr "您可以再上传 %(submissions_left)s 个解答。"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -959,7 +960,7 @@ msgid "no submissions yet"
 msgstr "尚未提交"
 
 msgid "Submission details"
-msgstr "提交详细资料"
+msgstr "提交详细信息"
 
 msgid "Close"
 msgstr "关闭"
@@ -993,4 +994,4 @@ msgid "Evaluation outcome"
 msgstr "测试信息"
 
 #~ msgid "All sources must be in the same language."
-#~ msgstr "所有程序码需使用相同的程序语言"
+#~ msgstr "所有程序源码需使用相同的程序语言。"
