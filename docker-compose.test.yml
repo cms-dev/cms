@@ -21,6 +21,11 @@ services:
     privileged: true
     command: >
       wait-for-it db:5432 -- sh -c "
+      cd isolate ;
+      git checkout cg2 ;
+      make isolate ;
+      sudo make install ;
+      cd .. ;
       createdb --host=db --username=postgres cmsdb ;
       createdb --host=db --username=postgres cmsdbfortesting ;
       cmsInitDB ;
