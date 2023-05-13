@@ -47,7 +47,7 @@ class TestGetNameForType(unittest.TestCase):
 
     def test_alias(self):
         self.assertEqual(get_name_for_type("text/x-octave"),
-                         "MATLAB script/function")
+                         "MATLAB file")
 
 
 class TestGetTypeForFileName(unittest.TestCase):
