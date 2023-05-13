@@ -35,12 +35,16 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 # Set cmsuser as default user
 USER cmsuser
 
-COPY --chown=cmsuser:cmsuser . /home/cmsuser/cms
+RUN mkdir /home/cmsuser/cms
+COPY --chown=cmsuser:cmsuser requirements.txt dev-requirements.txt /home/cmsuser/cms/
 
 WORKDIR /home/cmsuser/cms
 
 RUN sudo pip3 install -r requirements.txt
 RUN sudo pip3 install -r dev-requirements.txt
+
+COPY --chown=cmsuser:cmsuser . /home/cmsuser/cms
+
 RUN sudo python3 setup.py install
 
 RUN sudo python3 prerequisites.py --yes --cmsuser=cmsuser install
