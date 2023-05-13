@@ -211,6 +211,9 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
 
 
 class TestingNotAllowed(Exception):
+    # Tell pytest not to collect this class as test
+    __test__ = False
+
     pass
 
 

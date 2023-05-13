@@ -1,30 +1,35 @@
 version: "3.3"
+
 services:
-  db:
-    container_name: db
+  cms_test_db:
+    container_name: cms_test_db
     image: postgres
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-    volumes:
-      # It would be nice here to support OSes that don't have /tmp
-      # See: https://github.com/docker/compose/issues/3344
-      - "/tmp/var_lib_postgresql_data:/var/lib/postgresql/data"
+
   cms_test:
     container_name: cms_test
     build: .
     depends_on:
-      - "db"
+      - "cms_test_db"
     environment:
       CMS_CONFIG: /usr/local/etc/cms-testdb.conf
+      # Could be removed in the future, see:
+      # - https://github.com/pytest-dev/pytest/issues/7443
+      # - https://github.com/actions/runner/issues/241
+      PYTEST_ADDOPTS: --color=yes
     volumes:
       - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
     command: >
-      wait-for-it db:5432 -- sh -c "
-      createdb --host=db --username=postgres cmsdb ;
-      createdb --host=db --username=postgres cmsdbfortesting ;
+      wait-for-it cms_test_db:5432 -- sh -c "
+      dropdb --host=cms_test_db --username=postgres cmsdbfortesting ;
+      createdb --host=cms_test_db --username=postgres cmsdbfortesting ;
       cmsInitDB ;
       sudo chown cmsuser:cmsuser ./codecov ;
-      TEST_SUITE=unittests cmsRunTests -v --coverage codecov/unittests.xml ;
-      TEST_SUITE=functionaltests cmsRunTests -v --coverage codecov/functionaltests.xml ;
+      pytest --cov . --cov-report xml:codecov/unittests.xml ;
+      dropdb --host=cms_test_db --username=postgres cmsdbfortesting ;
+      createdb --host=cms_test_db --username=postgres cmsdbfortesting ;
+      cmsInitDB ;
+      cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml ;
       "
