@@ -5,6 +5,7 @@ Welcome to CMS's documentation!
    :maxdepth: 2
 
    Introduction
+   Docker image
    Installation
    Running CMS
    Data model
