@@ -122,7 +122,7 @@ class TestGenericStep(unittest.TestCase):
                              collect_output=True)
 
         # 2 commands executed, with exec_num 0 and 1
-        self.assertEquals(self.sandbox.exec_num, 1)
+        self.assertEqual(self.sandbox.exec_num, 1)
         # Stats are the combination of the two.
         self.assertEqual(stats, get_stats(1.1,  # sum
                                           5.5,  # sum
@@ -141,7 +141,7 @@ class TestGenericStep(unittest.TestCase):
                              collect_output=True)
 
         # 1 command executed (generic terminates early), with exec_num 0.
-        self.assertEquals(self.sandbox.exec_num, 0)
+        self.assertEqual(self.sandbox.exec_num, 0)
         # Stats are only for the first command.
         self.assertEqual(stats, get_stats(
             0.1, 0.5, 1000 * 1024, Sandbox.EXIT_NONZERO_RETURN,
@@ -156,7 +156,7 @@ class TestGenericStep(unittest.TestCase):
         stats = generic_step(self.sandbox, TWO_COMMANDS, "name")
 
         # 1 command executed (generic terminates early), with exec_num 0.
-        self.assertEquals(self.sandbox.exec_num, 0)
+        self.assertEqual(self.sandbox.exec_num, 0)
         self.assertIsNone(stats)
 
     def test_invalid_utf8_in_output(self):
