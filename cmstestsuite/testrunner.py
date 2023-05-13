@@ -38,6 +38,9 @@ logger = logging.getLogger(__name__)
 
 
 class TestRunner:
+    # Tell pytest not to collect this class as test
+    __test__ = False
+
     def __init__(self, test_list, contest_id=None, workers=1, cpu_limits=None):
         self.start_time = datetime.datetime.now()
         self.last_end_time = self.start_time
