@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:20.04
 
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update
 RUN apt-get install -y \
     build-essential \
-    g++-13 \
+    gcc-11 \
     cgroup-lite \
     cppreference-doc-en-html \
     fp-compiler \
