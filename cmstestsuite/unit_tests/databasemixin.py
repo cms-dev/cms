@@ -37,12 +37,6 @@ same regardless of the path used to reach it.
 
 from datetime import timedelta
 
-import cms
-
-
-# Monkeypatch the db string.
-# Noqa to avoid complaints due to imports after a statement.
-cms.config.database += "fortesting"  # noqa
 
 from cms.db import engine, metadata, Announcement, Contest, Dataset, Evaluation, \
     Executable, File, Manager, Message, Participation, Question, Session, \
@@ -261,8 +255,10 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        assert "fortesting" in str(engine), \
-            "Monkey patching of DB connection string failed"
+        assert engine.url.database.endswith("fortesting"), (
+            "The database name is not in the form '<name>fortesting' and "
+            " this could mean that you're running tests on the wrong database."
+            " Aborting")
         drop_db()
         init_db()
 

@@ -59,21 +59,21 @@ class TestLogService(unittest.TestCase):
             exc_text=TestLogService.EXC_TEXT + severity)
         last_message = self.service.last_messages()[-1]
         if saved:
-            self.assertEquals(last_message["message"],
+            self.assertEqual(last_message["message"],
                               TestLogService.MSG + severity)
-            self.assertEquals(last_message["coord"],
+            self.assertEqual(last_message["coord"],
                               TestLogService.SERVICE_NAME + severity +
                               "," + ("%d" % TestLogService.SERVICE_SHARD))
-            self.assertEquals(last_message["operation"],
+            self.assertEqual(last_message["operation"],
                               TestLogService.OPERATION + severity)
-            self.assertEquals(last_message["severity"],
+            self.assertEqual(last_message["severity"],
                               severity)
-            self.assertEquals(last_message["timestamp"],
+            self.assertEqual(last_message["timestamp"],
                               TestLogService.CREATED)
-            self.assertEquals(last_message["exc_text"],
+            self.assertEqual(last_message["exc_text"],
                               TestLogService.EXC_TEXT + severity)
         else:
-            self.assertNotEquals(last_message["severity"], severity)
+            self.assertNotEqual(last_message["severity"], severity)
 
 
 if __name__ == "__main__":

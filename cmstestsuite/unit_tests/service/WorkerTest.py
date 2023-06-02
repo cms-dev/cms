@@ -58,7 +58,7 @@ class TestWorker(unittest.TestCase):
             self.assertTrue(ret_job_group.jobs[0].success)
 
         cms.service.Worker.get_task_type.assert_has_calls(calls)
-        self.assertEquals(task_type.call_count, n_jobs)
+        self.assertEqual(task_type.call_count, n_jobs)
 
     def test_execute_job_failure(self):
         """Executes two unsuccessful jobs.
@@ -78,8 +78,8 @@ class TestWorker(unittest.TestCase):
         for job_group in results:
             for job in job_group.jobs:
                 self.assertFalse(job.success)
-        self.assertEquals(cms.service.Worker.get_task_type.call_count, n_jobs)
-        self.assertEquals(task_type.call_count, n_jobs)
+        self.assertEqual(cms.service.Worker.get_task_type.call_count, n_jobs)
+        self.assertEqual(task_type.call_count, n_jobs)
 
     def test_execute_job_tasktype_raise(self):
         """Executes two jobs raising exceptions.
@@ -96,8 +96,8 @@ class TestWorker(unittest.TestCase):
                 JobGroup.import_from_dict(
                     self.service.execute_job_group(job_group.export_to_dict()))
 
-        self.assertEquals(cms.service.Worker.get_task_type.call_count, n_jobs)
-        self.assertEquals(task_type.call_count, n_jobs)
+        self.assertEqual(cms.service.Worker.get_task_type.call_count, n_jobs)
+        self.assertEqual(task_type.call_count, n_jobs)
 
     def test_execute_job_subsequent_success(self):
         """Executes three successful jobs, then four others.
@@ -114,7 +114,7 @@ class TestWorker(unittest.TestCase):
                 self.service.execute_job_group(job_group.export_to_dict()))
 
         cms.service.Worker.get_task_type.assert_has_calls(calls_a)
-        self.assertEquals(task_type_a.call_count, n_jobs_a)
+        self.assertEqual(task_type_a.call_count, n_jobs_a)
 
         n_jobs_b = 4
         jobs_b, calls_b = TestWorker.new_jobs(n_jobs_b, prefix="b")
@@ -127,7 +127,7 @@ class TestWorker(unittest.TestCase):
                 self.service.execute_job_group(job_group.export_to_dict()))
 
         cms.service.Worker.get_task_type.assert_has_calls(calls_b)
-        self.assertEquals(task_type_b.call_count, n_jobs_b)
+        self.assertEqual(task_type_b.call_count, n_jobs_b)
 
     def test_execute_job_subsequent_locked(self):
         """Executes a long job, then another one that should fail
@@ -173,7 +173,7 @@ class TestWorker(unittest.TestCase):
             JobGroup.import_from_dict(
                 self.service.execute_job_group(job_group.export_to_dict()))
         cms.service.Worker.get_task_type.assert_has_calls(calls_a)
-        self.assertEquals(task_type_a.call_count, n_jobs_a)
+        self.assertEqual(task_type_a.call_count, n_jobs_a)
 
         n_jobs_b = 3
         jobs_b, calls_b = TestWorker.new_jobs(n_jobs_b)
@@ -186,7 +186,7 @@ class TestWorker(unittest.TestCase):
                 self.service.execute_job_group(job_group.export_to_dict()))
 
         cms.service.Worker.get_task_type.assert_has_calls(calls_b)
-        self.assertEquals(task_type_b.call_count, n_jobs_b)
+        self.assertEqual(task_type_b.call_count, n_jobs_b)
 
     def test_execute_job_group_success(self):
         """Executes two successful job groups.
@@ -202,7 +202,7 @@ class TestWorker(unittest.TestCase):
                 self.service.execute_job_group(job_group.export_to_dict()))
 
         cms.service.Worker.get_task_type.assert_has_calls(calls)
-        self.assertEquals(task_type.call_count, sum(n_jobs))
+        self.assertEqual(task_type.call_count, sum(n_jobs))
 
     def test_execute_job_group_mixed_success(self):
         """Executes three job groups with mixed grades of success.
@@ -213,7 +213,7 @@ class TestWorker(unittest.TestCase):
             [True] * n_jobs[0] +
             [False] + [True] * (n_jobs[1] - 1) +
             [False] * n_jobs[2])
-        self.assertEquals(sum(n_jobs), len(expected_success))
+        self.assertEqual(sum(n_jobs), len(expected_success))
 
         job_groups, calls = TestWorker.new_job_groups(n_jobs)
         task_type = FakeTaskType(expected_success)
@@ -231,7 +231,7 @@ class TestWorker(unittest.TestCase):
                 expected_idx += 1
 
         cms.service.Worker.get_task_type.assert_has_calls(calls)
-        self.assertEquals(task_type.call_count, sum(n_jobs))
+        self.assertEqual(task_type.call_count, sum(n_jobs))
 
     def test_execute_job_group_mixed_exceptions(self):
         """Executes a job group with some exceptions.
@@ -239,7 +239,7 @@ class TestWorker(unittest.TestCase):
         """
         n_jobs = 4
         expected_success = [True, Exception(), False, True]
-        self.assertEquals(n_jobs, len(expected_success))
+        self.assertEqual(n_jobs, len(expected_success))
 
         job_groups, unused_calls = TestWorker.new_job_groups([n_jobs])
         task_type = FakeTaskType(expected_success)

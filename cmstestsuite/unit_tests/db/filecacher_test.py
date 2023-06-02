@@ -119,7 +119,10 @@ class TestFileCacherBase:
 
     """
 
-    def _setUp(self, file_cacher):
+    # Tell pytest not to collect this class as test
+    __test__ = False
+
+    def setUp(self, file_cacher):
         """Common initialization that should be called by derived classes."""
         self.file_cacher = file_cacher
         self.cache_base_path = self.file_cacher.file_dir
@@ -360,19 +363,22 @@ class TestFileCacherBase:
 class TestFileCacherDB(TestFileCacherBase, DatabaseMixin, unittest.TestCase):
     """Tests for the FileCacher service with a database backend."""
 
+    # Tell pytest to collect this class as test
+    __test__ = True
+
     def setUp(self):
-        super().setUp()
-        file_cacher = FileCacher()
-        self._setUp(file_cacher)
+        DatabaseMixin.setUp(self)
+        TestFileCacherBase.setUp(self, FileCacher())
 
 
 class TestFileCacherFS(TestFileCacherBase, unittest.TestCase):
     """Tests for the FileCacher service with a filesystem backend."""
 
+    # Tell pytest to collect this class as test
+    __test__ = True
+
     def setUp(self):
-        super().setUp()
-        file_cacher = FileCacher(path="fs-storage")
-        self._setUp(file_cacher)
+        super().setUp(FileCacher(path="fs-storage"))
 
     def tearDown(self):
         shutil.rmtree("fs-storage", ignore_errors=True)
