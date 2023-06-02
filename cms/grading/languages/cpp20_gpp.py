@@ -57,7 +57,7 @@ class Cpp20Gpp(CompiledLanguage):
         command = ["/usr/bin/g++"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-std=gnu++20", "-O2", "-pipe", "-static",
+        command += ["-std=gnu++2a", "-O2", "-pipe", "-static",
                     "-s", "-o", executable_filename]
         command += source_filenames
         return [command]
