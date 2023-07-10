@@ -2,6 +2,7 @@
 # Copyright (C) 2020 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
+# Jongseo Lee <leejseo@kaist.ac.kr>, 2023.07.10.
 # Junu Kwon <junukwon7@gmail.com>, 2021.01.12.
 # Hyun-seok Jeon <melongist@gmail.com>, 2020.11.29.
 # Myungwoo Chun <mc.tamaki@gmail.com>, 2016-2017.
@@ -908,7 +909,7 @@ msgid "Public score:"
 msgstr "공식 점수:"
 
 msgid "Total score:"
-msgstr "총점"
+msgstr "총점:"
 
 msgid "Score"
 msgstr "점수"
