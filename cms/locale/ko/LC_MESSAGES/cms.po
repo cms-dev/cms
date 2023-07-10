@@ -864,7 +864,7 @@ msgid "Your username is:"
 msgstr "사용자ID:"
 
 msgid "The password you chose was stored securely."
-msgstr "비밀번호:"
+msgstr "선택한 비밀번호가 안전하게 저장되었습니다."
 
 msgid "Back to login"
 msgstr "로그인하기"
@@ -1001,7 +1001,7 @@ msgid "Submit a solution"
 msgstr "채점 제출"
 
 msgid "You may submit any subset of outputs in a single submission."
-msgstr "한 번 채점 제출로 모든 부분 채점을 수행할 수 있습니다."
+msgstr "한 번의 채점 제출로 모든 부분 채점을 수행할 수 있습니다."
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
