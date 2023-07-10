@@ -372,11 +372,11 @@ msgstr "너무 자주 제출했습니다."
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "누적 마지막 제출 시간을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
+msgstr "누적 마지막 제출 시각을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr "이 문제에 대해서, 마지막 제출 시간을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
+msgstr "이 문제에 대해서, 마지막 제출 시각을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
 msgid "Invalid archive format!"
 msgstr "압축 파일 오류!"
@@ -413,11 +413,11 @@ msgstr "너무 자주 테스트했습니다."
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
+msgstr "마지막 채점 테스트 제출 시각을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
+msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시각을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
 
 msgid "Invalid test format!"
 msgstr "채점 테스트 파일 오류!"
