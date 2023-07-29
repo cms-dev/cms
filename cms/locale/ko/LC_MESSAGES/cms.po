@@ -2,6 +2,7 @@
 # Copyright (C) 2020 CMS development group
 # This file is distributed under the same license as the Contest Management
 # System project.
+# Jongseo Lee <leejseo@kaist.ac.kr>, 2023.07.10.
 # Junu Kwon <junukwon7@gmail.com>, 2021.01.12.
 # Hyun-seok Jeon <melongist@gmail.com>, 2020.11.29.
 # Myungwoo Chun <mc.tamaki@gmail.com>, 2016-2017.
@@ -12,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.5.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2021-01-12 11:45+0900\n"
-"PO-Revision-Date: 2020-01-12 11:45+0900\n"
-"Last-Translator: Junu Kwon <junukwon7@gmail.com>\n"
+"POT-Creation-Date: 2023-07-10 23:49+0900\n"
+"PO-Revision-Date: 2023-07-10 23:49+0900\n"
+"Last-Translator: Jongseo Lee <leejseo@kaist.ac.kr>\n"
 "Language: ko\n"
 "Language-Team: \n"
 "Plural-Forms: nplurals=1; plural=0\n"
@@ -371,11 +372,11 @@ msgstr "너무 자주 제출했습니다."
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "누적 마지막 제출 시간을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
+msgstr "누적 마지막 제출 시각을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr "이 문제에 대해서, 마지막 제출 시간을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
+msgstr "이 문제에 대해서, 마지막 제출 시각을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
 msgid "Invalid archive format!"
 msgstr "압축 파일 오류!"
@@ -412,11 +413,11 @@ msgstr "너무 자주 테스트했습니다."
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
+msgstr "마지막 채점 테스트 제출 시각을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시간을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
+msgstr "이 문제에 대한, 마지막 채점 테스트 제출 시각을 기준으로 %d 초 이후에 다시 테스트를 제출할 수 있습니다."
 
 msgid "Invalid test format!"
 msgstr "채점 테스트 파일 오류!"
@@ -863,7 +864,7 @@ msgid "Your username is:"
 msgstr "사용자ID:"
 
 msgid "The password you chose was stored securely."
-msgstr "비밀번호:"
+msgstr "선택한 비밀번호가 안전하게 저장되었습니다."
 
 msgid "Back to login"
 msgstr "로그인하기"
@@ -908,7 +909,7 @@ msgid "Public score:"
 msgstr "공식 점수:"
 
 msgid "Total score:"
-msgstr "총점"
+msgstr "총점:"
 
 msgid "Score"
 msgstr "점수"
@@ -1000,7 +1001,7 @@ msgid "Submit a solution"
 msgstr "채점 제출"
 
 msgid "You may submit any subset of outputs in a single submission."
-msgstr "한 번 채점 제출로 모든 부분 채점을 수행할 수 있습니다."
+msgstr "한 번의 채점 제출로 모든 부분 채점을 수행할 수 있습니다."
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
