@@ -3,6 +3,7 @@ FROM ubuntu:20.04
 
 RUN apt-get update
 RUN apt-get install -y \
+    software-properties-common \
     build-essential \
     cgroup-lite \
     cppreference-doc-en-html \
@@ -26,6 +27,8 @@ RUN apt-get install -y \
     sudo \
     wait-for-it \
     zip
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+RUN apt-get install -y gcc-11
 
 # Create cmsuser user with sudo privileges
 RUN useradd -ms /bin/bash cmsuser && \
