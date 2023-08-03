@@ -27,6 +27,9 @@ from cmstestsuite.functionaltestframework import FunctionalTestFramework
 
 
 class TestFailure(Exception):
+    # Tell pytest not to collect this class as test
+    __test__ = False
+
     pass
 
 
@@ -147,6 +150,9 @@ class CheckUserTestEvaluated(CheckUserTest):
 
 
 class Test:
+    # Tell pytest not to collect this class as test
+    __test__ = False
+
     def __init__(self, name, *, task, filenames, alt_filenames={}, languages,
             checks, user_tests=False, user_managers=[], user_checks=[]):
         self.framework = FunctionalTestFramework()

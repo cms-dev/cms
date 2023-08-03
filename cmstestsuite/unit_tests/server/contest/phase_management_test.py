@@ -163,6 +163,9 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
                         end - step, res, (status, begin, end,
                                           valid_begin, valid_end))
 
+# Tell pytest not to collect the "test" function as test
+test.__test__ = False
+
 
 class TestComputeActualPhase(unittest.TestCase):
 

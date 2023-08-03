@@ -280,6 +280,9 @@ def test_testcases(base_dir, solution, language, assume=None):
 
     return zip(points, comments, info)
 
+# Tell pytest not to collect the "test_testcases" function as test
+test_testcases.__test__ = False
+
 
 def clean_test_env():
     """Clean the testing environment, mostly to reclaim disk space.

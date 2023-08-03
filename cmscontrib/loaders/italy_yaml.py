@@ -447,6 +447,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     "Attachment %s for task %s" % (filename, name))
                 args["attachments"][filename] = Attachment(filename, digest)
 
+        # Score precision.
+        load(conf, args, "score_precision")
+
         task = Task(**args)
 
         args = {}
