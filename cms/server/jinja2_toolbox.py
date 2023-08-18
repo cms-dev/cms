@@ -30,7 +30,8 @@ from jinja2 import Environment, StrictUndefined, contextfilter, \
 from jinja2.runtime import Context
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+    TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, \
+    FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import SubmissionResult, UserTestResult
 from cms.db.task import Dataset
 from cms.grading import format_status_text
@@ -156,6 +157,7 @@ def instrument_generic_toolbox(env: Environment):
 
     env.globals["FEEDBACK_LEVEL_FULL"] = FEEDBACK_LEVEL_FULL
     env.globals["FEEDBACK_LEVEL_RESTRICTED"] = FEEDBACK_LEVEL_RESTRICTED
+    env.globals["FEEDBACK_LEVEL_OI_RESTRICTED"] = FEEDBACK_LEVEL_OI_RESTRICTED
 
     env.filters["all"] = all_
     env.filters["any"] = any_
