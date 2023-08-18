@@ -29,7 +29,23 @@ Each of these fields can be left unset to prevent the corresponding limitation f
 Feedback to contestants
 =======================
 
-Each testcase can be marked as public or private. After sending a submission, a contestant can always see its results on the public testcases: a brief passed / partial / not passed status for each testcase, and the partial score that is computable from the public testcases only. Note that input and output data are always hidden.
+Each testcase can be marked as public or private.
+
+On public testcases, the information that a contestant receives depends on
+the feedback mode configured for the task. More precisely:
+
+- if the feedback mode is "Full", a contestant can always see its results on
+  the public testcases: a brief passed / partial / not passed status for each
+  testcase, and the partial score that is computable from the public testcases
+  only. Note that input and output data are always hidden.
+
+- if the feedback mode is "Restricted", information is only shown about
+  testcases up to the first testcase that has the lowest score for a given
+  subtask (inclusive). 
+
+- if the feedback mode is "OI Restricted", information is only shown about
+  the first testcase that has the lowest score for a given subtask (inclusive).
+  This matches IOI contest rules.
 
 Tokens were introduced to provide contestants with limited access to the detailed results of their submissions on the private testcases as well. If a contestant uses a token on a submission, then they will be able to see its result on all testcases, and the global score.
 
