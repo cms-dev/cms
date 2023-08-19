@@ -423,7 +423,6 @@ abbr {
     max-width: 40px;
     max-height: 20px;
     margin: 0 auto;
-    box-shadow: 0 0 2px 0 gray;
 }
 
 #Scoreboard_head tr th,
@@ -922,6 +921,7 @@ abbr {
     right: 470px;
     font-size: 2em;
     line-height: 1.5em;
+    max-width: 63px;
 }
 
 #UserDetail_f_name {
@@ -950,7 +950,6 @@ abbr {
 
 #UserDetail_flag {
     margin: -1px;
-    border: 1px solid gray;
 }
 
 #UserDetail_flag.hidden {
