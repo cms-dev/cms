@@ -25,6 +25,7 @@ import re
 import subprocess
 from datetime import timedelta
 
+from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
 from cmscommon.constants import SCORE_MODE_MAX_SUBTASK
 from .base_loader import TaskLoader
@@ -125,6 +126,14 @@ class TpsTaskLoader(TaskLoader):
         args["name"] = name
         args["title"] = data['name']
         args["score_mode"] = SCORE_MODE_MAX_SUBTASK
+
+        feedback_level = data.get("feedback_level", None)
+        if feedback_level:
+            if feedback_level not in (FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED):
+                logger.critical(f"invalid feedback_level: {feedback_level}")
+                return None
+
+            args["feedback_level"] = feedback_level
 
         # Statements
         if get_statement:
