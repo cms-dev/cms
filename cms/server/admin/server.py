@@ -27,7 +27,7 @@
 
 import logging
 
-from sqlalchemy import func, not_
+from sqlalchemy import func, not_, literal
 
 from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
@@ -127,7 +127,6 @@ class AdminWebServer(WebService):
         # TODO: at the moment this counts all submission results for
         # the live datasets. It is interesting to show also numbers
         # for the datasets with autojudge, and for all datasets.
-        stats = {}
         with SessionGen() as session:
             base_query = session\
                 .query(func.count(SubmissionResult.submission_id))\
@@ -147,42 +146,55 @@ class AdminWebServer(WebService):
                 SubmissionResult.filter_compilation_succeeded(),
                 not_(SubmissionResult.filter_evaluated()))
 
-            queries = {}
-            queries['compiling'] = not_compiled.filter(
-                SubmissionResult.compilation_tries <
-                EvaluationService.EvaluationService.MAX_COMPILATION_TRIES)
-            queries['max_compilations'] = not_compiled.filter(
-                SubmissionResult.compilation_tries >=
-                EvaluationService.EvaluationService.MAX_COMPILATION_TRIES)
-            queries['compilation_fail'] = base_query.filter(
-                SubmissionResult.filter_compilation_failed())
-            queries['evaluating'] = not_evaluated.filter(
-                SubmissionResult.evaluation_tries <
-                EvaluationService.EvaluationService.MAX_EVALUATION_TRIES)
-            queries['max_evaluations'] = not_evaluated.filter(
-                SubmissionResult.evaluation_tries >=
-                EvaluationService.EvaluationService.MAX_EVALUATION_TRIES)
-            queries['scoring'] = evaluated.filter(
-                not_(SubmissionResult.filter_scored()))
-            queries['scored'] = evaluated.filter(
-                SubmissionResult.filter_scored())
+            queries = [
+                not_compiled
+                    .filter(
+                        SubmissionResult.compilation_tries <
+                        EvaluationService.EvaluationService.MAX_COMPILATION_TRIES)\
+                    .add_columns(literal('compiling')),
+                not_compiled
+                    .filter(
+                        SubmissionResult.compilation_tries >=
+                        EvaluationService.EvaluationService.MAX_COMPILATION_TRIES)\
+                    .add_columns(literal('max_compilations')),
+                base_query
+                    .filter(
+                        SubmissionResult.filter_compilation_failed())\
+                    .add_columns(literal('compilation_fail')),
+                not_evaluated
+                    .filter(
+                        SubmissionResult.evaluation_tries <
+                        EvaluationService.EvaluationService.MAX_EVALUATION_TRIES)\
+                    .add_columns(literal('evaluating')),
+                not_evaluated
+                    .filter(
+                        SubmissionResult.evaluation_tries >=
+                        EvaluationService.EvaluationService.MAX_EVALUATION_TRIES)\
+                    .add_columns(literal('max_evaluations')),
+                evaluated
+                    .filter(
+                        not_(SubmissionResult.filter_scored()))\
+                    .add_columns(literal('scoring')),
+                evaluated
+                    .filter(
+                        SubmissionResult.filter_scored())\
+                    .add_columns(literal('scored')),
+            ]
 
             total_query = session\
-                .query(func.count(Submission.id))\
+                .query(func.count(Submission.id), literal('total'))\
                 .select_from(Submission)\
                 .join(Task, Submission.task_id == Task.id)
             if contest_id is not None:
                 total_query = total_query\
                     .filter(Task.contest_id == contest_id)
-            queries['total'] = total_query
+            queries.append(total_query)
 
-            stats = {}
-            keys = list(queries.keys())
-            results = queries[keys[0]].union_all(
-                *(queries[key] for key in keys[1:])).all()
+            results = queries[0].union_all(*queries[1:]).all()
 
-        for i, k in enumerate(keys):
-            stats[k] = results[i][0]
+        stats = {}
+        for (v, k) in results:
+            stats[k] = v
         stats['compiling'] += 2 * stats['total'] - sum(stats.values())
 
         return stats
