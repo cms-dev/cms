@@ -41,7 +41,7 @@ from cmscommon.constants import \
 from cmscommon.crypto import build_password
 from cmscommon.datetime import make_datetime
 from cmscontrib import touch
-from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader
+from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader, LANGUAGE_MAP
 
 
 logger = logging.getLogger(__name__)
@@ -356,26 +356,48 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         logger.info("Loading parameters for task %s.", name)
 
         if get_statement:
+            # language of testo.pdf / statement.pdf
             primary_language = load(conf, None, "primary_language")
             if primary_language is None:
                 primary_language = 'it'
             paths = [os.path.join(self.path, "statement", "statement.pdf"),
                      os.path.join(self.path, "testo", "testo.pdf")]
+            statement_path = None
             for path in paths:
                 if os.path.exists(path):
-                    digest = self.file_cacher.put_file_from_path(
-                        path,
-                        "Statement for task %s (lang: %s)" %
-                        (name, primary_language))
+                    statement_path = path
                     break
-            else:
-                logger.critical("Couldn't find any task statement, aborting.")
-                sys.exit(1)
-            args["statements"] = {
-                primary_language: Statement(primary_language, digest)
-            }
+
+            if statement_path is not None:
+                digest = self.file_cacher.put_file_from_path(
+                    statement_path,
+                    "Statement for task %s (lang: %s)" %
+                    (name, primary_language))
+                args["statements"] = {
+                    primary_language: Statement(
+                        primary_language, digest)
+                }
 
             args["primary_statements"] = [primary_language]
+
+            for (lang, lang_code) in LANGUAGE_MAP.items():
+                # <language>.pdf always overrides the corresponding language.
+                paths = [os.path.join(self.path, "statement", "%s.pdf" % lang),
+                         os.path.join(self.path, "testo", "%s.pdf" % lang)]
+                for path in paths:
+                    if os.path.exists(path):
+                        digest = self.file_cacher.put_file_from_path(
+                            path,
+                            "Statement for task %s (lang: %s)" %
+                            (name, lang_code))
+                        args["statements"][lang_code] = Statement(
+                            lang_code, digest)
+                        break
+
+            if primary_language not in args["statements"]:
+                logger.critical(
+                    "Couldn't find statement for primary language %s, aborting." % primary_language)
+                sys.exit(1)
 
         args["submission_format"] = ["%s.%%l" % name]
 
@@ -563,7 +585,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         if subtask_detected:
                             # Close the previous subtask
                             if points is None:
-                                assert(testcases == 0)
+                                assert testcases == 0
                             else:
                                 subtasks.append([points, testcases])
                             # Open the new one
@@ -582,7 +604,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     args["score_type_parameters"] = input_value
                 else:
                     subtasks.append([points, testcases])
-                    assert(100 == sum([int(st[0]) for st in subtasks]))
+                    assert 100 == sum([int(st[0]) for st in subtasks])
                     n_input = sum([int(st[1]) for st in subtasks])
                     args["score_type"] = "GroupMin"
                     args["score_type_parameters"] = subtasks
@@ -799,6 +821,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # Statement
         files.append(os.path.join(self.path, "statement", "statement.pdf"))
         files.append(os.path.join(self.path, "testo", "testo.pdf"))
+        for lang in LANGUAGE_MAP:
+            files.append(os.path.join(self.path, "statement", "%s.pdf" % lang))
+            files.append(os.path.join(self.path, "testo", "%s.pdf" % lang))
 
         # Managers
         files.append(os.path.join(self.path, "check", "checker"))
