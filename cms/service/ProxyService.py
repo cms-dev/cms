@@ -562,31 +562,32 @@ class ProxyService(TriggeredService):
         """
         with SessionGen() as session:
             task = Task.get_from_id(task_id, session)
-            if task is not None:
-                dataset = task.active_dataset
-
-                # This ProxyService may focus on a different contest, and it should
-                # ignore this update.
-                if task.contest_id != self.contest_id:
-                    logger.debug("Ignoring dataset change for task %d of contest "
-                                 "%d (this ProxyService considers contest %d "
-                                 "only).", task_id, task.contest_id,
-                                 self.contest_id)
-                    return
-
-                logger.info("Dataset update for task %d (dataset now is %d).",
-                            task.id, dataset.id)
-
-                # max_score and/or extra_headers might have changed.
-                self.reinitialize()
-
-                for submission in task.submissions:
-                    # Update RWS.
-                    if not submission.participation.hidden and \
-                            submission.official and \
-                            submission.get_result() is not None and \
-                            submission.get_result().scored():
-                        for operation in self.operations_for_score(submission):
-                            self.enqueue(operation)
-            else:
+            if task is None:
                 logger.warning("Dataset update for unexistent task %d.", task_id)
+                return
+
+            dataset = task.active_dataset
+
+            # This ProxyService may focus on a different contest, and it should
+            # ignore this update.
+            if task.contest_id != self.contest_id:
+                logger.debug("Ignoring dataset change for task %d of contest "
+                             "%d (this ProxyService considers contest %d "
+                             "only).", task_id, task.contest_id,
+                             self.contest_id)
+                return
+
+            logger.info("Dataset update for task %d (dataset now is %d).",
+                        task.id, dataset.id)
+
+            # max_score and/or extra_headers might have changed.
+            self.reinitialize()
+
+            for submission in task.submissions:
+                # Update RWS.
+                if not submission.participation.hidden and \
+                        submission.official and \
+                        submission.get_result() is not None and \
+                        submission.get_result().scored():
+                    for operation in self.operations_for_score(submission):
+                        self.enqueue(operation)
