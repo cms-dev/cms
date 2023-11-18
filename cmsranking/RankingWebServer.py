@@ -24,6 +24,7 @@ import os
 import pprint
 import re
 import shutil
+import signal
 import time
 from datetime import datetime
 
@@ -621,6 +622,10 @@ def main():
             (config.bind_address, config.https_port), wsgi_app,
             certfile=config.https_certfile, keyfile=config.https_keyfile)
         servers.append(https_server)
+
+    def sigterm_handler(*_):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, sigterm_handler)
 
     try:
         gevent.joinall(list(gevent.spawn(s.serve_forever) for s in servers))
