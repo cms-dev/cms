@@ -205,7 +205,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% for st in details %}
-    {% if "score_fraction" in st %}
+    {% if "score_ignore" not in st and "score_fraction" in st %}
         {% if st["score_fraction"] >= 1.0 %}
 <div class="subtask correct">
         {% elif st["score_fraction"] <= 0.0 %}
@@ -220,7 +220,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         <span class="title">
             {% trans index=st["idx"] %}Subtask {{ index }}{% endtrans %}
         </span>
-    {% if "score_fraction" in st and "max_score" in st %}
+    {% if "score_ignore" not in st and "score_fraction" in st and "max_score" in st %}
         {% set score = st["score_fraction"] * st["max_score"] %}
         <span class="score">
             ({{ score|round(2)|format_decimal }}

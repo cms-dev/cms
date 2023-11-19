@@ -181,6 +181,7 @@ setup(
             "GroupMul=cms.grading.scoretypes.GroupMul:GroupMul",
             "GroupSum=cms.grading.scoretypes.GroupSum:GroupSum",
             "GroupSumCheck=cms.grading.scoretypes.GroupSumCheck:GroupSumCheck",
+            "GroupSumCond=cms.grading.scoretypes.GroupSumCond:GroupSumCond",
             "GroupThreshold=cms.grading.scoretypes.GroupThreshold:GroupThreshold",
         ],
         "cms.grading.languages": [
