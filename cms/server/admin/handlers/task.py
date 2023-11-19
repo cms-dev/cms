@@ -174,6 +174,7 @@ class TaskHandler(BaseHandler):
                 attrs = dataset.get_attrs()
 
                 self.get_time_limit(attrs, "time_limit_%d" % dataset.id)
+                self.get_time_limit(attrs, "time_limit_interpreted_%d" % dataset.id, "time_limit_interpreted")
                 self.get_memory_limit(attrs, "memory_limit_%d" % dataset.id)
                 self.get_task_type(attrs, "task_type_%d" % dataset.id,
                                    "TaskTypeOptions_%d_" % dataset.id)
@@ -418,6 +419,7 @@ class AddDatasetHandler(BaseHandler):
                 return
 
             self.get_time_limit(attrs, "time_limit")
+            self.get_time_limit(attrs, "time_limit_interpreted", "time_limit_interpreted")
             self.get_memory_limit(attrs, "memory_limit")
             self.get_task_type(attrs, "task_type", "TaskTypeOptions_")
             self.get_score_type(attrs, "score_type", "score_type_parameters")

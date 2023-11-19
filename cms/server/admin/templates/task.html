@@ -348,6 +348,13 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         </tr>
         <tr>
           <td>
+            <span class="info" title="Total maximum time for each evaluation when using an interpreted language, in seconds."></span>
+	    Interpreted lang. time limit
+          </td>
+          <td><input type="text" name="time_limit_interpreted_{{ dataset.id }}" value="{{ dataset.time_limit_interpreted if dataset.time_limit_interpreted is not none else "" }}"/> second(s)</td>
+        </tr>
+        <tr>
+          <td>
             <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
             Memory limit
           </td>

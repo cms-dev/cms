@@ -59,6 +59,13 @@ You are cloning the dataset "{{ original_dataset.description }}".
     </tr>
     <tr>
       <td>
+        <span class="info" title="Total maximum time for each evaluation when using an interpreted language, in seconds."></span>
+  Interpreted lang. time limit
+      </td>
+      <td><input type="text" name="time_limit_interpreted_{{ dataset.id }}" value="{{ 1 if original_dataset is none else original_dataset.time_limit_interpreted or "" }}"/> second(s)</td>
+    </tr>
+    <tr>
+      <td>
         <span class="info" title="Total maximum memory usage for each evaluation, in MiB (2^20 bytes)."></span>
         Memory limit
       </td>
