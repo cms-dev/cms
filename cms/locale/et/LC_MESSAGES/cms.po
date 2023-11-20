@@ -229,13 +229,13 @@ msgstr[1] "saate Te veel %(gen_number)d %(type_pl)sit, "
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "kuni maksimaalselt ühe %(type_s)sini."
-msgstr[1] "kuni maksimaalselt %(gen_max)d %(type_s)sini."
+msgstr[1] "kuni maksimaalselt %(gen_max)d %(type_pl)sini."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "saate Te veel ühe %(type_s)si."
-msgstr[1] "saate Te veel %(gen_number)d %(type_s)sit."
+msgstr[1] "saate Te veel %(gen_number)d %(type_pl)sit."
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
@@ -263,7 +263,7 @@ msgstr[1] "Te võite kasutada ühe %(type_s)si iga %(min_interval)g sekundi jär
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Te võite kokku kasutada maksimaalselt ühe %(type_s)si."
-msgstr[1] "Te võite kokku kasutada maksimaalselt %(max_number)d %(type_s)sit."
+msgstr[1] "Te võite kokku kasutada maksimaalselt %(max_number)d %(type_pl)sit."
 
 msgid "You have no limitations on how you use them."
 msgstr "Teil pole piiranguid nende kasutamise osas."
