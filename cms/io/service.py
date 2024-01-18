@@ -78,6 +78,7 @@ class Service:
 
     def __init__(self, shard=0):
         signal.signal(signal.SIGINT, lambda unused_x, unused_y: self.exit())
+        signal.signal(signal.SIGTERM, lambda unused_x, unused_y: self.exit())
 
         self.name = self.__class__.__name__
         self.shard = shard
