@@ -196,7 +196,7 @@ $(document).ready(function () {
                             </li>
     {% if actual_phase == 0 or participation.unrestricted %}{# FIXME maybe >= 0? #}
         {% if testing_enabled %}
-                            <li{% if page == "testing" %} class="active"{% endif %}>
+                            <li{% if page == "test_interface" %} class="active"{% endif %}>
                                 <a href="{{ contest_url("testing") }}">{% trans %}Testing{% endtrans %}</a>
                             </li>
         {% endif %}
