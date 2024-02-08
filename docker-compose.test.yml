@@ -1,17 +1,15 @@
 version: "3.3"
 
 services:
-  cms_test_db:
-    container_name: cms_test_db
+  testdb:
     image: postgres
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
-  cms_test:
-    container_name: cms_test
+  testcms:
     build: .
     depends_on:
-      - "cms_test_db"
+      - "testdb"
     environment:
       CMS_CONFIG: /usr/local/etc/cms-testdb.conf
       # Could be removed in the future, see:
@@ -22,14 +20,14 @@ services:
       - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
     command: >
-      wait-for-it cms_test_db:5432 -- sh -c "
-      dropdb --host=cms_test_db --username=postgres cmsdbfortesting ;
-      createdb --host=cms_test_db --username=postgres cmsdbfortesting ;
+      wait-for-it testdb:5432 -- sh -c "
+      dropdb --host=testdb --username=postgres cmsdbfortesting ;
+      createdb --host=testdb --username=postgres cmsdbfortesting ;
       cmsInitDB ;
       sudo chown cmsuser:cmsuser ./codecov ;
       pytest --cov . --cov-report xml:codecov/unittests.xml ;
-      dropdb --host=cms_test_db --username=postgres cmsdbfortesting ;
-      createdb --host=cms_test_db --username=postgres cmsdbfortesting ;
+      dropdb --host=testdb --username=postgres cmsdbfortesting ;
+      createdb --host=testdb --username=postgres cmsdbfortesting ;
       cmsInitDB ;
       cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml ;
       "
