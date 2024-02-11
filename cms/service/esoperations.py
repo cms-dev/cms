@@ -510,6 +510,7 @@ class ESOperation(QueueItem):
                            d["dataset_id"],
                            d["testcase_codename"])
 
+
     def __eq__(self, other):
         # We may receive a non-ESOperation other when comparing with
         # operations in the worker pool (as these may also be unicode or
@@ -566,3 +567,5 @@ class ESOperation(QueueItem):
         return (str(self.type_),
                 str(self.object_id),
                 str(self.dataset_id))
+
+

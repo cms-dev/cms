@@ -27,8 +27,8 @@ from cms.db import Admin, SessionGen
 RPCS_ALLOWED_FOR_AUTHENTICATED = [
     ("AdminWebServer", "submissions_status"),
     ("ResourceService", "get_resources"),
-    ("EvaluationService", "workers_status"),
-    ("EvaluationService", "queue_status"),
+    ("QueueService", "workers_status"),
+    ("QueueService", "queue_status"),
     ("LogService", "last_messages"),
 ]
 
@@ -39,9 +39,9 @@ RPCS_ALLOWED_FOR_MESSAGING = RPCS_ALLOWED_FOR_AUTHENTICATED + []
 RPCS_ALLOWED_FOR_ALL = RPCS_ALLOWED_FOR_MESSAGING + [
     ("ResourceService", "kill_service"),
     ("ResourceService", "toggle_autorestart"),
-    ("EvaluationService", "enable_worker"),
-    ("EvaluationService", "disable_worker"),
-    ("EvaluationService", "invalidate_submission"),
+    ("QueueService", "enable_worker"),
+    ("QueueService", "disable_worker"),
+    ("QueueService", "invalidate_submission"),
     ("ScoringService", "invalidate_submission"),
 ]
 
