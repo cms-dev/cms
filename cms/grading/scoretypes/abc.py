@@ -392,10 +392,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             testcases = []
             public_testcases = []
-            previous_tc_all_correct = True
+
+            restricted_feedback_idx = None
+            restricted_feedback_outcome = None
+
             for tc_idx in target:
-                tc_outcome = self.get_public_outcome(
-                    float(evaluations[tc_idx].outcome), parameter)
+                outcome = float(evaluations[tc_idx].outcome)
+                tc_outcome = self.get_public_outcome(outcome, parameter)
 
                 testcases.append({
                     "idx": tc_idx,
@@ -403,14 +406,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "text": evaluations[tc_idx].text,
                     "time": evaluations[tc_idx].execution_time,
                     "memory": evaluations[tc_idx].execution_memory,
-                    "show_in_restricted_feedback": previous_tc_all_correct})
+                    "show_in_restricted_feedback": True})
                 if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
-                    # Only block restricted feedback if this is the first
-                    # *public* non-correct testcase, otherwise we might be
-                    # leaking info on private testcases.
-                    if tc_outcome != "Correct":
-                        previous_tc_all_correct = False
+
+                    if restricted_feedback_outcome is None or outcome < restricted_feedback_outcome:
+                        restricted_feedback_outcome = outcome
+                        restricted_feedback_idx = tc_idx
                 else:
                     public_testcases.append({"idx": tc_idx})
 
@@ -418,6 +420,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 [float(evaluations[tc_idx].outcome) for tc_idx in target],
                 parameter)
             st_score = st_score_fraction * parameter[0]
+
+            if st_score_fraction < 1.0 and parameter[0] > 0: # display full feedback for sample cases
+                for t in testcases:
+                    t["show_in_restricted_feedback"] = (t["idx"] <= restricted_feedback_idx)
 
             score += st_score
             subtasks.append({
