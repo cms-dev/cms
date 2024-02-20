@@ -48,7 +48,8 @@
 
     "other_services":
     {
-        "TestFileCacher":    [["localhost", 27501]]
+        "TestFileCacher":    [["localhost", 27501]],
+        "PrometheusExporter":   [["localhost", 27502]]
         },
 
 

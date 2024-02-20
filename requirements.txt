@@ -28,3 +28,6 @@ pyyaml>=5.3,<5.4  # http://pyyaml.org/wiki/PyYAML
 # Only for printing:
 pycups>=1.9,<1.10  # https://pypi.python.org/pypi/pycups
 PyPDF2>=1.26,<1.27  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
+
+# Only for cmsPrometheusExporter
+prometheus-client>=0.7,<0.8  # https://pypi.org/project/prometheus-client

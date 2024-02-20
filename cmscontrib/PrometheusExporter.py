@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+
+# Contest Management System - http://cms-dev.github.io/
+# Copyright © 2021 Edoardo Morassutto <edoardo.morassutto@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# We enable monkey patching to make many libraries gevent-friendly
+# (for instance, urllib3, used by requests)
+import gevent.monkey
+
+gevent.monkey.patch_all()  # noqa
+
+import argparse
+
+from prometheus_client import start_http_server
+from prometheus_client.core import REGISTRY, CounterMetricFamily, \
+    GaugeMetricFamily
+from sqlalchemy import func, distinct
+
+from cms import ServiceCoord
+from cms.db import Announcement, Dataset, Message, Participation, Question, \
+    SessionGen, Submission, SubmissionResult, Task, base
+from cms.io.service import Service
+from cms.server.admin.server import AdminWebServer
+
+
+class PrometheusExporter(Service):
+    def __init__(self, args):
+        super().__init__()
+
+        self.contest_id = args.contest_id
+        self.export_subs = not args.no_submissions
+        self.export_workers = not args.no_workers
+        self.export_queue = not args.no_queue
+        self.export_communiactions = not args.no_communications
+        self.export_users = not args.no_users
+        self.evaluation_service = self.connect_to(
+            ServiceCoord("EvaluationService", 0))
+
+    def collect(self):
+        with SessionGen() as session:
+            if self.export_subs:
+                yield from self.collect_subs(session)
+            if self.export_workers:
+                yield from self.collect_workers()
+            if self.export_queue:
+                yield from self.collect_queue()
+            if self.export_communiactions:
+                yield from self.collect_communications(session)
+            if self.export_users:
+                yield from self.collect_users(session)
+
+    def collect_subs(self, session):
+        # compiling / max_compilations / compilation_fail / evaluating /
+        # max_evaluations / scoring / scored / total
+        stats = AdminWebServer.submissions_status(self.contest_id)
+        metric = GaugeMetricFamily(
+            "cms_submissions",
+            "Number of submissions per category",
+            labels=["status"],
+        )
+        for status, count in stats.items():
+            metric.add_metric([status], count)
+        yield metric
+
+        metric = CounterMetricFamily(
+            "cms_task_submissions",
+            "Number of submissions per task",
+            labels=["task"],
+        )
+        data = session.query(Task.name, func.count(Submission.id)) \
+            .select_from(Submission) \
+            .join(Task)
+        if self.contest_id is not None:
+            data = data.filter(Task.contest_id == self.contest_id)
+        data = data \
+            .group_by(Task.name) \
+            .all()
+        for task_name, count in data:
+            metric.add_metric([task_name], count)
+        yield metric
+
+        metric = CounterMetricFamily(
+            "cms_submissions_language",
+            "Number of submissions per language",
+            labels=["language"],
+        )
+        data = session.query(Submission.language, func.count(Submission.id)) \
+            .select_from(Submission) \
+            .group_by(Submission.language)
+        if self.contest_id is not None:
+            data = data.join(Task) \
+                .filter(Task.contest_id == self.contest_id)
+        data = data.all()
+        for language, count in data:
+            metric.add_metric([language], count)
+        yield metric
+
+    def collect_workers(self):
+        status = self.evaluation_service.workers_status().get()
+        metric = GaugeMetricFamily(
+            "cms_workers",
+            "Number of cmsWorker instances",
+            labels=["status"],
+        )
+        metric.add_metric(["total"], len(status))
+
+        connected = len([1 for worker in status.values() if worker["connected"]])
+        metric.add_metric(["connected"], connected)
+
+        working = len([1 for worker in status.values() if worker["operations"]])
+        metric.add_metric(["working"], working)
+        yield metric
+
+    def collect_queue(self):
+        status = self.evaluation_service.queue_status().get()
+
+        metric = GaugeMetricFamily(
+            "cms_queue_length", "Number of entries in the queue")
+        metric.add_metric([], len(status))
+        yield metric
+
+        metric = GaugeMetricFamily(
+            "cms_queue_item_types",
+            "Types of items in the queue",
+            labels=["type"],
+        )
+        types = {}
+        for item in status:
+            typ = item["item"]["type"]
+            types.setdefault(typ, 0)
+            types[typ] += 1
+        for typ, count in types.items():
+            metric.add_metric([typ], count)
+        yield metric
+
+        metric = GaugeMetricFamily(
+            "cms_queue_oldest_job",
+            "Timestamp of the oldest job in the queue",
+        )
+        if status:
+            oldest = min(status, key=lambda x: x["timestamp"])
+            metric.add_metric([], oldest["timestamp"])
+        yield metric
+
+    def collect_communications(self, session):
+        metric = CounterMetricFamily(
+            "cms_questions",
+            "Number of questions",
+            labels=["status"],
+        )
+        base_data = session.query(func.count(Question.id))\
+            .select_from(Question)
+        if self.contest_id is not None:
+            base_data = base_data.join(Participation) \
+                .filter(Participation.contest_id == self.contest_id)
+
+        data = base_data.all()
+        metric.add_metric(["total"], data[0][0])
+        data = base_data.filter(Question.ignored == True).all()
+        metric.add_metric(["ignored"], data[0][0])
+        data = base_data.filter(Question.reply_timestamp != None).all()
+        metric.add_metric(["answered"], data[0][0])
+        yield metric
+
+        metric = CounterMetricFamily(
+            "cms_messages", "Number of private messages")
+        data = session.query(func.count(Message.id)).select_from(Message)
+        if self.contest_id is not None:
+            data = data.join(Participation) \
+                .filter(Participation.contest_id == self.contest_id)
+        data = data.all()
+        metric.add_metric([], data[0][0])
+        yield metric
+
+        metric = CounterMetricFamily(
+            "cms_announcements", "Number of announcements")
+        data = session.query(func.count(Announcement.id)) \
+            .select_from(Announcement)
+        if self.contest_id is not None:
+            data = data.filter(Announcement.contest_id == self.contest_id)
+        data = data.all()
+        metric.add_metric([], data[0][0])
+        yield metric
+
+    def collect_users(self, session):
+        metric = GaugeMetricFamily(
+            "cms_participations",
+            "Number of participations grouped by category",
+            labels=["category"],
+        )
+        base_data = session.query(func.count(distinct(Participation.id))) \
+            .select_from(Participation)
+        if self.contest_id is not None:
+            base_data = base_data.filter(Participation.contest_id == self.contest_id)
+
+        data = base_data.all()
+        metric.add_metric(["total"], data[0][0])
+
+        data = base_data.filter(Participation.hidden == True).all()
+        metric.add_metric(["hidden"], data[0][0])
+
+        data = base_data.filter(Participation.unrestricted == True).all()
+        metric.add_metric(["unrestricted"], data[0][0])
+
+        data = base_data.filter(Participation.starting_time != None).all()
+        metric.add_metric(["started"], data[0][0])
+
+        data = base_data.join(Submission).all()
+        metric.add_metric(["submitted"], data[0][0])
+
+        data = base_data \
+            .join(Submission) \
+            .join(SubmissionResult) \
+            .join(Dataset) \
+            .join(Task, Dataset.task_id == Task.id) \
+            .filter(Task.active_dataset_id == SubmissionResult.dataset_id) \
+            .filter(SubmissionResult.score > 0) \
+            .all()
+        metric.add_metric(["non_zero"], data[0][0])
+
+        yield metric
+
+
+def main():
+    """Parse arguments and launch process."""
+    parser = argparse.ArgumentParser(description="Prometheus exporter.")
+    parser.add_argument(
+        "--host",
+        help="IP address to bind",
+        default="0.0.0.0",
+    )
+    parser.add_argument(
+        "--port",
+        help="Port to use",
+        default=8811,
+        type=int,
+    )
+    parser.add_argument(
+        "--contest-id",
+        "-c",
+        help="Obtain metrics for the specified contest only",
+        type=int,
+    )
+    parser.add_argument(
+        "--no-submissions",
+        help="Do not export submissions metrics",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--no-workers",
+        help="Do not export workers metrics",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--no-queue",
+        help="Do not export queue metrics",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--no-communications",
+        help="Do not export communications metrics",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--no-users",
+        help="Do not export users metrics",
+        action="store_true",
+    )
+
+    args = parser.parse_args()
+
+    service = PrometheusExporter(args)
+    REGISTRY.register(service)
+    start_http_server(args.port, addr=args.host)
+    print("Started at http://%s:%s/metric" % (args.host, args.port))
+    Service.run(service)
+
+
+if __name__ == "__main__":
+    main()
