@@ -27,7 +27,7 @@ import logging
 import os
 import os.path
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from copy import deepcopy
 
 import yaml
@@ -40,7 +40,6 @@ from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.crypto import build_password
-from cmscommon.datetime import make_datetime
 from cmscontrib import touch
 from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader, LANGUAGE_MAP
 
@@ -123,6 +122,12 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
             dst[dst_name] = conv(res)
     else:
         return conv(res)
+
+
+def parse_datetime(val):
+    if isinstance(val, (int, float)):
+        return datetime.fromtimestamp(val, timezone.utc)
+    return datetime.fromisoformat(val)
 
 
 def make_timedelta(t):
@@ -214,8 +219,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             if args["token_gen_interval"].total_seconds() == 0:
                 args["token_gen_interval"] = timedelta(minutes=1)
 
-        load(conf, args, ["start", "inizio"], conv=make_datetime)
-        load(conf, args, ["stop", "fine"], conv=make_datetime)
+        load(conf, args, ["start", "inizio"], conv=parse_datetime)
+        load(conf, args, ["stop", "fine"], conv=parse_datetime)
         load(conf, args, ["per_user_time"], conv=make_timedelta)
         load(conf, args, ["timezone"])
 
