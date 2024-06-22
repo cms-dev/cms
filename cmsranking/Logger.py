@@ -234,7 +234,10 @@ class CustomFormatter(logging.Formatter):
         if record.exc_info:
             result += "\n\n%s" % self.formatException(record.exc_info).strip()
 
-        return result.replace("\n", "\n    ") + '\n'
+        if result[-1] == '\n':
+            result = result[:-1]
+
+        return result.replace("\n", "\n    ")
 
 
 # Create a global reference to the root logger.
