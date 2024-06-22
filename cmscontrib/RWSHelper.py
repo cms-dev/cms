@@ -169,7 +169,7 @@ def main():
             continue
 
         if args.action == "get":
-            print(res.content)
+            print(res.content.decode('utf-8'))
 
     if had_error:
         return 1
