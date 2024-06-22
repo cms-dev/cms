@@ -243,9 +243,9 @@ root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
 
 # Define the stream handler to output on stderr.
-shell_handler = StreamHandler(sys.stdout)
+shell_handler = StreamHandler(sys.stderr)
 shell_handler.setLevel(logging.INFO)
-shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
+shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stderr)))
 root_logger.addHandler(shell_handler)
 
 
