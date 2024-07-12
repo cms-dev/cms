@@ -31,6 +31,7 @@
 
 import logging
 import traceback
+from datetime import datetime, timedelta
 
 try:
     import tornado4.web as tornado_web
@@ -168,6 +169,11 @@ class ContestListHandler(BaseHandler):
         # able to import new contests without having to restart CWS.
         contest_list = dict()
         for contest in self.sql_session.query(Contest).all():
-            contest_list[contest.name] = contest
+            # We hide contests that ended more than a week ago, or start more than a week from now
+            today = datetime.now()
+            seven_days_ago = today - timedelta(days=7)
+            seven_days_ahead = today + timedelta(days=7)
+            if contest.start < seven_days_ahead and contest.stop > seven_days_ago:
+                contest_list[contest.name] = contest
         self.render("contest_list.html", contest_list=contest_list,
                     **self.r_params)
