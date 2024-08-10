@@ -36,6 +36,7 @@ from abc import ABCMeta, abstractmethod
 
 from cms import FEEDBACK_LEVEL_RESTRICTED
 from cms.db import SubmissionResult
+from cms.grading.steps import EVALUATION_MESSAGES
 from cms.locale import Translation, DEFAULT_TRANSLATION
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from jinja2 import Template
@@ -295,7 +296,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
             {% if feedback_level == FEEDBACK_LEVEL_FULL %}
                     <td class="execution-time">
-                {% if "time" in tc and tc["time"] is not none %}
+                {% if "time_limit_was_exceeded" in tc and tc["time_limit_was_exceeded"] %}
+                        &gt; {{ tc["time_limit"]|format_duration }}
+                {% elif "time" in tc and tc["time"] is not none %}
                         {{ tc["time"]|format_duration }}
                 {% else %}
                         {% trans %}N/A{% endtrans %}
@@ -430,11 +433,17 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 tc_outcome = self.get_public_outcome(
                     tc_score, parameter)
 
+                time_limit_was_exceeded = False
+                if evaluations[tc_idx].text == [EVALUATION_MESSAGES.get("timeout").message]:
+                    time_limit_was_exceeded = True
+
                 testcases.append({
                     "idx": tc_idx,
                     "outcome": tc_outcome,
                     "text": evaluations[tc_idx].text,
                     "time": evaluations[tc_idx].execution_time,
+                    "time_limit": evaluations[tc_idx].dataset.time_limit,
+                    "time_limit_was_exceeded": time_limit_was_exceeded,
                     "memory": evaluations[tc_idx].execution_memory,
                     "show_in_restricted_feedback": self.public_testcases[tc_idx],
                     "show_in_oi_restricted_feedback": self.public_testcases[tc_idx]})
