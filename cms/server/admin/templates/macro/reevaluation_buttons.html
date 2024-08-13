@@ -35,7 +35,8 @@ contest_id (int|None): the id of the contest to invalidate.
 {% elif contest_id is not none %}
   {% set invalidate_arguments = {"contest_id": contest_id} %}
 {% endif %}
-<button onclick="cmsrpc_request(
+<button onclick="if (confirm('Are you sure you want to recompile and judge all submissions?')) {
+                cmsrpc_request(
                  'EvaluationService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
@@ -43,12 +44,14 @@ contest_id (int|None): the id of the contest to invalidate.
 {% endfor %}
                   'level': 'compilation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
-                 );"
+                 );
+               }"
 {% if not allowed %}
         disabled
 {% endif %}
         title="Compilation" >C</button>
-<button onclick="cmsrpc_request(
+<button onclick="if (confirm('Are you sure you want to rejudge all submissions?')) {
+                cmsrpc_request(
                  'EvaluationService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
@@ -56,12 +59,14 @@ contest_id (int|None): the id of the contest to invalidate.
 {% endfor %}
                   'level': 'evaluation'},
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
-                  );"
+                  );
+                }"
 {% if not allowed %}
         disabled
 {% endif %}
         title="Evaluation" >E</button>
-<button onclick="cmsrpc_request(
+<button onclick="if (confirm('Are you sure you want to rescore all submissions?')) {
+                cmsrpc_request(
                  'ScoringService', 0,
                  'invalidate_submission', {
 {% for key, value in invalidate_arguments.items() %}
@@ -69,7 +74,8 @@ contest_id (int|None): the id of the contest to invalidate.
 {% endfor %}
                  },
                  function(response) { utils.redirect_if_ok('{{ next_page }}', response); }
-                 );"
+                 );
+                }"
 {% if not allowed %}
         disabled
 {% endif %}
