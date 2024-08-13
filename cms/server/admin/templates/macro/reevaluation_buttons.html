@@ -35,7 +35,7 @@ contest_id (int|None): the id of the contest to invalidate.
 {% elif contest_id is not none %}
   {% set invalidate_arguments = {"contest_id": contest_id} %}
 {% endif %}
-<button onclick="if (confirm('Are you sure you want to recompile and judge all submissions?')) {
+<button onclick="if ('submission_id' in {{ invalidate_arguments}} || confirm('Are you sure you want to recompile and judge all submissions?')) {
                 cmsrpc_request(
                  'EvaluationService', 0,
                  'invalidate_submission', {
@@ -50,7 +50,7 @@ contest_id (int|None): the id of the contest to invalidate.
         disabled
 {% endif %}
         title="Compilation" >C</button>
-<button onclick="if (confirm('Are you sure you want to rejudge all submissions?')) {
+<button onclick="if ('submission_id' in {{ invalidate_arguments}} || confirm('Are you sure you want to rejudge all submissions?')) {
                 cmsrpc_request(
                  'EvaluationService', 0,
                  'invalidate_submission', {
@@ -65,7 +65,7 @@ contest_id (int|None): the id of the contest to invalidate.
         disabled
 {% endif %}
         title="Evaluation" >E</button>
-<button onclick="if (confirm('Are you sure you want to rescore all submissions?')) {
+<button onclick="if ('submission_id' in {{ invalidate_arguments}} || confirm('Are you sure you want to rescore all submissions?')) {
                 cmsrpc_request(
                  'ScoringService', 0,
                  'invalidate_submission', {
