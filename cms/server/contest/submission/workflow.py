@@ -220,11 +220,15 @@ def accept_submission(
     logger.info("All files stored for submission sent by %s",
                 participation.user.username)
 
+    # Use the filenames of the contestant as a default submission comment
+    received_filenames_joined = ",".join([file.filename for file in received_files])
+
     submission = Submission(
         timestamp=timestamp,
         language=language.name if language is not None else None,
         task=task,
         participation=participation,
+        comment=received_filenames_joined,
         official=official)
     sql_session.add(submission)
 
