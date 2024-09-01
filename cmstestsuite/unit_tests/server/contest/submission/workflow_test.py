@@ -83,7 +83,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         self.tornado_files = sentinel.tornado_files
         self.language_name = sentinel.language_name
         self.official = True
-        self.received_files = sentinel.received_files
+        self.received_files = []
         self.files = {"foo.%l": FOO_CONTENT}
         # Multiple extensions, primary one doesn't start with a period.
         self.language = make_language("MockLanguage", ["mock.1", ".mock2"])
