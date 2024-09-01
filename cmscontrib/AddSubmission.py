@@ -29,7 +29,7 @@ from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
 from cms.grading.language import Language
-from cms.grading.languagemanager import filename_to_language
+from cms.grading.languagemanager import filename_to_language, get_language
 from cms.io import RemoteServiceClient
 from cmscommon.datetime import make_datetime
 
@@ -79,6 +79,7 @@ def add_submission(
     task_name: str,
     timestamp: float,
     files: dict[str, str],
+    given_language: str | None,
 ):
     file_cacher = FileCacher()
     with SessionGen() as session:
@@ -122,7 +123,10 @@ def add_submission(
         need_lang = any(element.find(".%l") != -1 for element in elements)
         if need_lang:
             try:
-                language = language_from_submitted_files(files)
+                if given_language is not None:
+                    language = get_language(given_language)
+                else:
+                    language = language_from_submitted_files(files)
             except ValueError as e:
                 logger.critical(e)
                 return False
@@ -185,6 +189,11 @@ def main() -> int:
     parser.add_argument("-t", "--timestamp", action="store", type=int,
                         help="timestamp of the submission in seconds from "
                         "epoch, e.g. `date +%%s` (now if not set)")
+    parser.add_argument("-l", "--language",
+                        help="programming language (e.g., 'C++17 / g++'), "
+                        "default is to guess from file name extension. "
+                        "It is also possible to specify languages not enabled "
+                        "in the contest.")
 
     args = parser.parse_args()
 
@@ -212,7 +221,8 @@ def main() -> int:
                              username=args.username,
                              task_name=args.task_name,
                              timestamp=args.timestamp,
-                             files=files)
+                             files=files,
+                             given_language=args.language)
     return 0 if success is True else 1
 
 
