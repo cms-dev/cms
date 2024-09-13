@@ -32,6 +32,7 @@ from cms.db import Contest, User, Task, Statement, Dataset, Manager, Testcase
 from cmscommon.crypto import build_password
 from cmscontrib import touch
 from .base_loader import ContestLoader, TaskLoader, UserLoader
+from cmscommon.constants import SCORE_MODE_MAX_SUBTASK
 
 
 logger = logging.getLogger(__name__)
