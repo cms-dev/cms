@@ -204,6 +204,10 @@ class PolygonTaskLoader(TaskLoader):
         # args['token_gen_number'] = 1
         # args['token_gen_interval'] = make_timedelta(1800)
         # args['token_gen_max'] = 2
+        args['score_mode'] = SCORE_MODE_MAX_SUBTASK
+        args['feedback_level'] = 'restricted'
+        args['min_submission_interval'] = make_timedelta(60)
+
 
         task_cms_conf_path = os.path.join(self.path, 'files', 'cms_conf.py')
         task_cms_conf = None
