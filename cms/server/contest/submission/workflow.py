@@ -144,7 +144,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
     except InvalidFilesOrLanguage:
         raise UnacceptableSubmission(
             N_("Invalid submission format!"),
-            N_("Please select the correct files."))
+            N_("Please select the correct file and ensure that it has the correct file extension. For example, in C++, you should submit a .cpp file."))
 
     digests = dict()
     missing_codenames = required_codenames.difference(files.keys())
@@ -156,7 +156,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
         else:
             raise UnacceptableSubmission(
                 N_("Invalid submission format!"),
-                N_("Please select the correct files."))
+                N_("Please select the correct file and ensure that it has the correct file extension. For example, in C++, you should submit a .cpp file."))
 
     if any(len(content) > config.max_submission_length
            for content in files.values()):
