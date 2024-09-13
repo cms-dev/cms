@@ -279,7 +279,7 @@ class PolygonTaskLoader(TaskLoader):
                 ["alone", [infile_param, outfile_param], evaluation_param]
 
             args["score_type"] = "GroupMin"
-            args["score_type_parameters"] = json.loads('[100, "^.*", "Subtask 1"]')
+            args["score_type_parameters"] = json.loads('[[100, ".*", "Test Cases"]]')
 
             total_value = 100.0
             input_value = 0.0
