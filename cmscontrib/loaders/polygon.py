@@ -23,6 +23,7 @@
 import imp
 import logging
 import os
+import json
 import subprocess
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -277,16 +278,13 @@ class PolygonTaskLoader(TaskLoader):
             args["task_type_parameters"] = \
                 ["alone", [infile_param, outfile_param], evaluation_param]
 
-            args["score_type"] = "Sum"
+            args["score_type"] = "GroupMin"
+            args["score_type_parameters"] = json.loads('[100, "^.*", "Subtask 1"]')
+
             total_value = 100.0
             input_value = 0.0
 
             testcases = int(testset.find('test-count').text)
-
-            n_input = testcases
-            if n_input != 0:
-                input_value = total_value / n_input
-            args["score_type_parameters"] = input_value
 
             args["testcases"] = {}
 
