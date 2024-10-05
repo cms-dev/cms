@@ -1,5 +1,3 @@
-version: "3.3"
-
 services:
   testdb:
     image: postgres
@@ -19,6 +17,7 @@ services:
     volumes:
       - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
+    cgroup: host
     command: >
       wait-for-it testdb:5432 -- sh -c "
       dropdb --host=testdb --username=postgres cmsdbfortesting ;
