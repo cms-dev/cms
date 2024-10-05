@@ -361,32 +361,30 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             if primary_language is None:
                 primary_language = "it"
 
-            has_statement = os.path.exists(os.path.join(self.path, "statement"))
-            has_testo = os.path.exists(os.path.join(self.path, "testo"))
+            statement = None
+            if os.path.exists(os.path.join(self.path, "statement")):
+                statement = "statement"
+            if os.path.exists(os.path.join(self.path, "testo")):
+                # Ensure that only one folder exists: either testo/ or statement/
+                if statement is not None:
+                    logger.critical(
+                        "Both testo/ and statement/ are present. This is likely an error."
+                    )
+                    sys.exit(1)
+                statement = "testo"
 
-            # Ensure that only one folder exists: either testo/ or statement/
-            if has_testo and has_statement:
-                logger.critical(
-                    "Both testo/ and statement/ are present. This is likely an error."
-                )
+            if statement is None:
+                logger.critical("Statement folder not found.")
                 sys.exit(1)
 
-            if has_testo:
-                statement_path = os.path.join(self.path, "testo")
-            else:
-                statement_path = os.path.join(self.path, "statement")
-
-            single_statement_path = None
-            for path in [
-                os.path.join(statement_path, "statement.pdf"),
-                os.path.join(statement_path, "testo.pdf"),
-            ]:
-                if os.path.exists(path):
-                    single_statement_path = path
+            single_statement_path = os.path.join(
+                self.path, statement, "%s.pdf" % statement)
+            if not os.path.exists(single_statement_path):
+                single_statement_path = None
 
             multi_statement_paths = {}
             for lang, lang_code in LANGUAGE_MAP.items():
-                path = os.path.join(statement_path, "%s.pdf" % lang)
+                path = os.path.join(self.path, statement, "%s.pdf" % lang)
                 if os.path.exists(path):
                     multi_statement_paths[lang_code] = path
 
@@ -406,13 +404,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     )
                 statements_to_import = multi_statement_paths
             else:
-                statements_to_import = {primary_language: single_statement_path}
+                statements_to_import = {
+                    primary_language: single_statement_path}
 
             if primary_language not in statements_to_import.keys():
                 logger.critical(
                     "Couldn't find statement for primary language %s, aborting." % primary_language)
                 sys.exit(1)
 
+            args["statements"] = dict()
             for lang_code, statement_path in statements_to_import.items():
                 digest = self.file_cacher.put_file_from_path(
                     statement_path,
