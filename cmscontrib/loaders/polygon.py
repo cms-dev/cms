@@ -31,7 +31,7 @@ from cms import config
 from cms.db import Contest, User, Task, Statement, Dataset, Manager, Testcase
 from cmscommon.crypto import build_password
 from cmscontrib import touch
-from .base_loader import ContestLoader, TaskLoader, UserLoader
+from .base_loader import ContestLoader, TaskLoader, UserLoader, LANGUAGE_MAP
 
 
 logger = logging.getLogger(__name__)
@@ -39,70 +39,6 @@ logger = logging.getLogger(__name__)
 
 def make_timedelta(t):
     return timedelta(seconds=t)
-
-
-LANGUAGE_MAP = {
-    'afrikaans': 'af',
-    'arabic': 'ar',
-    'armenian': 'hy',
-    'azerbaijani': 'az',
-    'belarusian': 'be',
-    'bengali': 'bn',
-    'bosnian': 'bs',
-    'bulgarian': 'bg',
-    'catalan': 'ca',
-    'chinese': 'zh',
-    'croatian': 'hr',
-    'czech': 'cs',
-    'danish': 'da',
-    'dutch': 'nl',
-    'english': 'en',
-    'estonian': 'et',
-    'filipino': 'fil',
-    'finnish': 'fi',
-    'french': 'fr',
-    'georgian': 'ka',
-    'german': 'de',
-    'greek': 'el',
-    'hebrew': 'he',
-    'hindi': 'hi',
-    'hungarian': 'hu',
-    'icelandic': 'is',
-    'indonesian': 'id',
-    'irish': 'ga',
-    'italian': 'it',
-    'japanese': 'ja',
-    'kazakh': 'kk',
-    'korean': 'ko',
-    'kyrgyz': 'ky',
-    'latvian': 'lv',
-    'lithuanian': 'lt',
-    'macedonian': 'mk',
-    'malay': 'ms',
-    'mongolian': 'mn',
-    'norwegian': 'no',
-    'persian': 'fa',
-    'polish': 'pl',
-    'portuguese': 'pt',
-    'romanian': 'ro',
-    'russian': 'ru',
-    'serbian': 'sr',
-    'sinhala': 'si',
-    'slovak': 'sk',
-    'slovene': 'sl',
-    'spanish': 'es',
-    'swedish': 'sv',
-    'tajik': 'tg',
-    'tamil': 'ta',
-    'thai': 'th',
-    'turkish': 'tr',
-    'turkmen': 'tk',
-    'ukrainian': 'uk',
-    'urdu': 'ur',
-    'uzbek': 'uz',
-    'vietnamese': 'vi',
-    'other': 'other',
-}
 
 
 class PolygonTaskLoader(TaskLoader):

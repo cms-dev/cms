@@ -226,7 +226,7 @@ def install_isolate():
 
     print("===== Copying isolate config to /usr/local/etc/")
     makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
-    copyfile(os.path.join(".", "isolate", "default.cf"),
+    copyfile(os.path.join(".", "config", "isolate.conf.sample"),
              os.path.join(USR_ROOT, "etc", "isolate"),
              root, 0o640, group=cmsuser_grp)
 

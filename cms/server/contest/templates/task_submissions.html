@@ -315,30 +315,30 @@ $(document).ready(function () {
             {% trans tokens=tokens_info[0] %}Right now, you have {{ tokens }} tokens available on this task.{% endtrans %}
         {% endif %}
         {% if not can_play_token_now %}
-            {% trans expiration_time=tokens_info[2]|format_datetime_smart %}
+            {%+ trans expiration_time=tokens_info[2]|format_datetime_smart %}
                 But you have to wait until {{ expiration_time }} to use them.
             {% endtrans %}
         {% endif %}
         {% if tokens_info[1] is not none %}
-            {% trans gen_time=tokens_info[1]|format_datetime_smart %}
+            {%+ trans gen_time=tokens_info[1]|format_datetime_smart %}
                 You will receive a new token at {{ gen_time }}.
             {% endtrans %}
         {% else %}
-            {% trans %}In the current situation, no more tokens will be generated.{% endtrans %}
+            {%+ trans %}In the current situation, no more tokens will be generated.{% endtrans %}
         {% endif %}
     {% else %}
         {% trans %}Right now, you do not have tokens available for this task.{% endtrans %}
         {% if actual_phase == 0 and tokens_info[1] is not none %}
-            {% trans gen_time=tokens_info[1]|format_datetime_smart %}
+            {%+ trans gen_time=tokens_info[1]|format_datetime_smart %}
                 You will receive a new token at {{ gen_time }}.
             {% endtrans %}
             {% if tokens_info[2] is not none and tokens_info[2] > tokens_info[1] %}
-                {% trans expiration_time=tokens_info[2]|format_datetime_smart %}
+                {%+ trans expiration_time=tokens_info[2]|format_datetime_smart %}
                     But you will have to wait until {{ expiration_time }} to use it.
                 {% endtrans %}
             {% endif %}
         {% else %}
-            {% trans %}In the current situation, no more tokens will be generated.{% endtrans %}
+            {%+ trans %}In the current situation, no more tokens will be generated.{% endtrans %}
         {% endif %}
     {% endif %}
 </div>
