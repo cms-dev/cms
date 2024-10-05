@@ -390,26 +390,23 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 if os.path.exists(path):
                     multi_statement_paths[lang_code] = path
 
-            # Ensure that either a statement.pdf/testo.pdf is specified, or a
-            # list of <lang>.pdf files are specified, but not both.
-            if single_statement_path is not None and len(multi_statement_paths) > 0:
-                # Unless statement.pdf/testo.pdf is a symlink, in which case we
-                # let it slide
-                if os.path.islink(single_statement_path):
-                    pass
-                else:
+            if len(multi_statement_paths) > 0:
+                # Ensure that either a statement.pdf or testo.pdf is specified,
+                # or a list of <lang>.pdf files are specified, but not both,
+                # unless statement.pdf or testo.pdf is a symlink, in which case
+                # we let it slide.
+                if single_statement_path is not None and not os.path.islink(
+                    single_statement_path
+                ):
                     logger.warning(
                         f"A statement (not a symlink!) is present at {single_statement_path} "
                         f"but {len(multi_statement_paths)} more multi-language statements "
                         "were found. This is likely an error. Proceeding with "
                         "importing the multi-language files only."
                     )
-                    single_statement_path = None
-
-            if single_statement_path is not None:
-                statements_to_import = {primary_language: single_statement_path}
-            else:
                 statements_to_import = multi_statement_paths
+            else:
+                statements_to_import = {primary_language: single_statement_path}
 
             if primary_language not in statements_to_import.keys():
                 logger.critical(
