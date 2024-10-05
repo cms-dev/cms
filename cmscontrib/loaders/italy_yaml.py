@@ -362,16 +362,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 primary_language = "it"
 
             statement = None
-            if os.path.exists(os.path.join(self.path, "statement")):
-                statement = "statement"
-            if os.path.exists(os.path.join(self.path, "testo")):
-                # Ensure that only one folder exists: either testo/ or statement/
-                if statement is not None:
-                    logger.critical(
-                        "Both testo/ and statement/ are present. This is likely an error."
-                    )
-                    sys.exit(1)
-                statement = "testo"
+            for localized_statement in ["statement", "testo"]:
+                if os.path.exists(os.path.join(self.path, localized_statement)):
+                    # Ensure that only one folder exists: either testo/ or statement/
+                    if statement is not None:
+                        logger.critical(
+                            "Both testo/ and statement/ are present. This is likely an error."
+                        )
+                        sys.exit(1)
+                    statement = localized_statement
 
             if statement is None:
                 logger.critical("Statement folder not found.")
