@@ -15,6 +15,17 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 });
 {% endfor %}
 
+function updateLanguageVisibility() {
+    if($("#limit-languages").is(':checked')) {
+        $("#language-list").show();
+    } else {
+        $("#language-list").hide();
+    }
+}
+
+$("#limit-languages").change(updateLanguageVisibility);
+$(document).ready(updateLanguageVisibility);
+
 {% endblock js_init %}
 
 {% block core %}
@@ -140,6 +151,28 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <option value={{ FEEDBACK_LEVEL_RESTRICTED }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_RESTRICTED else "" }}>Restricted</option>
             <option value={{ FEEDBACK_LEVEL_FULL }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_FULL else "" }}>Full</option>
           </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Whether this task should accept only a subset of all allowed programming languages."></span>
+          <label for="limit-languages">Restrict programming languages</label>
+        </td>
+        <td>
+          <input type="checkbox" id="limit-languages" name="limit_languages" {{ "checked" if task.languages != None else "" }}/>
+        </td>
+      </tr>
+      <tr id="language-list">
+        <td>
+          <span class="info" title="Programming languages that contestants can use to solve this task. Only relevant if Restrict programming languages is checked."></span>
+          Allowed programming languages
+        </td>
+        <td class="wrapping-options">
+          {% for lang in LANGUAGES %}
+            {% if task.contest == None or lang.name in task.contest.languages %}
+              <label><input type="checkbox" name="languages" value="{{ lang.name }}" {{ "checked" if task.languages == None or lang.name in task.languages else "" }}>{{ lang.name }}</label>
+            {% endif %}
+          {% endfor %}
         </td>
       </tr>
       <tr><td colspan=2><h2>Tokens parameters (<a href="http://cms.readthedocs.org/en/{{ rtd_version }}/Configuring%20a%20contest.html#feedback-to-contestants" target="_blank">documentation</a>)</h2></td></tr>

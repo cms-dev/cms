@@ -201,6 +201,8 @@ Programming languages
 
 CMS allows to restrict the set of programming languages available to contestants in a certain contest; the configuration is in the contest page in AWS.
 
+If necessary, it is possible to apply language restrictions to individual tasks. This might be useful for tasks that utilize custom graders. Task level restrictions can be enabled in the task page in AWS.
+
 CMS offers out of the box the following combination of languages: C, C++, Pascal, Java (using a JDK), Python 2 and 3, PHP, Haskell, Rust, C#.
 
 C, C++ and Pascal are the default languages, and have been tested thoroughly in many contests.
