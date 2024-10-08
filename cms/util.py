@@ -27,6 +27,7 @@ import logging
 import netifaces
 import os
 import pwd
+import random
 import stat
 import sys
 
@@ -184,6 +185,18 @@ def get_service_shards(service):
             get_service_address(ServiceCoord(service, i))
         except KeyError:
             return i
+
+
+def random_service(services):
+    """Return a random connected service.
+
+    service ([Service]): a list of services.
+    returns (Service): a random, connected service.
+
+    raise (IndexError): if there are no connected services.
+
+    """
+    return random.choice([s for s in services if s.connected])
 
 
 def default_argument_parser(description, cls, ask_contest=None):
