@@ -54,9 +54,9 @@ is similar to:
     We recommend adding yourself to the ``docker`` group.
 
 What the ``cms-test.sh`` command does is: first build a fresh CMS image when
-necessary, and then create (assuming you didn't specify the ``-p`` flag) a
-``cms-testdb-1`` container for the database, and a
-``cms-testcms-run-<random_string>`` container for CMS.
+necessary, and then create (assuming you are on the ``main`` git branch) a
+``main-testdb-1`` container for the database, and a
+``main-testcms-run-<random_string>`` container for CMS.
 
 The database container **will not** be automatically deleted, while the CMS
 container will be automatically deleted upon exiting (because of the ``--rm``
