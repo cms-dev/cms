@@ -38,7 +38,7 @@ Servers
 
 - *Symptom.* Message from ContestWebServer such as: :samp:`WARNING:root:Invalid cookie signature KFZzdW5kdWRlCnAwCkkxMzI5MzQzNzIwCnRw...`
 
-  *Possible cause.* The contest secret key (defined in cms.conf) may have been changed and users' browsers are still attempting to use cookies signed with the old key. If this is the case, the problem should correct itself and won't be seen by users.
+  *Possible cause.* The contest secret key (defined in cms.toml) may have been changed and users' browsers are still attempting to use cookies signed with the old key. If this is the case, the problem should correct itself and won't be seen by users.
 
 - *Symptom.* Ranking Web Server displays wrong data, or too much data.
 
@@ -61,7 +61,7 @@ Sandbox
 
 - *Symptom.* Contestants' solutions fail when trying to write large outputs.
 
-  *Possible cause.* CMS limits the maximum output size from programs being evaluated for security reasons. Currently the limit is 1 GB and can be configured by changing the parameter ``max_file_size`` in :file:`cms.conf`.
+  *Possible cause.* CMS limits the maximum output size from programs being evaluated for security reasons. Currently the limit is 1 GB and can be configured by changing the parameter ``max_file_size`` in :file:`cms.toml`.
 
 Evaluations
 ===========

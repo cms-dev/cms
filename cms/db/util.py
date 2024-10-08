@@ -54,7 +54,7 @@ def test_db_connection():
     except OperationalError as e:
         logger.error(e)
         raise ConfigError("Operational error while talking to the DB. "
-                          "Is the connection string in cms.conf correct?")
+                          "Is the connection string in cms.toml correct?")
 
 
 def get_contest_list(session=None):

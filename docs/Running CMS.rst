@@ -51,11 +51,11 @@ Finally you have to create the database schema for CMS, by running:
 Configuring CMS
 ===============
 
-There are two configuration files, one for CMS itself and one for the rankings. Samples for both files are in the directory :gh_tree:`config/`. You want to copy them to the same file names but without the ``.sample`` suffix (that is, to :file:`config/cms.conf` and :file:`config/cms.ranking.conf`) before modifying them.
+There are two configuration files, one for CMS itself and one for the rankings. Samples for both files are in the directory :gh_tree:`config/`. You want to copy them to the same file names but without the ``.sample`` suffix (that is, to :file:`config/cms.toml` and :file:`config/cms.ranking.toml`) before modifying them.
 
-* :file:`cms.conf` is intended to be the same on all machines; all configurations options are explained in the file; of particular importance is the definition of ``core_services``, that specifies where and how many services are going to be run, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
+* :file:`cms.toml` is intended to be the same on all machines; all configurations options are explained in the file; of particular importance is the definition of ``core_services``, that specifies where and how many services are going to be run, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
 
-* :file:`cms.ranking.conf` is not necessarily meant to be the same on each server that will host a ranking, since it just controls settings relevant for one single server. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.conf`.
+* :file:`cms.ranking.toml` is not necessarily meant to be the same on each server that will host a ranking, since it just controls settings relevant for one single server. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.toml`.
 
 These files are a pretty good starting point if you want to try CMS. There are some mandatory changes to do though:
 
@@ -63,7 +63,7 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 * if you are running low on disk space, you may want to make sure ``keep_sandbox`` is set to ``false``;
 
-If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, using non-trivial username and password.
+If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.toml`, and :file:`cms.ranking.toml`, using non-trivial username and password.
 
 .. warning::
 
@@ -78,7 +78,7 @@ Here we will assume you installed CMS. If not, you should replace all commands p
 
 At this point, you should have CMS installed on all the machines you want run services on, with the same configuration file, and a running PostgreSQL instance. To run CMS, you need a contest in the database. To create a contest, follow :doc:`these instructions <Creating a contest>`.
 
-CMS is composed of a number of services, potentially replicated several times, and running on several machines. You can start all the services by hand, but this is a tedious task. Luckily, there is a service (ResourceService) that takes care of starting all the services on the machine it is running, limiting thus the number of binaries you have to run. Services started by ResourceService do not show their logs to the standard output; so it is expected that you run LogService to inspect the logs as they arrive (logs are also saved to disk). To start LogService, you need to issue, in the machine specified in cms.conf for LogService, this command:
+CMS is composed of a number of services, potentially replicated several times, and running on several machines. You can start all the services by hand, but this is a tedious task. Luckily, there is a service (ResourceService) that takes care of starting all the services on the machine it is running, limiting thus the number of binaries you have to run. Services started by ResourceService do not show their logs to the standard output; so it is expected that you run LogService to inspect the logs as they arrive (logs are also saved to disk). To start LogService, you need to issue, in the machine specified in cms.toml for LogService, this command:
 
 .. sourcecode:: bash
 

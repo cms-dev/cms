@@ -22,11 +22,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import logging
 import re
 import sys
 import time
+import tomli
 
 from cmstestsuite import CONFIG, TestException, sh
 from cmstestsuite.web import Browser
@@ -73,7 +73,7 @@ class FunctionalTestFramework:
         return FunctionalTestFramework.__instance
 
     def __init__(self):
-        # This holds the decoded-JSON of the cms.conf configuration file.
+        # This holds the decoded-TOML of the cms.toml configuration file.
         # Lazily loaded, to be accessed through the getter method.
         self._cms_config = None
 
@@ -141,8 +141,8 @@ class FunctionalTestFramework:
 
     def get_cms_config(self):
         if self._cms_config is None:
-            with open("%(CONFIG_PATH)s" % CONFIG, "rt", encoding="utf-8") as f:
-                self._cms_config = json.load(f)
+            with open("%(CONFIG_PATH)s" % CONFIG, "rb") as f:
+                self._cms_config = tomli.load(f)
         return self._cms_config
 
     def admin_req(self, path, args=None, files=None):

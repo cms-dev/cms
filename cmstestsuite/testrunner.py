@@ -93,9 +93,9 @@ class TestRunner:
         except subprocess.CalledProcessError:
             git_root = None
         CONFIG["TEST_DIR"] = git_root
-        CONFIG["CONFIG_PATH"] = "%s/config/cms.conf" % CONFIG["TEST_DIR"]
+        CONFIG["CONFIG_PATH"] = "%s/config/cms.toml" % CONFIG["TEST_DIR"]
         if CONFIG["TEST_DIR"] is None:
-            CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.conf"
+            CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.toml"
 
         # Override CMS config path when environment variable is present
         CMS_CONFIG_ENV_VAR = "CMS_CONFIG"
