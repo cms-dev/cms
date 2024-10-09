@@ -433,7 +433,7 @@ class EvaluationJob(Job):
     submission, or of an arbitrary source (as used in cmsMake).
 
     Input data (usually filled by ES): testcase_codename, language,
-    files, managers, executables, input, output, time_limit,
+    files, managers, executables, input, output, time_limit, time_limit_interpreted,
     memory_limit. Output data (filled by the Worker): success,
     outcome, text, user_output, executables, text, plus. Metadata:
     only_execution, get_output.
@@ -445,7 +445,7 @@ class EvaluationJob(Job):
                  language=None, multithreaded_sandbox=False,
                  files=None, managers=None, executables=None,
                  input=None, output=None,
-                 time_limit=None, memory_limit=None,
+                 time_limit=None, time_limit_interpreted=None, memory_limit=None,
                  success=None, outcome=None, text=None,
                  user_output=None, plus=None,
                  only_execution=False, get_output=False):
@@ -456,6 +456,8 @@ class EvaluationJob(Job):
         input (string|None): digest of the input file.
         output (string|None): digest of the output file.
         time_limit (float|None): user time limit in seconds.
+        time_limit_interpreted (float|None): user time limit in seconds
+            for interpreted-language solutions; if None, time_limit is used.
         memory_limit (int|None): memory limit in bytes.
         outcome (string|None): the outcome of the evaluation, from
             which to compute the score.
@@ -478,12 +480,21 @@ class EvaluationJob(Job):
         self.input = input
         self.output = output
         self.time_limit = time_limit
+        self.time_limit_interpreted = time_limit_interpreted
         self.memory_limit = memory_limit
         self.outcome = outcome
         self.user_output = user_output
         self.plus = plus
         self.only_execution = only_execution
         self.get_output = get_output
+
+    def effective_time_limit(self):
+        res = self.time_limit
+        if self.time_limit_interpreted is not None and self.language is not None:
+            lang = get_language(self.language)
+            if lang.is_interpreted:
+                res = self.time_limit_interpreted
+        return res
 
     def export_to_dict(self):
         res = Job.export_to_dict(self)
@@ -492,6 +503,7 @@ class EvaluationJob(Job):
             'input': self.input,
             'output': self.output,
             'time_limit': self.time_limit,
+            'time_limit_interpreted': self.time_limit_interpreted,
             'memory_limit': self.memory_limit,
             'outcome': self.outcome,
             'user_output': self.user_output,
@@ -544,6 +556,7 @@ class EvaluationJob(Job):
             input=testcase.input,
             output=testcase.output,
             time_limit=dataset.time_limit,
+            time_limit_interpreted=dataset.time_limit_interpreted,
             memory_limit=dataset.memory_limit,
             info=info
         )
@@ -623,6 +636,7 @@ class EvaluationJob(Job):
             executables=dict(user_test_result.executables),
             input=user_test.input,
             time_limit=dataset.time_limit,
+            time_limit_interpreted=dataset.time_limit_interpreted,
             memory_limit=dataset.memory_limit,
             info="evaluate user test %d" % (user_test.id),
             get_output=True,

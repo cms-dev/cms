@@ -103,6 +103,12 @@
             <td colspan="2">{{ task.active_dataset.time_limit|format_duration(length="long") }}</td>
         </tr>
 {% endif %}
+{% if task.active_dataset.time_limit_interpreted is not none %}
+        <tr>
+            <th>{% trans %}Interpreted language time limit{% endtrans %}</th>
+            <td colspan="2">{{ task.active_dataset.time_limit_interpreted|format_duration(length="long") }}</td>
+        </tr>
+{% endif %}
 {% if task.active_dataset.memory_limit is not none %}
         <tr>
             <th>{% trans %}Memory limit{% endtrans %}</th>

@@ -51,6 +51,11 @@ class Python3CPython(CompiledLanguage):
         # Defined in PEP 441 (https://www.python.org/dev/peps/pep-0441/).
         return ".pyz"
 
+    @property
+    def is_interpreted(self):
+        """See Language.is_interpreted."""
+        return True
+
     def get_compilation_commands(self,
                                  source_filenames, executable_filename,
                                  for_evaluation=True):

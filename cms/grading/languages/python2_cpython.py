@@ -50,6 +50,11 @@ class Python2CPython(CompiledLanguage):
         """See Language.executable_extension."""
         return ".zip"
 
+    @property
+    def is_interpreted(self):
+        """See Language.is_interpreted."""
+        return True
+
     def get_compilation_commands(self,
                                  source_filenames, executable_filename,
                                  for_evaluation=True):

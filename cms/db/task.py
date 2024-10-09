@@ -386,6 +386,10 @@ class Dataset(Base):
         Float,
         CheckConstraint("time_limit > 0"),
         nullable=True)
+    time_limit_interpreted = Column(
+        Float,
+        CheckConstraint("time_limit_interpreted > 0"),
+        nullable=True)
     memory_limit = Column(
         BigInteger,
         CheckConstraint("memory_limit > 0"),

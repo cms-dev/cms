@@ -93,6 +93,13 @@ class Language(metaclass=ABCMeta):
         return False
 
     @property
+    def is_interpreted(self):
+        """Whether the language is interpreted and should be graded with the
+        interpreted language time limit (when such a limit is specified).
+        """
+        return False
+
+    @property
     def object_extension(self):
         """Default object extension for the language."""
         return self.object_extensions[0] \
