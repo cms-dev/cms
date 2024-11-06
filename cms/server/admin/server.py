@@ -179,8 +179,8 @@ class AdminWebServer(WebService):
             # Add a "key" column for keeping track of each stats, in case they
             # get shuffled.
             for key, query in queries.items():
-                key_column = literal_column("'%s'" % key).label("key")
-                queries[key] = query.add_column(key_column)
+                key_column = literal_column(f"'{key}'").label("key")
+                queries[key] = query.add_columns(key_column)
 
             keys = list(queries.keys())
             results = queries[keys[0]].union_all(
