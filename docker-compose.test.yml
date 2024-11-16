@@ -24,11 +24,13 @@ services:
       createdb --host=testdb --username=postgres cmsdbfortesting ;
       cmsInitDB ;
       sudo chown cmsuser:cmsuser ./codecov ;
-      UNIT=$(pytest --cov . --cov-report xml:codecov/unittests.xml) ;
+      pytest --cov . --cov-report xml:codecov/unittests.xml ;
+      UNIT=$? ;
       dropdb --host=testdb --username=postgres cmsdbfortesting ;
       createdb --host=testdb --username=postgres cmsdbfortesting ;
       cmsInitDB ;
-      FUNC=$(cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml) ;
+      cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml ;
+      FUNC=$? ;
 
       # This contraption is needed because otherwise failing unit tests aren't
       # reported in the CI as long as the functional tests are passing. Ideally
