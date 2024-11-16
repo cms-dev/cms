@@ -34,7 +34,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
-* `Python <http://www.python.org/>`_ >= 2.7 (for Python, with executable ``python2`` or ``python3``; in addition you will need ``zip``);
+* `Python <http://www.python.org/>`_ >= 3.8 (for Python, with executable ``python3``; in addition you will need ``zip``);
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
@@ -63,7 +63,7 @@ On Ubuntu 20.04, one will need to run the following script to satisfy all depend
         libffi-dev python3-pip
 
     # Optional
-    sudo apt-get install nginx-full python2.7 php7.4-cli php7.4-fpm \
+    sudo apt-get install nginx-full python3.8 php7.4-cli php7.4-fpm \
         phppgadmin texlive-latex-base a2ps haskell-platform rustc mono-mcs
 
 The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
@@ -86,7 +86,7 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     sudo pacman -S --needed postgresql-libs libcups libyaml python-pip
 
     # Optional
-    sudo pacman -S --needed nginx python2 php php-fpm phppgadmin texlive-core \
+    sudo pacman -S --needed nginx python3 php php-fpm phppgadmin texlive-core \
         a2ps ghc rust mono
 
 Preparation steps
