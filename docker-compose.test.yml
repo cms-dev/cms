@@ -32,6 +32,8 @@ services:
       cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml ;
       FUNC=$? ;
 
+      echo "Results: $UNIT $FUNC" ;
+
       # This contraption is needed because otherwise failing unit tests aren't
       # reported in the CI as long as the functional tests are passing. Ideally
       # we should get rid of `cmsRunFunctionalTests` and make those tests work
