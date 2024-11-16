@@ -72,7 +72,7 @@ class TestName(unittest.TestCase):
 
     def test_own_name_language_only(self):
         self.assertEqual(ENGLISH.name, "English")
-        self.assertEqual(ITALIAN.name, "🤌")
+        self.assertEqual(ITALIAN.name, "italiano")
 
     def test_own_name_language_and_country(self):
         self.assertEqual(BRITISH_ENGLISH.name, "English (United Kingdom)")

@@ -35,7 +35,7 @@ services:
       # This contraption is needed because otherwise failing unit tests aren't
       # reported in the CI as long as the functional tests are passing. Ideally
       # we should get rid of `cmsRunFunctionalTests` and make those tests work
-      # with pytest so they can be auto-discovered and run with it.
+      # with pytest so they can be auto-discovered and run in a single command.
       if [ $UNIT -ne 0 ] || [ $FUNC -ne 0 ]; then
         exit 1
       else
