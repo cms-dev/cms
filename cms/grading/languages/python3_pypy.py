@@ -23,13 +23,13 @@ import os
 from cms.grading import CompiledLanguage
 
 
-__all__ = ["Python3PyPy3"]
+__all__ = ["Python3PyPy"]
 
 
-class Python3PyPy3(CompiledLanguage):
+class Python3PyPy(CompiledLanguage):
     """This defines the Python programming language, version 3 (more
     precisely, the subversion of Python 3 available on the system)
-    using the default interpeter in the system.
+    using the default PyPy interpeter in the system.
 
     """
 
@@ -38,7 +38,7 @@ class Python3PyPy3(CompiledLanguage):
     @property
     def name(self):
         """See Language.name."""
-        return "Python 3 / PyPy3"
+        return "Python 3 / PyPy"
 
     @property
     def source_extensions(self):
