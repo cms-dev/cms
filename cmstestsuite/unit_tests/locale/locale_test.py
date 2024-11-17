@@ -103,20 +103,20 @@ class TestFormatDatetime(unittest.TestCase):
         self.assertEqual(
             ENGLISH.format_datetime(datetime(2018, 1, 1, 12, 34, 56),
                                     timezone=UTC),
-            "Jan 1, 2018, 12:34:56 PM")
+            "Jan 1, 2018, 12:34:56\N{Narrow No-Break Space}PM")
 
     def test_other_timezone_winter(self):
         # Other timezone, in winter (no DST).
         self.assertEqual(
             ENGLISH.format_datetime(datetime(2018, 1, 1, 12, 34, 56),
                                     timezone=ROME),
-            "Jan 1, 2018, 1:34:56 PM")
+            "Jan 1, 2018, 1:34:56\N{Narrow No-Break Space}PM")
 
     def test_other_timezone_summer(self):
         self.assertEqual(
             ENGLISH.format_datetime(datetime(2018, 7, 1, 12, 34, 56),
                                     timezone=ROME),
-            "Jul 1, 2018, 2:34:56 PM")
+            "Jul 1, 2018, 2:34:56\N{Narrow No-Break Space}PM")
 
     # As above, localized (use a language with a 24h clock and with a
     # different day/month/year order).
@@ -146,19 +146,19 @@ class TestFormatTime(unittest.TestCase):
         # UTC, in English
         self.assertEqual(ENGLISH.format_time(datetime(2018, 1, 1, 12, 34, 56),
                                              timezone=UTC),
-                         "12:34:56 PM")
+                         "12:34:56\N{Narrow No-Break Space}PM")
 
     def test_other_timezone_winter(self):
         # Other timezone, in winter (no DST).
         self.assertEqual(ENGLISH.format_time(datetime(2018, 1, 1, 12, 34, 56),
                                              timezone=ROME),
-                         "1:34:56 PM")
+                         "1:34:56\N{Narrow No-Break Space}PM")
 
     def test_other_timezone_in_summer(self):
         # Other timezone, in summer (DST).
         self.assertEqual(ENGLISH.format_time(datetime(2018, 7, 1, 12, 34, 56),
                                              timezone=ROME),
-                         "2:34:56 PM")
+                         "2:34:56\N{Narrow No-Break Space}PM")
 
     # As above, localized (use Danish as they use periods rather
     # than colons and have a 24h clock).
@@ -187,17 +187,17 @@ class TestFormatDatetimeSmart(unittest.TestCase):
             ENGLISH.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2018, 1, 1, 23, 30),
                                           timezone=UTC),
-            "12:34:56 PM")
+            "12:34:56\N{Narrow No-Break Space}PM")
         self.assertEqual(
             ENGLISH.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2018, 1, 2, 0, 30),
                                           timezone=UTC),
-            "Jan 1, 2018, 12:34:56 PM")
+            "Jan 1, 2018, 12:34:56\N{Narrow No-Break Space}PM")
         self.assertEqual(
             ENGLISH.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2017, 12, 31, 23, 30),
                                           timezone=UTC),
-            "Jan 1, 2018, 12:34:56 PM")
+            "Jan 1, 2018, 12:34:56\N{Narrow No-Break Space}PM")
 
     def test_other_timezone_winter(self):
         # Other timezone, in winter (no DST).
@@ -205,17 +205,17 @@ class TestFormatDatetimeSmart(unittest.TestCase):
             ENGLISH.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2018, 1, 1, 22, 30),
                                           timezone=ROME),
-            "1:34:56 PM")
+            "1:34:56\N{Narrow No-Break Space}PM")
         self.assertEqual(
             ENGLISH.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2018, 1, 1, 23, 30),
                                           timezone=ROME),
-            "Jan 1, 2018, 1:34:56 PM")
+            "Jan 1, 2018, 1:34:56\N{Narrow No-Break Space}PM")
         self.assertEqual(
             ENGLISH.format_datetime_smart(datetime(2018, 1, 1, 12, 34, 56),
                                           datetime(2017, 12, 31, 22, 30),
                                           timezone=ROME),
-            "Jan 1, 2018, 1:34:56 PM")
+            "Jan 1, 2018, 1:34:56\N{Narrow No-Break Space}PM")
 
     def test_other_timezone_summer(self):
         # Other timezone, in summer (DST).
@@ -223,17 +223,17 @@ class TestFormatDatetimeSmart(unittest.TestCase):
             ENGLISH.format_datetime_smart(datetime(2018, 7, 1, 12, 34, 56),
                                           datetime(2018, 7, 1, 21, 30),
                                           timezone=ROME),
-            "2:34:56 PM")
+            "2:34:56\N{Narrow No-Break Space}PM")
         self.assertEqual(
             ENGLISH.format_datetime_smart(datetime(2018, 7, 1, 12, 34, 56),
                                           datetime(2018, 7, 1, 22, 30),
                                           timezone=ROME),
-            "Jul 1, 2018, 2:34:56 PM")
+            "Jul 1, 2018, 2:34:56\N{Narrow No-Break Space}PM")
         self.assertEqual(
             ENGLISH.format_datetime_smart(datetime(2018, 7, 1, 12, 34, 56),
                                           datetime(2018, 6, 30, 21, 30),
                                           timezone=ROME),
-            "Jul 1, 2018, 2:34:56 PM")
+            "Jul 1, 2018, 2:34:56\N{Narrow No-Break Space}PM")
 
     # As above, localized.
 
@@ -508,23 +508,23 @@ class TestFormatSize(unittest.TestCase):
 
     def test_localized_zero(self):
         self.assertEqual(FRENCH.format_size(0),
-                         "0 octet")
+                         "0\N{No-Break Space}octet")
 
     def test_localized_small_values(self):
         self.assertEqual(FRENCH.format_size(1),
-                         "1 octet")
+                         "1\N{No-Break Space}octet")
         self.assertEqual(FRENCH.format_size(2),
-                         "2 octets")
+                         "2\N{No-Break Space}octets")
 
     def test_localized_cutoff_kib(self):
         self.assertEqual(FRENCH.format_size(999),
-                         "999 octets")
+                         "999\N{No-Break Space}octets")
         self.assertEqual(FRENCH.format_size(1000),
-                         "1\N{NO-BREAK SPACE}000 octets")
+                         "1\N{Narrow No-Break Space}000\N{No-Break Space}octets")
         self.assertEqual(FRENCH.format_size(1001),
-                         "1\N{NO-BREAK SPACE}001 octets")
+                         "1\N{Narrow No-Break Space}001\N{No-Break Space}octets")
         self.assertEqual(FRENCH.format_size(1023),
-                         "1\N{NO-BREAK SPACE}023 octets")
+                         "1\N{Narrow No-Break Space}023\N{No-Break Space}octets")
         self.assertEqual(FRENCH.format_size(1024),
                          "1,00 Kio")
         self.assertEqual(FRENCH.format_size(1025),
@@ -534,16 +534,15 @@ class TestFormatSize(unittest.TestCase):
         self.assertEqual(FRENCH.format_size(999 * 1024),
                          "999 Kio")
         self.assertEqual(FRENCH.format_size(1000 * 1024),
-                         "1\N{NO-BREAK SPACE}000 Kio")
+                         "1\N{Narrow No-Break Space}000 Kio")
         self.assertEqual(FRENCH.format_size(1001 * 1024),
-                         "1\N{NO-BREAK SPACE}001 Kio")
+                         "1\N{Narrow No-Break Space}001 Kio")
         self.assertEqual(FRENCH.format_size(1023 * 1024),
-                         "1\N{NO-BREAK SPACE}023 Kio")
+                         "1\N{Narrow No-Break Space}023 Kio")
         self.assertEqual(FRENCH.format_size(1024 * 1024),
                          "1,00 Mio")
         self.assertEqual(FRENCH.format_size(1025 * 1024),
                          "1,00 Mio")
-
 
     def test_localized_large(self):
         self.assertEqual(FRENCH.format_size(2_345_000),
@@ -553,7 +552,7 @@ class TestFormatSize(unittest.TestCase):
         self.assertEqual(FRENCH.format_size(456_789_000_000_000),
                          "415 Tio")
         self.assertEqual(FRENCH.format_size(5_678_912_300_000_000),
-                         "5\N{NO-BREAK SPACE}165 Tio")
+                         "5\N{Narrow No-Break Space}165 Tio")
 
 
 class TestFormatDecimal(unittest.TestCase):
@@ -594,7 +593,7 @@ class TestTranslateMimetype(unittest.TestCase):
 
     @unittest.skipIf(not os.path.isfile(
         "/usr/share/locale/it/LC_MESSAGES/shared-mime-info.mo"),
-                     reason="need Italian shared-mime-info translation")
+        reason="need Italian shared-mime-info translation")
     def test_translate_mimetype(self):
         self.assertEqual(ENGLISH.translate_mimetype("PDF document"),
                          "PDF document")

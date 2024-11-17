@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
@@ -7,7 +7,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     cppreference-doc-en-html \
     fp-compiler \
     git \
-    haskell-platform \
+    ghc \
     libcap-dev \
     libcups2-dev \
     libffi-dev \
@@ -15,12 +15,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libyaml-dev \
     mono-mcs \
     openjdk-8-jdk-headless \
-    php7.4-cli \
+    php-cli \
     postgresql-client \
     python3-pip \
-    python3.8 \
-    python3.8-dev \
+    python3.12 \
+    python3.12-dev \
     rustc \
+    shared-mime-info \
     sudo \
     wait-for-it \
     zip
@@ -38,8 +39,8 @@ COPY --chown=cmsuser:cmsuser requirements.txt dev-requirements.txt /home/cmsuser
 
 WORKDIR /home/cmsuser/cms
 
-RUN sudo pip3 install -r requirements.txt
-RUN sudo pip3 install -r dev-requirements.txt
+RUN sudo pip3 install --break-system-packages -r requirements.txt
+RUN sudo pip3 install --break-system-packages -r dev-requirements.txt
 
 COPY --chown=cmsuser:cmsuser . /home/cmsuser/cms
 
