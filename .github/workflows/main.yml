@@ -25,12 +25,16 @@ jobs:
         run: |
           docker compose -p cms -f docker-compose.test.yml run --rm testcms
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
+        env:
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: ./codecov/unittests.xml
           flags: unittests
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
+        env:
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: ./codecov/functionaltests.xml
           flags: functionaltests

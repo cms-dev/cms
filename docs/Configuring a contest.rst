@@ -225,7 +225,7 @@ Language details
 
 * Pascal support is provided by ``fpc``, and submissions are optimized with ``-O2``.
 
-* Python submissions are executed using the system Python interpreter (you need to have ``/usr/bin/python2`` or ``/usr/bin/python3``, respectively).
+* Python submissions are executed using the system Python interpreter (you need to have ``/usr/bin/python3``).
 
 * PHP submissions are interpreted by ``/usr/bin/php``.
 
