@@ -1,6 +1,5 @@
-#!/usr/bin/python2 -sS
+#!/usr/bin/python3 -sS
 
-from __future__ import print_function
 
 import io
 import sys
@@ -20,44 +19,44 @@ correct = True
 
 # Speak the to program a few times, check what it does, and output the last
 # line.
-for i in range(10, 20) + [0]:
+for i in list(range(10, 20)) + [0]:
     x = i + input_value
     # Write a question to the candidate executable.
-    fifo_to_user1.write("%d\n" % x)
+    fifo_to_user1.write(b"%d\n" % x)
     # Read their response.
     l = fifo_from_user1.readline()
     # EOF?
-    if l == '':
+    if l == b'':
         correct = False
         break
     # These are the only things we expect from our stub.
-    if l.strip() != 'correct %d' % x:
+    if l.strip() != b'correct %d' % x:
         correct = False
         break
 
     correct = correct and (int(l.split()[1]) == x)
 
     # Write a question to the candidate executable.
-    fifo_to_user2.write("%d\n" % x)
+    fifo_to_user2.write(b"%d\n" % x)
     # Read their response.
     l = fifo_from_user2.readline()
     # EOF?
-    if l == '':
+    if l == b'':
         correct = False
         break
     # These are the only things we expect from our stub.
-    if l.strip() != 'correct %d' % (-x):
+    if l.strip() != b'correct %d' % (-x):
         correct = False
         break
 
     correct = correct and (int(l.split()[1]) == -x)
 else:
     # Tell stub to exit.
-    fifo_to_user1.write("0\n")
-    fifo_to_user2.write("0\n")
+    fifo_to_user1.write(b"0\n")
+    fifo_to_user2.write(b"0\n")
 
 # This file exists just for convenience.
-io.open("output.txt", "wb").write(l + "\n")
+io.open("output.txt", "wb").write(l + b"\n")
 
 # This is the final score.
 if correct:

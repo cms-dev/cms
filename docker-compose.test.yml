@@ -18,15 +18,4 @@ services:
       - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
     cgroup: host
-    command: >
-      wait-for-it testdb:5432 -- sh -c "
-      dropdb --host=testdb --username=postgres cmsdbfortesting ;
-      createdb --host=testdb --username=postgres cmsdbfortesting ;
-      cmsInitDB ;
-      sudo chown cmsuser:cmsuser ./codecov ;
-      pytest --cov . --cov-report xml:codecov/unittests.xml ;
-      dropdb --host=testdb --username=postgres cmsdbfortesting ;
-      createdb --host=testdb --username=postgres cmsdbfortesting ;
-      cmsInitDB ;
-      cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml ;
-      "
+    command: wait-for-it testdb:5432 -- ./_cms-test-internal.sh

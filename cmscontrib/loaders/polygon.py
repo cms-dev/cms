@@ -20,7 +20,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import imp
 import logging
 import os
 import subprocess
@@ -145,10 +144,11 @@ class PolygonTaskLoader(TaskLoader):
         task_cms_conf = None
         if os.path.exists(task_cms_conf_path):
             logger.info("Found additional CMS options for task %s.", name)
-            with open(task_cms_conf_path, 'rb') as f:
-                task_cms_conf = imp.load_module('cms_conf', f,
-                                                task_cms_conf_path,
-                                                ('.py', 'r', imp.PY_SOURCE))
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                'cms_conf', task_cms_conf_path)
+            task_cms_conf = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(task_cms_conf)
         if task_cms_conf is not None and hasattr(task_cms_conf, "general"):
             args.update(task_cms_conf.general)
 
