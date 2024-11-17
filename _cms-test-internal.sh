@@ -6,7 +6,7 @@ dropdb --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
-pytest --cov . --cov-report xml:codecov/unittests.xml
+pytest --cov . --cov-report xml:codecov/unittests.xml --junitxml=codecov/junit.xml -o junit_family=legacy
 UNIT=$?
 
 dropdb --host=testdb --username=postgres cmsdbfortesting

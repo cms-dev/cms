@@ -25,16 +25,24 @@ jobs:
         run: |
           docker compose -p cms -f docker-compose.test.yml run --rm testcms
 
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          files: ./codecov/junit.xml
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - uses: codecov/codecov-action@v4
-        env:
-            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        if: ${{ !cancelled() }}
         with:
           files: ./codecov/unittests.xml
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - uses: codecov/codecov-action@v4
-        env:
-            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        if: ${{ !cancelled() }}
         with:
           files: ./codecov/functionaltests.xml
           flags: functionaltests
+          token: ${{ secrets.CODECOV_TOKEN }}
