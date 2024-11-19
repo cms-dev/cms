@@ -14,7 +14,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
+
     - name: Build the Docker image
-      run: |
-        git submodule update --init
-        docker build . --file Dockerfile --tag cms:$(date +%s)
+      run: docker build . -t ${{ secrets.REGISTRY_NAME }}/cms:$(echo $GITHUB_SHA | head -c7)
+
+    - uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_TOKEN }}
+
+    - name: Log in to DO Container Registry
+      run: doctl registry login --expiry-seconds 1200
+
+    - name: Push image to DO Container Registry
+      run: docker push ${{ secrets.REGISTRY_NAME }}/cms:$(echo $GITHUB_SHA | head -c7)
