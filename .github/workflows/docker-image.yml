@@ -15,4 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag cms:$(date +%s)
+      run: |
+        git submodule update --init
+        docker build . --file Dockerfile --tag cms:$(date +%s)
