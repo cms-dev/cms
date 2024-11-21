@@ -1,7 +1,12 @@
 {
     "recommendations": [
+        // Auto-format Python code with Ruff linter
+        "charliermarsh.ruff",
+        // To apply settings from .editorconfig file
         "editorconfig.editorconfig",
+        // Python intellisense support
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        // Python language server and type checker
+        "ms-python.vscode-pylance",
     ]
-  }
+}

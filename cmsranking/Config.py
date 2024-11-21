@@ -61,7 +61,7 @@ class Config:
         # TODO: move to cmscommon as it is used both here and in cms/conf.py
         bin_path = os.path.join(os.getcwd(), sys.argv[0])
         bin_name = os.path.basename(bin_path)
-        bin_is_python = bin_name in ["ipython", "python", "python2", "python3"]
+        bin_is_python = bin_name in ["ipython", "python", "python3"]
         bin_in_installed_path = bin_path.startswith(sys.prefix) or (
             hasattr(sys, 'real_prefix')
             and bin_path.startswith(sys.real_prefix))

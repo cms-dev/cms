@@ -1,6 +1,5 @@
-#!/usr/bin/python2 -sS
+#!/usr/bin/python3 -sS
 
-from __future__ import print_function
 
 import io
 import sys
@@ -17,11 +16,11 @@ try:
     f = io.open(output_file, 'rb')
     line = f.readline().strip()
     more = f.readline()
-    if line == '%s %d' % (solution_word, number) and more == '':
+    if line == b'%s %d' % (solution_word, number) and more == b'':
         print("1.0")
         print("Correcto", file=sys.stderr)
     else:
-        assert more == ''
+        assert more == b''
         print("0.0")
         print("Plain wrong", file=sys.stderr)
 except:

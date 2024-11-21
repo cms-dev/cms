@@ -225,6 +225,8 @@ def main():
     runner = TestRunner(test_list, contest_id=args.contest, workers=4)
     failures = []
 
+    testing_general_failure = False
+
     try:
         # Submit and wait for all tests to complete.
         runner.submit_tests()
@@ -238,12 +240,17 @@ def main():
             with open("./log/cms/last.log", "rt", encoding="utf-8") as f:
                 print(f.read())
             print("\n\n===== END OF LOG DUMP =====\n\n")
+        logging.error("Failure while running tests", exc_info=True)
+        testing_general_failure = True
     finally:
         # And good night!
         runner.shutdown()
         runner.log_elapsed_time()
 
     combine_coverage()
+
+    if testing_general_failure:
+        return 1
 
     logger.info("Executed: %s", tests)
     logger.info("Failed: %s", len(failures))

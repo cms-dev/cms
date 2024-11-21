@@ -34,7 +34,7 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
-* `Python <http://www.python.org/>`_ >= 2.7 (for Python, with executable ``python2`` or ``python3``; in addition you will need ``zip``);
+* `Python <http://www.python.org/>`_ >= 3.8 (for Python, with executable ``python3``; in addition you will need ``zip``);
 
 * `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
 
@@ -49,22 +49,22 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 20.04, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 24.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
     # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-11-jdk-headless fp-compiler \
-        postgresql postgresql-client python3.8 cppreference-doc-en-html \
+        postgresql postgresql-client python3.12 cppreference-doc-en-html \
         cgroup-lite libcap-dev zip
 
     # Only if you are going to use pip/venv to install python dependencies
-    sudo apt-get install python3.8-dev libpq-dev libcups2-dev libyaml-dev \
+    sudo apt-get install python3.12-dev libpq-dev libcups2-dev libyaml-dev \
         libffi-dev python3-pip
 
     # Optional
-    sudo apt-get install nginx-full python2.7 php7.4-cli php7.4-fpm \
-        phppgadmin texlive-latex-base a2ps haskell-platform rustc mono-mcs
+    sudo apt-get install nginx-full php-cli texlive-latex-base \
+        a2ps ghc rustc mono-mcs pypy3
 
 The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
 
@@ -86,8 +86,8 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     sudo pacman -S --needed postgresql-libs libcups libyaml python-pip
 
     # Optional
-    sudo pacman -S --needed nginx python2 php php-fpm phppgadmin texlive-core \
-        a2ps ghc rust mono
+    sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core \
+        a2ps ghc rust mono pypy3
 
 Preparation steps
 =================
