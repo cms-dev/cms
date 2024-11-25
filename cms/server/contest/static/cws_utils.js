@@ -206,15 +206,25 @@ CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
         timedelta = 0;
     }
 
+
+    var days = Math.floor(timedelta / 86400);
+    timedelta %= 86400;
     var hours = Math.floor(timedelta / 3600);
     timedelta %= 3600;
     var minutes = Math.floor(timedelta / 60);
     timedelta %= 60;
     var seconds = Math.floor(timedelta);
 
-    return this.two_digits(hours) + ":"
-        + this.two_digits(minutes) + ":"
-        + this.two_digits(seconds);
+    if (days <= 2) {
+        // If less than 72 hours left, return the exact number of hours, minutes and seconds.
+        return this.two_digits(days * 24 + hours) + ":"
+            + this.two_digits(minutes) + ":"
+            + this.two_digits(seconds);
+    }
+    else {
+        // Otherwise only return the number of days.
+        return days + $("#translation_days").text();
+    }
 };
 
 
