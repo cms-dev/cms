@@ -43,7 +43,8 @@ try:
 except ImportError:
     import tornado.web as tornado_web
 
-from cms import config
+
+from cms import config, random_service
 from cms.db import UserTest, UserTestResult
 from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
@@ -150,8 +151,8 @@ class UserTestHandler(ContestHandler):
             logger.info("Sent error: `%s' - `%s'", e.subject, e.formatted_text)
             self.notify_error(e.subject, e.text, e.text_params)
         else:
-            self.service.evaluation_service.new_user_test(
-                user_test_id=user_test.id)
+            random_service(self.service.evaluation_services) \
+                .new_user_test(user_test_id=user_test.id)
             self.notify_success(N_("Test received"),
                                 N_("Your test has been received "
                                    "and is currently being executed."))

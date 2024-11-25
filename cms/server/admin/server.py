@@ -73,7 +73,10 @@ class AdminWebServer(WebService):
 
         self.admin_web_server = self.connect_to(
             ServiceCoord("AdminWebServer", 0))
-        self.evaluation_service = self.connect_to(
+        self.queue_service = self.connect_to(
+            ServiceCoord("QueueService", 0))
+        # TODO: does it make sense to use a random one?
+        self.evaluation_services = self.connect_to(
             ServiceCoord("EvaluationService", 0))
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))

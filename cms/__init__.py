@@ -39,7 +39,7 @@ __all__ = [
     "Address", "ServiceCoord", "ConfigError", "async_config", "config",
     # util
     "mkdir", "rmtree", "utf8_decoder", "get_safe_shard", "get_service_address",
-    "get_service_shards", "contest_id_from_args", "default_argument_parser",
+    "random_service", "get_service_shards", "contest_id_from_args", "default_argument_parser",
     # plugin
     "plugin_list",
 ]
@@ -60,6 +60,7 @@ TOKEN_MODE_INFINITE = "infinite"
 # Acts as a "none of the above".
 TOKEN_MODE_MIXED = "mixed"
 
+
 # Feedback level.
 
 # Full information (killing signals, time and memory, status for all
@@ -73,5 +74,6 @@ FEEDBACK_LEVEL_RESTRICTED = "restricted"
 from .conf import Address, ServiceCoord, ConfigError, async_config, config
 from .util import mkdir, rmtree, utf8_decoder, get_safe_shard, \
     get_service_address, get_service_shards, contest_id_from_args, \
-    default_argument_parser
+    random_service, default_argument_parser
 from .plugin import plugin_list
+
