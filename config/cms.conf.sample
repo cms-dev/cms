@@ -43,7 +43,8 @@
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]],
         "ProxyService":      [["localhost", 28600]],
-        "PrintingService":   [["localhost", 25123]]
+        "PrintingService":   [["localhost", 25123]],
+        "PrometheusExporter": []
         },
 
     "other_services":
