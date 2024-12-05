@@ -166,7 +166,7 @@ http {
             proxy_set_header Connection "";
 
             # Needs to be as large as the maximum allowed submission
-            # and input lengths set in cms.conf.
+            # and input lengths set in cms.toml.
             client_max_body_size 50M;
         }
     }

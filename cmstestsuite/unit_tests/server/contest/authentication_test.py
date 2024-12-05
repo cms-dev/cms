@@ -227,7 +227,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.assertIsNone(authenticated_participation)
         self.assertIsNone(cookie)
 
-    @patch.object(config, "cookie_duration", 10)
+    @patch.object(config, "contest_cookie_duration", 10)
     def test_cookie_contains_timestamp(self):
         self.contest.ip_autologin = False
         self.contest.allow_password_authentication = True

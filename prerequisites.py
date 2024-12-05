@@ -247,7 +247,7 @@ def install_conf():
     root = pwd.getpwnam("root")
     cmsuser = pwd.getpwnam(CMSUSER)
     makedir(os.path.join(USR_ROOT, "etc"), root, 0o755)
-    for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+    for conf_file_name in ["cms.toml", "cms.ranking.toml"]:
         conf_file = os.path.join(USR_ROOT, "etc", conf_file_name)
         # Skip if destination is a symlink
         if os.path.islink(conf_file):
@@ -377,7 +377,7 @@ def uninstall():
 
     print("===== Deleting configuration to /usr/local/etc/")
     if ask("Type Y if you really want to remove configuration files: "):
-        for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+        for conf_file_name in ["cms.toml", "cms.ranking.toml"]:
             try_delete(os.path.join(USR_ROOT, "etc", conf_file_name))
 
     print("===== Deleting empty directories")

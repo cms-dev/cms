@@ -6,7 +6,7 @@ Creating a contest from scratch
 
 The most immediate (but often less practical) way to create a contest in CMS is using the admin interface. You can start the AdminWebServer using the command ``cmsAdminWebServer`` (or using the ResourceService).
 
-After that, you can connect to the server using the address and port specified in :file:`cms.conf`; by default, http://localhost:8889/. Here, you can create a contest clicking on the link in the left column. After this, you must similarly add tasks and users.
+After that, you can connect to the server using the address and port specified in :file:`cms.toml`; by default, http://localhost:8889/. Here, you can create a contest clicking on the link in the left column. After this, you must similarly add tasks and users.
 
 Since the details of contests, tasks and users usually live somewhere in the filesystem, it is more practical to use an importer to create them in CMS automatically.
 

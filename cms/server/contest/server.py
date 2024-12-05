@@ -68,7 +68,7 @@ class ContestWebServer(WebService):
             "cookie_secret": hex_to_bin(config.secret_key),
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
-            "num_proxies_used": config.num_proxies_used,
+            "contest_num_proxies_used": config.contest_num_proxies_used,
             "xsrf_cookies": True,
         }
 
@@ -79,7 +79,7 @@ class ContestWebServer(WebService):
             raise ConfigError("Wrong shard number for %s, or missing "
                               "address/port configuration. Please check "
                               "contest_listen_address and contest_listen_port "
-                              "in cms.conf." % __name__)
+                              "in cms.toml." % __name__)
 
         self.contest_id = contest_id
 
