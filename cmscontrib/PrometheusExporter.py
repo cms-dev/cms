@@ -45,6 +45,7 @@ from cms.db import (
     Task,
 )
 from cms.io.service import Service
+from cms.io.rpc import RPCError
 from cms.server.admin.server import AdminWebServer
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class PrometheusExporter(Service):
         self.export_queue = not args.no_queue
         self.export_communiactions = not args.no_communications
         self.export_users = not args.no_users
-        self.evaluation_service = self.connect_to(ServiceCoord("EvaluationService", 0))
+        self.evaluation_service = None
 
     def run(self):
         REGISTRY.register(self)
@@ -73,14 +74,28 @@ class PrometheusExporter(Service):
         with SessionGen() as session:
             if self.export_submissions:
                 yield from self._collect_submissions(session)
-            if self.export_workers:
-                yield from self._collect_workers()
-            if self.export_queue:
-                yield from self._collect_queue()
             if self.export_communiactions:
                 yield from self._collect_communications(session)
             if self.export_users:
                 yield from self._collect_users(session)
+
+            if self.evaluation_service is None:
+                try:
+                    self.evaluation_service = self.connect_to(ServiceCoord("EvaluationService", 0))
+                except RPCError:
+                    pass
+            if self.evaluation_service is not None:
+                try:
+                    if self.export_workers:
+                        yield from self._collect_workers()
+                    if self.export_queue:
+                        yield from self._collect_queue()
+                except RPCError:
+                    self.evaluation_service = None
+
+            metric = GaugeMetricFamily("cms_es_is_up", "Whether the Evaluation Service is currently up")
+            metric.add_metric([], 1 if self.evaluation_service is not None else 0)
+            yield metric
 
     def _collect_submissions(self, session):
         # compiling / max_compilations / compilation_fail / evaluating /
