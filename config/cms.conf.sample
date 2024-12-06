@@ -194,7 +194,7 @@
 
     "_help": "Listening HTTP address and port for the exporter. If exposed",
     "_help": "this may leak private information, make sure to secure this endpoint.",
-    "prometheus_listen_address": "0.0.0.0",
+    "prometheus_listen_address": "127.0.0.1",
     "prometheus_listen_port": 8811,
 
 
