@@ -25,8 +25,7 @@ from cms.db.contest import Contest
 gevent.monkey.patch_all()  # noqa
 
 import argparse
-import sys
-import time
+import logging
 
 from prometheus_client import start_http_server
 from prometheus_client.core import REGISTRY, CounterMetricFamily, GaugeMetricFamily
@@ -47,32 +46,42 @@ from cms.db import (
 from cms.io.service import Service
 from cms.server.admin.server import AdminWebServer
 
+logger = logging.getLogger(__name__)
 
 class PrometheusExporter(Service):
     def __init__(self, args):
         super().__init__()
 
-        self.export_subs = not args.no_submissions
+        self.host = args.host
+        self.port = args.port
+
+        self.export_submissions = not args.no_submissions
         self.export_workers = not args.no_workers
         self.export_queue = not args.no_queue
         self.export_communiactions = not args.no_communications
         self.export_users = not args.no_users
         self.evaluation_service = self.connect_to(ServiceCoord("EvaluationService", 0))
 
+    def run(self):
+        REGISTRY.register(self)
+        start_http_server(self.port, addr=self.host)
+        logger.info("Started at http://%s:%s/metric", self.host, self.port)
+        super().run()
+
     def collect(self):
         with SessionGen() as session:
-            if self.export_subs:
-                yield from self.collect_subs(session)
+            if self.export_submissions:
+                yield from self._collect_submissions(session)
             if self.export_workers:
-                yield from self.collect_workers()
+                yield from self._collect_workers()
             if self.export_queue:
-                yield from self.collect_queue()
+                yield from self._collect_queue()
             if self.export_communiactions:
-                yield from self.collect_communications(session)
+                yield from self._collect_communications(session)
             if self.export_users:
-                yield from self.collect_users(session)
+                yield from self._collect_users(session)
 
-    def collect_subs(self, session):
+    def _collect_submissions(self, session):
         # compiling / max_compilations / compilation_fail / evaluating /
         # max_evaluations / scoring / scored / total
         stats = AdminWebServer.submissions_status(None)
@@ -118,7 +127,7 @@ class PrometheusExporter(Service):
             metric.add_metric([language], count)
         yield metric
 
-    def collect_workers(self):
+    def _collect_workers(self):
         status = self.evaluation_service.workers_status().get()
         metric = GaugeMetricFamily(
             "cms_workers",
@@ -127,14 +136,14 @@ class PrometheusExporter(Service):
         )
         metric.add_metric(["total"], len(status))
         metric.add_metric(
-            ["connected"], len([1 for worker in status.values() if worker["connected"]])
+            ["connected"], sum(1 for worker in status.values() if worker["connected"])
         )
         metric.add_metric(
-            ["working"], len([1 for worker in status.values() if worker["operations"]])
+            ["working"], sum(1 for worker in status.values() if worker["operations"])
         )
         yield metric
 
-    def collect_queue(self):
+    def _collect_queue(self):
         status = self.evaluation_service.queue_status().get()
 
         metric = GaugeMetricFamily("cms_queue_length", "Number of entries in the queue")
@@ -164,7 +173,7 @@ class PrometheusExporter(Service):
             metric.add_metric([], oldest["timestamp"])
         yield metric
 
-    def collect_communications(self, session):
+    def _collect_communications(self, session):
         metric = CounterMetricFamily(
             "cms_questions",
             "Number of questions",
@@ -200,7 +209,7 @@ class PrometheusExporter(Service):
         metric.add_metric([], data[0][0])
         yield metric
 
-    def collect_users(self, session):
+    def _collect_users(self, session):
         metric = GaugeMetricFamily(
             "cms_participations",
             "Number of participations grouped by category and contest",
@@ -276,7 +285,7 @@ def main():
     parser = argparse.ArgumentParser(description="Prometheus exporter.")
     parser.add_argument(
         "--host",
-        help="IP address to bind",
+        help="IP address to bind to",
         default="0.0.0.0",
     )
     parser.add_argument(
@@ -318,10 +327,7 @@ def main():
     args = parser.parse_args()
 
     service = PrometheusExporter(args)
-    REGISTRY.register(service)
-    start_http_server(args.port, addr=args.host)
-    print("Started at http://%s:%s/metric" % (args.host, args.port))
-    Service.run(service)
+    service.run()
 
 
 if __name__ == "__main__":
