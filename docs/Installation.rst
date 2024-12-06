@@ -190,58 +190,10 @@ After the activation, the ``pip`` command will *always* be available (even if it
 
         deactivate
 
-Method 3: Using ``apt-get`` on Ubuntu
--------------------------------------
-
-.. warning::
-
-  It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. **On Ubuntu, this is generally not the case** since we try to build on the python packages that are available for the current LTS version.
-
-.. warning::
-
-  On Ubuntu 20.04, the shipped version of ``python3-gevent`` is too old to support the system Python 3 version. After installing other packages from the repositories, you should still install ``gevent>=1.5,<1.6``, for example, using the ``pip`` method above.
-
-To install CMS and its Python dependencies on Ubuntu, you can issue:
-
-.. sourcecode:: bash
-
-    sudo python3 setup.py install
-
-    sudo apt-get install python3-setuptools python3-tornado4 python3-psycopg2 \
-         python3-sqlalchemy python3-psutil python3-netifaces python3-pycryptodome \
-         python3-bs4 python3-coverage python3-requests python3-werkzeug \
-         python3-gevent python3-bcrypt python3-chardet patool python3-babel \
-         python3-xdg python3-jinja2
-
-    # Optional.
-    # sudo apt-get install python3-yaml python3-sphinx python3-cups python3-pypdf2
-
-Method 4: Using ``pacman`` on Arch Linux
-----------------------------------------
-
-.. warning::
-
-  It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. **This is especially true for Arch Linux**, which is a bleeding edge distribution.
-
-To install CMS python dependencies on Arch Linux (again: assuming you did not use the aforementioned AUR packages), you can issue:
-
-.. sourcecode:: bash
-
-    sudo python3 setup.py install
-
-    sudo pacman -S --needed python-setuptools python-tornado python-psycopg2 \
-         python-sqlalchemy python-psutil python-netifaces python-pycryptodome \
-         python-beautifulsoup4 python-coverage python-requests python-werkzeug \
-         python-gevent python-bcrypt python-chardet python-babel python-xdg \
-         python-jinja
-
-    # Install the following from AUR.
-    # https://aur.archlinux.org/packages/patool/
-
-    # Optional.
-    # sudo pacman -S --needed python-yaml python-sphinx python-pycups
-    # Optionally install the following from AUR.
-    # https://aur.archlinux.org/packages/python-pypdf2/
+Method 3: Using your distribution's system packages 
+---------------------------------------------------
+You might be able to install compatible versions of the dependencies in `requirements.txt`
+through your distribution's packages; this method is not supported.
 
 
 Configuring the worker machines
