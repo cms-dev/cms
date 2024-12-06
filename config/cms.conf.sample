@@ -43,7 +43,8 @@
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]],
         "ProxyService":      [["localhost", 28600]],
-        "PrintingService":   [["localhost", 25123]]
+        "PrintingService":   [["localhost", 25123]],
+        "PrometheusExporter": []
         },
 
     "other_services":
@@ -188,6 +189,13 @@
     "max_jobs_per_user": 10,
     "pdf_printing_allowed": false,
 
+
+    "_section": "PrometheusExporter",
+
+    "_help": "Listening HTTP address and port for the exporter. If exposed",
+    "_help": "this may leak private information, make sure to secure this endpoint.",
+    "prometheus_listen_address": "127.0.0.1",
+    "prometheus_listen_port": 8811,
 
 
     "_help": "This is the end of this file."
