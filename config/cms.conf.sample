@@ -190,6 +190,13 @@
     "pdf_printing_allowed": false,
 
 
+    "_section": "PrometheusExporter",
+
+    "_help": "Listening HTTP address and port for the exporter. If exposed",
+    "_help": "this may leak private information, make sure to secure this endpoint.",
+    "prometheus_listen_address": "0.0.0.0",
+    "prometheus_listen_port": 8811,
+
 
     "_help": "This is the end of this file."
 }

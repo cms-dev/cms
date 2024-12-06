@@ -32,6 +32,7 @@ from prometheus_client.core import REGISTRY, CounterMetricFamily, GaugeMetricFam
 from sqlalchemy import func, distinct
 
 from cms import ServiceCoord
+from cms import config
 from cms.db import (
     Announcement,
     Dataset,
@@ -286,12 +287,12 @@ def main():
     parser.add_argument(
         "--host",
         help="IP address to bind to",
-        default="0.0.0.0",
+        default=config.prometheus_listen_address,
     )
     parser.add_argument(
         "--port",
         help="Port to use",
-        default=8811,
+        default=config.prometheus_listen_port,
         type=int,
     )
     parser.add_argument(
