@@ -14,7 +14,7 @@ bcrypt>=3.1,<4.3  # https://github.com/pyca/bcrypt/
 chardet>=3.0,<5.3  # https://pypi.python.org/pypi/chardet
 babel==2.12.1  # http://babel.pocoo.org/en/latest/changelog.html
 pyxdg>=0.26,<0.29  # https://freedesktop.org/wiki/Software/pyxdg/
-Jinja2>=2.10,<2.11  # http://jinja.pocoo.org/docs/latest/changelog/
+Jinja2>=2.10,<3.2  # http://jinja.pocoo.org/docs/latest/changelog/
 
 # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
 # MarkupSafe causes jinja to break
