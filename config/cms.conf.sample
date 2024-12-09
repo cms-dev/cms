@@ -52,6 +52,20 @@
         "TestFileCacher":    [["localhost", 27501]]
         },
 
+    "ephemeral_services":
+    {
+        "Worker": {
+            "subnet": "127.0.0.0/8",
+            "min_port": 26000,
+            "max_port": 26999
+            },
+        "ContestWebServer": {
+            "subnet": "127.0.0.0/8",
+            "min_port": 21000,
+            "max_port": 21000
+            }
+        },
+
 
 
     "_section": "Database",
@@ -106,6 +120,8 @@
     "_help": "in core_services. If you access them through a proxy (acting",
     "_help": "as a load balancer) running on the same host you could put",
     "_help": "127.0.0.1 here for additional security.",
+    "_help": "When using ephemeral services only the first address and port",
+    "_help": "are used",
     "contest_listen_address": [""],
     "contest_listen_port":    [8888],
 
