@@ -7,7 +7,7 @@ psutil>=5.5,<6.2  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
 requests==2.32.3  # https://pypi.python.org/pypi/requests
 gevent==24.11.1  # http://www.gevent.org/changelog.html
 greenlet>=3.0rc1
-werkzeug<1.0 # https://github.com/pallets/werkzeug/blob/master/CHANGES
+werkzeug<4.0 # https://github.com/pallets/werkzeug/blob/master/CHANGES
 backports.ssl-match-hostname==3.7.0.1 # required by tornado<5.0
 patool>=1.12,<3.2  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
 bcrypt>=3.1,<4.3  # https://github.com/pyca/bcrypt/
