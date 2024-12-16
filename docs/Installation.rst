@@ -137,15 +137,63 @@ Installing CMS and its Python dependencies
 
 There are a number of ways to install CMS and its Python dependencies:
 
-Method 1: Using the Docker image
+Method 1: Virtual environment
+-----------------------------
+
+The recommended method to install CMS is via a `virtual environment
+<https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python
+environment that you can put wherever you like and that can be
+activated/deactivated at will.
+
+You will need to create a virtual environment somewhere in your filesystem. For
+example, let's assume that you decided to create it under your home directory
+(as ``~/cms_venv``):
+
+.. sourcecode:: bash
+
+    python3 -m venv ~/cms_venv
+
+To activate it:
+
+.. sourcecode:: bash
+
+    source ~/cms_venv/bin/activate
+
+After the activation, the ``pip`` command will *always* be available (even if it
+was not available globally, e.g. because you did not install it). In general,
+every python command (python, pip) will refer to their corresponding virtual
+version. So, you can install python dependencies by issuing:
+
+.. sourcecode:: bash
+
+    export SETUPTOOLS_USE_DISTUTILS="stdlib"
+    pip3 install -r requirements.txt
+    python3 setup.py install
+
+.. note::
+
+    Once you finished using CMS, you can deactivate the virtual environment by
+    issuing:
+
+    .. sourcecode:: bash
+
+        deactivate
+
+Method 2: Using the Docker image
 --------------------------------
 
-See :doc:`here <Docker image>` for more information.
+See :doc:`here <Docker image>` for more information. This method is the
+recommended way for running tests locally and for local development. It hasn't
+been tested in production yet, so use it at your own risk.
 
-Method 2: Global installation with pip
+Method 3: Global installation with pip
 --------------------------------------
 
-There are good reasons to install CMS and its Python dependencies via pip (Python Package Index) instead of your package manager (e.g. apt-get). For example: two different Linux distro (or two different versions of the same distro) may offer two different versions of ``python-sqlalchemy``. When using pip, you can choose to install a *specific version* of ``sqlalchemy`` that is known to work correctly with CMS.
+There are good reasons to install CMS and its Python dependencies via pip
+instead of your package manager (e.g. apt-get). For example: two different Linux
+distro (or two different versions of the same distro) may offer two different
+versions of ``python-sqlalchemy``. When using pip, you can choose to install a
+*specific version* of ``sqlalchemy`` that is known to work correctly with CMS.
 
 Assuming you have ``pip`` installed, you can do this:
 
@@ -163,41 +211,9 @@ This command installs python dependencies globally. Note that on some distros, l
     pip3 install --user -r requirements.txt
     python3 setup.py install --user
 
-Method 3: Virtual environment
------------------------------
-
-An alternative method to perform the installation is with a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python environment that you can put wherever you like and that can be activated/deactivated at will.
-
-You will need to create a virtual environment somewhere in your filesystem. For example, let's assume that you decided to create it under your home directory (as ``~/cms_venv``):
-
-.. sourcecode:: bash
-
-    python3 -m venv ~/cms_venv
-
-To activate it:
-
-.. sourcecode:: bash
-
-    source ~/cms_venv/bin/activate
-
-After the activation, the ``pip`` command will *always* be available (even if it was not available globally, e.g. because you did not install it). In general, every python command (python, pip) will refer to their corresponding virtual version. So, you can install python dependencies by issuing:
-
-.. sourcecode:: bash
-
-    export SETUPTOOLS_USE_DISTUTILS="stdlib"
-    pip3 install -r requirements.txt
-    python3 setup.py install
-
-.. note::
-
-    Once you finished using CMS, you can deactivate the virtual environment by issuing:
-
-    .. sourcecode:: bash
-
-        deactivate
-
 Method 4: Using your distribution's system packages
 ---------------------------------------------------
+
 You might be able to install compatible versions of the dependencies in `requirements.txt`
 through your distribution's packages; this method is not supported.
 
