@@ -16,7 +16,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (in particular the C compiler ``gcc``);
 
-* `Python <http://www.python.org/>`_ >= 3.8;
+* `Python <http://www.python.org/>`_ >= 3.9;
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
@@ -24,7 +24,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `a2ps <https://www.gnu.org/software/a2ps/>`_ (only for printing).
 
-You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``. It is anyway suggested to use Linux kernel version at least 3.8.
+You will also require a Linux kernel with support for `cgroupv2 <https://docs.kernel.org/admin-guide/cgroup-v2.html>`_.
 
 Then you require the compilation and execution environments for the languages you will use in your contest:
 
@@ -34,9 +34,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
-* `Python <http://www.python.org/>`_ >= 3.8 (for Python, with executable ``python3``; in addition you will need ``zip``);
+* `Python <http://www.python.org/>`_ (for Python, with executable ``python3``; in addition you will need ``zip``);
 
-* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
+* `PHP <http://www.php.net>`_ (for PHP, with executable ``php``);
 
 * `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``);
 
@@ -71,7 +71,8 @@ The above commands provide a very essential Pascal environment. Consider install
 Arch Linux
 ----------
 
-On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.org/packages/cms>`_ or `cms-git <http://aur.archlinux.org/packages/cms-git>`_. However, if you do not want to use them, the following command will install almost all dependencies (some of them can be found in the AUR):
+On Arch Linux, the following command will install almost all dependencies (some
+of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -136,7 +137,12 @@ Installing CMS and its Python dependencies
 
 There are a number of ways to install CMS and its Python dependencies:
 
-Method 1: Global installation with pip
+Method 1: Using the Docker image
+--------------------------------
+
+See :doc:`here <Docker image>` for more information.
+
+Method 2: Global installation with pip
 --------------------------------------
 
 There are good reasons to install CMS and its Python dependencies via pip (Python Package Index) instead of your package manager (e.g. apt-get). For example: two different Linux distro (or two different versions of the same distro) may offer two different versions of ``python-sqlalchemy``. When using pip, you can choose to install a *specific version* of ``sqlalchemy`` that is known to work correctly with CMS.
@@ -157,7 +163,7 @@ This command installs python dependencies globally. Note that on some distros, l
     pip3 install --user -r requirements.txt
     python3 setup.py install --user
 
-Method 2: Virtual environment
+Method 3: Virtual environment
 -----------------------------
 
 An alternative method to perform the installation is with a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python environment that you can put wherever you like and that can be activated/deactivated at will.
@@ -190,7 +196,7 @@ After the activation, the ``pip`` command will *always* be available (even if it
 
         deactivate
 
-Method 3: Using your distribution's system packages 
+Method 4: Using your distribution's system packages
 ---------------------------------------------------
 You might be able to install compatible versions of the dependencies in `requirements.txt`
 through your distribution's packages; this method is not supported.
