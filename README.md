@@ -3,7 +3,7 @@ Contest Management System
 
 Homepage: <http://cms-dev.github.io/>
 
-[![Build Status](https://github.com/cms-dev/cms/workflows/ci/badge.svg)](https://github.com/cms-dev/cms/actions)
+[![Build Status](https://github.com/cms-dev/cms/actions/workflows/main.yml/badge.svg)](https://github.com/cms-dev/cms/actions)
 [![Codecov](https://codecov.io/gh/cms-dev/cms/branch/master/graph/badge.svg)](https://codecov.io/gh/cms-dev/cms)
 [![Get support on Telegram](https://img.shields.io/endpoint?label=Support&style=flat-square&url=https%3A%2F%2Fmogyo.ro%2Fquart-apis%2Ftgmembercount%3Fchat_id%3Dcontestms)](https://t.me/contestms)
 
