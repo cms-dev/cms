@@ -18,7 +18,7 @@ Jinja2>=2.10,<2.11  # http://jinja.pocoo.org/docs/latest/changelog/
 
 # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
 # MarkupSafe causes jinja to break
-MarkupSafe==2.0.1
+MarkupSafe==3.0.2
 
 # Only for some importers:
 pyyaml>=5.3,<6.1  # http://pyyaml.org/wiki/PyYAML
