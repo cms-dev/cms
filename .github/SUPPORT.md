@@ -4,7 +4,7 @@ To learn how to install and use CMS, please read the **documentation**,
 available at <https://cms.readthedocs.org/>.
 
 If you have questions or need help troubleshooting some problem,
-contact us in the **chat** at [gitter](https://gitter.im/cms-dev/cms),
+contact us in the **chat** on [Telegram](https://t.me/contestms),
 or write on the **support mailing list**
 <contestms-support@googlegroups.com>, where no registration is required
 (you can see the archives on
