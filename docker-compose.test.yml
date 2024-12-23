@@ -1,6 +1,6 @@
 services:
   testdb:
-    image: postgres
+    image: postgres:15
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 

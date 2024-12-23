@@ -20,5 +20,5 @@ If you encountered a bug, please file an
 the instructions in the issue template.
 
 **Please don't file issues to ask for help**, we are happy to help
-on the mailing list or on gitter, and it is more likely somebody will
+on the mailing list or on Telegram, and it is more likely somebody will
 answer your query sooner.

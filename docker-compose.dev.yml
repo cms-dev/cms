@@ -1,6 +1,6 @@
 services:
   devdb:
-    image: postgres
+    image: postgres:15
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
