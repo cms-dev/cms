@@ -228,43 +228,6 @@ Apart from validity, there are many possible tweaks to reduce the variability in
 We suggest following isolate's `guidelines <https://github.com/ioi/isolate/blob/c679ae936d8e8d64e5dab553bdf1b22261324315/isolate.1.txt#L292>`_ for reproducible results.
 
 
-.. _installation_running-cms-non-installed:
-
-Running CMS non-installed
-=========================
-
-To run CMS without installing it in the system, you need first to build the prerequisites:
-
-.. sourcecode:: bash
-
-    python3 prerequisites.py build
-
-There are still a few steps to complete manually in this case. First, add CMS and isolate to the path and create the configuration files:
-
-.. sourcecode:: bash
-
-    export PATH=$PATH:./isolate/
-    export PYTHONPATH=./
-    cp config/cms.conf.sample config/cms.conf
-    cp config/cms.ranking.conf.sample config/cms.ranking.conf
-
-Second, perform these tasks (that require root permissions):
-
-* create the ``cmsuser`` user and a group with the same name;
-
-* add your user to the ``cmsuser`` group;
-
-* set isolate to be owned by root:cmsuser, and set its suid bit.
-
-For example:
-
-.. sourcecode:: bash
-
-    sudo useradd cmsuser
-    sudo usermod -a -G cmsuser <your user>
-    sudo chown root:cmsuser ./isolate/isolate
-    sudo chmod u+s ./isolate/isolate
-
 Updating CMS
 ============
 
