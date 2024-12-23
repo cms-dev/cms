@@ -5,7 +5,7 @@ msgstr ""
 "PO-Revision-Date: 2024-12-23 21:08+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
-"Language: es_ES\n"
+"Language: es_CL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -155,21 +155,21 @@ msgstr "tokens"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "No posee %(type_pl)s disponibles para este problema."
+msgstr "No tienes %(type_pl)s disponibles para este problema."
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "Posee una cantidad infinita de %(type_pl)s para este problema."
+msgstr "Tienes una cantidad infinita de %(type_pl)s para este problema."
 
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "Comienza sin %(type_pl)s."
+msgstr "Comienzas sin %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "Comienza con un %(type_s)s."
-msgstr[1] "Comienza con %(gen_initial)d %(type_pl)s."
+msgstr[0] "Comienzas con un %(type_s)s."
+msgstr[1] "Comienzas con %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
@@ -191,19 +191,19 @@ msgstr[1] "hasta un máximo de %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "No recibe %(type_pl)s adicionales."
+msgstr "No recibes %(type_pl)s adicionales."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "recibe otro %(type_s)s."
-msgstr[1] "recibe %(gen_number)d %(type_pl)s adicionales."
+msgstr[0] "recibes otro %(type_s)s."
+msgstr[1] "recibes %(gen_number)d %(type_pl)s adicionales."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "Puede utilizar un %(type_s)s por segundo "
-msgstr[1] "Puede utilizar un %(type_s)s cada %(min_interval)g segundos "
+msgstr[0] "Puedes utilizar un %(type_s)s por segundo "
+msgstr[1] "Puedes utilizar un %(type_s)s cada %(min_interval)g segundos "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -214,14 +214,14 @@ msgstr[1] "y no más de %(max_number)d %(type_pl)s en total."
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "Puede utilizar un %(type_s)s por segundo."
-msgstr[1] "Puede utilizar un %(type_s)s cada %(min_interval)g segundos."
+msgstr[0] "Puedes utilizar un %(type_s)s por segundo."
+msgstr[1] "Puedes utilizar un %(type_s)s cada %(min_interval)g segundos."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "No puede utilizar más de un %(type_s)s en total."
-msgstr[1] "No puede utilizar más de %(max_number)d %(type_pl)s en total."
+msgstr[0] "No puedes utilizar más de un %(type_s)s en total."
+msgstr[1] "No puedes utilizar más de %(max_number)d %(type_pl)s en total."
 
 msgid "You have no limitations on how you use them."
 msgstr "No hay limitaciones en cuanto a su utilización."
@@ -320,11 +320,11 @@ msgstr "¡Demasiados envíos!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Ha alcanzado el límite máximo de a lo sumo %d envíos entre todos los problemas."
+msgstr "Has alcanzado el límite máximo de a lo sumo %d envíos entre todos los problemas."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Ha alcanzado el límite máximo de a lo sumo %d envíos en este problema."
+msgstr "Has alcanzado el límite máximo de a lo sumo %d envíos en este problema."
 
 msgid "Submissions too frequent!"
 msgstr "¡Envíos demasiado frecuentes!"
@@ -365,7 +365,7 @@ msgstr "Ha alcanzado el máximo permitido de %d tests entre todos los problemas.
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "Ha alcanzado el máximo permitido de %d tests en este problema."
+msgstr "Has alcanzado el máximo permitido de %d tests en este problema."
 
 msgid "Tests too frequent!"
 msgstr "¡Tests demasiado frecuentes!"
@@ -448,10 +448,10 @@ msgid "Username"
 msgstr "Nombre de usuario"
 
 msgid "Password"
-msgstr "Password"
+msgstr "Contraseña"
 
 msgid "Login"
-msgstr "Acceder"
+msgstr "Iniciar sesión"
 
 msgid "Don't have an account?"
 msgstr "¿No tienes una cuenta?"
@@ -460,29 +460,29 @@ msgid "Register"
 msgstr "Registrarse"
 
 msgid "New message"
-msgstr "Mensaje nuevo"
+msgstr "Nuevo mensaje"
 
 msgid "New announcement"
 msgstr "Anuncio nuevo"
 
 msgid "New answer"
-msgstr "Respuesta nueva"
+msgstr "Nueva respuesta"
 
 #, python-format
 msgid "%d unread"
 msgstr "%d sin leer"
 
 msgid "Until contest starts:"
-msgstr "Tiempo restante hasta el comienzo del certamen:"
+msgstr "Tiempo restante hasta el comienzo de la competencia:"
 
 msgid "Until analysis starts:"
-msgstr "Tiempo restante hasta el comienzo de la fase de análisis:"
+msgstr "Tiempo restante hasta el inicio de la fase de análisis:"
 
 msgid "Until contest ends:"
-msgstr "Tiempo restante hasta el final el certamen:"
+msgstr "Tiempo restante hasta el final de la competencia:"
 
 msgid "Until analysis ends:"
-msgstr "Tiempo restante hasta el final de la fase de análisis:"
+msgstr "Tiempo restante el final de la fase de análisis:"
 
 msgid "Time left:"
 msgstr "Tiempo restante:"
@@ -491,13 +491,13 @@ msgid "Server time:"
 msgstr "Hora del servidor:"
 
 msgid "Overview"
-msgstr "Carátula"
+msgstr "Vista general"
 
 msgid "Statement"
 msgstr "Enunciado"
 
 msgid "Submissions"
-msgstr "Envíos"
+msgstr "Envío"
 
 msgid "Documentation"
 msgstr "Documentación"
@@ -512,22 +512,22 @@ msgid "Contest Management System"
 msgstr "Contest Management System"
 
 msgid "is released under the"
-msgstr "se encuentra publicado bajo la"
+msgstr "se distribuye bajo la"
 
 msgid "GNU Affero General Public License"
-msgstr "GNU Affero General Public License"
+msgstr "licencia pública general de Affero (GNU AGPL)"
 
 msgid "Choose a contest"
-msgstr "Seleccione un certamen"
+msgstr "Seleccionar una competencia"
 
 msgid "Programming languages and libraries"
 msgstr "Lenguajes de programación y librerías"
 
 msgid "Standard Template Library"
-msgstr "Standard Template Library"
+msgstr "Standrad Template Library"
 
 msgid "The main Java class of the solution should have exactly the same name as the task."
-msgstr "La clase principal de la solución en Java debe tener exactamente el mismo nombre que el problema."
+msgstr "La class principal en Java debe llamarse igual que el nombre del problema"
 
 msgid "Submission details for compilation"
 msgstr "Detalles del envío (compilación)"
@@ -600,37 +600,37 @@ msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
 msgstr "La fase de análisis comenzó a las %(start_time)s y finalizó a las %(stop_time)s."
 
 msgid "You have an infinite number of tokens."
-msgstr "Posee un número ilimitado de tokens."
+msgstr "Tienes un número ilimitado de tokens."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr "Puede ver el resultado detallado de un envío utilizando un token sobre el mismo."
+msgstr "Puedes ver el resultado detallado de un envío utilizando un token sobre el mismo."
 
 msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
-msgstr "Su puntaje en cada problema será el máximo entre los envíos con token, y el último envío realizado."
+msgstr "Tu puntaje en cada problema será el máximo entre los envíos con token, y el último envío realizado."
 
 msgid "You have a distinct set of tokens for each task."
-msgstr "Posee un conjunto de tokens diferentes para cada problema."
+msgstr "Tienes un conjunto de tokens diferentes para cada problema."
 
 #, python-format
 msgid "You can find the rules for the %(type_pl)s on each task's description page."
-msgstr "Puede ver las reglas de los %(type_pl)s en la página de descripción de cada problema."
+msgstr "Puedes ver las reglas de los %(type_pl)s en la página de descripción de cada problema."
 
 msgid "You have a set of tokens shared among all tasks."
-msgstr "Posee un conjunto de tokens compartido entre todos los problemas."
+msgstr "Tienes un conjunto de tokens compartido entre todos los problemas."
 
 msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr "Posee dos tipos de tokens: un conjunto de <em>contest-tokens</em> compartidos entre todos los problemas, y un conjunto distinto de <em>task-tokens</em> para cada problema."
+msgstr "Tienes dos tipos de tokens: un conjunto de <em>contest-tokens</em> compartidos entre todos los problemas, y un conjunto distinto de <em>task-tokens</em> para cada problema."
 
 msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
-msgstr "Puede ver el resultado detallado de un envío utilizando dos tokens sobre el mismo, uno de cada tipo."
+msgstr "Puedes ver el resultado detallado de un envío utilizando dos tokens sobre el mismo, uno de cada tipo."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr "Puede realizar a lo sumo %(submissions)s envíos de solución durante esta competencia."
+msgstr "Puedes realizar a lo sumo %(submissions)s envíos de solución durante esta competencia."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr "Puede realizar a lo sumo %(user_tests)s tests provistos por el usuario durante esta competencia."
+msgstr "Puedes realizar a lo sumo %(user_tests)s tests provistos por el usuario durante esta competencia."
 
 #, python-format
 msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
@@ -640,27 +640,27 @@ msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Una vez que la competencia comienza, puede elegir comenzar su ventana de tiempo."
 
 msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Una vez iniciada esta ventana de tiempo, podrá enviar soluciones hasta el final de la misma, o hasta el final de la competencia, lo que ocurra primero."
+msgstr "Una vez iniciada esta ventana de tiempo, podrás enviar soluciones hasta el final de la misma, o hasta el final de la competencia, lo que ocurra primero."
 
 msgid "By clicking on the button below you can start your time frame."
-msgstr "Puede iniciar su ventana de tiempo haciendo clic en el botón de más abajo."
+msgstr "Puedes iniciar tu ventana de tiempo haciendo click en el botón de más abajo."
 
 #, python-format
 msgid "You started your time frame at %(start_time)s."
-msgstr "Su ventana de tiempo comenzó a las %(start_time)s."
+msgstr "Tu ventana de tiempo comenzó a las %(start_time)s."
 
 msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Puede enviar soluciones hasta el final de la ventana de tiempo, o hasta el final de la competencia, lo que ocurra primero."
+msgstr "Puedes enviar soluciones hasta el final de la ventana de tiempo, o hasta el final de la competencia, lo que ocurra primero."
 
 #, python-format
 msgid "You started your time frame at %(start_time)s and you already finished it."
-msgstr "Su ventana de tiempo comenzó a las %(start_time)s, y ya ha finalizado."
+msgstr "Tu ventana de tiempo comenzó a las %(start_time)s, y ya ha finalizado."
 
 msgid "There's nothing you can do now."
-msgstr "Ya no puede realizar ningún envío."
+msgstr "Ya no puedes realizar más envíos."
 
 msgid "You never started your time frame. Now it's too late."
-msgstr "Nunca inició su ventana de tiempo. Ya no es posible realizar ningún envío."
+msgstr "Nunca iniciaste tu ventana de tiempo. Ya no es posible realizar envíos."
 
 msgid "Start!"
 msgstr "¡Comenzar!"
@@ -700,11 +700,11 @@ msgstr "Imprimir"
 
 #, python-format
 msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Puede imprimir %(remaining_jobs)s archivos de texto o pdf adicionales, de hasta %(max_pages)s páginas cada uno."
+msgstr "Puedes imprimir %(remaining_jobs)s archivos de texto o pdf adicionales, de hasta %(max_pages)s páginas cada uno."
 
 #, python-format
 msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Puede imprimir %(remaining_jobs)s archivos de texto adicionales, de hasta %(max_pages)s páginas cada uno."
+msgstr "Puedes imprimir %(remaining_jobs)s archivos de texto adicionales, de hasta %(max_pages)s páginas cada uno."
 
 msgid "File (text or PDF)"
 msgstr "Archivo (de texto o PDF)"
@@ -716,7 +716,7 @@ msgid "Submit"
 msgstr "Enviar"
 
 msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Ya no puede imprimir nada más, pues ya ha agotado su cuota de impresión."
+msgstr "Ya no puedes imprimir nada más, pues ya has agotado tu cuota de impresión."
 
 msgid "Previous print jobs"
 msgstr "Trabajos de impresión previos"
@@ -746,7 +746,7 @@ msgid "This username is already taken, please choose a different one."
 msgstr "Este nombre de usuario ya está en uso, por favor elige uno diferente."
 
 msgid "This user is already registered in the contest."
-msgstr "Este usuario ya está inscrito en el certamen."
+msgstr "Este usuario ya está inscrito en la competencia."
 
 msgid "No such user."
 msgstr "No se encontró el usuario."
@@ -764,7 +764,7 @@ msgid "New user"
 msgstr "Nuevo usuario"
 
 msgid "Join contest"
-msgstr "Unirse al certamen"
+msgstr "Unirse a la competencia"
 
 msgid "First name"
 msgstr "Nombre"
@@ -788,7 +788,7 @@ msgid "Confirm password"
 msgstr "Confirmar contraseña"
 
 msgid "Registered in the contest successfully!"
-msgstr "¡Te has registrado exitosamente en el certamen!"
+msgstr "¡Te has registrado exitosamente en la competencia!"
 
 msgid "Your username is:"
 msgstr "Tu nombre de usuario es:"
@@ -831,7 +831,7 @@ msgid "The statement for this task is available in multiple versions, in differe
 msgstr "El enunciado de este problema está disponible en múltiples versiones, en diferentes idiomas."
 
 msgid "You can see (and download) all of them using the list on the right."
-msgstr "Puede ver y descargar todas las versiones utilizando la lista a la derecha."
+msgstr "Puedes ver y descargar todas las versiones utilizando la lista a la derecha."
 
 msgid "Some suggested translations follow."
 msgstr "A continuación, se muestran algunas traducciones sugeridas."
@@ -860,10 +860,10 @@ msgstr "Comandos de compilación"
 
 #, python-format
 msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>."
-msgstr "Puede consultar las reglas de los %(type_pl)s en la <a href=\"%(contest_root)s\">carátula de la competencia</a>."
+msgstr "Puedes consultar las reglas de los %(type_pl)s en la <a href=\"%(contest_root)s\">vista general de la competencia</a>."
 
 msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
-msgstr "Recuerde que para ver el resultado detallado de un envío, debe utilizar tanto un contest-token como un task-token."
+msgstr "Recuerda que para ver el resultado detallado de un envío, debes utilizar tanto un contest-token como un task-token."
 
 msgid "Attachments"
 msgstr "Adjuntos"
@@ -894,11 +894,11 @@ msgid "Submit a solution"
 msgstr "Enviar solución"
 
 msgid "You may submit any subset of outputs in a single submission."
-msgstr "Puede enviar cualquier subconjunto de los archivos de salida en un mismo envío."
+msgstr "Puedes enviar cualquier subconjunto de los archivos de salida en un mismo envío."
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
-msgstr "Puede enviar %(submissions_left)s soluciones más."
+msgstr "Puedes enviar %(submissions_left)s soluciones más."
 
 msgid "submission.zip"
 msgstr "envio.zip"
@@ -917,7 +917,7 @@ msgstr "En este momento, usted tiene un token disponible para este problema."
 
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
-msgstr "En este momento, usted tiene %(tokens)s tokens disponibles para este problema."
+msgstr "En este momento, tienes %(tokens)s tokens disponibles para este problema."
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
@@ -925,17 +925,17 @@ msgstr "Pero debe esperar hasta %(expiration_time)s para utilizarlos."
 
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
-msgstr "Recibirá un nuevo token a las %(gen_time)s."
+msgstr "Recibirás un nuevo token a las %(gen_time)s."
 
 msgid "In the current situation, no more tokens will be generated."
 msgstr "En la situación actual, no se generarán más tokens."
 
 msgid "Right now, you do not have tokens available for this task."
-msgstr "En este momento, usted no tiene tokens disponibles para este problema."
+msgstr "En este momento, no tienes tokens disponibles para este problema."
 
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
-msgstr "Pero debe esperar hasta %(expiration_time)s para utilizarlo."
+msgstr "Pero debes esperar hasta %(expiration_time)s para utilizarlo."
 
 msgid "Unofficial submissions"
 msgstr "Envíos no oficiales"

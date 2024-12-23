@@ -1,25 +1,43 @@
-# Bosnian translations for CMS.
-# Copyright © 2010-2015 CMS authors
-# This file is distributed under the same license as CMS.
-# Dinko Osmankovic <dinko.osmankovic@etf.unsa.ba>, 2014.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-01 07:17+0100\n"
-"PO-Revision-Date: 2014-07-01 07:18+0100\n"
-"Last-Translator: Vedran Ljubović <vljubovic@smartnet.ba>\n"
-"Language-Team: Bosnian\n"
-"Language: bs\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: bs_BA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgid "N/A"
 msgstr "Nedostupno"
+
+msgid "Correct"
+msgstr "Ispravno"
+
+msgid "Not correct"
+msgstr "Nije ispravno"
+
+msgid "Partially correct"
+msgstr "Djelomično ispravno"
+
+msgid "Outcome"
+msgstr "Ishod"
+
+msgid "Details"
+msgstr "Detalji"
+
+msgid "Execution time"
+msgstr "Vrijeme izvršenja"
+
+msgid "Memory used"
+msgstr "Korištena memorija"
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "Podzadatak %(index)s"
 
 msgid "Compilation succeeded"
 msgstr "Kompajliranje uspješno"
@@ -34,16 +52,6 @@ msgstr "Kompajliranje je trajalo predugo"
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
 msgstr "Kompajliranje prekinuto signalom %s (možda je izazvano prekoračenjem dozvoljene memorije)"
 
-msgid "Execution timed out"
-msgstr "Vrijeme za izvršavanje je isteklo"
-
-#, python-format
-msgid "Execution killed with signal %s (could be triggered by violating memory limits)"
-msgstr "Izvršavanje prekinuto signalom %s (možda je izazvano prekoračenjem dozvoljene memorije)"
-
-msgid "Execution failed because the return code was nonzero"
-msgstr "Izvršenje nije uspjelo jer povratni kod nije bio nula"
-
 msgid "Output is correct"
 msgstr "Izlaz je ispravan"
 
@@ -54,33 +62,11 @@ msgstr "Izlaz nije ispravan"
 msgid "Evaluation didn't produce file %s"
 msgstr "Evaluacija nije proizvela datoteku %s"
 
-#, python-format
-msgid "Subtask %(index)s"
-msgstr "Podzadatak %(index)s"
+msgid "Execution timed out"
+msgstr "Vrijeme za izvršavanje je isteklo"
 
-msgid "Outcome"
-msgstr "Ishod"
-
-msgid "Details"
-msgstr "Detalji"
-
-msgid "Execution time"
-msgstr "Vrijeme izvršenja"
-
-msgid "Memory used"
-msgstr "Korištena memorija"
-
-msgid "Not correct"
-msgstr "Nije ispravno"
-
-msgid "Correct"
-msgstr "Ispravno"
-
-msgid "Partially correct"
-msgstr "Djelomično ispravno"
-
-msgid "Invalid files in submission"
-msgstr "Neispravne datoteke u prijavi"
+msgid "Execution failed because the return code was nonzero"
+msgstr "Izvršenje nije uspjelo jer povratni kod nije bio nula"
 
 msgid "Execution completed successfully"
 msgstr "Izvršavanje uspješno završeno"
@@ -90,167 +76,6 @@ msgstr "Nije potrebno kompajliranje"
 
 msgid "File not submitted"
 msgstr "Datoteka nije poslana"
-
-msgid "Question received"
-msgstr "Primljeno pitanje"
-
-msgid "Your question has been received, you will be notified when it is answered."
-msgstr "Vaše pitanje je primljeno, bićete obaviješteni kada dobijete odgovor."
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Dosegli ste gornju granicu od maksimalnih %d prijava za sve zadatke."
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Dosegli ste gornju granicu od maksimalnih %d prijava za ovaj zadatak."
-
-msgid "Too many submissions!"
-msgstr "Previše prijava!"
-
-#, python-format
-msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "Za sve zadatke možete slati novu prijavu nakon %d sekundi od posljednje prijave."
-
-#, python-format
-msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr "Za ovaj zadatak možete slati novu prijavu nakon %d sekundi od posljednje prijave."
-
-msgid "Submissions too frequent!"
-msgstr "Previše česte prijave!"
-
-msgid "Invalid submission format!"
-msgstr "Neispravan format prijave!"
-
-msgid "Please select the correct files."
-msgstr "Molimo izaberite korektne datoteke."
-
-msgid "Invalid archive format!"
-msgstr "Neispravan format arhive!"
-
-msgid "The submitted archive could not be opened."
-msgstr "Poslana arhiva se nije mogla otvoriti."
-
-msgid "Cannot recognize submission's language."
-msgstr "Ne mogu prepoznati jezik prijave."
-
-msgid "All sources must be in the same language."
-msgstr "Sve izvorne datoteke moraju biti u istom jeziku."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Jezik %s nije dozvoljen na ovom takmičenju."
-
-msgid "Invalid submission!"
-msgstr "Neispravna prijava!"
-
-msgid "Submission too big!"
-msgstr "Prijava prevelika!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Svaka izvorna datoteka može biti velika najviše %d bajta."
-
-msgid "Submission storage failed!"
-msgstr "Smještaj prijave neuspješan!"
-
-msgid "Please try again."
-msgstr "Molimo pokušajte ponovo."
-
-msgid "Submission received"
-msgstr "Primljena prijava"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "Vaša prijava je primljena i trenutno se evaluira."
-
-msgid "Token request discarded"
-msgstr "Zahtjev za tokenom odbijen"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Vaš zahtjev je odbijen jer nemate više slobodnih tokena."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Vaš zahtjev je odbijen jer ste već iskoristili token na toj prijavi."
-
-msgid "Token request received"
-msgstr "Primljen zahtjev za tokenom"
-
-msgid "Your request has been received and applied to the submission."
-msgstr "Vaš zahtjev je primljen i primijenjen na prijavu."
-
-msgid "Compiling..."
-msgstr "Kompajliram..."
-
-msgid "details"
-msgstr "detalji"
-
-msgid "Evaluating..."
-msgstr "Evaluiram..."
-
-msgid "Scoring..."
-msgstr "Bodujem..."
-
-msgid "Evaluated"
-msgstr "Evaluirano"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr "Dosegli ste gornju granicu od maksimalnih %d testova za sve zadatke."
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "Dosegli ste gornju granicu od maksimalnih %d testova za ovaj zadatak."
-
-msgid "Too many tests!"
-msgstr "Previše testova!"
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "Za sve zadatke možete ponovo testirati nakon %d sekundi od posljednjeg testa."
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr "Za ovaj zadatak možete ponovo testirati nakon %d sekundi od posljednjeg testa."
-
-msgid "Tests too frequent!"
-msgstr "Previše česti testovi!"
-
-msgid "Invalid test format!"
-msgstr "Neispravan format testa!"
-
-msgid "Cannot recognize test's language."
-msgstr "Ne mogu prepoznati jezik testa."
-
-msgid "Invalid test!"
-msgstr "Neispravan test!"
-
-msgid "Test too big!"
-msgstr "Test je prevelik!"
-
-msgid "Input too big!"
-msgstr "Ulaz je prevelik!"
-
-#, python-format
-msgid "The input file must be at most %d bytes long."
-msgstr "Ulazna datoteka može biti velika najviše %d bajta."
-
-msgid "Test storage failed!"
-msgstr "Smještaj testa neuspješan!"
-
-msgid "Test received"
-msgstr "Test primljen"
-
-msgid "Your test has been received and is currently being executed."
-msgstr "Vaš test je primljen i trenutno se izvršava."
-
-msgid "Executing..."
-msgstr "Izvršavam..."
-
-msgid "Executed"
-msgstr "Izvršeno"
-
-msgid "loading..."
-msgstr "učitavam..."
 
 msgid "contest-token"
 msgstr "contest-token"
@@ -277,10 +102,6 @@ msgstr "Nemate %(type_pl)s dostupnih za ovaj zadatak."
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "Imate beskonačan broj %(type_pl)s za ovaj zadatak."
-
-#, python-format
-msgid "You start with no %(type_pl)s."
-msgstr "Počinjete bez %(type_s)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
@@ -311,15 +132,15 @@ msgstr[1] "do maksimalnih %(gen_max)d %(type_pl)s."
 msgstr[2] "do maksimalnih %(gen_max)d %(type_pl)s."
 
 #, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Nećete dobiti druge %(type_pl)s."
+
+#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "dobićete %(gen_number)d drugih %(type_pl)s, "
 msgstr[1] "dobićete %(gen_number)d drugih %(type_pl)s, "
 msgstr[2] "dobićete %(gen_number)d drugih %(type_pl)s, "
-
-#, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Nećete dobiti druge %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -352,16 +173,158 @@ msgstr[2] "Ne možete koristiti više od %(max_number)d %(type_pl)s ukupno."
 msgid "You have no limitations on how you use them."
 msgstr "Nemate ograničenja na njihovu upotrebu."
 
+msgid "Please select the correct files."
+msgstr "Molimo izaberite korektne datoteke."
+
+msgid "Please try again."
+msgstr "Molimo pokušajte ponovo."
+
+msgid "Token request discarded"
+msgstr "Zahtjev za tokenom odbijen"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Vaš zahtjev je odbijen jer nemate više slobodnih tokena."
+
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Vaš zahtjev je odbijen jer ste već iskoristili token na toj prijavi."
+
+msgid "Question received"
+msgstr "Primljeno pitanje"
+
+msgid "Your question has been received, you will be notified when it is answered."
+msgstr "Vaše pitanje je primljeno, bićete obaviješteni kada dobijete odgovor."
+
+msgid "Submission received"
+msgstr "Primljena prijava"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Vaša prijava je primljena i trenutno se evaluira."
+
+msgid "Compiling..."
+msgstr "Kompajliram..."
+
+msgid "Evaluating..."
+msgstr "Evaluiram..."
+
+msgid "Scoring..."
+msgstr "Bodujem..."
+
+msgid "Evaluated"
+msgstr "Evaluirano"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Vaš zahtjev je primljen i primijenjen na prijavu."
+
+msgid "Token request received"
+msgstr "Primljen zahtjev za tokenom"
+
+msgid "Test received"
+msgstr "Test primljen"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Vaš test je primljen i trenutno se izvršava."
+
+msgid "details"
+msgstr "detalji"
+
+msgid "Executing..."
+msgstr "Izvršavam..."
+
+msgid "Executed"
+msgstr "Izvršeno"
+
+msgid "Too many submissions!"
+msgstr "Previše prijava!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Dosegli ste gornju granicu od maksimalnih %d prijava za sve zadatke."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Dosegli ste gornju granicu od maksimalnih %d prijava za ovaj zadatak."
+
+msgid "Submissions too frequent!"
+msgstr "Previše česte prijave!"
+
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Za sve zadatke možete slati novu prijavu nakon %d sekundi od posljednje prijave."
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Za ovaj zadatak možete slati novu prijavu nakon %d sekundi od posljednje prijave."
+
+msgid "Invalid archive format!"
+msgstr "Neispravan format arhive!"
+
+msgid "The submitted archive could not be opened."
+msgstr "Poslana arhiva se nije mogla otvoriti."
+
+msgid "Invalid submission format!"
+msgstr "Neispravan format prijave!"
+
+msgid "Submission too big!"
+msgstr "Prijava prevelika!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Svaka izvorna datoteka može biti velika najviše %d bajta."
+
+msgid "Submission storage failed!"
+msgstr "Smještaj prijave neuspješan!"
+
+msgid "Too many tests!"
+msgstr "Previše testova!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests among all tasks."
+msgstr "Dosegli ste gornju granicu od maksimalnih %d testova za sve zadatke."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d tests on this task."
+msgstr "Dosegli ste gornju granicu od maksimalnih %d testova za ovaj zadatak."
+
+msgid "Tests too frequent!"
+msgstr "Previše česti testovi!"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "Za sve zadatke možete ponovo testirati nakon %d sekundi od posljednjeg testa."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "Za ovaj zadatak možete ponovo testirati nakon %d sekundi od posljednjeg testa."
+
+msgid "Invalid test format!"
+msgstr "Neispravan format testa!"
+
+msgid "Test too big!"
+msgstr "Test je prevelik!"
+
+msgid "Input too big!"
+msgstr "Ulaz je prevelik!"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "Ulazna datoteka može biti velika najviše %d bajta."
+
+msgid "Test storage failed!"
+msgstr "Smještaj testa neuspješan!"
+
+msgid "Reset"
+msgstr "Poništi"
+
 #, python-format
 msgid "Automatic (%(lang)s)"
 msgstr "Automatski (%(lang)s)"
 
+msgid "Logout"
+msgstr "Odjava"
+
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 msgstr "Prijavljen kao <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
-
-msgid "Logout"
-msgstr "Odjava"
 
 msgid "Failed to log in."
 msgstr "Prijava neuspješna."
@@ -380,9 +343,6 @@ msgstr "Lozinka"
 
 msgid "Login"
 msgstr "Prijava"
-
-msgid "Reset"
-msgstr "Poništi"
 
 msgid "New message"
 msgstr "Nova poruka"
@@ -403,166 +363,8 @@ msgstr "Do početka takmičenja:"
 msgid "Until contest ends:"
 msgstr "Do kraja takmičenja:"
 
-msgid "Time left:"
-msgstr "Preostalo vrijeme:"
-
-msgid "Server time:"
-msgstr "Vrijeme na serveru:"
-
-msgid "Overview"
-msgstr "Pregled"
-
-msgid "Communication"
-msgstr "Komunikacija"
-
-msgid "Statement"
-msgstr "Specifikacija"
-
-msgid "Submissions"
-msgstr "Prijave"
-
-msgid "Documentation"
-msgstr "Dokumentacija"
-
-msgid "Testing"
-msgstr "Testiranje"
-
-msgid "Contest Management System"
-msgstr "Contest Management System"
-
-msgid "is released under the"
-msgstr "je objavljen pod"
-
-msgid "GNU Affero General Public License"
-msgstr "GNU Affero General Public License"
-
-msgid "Announcements"
-msgstr "Obavještenja"
-
-msgid "(no subject)"
-msgstr "(bez teme)"
-
-msgid "Questions"
-msgstr "Pitanja"
-
-msgid "Subject"
-msgstr "Tema"
-
-msgid "Text"
-msgstr "Tekst"
-
-msgid "Ask question"
-msgstr "Postavi pitanje"
-
-msgid "no answer yet"
-msgstr "nema odgovora"
-
-msgid "Messages"
-msgstr "Poruke"
-
-msgid "Standard Template Library"
-msgstr "Standard Template Library"
-
-#, python-format
-msgid "Error %(status_code)s"
-msgstr "Greška %(status_code)s"
-
-msgid "An error occured while the server was handling your request."
-msgstr "Došlo je do greške prilikom obrade vašeg zahtjeva od strane servera."
-
-msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
-msgstr "Pokušaji da se manipuliše Contest Management System (npr. isprobavajući različite nestandardne URLove) će se smatrati za varanje i mogu voditi do diskvalifikacije."
-
-msgid "If you encountered this error during normal usage, please notify the contest administrators."
-msgstr "Ako ste dobili ovu grešku tokom normalne upotrebe, molimo obavijestite administratore takmičenja."
-
-msgid "General information"
-msgstr "Opšte informacije"
-
-msgid "The contest hasn't started yet."
-msgstr "Takmičenje još uvijek nije počelo."
-
-#, python-format
-msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
-msgstr "Takmičenje će početi u %(start_time)s a završiće se u %(stop_time)s."
-
-msgid "The contest is currently running."
-msgstr "Takmičenje je trenutno u toku."
-
-#, python-format
-msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
-msgstr "Takmičenje je započelo u %(start_time)s a završiće se u %(stop_time)s."
-
-msgid "The contest has already ended."
-msgstr "Takmičenje je već završeno."
-
-#, python-format
-msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
-msgstr "Takmičenje je započelo u %(start_time)s a završeno je u %(stop_time)s."
-
-msgid "You have an infinite number of tokens."
-msgstr "Imate beskonačan broj tokena."
-
-msgid "You can see the detailed result of a submission by using a token on it."
-msgstr "Možete vidjeti detaljne rezultate prijave tako što ćete iskoristiti token na njoj."
-
-msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
-msgstr "Vaš rezultat za svaki zadatak će biti maksimum svih tokenovanih prijava i posljednje prijave."
-
-msgid "You have a distinct set of tokens for each task."
-msgstr "Imate jedinstven skup tokena za svaki zadatak."
-
-#, python-format
-msgid "You can find the rules for the %(type_pl)s on each task's description page."
-msgstr "Možete pronaći pravila za %(type_pl)s na stranici sa opisom svakog zadatka."
-
-msgid "You have a set of tokens shared among all tasks."
-msgstr "Imate skup tokena koji je dijeljen između svih zadataka."
-
-msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr "Imate dvije vrste tokena: skup <em>contest-tokens</em> dijeljen između svih zadataka i jedinstveni skup <em>task-tokens</em> za svaki zadatak."
-
-msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
-msgstr "Možete vidjeti detaljne rezultate prijave tako što ćete iskoristiti dva tokena na njoj, po jedan svake vrste."
-
-#, python-format
-msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
-msgstr "Svaki korisnik se može takmičiti (odnosno slati rješenja) tokom neprekinutog perioda od %(per_user_time)s."
-
-msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr "Čim takmičenje počne možete izabrati da počnete vaš period."
-
-msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Jednom kada počnete, možete slati rješenja do kraja vremenskog perioda ili do kraja takmičenja, šta god od to dvoje nastupi prvo."
-
-msgid "By clicking on the button below you can start your time frame."
-msgstr "Klikom na dugme ispod možete započeti vaš vremenski period."
-
-#, python-format
-msgid "You started your time frame at %(start_time)s."
-msgstr "Započeli ste vremenski period u %(start_time)s."
-
-msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Možete slati rješenja do kraja vremenskog perioda ili do kraja takmičenja, šta god od to dvoje nastupi prvo."
-
-#, python-format
-msgid "You started your time frame at %(start_time)s and you already finished it."
-msgstr "Započeli ste svoj vremenski period u %(start_time)s te je on već istekao."
-
-msgid "There's nothing you can do now."
-msgstr "Sada ne možete ništa uraditi."
-
-msgid "You never started your time frame. Now it's too late."
-msgstr "Nikada niste započeli vaš vremenski period. No sada je prekasno."
-
-msgid "Start!"
-msgstr "Počni!"
-
 msgid "Task overview"
 msgstr "Pregled zadatka"
-
-msgid "Task"
-msgstr "Zadatak"
 
 msgid "Name"
 msgstr "Ime"
@@ -588,6 +390,18 @@ msgstr "Da"
 msgid "No"
 msgstr "Ne"
 
+msgid "Submit"
+msgstr "Pošalji"
+
+msgid "Date and time"
+msgstr "Datum i vrijeme"
+
+msgid "Time"
+msgstr "Vrijeme"
+
+msgid "Status"
+msgstr "Status"
+
 msgid "Compilation output"
 msgstr "Izlaz kompajlera"
 
@@ -605,24 +419,6 @@ msgstr "Standardni izlaz"
 
 msgid "Standard error"
 msgstr "Standardne greške"
-
-msgid "None"
-msgstr "Bez"
-
-msgid "Download"
-msgstr "Download"
-
-msgid "Played"
-msgstr "Iskorišteno"
-
-msgid "Play!"
-msgstr "Iskoristi!"
-
-msgid "Wait..."
-msgstr "Čekaj..."
-
-msgid "No tokens"
-msgstr "Nema tokena"
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
@@ -665,15 +461,14 @@ msgstr "Neki detalji"
 msgid "Compilation commands"
 msgstr "Naredbe kompajlera"
 
-#, python-format
-msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/\">contest overview page</a>."
-msgstr "Možete pronaći pravila za %(type_pl)s na <a href=\"%(contest_root)s/\">stranici pregleda takmičenja</a>."
-
 msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
 msgstr "Zapamtite da ne možete vidjeti detaljan rezultat prijave osim ako iskoristite i contest-token i task-token."
 
 msgid "Attachments"
 msgstr "Prilozi"
+
+msgid "loading..."
+msgstr "učitavam..."
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
@@ -681,9 +476,6 @@ msgstr "%(name)s (%(short_name)s) <small>prijave</small>"
 
 msgid "Submit a solution"
 msgstr "Pošalji rješenje"
-
-msgid "Submit"
-msgstr "Pošalji"
 
 msgid "submission.zip"
 msgstr "prijava.zip"
@@ -719,35 +511,14 @@ msgstr "Trenutno nemate nijedan token za ovaj zadatak."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Ali morate sačekati do %(expiration_time)s da biste ih koristili."
 
-msgid "Date and time"
-msgstr "Datum i vrijeme"
-
-msgid "Time"
-msgstr "Vrijeme"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Public score"
-msgstr "Javni bodovi"
-
-msgid "Total score"
-msgstr "Ukupni bodovi"
-
-msgid "Score"
-msgstr "Bodovi"
-
-msgid "Token"
-msgstr "Token"
-
-msgid "no submissions yet"
-msgstr "još uvijek nema prijava"
-
 msgid "Submission details"
 msgstr "Detalji prijave"
 
 msgid "Close"
 msgstr "Zatvori"
+
+msgid "Download"
+msgstr "Download"
 
 msgid "Submit a test"
 msgstr "Pošalji test"
@@ -772,3 +543,31 @@ msgstr "Detalji testa"
 
 msgid "Evaluation outcome"
 msgstr "Ishod evaluacije"
+
+msgid "Wait..."
+msgstr "Čekaj..."
+
+msgid "None"
+msgstr "Bez"
+
+msgid "Public score"
+msgstr "Javni bodovi"
+
+msgid "Total score"
+msgstr "Ukupni bodovi"
+
+msgid "Score"
+msgstr "Bodovi"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "Played"
+msgstr "Iskorišteno"
+
+msgid "Play!"
+msgstr "Iskoristi!"
+
+msgid "No tokens"
+msgstr "Nema tokena"
+

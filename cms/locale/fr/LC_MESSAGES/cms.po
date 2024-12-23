@@ -1,22 +1,49 @@
-# French translations for CMS.
-# Copyright © 2010-2015 CMS authors
-# This file is distributed under the same license as CMS.
-# Damien Leroy <damien.leroy@be-oi.be>, 2014.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-29 19:38+0000\n"
-"PO-Revision-Date: 2017-01-29 21:55+0100\n"
-"Last-Translator: Damien Leroy <damien.leroy@be-oi.be>\n"
-"Language-Team: French\n"
-"Language: fr\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.11\n"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Correct"
+msgstr "Correct"
+
+msgid "Not correct"
+msgstr "Incorrect"
+
+msgid "Partially correct"
+msgstr "Partiellement correct"
+
+msgid "Outcome"
+msgstr "Résultat"
+
+msgid "#"
+msgstr "#"
+
+msgid "Details"
+msgstr "Détails"
+
+msgid "Execution time"
+msgstr "Durée d'exécution"
+
+msgid "Memory used"
+msgstr "Mémoire utilisée"
+
+msgid "Score details temporarily unavailable."
+msgstr "Information de score temporairement indisponible."
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "Sous-tâche %(index)s"
 
 msgid "Compilation succeeded"
 msgstr "Compilation réussie"
@@ -33,29 +60,15 @@ msgstr "Votre soumission n'a pas réussi à compiler."
 msgid "Compilation timed out"
 msgstr "Durée maximale de compilation dépassée"
 
-msgid ""
-"Your submission exceeded the time limit while compiling. This might be "
-"caused by an excessive use of C++ templates, for example."
-msgstr ""
-"Votre soumission a excédé la durée maximale de compilation. Cela peut être "
-"dû par exemple à un usage excessif des templates (modèles) C++."
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Votre soumission a excédé la durée maximale de compilation. Cela peut être dû par exemple à un usage excessif des templates (modèles) C++."
 
 #, python-format
-msgid ""
-"Compilation killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Compilation interrompue avec le signal %s (peut être dû à un dépassement des "
-"limites mémoire)"
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Compilation interrompue avec le signal %s (peut être dû à un dépassement des limites mémoire)"
 
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit for the compilation, and "
-"in turn by an excessive use of C++ templates, for example."
-msgstr ""
-"Votre soumission a été interrompue avec le signal spécifié. Cela peut être "
-"dû, entre autres, à un débordement mémoire à la compilation ou un usage "
-"excessif des templates (modèles) C++."
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Votre soumission a été interrompue avec le signal spécifié. Cela peut être dû, entre autres, à un débordement mémoire à la compilation ou un usage excessif des templates (modèles) C++."
 
 msgid "Output is correct"
 msgstr "Sortie correcte"
@@ -67,8 +80,7 @@ msgid "Output is partially correct"
 msgstr "La sortie est partiellement correcte"
 
 msgid "Your submission ran and gave the partially correct answer"
-msgstr ""
-"Votre soumission a été exécutée et donne une réponse partiellement correcte"
+msgstr "Votre soumission a été exécutée et donne une réponse partiellement correcte"
 
 msgid "Output isn't correct"
 msgstr "Sortie incorrecte"
@@ -81,9 +93,7 @@ msgid "Evaluation didn't produce file %s"
 msgstr "L'exécution n'a pas produit de fichier %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
-"Votre soumission a été exécutée mais n'a pas écrit dans le fichier de sortie "
-"correct"
+msgstr "Votre soumission a été exécutée mais n'a pas écrit dans le fichier de sortie correct"
 
 msgid "Execution timed out"
 msgstr "Durée maximale d'exécution dépassée"
@@ -94,74 +104,20 @@ msgstr "Votre soumission a utilisé trop de temps CPU (processeur)"
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Temps d'exécution dépassé (durée maximale dépassée)"
 
-msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
-msgstr ""
-"Votre soumission a pris trop de temps. Cela peut être causé, par exemple, "
-"par un code indéfini ou une écriture hors mémoire allouée. Notez que dans ce "
-"cas, le temps CPU (processeur) visible dans les détails de la soumission "
-"peut être bien plus petit que la limite de temps."
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "Votre soumission a pris trop de temps. Cela peut être causé, par exemple, par un code indéfini ou une écriture hors mémoire allouée. Notez que dans ce cas, le temps CPU (processeur) visible dans les détails de la soumission peut être bien plus petit que la limite de temps."
 
-#, python-format
-msgid ""
-"Execution killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Exécution interrompue : signal %s (peut provenir d'un débordement de mémoire)"
+msgid "Execution killed (could be triggered by violating memory limits)"
+msgstr "Exécution tuée (peut être causé par un dépassement des limites mémoire)"
 
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit. Note that if this is the "
-"reason, the memory usage visible in the submission details is the usage "
-"before the allocation that caused the signal."
-msgstr ""
-"Votre soumission a été interrompue par le signal spécifié. Cela peut être "
-"dû, entre autres, à un débordement mémoire. Notez que si c'est la raison, "
-"l'utilisation mémoire visible dans les détails de soumission est "
-"l'utilisation avant l'allocation qui a causé le signal."
+msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+msgstr "L'évaluation a été tuée par un signal. Cela peut être causé, mais pas uniquement, par un dépassement des limites mémoire. Notez que si cela est le cas, l'utilisation de la mémoire visible dans les détails de la soumission est l'utilisation avant l'allocation mémoire qui a causé le signal."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Exécution échouée: code de retour différent de zéro"
 
-msgid ""
-"Your submission failed because it exited with a return code different from 0."
-msgstr ""
-"Votre soumission a échouée car elle a terminé avec un code de retour "
-"différent de 0."
-
-msgid "N/A"
-msgstr "N/A"
-
-#, python-format
-msgid "Subtask %(index)s"
-msgstr "Sous-tâche %(index)s"
-
-msgid "Outcome"
-msgstr "Résultat"
-
-msgid "Details"
-msgstr "Détails"
-
-msgid "Execution time"
-msgstr "Durée d'exécution"
-
-msgid "Memory used"
-msgstr "Mémoire utilisée"
-
-msgid "Not correct"
-msgstr "Incorrect"
-
-msgid "Correct"
-msgstr "Correct"
-
-msgid "Partially correct"
-msgstr "Partiellement correct"
-
-msgid "Invalid files in submission"
-msgstr "Fichiers soumis incorrects"
+msgid "Your submission failed because it exited with a return code different from 0."
+msgstr "Votre soumission a échouée car elle a terminé avec un code de retour différent de 0."
 
 msgid "Execution completed successfully"
 msgstr "Exécution terminée avec succès"
@@ -172,11 +128,12 @@ msgstr "Compilation non nécessaire"
 msgid "File not submitted"
 msgstr "Aucun fichier soumis"
 
-msgid "loading..."
-msgstr "chargement ..."
+msgid "Question too long!"
+msgstr "Question trop longue !"
 
-msgid "unknown"
-msgstr "inconnu"
+#, python-format
+msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
+msgstr "Le sujet doit faire au maximum %(max_subject_length)d caractères, le contenu au maximum %(max_text_length)d."
 
 msgid "contest-token"
 msgstr "jeton d'épreuve"
@@ -233,21 +190,20 @@ msgstr[0] "jusqu'à un maximum d'un %(type_s)s."
 msgstr[1] "jusqu'à un maximum de %(gen_max)d %(type_pl)s."
 
 #, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Vous ne recevez plus de %(type_pl)s."
+
+#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "vous recevez un %(type_s)s supplémentaire."
 msgstr[1] "vous recevez %(gen_number)d %(type_pl)s supplémentaires."
 
 #, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Vous ne recevez plus de %(type_pl)s."
-
-#, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] "Vous pouvez utiliser un %(type_s)s par seconde "
-msgstr[1] ""
-"Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g secondes "
+msgstr[1] "Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g secondes "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -259,8 +215,7 @@ msgstr[1] "et pas plus de %(max_number)d %(type_pl)s au total."
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] "Vous pouvez utiliser un %(type_s)s par seconde."
-msgstr[1] ""
-"Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g secondes."
+msgstr[1] "Vous pouvez utiliser un %(type_s)s toutes les %(min_interval)g secondes."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
@@ -270,21 +225,6 @@ msgstr[1] "Vous pouvez utiliser au maximum %(max_number)d %(type_pl)s."
 
 msgid "You have no limitations on how you use them."
 msgstr "Il n'y a pas de limitation sur leur utilisation."
-
-msgid "Question too big!"
-msgstr "Question trop longue !"
-
-msgid "You have reached the question length limit."
-msgstr "Vous avez atteint la limite de longueur pour une question."
-
-msgid "Question received"
-msgstr "Question envoyée"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr ""
-"Votre question a été envoyée, vous serez notifié lorsque quelqu'un y aura "
-"répondu."
 
 msgid "Too many print jobs!"
 msgstr "Trop d'impressions !"
@@ -312,17 +252,35 @@ msgstr "Impossible de stocker l'impression !"
 msgid "Please try again."
 msgstr "Veuillez réessayer."
 
+msgid "Token request discarded"
+msgstr "Demande de token refusée"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Votre requête a été annulée car vous n'avez plus de jetons disponibles."
+
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Votre requête a été annulée car vous avez déjà utilisé un jeton sur cette soumission."
+
+msgid "Question received"
+msgstr "Question envoyée"
+
+msgid "Your question has been received, you will be notified when it is answered."
+msgstr "Votre question a été envoyée, vous serez notifié lorsque quelqu'un y aura répondu."
+
 msgid "Print job received"
 msgstr "Impression reçue"
 
 msgid "Your print job has been received."
 msgstr "Votre impression a été reçue."
 
+msgid "Submission received"
+msgstr "Soumission reçue"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Votre soumission a bien été reçue et est en cours d'évaluation."
+
 msgid "Compiling..."
 msgstr "Compilation..."
-
-msgid "details"
-msgstr "détails"
 
 msgid "Evaluating..."
 msgstr "Evaluation..."
@@ -333,61 +291,51 @@ msgstr "Calcul des points..."
 msgid "Evaluated"
 msgstr "Évalué"
 
-msgid "Token request discarded"
-msgstr "Demande de token refusée"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
-"Votre requête a été annulée car vous n'avez plus de jetons disponibles."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"Votre requête a été annulée car vous avez déjà utilisé un jeton sur cette "
-"soumission."
-
-msgid "Token request received"
-msgstr "Demande de jeton reçue"
+msgid "status"
+msgstr "état"
 
 msgid "Your request has been received and applied to the submission."
 msgstr "Votre requête a été reçue et appliquée à la soumission."
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr ""
-"Vous avez atteint le nombre maximum de %d soumissions toutes tâches "
-"confondues."
+msgid "Token request received"
+msgstr "Demande de jeton reçue"
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr ""
-"Vous avez atteint le nombre maximum de %d soumissions pour cette tâche."
+msgid "Test received"
+msgstr "Test reçu"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "Votre test a été reçu et est en cours d'exécution."
+
+msgid "details"
+msgstr "détails"
+
+msgid "Executing..."
+msgstr "En cours d'exécution..."
+
+msgid "Executed"
+msgstr "Exécuté"
 
 msgid "Too many submissions!"
 msgstr "Trop de soumissions !"
 
 #, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Toutes tâches confondues, vous ne pouvez resoumettre que %d secondes après "
-"votre précédente soumission."
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Vous avez atteint le nombre maximum de %d soumissions toutes tâches confondues."
 
 #, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Pour cette tâche, vous ne pouvez resoumettre que %d secondes après votre "
-"précédente soumission."
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Vous avez atteint le nombre maximum de %d soumissions pour cette tâche."
 
 msgid "Submissions too frequent!"
 msgstr "Soumissions trop rapprochées !"
 
-msgid "Invalid submission format!"
-msgstr "Format de soumission invalide !"
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Toutes tâches confondues, vous ne pouvez resoumettre que %d secondes après votre précédente soumission."
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Pour cette tâche, vous ne pouvez resoumettre que %d secondes après votre précédente soumission."
 
 msgid "Invalid archive format!"
 msgstr "Format d'archive invalide !"
@@ -395,15 +343,8 @@ msgstr "Format d'archive invalide !"
 msgid "The submitted archive could not be opened."
 msgstr "Impossible d'ouvrir l'archive soumise."
 
-msgid "Cannot recognize the submission language."
-msgstr "Impossible de reconnaître le langage du fichier soumis."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Le langage ‘%s’ n’est pas autorisé dans ce concours."
-
-msgid "Invalid submission!"
-msgstr "Soumission invalide !"
+msgid "Invalid submission format!"
+msgstr "Format de soumission invalide !"
 
 msgid "Submission too big!"
 msgstr "Fichier soumis trop gros !"
@@ -415,47 +356,30 @@ msgstr "Chaque fichier source ne peut pas faire plus de %d octets."
 msgid "Submission storage failed!"
 msgstr "Erreur d'enregistrement de votre soumission !"
 
-msgid "Submission received"
-msgstr "Soumission reçue"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "Votre soumission a bien été reçue et est en cours d'évaluation."
+msgid "Too many tests!"
+msgstr "Trop de tests !"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr ""
-"Vous avez atteint le nombre maximal de %d tests toutes tâches confondues."
+msgstr "Vous avez atteint le nombre maximal de %d tests toutes tâches confondues."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Vous avez atteint le nombre maximal de %d tests pour cette tâche."
 
-msgid "Too many tests!"
-msgstr "Trop de tests !"
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"Toutes tâches confondues, vous ne pouvez relancer un test que %d secondes "
-"après votre précédent test."
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
-"Pour cette tâche, vous ne pouvez relancer un test que %d secondes après "
-"votre précédent test."
-
 msgid "Tests too frequent!"
 msgstr "Tests trop rapprochés !"
 
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "Toutes tâches confondues, vous ne pouvez relancer un test que %d secondes après votre précédent test."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "Pour cette tâche, vous ne pouvez relancer un test que %d secondes après votre précédent test."
+
 msgid "Invalid test format!"
 msgstr "Format de test invalide !"
-
-msgid "Cannot recognize the user test language."
-msgstr "Impossible de reconnaître le langage du test."
-
-msgid "Invalid test!"
-msgstr "Test invalide !"
 
 msgid "Test too big!"
 msgstr "Test trop gros !"
@@ -470,17 +394,35 @@ msgstr "Le fichier d'entrée ne peut pas faire plus de %d octets."
 msgid "Test storage failed!"
 msgstr "Impossible d'enregistrer le test !"
 
-msgid "Test received"
-msgstr "Test reçu"
+msgid "Communication"
+msgstr "Communication"
 
-msgid "Your test has been received and is currently being executed."
-msgstr "Votre test a été reçu et est en cours d'exécution."
+msgid "Announcements"
+msgstr "Annonces"
 
-msgid "Executing..."
-msgstr "En cours d'exécution..."
+msgid "(no subject)"
+msgstr "(aucun objet)"
 
-msgid "Executed"
-msgstr "Exécuté"
+msgid "Questions"
+msgstr "Questions"
+
+msgid "Subject"
+msgstr "Objet"
+
+msgid "Text"
+msgstr "Texte"
+
+msgid "Ask question"
+msgstr "Poser une question"
+
+msgid "Reset"
+msgstr "Effacer"
+
+msgid "no answer yet"
+msgstr "pas encore de réponse"
+
+msgid "Messages"
+msgstr "Messages"
 
 #, python-format
 msgid "Automatic (%(lang)s)"
@@ -490,12 +432,8 @@ msgid "Logout"
 msgstr "Se déconnecter"
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr ""
-"Connecté en tant que <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Connecté en tant que <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Connexion impossible"
@@ -515,8 +453,11 @@ msgstr "Mot de passe"
 msgid "Login"
 msgstr "Se connecter"
 
-msgid "Reset"
-msgstr "Effacer"
+msgid "Don't have an account?"
+msgstr "Vous n'avez pas de compte ?"
+
+msgid "Register"
+msgstr "S'inscrire"
 
 msgid "New message"
 msgstr "Nouveau message"
@@ -534,8 +475,14 @@ msgstr "%d non lu(s)"
 msgid "Until contest starts:"
 msgstr "L'épreuve commence dans :"
 
+msgid "Until analysis starts:"
+msgstr "La session d'analyse commence dans :"
+
 msgid "Until contest ends:"
 msgstr "Temps d'épreuve restant :"
+
+msgid "Until analysis ends:"
+msgstr "Temps restant dans la session d'analyse :"
 
 msgid "Time left:"
 msgstr "Temps restant :"
@@ -545,9 +492,6 @@ msgstr "Heure serveur :"
 
 msgid "Overview"
 msgstr "Présentation"
-
-msgid "Communication"
-msgstr "Communication"
 
 msgid "Statement"
 msgstr "Énoncé"
@@ -573,29 +517,8 @@ msgstr "est publié sous la"
 msgid "GNU Affero General Public License"
 msgstr "licence GNU Affero General Public"
 
-msgid "Announcements"
-msgstr "Annonces"
-
-msgid "(no subject)"
-msgstr "(aucun objet)"
-
-msgid "Questions"
-msgstr "Questions"
-
-msgid "Subject"
-msgstr "Objet"
-
-msgid "Text"
-msgstr "Texte"
-
-msgid "Ask question"
-msgstr "Poser une question"
-
-msgid "no answer yet"
-msgstr "pas encore de réponse"
-
-msgid "Messages"
-msgstr "Messages"
+msgid "Choose a contest"
+msgstr "Choisissez un concours"
 
 msgid "Programming languages and libraries"
 msgstr "Langages et librairies de programmation"
@@ -603,12 +526,8 @@ msgstr "Langages et librairies de programmation"
 msgid "Standard Template Library"
 msgstr "Librairie Standard C++ (STL)"
 
-msgid ""
-"The main Java class of the solution should have exactly the same name as the "
-"task."
-msgstr ""
-"La classe Java principale de la solution doit avoir exactement le même nom "
-"que la tâche."
+msgid "The main Java class of the solution should have exactly the same name as the task."
+msgstr "La classe Java principale de la solution doit avoir exactement le même nom que la tâche."
 
 msgid "Submission details for compilation"
 msgstr "Détails de la soumission pour la compilation"
@@ -629,21 +548,11 @@ msgstr "Erreur %(status_code)s"
 msgid "An error occured while the server was handling your request."
 msgstr "Une erreur s'est produite lors du traitement de votre requête."
 
-msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing "
-"the server with customized URLs) may be considered cheating and may lead to "
-"disqualification."
-msgstr ""
-"Toute tentative de manipulation frauduleuse du serveur de soumission (telle "
-"que manipuler les adresses du site) sera considéré comme de la triche et "
-"pourra mener à une disqualification."
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Toute tentative de manipulation frauduleuse du serveur de soumission (telle que manipuler les adresses du site) sera considéré comme de la triche et pourra mener à une disqualification."
 
-msgid ""
-"If you encountered this error during normal usage, please notify the contest "
-"administrators."
-msgstr ""
-"Si vous recontrer cette erreur alors que vous utilisez le service "
-"normalement, veuillez en notifier les administrateurs du concours."
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Si vous recontrer cette erreur alors que vous utilisez le service normalement, veuillez en notifier les administrateurs du concours."
 
 msgid "General information"
 msgstr "Information générale"
@@ -653,131 +562,105 @@ msgstr "L'épreuve n'a pas encore commencé."
 
 #, python-format
 msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-"Le concours commencera le %(start_time)s et se terminera le %(stop_time)s."
+msgstr "Le concours commencera le %(start_time)s et se terminera le %(stop_time)s."
 
 msgid "The contest is currently running."
 msgstr "Le concours est en cours."
 
 #, python-format
 msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-"Le concours a commencé le %(start_time)s et se terminera le %(stop_time)s."
+msgstr "Le concours a commencé le %(start_time)s et se terminera le %(stop_time)s."
 
 msgid "The contest has already ended."
 msgstr "L'épreuve est terminée."
 
 #, python-format
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
-msgstr ""
-"Le concours a commencé le %(start_time)s et s'est terminé le %(stop_time)s."
+msgstr "Le concours a commencé le %(start_time)s et s'est terminé le %(stop_time)s."
+
+msgid "The analysis mode hasn't started yet."
+msgstr "La session d'analyse n'a pas encore commencé."
+
+#, python-format
+msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "La session d'analyse commencera à %(start_time)s et finira à %(stop_time)s."
+
+msgid "The analysis mode is currently running."
+msgstr "La session d'analyse est en cours."
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr "La session d'analyse a commencé à %(start_time)s et se terminera à %(stop_time)s."
+
+msgid "The analysis mode has already ended."
+msgstr "La session d'analyse est terminée."
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
+msgstr "La session d'analyse a commencé à %(start_time)s et s'est terminée à %(stop_time)s."
 
 msgid "You have an infinite number of tokens."
 msgstr "Vous avez un nombre infini de jetons."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
-"Vous pouvez voir le résultat détaillé d’une soumission en utilisant un jeton."
+msgstr "Vous pouvez voir le résultat détaillé d’une soumission en utilisant un jeton."
 
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-"Votre score pour chaque tâche sera le maximum entre les soumissions pour "
-"lesquelles vous aurez utilisé un jeton, et votre dernière soumission."
+msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
+msgstr "Votre score pour chaque tâche sera le maximum entre les soumissions pour lesquelles vous aurez utilisé un jeton, et votre dernière soumission."
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "Vous avez un nombre différent de jetons pour chaque tâche."
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on each task's description page."
-msgstr ""
-"Vous pouvez trouver les règles des %(type_pl)s sur la description de chaque "
-"tâche."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "Vous pouvez trouver les règles des %(type_pl)s sur la description de chaque tâche."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Vous avez un ensemble de jetons partagés entre toutes les tâches."
 
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-"Vous avez deux types de jetons : un ensemble de <em>jetons d'épreuve</em> "
-"partagés entre toutes les tâches, et un ensemble de <em>jetons de tâche</em> "
-"spécifique à chaque tâche."
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Vous avez deux types de jetons : un ensemble de <em>jetons d'épreuve</em> partagés entre toutes les tâches, et un ensemble de <em>jetons de tâche</em> spécifique à chaque tâche."
 
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-"Vous pouvez voir le résultat détaillé d'une soumission en utilisant deux "
-"jetons, un de chaque type."
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Vous pouvez voir le résultat détaillé d'une soumission en utilisant deux jetons, un de chaque type."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr ""
-"Vous pouvez soumettre au maximum %(submissions)s solutions durant ce "
-"concours."
+msgstr "Vous pouvez soumettre au maximum %(submissions)s solutions durant ce concours."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr ""
-"Vous pouvez soumettre au maximum %(user_tests)s tests utilisateurs durant ce "
-"concours "
+msgstr "Vous pouvez soumettre au maximum %(user_tests)s tests utilisateurs durant ce concours "
 
 #, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
-"time frame of %(per_user_time)s."
-msgstr ""
-"Chaque utilisateur est autorisé à participer (c.-à.-d. soumettre des "
-"solutions) de façon ininterrompue durant %(per_user_time)s."
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Chaque utilisateur est autorisé à participer (c.-à.-d. soumettre des solutions) de façon ininterrompue durant %(per_user_time)s."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr ""
-"Dès que le concours a débuté, vous pouvez choisir la fourchette de temps "
-"pendant laquelle vous participez."
+msgstr "Dès que le concours a débuté, vous pouvez choisir la fourchette de temps pendant laquelle vous participez."
 
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-"Lorsque vous avez commencé, vous pouvez soumettre jusqu'à ce que votre "
-"fourchette de participation soit terminée ou que le concours se termine "
-"(selon le premier ayant lieu)"
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Lorsque vous avez commencé, vous pouvez soumettre jusqu'à ce que votre fourchette de participation soit terminée ou que le concours se termine (selon le premier ayant lieu)"
 
 msgid "By clicking on the button below you can start your time frame."
-msgstr ""
-"En cliquant sur le bouton ci-dessous, vous commencerez votre fourchette de "
-"participation."
+msgstr "En cliquant sur le bouton ci-dessous, vous commencerez votre fourchette de participation."
 
 #, python-format
 msgid "You started your time frame at %(start_time)s."
-msgstr ""
-"Vous avez commencé votre fourchette de participation le %(start_time)s."
+msgstr "Vous avez commencé votre fourchette de participation le %(start_time)s."
 
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of "
-"the contest, whatever comes first."
-msgstr ""
-"Vous pouvez soumettre jusqu'à la fin de votre fourchette de participation ou "
-"jusqu'à la fin du concours (selon le premier qui aura lieu)."
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Vous pouvez soumettre jusqu'à la fin de votre fourchette de participation ou jusqu'à la fin du concours (selon le premier qui aura lieu)."
 
 #, python-format
-msgid ""
-"You started your time frame at %(start_time)s and you already finished it."
-msgstr ""
-"Votre fourchette de participation a débuté le %(start_time)s et est "
-"maintenant terminée."
+msgid "You started your time frame at %(start_time)s and you already finished it."
+msgstr "Votre fourchette de participation a débuté le %(start_time)s et est maintenant terminée."
 
 msgid "There's nothing you can do now."
 msgstr "Il n'y a plus rien à faire pour l'instant."
 
 msgid "You never started your time frame. Now it's too late."
-msgstr ""
-"Vous n'avez pas démarré votre fenêtre de participantion. Il est maintenant "
-"trop tard."
+msgstr "Vous n'avez pas démarré votre fenêtre de participantion. Il est maintenant trop tard."
 
 msgid "Start!"
 msgstr "Commencer !"
@@ -816,20 +699,12 @@ msgid "Print"
 msgstr "Imprimer"
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text or PDF files of up to "
-"%(max_pages)s pages each."
-msgstr ""
-"Vous pouvez encore imprimer %(remaining_jobs)s fichiers textes ou PDF de "
-"%(max_pages)s pages maximum chacuns."
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "Vous pouvez encore imprimer %(remaining_jobs)s fichiers textes ou PDF de %(max_pages)s pages maximum chacuns."
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
-"pages each."
-msgstr ""
-"Vous pouvez encore imprimer %(remaining_jobs)s fichiers textes de "
-"%(max_pages)s pages maximum chacuns."
+msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
+msgstr "Vous pouvez encore imprimer %(remaining_jobs)s fichiers textes de %(max_pages)s pages maximum chacuns."
 
 msgid "File (text or PDF)"
 msgstr "Fichier (texte ou PDF)"
@@ -840,10 +715,8 @@ msgstr "Fichier (texte)"
 msgid "Submit"
 msgstr "Soumettre"
 
-msgid ""
-"You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-"Vous ne pouvez plus imprimer car vous avez épuisé votre quota d'impression."
+msgid "You cannot print anything any more as you have used up your printing quota."
+msgstr "Vous ne pouvez plus imprimer car vous avez épuisé votre quota d'impression."
 
 msgid "Previous print jobs"
 msgstr "Impressions précédentes"
@@ -860,11 +733,71 @@ msgstr "Nom de fichier"
 msgid "Status"
 msgstr "Status"
 
+msgid "Preparing..."
+msgstr "Préparation ..."
+
 msgid "no print jobs yet"
 msgstr "aucune impression"
 
-msgid "Preparing..."
-msgstr "Préparation ..."
+msgid "The passwords do not match!"
+msgstr "Les mots de passe ne correspondent pas !"
+
+msgid "This username is already taken, please choose a different one."
+msgstr "Ce nom d'utilisateur est déjà pris, choisissez un autre."
+
+msgid "This user is already registered in the contest."
+msgstr "Cet utilisateur est déjà inscrit dans le concours."
+
+msgid "No such user."
+msgstr "Pas d'utilisateur avec ce nom."
+
+msgid "The password is not correct."
+msgstr "Le mot de passe est incorrect."
+
+msgid "Registration"
+msgstr "Inscription"
+
+msgid "Please fill in the fields to register"
+msgstr "Remplissez ces champs pour vous inscrire"
+
+msgid "New user"
+msgstr "Nouvel utilisateur"
+
+msgid "Join contest"
+msgstr "Rejoindre le concours"
+
+msgid "First name"
+msgstr "Prénom"
+
+msgid "Last name"
+msgstr "Nom"
+
+msgid "E-mail"
+msgstr "Courriel"
+
+msgid "Representing"
+msgstr "Représentant"
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] "Doit comporter au moins un caractère."
+msgstr[1] "Doit comporter au moins %(min_length)s caractères."
+
+msgid "Confirm password"
+msgstr "Confirmez le mot de passe"
+
+msgid "Registered in the contest successfully!"
+msgstr "Inscrit au concours !"
+
+msgid "Your username is:"
+msgstr "Votre nom d'utilisateur est :"
+
+msgid "Your password is stored securely."
+msgstr "Votre mot de passe est conservé en sécurité."
+
+msgid "Back to login"
+msgstr "Retour à la page de connexion"
 
 msgid "Compilation output"
 msgstr "Résultat de la compilation"
@@ -884,24 +817,6 @@ msgstr "Sortie standard"
 msgid "Standard error"
 msgstr "Sortie d'erreur"
 
-msgid "None"
-msgstr "Aucun(e)"
-
-msgid "Download"
-msgstr "Télécharger"
-
-msgid "Played"
-msgstr "Utilisé"
-
-msgid "Play!"
-msgstr "Utiliser !"
-
-msgid "Wait..."
-msgstr "Patientez ..."
-
-msgid "No tokens"
-msgstr "Aucun jeton"
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr "%(name)s (%(short_name)s) <small>description</small>"
@@ -912,16 +827,11 @@ msgstr "aucun énoncé disponible"
 msgid "Download task statement"
 msgstr "Télécharger l'énoncé"
 
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
-msgstr ""
-"L'énoncé pour cette tâche est disponible en plusieurs versions (plusieurs "
-"langues)."
+msgid "The statement for this task is available in multiple versions, in different languages."
+msgstr "L'énoncé pour cette tâche est disponible en plusieurs versions (plusieurs langues)."
 
 msgid "You can see (and download) all of them using the list on the right."
-msgstr ""
-"Vous pouvez les voir toutes (et les télécharger) dans la liste sur la droite."
+msgstr "Vous pouvez les voir toutes (et les télécharger) dans la liste sur la droite."
 
 msgid "Some suggested translations follow."
 msgstr "D'autres versions peuvent également être disponibles."
@@ -949,29 +859,42 @@ msgid "Compilation commands"
 msgstr "Commandes utilisées pour compiler"
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
-"\">contest overview page</a>."
-msgstr ""
-"Vous pouvez trouver les règles des %(type_pl)s sur <a href=\"%(contest_root)s/"
-"\">la page générale du concours</a>."
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>."
+msgstr "Vous pouvez trouver les règles de %(type_pl)s sur la <a href=\"%(contest_root)s\">page de présentation du concours</a>."
 
-msgid ""
-"Remember that to see the detailed result of a submission you need to use both "
-"a contest-token and a task-token."
-msgstr ""
-"Rappelez-vous que pour voir les résultats détaillés d'une soumission, vous "
-"avez besoin à la fois d'un jeton d'épreuve et d'un jeton de tâche."
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Rappelez-vous que pour voir les résultats détaillés d'une soumission, vous avez besoin à la fois d'un jeton d'épreuve et d'un jeton de tâche."
 
 msgid "Attachments"
 msgstr "Pièces jointes"
+
+msgid "unknown"
+msgstr "inconnu"
+
+msgid "loading..."
+msgstr "chargement ..."
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>soumissions</small>"
 
+msgid "Score:"
+msgstr "Score:"
+
+msgid "Public score:"
+msgstr "Score public:"
+
+msgid "Score of tokened submissions:"
+msgstr "Score des soumissions avec jetons:"
+
+msgid "Total score:"
+msgstr "Score total:"
+
 msgid "Submit a solution"
 msgstr "Soumettre une solution"
+
+msgid "You may submit any subset of outputs in a single submission."
+msgstr "Vous pouvez soumettre un sous-ensemble des sorties dans une seule soumission."
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
@@ -983,6 +906,9 @@ msgstr "soumission.zip"
 msgid "Previous submissions"
 msgstr "Soumissions précédentes"
 
+msgid "Tokens are not allowed on this task."
+msgstr "Les jetons ne sont pas autorisés dans cette tâche."
+
 msgid "Right now, you have infinite tokens available on this task."
 msgstr "Pour l'instant, vous avez un nombre infini de jetons pour cette tâche."
 
@@ -991,13 +917,11 @@ msgstr "Pour l'instant, vous avez un jeton disponible pour cette tâche."
 
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
-msgstr ""
-"Pour l'instant, vous avez %(tokens)s jetons disponibles pour cette tâche."
+msgstr "Pour l'instant, vous avez %(tokens)s jetons disponibles pour cette tâche."
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
-msgstr ""
-"Mais vous devez attendre jusqu'à %(expiration_time)s pour les utiliser."
+msgstr "Mais vous devez attendre jusqu'à %(expiration_time)s pour les utiliser."
 
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
@@ -1013,26 +937,20 @@ msgstr "Pour l'instant, vous n'avez pas de jeton disponible pour cette tâche."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Mais vous devrez attendre jusqu'à %(expiration_time)s pour l'utiliser."
 
-msgid "Public score"
-msgstr "Score public"
+msgid "Unofficial submissions"
+msgstr "Soumissions non-officielles"
 
-msgid "Total score"
-msgstr "Score total"
-
-msgid "Score"
-msgstr "Score"
-
-msgid "Token"
-msgstr "Jeton"
-
-msgid "no submissions yet"
-msgstr "aucune soumission"
+msgid "Official submissions"
+msgstr "Soumissions officielles"
 
 msgid "Submission details"
 msgstr "Détails de la soumission"
 
 msgid "Close"
 msgstr "Fermer"
+
+msgid "Download"
+msgstr "Télécharger"
 
 msgid "Submit a test"
 msgstr "Soumettre un test"
@@ -1062,5 +980,42 @@ msgstr "Détails du test"
 msgid "Evaluation outcome"
 msgstr "Résultat de l'évaluation"
 
-#~ msgid "All sources must be in the same language."
-#~ msgstr "Toutes les fichiers sources doivent être dans le même language."
+msgid "Wait..."
+msgstr "Patientez ..."
+
+msgid "None"
+msgstr "Aucun(e)"
+
+msgid "Public score"
+msgstr "Score public"
+
+msgid "Total score"
+msgstr "Score total"
+
+msgid "Score"
+msgstr "Score"
+
+msgid "Token"
+msgstr "Jeton"
+
+msgid "no submissions"
+msgstr "aucune soumission"
+
+msgid "Played"
+msgstr "Utilisé"
+
+msgid "Play!"
+msgstr "Utiliser !"
+
+msgid "No tokens"
+msgstr "Aucun jeton"
+
+msgid "Invalid file"
+msgstr "Fichier invalide"
+
+msgid "Print job has too many pages"
+msgstr "Le document à imprimer est trop long."
+
+msgid "Sent to printer"
+msgstr "Envoyer à l'imprimante"
+

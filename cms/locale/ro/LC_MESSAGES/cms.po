@@ -1,21 +1,39 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# Mihail Croitor <mcroitor@gmail.com>, 2016.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-01 15:57+0900\n"
-"PO-Revision-Date: 2016-03-02 16:00+0200\n"
-"Last-Translator: Mihail Croitor <mcroitor@gmail.com>\n"
-"Language-Team: Romanian <ro@li.org>\n"
-"Language: ro\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: ro_RO\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: UTF-8\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2);\n"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Correct"
+msgstr "Corect"
+
+msgid "Not correct"
+msgstr "Gresit"
+
+msgid "Partially correct"
+msgstr "Solutie partiala"
+
+msgid "Outcome"
+msgstr "Rezultatul"
+
+msgid "Details"
+msgstr "Detalii"
+
+msgid "Execution time"
+msgstr "Timpul de executie"
+
+msgid "Memory used"
+msgstr "Memoria utilizata"
 
 msgid "Compilation succeeded"
 msgstr "Compilare reusita"
@@ -32,29 +50,11 @@ msgstr "Expedierea nu a fost compilata corect"
 msgid "Compilation timed out"
 msgstr "Depasirea timpului alocat pentru compilare"
 
-msgid ""
-"Your submission exceeded the time limit while compiling. This might be "
-"caused by an excessive use of C++ templates, for example."
-msgstr ""
-"Expedierea a depasit limita de timp la compilare.Aceasta ar putea fi"
-"cauzata de utilizarea excesiva a template-urilor C++, de exemplu."
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Expedierea a depasit limita de timp la compilare.Aceasta ar putea ficauzata de utilizarea excesiva a template-urilor C++, de exemplu."
 
-#, python-format
-msgid ""
-"Compilation killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Compilarea a esuat cu semnalul %d (putea fi depasita limita de memorie)"
-
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit for the compilation, and "
-"in turn by an excessive use of C++ templates, for example."
-msgstr ""
-"Expedierea a fost intrerupta cu semnalul specificat. Printre altele, "
-"acest lucru ar putea fi cauzat de depasirea limitei de memorie pentru "
-"compilare si, la rindul sau, de utilizarea excesiva a template-urilor "
-"utilizate in C++, de exemplu."
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Expedierea a fost intrerupta cu semnalul specificat. Printre altele, acest lucru ar putea fi cauzat de depasirea limitei de memorie pentru compilare si, la rindul sau, de utilizarea excesiva a template-urilor utilizate in C++, de exemplu."
 
 msgid "Output is correct"
 msgstr "Iesire corecta"
@@ -90,68 +90,11 @@ msgstr "Programul expediat utilizeaza prea mult timp al procesorului."
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Depasirea timpului de executie (wall clock limit exceeded)"
 
-msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
-msgstr ""
-""
-
-#, python-format
-msgid ""
-"Execution killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr "Executia a esuat cu semnalul %s (putea fi depasita limita de memorie)"
-
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit. Note that if this is the "
-"reason, the memory usage visible in the submission details is the usage "
-"before the allocation that caused the signal."
-msgstr ""
-"Expedierea utilizeaza prea mult timp. Acest lucru ar putea fi declansat de "
-"cod nedefinit, sau supraincarcarea memoriei tampon, de exemplu. De notat "
-"ca, in acest caz, timpul procesorului vizibil in detaliile pentru "
-"expedierea realizata poate fi mult mai mic decit timpul limita."
-
 msgid "Execution failed because the return code was nonzero"
 msgstr "Executia a esuat, deoarece codur de retur a fost nonzero"
 
-msgid ""
-"Your submission failed because it exited with a return code different from 0."
+msgid "Your submission failed because it exited with a return code different from 0."
 msgstr "Expedierea a esuat deoarece aceasta a iesit cu un cod diferit de 0."
-
-msgid "N/A"
-msgstr "N/A"
-
-#, python-format
-msgid "Subtask %d"
-msgstr "Subproblema %d"
-
-msgid "Outcome"
-msgstr "Rezultatul"
-
-msgid "Details"
-msgstr "Detalii"
-
-msgid "Execution time"
-msgstr "Timpul de executie"
-
-msgid "Memory used"
-msgstr "Memoria utilizata"
-
-msgid "Not correct"
-msgstr "Gresit"
-
-msgid "Correct"
-msgstr "Corect"
-
-msgid "Partially correct"
-msgstr "Solutie partiala"
-
-msgid "Invalid files in submission"
-msgstr "Au fost expediate fisiere nevalide"
 
 msgid "Execution completed successfully"
 msgstr "Executie reusita"
@@ -161,27 +104,6 @@ msgstr "Compilarea nu este necesara"
 
 msgid "File not submitted"
 msgstr "Fisierul nu a fost expediat"
-
-msgid "loading..."
-msgstr "se incarca..."
-
-msgid "contest-token"
-msgstr ""
-
-msgid "contest-tokens"
-msgstr ""
-
-msgid "task-token"
-msgstr ""
-
-msgid "task-tokens"
-msgstr ""
-
-msgid "token"
-msgstr ""
-
-msgid "tokens"
-msgstr ""
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
@@ -200,168 +122,76 @@ msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "Incepeti cu un/o %(type_s)s."
 msgstr[1] "Incepeti cu %(gen_initial)d %(type_pl)s."
+msgstr[2] ""
 
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Fiecare minuta "
 msgstr[1] "Fiecare %(gen_interval)g  minute "
+msgstr[2] ""
 
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "obtineti inca %(type_s)s, "
 msgstr[1] "obtineti inca %(gen_number)d din %(type_pl)s, "
+msgstr[2] ""
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "pina la maxim un/o %(type_s)s."
 msgstr[1] "pina la maxim %(gen_max)d %(type_pl)s."
-
-#, python-format
-msgid "you get another %(type_s)s."
-msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "obtineti inca %(type_s)s."
-msgstr[1] "obtineti inca %(gen_number)d din %(type_pl)s."
+msgstr[2] ""
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
 msgstr "Nu puteti primi alte %(type_pl)s."
 
 #, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "obtineti inca %(type_s)s."
+msgstr[1] "obtineti inca %(gen_number)d din %(type_pl)s."
+msgstr[2] ""
+
+#, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] "Puteti utiliza %(type_s)s fiecare secunda "
 msgstr[1] "Puteti utiliza %(type_s)s fiecare %(min_interval)g secunde "
+msgstr[2] ""
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "si nu mai mult decit un/o %(type_s)s in total."
 msgstr[1] "si nu mai mult decit un/o %(max_number)d %(type_pl)s in total."
+msgstr[2] ""
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] "Puteti utiliza %(type_s)s fiecare secunda."
 msgstr[1] "Puteti utiliza %(type_s)s fiecare %(min_interval)g secunde."
+msgstr[2] ""
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Puteti utiliza nu mai mult de %(type_s)s in total."
 msgstr[1] "Puteti utiliza nu mai mult de %(max_number)d %(type_pl)s in total."
+msgstr[2] ""
 
 msgid "You have no limitations on how you use them."
 msgstr "Nu aveti limite de utilizare a acestora."
 
-msgid "Question too big!"
-msgstr "Intrebarea prea mare!"
-
-msgid "You have reached the question length limit."
-msgstr "Ati atins limita de lungime admisa pentru intrebare."
-
-msgid "Question received"
-msgstr "Intrebarea a fost primita"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr ""
-
-msgid "Too many print jobs!"
-msgstr ""
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr ""
-
-msgid "Invalid format!"
-msgstr ""
-
-msgid "Please select the correct files."
-msgstr ""
-
-msgid "File too big!"
-msgstr ""
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr ""
-
-msgid "Print job storage failed!"
-msgstr ""
-
 msgid "Please try again."
 msgstr "Va rugam sa mai incercati"
 
-msgid "Print job received"
-msgstr ""
-
-msgid "Your print job has been received."
-msgstr ""
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr ""
-
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr ""
-
-msgid "Too many submissions!"
-msgstr "Prea multe expedieri!"
-
-#, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Pentru toate sarcinile, puteti face trimiteri din nou dupa %d secunde de "
-"la ultima expediere."
-
-#, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Pentru aceasta sarcina, puteti face trimitere din nou dupa %d secunde "
-"de la ultima expediere."
-
-msgid "Submissions too frequent!"
-msgstr "Expedieri prea dese!"
-
-msgid "Invalid submission format!"
-msgstr "Format nevalid al expedierii!"
-
-msgid "Invalid archive format!"
-msgstr "Format nevalid pentru arhiva!"
-
-msgid "The submitted archive could not be opened."
-msgstr ""
-
-msgid "Cannot recognize submission's language."
-msgstr "Nu se poate recunoaste limbajul expedierii."
-
-msgid "All sources must be in the same language."
-msgstr "Toate sursele trebuie sa in acelasi limbaj."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "Limbajul %s nu este permis la acest concurs."
-
-msgid "Invalid submission!"
-msgstr ""
-
-msgid "Submission too big!"
-msgstr ""
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr ""
-
-msgid "Submission storage failed!"
-msgstr "Gresala de stocare a fisierului!"
+msgid "Question received"
+msgstr "Intrebarea a fost primita"
 
 msgid "Submission received"
 msgstr "Expediere cu succes"
@@ -372,9 +202,6 @@ msgstr "Programul a fost receptionat si se evalueaza."
 msgid "Compiling..."
 msgstr "Compilare..."
 
-msgid "details"
-msgstr "detalii"
-
 msgid "Evaluating..."
 msgstr "Evaluare..."
 
@@ -384,92 +211,71 @@ msgstr "Punctare..."
 msgid "Evaluated"
 msgstr "Evaluat"
 
-msgid "Token request discarded"
-msgstr ""
+msgid "details"
+msgstr "detalii"
 
-msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
+msgid "Too many submissions!"
+msgstr "Prea multe expedieri!"
 
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-
-msgid "Token request received"
-msgstr ""
-
-msgid "Your request has been received and applied to the submission."
-msgstr ""
+msgid "Submissions too frequent!"
+msgstr "Expedieri prea dese!"
 
 #, python-format
-msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr ""
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Pentru toate sarcinile, puteti face trimiteri din nou dupa %d secunde de la ultima expediere."
 
 #, python-format
-msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr ""
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Pentru aceasta sarcina, puteti face trimitere din nou dupa %d secunde de la ultima expediere."
+
+msgid "Invalid archive format!"
+msgstr "Format nevalid pentru arhiva!"
+
+msgid "Invalid submission format!"
+msgstr "Format nevalid al expedierii!"
+
+msgid "Submission storage failed!"
+msgstr "Gresala de stocare a fisierului!"
 
 msgid "Too many tests!"
 msgstr "Prea multe  teste!"
 
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
+msgid "Communication"
+msgstr "Comunicarea cu juriul"
 
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
+msgid "Announcements"
+msgstr "Anunturi"
 
-msgid "Tests too frequent!"
-msgstr ""
+msgid "(no subject)"
+msgstr "(fara subiect)"
 
-msgid "Invalid test format!"
-msgstr ""
+msgid "Questions"
+msgstr "Intrebari"
 
-msgid "Cannot recognize test's language."
-msgstr "Limbajul testului nu poate fi recunoscut!"
+msgid "Subject"
+msgstr "Subiectul"
 
-msgid "Invalid test!"
-msgstr ""
+msgid "Text"
+msgstr "Text"
 
-msgid "Test too big!"
-msgstr ""
+msgid "Ask question"
+msgstr "Pune o intrebare"
 
-msgid "Input too big!"
-msgstr ""
+msgid "Reset"
+msgstr "Reseteaza"
 
-#, python-format
-msgid "The input file must be at most %d bytes long."
-msgstr ""
+msgid "no answer yet"
+msgstr "raspunsul inca nu este"
 
-msgid "Test storage failed!"
-msgstr ""
-
-msgid "Test received"
-msgstr ""
-
-msgid "Your test has been received and is currently being executed."
-msgstr ""
-
-msgid "Executing..."
-msgstr ""
-
-msgid "Executed"
-msgstr ""
-
-#, python-format
-msgid "Automatic (%(lang)s)"
-msgstr ""
-
-#, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr "Logat ca <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Messages"
+msgstr "Mesaje"
 
 msgid "Logout"
 msgstr "Iesire"
+
+#, python-format
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Logat ca <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Eroare de logare"
@@ -488,9 +294,6 @@ msgstr "Parola"
 
 msgid "Login"
 msgstr "Logare"
-
-msgid "Reset"
-msgstr "Reseteaza"
 
 msgid "New message"
 msgstr "Mesaj nou"
@@ -520,9 +323,6 @@ msgstr "Timpul serverului:"
 msgid "Overview"
 msgstr "Privire de ansamblu"
 
-msgid "Communication"
-msgstr "Comunicarea cu juriul"
-
 msgid "Statement"
 msgstr "Enunt"
 
@@ -547,47 +347,17 @@ msgstr "este eliberat sub"
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero General Public License"
 
-msgid "Announcements"
-msgstr "Anunturi"
-
-msgid "(no subject)"
-msgstr "(fara subiect)"
-
-msgid "Questions"
-msgstr "Intrebari"
-
-msgid "Subject"
-msgstr "Subiectul"
-
-msgid "Text"
-msgstr "Text"
-
-msgid "Ask question"
-msgstr "Pune o intrebare"
-
-msgid "no answer yet"
-msgstr "raspunsul inca nu este"
-
-msgid "Messages"
-msgstr "Mesaje"
-
 msgid "Programming languages and libraries"
 msgstr "Limbaje de programare si biblioteci"
 
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
 
-msgid "Submission details for compilation"
-msgstr ""
-
 msgid "Message"
 msgstr "Mesaje"
 
 msgid "Explanation"
 msgstr "Explicatii"
-
-msgid "Submission details for evaluation"
-msgstr ""
 
 #, python-format
 msgid "Error %(status_code)s"
@@ -596,21 +366,11 @@ msgstr "Eroare %(status_code)s"
 msgid "An error occured while the server was handling your request."
 msgstr "A aparut o eroare la preluctrarea solicitarii dumneavoastre."
 
-msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing "
-"the server with customized URLs) may be considered cheating and may lead to "
-"disqualification."
-msgstr ""
-"Atentie, incercarile de a incalca/manipula sistemul (cum ar fi ondarea "
-"serverului cu URL utilizatorului) poate fi considerata ca inselaciune si duce la "
-"descalificare."
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Atentie, incercarile de a incalca/manipula sistemul (cum ar fi ondarea serverului cu URL utilizatorului) poate fi considerata ca inselaciune si duce la descalificare."
 
-msgid ""
-"If you encountered this error during normal usage, please notify the contest "
-"administrators."
-msgstr ""
-"Daca in timpul licrului ati intilnit o eroare de sistem, va rugam sa anuntati "
-"administratorul."
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Daca in timpul licrului ati intilnit o eroare de sistem, va rugam sa anuntati administratorul."
 
 msgid "General information"
 msgstr "Informatie generala"
@@ -642,60 +402,23 @@ msgstr "Aveti un numar nelimitat de token-e."
 msgid "You can see the detailed result of a submission by using a token on it."
 msgstr "Puteti vizualiza rezultatele detaliate ale expedierilor, utilizint token-ul."
 
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-
-msgid "You have a distinct set of tokens for each task."
-msgstr ""
-
-#, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on each task's description page."
-msgstr ""
-
-msgid "You have a set of tokens shared among all tasks."
-msgstr ""
-
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
 msgstr "Puteti expedia nu mai mult de %(submissions)s solutii in acest concurs."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr ""
-"Puteti expedia nu mai mult de %(user_tests)s teste ale utilizatorului "
-"in acest concurs."
+msgstr "Puteti expedia nu mai mult de %(user_tests)s teste ale utilizatorului in acest concurs."
 
 #, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
-"time frame of %(per_user_time)s."
-msgstr ""
-"Fiecare utilizator poate participa la competitie (de exemplu, expedia "
-"solutii) pe parcursul unui interval neintrerupt de timp "
-"de  %(per_user_time)s."
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Fiecare utilizator poate participa la competitie (de exemplu, expedia solutii) pe parcursul unui interval neintrerupt de timp de  %(per_user_time)s."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Cind olimpiada va incepe, puteti lansa propriul cadru de timp."
 
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-"Odata ce ati inceput, puteti trimite solutii pina la epuizarea timpului "
-"dumneavoastra sau al olimpiadei, in dependenta de care va fi primul."
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Odata ce ati inceput, puteti trimite solutii pina la epuizarea timpului dumneavoastra sau al olimpiadei, in dependenta de care va fi primul."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Accesind butonul de mai jos, veti lansa competitia."
@@ -704,16 +427,11 @@ msgstr "Accesind butonul de mai jos, veti lansa competitia."
 msgid "You started your time frame at %(start_time)s."
 msgstr "Ati inceput competitia la %(start_time)s."
 
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of "
-"the contest, whatever comes first."
-msgstr ""
-"Puteti trimite solutii pina la expirarea timpului dumneavoastra sau "
-"al olimpiadei, in dependenta de care va fi primul."
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Puteti trimite solutii pina la expirarea timpului dumneavoastra sau al olimpiadei, in dependenta de care va fi primul."
 
 #, python-format
-msgid ""
-"You started your time frame at %(start_time)s and you already finished it."
+msgid "You started your time frame at %(start_time)s and you already finished it."
 msgstr "Ati inceput competitia la %(start_time)s si ea a finisat deja."
 
 msgid "There's nothing you can do now."
@@ -758,18 +476,6 @@ msgstr "Nu"
 msgid "Print"
 msgstr "Tipar"
 
-#, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text or PDF files of up to "
-"%(max_pages)s pages each."
-msgstr ""
-
-#, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
-"pages each."
-msgstr ""
-
 msgid "File (text or PDF)"
 msgstr "Fisier (text sau PDF)"
 
@@ -778,13 +484,6 @@ msgstr "Fisier (text)"
 
 msgid "Submit"
 msgstr "Expediaza"
-
-msgid ""
-"You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-
-msgid "Previous print jobs"
-msgstr ""
 
 msgid "Date and time"
 msgstr "Data si timpul"
@@ -797,9 +496,6 @@ msgstr "Denumire fisier"
 
 msgid "Status"
 msgstr "Statut"
-
-msgid "no print jobs yet"
-msgstr ""
 
 msgid "Preparing..."
 msgstr "Pregatire..."
@@ -822,24 +518,6 @@ msgstr "Iesirea standard"
 msgid "Standard error"
 msgstr "Erori standarde"
 
-msgid "None"
-msgstr "Lipsa"
-
-msgid "Download"
-msgstr "Descarca"
-
-msgid "Played"
-msgstr "Jucat"
-
-msgid "Play!"
-msgstr "Joaca!"
-
-msgid "Wait..."
-msgstr "Asteptati..."
-
-msgid "No tokens"
-msgstr "Nu sint token-e"
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr "%(name)s (%(short_name)s) <small>descriere</small>"
@@ -850,14 +528,11 @@ msgstr "conditii nu sint"
 msgid "Download task statement"
 msgstr "Descarca textul sarcinii"
 
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
+msgid "The statement for this task is available in multiple versions, in different languages."
 msgstr "Enunturile acestei sarcini sint disponibile in mai multe limbi."
 
 msgid "You can see (and download) all of them using the list on the right."
-msgstr ""
-"Puteti vizualiza (si descarca) orice traducere, utilizind lista din dreapta"
+msgstr "Puteti vizualiza (si descarca) orice traducere, utilizind lista din dreapta"
 
 msgid "Some suggested translations follow."
 msgstr "."
@@ -870,34 +545,17 @@ msgstr "Enunt in <b>%(lang)s</b>"
 msgid "Statement in %(lang)s"
 msgstr "Enunt in %(lang)s"
 
-#, python-format
-msgid "<b>%(lang)s</b>"
-msgstr ""
-
-#, python-format
-msgid "%(lang)s"
-msgstr ""
-
 msgid "Some details"
 msgstr "Detalii"
 
 msgid "Compilation commands"
 msgstr "Comenzile compilarii"
 
-#, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
-"\">contest overview page</a>."
-msgstr "Puteti gasi conditiile pentru %(type_pl)s pe <a href=\"%(url_root)s/"
-"\">pagina generala a olimpiadei</a>."
-
-msgid ""
-"Remember that to see the detailed result of a submission you need to use both "
-"a contest-token and a task-token."
-msgstr ""
-
 msgid "Attachments"
 msgstr "Atasari"
+
+msgid "loading..."
+msgstr "se incarca..."
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
@@ -909,9 +567,6 @@ msgstr "Expedierea solutiei"
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Mai puteti trimite %(submissions_left)s solutii."
-
-msgid "submission.zip"
-msgstr ""
 
 msgid "Previous submissions"
 msgstr "Expedierile anterioare"
@@ -937,33 +592,14 @@ msgstr "Veti primi un token nou in %(gen_time)s."
 msgid "In the current situation, no more tokens will be generated."
 msgstr "In situatia actuala, nu vor mai fi generate alte token-e."
 
-msgid "Right now, you do not have tokens available for this task."
-msgstr ""
-
-#, python-format
-msgid "But you will have to wait until %(expiration_time)s to use it."
-msgstr ""
-
-msgid "Public score"
-msgstr "Scorul public"
-
-msgid "Total score"
-msgstr "Scorul total"
-
-msgid "Score"
-msgstr "Scorul"
-
-msgid "Token"
-msgstr ""
-
-msgid "no submissions yet"
-msgstr "nu sint expedieri"
-
 msgid "Submission details"
 msgstr "Detaliile expedierii"
 
 msgid "Close"
 msgstr "Inchide"
+
+msgid "Download"
+msgstr "Descarca"
 
 msgid "Submit a test"
 msgstr "Trimite testul"
@@ -992,3 +628,28 @@ msgstr "Detaliile testului"
 
 msgid "Evaluation outcome"
 msgstr "Rezultatele evaluarii"
+
+msgid "Wait..."
+msgstr "Asteptati..."
+
+msgid "None"
+msgstr "Lipsa"
+
+msgid "Public score"
+msgstr "Scorul public"
+
+msgid "Total score"
+msgstr "Scorul total"
+
+msgid "Score"
+msgstr "Scorul"
+
+msgid "Played"
+msgstr "Jucat"
+
+msgid "Play!"
+msgstr "Joaca!"
+
+msgid "No tokens"
+msgstr "Nu sint token-e"
+

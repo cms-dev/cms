@@ -1,41 +1,33 @@
-# Czech translations for CMS package.
-# Copyright (C) 2015--2018 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the CMS package.
-# Karry <karry@karryanna.cz>, 2015.
-# Martin Mareš <mj@ucw.cz>, 2018.
-# Benjamin Swart <Benjaminswart@email.cz>, 2020.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2021-02-08 16:20+0000\n"
-"PO-Revision-Date: 2015-03-24 15:57+0100\n"
-"Last-Translator: Benjamin Swart <Benjaminswart@email.cz>\n"
-"Language-Team: Czech\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 msgid "N/A"
 msgstr "N/A"
 
-msgid "Not correct"
-msgstr "Nesprávně"
-
 msgid "Correct"
 msgstr "Správně"
+
+msgid "Not correct"
+msgstr "Nesprávně"
 
 msgid "Partially correct"
 msgstr "Částečně správně"
 
-msgid "#"
-msgstr "#"
-
 msgid "Outcome"
 msgstr "Výsledek"
+
+msgid "#"
+msgstr "#"
 
 msgid "Details"
 msgstr "Podrobnosti"
@@ -68,29 +60,15 @@ msgstr "Odevzdané řešení nebylo správně zkompilováno."
 msgid "Compilation timed out"
 msgstr "Vyčerpaný časový limit kompilace"
 
-msgid ""
-"Your submission exceeded the time limit while compiling. This might be "
-"caused by an excessive use of C++ templates, for example."
-msgstr ""
-"Odevzdané řešení během kompilace vyčerpalo časový limit. To může být "
-"způsobeno např. nadměrným využíváním šablon (templates) v C++."
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Odevzdané řešení během kompilace vyčerpalo časový limit. To může být způsobeno např. nadměrným využíváním šablon (templates) v C++."
 
 #, python-format
-msgid ""
-"Compilation killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Kompilace ukončena signálem %s (to mohlo být způsobeno překročením "
-"paměťových limitů)"
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Kompilace ukončena signálem %s (to mohlo být způsobeno překročením paměťových limitů)"
 
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit for the compilation, and "
-"in turn by an excessive use of C++ templates, for example."
-msgstr ""
-"Odevzdané řešení bylo přerušeno uvedeným signálem. To mohlo být způsobeno, "
-"kromě jiných věcí, překročením paměťových limitů pro kompilaci, tedy např. "
-"nadměrným využíváním šablon v C++."
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Odevzdané řešení bylo přerušeno uvedeným signálem. To mohlo být způsobeno, kromě jiných věcí, překročením paměťových limitů pro kompilaci, tedy např. nadměrným využíváním šablon v C++."
 
 msgid "Output is correct"
 msgstr "Správný výstup"
@@ -115,8 +93,7 @@ msgid "Evaluation didn't produce file %s"
 msgstr "Vyhodnocení nevytvořilo soubor %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
-"Odevzdané řešení doběhlo, ale nic nezapsalo do správného výstupního souboru"
+msgstr "Odevzdané řešení doběhlo, ale nic nezapsalo do správného výstupního souboru"
 
 msgid "Execution timed out"
 msgstr "Program vyčerpal časový limit"
@@ -127,40 +104,20 @@ msgstr "Odevzdané řešení spotřebovalo příliš mnoho procesorového času.
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Program vyčerpal časový limit (překročený limit na reálný čas)"
 
-msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
-msgstr ""
-"Odevzdané řešení využilo příliš mnoho celkového času. To může být např. "
-"způsobeno kódem s nedefinovaným chováním nebo přetečením bufferu. Uvědomte "
-"si, že v tomto případě může být procesorový čas zobrazený v detailech "
-"odevzdaného řešení mnohem menší než časový limit."
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "Odevzdané řešení využilo příliš mnoho celkového času. To může být např. způsobeno kódem s nedefinovaným chováním nebo přetečením bufferu. Uvědomte si, že v tomto případě může být procesorový čas zobrazený v detailech odevzdaného řešení mnohem menší než časový limit."
 
 msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr ""
-"Program byl ukončen (to mohlo být způsobeno překročením paměťových limitů)"
+msgstr "Program byl ukončen (to mohlo být způsobeno překročením paměťových limitů)"
 
-msgid ""
-"The evaluation was killed by a signal. Among other things, this might be "
-"caused by exceeding the memory limit. Note that if this is the reason, the "
-"memory usage visible in the submission details is the usage before the "
-"allocation that caused the signal."
-msgstr ""
-"Vyhodnocování bylo ukončeno signálem. To může být způsobeno překročením "
-"paměťového limitu. Uvědomte si, že je-li to způsobeno tím, použitá paměť "
-"zobrazená v detailech odevzdaného řešení je použitá paměť před alokací, "
-"která způsobila poslání signálu."
+msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+msgstr "Vyhodnocování bylo ukončeno signálem. To může být způsobeno překročením paměťového limitu. Uvědomte si, že je-li to způsobeno tím, použitá paměť zobrazená v detailech odevzdaného řešení je použitá paměť před alokací, která způsobila poslání signálu."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Program selhal kvůli nenulové návratové hodnotě"
 
-msgid ""
-"Your submission failed because it exited with a return code different from 0."
-msgstr ""
-"Odevzdané řešení selhalo, protože skončilo s návratovou hodnotou odlišnou od "
-"0."
+msgid "Your submission failed because it exited with a return code different from 0."
+msgstr "Odevzdané řešení selhalo, protože skončilo s návratovou hodnotou odlišnou od 0."
 
 msgid "Execution completed successfully"
 msgstr "Spuštění programu skončilo úspěšně"
@@ -175,12 +132,8 @@ msgid "Question too long!"
 msgstr "Příliš dlouhá otázka!"
 
 #, python-format
-msgid ""
-"Subject must be at most %(max_subject_length)d characters, content at most "
-"%(max_text_length)d."
-msgstr ""
-"Předmět může mít maximálně %(max_subject_length)d znaků a text maximálně "
-"%(max_text_length)d znaků."
+msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
+msgstr "Předmět může mít maximálně %(max_subject_length)d znaků a text maximálně %(max_text_length)d znaků."
 
 msgid "contest-token"
 msgstr "soutěžní token"
@@ -201,31 +154,20 @@ msgid "tokens"
 msgstr "tokeny"
 
 #, python-format
-msgid "You don't have %(type_pl)s available for this task."
-msgstr "Pro tuto úlohu nemáte k dispozici %(type_pl)."
-
-#, python-format
-msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "Pro tuto úlohu máte k dispozici neomezeně %(type_pl)."
-
-#, python-format
-msgid "You start with no %(type_pl)s."
-msgstr "Na začátku nemáte žádné %(type_pl)."
-
-#, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
 msgstr[1] "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
 msgstr[2] "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
+msgstr[3] ""
 
-#  CHECK ME: Každých 1.5 minut?
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Každou %(gen_interval)g minutu "
 msgstr[1] "Každé %(gen_interval)g minuty "
 msgstr[2] "Každých %(gen_interval)g minut "
+msgstr[3] ""
 
 #, python-format
 msgid "you get another %(type_s)s, "
@@ -233,6 +175,7 @@ msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "dostanete další %(type_s), "
 msgstr[1] "dostanete další %(gen_number)d %(type_pl), "
 msgstr[2] "dostanete dalších %(gen_number) %(type_pl), "
+msgstr[3] ""
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
@@ -240,6 +183,7 @@ msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] " až do maximálního počtu 1 %(type_pl)s."
 msgstr[1] " až do maximálního počtu %(gen_max)d %(type_pl)s."
 msgstr[2] " až do maximálního počtu %(gen_max)d %(type_pl)s."
+msgstr[3] ""
 
 #, python-format
 msgid "you get another %(type_s)s."
@@ -247,10 +191,7 @@ msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] " dostanete další %(type_s)s."
 msgstr[1] " dostanete další %(type_s)s v počtu %(gen_number)d."
 msgstr[2] " dostanete další %(type_s)s v počtu %(gen_number)d."
-
-#, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Nemáte další %(type_pl)."
+msgstr[3] ""
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -258,6 +199,7 @@ msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] "Můžete použít %(type_s) každou vteřinu "
 msgstr[1] "Můžete použít %(type_s) každé %(min_interval)g vteřiny "
 msgstr[2] "Můžete použít %(type_s) každých %(min_interval)g vteřin "
+msgstr[3] ""
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -265,6 +207,7 @@ msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] " a maximálně 1 %(type_s) celkem."
 msgstr[1] " a maximálně %(max_number)d %(type_pl)s celkem."
 msgstr[2] " a maximálně %(max_number)d %(type_pl)s celkem."
+msgstr[3] ""
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
@@ -272,6 +215,7 @@ msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] "Smíte použít %(type_s) každou vteřinu."
 msgstr[1] "Smíte použít %(type_s) každé %(min_interval)g vteřiny."
 msgstr[2] "Smíte použít %(type_s) každých %(min_interval)g vteřin."
+msgstr[3] ""
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
@@ -279,6 +223,7 @@ msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Počet použití %(type_s)s máte omezený na 1."
 msgstr[1] "Počet použití %(type_s)s máte omezený na %(max_number)d."
 msgstr[2] "Počet použití %(type_s)s máte omezený na %(max_number)d."
+msgstr[3] ""
 
 msgid "You have no limitations on how you use them."
 msgstr "Nemáte žádná omezení na to, jak je použijete."
@@ -315,18 +260,13 @@ msgstr "Požadavek na token nesplněn."
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "Požadavek nebyl splněn, protože nemáte k dispozici žádné tokeny."
 
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"Požadavek nebyl splněn, protože pro toto odevzdané řešení jste už token "
-"použili."
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Požadavek nebyl splněn, protože pro toto odevzdané řešení jste už token použili."
 
 msgid "Question received"
 msgstr "Otázka přijata"
 
-msgid ""
-"Your question has been received, you will be notified when it is answered."
+msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Otázka byla přijata, budete upozorněni, až bude zodpovězena."
 
 msgid "Print job received"
@@ -356,11 +296,11 @@ msgstr "Vyhodnoceno"
 msgid "status"
 msgstr "stav"
 
-msgid "Token request received"
-msgstr "Obdržen požadavek o token"
-
 msgid "Your request has been received and applied to the submission."
 msgstr "Váš požadavek byl použit na odevzdané řešení."
+
+msgid "Token request received"
+msgstr "Obdržen požadavek o token"
 
 msgid "Test received"
 msgstr "Test přijat"
@@ -381,31 +321,23 @@ msgid "Too many submissions!"
 msgstr "Příliš mnoho odevzdaných řešení!"
 
 #, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
 msgstr "Byl dosažený limit maximálně %d odevzdání všech úloh dohromady."
 
 #, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
+msgid "You have reached the maximum limit of at most %d submissions on this task."
 msgstr "Byl dosažený limit maximálně %d odevzdání této úlohy."
 
 msgid "Submissions too frequent!"
 msgstr "Příliš časté odevzdávání!"
 
 #, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Řešení libovolné úlohy můžete znovu odevzdat po %d vteřinách od posledního "
-"odevzdání."
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Řešení libovolné úlohy můžete znovu odevzdat po %d vteřinách od posledního odevzdání."
 
 #, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Řešení této úlohy můžete znovu odevzdat po %d vteřinách od posledního "
-"odevzdání."
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Řešení této úlohy můžete znovu odevzdat po %d vteřinách od posledního odevzdání."
 
 msgid "Invalid archive format!"
 msgstr "Neplatný formát archivu!"
@@ -442,14 +374,11 @@ msgstr "Přílič časté testování!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"Test k libovolné úloze můžete znovu spustit po %d vteřinách od posledního "
-"testu."
+msgstr "Test k libovolné úloze můžete znovu spustit po %d vteřinách od posledního testu."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
-"Test k této úloze můžete znovu spustit po %d vteřinách od posledního testu."
+msgstr "Test k této úloze můžete znovu spustit po %d vteřinách od posledního testu."
 
 msgid "Invalid test format!"
 msgstr "Neplatný formát testu!"
@@ -505,12 +434,8 @@ msgid "Logout"
 msgstr "Odhlásit"
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr ""
-"Přihlášen(a) jako <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Přihlášen(a) jako <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Přihlášení se nepodařilo."
@@ -552,11 +477,11 @@ msgstr "%d nepřečteno"
 msgid "Until contest starts:"
 msgstr "Do začátku soutěže:"
 
-msgid "Until contest ends:"
-msgstr "Do konce soutěže:"
-
 msgid "Until analysis starts:"
 msgstr "Do začátku analýzy:"
+
+msgid "Until contest ends:"
+msgstr "Do konce soutěže:"
 
 msgid "Until analysis ends:"
 msgstr "Do konce analýzy:"
@@ -603,9 +528,7 @@ msgstr "Programovací jazyky a knihovny"
 msgid "Standard Template Library"
 msgstr "Standard Template Library (STL)"
 
-msgid ""
-"The main Java class of the solution should have exactly the same name as the "
-"task."
+msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "Hlavní třída programu v Javě se musí jmenovat stejně jako úloha."
 
 msgid "Submission details for compilation"
@@ -627,21 +550,11 @@ msgstr "Chyba %(status_code)s"
 msgid "An error occured while the server was handling your request."
 msgstr "Během zpracování vašeho požadavku došlo na serveru k chybě."
 
-msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing "
-"the server with customized URLs) may be considered cheating and may lead to "
-"disqualification."
-msgstr ""
-"Vezměte na vědomí, že pokusy zasahovat do soutěžního systému (jako zkoumání "
-"serveru s upravenými URL) může být vyhodnoceno jako podvod a vést k "
-"diskvalifikaci ze soutěže."
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Vezměte na vědomí, že pokusy zasahovat do soutěžního systému (jako zkoumání serveru s upravenými URL) může být vyhodnoceno jako podvod a vést k diskvalifikaci ze soutěže."
 
-msgid ""
-"If you encountered this error during normal usage, please notify the contest "
-"administrators."
-msgstr ""
-"Pokud potkáte tuto chybu během běžného použití, dejte prosím vědět "
-"organizátorům soutěže."
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Pokud potkáte tuto chybu během běžného použití, dejte prosím vědět organizátorům soutěže."
 
 msgid "General information"
 msgstr "Obecné informace"
@@ -671,16 +584,14 @@ msgid "The analysis mode hasn't started yet."
 msgstr "Analýza ještě nezačala."
 
 #, python-format
-msgid ""
-"The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
 msgstr "Analýza začne %(start_time)s a skončí %(stop_time)s."
 
 msgid "The analysis mode is currently running."
 msgstr "Analýza právě probíhá."
 
 #, python-format
-msgid ""
-"The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
 msgstr "Analýza začala %(start_time)s a skončí %(stop_time)s."
 
 msgid "The analysis mode has already ended."
@@ -694,41 +605,26 @@ msgid "You have an infinite number of tokens."
 msgstr "Máte neomezený počet tokenů."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
-"Detailní výsledky odevzdaného řešení si můžete prohlédnout, použijete-li na "
-"toto řešení token."
+msgstr "Detailní výsledky odevzdaného řešení si můžete prohlédnout, použijete-li na toto řešení token."
 
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-"Vaše skóre bude pro každou úlohu maximum z výsledků řešení, na které byl "
-"použitý token, a posledního."
+msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
+msgstr "Vaše skóre bude pro každou úlohu maximum z výsledků řešení, na které byl použitý token, a posledního."
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "Pro každou úlohu máte vlastní sadu tokenů."
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on each task's description page."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
 msgstr "Pravidla pro %(type_pl)s můžete najít u popisu každé úlohy."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Máte sadu tokenů sdílenou mezi všemi úkoly."
 
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-"Máte dva typy tokenů: sadu <em>soutěžních tokenů</em> sdílenou mezi všemi "
-"úlohami a jednotlivé sady <em>úlohových tokenů</em> pro každou úlohu."
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Máte dva typy tokenů: sadu <em>soutěžních tokenů</em> sdílenou mezi všemi úlohami a jednotlivé sady <em>úlohových tokenů</em> pro každou úlohu."
 
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-"Detailní výsledky odevzdaného řešení si můžete prohlédnout, použijete-li na "
-"toto řešení dva tokeny, jeden od každého druhu."
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Detailní výsledky odevzdaného řešení si můžete prohlédnout, použijete-li na toto řešení dva tokeny, jeden od každého druhu."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
@@ -736,27 +632,17 @@ msgstr "Během této soutěže můžete odevzdat maximálně %(submissions)s ře
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr ""
-"Během této soutěže můžete odevzdat maximálně %(user_tests)s vlastních testů."
+msgstr "Během této soutěže můžete odevzdat maximálně %(user_tests)s vlastních testů."
 
 #, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
-"time frame of %(per_user_time)s."
-msgstr ""
-"Každý uživatel smí bez přerušení soutěžit (např. odevzdávat řešení) po dobu "
-"%(per_user_time)s."
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Každý uživatel smí bez přerušení soutěžit (např. odevzdávat řešení) po dobu %(per_user_time)s."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr ""
-"Jakmile soutěž začne, můžete se rozhodnout spustit svoji soutěžní dobu."
+msgstr "Jakmile soutěž začne, můžete se rozhodnout spustit svoji soutěžní dobu."
 
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-"Jakmile začnete, můžete odevzdávat řešení do konce určené doby nebo do konce "
-"soutěže, podle toho, co nastane dřív."
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Jakmile začnete, můžete odevzdávat řešení do konce určené doby nebo do konce soutěže, podle toho, co nastane dřív."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Kliknutím na tlačítko níže můžete spustit svou soutěžní dobu."
@@ -765,18 +651,12 @@ msgstr "Kliknutím na tlačítko níže můžete spustit svou soutěžní dobu."
 msgid "You started your time frame at %(start_time)s."
 msgstr "Začali jste svou soutěžní dobu v %(start_time)s."
 
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of "
-"the contest, whatever comes first."
-msgstr ""
-"Můžete odevzdávat řešení do konce určené soutěžní doby nebo do konce "
-"soutěže, podle toho, co nastane dřív."
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Můžete odevzdávat řešení do konce určené soutěžní doby nebo do konce soutěže, podle toho, co nastane dřív."
 
 #, python-format
-msgid ""
-"You started your time frame at %(start_time)s and you already finished it."
-msgstr ""
-"Spustili jste svou soutěžní dobu v %(start_time)s a již jste ji vyčerpali."
+msgid "You started your time frame at %(start_time)s and you already finished it."
+msgstr "Spustili jste svou soutěžní dobu v %(start_time)s a již jste ji vyčerpali."
 
 msgid "There's nothing you can do now."
 msgstr "Aktuálně nemůžete nic dělat."
@@ -821,20 +701,12 @@ msgid "Print"
 msgstr "Tisk"
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text or PDF files of up to "
-"%(max_pages)s pages each."
-msgstr ""
-"Můžete vytisknout ještě %(remaining_jobs)s textů nebo souborů PDF, každý o "
-"maximálně %(max_pages)s stránkách."
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "Můžete vytisknout ještě %(remaining_jobs)s textů nebo souborů PDF, každý o maximálně %(max_pages)s stránkách."
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
-"pages each."
-msgstr ""
-"Můžete vytisknout ještě %(remaining_jobs)s textových souborů, každý o "
-"maximálně %(max_pages)s stránkách."
+msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
+msgstr "Můžete vytisknout ještě %(remaining_jobs)s textových souborů, každý o maximálně %(max_pages)s stránkách."
 
 msgid "File (text or PDF)"
 msgstr "Soubor (text nebo PDF)"
@@ -845,8 +717,7 @@ msgstr "Soubor (text)"
 msgid "Submit"
 msgstr "Odevzdat"
 
-msgid ""
-"You cannot print anything any more as you have used up your printing quota."
+msgid "You cannot print anything any more as you have used up your printing quota."
 msgstr "Už nemůžete nic vytisknout, jelikož váš limit na tisk byl vyčerpaný."
 
 msgid "Previous print jobs"
@@ -876,11 +747,11 @@ msgstr "Hesla se neshodují!"
 msgid "This username is already taken, please choose a different one."
 msgstr "Toto uživatelské jméno je již zabrané, prosíme vyberte jiné."
 
-msgid "New user"
-msgstr "Nový uživatel"
-
 msgid "Please fill in the fields to register"
 msgstr "Prosíme vyplňte tato pole k registraci"
+
+msgid "New user"
+msgstr "Nový uživatel"
 
 msgid "First name"
 msgstr "Křestní jméno"
@@ -900,18 +771,13 @@ msgid_plural "Must be %(min_length)s characters or more."
 msgstr[0] "Musí mít alespoň %(min_length)s znak."
 msgstr[1] "Musí mít alespoň %(min_length)s znaky."
 msgstr[2] "Musí mít alespoň %(min_length)s znaků."
+msgstr[3] ""
 
 msgid "Confirm password"
 msgstr "Zopakujte heslo"
 
-msgid "The user was created successfully!"
-msgstr "Uživatel byl úspěšně vytvořen!"
-
 msgid "Your username is:"
 msgstr "Vaše uživatelské jméno je:"
-
-msgid "The password you chose was stored securely."
-msgstr "Heslo bylo bezpečně uloženo."
 
 msgid "Back to login"
 msgstr "Zpět na přihlášení"
@@ -944,15 +810,11 @@ msgstr "žádné dostupné zadání"
 msgid "Download task statement"
 msgstr "Stáhnout zadání úlohy"
 
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
-msgstr ""
-"Zadání této úlohy je k dispozici v několika verzích v různých jazycích."
+msgid "The statement for this task is available in multiple versions, in different languages."
+msgstr "Zadání této úlohy je k dispozici v několika verzích v různých jazycích."
 
 msgid "You can see (and download) all of them using the list on the right."
-msgstr ""
-"Můžete si prohlédnout (a stáhnout) každou z nich pomocí seznamu vpravo."
+msgstr "Můžete si prohlédnout (a stáhnout) každou z nich pomocí seznamu vpravo."
 
 msgid "Some suggested translations follow."
 msgstr "Následují nějaké navržené překlady."
@@ -979,20 +841,8 @@ msgstr "Bližší informace"
 msgid "Compilation commands"
 msgstr "Příkazy ke kompilaci"
 
-#, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s"
-"\">contest overview page</a>."
-msgstr ""
-"Pravidla pro %(type_pl)s můžete najít v <a href=\"%(contest_root)s/"
-"\">přehledu soutěže</a>."
-
-msgid ""
-"Remember that to see the detailed result of a submission you need to use "
-"both a contest-token and a task-token."
-msgstr ""
-"Pamatujte, že k zobrazení detailních výsledků odevzdaného řešení musíte "
-"použít jak soutěžní token, tak úlohový token."
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Pamatujte, že k zobrazení detailních výsledků odevzdaného řešení musíte použít jak soutěžní token, tak úlohový token."
 
 msgid "Attachments"
 msgstr "Přílohy"
@@ -1148,77 +998,3 @@ msgstr "Tisková úloha má moc stránek"
 msgid "Sent to printer"
 msgstr "Odeslat do tiskárny"
 
-#~ msgid "Invalid files in submission"
-#~ msgstr "Neplatné soubory v odevzdaném řešení"
-
-#~ msgid "You have reached the question length limit."
-#~ msgstr "Byl dosažený limit na počet otázek."
-
-#~ msgid "Cannot recognize the submission language."
-#~ msgstr "Nepodařilo se určit jazyk odevzdaného řešení."
-
-#~ msgid "Cannot recognize the user test language."
-#~ msgstr "Nepodařilo se určit jazyk testu."
-
-#~ msgid "Official"
-#~ msgstr "Oficiální"
-
-#~ msgid "%Y-%m-%d"
-#~ msgstr "%d. %m. %Y"
-
-#~ msgid "%H:%M:%S"
-#~ msgstr "%H:%M:%S"
-
-#~ msgid "%Y-%m-%d %H:%M:%S"
-#~ msgstr "%d. %m. %Y, %H:%M:%S"
-
-#~ msgid "%d second"
-#~ msgid_plural "%d seconds"
-#~ msgstr[0] "%d vteřina"
-#~ msgstr[1] "%d vteřiny"
-#~ msgstr[2] "%d vteřin"
-
-#~ msgid "%d minute"
-#~ msgid_plural "%d minutes"
-#~ msgstr[0] "%d minuta"
-#~ msgstr[1] "%d minuty"
-#~ msgstr[2] "%d minut"
-
-#~ msgid "%d hour"
-#~ msgid_plural "%d hours"
-#~ msgstr[0] "%d hodina"
-#~ msgstr[1] "%d hodiny"
-#~ msgstr[2] "%d hodin"
-
-#~ msgid "%d day"
-#~ msgid_plural "%d days"
-#~ msgstr[0] "%d den"
-#~ msgstr[1] "%d dny"
-#~ msgstr[2] "%d dnů"
-
-#~ msgid "%s and %s"
-#~ msgstr "%s a %s"
-
-#~ msgid "more than %s"
-#~ msgstr "více než %s"
-
-#~ msgid "%(seconds)0.3f s"
-#~ msgstr "%(seconds)0.3f s"
-
-#~ msgid "Error %d"
-#~ msgstr "Chyba %d"
-
-#~ msgid "%(seconds)g second"
-#~ msgstr "%(seconds)g s"
-
-#~ msgid "%(seconds)g seconds"
-#~ msgstr "%(seconds)g s"
-
-#~ msgid "%(mb)d MiB"
-#~ msgstr "%(mb)d MiB"
-
-#~ msgid "%s"
-#~ msgstr "%s"
-
-#~ msgid "All sources must be in the same language."
-#~ msgstr "Všechny zdrojové kódy musí být ve stejném jazyce."
