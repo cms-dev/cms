@@ -28,13 +28,11 @@ If instead you have found a possible bug, please go ahead filing the issue using
 
 ### Logs
 
-[Please attach relevant logs of the component(s) that caused the problem; you can find them in /var/local/log/cms/ (if CMS was running
-installed) or in ./log (if it was running from the local copy).]
+[Please attach relevant logs of the component(s) that caused the problem; you can find them in /var/local/log/cms/.]
 
 ### System Information
 
 **CMS version:** [master, or a specific version]
-**Was CMS installed:** [yes or no]
-**Using a virtualenv:** [yes or no]
+**How was CMS installed:** [virtualenv, docker, ...?]
 **Postgres version:** [if relevant]
 **Distribution and version:** [if relevant]
