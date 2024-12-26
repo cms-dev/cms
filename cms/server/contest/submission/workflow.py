@@ -61,6 +61,16 @@ class UnacceptableSubmission(Exception):
         return self.text % self.text_params
 
 
+def combine_language_lists(*lists):
+    """ Calculate intersection of one or more collections, skipping Nones """
+    lists = list(filter(lambda l: l != None, lists))
+
+    if len(lists) == 0:
+        return None
+
+    return set.intersection(*map(lambda l: set(l), lists))
+
+
 def accept_submission(sql_session, file_cacher, participation, task, timestamp,
                       tornado_files, language_name, official):
     """Process a contestant's request to submit a submission.
@@ -140,7 +150,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
     try:
         files, language = match_files_and_language(
             received_files, language_name, required_codenames,
-            contest.languages)
+            combine_language_lists(contest.languages, task.languages))
     except InvalidFilesOrLanguage:
         raise UnacceptableSubmission(
             N_("Invalid submission format!"),
@@ -314,7 +324,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
     try:
         files, language = match_files_and_language(
             received_files, language_name, required_codenames,
-            contest.languages)
+            combine_language_lists(contest.languages, task.languages))
     except InvalidFilesOrLanguage:
         raise UnacceptableUserTest(
             N_("Invalid test format!"),
