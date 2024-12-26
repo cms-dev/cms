@@ -247,11 +247,6 @@ class ResourceService(Service):
                 logger.info("Restarting (%s, %s)...",
                             service.name, service.shard)
                 command = os.path.join(BIN_PATH, "cms%s" % service.name)
-                if not config.installed:
-                    command = os.path.join(
-                        ".",
-                        "scripts",
-                        "cms%s" % service.name)
                 args = [command, "%d" % service.shard]
                 if self.contest_id is not None:
                     args += ["-c", str(self.contest_id)]
