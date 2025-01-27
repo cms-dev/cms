@@ -99,7 +99,7 @@ HANDLERS = [
 
     # The following prefixes are handled by WSGI middlewares:
     # * /static, defined in cms/io/web_service.py
-    # * /stl, defined in cms/server/contest/server.py
+    # * /docs, defined in cms/server/contest/server.py
 ]
 
 

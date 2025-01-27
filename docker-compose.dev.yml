@@ -1,0 +1,25 @@
+services:
+  devdb:
+    image: postgres:15
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - "./.dev/postgres-data:/var/lib/postgresql/data"
+
+  devcms:
+    build: .
+    depends_on:
+      - "devdb"
+    environment:
+      CMS_CONFIG: /usr/local/etc/cms-devdb.conf
+    volumes:
+      - "./.dev/home:/home/cmsuser"
+      - ".:/home/cmsuser/cms"
+    privileged: true
+    cgroup: host
+    command: >
+      wait-for-it devdb:5432 -- bash
+    ports:
+      - 8888:8888
+      - 8889:8889
+      - 8890:8890

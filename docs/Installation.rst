@@ -16,7 +16,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `GNU compiler collection <https://gcc.gnu.org/>`_ (in particular the C compiler ``gcc``);
 
-* `Python <http://www.python.org/>`_ >= 3.8;
+* `Python <http://www.python.org/>`_ >= 3.9;
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
@@ -24,7 +24,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `a2ps <https://www.gnu.org/software/a2ps/>`_ (only for printing).
 
-You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``. It is anyway suggested to use Linux kernel version at least 3.8.
+You will also require a Linux kernel with support for `cgroupv2 <https://docs.kernel.org/admin-guide/cgroup-v2.html>`_.
 
 Then you require the compilation and execution environments for the languages you will use in your contest:
 
@@ -34,9 +34,9 @@ Then you require the compilation and execution environments for the languages yo
 
 * `Free Pascal <http://www.freepascal.org/>`_ (for Pascal, with executable ``fpc``);
 
-* `Python <http://www.python.org/>`_ >= 2.7 (for Python, with executable ``python2`` or ``python3``; in addition you will need ``zip``);
+* `Python <http://www.python.org/>`_ (for Python, with executable ``python3``; in addition you will need ``zip``);
 
-* `PHP <http://www.php.net>`_ >= 5 (for PHP, with executable ``php``);
+* `PHP <http://www.php.net>`_ (for PHP, with executable ``php``);
 
 * `Glasgow Haskell Compiler <https://www.haskell.org/ghc/>`_ (for Haskell, with executable ``ghc``);
 
@@ -49,29 +49,30 @@ All dependencies can be installed automatically on most Linux distributions.
 Ubuntu
 ------
 
-On Ubuntu 20.04, one will need to run the following script to satisfy all dependencies:
+On Ubuntu 24.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
     # Feel free to change OpenJDK packages with your preferred JDK.
     sudo apt-get install build-essential openjdk-11-jdk-headless fp-compiler \
-        postgresql postgresql-client python3.8 cppreference-doc-en-html \
+        postgresql postgresql-client python3.12 cppreference-doc-en-html \
         cgroup-lite libcap-dev zip
 
     # Only if you are going to use pip/venv to install python dependencies
-    sudo apt-get install python3.8-dev libpq-dev libcups2-dev libyaml-dev \
+    sudo apt-get install python3.12-dev libpq-dev libcups2-dev libyaml-dev \
         libffi-dev python3-pip
 
     # Optional
-    sudo apt-get install nginx-full python2.7 php7.4-cli php7.4-fpm \
-        phppgadmin texlive-latex-base a2ps haskell-platform rustc mono-mcs
+    sudo apt-get install nginx-full php-cli texlive-latex-base \
+        a2ps ghc rustc mono-mcs pypy3
 
 The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
 
 Arch Linux
 ----------
 
-On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.org/packages/cms>`_ or `cms-git <http://aur.archlinux.org/packages/cms-git>`_. However, if you do not want to use them, the following command will install almost all dependencies (some of them can be found in the AUR):
+On Arch Linux, the following command will install almost all dependencies (some
+of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -86,8 +87,8 @@ On Arch Linux, unofficial AUR packages can be found: `cms <http://aur.archlinux.
     sudo pacman -S --needed postgresql-libs libcups libyaml python-pip
 
     # Optional
-    sudo pacman -S --needed nginx python2 php php-fpm phppgadmin texlive-core \
-        a2ps ghc rust mono
+    sudo pacman -S --needed nginx php php-fpm phppgadmin texlive-core \
+        a2ps ghc rust mono pypy3
 
 Preparation steps
 =================
@@ -136,33 +137,17 @@ Installing CMS and its Python dependencies
 
 There are a number of ways to install CMS and its Python dependencies:
 
-Method 1: Global installation with pip
---------------------------------------
-
-There are good reasons to install CMS and its Python dependencies via pip (Python Package Index) instead of your package manager (e.g. apt-get). For example: two different Linux distro (or two different versions of the same distro) may offer two different versions of ``python-sqlalchemy``. When using pip, you can choose to install a *specific version* of ``sqlalchemy`` that is known to work correctly with CMS.
-
-Assuming you have ``pip`` installed, you can do this:
-
-.. sourcecode:: bash
-
-    export SETUPTOOLS_USE_DISTUTILS="stdlib"
-    sudo --preserve-env=SETUPTOOLS_USE_DISTUTILS pip3 install -r requirements.txt
-    sudo --preserve-env=SETUPTOOLS_USE_DISTUTILS python3 setup.py install
-
-This command installs python dependencies globally. Note that on some distros, like Arch Linux, this might interfere with the system package manager. If you want to perform the installation in your home folder instead, then you can do this instead:
-
-.. sourcecode:: bash
-
-    export SETUPTOOLS_USE_DISTUTILS="stdlib"
-    pip3 install --user -r requirements.txt
-    python3 setup.py install --user
-
-Method 2: Virtual environment
+Method 1: Virtual environment
 -----------------------------
 
-An alternative method to perform the installation is with a `virtual environment <https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python environment that you can put wherever you like and that can be activated/deactivated at will.
+The recommended method to install CMS is via a `virtual environment
+<https://virtualenv.pypa.io/en/latest/>`_, which is an isolated Python
+environment that you can put wherever you like and that can be
+activated/deactivated at will.
 
-You will need to create a virtual environment somewhere in your filesystem. For example, let's assume that you decided to create it under your home directory (as ``~/cms_venv``):
+You will need to create a virtual environment somewhere in your filesystem. For
+example, let's assume that you decided to create it under your home directory
+(as ``~/cms_venv``):
 
 .. sourcecode:: bash
 
@@ -174,74 +159,60 @@ To activate it:
 
     source ~/cms_venv/bin/activate
 
-After the activation, the ``pip`` command will *always* be available (even if it was not available globally, e.g. because you did not install it). In general, every python command (python, pip) will refer to their corresponding virtual version. So, you can install python dependencies by issuing:
+After the activation, the ``pip`` command will *always* be available (even if it
+was not available globally, e.g. because you did not install it). In general,
+every python command (python, pip) will refer to their corresponding virtual
+version. So, you can install python dependencies by issuing:
 
 .. sourcecode:: bash
 
-    export SETUPTOOLS_USE_DISTUTILS="stdlib"
     pip3 install -r requirements.txt
     python3 setup.py install
 
 .. note::
 
-    Once you finished using CMS, you can deactivate the virtual environment by issuing:
+    Once you finished using CMS, you can deactivate the virtual environment by
+    issuing:
 
     .. sourcecode:: bash
 
         deactivate
 
-Method 3: Using ``apt-get`` on Ubuntu
--------------------------------------
+Method 2: Using the Docker image
+--------------------------------
 
-.. warning::
+See :doc:`here <Docker image>` for more information. This method is the
+recommended way for running tests locally and for local development. It hasn't
+been tested in production yet, so use it at your own risk.
 
-  It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. **On Ubuntu, this is generally not the case** since we try to build on the python packages that are available for the current LTS version.
+Method 3: Global installation with pip
+--------------------------------------
 
-.. warning::
+There are good reasons to install CMS and its Python dependencies via pip
+instead of your package manager (e.g. apt-get). For example: two different Linux
+distro (or two different versions of the same distro) may offer two different
+versions of ``python-sqlalchemy``. When using pip, you can choose to install a
+*specific version* of ``sqlalchemy`` that is known to work correctly with CMS.
 
-  On Ubuntu 20.04, the shipped version of ``python3-gevent`` is too old to support the system Python 3 version. After installing other packages from the repositories, you should still install ``gevent>=1.5,<1.6``, for example, using the ``pip`` method above.
-
-To install CMS and its Python dependencies on Ubuntu, you can issue:
-
-.. sourcecode:: bash
-
-    sudo python3 setup.py install
-
-    sudo apt-get install python3-setuptools python3-tornado4 python3-psycopg2 \
-         python3-sqlalchemy python3-psutil python3-netifaces python3-pycryptodome \
-         python3-bs4 python3-coverage python3-requests python3-werkzeug \
-         python3-gevent python3-bcrypt python3-chardet patool python3-babel \
-         python3-xdg python3-jinja2
-
-    # Optional.
-    # sudo apt-get install python3-yaml python3-sphinx python3-cups python3-pypdf2
-
-Method 4: Using ``pacman`` on Arch Linux
-----------------------------------------
-
-.. warning::
-
-  It is usually possible to install python dependencies using your Linux distribution's package manager. However, keep in mind that the version of each package is controlled by the package mantainers and could be too new or too old for CMS. **This is especially true for Arch Linux**, which is a bleeding edge distribution.
-
-To install CMS python dependencies on Arch Linux (again: assuming you did not use the aforementioned AUR packages), you can issue:
+Assuming you have ``pip`` installed, you can do this:
 
 .. sourcecode:: bash
 
+    sudo pip3 install -r requirements.txt
     sudo python3 setup.py install
 
-    sudo pacman -S --needed python-setuptools python-tornado python-psycopg2 \
-         python-sqlalchemy python-psutil python-netifaces python-pycryptodome \
-         python-beautifulsoup4 python-coverage python-requests python-werkzeug \
-         python-gevent python-bcrypt python-chardet python-babel python-xdg \
-         python-jinja
+This command installs python dependencies globally. Note that on some distros, like Arch Linux, this might interfere with the system package manager. If you want to perform the installation in your home folder instead, then you can do this instead:
 
-    # Install the following from AUR.
-    # https://aur.archlinux.org/packages/patool/
+.. sourcecode:: bash
 
-    # Optional.
-    # sudo pacman -S --needed python-yaml python-sphinx python-pycups
-    # Optionally install the following from AUR.
-    # https://aur.archlinux.org/packages/python-pypdf2/
+    pip3 install --user -r requirements.txt
+    python3 setup.py install --user
+
+Method 4: Using your distribution's system packages
+---------------------------------------------------
+
+You might be able to install compatible versions of the dependencies in `requirements.txt`
+through your distribution's packages; this method is not supported.
 
 
 Configuring the worker machines
@@ -253,43 +224,6 @@ Apart from validity, there are many possible tweaks to reduce the variability in
 
 We suggest following isolate's `guidelines <https://github.com/ioi/isolate/blob/c679ae936d8e8d64e5dab553bdf1b22261324315/isolate.1.txt#L292>`_ for reproducible results.
 
-
-.. _installation_running-cms-non-installed:
-
-Running CMS non-installed
-=========================
-
-To run CMS without installing it in the system, you need first to build the prerequisites:
-
-.. sourcecode:: bash
-
-    python3 prerequisites.py build
-
-There are still a few steps to complete manually in this case. First, add CMS and isolate to the path and create the configuration files:
-
-.. sourcecode:: bash
-
-    export PATH=$PATH:./isolate/
-    export PYTHONPATH=./
-    cp config/cms.conf.sample config/cms.conf
-    cp config/cms.ranking.conf.sample config/cms.ranking.conf
-
-Second, perform these tasks (that require root permissions):
-
-* create the ``cmsuser`` user and a group with the same name;
-
-* add your user to the ``cmsuser`` group;
-
-* set isolate to be owned by root:cmsuser, and set its suid bit.
-
-For example:
-
-.. sourcecode:: bash
-
-    sudo useradd cmsuser
-    sudo usermod -a -G cmsuser <your user>
-    sudo chown root:cmsuser ./isolate/isolate
-    sudo chmod u+s ./isolate/isolate
 
 Updating CMS
 ============

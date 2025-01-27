@@ -1,14 +1,13 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
-RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential \
     cgroup-lite \
     cppreference-doc-en-html \
     fp-compiler \
     git \
-    haskell-platform \
+    ghc \
     libcap-dev \
     libcups2-dev \
     libffi-dev \
@@ -16,13 +15,14 @@ RUN apt-get install -y \
     libyaml-dev \
     mono-mcs \
     openjdk-8-jdk-headless \
-    php7.4-cli \
+    php-cli \
     postgresql-client \
-    python2 \
+    pypy3 \
     python3-pip \
-    python3.8 \
-    python3.8-dev \
+    python3.12 \
+    python3.12-dev \
     rustc \
+    shared-mime-info \
     sudo \
     wait-for-it \
     zip
@@ -40,8 +40,8 @@ COPY --chown=cmsuser:cmsuser requirements.txt dev-requirements.txt /home/cmsuser
 
 WORKDIR /home/cmsuser/cms
 
-RUN sudo pip3 install -r requirements.txt
-RUN sudo pip3 install -r dev-requirements.txt
+RUN sudo pip3 install --break-system-packages -r requirements.txt
+RUN sudo pip3 install --break-system-packages -r dev-requirements.txt
 
 COPY --chown=cmsuser:cmsuser . /home/cmsuser/cms
 
@@ -51,6 +51,8 @@ RUN sudo python3 prerequisites.py --yes --cmsuser=cmsuser install
 
 RUN sudo sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@testdb:5432/cmsdbfortesting"|' ./config/cms.conf.sample \
     | sudo tee /usr/local/etc/cms-testdb.conf
+RUN sudo sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@devdb:5432/cmsdb"|' ./config/cms.conf.sample \
+    | sudo tee /usr/local/etc/cms-devdb.conf
 
 ENV LANG C.UTF-8
 

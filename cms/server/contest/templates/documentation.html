@@ -11,11 +11,10 @@
 
 <h2>{% trans %}Programming languages and libraries{% endtrans %}</h2>
 
-{% if contest.languages|map("to_language")|map(attribute="source_extensions")|any("contains", ".cpp") %}
-<h3>C++</h3>
-
-<p><a href="{{ url("stl", "en", "index.html") }}">{% trans %}Standard Template Library{% endtrans %}</a></p>
-{% endif %}
+{% for name, ext in language_docs %}
+<h3>{{name}}</h3>
+<p><a href="{{ url("docs", ext, "index.html") }}">{% trans %}Documentation{% endtrans %}</a></p>
+{% endfor %}
 
 {% if contest.languages|map("to_language")|map(attribute="source_extensions")|any("contains", ".java") %}
 <h3>Java</h3>

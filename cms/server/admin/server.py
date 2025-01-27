@@ -27,7 +27,7 @@
 
 import logging
 
-from sqlalchemy import func, not_
+from sqlalchemy import func, not_, literal_column
 
 from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
@@ -176,13 +176,17 @@ class AdminWebServer(WebService):
                     .filter(Task.contest_id == contest_id)
             queries['total'] = total_query
 
-            stats = {}
+            # Add a "key" column for keeping track of each stats, in case they
+            # get shuffled.
+            for key, query in queries.items():
+                key_column = literal_column(f"'{key}'").label("key")
+                queries[key] = query.add_columns(key_column)
+
             keys = list(queries.keys())
             results = queries[keys[0]].union_all(
                 *(queries[key] for key in keys[1:])).all()
 
-        for i, k in enumerate(keys):
-            stats[k] = results[i][0]
+        stats = {key: value for value, key in results}
         stats['compiling'] += 2 * stats['total'] - sum(stats.values())
 
         return stats

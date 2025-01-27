@@ -1,43 +1,33 @@
-# Lithuanian translations for CMS.
-# Copyright © 2010-2015 CMS authors
-# This file is distributed under the same license as CMS.
-# Martynas Budriūnas <martynas.budriunas@gmail.com>, 2012.
-# Vytis Banaitis <vytis.banaitis@gmail.com>, 2014, 2017-2018.
-# Motiejus Jakštys <desired.mta@gmail.com>, 2015.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version:  0.1\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-01 09:06+0100\n"
-"PO-Revision-Date: 2017-03-26 17:00+0300\n"
-"Last-Translator: Vytis Banaitis <vytis.banaitis@gmail.com>\n"
-"Language: lt\n"
-"Language-Team: Lithuanian\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"(n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: lt_LT\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgid "N/A"
 msgstr "Nėra"
 
-msgid "Not correct"
-msgstr "Neteisingai"
-
 msgid "Correct"
 msgstr "Teisingai"
+
+msgid "Not correct"
+msgstr "Neteisingai"
 
 msgid "Partially correct"
 msgstr "Dalinai teisingai"
 
-msgid "#"
-msgstr "#"
-
 msgid "Outcome"
 msgstr "Rezultatas"
+
+msgid "#"
+msgstr "#"
 
 msgid "Details"
 msgstr "Detalės"
@@ -70,29 +60,15 @@ msgstr "Tavo sprendimo nepavyko sukompiliuoti."
 msgid "Compilation timed out"
 msgstr "Kompiliavimas viršijo laiko ribojimą"
 
-msgid ""
-"Your submission exceeded the time limit while compiling. This might be "
-"caused by an excessive use of C++ templates, for example."
-msgstr ""
-"Tavo sprendimo kompiliavimas viršijo laiko ribojimą. Tai galėjo įvykti, "
-"pavyzdžiui, dėl intensyvaus C++ šablonų naudojimo."
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Tavo sprendimo kompiliavimas viršijo laiko ribojimą. Tai galėjo įvykti, pavyzdžiui, dėl intensyvaus C++ šablonų naudojimo."
 
 #, python-format
-msgid ""
-"Compilation killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Kompiliavimas nutrauktas signalu %s (tai galėjo įvykti viršijus atminties "
-"ribojimus)"
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Kompiliavimas nutrauktas signalu %s (tai galėjo įvykti viršijus atminties ribojimus)"
 
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit for the compilation, and "
-"in turn by an excessive use of C++ templates, for example."
-msgstr ""
-"Tavo sprendimo kompiliavimas buvo nutrauktas nurodytu signalu. Viena iš "
-"galimų priežasčių yra kompiliavimui skirto atminties ribojimo viršijimas, "
-"kurį galėjo sukelti, pavyzdžiui, intensyvus C++ šablonų naudojimas."
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Tavo sprendimo kompiliavimas buvo nutrauktas nurodytu signalu. Viena iš galimų priežasčių yra kompiliavimui skirto atminties ribojimo viršijimas, kurį galėjo sukelti, pavyzdžiui, intensyvus C++ šablonų naudojimas."
 
 msgid "Output is correct"
 msgstr "Išvestis teisinga"
@@ -117,9 +93,7 @@ msgid "Evaluation didn't produce file %s"
 msgstr "Vykdymo metu nebuvo sukurtas failas %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
-"Tavo sprendimas buvo įvykdytas, tačiau neįrašė rezultato į nurodytą "
-"rezultatų failą."
+msgstr "Tavo sprendimas buvo įvykdytas, tačiau neįrašė rezultato į nurodytą rezultatų failą."
 
 msgid "Execution timed out"
 msgstr "Vykdymas viršijo laiko ribojimą"
@@ -130,30 +104,14 @@ msgstr "Tavo sprendimo vykdymas panaudojo per daug procesoriaus laiko."
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Vykdymas užtruko per ilgai (viršytas sieninio laikrodžio ribojimas)"
 
-msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
-msgstr ""
-"Tavo sprendimo vykdymas užtruko per ilgai neišnaudodamas procesoriaus laiko."
-" Tai galėjo įvykti, pavyzdžiui, dėl neapibrėžto kodo ar buferio perpildymo. "
-"Įvykus šiai klaidai, sprendimo informacijos lange rodomas panaudoto "
-"procesoriaus laiko kiekis gali būti gerokai mažesnis už laiko ribojimą."
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "Tavo sprendimo vykdymas užtruko per ilgai neišnaudodamas procesoriaus laiko. Tai galėjo įvykti, pavyzdžiui, dėl neapibrėžto kodo ar buferio perpildymo. Įvykus šiai klaidai, sprendimo informacijos lange rodomas panaudoto procesoriaus laiko kiekis gali būti gerokai mažesnis už laiko ribojimą."
 
 msgid "Execution killed (could be triggered by violating memory limits)"
 msgstr "Vykdymas nutrauktas (tai galėjo įvykti viršijus atminties ribojimus)"
 
-msgid ""
-"The evaluation was killed by a signal. Among other things, this might be "
-"caused by exceeding the memory limit. Note that if this is the reason, the "
-"memory usage visible in the submission details is the usage before the "
-"allocation that caused the signal."
-msgstr ""
-"Tavo sprendimo vykdymas buvo nutrauktas signalu. Viena iš galimų priežasčių "
-"yra atminties ribojimo viršijimas. Sprendimo informacijos lange rodomas "
-"panaudotos atminties kiekis yra toks, koks jis buvo prieš signalą sukėlusį "
-"veiksmą."
+msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+msgstr "Tavo sprendimo vykdymas buvo nutrauktas signalu. Viena iš galimų priežasčių yra atminties ribojimo viršijimas. Sprendimo informacijos lange rodomas panaudotos atminties kiekis yra toks, koks jis buvo prieš signalą sukėlusį veiksmą."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Vykdymas nesėkmingas, nes grąžintas kodas buvo ne nulis"
@@ -174,12 +132,8 @@ msgid "Question too long!"
 msgstr "Klausimas per ilgas!"
 
 #, python-format
-msgid ""
-"Subject must be at most %(max_subject_length)d characters, content at most "
-"%(max_text_length)d."
-msgstr ""
-"Tema turi būti ne ilgesnė nei %(max_subject_length)d simbolių, o tekstas — "
-"ne ilgesnis nei %(max_text_length)d simbolių."
+msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
+msgstr "Tema turi būti ne ilgesnė nei %(max_subject_length)d simbolių, o tekstas — ne ilgesnis nei %(max_text_length)d simbolių."
 
 msgid "contest-token"
 msgstr "varžybų žetoną"
@@ -217,6 +171,7 @@ msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "Pradžioje turi vieną %(type_s)s."
 msgstr[1] "Pradžioje turi %(gen_initial)d %(type_pl)s."
 msgstr[2] "Pradžioje turi %(gen_initial)d %(type_pl)s."
+msgstr[3] ""
 
 #, python-format
 msgid "Every minute "
@@ -224,6 +179,7 @@ msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Kas minutę "
 msgstr[1] "Kas %(gen_interval)g minutes "
 msgstr[2] "Kas %(gen_interval)g minučių "
+msgstr[3] ""
 
 #, python-format
 msgid "you get another %(type_s)s, "
@@ -231,6 +187,7 @@ msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "gausi po vieną %(type_s)s, "
 msgstr[1] "gausi po %(gen_number)d %(type_pl)s, "
 msgstr[2] "gausi po %(gen_number)d %(type_pl)s, "
+msgstr[3] ""
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
@@ -238,6 +195,11 @@ msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "kol pasieksi vieną %(type_s)s."
 msgstr[1] "kol pasieksi %(gen_max)d %(type_pl)s."
 msgstr[2] "kol pasieksi %(gen_max)d %(type_pl)s."
+msgstr[3] ""
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Daugiau %(type_pl)s negausi."
 
 #, python-format
 msgid "you get another %(type_s)s."
@@ -245,10 +207,7 @@ msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "gausi po vieną %(type_s)s."
 msgstr[1] "gausi po %(gen_number)d %(type_pl)s."
 msgstr[2] "gausi po %(gen_number)d %(type_pl)s."
-
-#, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Daugiau %(type_pl)s negausi."
+msgstr[3] ""
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -256,6 +215,7 @@ msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] "Gali naudoti %(type_s)s kartą per sekundę "
 msgstr[1] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundes "
 msgstr[2] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundžių "
+msgstr[3] ""
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -263,6 +223,7 @@ msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "ir ne daugiau nei vieną %(type_s)s iš viso."
 msgstr[1] "ir ne daugiau nei %(max_number)d %(type_pl)s iš viso."
 msgstr[2] "ir ne daugiau nei %(max_number)d %(type_pl)s iš viso."
+msgstr[3] ""
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
@@ -270,6 +231,7 @@ msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] "Gali naudoti %(type_s)s kartą per sekundę."
 msgstr[1] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundes."
 msgstr[2] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundžių."
+msgstr[3] ""
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
@@ -277,6 +239,7 @@ msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Iš viso gali naudoti ne daugiau nei vieną %(type_s)s."
 msgstr[1] "Iš viso gali naudoti ne daugiau nei %(max_number)d %(type_pl)s."
 msgstr[2] "Iš viso gali naudoti ne daugiau nei %(max_number)d %(type_pl)s."
+msgstr[3] ""
 
 msgid "You have no limitations on how you use them."
 msgstr "Neturi apribojimų jų naudojimui."
@@ -313,9 +276,7 @@ msgstr "Žetono užklausa atmesta"
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "Tavo užklausa atmesta, kadangi neturi žetonų."
 
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
+msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Užklausa buvo atmesta, kadangi šiam sprendimui žetoną jau naudojai."
 
 msgid "Question received"
@@ -348,11 +309,11 @@ msgstr "Skaičiuojami taškai..."
 msgid "Evaluated"
 msgstr "Įvertinta"
 
-msgid "Token request received"
-msgstr "Žetono užklausa gauta"
-
 msgid "Your request has been received and applied to the submission."
 msgstr "Tavo užklausa gauta ir įvykdyta pateiktam sprendimui."
+
+msgid "Token request received"
+msgstr "Žetono užklausa gauta"
 
 msgid "Test received"
 msgstr "Testas gautas"
@@ -385,15 +346,11 @@ msgstr "Per dažni pateikimai!"
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Dar kartą pateikti sprendimą gali po %d sekundžių nuo paskutinio bet kurios "
-"užduoties sprendimo pateikimo."
+msgstr "Dar kartą pateikti sprendimą gali po %d sekundžių nuo paskutinio bet kurios užduoties sprendimo pateikimo."
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Dar kartą pateikti sprendimą gali po %d sekundžių nuo paskutinio šios "
-"užduoties sprendimo pateikimo."
+msgstr "Dar kartą pateikti sprendimą gali po %d sekundžių nuo paskutinio šios užduoties sprendimo pateikimo."
 
 msgid "Invalid archive format!"
 msgstr "Netinkamas archyvo formatas!"
@@ -430,15 +387,11 @@ msgstr "Per dažnas testavimas!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"Dar kartą testuoti galėsi praėjus %d sekundžių nuo paskutinio bet kurios "
-"užduoties testavimo."
+msgstr "Dar kartą testuoti galėsi praėjus %d sekundžių nuo paskutinio bet kurios užduoties testavimo."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
-"Dar kartą testuoti galėsi praėjus %d sekundžių nuo paskutinio šios užduoties"
-" testavimo."
+msgstr "Dar kartą testuoti galėsi praėjus %d sekundžių nuo paskutinio šios užduoties testavimo."
 
 msgid "Invalid test format!"
 msgstr "Netinkamas testo formatas!"
@@ -494,12 +447,8 @@ msgid "Logout"
 msgstr "Atsijungti"
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr ""
-"Prisijungta kaip <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Prisijungta kaip <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Prisijungti nepavyko."
@@ -535,11 +484,11 @@ msgstr "%d neskaityti"
 msgid "Until contest starts:"
 msgstr "Iki varžybų pradžios:"
 
-msgid "Until contest ends:"
-msgstr "Iki varžybų pabaigos:"
-
 msgid "Until analysis starts:"
 msgstr "Iki analizės pradžios:"
+
+msgid "Until contest ends:"
+msgstr "Iki varžybų pabaigos:"
 
 msgid "Until analysis ends:"
 msgstr "Iki analizės pabaigos:"
@@ -586,9 +535,7 @@ msgstr "Programavimo kalbos ir bibliotekos"
 msgid "Standard Template Library"
 msgstr "Standartinė šablonų biblioteka"
 
-msgid ""
-"The main Java class of the solution should have exactly the same name as the"
-" task."
+msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "Pagrindinė sprendimo klasė turi vadintis taip pat kaip užduotis."
 
 msgid "Submission details for compilation"
@@ -610,21 +557,11 @@ msgstr "Klaida %(status_code)s"
 msgid "An error occured while the server was handling your request."
 msgstr "Serveriui vykdant tavo užklausą įvyko klaida."
 
-msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing"
-" the server with customized URLs) may be considered cheating and may lead to"
-" disqualification."
-msgstr ""
-"Atkreipkite dėmesį, jog bandymas gadinti Varžybų aptarnavimo sistemą "
-"(pavyzdžiui, zonduoti serverį parinktais URL) gali būti būti palaikytas "
-"sukčiavimu, kas gali lemti diskvalifikaciją."
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Atkreipkite dėmesį, jog bandymas gadinti Varžybų aptarnavimo sistemą (pavyzdžiui, zonduoti serverį parinktais URL) gali būti būti palaikytas sukčiavimu, kas gali lemti diskvalifikaciją."
 
-msgid ""
-"If you encountered this error during normal usage, please notify the contest"
-" administrators."
-msgstr ""
-"Jeigu šią klaidą gavote normaliai naudodamiesi sistema, prašome pranešti "
-"varžybų administratoriams."
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Jeigu šią klaidą gavote normaliai naudodamiesi sistema, prašome pranešti varžybų administratoriams."
 
 msgid "General information"
 msgstr "Bendra informacija"
@@ -675,16 +612,10 @@ msgid "You have an infinite number of tokens."
 msgstr "Turi begalinį žetonų skaičių."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
-"Kiekvienam pateiktam sprendimui gali pažiūrėti jo detalius rezultatus "
-"panaudodamas žetoną."
+msgstr "Kiekvienam pateiktam sprendimui gali pažiūrėti jo detalius rezultatus panaudodamas žetoną."
 
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-"Tavo surinkti taškai bus maksimumas iš visų sprendimų, kuriems panaudojai "
-"žetoną, ir paskutinio sprendimo rezultato."
+msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
+msgstr "Tavo surinkti taškai bus maksimumas iš visų sprendimų, kuriems panaudojai žetoną, ir paskutinio sprendimo rezultato."
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "Kiekvienai užduočiai turi atskirą aibę žetonų."
@@ -696,20 +627,11 @@ msgstr "Kiekvienos užduoties aprašyme rasi %(type_pl)s taisykles."
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Turi aibę žetonų, kuriuos gali naudoti bet kuriai iš užduočių."
 
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-"Turi dviejų rūšių žetonus: aibę <em>varžybų žetonų</em>, kuriuos gali "
-"naudoti bet kuriai iš užduočių, ir po aibę <em>užduoties žetonų</em> "
-"kiekvienai užduočiai atskirai."
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Turi dviejų rūšių žetonus: aibę <em>varžybų žetonų</em>, kuriuos gali naudoti bet kuriai iš užduočių, ir po aibę <em>užduoties žetonų</em> kiekvienai užduočiai atskirai."
 
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-"Kiekvienam pateiktam sprendimui gali pažiūrėti jo detalius rezultatus "
-"panaudodamas du žetonus: po vieną abiejų tipų žetoną."
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Kiekvienam pateiktam sprendimui gali pažiūrėti jo detalius rezultatus panaudodamas du žetonus: po vieną abiejų tipų žetoną."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
@@ -720,22 +642,14 @@ msgid "You can submit at most %(user_tests)s user tests during this contest."
 msgstr "Gali pateikti daugiausiai %(user_tests)s naudotojo testų per šį konkursą."
 
 #, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted"
-" time frame of %(per_user_time)s."
-msgstr ""
-"Kiekvienas naudotojas gali varžytis (t. y. pateikti sprendimus) "
-"nenutrūkstamą %(per_user_time)s ilgio laiko tarpą."
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Kiekvienas naudotojas gali varžytis (t. y. pateikti sprendimus) nenutrūkstamą %(per_user_time)s ilgio laiko tarpą."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Kai tik prasidės varžybos, galėsi pasirinkti savo laiko tarpą."
 
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-"Pradėjus spręsti, sprendimus pateikti galėsi iki savo laiko tarpo arba "
-"varžybų pabaigos – to, kas bus pirmiau."
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Pradėjus spręsti, sprendimus pateikti galėsi iki savo laiko tarpo arba varžybų pabaigos – to, kas bus pirmiau."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Paspausdamas žemiau esantį mygtuką gali pradėti savo laiko tarpą."
@@ -744,12 +658,8 @@ msgstr "Paspausdamas žemiau esantį mygtuką gali pradėti savo laiko tarpą."
 msgid "You started your time frame at %(start_time)s."
 msgstr "Savo laiko tarpą pradėjai %(start_time)s."
 
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of"
-" the contest, whatever comes first."
-msgstr ""
-"Pateikti savo sprendimus gali iki savo laiko tarpo pabaigos arba iki varžybų"
-" pabaigos – to, kas bus pirmiau."
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Pateikti savo sprendimus gali iki savo laiko tarpo pabaigos arba iki varžybų pabaigos – to, kas bus pirmiau."
 
 #, python-format
 msgid "You started your time frame at %(start_time)s and you already finished it."
@@ -798,20 +708,12 @@ msgid "Print"
 msgstr "Spausdinti"
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text or PDF files of up to "
-"%(max_pages)s pages each."
-msgstr ""
-"Gali spausdinti dar %(remaining_jobs)s tekstinių arba PDF failų po ne "
-"daugiau nei %(max_pages)s puslapių."
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "Gali spausdinti dar %(remaining_jobs)s tekstinių arba PDF failų po ne daugiau nei %(max_pages)s puslapių."
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
-"pages each."
-msgstr ""
-"Gali spausdinti dar %(remaining_jobs)s tekstinių failų po ne daugiau nei "
-"%(max_pages)s puslapių."
+msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
+msgstr "Gali spausdinti dar %(remaining_jobs)s tekstinių failų po ne daugiau nei %(max_pages)s puslapių."
 
 msgid "File (text or PDF)"
 msgstr "Failas (tekstinis arba PDF)"
@@ -864,24 +766,6 @@ msgstr "Standartinė išvestis"
 msgid "Standard error"
 msgstr "Standartinė klaidų išvestis"
 
-msgid "None"
-msgstr "Nėra"
-
-msgid "Download"
-msgstr "Atsisiųsti"
-
-msgid "Played"
-msgstr "Panaudotas"
-
-msgid "Play!"
-msgstr "Naudoti!"
-
-msgid "Wait..."
-msgstr "Laukite..."
-
-msgid "No tokens"
-msgstr "Žetonų nėra"
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr "%(name)s (%(short_name)s) <small>aprašymas</small>"
@@ -892,9 +776,7 @@ msgstr "sąlygos nėra"
 msgid "Download task statement"
 msgstr "Atsisiųsti užduoties sąlygą"
 
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
+msgid "The statement for this task is available in multiple versions, in different languages."
 msgstr "Šios užduoties sąlyga galima keliomis versijomis skirtingomis kalbomis."
 
 msgid "You can see (and download) all of them using the list on the right."
@@ -926,19 +808,11 @@ msgid "Compilation commands"
 msgstr "Kompiliavimo komandos"
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a "
-"href=\"%(contest_root)s\">contest overview page</a>."
-msgstr ""
-"<a href=\"%(contest_root)s\">Varžybų apžvalgos puslapyje</a> rasi "
-"%(type_pl)s taisykles."
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>."
+msgstr "<a href=\"%(contest_root)s\">Varžybų apžvalgos puslapyje</a> rasi %(type_pl)s taisykles."
 
-msgid ""
-"Remember that to see the detailed result of a submission you need to use "
-"both a contest-token and a task-token."
-msgstr ""
-"Nepamiršk, jog norėdamas pamatyti detalius pateikto sprendimo rezultatus "
-"turi panaudoti ir varžybų, ir užduoties žetoną."
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Nepamiršk, jog norėdamas pamatyti detalius pateikto sprendimo rezultatus turi panaudoti ir varžybų, ir užduoties žetoną."
 
 msgid "Attachments"
 msgstr "Priedai"
@@ -1012,29 +886,14 @@ msgstr "Šiuo metu neturi žetonų šiam uždaviniui."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Tačiau turi palaukti iki %(expiration_time)s, kad galėtum jį naudoti."
 
-msgid "Public score"
-msgstr "Vieši taškai"
-
-msgid "Total score"
-msgstr "Visi taškai"
-
-msgid "Score"
-msgstr "Taškai"
-
-msgid "Official"
-msgstr "Oficialus"
-
-msgid "Token"
-msgstr "Žetonas"
-
-msgid "no submissions yet"
-msgstr "pateiktų sprendimų dar nėra"
-
 msgid "Submission details"
 msgstr "Pateikto sprendimo detalės"
 
 msgid "Close"
 msgstr "Uždaryti"
+
+msgid "Download"
+msgstr "Atsisiųsti"
 
 msgid "Submit a test"
 msgstr "Pateikti testą"
@@ -1063,4 +922,31 @@ msgstr "Testo detalės"
 
 msgid "Evaluation outcome"
 msgstr "Vertinimo išeiga"
+
+msgid "Wait..."
+msgstr "Laukite..."
+
+msgid "None"
+msgstr "Nėra"
+
+msgid "Public score"
+msgstr "Vieši taškai"
+
+msgid "Total score"
+msgstr "Visi taškai"
+
+msgid "Score"
+msgstr "Taškai"
+
+msgid "Token"
+msgstr "Žetonas"
+
+msgid "Played"
+msgstr "Panaudotas"
+
+msgid "Play!"
+msgstr "Naudoti!"
+
+msgid "No tokens"
+msgstr "Žetonų nėra"
 

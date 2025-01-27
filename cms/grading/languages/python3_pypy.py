@@ -16,20 +16,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Python programming language, version 2, definition."""
+"""Python programming language, version 3, definition."""
 
 import os
 
 from cms.grading import CompiledLanguage
 
 
-__all__ = ["Python2CPython"]
+__all__ = ["Python3PyPy"]
 
 
-class Python2CPython(CompiledLanguage):
-    """This defines the Python programming language, version 2 (more
-    precisely, the subversion of Python 2 available on the system,
-    usually 2.7) using the default interpeter in the system.
+class Python3PyPy(CompiledLanguage):
+    """This defines the Python programming language, version 3 (more
+    precisely, the subversion of Python 3 available on the system)
+    using the default PyPy interpeter in the system.
 
     """
 
@@ -38,7 +38,7 @@ class Python2CPython(CompiledLanguage):
     @property
     def name(self):
         """See Language.name."""
-        return "Python 2 / CPython"
+        return "Python 3 / PyPy"
 
     @property
     def source_extensions(self):
@@ -47,8 +47,9 @@ class Python2CPython(CompiledLanguage):
 
     @property
     def executable_extension(self):
-        """See Language.executable_extension."""
-        return ".zip"
+        """See Language.executable.extension."""
+        # Defined in PEP 441 (https://www.python.org/dev/peps/pep-0441/).
+        return ".pyz"
 
     def get_compilation_commands(self,
                                  source_filenames, executable_filename,
@@ -57,7 +58,7 @@ class Python2CPython(CompiledLanguage):
 
         commands = []
         files_to_package = []
-        commands.append(["/usr/bin/python2", "-m", "compileall", "."])
+        commands.append(["/usr/bin/pypy3", "-m", "compileall", "-b", "."])
         for idx, source_filename in enumerate(source_filenames):
             basename = os.path.splitext(os.path.basename(source_filename))[0]
             pyc_filename = "%s.pyc" % basename
@@ -77,4 +78,4 @@ class Python2CPython(CompiledLanguage):
             self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
         args = args if args is not None else []
-        return [["/usr/bin/python2", executable_filename] + args]
+        return [["/usr/bin/pypy3", executable_filename] + args]

@@ -1,38 +1,27 @@
-# Estonian translations for CMS.
-# Copyright © 2010-2023 CMS authors
-# This file is distributed under the same license as CMS.
-# <heno@siil.net>, 2014.
-# Konstantin Tretyakov <kt@ut.ee>, 2014.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: CMS\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-20 17:01+0200\n"
-"PO-Revision-Date: 2023-11-12 04:45+0200\n"
-"Last-Translator: prandla\n"
-"Language: et\n"
-"Language-Team: Estonian\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: et_EE\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "N/A"
 msgstr "-"
 
-msgid "Not correct"
-msgstr "Vale vastus"
-
 msgid "Correct"
 msgstr "Õige vastus"
 
+msgid "Not correct"
+msgstr "Vale vastus"
+
 msgid "Partially correct"
 msgstr "Osaliselt õige vastus"
-
-msgid "#"
-msgstr ""
 
 msgid "Outcome"
 msgstr "Tulemus"
@@ -68,27 +57,15 @@ msgstr "Teie lahenduse kompileerimisel esines viga."
 msgid "Compilation timed out"
 msgstr "Kompileerimise ajalimiit ületatud"
 
-msgid ""
-"Your submission exceeded the time limit while compiling. This might be "
-"caused by an excessive use of C++ templates, for example."
-msgstr "Teie lahenduse kompileerimine võttis liiga kaua aega. See võib tuleneda "
-"näiteks liigsest C++ mallide kasutamisest."
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Teie lahenduse kompileerimine võttis liiga kaua aega. See võib tuleneda näiteks liigsest C++ mallide kasutamisest."
 
 #, python-format
-msgid ""
-"Compilation killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Kompileerimine katkes signaali %s tagajärjel (võib olla tingitud "
-"mälupiirangute ületamisest)"
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Kompileerimine katkes signaali %s tagajärjel (võib olla tingitud mälupiirangute ületamisest)"
 
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit for the compilation, and "
-"in turn by an excessive use of C++ templates, for example."
-msgstr "Teie lahenduse kompileerimine katkes antud signaaliga. See võib "
-"muuhulgas olla tingitud kompilaatori mälupiirangute ületamisest, mis omakorda "
-"võib tuleneda liigsest C++ mallide kasutamisest."
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Teie lahenduse kompileerimine katkes antud signaaliga. See võib muuhulgas olla tingitud kompilaatori mälupiirangute ületamisest, mis omakorda võib tuleneda liigsest C++ mallide kasutamisest."
 
 msgid "Output is correct"
 msgstr "Väljund on õige"
@@ -124,38 +101,20 @@ msgstr "Lahenduse jooksmiseks kulus liiga palju protsessori aega."
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Programmi tööaja limiit ületatud"
 
-msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
-msgstr "Programmi tööaeg ületas lubatud piiri. Selle kõige tõenäolisem põhjus "
-"on katse lugeda rohkem sisendit, kui seda on. Aga mõnikord võivad seda "
-"põhjustada ka mitmesugused määramatused programmis, sealhulgas ka massiivide "
-"piiridest väljumine. Kuna lahendus jääb ootele, võib selle kasutatud "
-"protsessoriaeg olla protsessori ajalimiidist märksa väiksem."
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "Programmi tööaeg ületas lubatud piiri. Selle kõige tõenäolisem põhjus on katse lugeda rohkem sisendit, kui seda on. Aga mõnikord võivad seda põhjustada ka mitmesugused määramatused programmis, sealhulgas ka massiivide piiridest väljumine. Kuna lahendus jääb ootele, võib selle kasutatud protsessoriaeg olla protsessori ajalimiidist märksa väiksem."
 
-#, python-format
 msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr ""
-"Programmi täitmine katkes signaali tagajärjel (võib olla tingitud "
-"mälupiirangute ületamisest)"
+msgstr "Programmi täitmine katkes signaali tagajärjel (võib olla tingitud mälupiirangute ületamisest)"
 
-msgid ""
-"The evaluation was killed by a signal. Among other things, this might be "
-"caused by exceeding the memory limit. Note that if this is the reason, the "
-"memory usage visible in the submission details is the usage before the "
-"allocation that caused the signal."
-msgstr "Lahenduse jooksmine katkes signaali tagajärjel. See võib olla tingitud "
-"muuhulgas mälupiirangu ületamisest. Pane tähele, et sellisel juhul näidatakse "
-"esituse mälukastutust vahetult enne piirangu ületamist."
+msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+msgstr "Lahenduse jooksmine katkes signaali tagajärjel. See võib olla tingitud muuhulgas mälupiirangu ületamisest. Pane tähele, et sellisel juhul näidatakse esituse mälukastutust vahetult enne piirangu ületamist."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Programmi täitmine ebaõnnestus, nullist erinev veakood"
 
 msgid "Your submission failed because it exited with a return code different from 0."
-msgstr "Lahendus loeti ebaõnnestunuks, kuna selle jooksmine lõppes nullist "
-"erineva veakoodiga."
+msgstr "Lahendus loeti ebaõnnestunuks, kuna selle jooksmine lõppes nullist erineva veakoodiga."
 
 msgid "Execution completed successfully"
 msgstr "Prorammi täitmine õnnestus"
@@ -170,13 +129,9 @@ msgid "Question too long!"
 msgstr "Küsimus on liiga pikk!"
 
 #, python-format
-msgid ""
-"Subject must be at most %(max_subject_length)d characters, content at most "
-"%(max_text_length)d."
-msgstr "Küsimuse pealkiri peab olema maksimaalselt %(max_subject_length)d "
-"tähemärki, küsimuse sisu maksimaalselt %(max_text_length)d tähemärki."
+msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
+msgstr "Küsimuse pealkiri peab olema maksimaalselt %(max_subject_length)d tähemärki, küsimuse sisu maksimaalselt %(max_text_length)d tähemärki."
 
-#  Eesti keele käänded on keerulised. kasutame ainsust tüvena ja paneme sinna õige käändelõpu otsa
 msgid "contest-token"
 msgstr "võistluse pilet"
 
@@ -232,14 +187,14 @@ msgstr[0] "kuni maksimaalselt ühe %(type_s)sini."
 msgstr[1] "kuni maksimaalselt %(gen_max)d %(type_pl)sini."
 
 #, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Te ei saa rohkem %(type_pl)seid."
+
+#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "saate Te veel ühe %(type_s)si."
 msgstr[1] "saate Te veel %(gen_number)d %(type_pl)sit."
-
-#, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Te ei saa rohkem %(type_pl)seid."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -300,9 +255,7 @@ msgstr "Pileti päring tühistatud"
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "Päring on tühistatud, kuna Teil pole ühtegi piletit."
 
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
+msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Päring on tühistatud, kuna selle jaoks on juba piletit kasutatud."
 
 msgid "Question received"
@@ -338,11 +291,11 @@ msgstr "Testitud"
 msgid "status"
 msgstr "Olek"
 
-msgid "Token request received"
-msgstr "Pileti päring vastu võetud"
-
 msgid "Your request has been received and applied to the submission."
 msgstr "Teie päring on vastu võetud ning rakendatud lahendusele."
+
+msgid "Token request received"
+msgstr "Pileti päring vastu võetud"
 
 msgid "Test received"
 msgstr "Test vastu võetud"
@@ -375,15 +328,11 @@ msgstr "Lahenduste esitamine on liiga sage!"
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Saate jälle uue lahenduse esitada (suvalisele ülesandele) %d sekundit "
-"pärast viimase lahenduse esitamist."
+msgstr "Saate jälle uue lahenduse esitada (suvalisele ülesandele) %d sekundit pärast viimase lahenduse esitamist."
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Saate sellele ülesandele uue lahenduse esitada %d sekundit pärast viimase "
-"lahenduse esitamist."
+msgstr "Saate sellele ülesandele uue lahenduse esitada %d sekundit pärast viimase lahenduse esitamist."
 
 msgid "Invalid archive format!"
 msgstr "Vigases vormingus arhiiv!"
@@ -420,9 +369,7 @@ msgstr "Testimine on liiga sage!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"Saate jälle mõnda ülesannet testida alles %d sekundit peale viimast "
-"testimist."
+msgstr "Saate jälle mõnda ülesannet testida alles %d sekundit peale viimast testimist."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
@@ -482,12 +429,8 @@ msgid "Logout"
 msgstr "Logi välja"
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr ""
-"Sisse logitud kui <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Sisse logitud kui <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Sisselogimine ebaõnnestus."
@@ -529,11 +472,11 @@ msgstr "%d lugemata"
 msgid "Until contest starts:"
 msgstr "Võistluse alguseni:"
 
-msgid "Until contest ends:"
-msgstr "Võisluse lõpuni:"
-
 msgid "Until analysis starts:"
 msgstr "Järellahendamise alguseni:"
+
+msgid "Until contest ends:"
+msgstr "Võisluse lõpuni:"
 
 msgid "Until analysis ends:"
 msgstr "Järellahendamise lõpuni:"
@@ -580,9 +523,7 @@ msgstr "Programmeerimiskeeled ja teegid"
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
 
-msgid ""
-"The main Java class of the solution should have exactly the same name as the"
-" task."
+msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "Java lahenduse peaklass peaks olema sama nimega kui ülesanne."
 
 msgid "Submission details for compilation"
@@ -604,21 +545,11 @@ msgstr "Viga %(status_code)s"
 msgid "An error occured while the server was handling your request."
 msgstr "Päringu töötlemise käigus esines viga."
 
-msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing"
-" the server with customized URLs) may be considered cheating and may lead to"
-" disqualification."
-msgstr ""
-"Pange tähele, et Contest Management System'i ebaotstarbeline kasutus "
-"(nagu näiteks moonutatud URL-ide katsetamine) võib olla interpreteeritud kui"
-" sohitegemise katse, ning kaasa tuua diskvalifikatsiooni."
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Pange tähele, et Contest Management System'i ebaotstarbeline kasutus (nagu näiteks moonutatud URL-ide katsetamine) võib olla interpreteeritud kui sohitegemise katse, ning kaasa tuua diskvalifikatsiooni."
 
-msgid ""
-"If you encountered this error during normal usage, please notify the contest"
-" administrators."
-msgstr ""
-"Kui te avastasite selle vea normaalse kasutuse käigus, palun teavitage "
-"võistluse administraatoreid."
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Kui te avastasite selle vea normaalse kasutuse käigus, palun teavitage võistluse administraatoreid."
 
 msgid "General information"
 msgstr "Üldinfo"
@@ -671,12 +602,8 @@ msgstr "Teil on lõpmatu arv pileteid."
 msgid "You can see the detailed result of a submission by using a token on it."
 msgstr "Te saate lahenduse detailseid tulemusi näha, kui kasutate sellel piletit."
 
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-"Ülesande punktide arvu loetakse kui maksimumi Teie viimasest lahendusest "
-"ning kõigist kasutatud piletiga lahendustest."
+msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
+msgstr "Ülesande punktide arvu loetakse kui maksimumi Teie viimasest lahendusest ning kõigist kasutatud piletiga lahendustest."
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "Teil on iga ülesande jaoks eraldi komplekt pileteid."
@@ -688,20 +615,11 @@ msgstr "Te saate iga ülesande kirjelduse lehel teada, milliste reeglite järgi 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Teil on üks komplekt pileteid kasutuseks kõigi ülesannete jaoks."
 
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-"Teil on kahte tüüpi pileteid: hulk <em>võistluse pileteid</em>, jagatud kõigi"
-" ülesannete vahel, ning eraldi hulk <em>ülesande pileteid</em> iga ülesande "
-"jaoks."
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Teil on kahte tüüpi pileteid: hulk <em>võistluse pileteid</em>, jagatud kõigi ülesannete vahel, ning eraldi hulk <em>ülesande pileteid</em> iga ülesande jaoks."
 
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-"Te saate lahenduse detailseid tulemusi näha, kui kasutate selle peal ühe "
-"võistluse pileti ja ühe ülesande pileti."
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Te saate lahenduse detailseid tulemusi näha, kui kasutate selle peal ühe võistluse pileti ja ühe ülesande pileti."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
@@ -712,24 +630,14 @@ msgid "You can submit at most %(user_tests)s user tests during this contest."
 msgstr "Te võite võistluse jooksul esitada maksimaalselt %(user_tests)s testi."
 
 #, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted"
-" time frame of %(per_user_time)s."
-msgstr ""
-"Iga kasutaja saab võistelda (s.t. lahendusi esitada) %(per_user_time)s pikkuse "
-"lahendusperioodi jooksul."
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Iga kasutaja saab võistelda (s.t. lahendusi esitada) %(per_user_time)s pikkuse lahendusperioodi jooksul."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr ""
-"Niipea, kui võistlus algab, saate valida, millal alustate oma lahendusperioodi."
+msgstr "Niipea, kui võistlus algab, saate valida, millal alustate oma lahendusperioodi."
 
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-""
-"Alustades saate esitada lahendusi oma lahendusperioodi lõpuni, või kuni "
-"võistluse lõpuni, kumbiganes esimesena kätte jõuab."
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Alustades saate esitada lahendusi oma lahendusperioodi lõpuni, või kuni võistluse lõpuni, kumbiganes esimesena kätte jõuab."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Lahendusperioodi alustamiseks vajutage allolevat nuppu."
@@ -738,12 +646,8 @@ msgstr "Lahendusperioodi alustamiseks vajutage allolevat nuppu."
 msgid "You started your time frame at %(start_time)s."
 msgstr "Te alustasite oma lahendusperioodi %(start_time)s."
 
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of"
-" the contest, whatever comes first."
-msgstr ""
-"Saate esitada lahendusi oma lahendusperioodi lõpuni, või kuni võistluse "
-"lõpuni, kumbiganes esimesena kätte jõuab."
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Saate esitada lahendusi oma lahendusperioodi lõpuni, või kuni võistluse lõpuni, kumbiganes esimesena kätte jõuab."
 
 #, python-format
 msgid "You started your time frame at %(start_time)s and you already finished it."
@@ -792,20 +696,12 @@ msgid "Print"
 msgstr "Prindi"
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text or PDF files of up to "
-"%(max_pages)s pages each."
-msgstr ""
-"Te võite printida veel %(remaining_jobs)s teksti või PDF faili, igaüks kuni "
-"%(max_pages)s lehekülge pikk."
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "Te võite printida veel %(remaining_jobs)s teksti või PDF faili, igaüks kuni %(max_pages)s lehekülge pikk."
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
-"pages each."
-msgstr ""
-"Te võite printida veel %(remaining_jobs)s tekstifaili, igaüks kuni "
-"%(max_pages)s lehekülge pikk."
+msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
+msgstr "Te võite printida veel %(remaining_jobs)s tekstifaili, igaüks kuni %(max_pages)s lehekülge pikk."
 
 msgid "File (text or PDF)"
 msgstr "Fail (tekst või PDF)"
@@ -928,9 +824,7 @@ msgstr "ülesande teksti pole"
 msgid "Download task statement"
 msgstr "Lae ülesande tekst alla"
 
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
+msgid "The statement for this task is available in multiple versions, in different languages."
 msgstr "Selle ülesande tekstist on saadaval mitu versiooni erinevates keeltes."
 
 msgid "You can see (and download) all of them using the list on the right."
@@ -961,20 +855,8 @@ msgstr "Üksikasjad"
 msgid "Compilation commands"
 msgstr "Kompileerimise käsurida"
 
-#, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a "
-"href=\"%(contest_root)s\">contest overview page</a>."
-msgstr ""
-"<a href=\"%(contest_root)s/\">Võistluse ülevaate lehel</a> leiate reeglid, "
-"mille järgi saab kasutada %(type_pl)seid."
-
-msgid ""
-"Remember that to see the detailed result of a submission you need to use "
-"both a contest-token and a task-token."
-msgstr ""
-"Pane tähele, et esitatud lahenduse tulemuste detailvaate nägemiseks pead "
-"kasutama nii ühe võistluspileti kui ka ühe ülesandepileti."
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Pane tähele, et esitatud lahenduse tulemuste detailvaate nägemiseks pead kasutama nii ühe võistluspileti kui ka ühe ülesandepileti."
 
 msgid "Attachments"
 msgstr "Manused"
@@ -1007,7 +889,6 @@ msgstr "Esita lahendus"
 msgid "You may submit any subset of outputs in a single submission."
 msgstr "Võite esitada suvalise alamhulga väljundfailidest."
 
-#  TODO ngettext here
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Võite esitada veel %(submissions_left)s lahendust."
@@ -1018,7 +899,6 @@ msgstr "lahendus.zip"
 msgid "Previous submissions"
 msgstr "Eelmised esitatud lahendused"
 
-#, python-format
 msgid "Tokens are not allowed on this task."
 msgstr "Piletite kasutamine ei ole selles ülesandes lubatud."
 
@@ -1110,54 +990,4 @@ msgstr "Punktid"
 
 msgid "Token"
 msgstr "Pilet"
-
-msgid "no submissions"
-msgstr "pole ühtegi esitust"
-
-msgid "Played"
-msgstr "Kasutatud"
-
-msgid "Play!"
-msgstr "Kasuta!"
-
-msgid "No tokens"
-msgstr "Pileteid pole"
-
-msgid "Invalid file"
-msgstr "Vigane fail"
-
-msgid "Print job has too many pages"
-msgstr "Prinditaval dokumendil on liiga mitu lehekülge"
-
-msgid "Sent to printer"
-msgstr "Printerile saadetud"
-
-#~ msgid "All sources must be in the same language."
-#~ msgstr "Kogu lähtetekst peab olema samas programmeerimiskeeles."
-
-#~ msgid ""
-#~ "Your submission was killed with the "
-#~ "specified signal. Among other things, this"
-#~ " might be caused by exceeding the "
-#~ "memory limit. Note that if this is"
-#~ " the reason, the memory usage visible"
-#~ " in the submission details is the "
-#~ "usage before the allocation that caused "
-#~ "the signal."
-#~ msgstr ""
-
-#~ msgid "Invalid files in submission"
-#~ msgstr "Lahendus sisaldab lubamatuid faile"
-
-#~ msgid "You have reached the question length limit."
-#~ msgstr "Rohkem kui %d korda seda ülesande testida ei ole lubatud."
-
-#~ msgid "Cannot recognize the submission language."
-#~ msgstr "Lahenduse programmeerimiskeel on tundmatu."
-
-#~ msgid "Cannot recognize the user test language."
-#~ msgstr "Testi programmeerimiskeele tuvastus ebaõnnestus."
-
-#~ msgid "Official"
-#~ msgstr ""
 

@@ -4,7 +4,7 @@ To learn how to install and use CMS, please read the **documentation**,
 available at <https://cms.readthedocs.org/>.
 
 If you have questions or need help troubleshooting some problem,
-contact us in the **chat** at [gitter](https://gitter.im/cms-dev/cms),
+contact us in the **chat** on [Telegram](https://t.me/contestms),
 or write on the **support mailing list**
 <contestms-support@googlegroups.com>, where no registration is required
 (you can see the archives on
@@ -12,13 +12,12 @@ or write on the **support mailing list**
 
 To help with the troubleshooting, you can upload on some online
 pastebin the relevant **log files**, that you can find in
-/var/local/log/cms/ (if CMS was running installed) or in ./log (if it
-was running from the local copy).
+`/var/local/log/cms/`.
 
 If you encountered a bug, please file an
 [issue](https://github.com/cms-dev/cms/issues) on **GitHub** following
 the instructions in the issue template.
 
 **Please don't file issues to ask for help**, we are happy to help
-on the mailing list or on gitter, and it is more likely somebody will
+on the mailing list or on Telegram, and it is more likely somebody will
 answer your query sooner.

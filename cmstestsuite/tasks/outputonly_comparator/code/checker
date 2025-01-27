@@ -1,6 +1,5 @@
-#!/usr/bin/python2 -sS
+#!/usr/bin/python3 -sS
 
-from __future__ import print_function
 
 import io
 import sys

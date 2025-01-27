@@ -1,21 +1,19 @@
-# We are currently targeting the versions shipped in Ubuntu 20.04.
-
-tornado>=4.5,<4.6  # http://www.tornadoweb.org/en/stable/releases.html
-psycopg2>=2.8,<2.9  # http://initd.org/psycopg/articles/tag/release/
+tornado==4.5.3  # http://www.tornadoweb.org/en/stable/releases.html
+psycopg2==2.9.10  # http://initd.org/psycopg/articles/tag/release/
 sqlalchemy>=1.3,<1.4  # http://docs.sqlalchemy.org/en/latest/changelog/index.html
-netifaces>=0.10,<0.11  # https://bitbucket.org/al45tair/netifaces/src/
-pycryptodomex>=3.6,<3.7  # https://github.com/Legrandin/pycryptodome/blob/master/Changelog.rst
-psutil>=5.5,<5.6  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
-requests>=2.22,<2.23  # https://pypi.python.org/pypi/requests
-gevent==20.12.0  # http://www.gevent.org/changelog.html
-# Limit greenlet version for binary compatibility with gevent 20.12 wheels
-greenlet==1.0.0
-werkzeug>=0.16,<0.17  # https://github.com/pallets/werkzeug/blob/master/CHANGES
-patool>=1.12,<1.13  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
-bcrypt>=3.1,<3.2  # https://github.com/pyca/bcrypt/
-chardet>=3.0,<3.1  # https://pypi.python.org/pypi/chardet
-babel>=2.6,<2.7  # http://babel.pocoo.org/en/latest/changelog.html
-pyxdg>=0.26,<0.27  # https://freedesktop.org/wiki/Software/pyxdg/
+netifaces>=0.10,<0.12  # https://bitbucket.org/al45tair/netifaces/src/
+pycryptodomex==3.21.0  # https://github.com/Legrandin/pycryptodome/blob/master/Changelog.rst
+psutil>=5.5,<6.2  # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
+requests==2.32.3  # https://pypi.python.org/pypi/requests
+gevent==24.11.1  # http://www.gevent.org/changelog.html
+greenlet>=3.0rc1
+werkzeug<1.0 # https://github.com/pallets/werkzeug/blob/master/CHANGES
+backports.ssl-match-hostname==3.7.0.1 # required by tornado<5.0
+patool>=1.12,<3.2  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
+bcrypt>=3.1,<4.3  # https://github.com/pyca/bcrypt/
+chardet>=3.0,<5.3  # https://pypi.python.org/pypi/chardet
+babel==2.12.1  # http://babel.pocoo.org/en/latest/changelog.html
+pyxdg>=0.26,<0.29  # https://freedesktop.org/wiki/Software/pyxdg/
 Jinja2>=2.10,<2.11  # http://jinja.pocoo.org/docs/latest/changelog/
 
 # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
@@ -23,8 +21,14 @@ Jinja2>=2.10,<2.11  # http://jinja.pocoo.org/docs/latest/changelog/
 MarkupSafe==2.0.1
 
 # Only for some importers:
-pyyaml>=5.3,<5.4  # http://pyyaml.org/wiki/PyYAML
+pyyaml>=5.3,<6.1  # http://pyyaml.org/wiki/PyYAML
 
 # Only for printing:
-pycups>=1.9,<1.10  # https://pypi.python.org/pypi/pycups
-PyPDF2>=1.26,<1.27  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
+pycups==2.0.4  # https://pypi.python.org/pypi/pycups
+PyPDF2>=1.26,<3.1  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
+
+# Only for cmsPrometheusExporter
+prometheus-client>=0.7,<0.22  # https://pypi.org/project/prometheus-client
+
+# Only for cmsTelegramBot
+python-telegram-bot>=21.9,<21.10 # https://pypi.org/project/python-telegram-bot

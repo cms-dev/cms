@@ -136,6 +136,7 @@ class Config:
         self.max_submission_length = 100_000  # 100 KB
         self.max_input_length = 5_000_000  # 5 MB
         self.stl_path = "/usr/share/cppreference/doc/html/"
+        self.docs_path = None
         # Prefix of 'shared-mime-info'[1] installation. It can be found
         # out using `pkg-config --variable=prefix shared-mime-info`, but
         # it's almost universally the same (i.e. '/usr') so it's hardly
@@ -161,37 +162,14 @@ class Config:
         self.max_jobs_per_user = 10
         self.pdf_printing_allowed = False
 
-        # Installed or from source?
-        # We declare we are running from installed if the program was
-        # NOT invoked through some python flavor, and the file is in
-        # the prefix (or real_prefix to accommodate virtualenvs).
-        bin_path = os.path.join(os.getcwd(), sys.argv[0])
-        bin_name = os.path.basename(bin_path)
-        bin_is_python = bin_name in ["ipython", "python", "python2", "python3"]
-        bin_in_installed_path = bin_path.startswith(sys.prefix) or (
-            hasattr(sys, 'real_prefix')
-            and bin_path.startswith(sys.real_prefix))
-        self.installed = bin_in_installed_path and not bin_is_python
-
-        if self.installed:
-            self.log_dir = os.path.join("/", "var", "local", "log", "cms")
-            self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
-            self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
-            self.run_dir = os.path.join("/", "var", "local", "run", "cms")
-            paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                     os.path.join("/", "etc", "cms.conf")]
-        else:
-            self.log_dir = "log"
-            self.cache_dir = "cache"
-            self.data_dir = "lib"
-            self.run_dir = "run"
-            paths = [os.path.join(".", "config", "cms.conf")]
-            if '__file__' in globals():
-                paths += [os.path.abspath(os.path.join(
-                          os.path.dirname(__file__),
-                          '..', 'config', 'cms.conf'))]
-            paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                      os.path.join("/", "etc", "cms.conf")]
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms")
+        self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
+        self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
+        self.run_dir = os.path.join("/", "var", "local", "run", "cms")
+        paths = [
+            os.path.join("/", "usr", "local", "etc", "cms.conf"),
+            os.path.join("/", "etc", "cms.conf"),
+        ]
 
         # Allow user to override config file path using environment
         # variable 'CMS_CONFIG'.

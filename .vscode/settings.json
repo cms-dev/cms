@@ -1,3 +1,23 @@
 {
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "files.insertFinalNewline": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modifications",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features",
+    },
+    "[css]": {
+        "editor.defaultFormatter": "vscode.css-language-features",
+    },
+    "[html]": {
+        // Doesn't work properly with template files, for example with things
+        // like {{ url("page") }} becoming {{ url(" page") }}
+        "editor.formatOnSave": false,
+    },
 }

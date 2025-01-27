@@ -57,32 +57,13 @@ class Config:
         # Buffers
         self.buffer_size = 100  # Needs to be strictly positive.
 
-        # File system.
-        # TODO: move to cmscommon as it is used both here and in cms/conf.py
-        bin_path = os.path.join(os.getcwd(), sys.argv[0])
-        bin_name = os.path.basename(bin_path)
-        bin_is_python = bin_name in ["ipython", "python", "python2", "python3"]
-        bin_in_installed_path = bin_path.startswith(sys.prefix) or (
-            hasattr(sys, 'real_prefix')
-            and bin_path.startswith(sys.real_prefix))
-        self.installed = bin_in_installed_path and not bin_is_python
-
         self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
-        if self.installed:
-            self.log_dir = os.path.join("/", "var", "local", "log",
-                                        "cms", "ranking")
-            self.lib_dir = os.path.join("/", "var", "local", "lib",
-                                        "cms", "ranking")
-            self.conf_paths = [os.path.join("/", "usr", "local", "etc",
-                                            "cms.ranking.conf"),
-                               os.path.join("/", "etc", "cms.ranking.conf")]
-        else:
-            self.log_dir = os.path.join("log", "ranking")
-            self.lib_dir = os.path.join("lib", "ranking")
-            self.conf_paths = [os.path.join(".", "config", "cms.ranking.conf"),
-                               os.path.join("/", "usr", "local", "etc",
-                                            "cms.ranking.conf"),
-                               os.path.join("/", "etc", "cms.ranking.conf")]
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
+        self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
+        self.conf_paths = [
+            os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
+            os.path.join("/", "etc", "cms.ranking.conf"),
+        ]
 
         # Allow users to override config file path using environment
         # variable 'CMS_RANKING_CONFIG'.

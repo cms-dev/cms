@@ -1,23 +1,43 @@
-# Dutch translations for CMS.
-# Copyright © 2010-2015 CMS authors
-# This file is distributed under the same license as CMS.
-# Joachim Ganseman <joachim.ganseman@be-oi.be>, 2014.
-# Floris Kint <floris.kint@gmail.com>, 2014.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.1\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-29 19:38+0000\n"
-"PO-Revision-Date: 2017-03-31 15:49+0200\n"
-"Last-Translator: Joachim Ganseman <joachim.ganseman@be-oi.be>\n"
-"Language-Team: Dutch\n"
-"Language: nl\n"
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2024-12-23 21:08+0000\n"
+"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0\n"
+
+msgid "N/A"
+msgstr "Niet beschikbaar"
+
+msgid "Correct"
+msgstr "Correct"
+
+msgid "Not correct"
+msgstr "Niet correct"
+
+msgid "Partially correct"
+msgstr "Deels correct"
+
+msgid "Outcome"
+msgstr "Uitkomst"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Execution time"
+msgstr "Uitvoeringstijd"
+
+msgid "Memory used"
+msgstr "Geheugengebruik"
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "Subtaak %(index)s"
 
 msgid "Compilation succeeded"
 msgstr "Compilatie succesvol"
@@ -34,30 +54,15 @@ msgstr "Je inzending kon niet correct gecompileerd worden."
 msgid "Compilation timed out"
 msgstr "Compilatie time-out"
 
-msgid ""
-"Your submission exceeded the time limit while compiling. This might be "
-"caused by an excessive use of C++ templates, for example."
-msgstr ""
-"Je inzending overschreed de tijdslimiet tijdens compilatie. Dit kan het "
-"gevolg zijn van, bijvoorbeeld, overdreven gebruik van C++ templates."
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "Je inzending overschreed de tijdslimiet tijdens compilatie. Dit kan het gevolg zijn van, bijvoorbeeld, overdreven gebruik van C++ templates."
 
 #, python-format
-msgid ""
-"Compilation killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Compilatie afgebroken met signaal %s (mogelijk veroorzaakt door het "
-"overschrijden van geheugenlimieten)"
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "Compilatie afgebroken met signaal %s (mogelijk veroorzaakt door het overschrijden van geheugenlimieten)"
 
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit for the compilation, and "
-"in turn by an excessive use of C++ templates, for example."
-msgstr ""
-"Je inzending werd afgebroken met het gespecifieerde signaal. Er zijn "
-"verschillende oorzaken mogelijk, waaronder het overschrijden van de "
-"geheugenlimiet voor compilatie, bijvoorbeeld na overdreven gebruik van C++ "
-"templates."
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "Je inzending werd afgebroken met het gespecifieerde signaal. Er zijn verschillende oorzaken mogelijk, waaronder het overschrijden van de geheugenlimiet voor compilatie, bijvoorbeeld na overdreven gebruik van C++ templates."
 
 msgid "Output is correct"
 msgstr "Output is correct"
@@ -82,9 +87,7 @@ msgid "Evaluation didn't produce file %s"
 msgstr "Evaluatie produceerde niet het bestand %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
-"Je inzending werd uitgevoerd, maar schreef niet naar het correcte "
-"outputbestand"
+msgstr "Je inzending werd uitgevoerd, maar schreef niet naar het correcte outputbestand"
 
 msgid "Execution timed out"
 msgstr "Time-out bij uitvoering"
@@ -95,75 +98,14 @@ msgstr "Je inzending gebruikte teveel CPU tijd."
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Time-out bij uitvoering (harde tijdslimiet overschreden)"
 
-msgid ""
-"Your submission used too much total time. This might be triggered by "
-"undefined code, or buffer overflow, for example. Note that in this case the "
-"CPU time visible in the submission details might be much smaller than the "
-"time limit."
-msgstr ""
-"Je inzending gebruikte teveel tijd in totaal. Dit kan het gevolg zijn van, "
-"bijvoorbeeld, ongedefinieerde code of buffer overflow. Merk op dat in dit "
-"geval de CPU-tijd die zichtbaar is bij de details van de inzending veel "
-"kleiner kan zijn dan de tijdslimiet."
-
-#, python-format
-msgid ""
-"Execution killed with signal %s (could be triggered by violating memory "
-"limits)"
-msgstr ""
-"Uitvoering afgebroken met signaal %s (mogelijk veroorzaakt door het "
-"overschrijden van geheugenlimieten)"
-
-msgid ""
-"Your submission was killed with the specified signal. Among other things, "
-"this might be caused by exceeding the memory limit. Note that if this is the "
-"reason, the memory usage visible in the submission details is the usage "
-"before the allocation that caused the signal."
-msgstr ""
-"Je inzending werd afgebroken met het gespecifieerde signaal. Er zijn "
-"verschillende oorzaken mogelijk, waaronder het overschrijden van de "
-"geheugenlimiet. Merk op dat als dit de oorzaak is, dat het geheugengebruik "
-"weergegeven in de details van de inzending, het gebruik is vlak voor de "
-"allocatie die dit signaal veroorzaakte."
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "Je inzending gebruikte teveel tijd in totaal. Dit kan het gevolg zijn van, bijvoorbeeld, ongedefinieerde code of buffer overflow. Merk op dat in dit geval de CPU-tijd die zichtbaar is bij de details van de inzending veel kleiner kan zijn dan de tijdslimiet."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Uitvoering mislukt omdat de return code niet nul was"
 
-msgid ""
-"Your submission failed because it exited with a return code different from 0."
-msgstr ""
-"Je inzending mislukte omdat ze stopte met een return code verschillend van 0."
-
-msgid "N/A"
-msgstr "Niet beschikbaar"
-
-#, python-format
-msgid "Subtask %(index)s"
-msgstr "Subtaak %(index)s"
-
-msgid "Outcome"
-msgstr "Uitkomst"
-
-msgid "Details"
-msgstr "Details"
-
-msgid "Execution time"
-msgstr "Uitvoeringstijd"
-
-msgid "Memory used"
-msgstr "Geheugengebruik"
-
-msgid "Not correct"
-msgstr "Niet correct"
-
-msgid "Correct"
-msgstr "Correct"
-
-msgid "Partially correct"
-msgstr "Deels correct"
-
-msgid "Invalid files in submission"
-msgstr "Ongeldige bestanden in inzending"
+msgid "Your submission failed because it exited with a return code different from 0."
+msgstr "Je inzending mislukte omdat ze stopte met een return code verschillend van 0."
 
 msgid "Execution completed successfully"
 msgstr "Uitvoering geslaagd"
@@ -173,12 +115,6 @@ msgstr "Geen compilatie nodig"
 
 msgid "File not submitted"
 msgstr "Bestand niet ingediend"
-
-msgid "loading..."
-msgstr "laden..."
-
-msgid "unknown"
-msgstr "onbekend"
 
 msgid "contest-token"
 msgstr "wedstrijd-token"
@@ -235,14 +171,14 @@ msgstr[0] "tot een maximum van een %(type_s)s."
 msgstr[1] "tot een maximum van %(gen_max)d %(type_pl)s."
 
 #, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Je krijgt geen andere %(type_pl)s."
+
+#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "krijg je nog een %(type_s)s."
 msgstr[1] "krijg je %(gen_number)d %(type_pl)s erbij."
-
-#, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Je krijgt geen andere %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -266,25 +202,10 @@ msgstr[1] "Je kan elke %(min_interval)g seconden een %(type_s)s gebruiken."
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Je kan niet meer dan één %(type_s)s in totaal gebruiken."
-msgstr[1] ""
-"Je kan niet meer dan %(max_number)d %(type_pl)s in totaal gebruiken."
+msgstr[1] "Je kan niet meer dan %(max_number)d %(type_pl)s in totaal gebruiken."
 
 msgid "You have no limitations on how you use them."
 msgstr "Er zijn geen beperkingen op hoe je ze gebruikt."
-
-msgid "Question too big!"
-msgstr "Vraag te groot!"
-
-msgid "You have reached the question length limit."
-msgstr "Je hebt de lengtelimiet van de vraag bereikt."
-
-msgid "Question received"
-msgstr "Vraag ontvangen"
-
-msgid ""
-"Your question has been received, you will be notified when it is answered."
-msgstr ""
-"Je vraag werd ontvangen, je zal worden verwittigd wanneer ze beantwoord is."
 
 msgid "Too many print jobs!"
 msgstr "Te veel printopdrachten!"
@@ -312,17 +233,35 @@ msgstr "Kon de printopdracht niet registreren!"
 msgid "Please try again."
 msgstr "Probeer opnieuw aub."
 
+msgid "Token request discarded"
+msgstr "Aanvraag token afgewezen"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Je aanvraag werd afgewezen omdat je geen tokens beschikbaar hebt."
+
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Je aanvraag werd afgewezen omdat je al een token gebruikte voor deze inzending."
+
+msgid "Question received"
+msgstr "Vraag ontvangen"
+
+msgid "Your question has been received, you will be notified when it is answered."
+msgstr "Je vraag werd ontvangen, je zal worden verwittigd wanneer ze beantwoord is."
+
 msgid "Print job received"
 msgstr "Printopdracht ontvangen"
 
 msgid "Your print job has been received."
 msgstr "Je printopdracht werd ontvangen."
 
+msgid "Submission received"
+msgstr "Inzending ontvangen"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "Je inzending werd ontvangen en wordt momenteel geëvalueerd."
+
 msgid "Compiling..."
 msgstr "Bezig met compileren..."
-
-msgid "details"
-msgstr "details"
 
 msgid "Evaluating..."
 msgstr "Bezig met evalueren..."
@@ -333,58 +272,48 @@ msgstr "Bezig met punten geven..."
 msgid "Evaluated"
 msgstr "Geëvalueerd"
 
-msgid "Token request discarded"
-msgstr "Aanvraag token afgewezen"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Je aanvraag werd afgewezen omdat je geen tokens beschikbaar hebt."
-
-msgid ""
-"Your request has been discarded because you already used a token on that "
-"submission."
-msgstr ""
-"Je aanvraag werd afgewezen omdat je al een token gebruikte voor deze "
-"inzending."
+msgid "Your request has been received and applied to the submission."
+msgstr "Je aanvraag werd ontvangen en toegepast op de inzending."
 
 msgid "Token request received"
 msgstr "Aanvraag token ontvangen"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "Je aanvraag werd ontvangen en toegepast op de inzending."
+msgid "Test received"
+msgstr "Test ontvangen"
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr ""
-"Je hebt de limiet van maximum %d inzendingen voor alle taken samen bereikt."
+msgid "Your test has been received and is currently being executed."
+msgstr "Je test werd ontvangen en wordt momenteel uitgevoerd."
 
-#, python-format
-msgid ""
-"You have reached the maximum limit of at most %d submissions on this task."
-msgstr "Je hebt de limiet van maximum %d inzendingen voor deze taak bereikt."
+msgid "details"
+msgstr "details"
+
+msgid "Executing..."
+msgstr "Bezig met uitvoeren..."
+
+msgid "Executed"
+msgstr "Uitgevoerd"
 
 msgid "Too many submissions!"
 msgstr "Te veel inzendingen!"
 
 #, python-format
-msgid ""
-"Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
-"Voor alle taken samen, kan je opnieuw indienen na %d seconden na je laatste "
-"inzending."
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Je hebt de limiet van maximum %d inzendingen voor alle taken samen bereikt."
 
 #, python-format
-msgid ""
-"For this task, you can submit again after %d seconds from last submission."
-msgstr ""
-"Voor deze taak kan je opnieuw indienen na %d seconden na je laatste "
-"inzending."
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Je hebt de limiet van maximum %d inzendingen voor deze taak bereikt."
 
 msgid "Submissions too frequent!"
 msgstr "Je dient te frequent in!"
 
-msgid "Invalid submission format!"
-msgstr "Ongeldig formaat voor inzending!"
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Voor alle taken samen, kan je opnieuw indienen na %d seconden na je laatste inzending."
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Voor deze taak kan je opnieuw indienen na %d seconden na je laatste inzending."
 
 msgid "Invalid archive format!"
 msgstr "Ongeldig formaat voor archief!"
@@ -392,15 +321,8 @@ msgstr "Ongeldig formaat voor archief!"
 msgid "The submitted archive could not be opened."
 msgstr "Het ingediende archief kon niet worden geopend."
 
-msgid "Cannot recognize the submission language."
-msgstr "De taal van de inzending kan niet worden herkend."
-
-#, python-format
-msgid "Language %s not allowed in this contest."
-msgstr "De programmeertaal %s is niet toegelaten in deze wedstrijd."
-
-msgid "Invalid submission!"
-msgstr "Ongeldige inzending!"
+msgid "Invalid submission format!"
+msgstr "Ongeldig formaat voor inzending!"
 
 msgid "Submission too big!"
 msgstr "Inzending te groot!"
@@ -412,11 +334,8 @@ msgstr "Elk bronbestand mag maximaal %d bytes lang zijn."
 msgid "Submission storage failed!"
 msgstr "Opslag van inzending mislukt!"
 
-msgid "Submission received"
-msgstr "Inzending ontvangen"
-
-msgid "Your submission has been received and is currently being evaluated."
-msgstr "Je inzending werd ontvangen en wordt momenteel geëvalueerd."
+msgid "Too many tests!"
+msgstr "Te veel tests!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
@@ -426,31 +345,19 @@ msgstr "Je hebt de limiet van maximaal %d tests voor alle taken samen bereikt."
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Je hebt de limiet van maximaal %d tests voor deze taak bereikt."
 
-msgid "Too many tests!"
-msgstr "Te veel tests!"
-
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
-"Voor alle taken samen, kan je opnieuw testen na %d seconden na de laatste "
-"test."
-
-#, python-format
-msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
-"Voor deze taak, kan je opnieuw testen na %d seconden na de laatste test."
-
 msgid "Tests too frequent!"
 msgstr "Je test te frequent!"
 
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "Voor alle taken samen, kan je opnieuw testen na %d seconden na de laatste test."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "Voor deze taak, kan je opnieuw testen na %d seconden na de laatste test."
+
 msgid "Invalid test format!"
 msgstr "Ongeldig testformaat!"
-
-msgid "Cannot recognize the user test language."
-msgstr "Kan de taal van de test niet herkennen."
-
-msgid "Invalid test!"
-msgstr "Ongeldige test!"
 
 msgid "Test too big!"
 msgstr "Test te groot!"
@@ -465,17 +372,35 @@ msgstr "Het inputbestand mag maximaal %d bytes lang zijn."
 msgid "Test storage failed!"
 msgstr "Kon de test niet opslaan!"
 
-msgid "Test received"
-msgstr "Test ontvangen"
+msgid "Communication"
+msgstr "Communicatie"
 
-msgid "Your test has been received and is currently being executed."
-msgstr "Je test werd ontvangen en wordt momenteel uitgevoerd."
+msgid "Announcements"
+msgstr "Aankondigingen"
 
-msgid "Executing..."
-msgstr "Bezig met uitvoeren..."
+msgid "(no subject)"
+msgstr "(geen onderwerp)"
 
-msgid "Executed"
-msgstr "Uitgevoerd"
+msgid "Questions"
+msgstr "Vragen"
+
+msgid "Subject"
+msgstr "Onderwerp"
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Ask question"
+msgstr "Stel een vraag"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "no answer yet"
+msgstr "nog geen antwoord"
+
+msgid "Messages"
+msgstr "Berichten"
 
 #, python-format
 msgid "Automatic (%(lang)s)"
@@ -485,12 +410,8 @@ msgid "Logout"
 msgstr "Uitloggen"
 
 #, python-format
-msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
-msgstr ""
-"Ingelogd als <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Ingelogd als <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
 msgstr "Login mislukt."
@@ -509,9 +430,6 @@ msgstr "Paswoord"
 
 msgid "Login"
 msgstr "Login"
-
-msgid "Reset"
-msgstr "Reset"
 
 msgid "New message"
 msgstr "Nieuw bericht"
@@ -541,9 +459,6 @@ msgstr "Servertijd:"
 msgid "Overview"
 msgstr "Overzicht"
 
-msgid "Communication"
-msgstr "Communicatie"
-
 msgid "Statement"
 msgstr "Opdracht"
 
@@ -568,42 +483,14 @@ msgstr "is vrijgegeven onder de"
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero General Public License"
 
-msgid "Announcements"
-msgstr "Aankondigingen"
-
-msgid "(no subject)"
-msgstr "(geen onderwerp)"
-
-msgid "Questions"
-msgstr "Vragen"
-
-msgid "Subject"
-msgstr "Onderwerp"
-
-msgid "Text"
-msgstr "Tekst"
-
-msgid "Ask question"
-msgstr "Stel een vraag"
-
-msgid "no answer yet"
-msgstr "nog geen antwoord"
-
-msgid "Messages"
-msgstr "Berichten"
-
 msgid "Programming languages and libraries"
 msgstr "Programmeertalen en -libraries"
 
 msgid "Standard Template Library"
 msgstr "Standard Template Library"
 
-msgid ""
-"The main Java class of the solution should have exactly the same name as the "
-"task."
-msgstr ""
-"De main Java class van de oplossing moet exact dezelfde naam hebben als de "
-"opdracht."
+msgid "The main Java class of the solution should have exactly the same name as the task."
+msgstr "De main Java class van de oplossing moet exact dezelfde naam hebben als de opdracht."
 
 msgid "Submission details for compilation"
 msgstr "Details van de inzending over compilatie"
@@ -624,21 +511,11 @@ msgstr "Fout %(status_code)s"
 msgid "An error occured while the server was handling your request."
 msgstr "Een fout trad op terwijl de server je aanvraag behandelde."
 
-msgid ""
-"Note that attempts to tamper with Contest Management System (such as probing "
-"the server with customized URLs) may be considered cheating and may lead to "
-"disqualification."
-msgstr ""
-"Elke poging om het Wedstrijdbeheersysteem te beïnvloeden (zoals het sturen "
-"van gefabriceerde URLs naar de server) kan beschouwd worden als valsspelen "
-"en kan leiden tot uitsluiting van de wedstrijd."
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Elke poging om het Wedstrijdbeheersysteem te beïnvloeden (zoals het sturen van gefabriceerde URLs naar de server) kan beschouwd worden als valsspelen en kan leiden tot uitsluiting van de wedstrijd."
 
-msgid ""
-"If you encountered this error during normal usage, please notify the contest "
-"administrators."
-msgstr ""
-"Als je deze fout tegenkomt bij normaal gebruik, verwittig dan de begeleiders "
-"van de wedstrijd."
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Als je deze fout tegenkomt bij normaal gebruik, verwittig dan de begeleiders van de wedstrijd."
 
 msgid "General information"
 msgstr "Algemene informatie"
@@ -648,16 +525,14 @@ msgstr "De wedstrijd is nog niet gestart."
 
 #, python-format
 msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-"De wedstrijd zal starten om %(start_time)s en eindigen om %(stop_time)s."
+msgstr "De wedstrijd zal starten om %(start_time)s en eindigen om %(stop_time)s."
 
 msgid "The contest is currently running."
 msgstr "De wedstrijd is momenteel bezig."
 
 #, python-format
 msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
-msgstr ""
-"De wedstrijd is gestart om %(start_time)s en zal eindigen om %(stop_time)s."
+msgstr "De wedstrijd is gestart om %(start_time)s en zal eindigen om %(stop_time)s."
 
 msgid "The contest has already ended."
 msgstr "De wedstrijd is al geëindigd."
@@ -670,74 +545,44 @@ msgid "You have an infinite number of tokens."
 msgstr "Je hebt een oneindige voorraad tokens."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr ""
-"Je kunt het gedetailleerde resultaat van een inzending bekijken door er een "
-"token op te gebruiken."
+msgstr "Je kunt het gedetailleerde resultaat van een inzending bekijken door er een token op te gebruiken."
 
-msgid ""
-"Your score for each task will be the maximum among the tokened submissions "
-"and the last one."
-msgstr ""
-"Je score voor elke taak is het maximum van de inzendingen waarvoor je een "
-"token hebt gebruikt en de laatste inzending samen."
+msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
+msgstr "Je score voor elke taak is het maximum van de inzendingen waarvoor je een token hebt gebruikt en de laatste inzending samen."
 
 msgid "You have a distinct set of tokens for each task."
 msgstr "Je hebt een aparte verzameling tokens voor iedere taak."
 
 #, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on each task's description page."
-msgstr ""
-"Je kunt de regels voor de %(type_pl)s vinden op de pagina met de "
-"taakomschrijving voor iedere opdracht."
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "Je kunt de regels voor de %(type_pl)s vinden op de pagina met de taakomschrijving voor iedere opdracht."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Je hebt een verzameling tokens die wordt gedeeld door alle taken."
 
-msgid ""
-"You have two types of tokens: a set of <em>contest-tokens</em> shared among "
-"all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr ""
-"Er zijn twee types tokens: een verzameling <em>wedstrijd-tokens</em> gedeeld "
-"door alle taken en een aparte verzameling <em>taak-tokens</em> voor elke "
-"taak."
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Er zijn twee types tokens: een verzameling <em>wedstrijd-tokens</em> gedeeld door alle taken en een aparte verzameling <em>taak-tokens</em> voor elke taak."
 
-msgid ""
-"You can see the detailed result of a submission by using two tokens on it, "
-"one of each type."
-msgstr ""
-"Je kan het gedetailleerde resultaat van een inzending bekijken door er twee "
-"tokens op te gebruiken, één van elk type."
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Je kan het gedetailleerde resultaat van een inzending bekijken door er twee tokens op te gebruiken, één van elk type."
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
-msgstr ""
-"Je kan ten hoogste %(submissions)s oplossingen indienen tijdens deze "
-"wedstrijd."
+msgstr "Je kan ten hoogste %(submissions)s oplossingen indienen tijdens deze wedstrijd."
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr ""
-"Je kunt maximaal %(user_tests)s gebruikerstesten indienen tijdens deze "
-"wedstrijd."
+msgstr "Je kunt maximaal %(user_tests)s gebruikerstesten indienen tijdens deze wedstrijd."
 
 #, python-format
-msgid ""
-"Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
-"time frame of %(per_user_time)s."
-msgstr ""
-"Elke gebruiker mag deelnemen (d.w.z. oplossingen indienen) gedurende een "
-"ononderbroken tijdsslot van %(per_user_time)s."
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Elke gebruiker mag deelnemen (d.w.z. oplossingen indienen) gedurende een ononderbroken tijdsslot van %(per_user_time)s."
 
 msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Zodra de wedstrijd start mag je kiezen om jouw tijdsslot te starten."
 
-msgid ""
-"Once you start, you can submit solutions until the end of the time frame or "
-"until the end of the contest, whatever comes first."
-msgstr ""
-"Eens je start, kan je oplossingen indienen tot aan het einde van het "
-"tijdsslot of het einde van de wedstrijd, welke ook eerst komt."
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Eens je start, kan je oplossingen indienen tot aan het einde van het tijdsslot of het einde van de wedstrijd, welke ook eerst komt."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "Door op de knop hieronder te klikken start je jouw tijdsslot."
@@ -746,18 +591,12 @@ msgstr "Door op de knop hieronder te klikken start je jouw tijdsslot."
 msgid "You started your time frame at %(start_time)s."
 msgstr "Je hebt jouw tijdsslot gestart om %(start_time)s."
 
-msgid ""
-"You can submit solutions until the end of the time frame or until the end of "
-"the contest, whatever comes first."
-msgstr ""
-"Je kan oplossingen indienen tot aan het einde van het tijdsslot of tot het "
-"einde van de wedstrijd, welke ook eerst komt."
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Je kan oplossingen indienen tot aan het einde van het tijdsslot of tot het einde van de wedstrijd, welke ook eerst komt."
 
 #, python-format
-msgid ""
-"You started your time frame at %(start_time)s and you already finished it."
-msgstr ""
-"Je hebt je tijdsslot gestart om %(start_time)s en je hebt het al beëindigd."
+msgid "You started your time frame at %(start_time)s and you already finished it."
+msgstr "Je hebt je tijdsslot gestart om %(start_time)s en je hebt het al beëindigd."
 
 msgid "There's nothing you can do now."
 msgstr "Je kan nu niets meer doen."
@@ -802,20 +641,12 @@ msgid "Print"
 msgstr "Afdrukken"
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text or PDF files of up to "
-"%(max_pages)s pages each."
-msgstr ""
-"Je kunt nog maximaal %(remaining_jobs)s tekst- of PDF-bestanden afdrukken "
-"van elk maximaal %(max_pages)s pagina's."
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "Je kunt nog maximaal %(remaining_jobs)s tekst- of PDF-bestanden afdrukken van elk maximaal %(max_pages)s pagina's."
 
 #, python-format
-msgid ""
-"You can print %(remaining_jobs)s more text files of up to %(max_pages)s "
-"pages each."
-msgstr ""
-"Je kunt nog %(remaining_jobs)s tekstbestanden afdrukken van elk maximaal "
-"%(max_pages)s pagina's."
+msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
+msgstr "Je kunt nog %(remaining_jobs)s tekstbestanden afdrukken van elk maximaal %(max_pages)s pagina's."
 
 msgid "File (text or PDF)"
 msgstr "Bestand (tekst of PDF)"
@@ -826,10 +657,8 @@ msgstr "Bestand (tekst)"
 msgid "Submit"
 msgstr "Indienen"
 
-msgid ""
-"You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-"Je kunt niets meer afdrukken omdat je je printquota al opgebruikt hebt."
+msgid "You cannot print anything any more as you have used up your printing quota."
+msgstr "Je kunt niets meer afdrukken omdat je je printquota al opgebruikt hebt."
 
 msgid "Previous print jobs"
 msgstr "Vorige printopdrachten"
@@ -846,11 +675,11 @@ msgstr "Bestandsnaam"
 msgid "Status"
 msgstr "Status"
 
-msgid "no print jobs yet"
-msgstr "nog geen printopdrachten"
-
 msgid "Preparing..."
 msgstr "Voorbereiden..."
+
+msgid "no print jobs yet"
+msgstr "nog geen printopdrachten"
 
 msgid "Compilation output"
 msgstr "Compilatie-output"
@@ -870,24 +699,6 @@ msgstr "Standaard output"
 msgid "Standard error"
 msgstr "Standaard error"
 
-msgid "None"
-msgstr "Geen"
-
-msgid "Download"
-msgstr "Download"
-
-msgid "Played"
-msgstr "Afgespeeld"
-
-msgid "Play!"
-msgstr "Afspelen!"
-
-msgid "Wait..."
-msgstr "Wachten..."
-
-msgid "No tokens"
-msgstr "Geen tokens"
-
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>description</small>"
 msgstr "%(name)s (%(short_name)s) <small>beschrijving</small>"
@@ -898,16 +709,11 @@ msgstr "geen omschrijving beschikbaar"
 msgid "Download task statement"
 msgstr "Download de taakbeschrijving"
 
-msgid ""
-"The statement for this task is available in multiple versions, in different "
-"languages."
-msgstr ""
-"De beschrijving van deze taak is beschikbaar in verschillende versies, in "
-"verschillende talen."
+msgid "The statement for this task is available in multiple versions, in different languages."
+msgstr "De beschrijving van deze taak is beschikbaar in verschillende versies, in verschillende talen."
 
 msgid "You can see (and download) all of them using the list on the right."
-msgstr ""
-"Je kan ze allemaal zien (en downloaden) in de lijst aan de rechterkant."
+msgstr "Je kan ze allemaal zien (en downloaden) in de lijst aan de rechterkant."
 
 msgid "Some suggested translations follow."
 msgstr "Wij raden de volgende vertalingen aan."
@@ -934,23 +740,17 @@ msgstr "Enkele details"
 msgid "Compilation commands"
 msgstr "Commando's voor compilatie"
 
-#, python-format
-msgid ""
-"You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s/"
-"\">contest overview page</a>."
-msgstr ""
-"Je kan de regels voor de %(type_pl)s op de <a href=\"%(contest_root)s/"
-"\">overzichtspagina van de wedstrijd</a> vinden."
-
-msgid ""
-"Remember that to see the detailed result of a submission you need to use both "
-"a contest-token and a task-token."
-msgstr ""
-"Onthoud dat je om een gedetailleerd resultaat te bekijken van een inzending, "
-"zowel een wedstrijd-token als een taak-token moet gebruiken."
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Onthoud dat je om een gedetailleerd resultaat te bekijken van een inzending, zowel een wedstrijd-token als een taak-token moet gebruiken."
 
 msgid "Attachments"
 msgstr "Bijlagen"
+
+msgid "unknown"
+msgstr "onbekend"
+
+msgid "loading..."
+msgstr "laden..."
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
@@ -981,8 +781,7 @@ msgstr "Momenteel heb je %(tokens)s tokens beschikbaar voor deze taak."
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
-msgstr ""
-"Maar je moet wachten tot %(expiration_time)s voordat je ze kunt gebruiken."
+msgstr "Maar je moet wachten tot %(expiration_time)s voordat je ze kunt gebruiken."
 
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
@@ -996,29 +795,16 @@ msgstr "Momenteel heb je geen tokens meer beschikbaar voor deze taak."
 
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
-msgstr ""
-"Maar je zal moeten wachten tot %(expiration_time)s om het te gebruiken."
-
-msgid "Public score"
-msgstr "Publieke score"
-
-msgid "Total score"
-msgstr "Totaalscore"
-
-msgid "Score"
-msgstr "Score"
-
-msgid "Token"
-msgstr "Token"
-
-msgid "no submissions yet"
-msgstr "nog geen inzendingen"
+msgstr "Maar je zal moeten wachten tot %(expiration_time)s om het te gebruiken."
 
 msgid "Submission details"
 msgstr "Details van de inzending"
 
 msgid "Close"
 msgstr "Sluiten"
+
+msgid "Download"
+msgstr "Download"
 
 msgid "Submit a test"
 msgstr "Dien een test in"
@@ -1048,5 +834,30 @@ msgstr "Details van de test"
 msgid "Evaluation outcome"
 msgstr "Evaluatie-resultaat"
 
-#~ msgid "All sources must be in the same language."
-#~ msgstr "Alle bronbestanden moeten in dezelfde taal zijn."
+msgid "Wait..."
+msgstr "Wachten..."
+
+msgid "None"
+msgstr "Geen"
+
+msgid "Public score"
+msgstr "Publieke score"
+
+msgid "Total score"
+msgstr "Totaalscore"
+
+msgid "Score"
+msgstr "Score"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "Played"
+msgstr "Afgespeeld"
+
+msgid "Play!"
+msgstr "Afspelen!"
+
+msgid "No tokens"
+msgstr "Geen tokens"
+

@@ -31,7 +31,15 @@
 import ipaddress
 import json
 import logging
+import os.path
 import re
+
+import collections
+try:
+    collections.MutableMapping
+except:
+    # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
+    collections.MutableMapping = collections.abc.MutableMapping
 
 try:
     import tornado4.web as tornado_web
@@ -41,6 +49,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from cms import config
 from cms.db import PrintJob, User, Participation, Team
+from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
@@ -360,7 +369,21 @@ class DocumentationHandler(ContestHandler):
     @tornado_web.authenticated
     @multi_contest
     def get(self):
+        contest = self.r_params.get("contest")
+        languages = [get_language(lang) for lang in contest.languages]
+
+        language_docs = []
+        if config.docs_path is not None:
+            for language in languages:
+                ext = language.source_extensions[0][1:] # remove dot
+                path = os.path.join(config.docs_path, ext)
+                if os.path.exists(path):
+                    language_docs.append((language.name, ext))
+        else:
+            language_docs.append(("C++", "en"))
+
         self.render("documentation.html",
                     COMPILATION_MESSAGES=COMPILATION_MESSAGES,
                     EVALUATION_MESSAGES=EVALUATION_MESSAGES,
+                    language_docs=language_docs,
                     **self.r_params)
