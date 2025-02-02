@@ -50,7 +50,6 @@ CMS.CWSUtils = function(url_root, contest_root, contest_name, timestamp, timezon
     }
 };
 
-
 CMS.CWSUtils.create_url_builder = function(url_root) {
     return function() {
         var url = url_root;
@@ -63,7 +62,6 @@ CMS.CWSUtils.create_url_builder = function(url_root) {
         return url;
     };
 };
-
 
 CMS.CWSUtils.prototype.update_notifications = function(hush) {
     var self = this;
@@ -87,14 +85,12 @@ CMS.CWSUtils.prototype.update_notifications = function(hush) {
         }, "json");
 };
 
-
 CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
                                                        subject, text,
                                                        level, hush) {
-    // TODO somehow display timestamp, subject and text
-
-    var alert = $('<div class="alert alert-block notification">' +
-                  '<a class="close" data-dismiss="alert" href="#">×</a>' +
+    // Create alert container
+    var alert = $('<div class="alert notification fade show" role="alert">' +
+                  '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
                   '<h4 class="alert-heading"></h4>' +
                   '</div>');
 
@@ -109,9 +105,9 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
         alert.append($("<span>" + text + "</span>"));
     }
 
-    // The "warning" level is the default, so no check needed.
+    // Set alert level (error, success, etc.)
     if (level == "error") {
-        alert.addClass("alert-error");
+        alert.addClass("alert-danger");
     } else if (level == "success") {
         alert.addClass("alert-success");
     }
@@ -123,7 +119,6 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
         this.desktop_notification(type, timestamp, subject, text);
     }
 };
-
 
 CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
                                                        subject, text) {
@@ -146,7 +141,6 @@ CMS.CWSUtils.prototype.desktop_notification = function(type, timestamp,
     }
 };
 
-
 CMS.CWSUtils.prototype.update_unread_count = function(delta, value) {
     if (delta > 0) {
         this.unread_count += delta;
@@ -160,7 +154,6 @@ CMS.CWSUtils.prototype.update_unread_count = function(delta, value) {
     $("#unread_count").toggleClass("no_unread", this.unread_count === 0);
 };
 
-
 CMS.CWSUtils.prototype.update_last_notification = function(timestamp) {
     if (this.last_notification === null || timestamp > this.last_notification) {
         this.last_notification = timestamp;
@@ -168,14 +161,6 @@ CMS.CWSUtils.prototype.update_last_notification = function(timestamp) {
     }
 };
 
-
-/**
- * Return a string representation of the number with two digits.
- *
- * n (int): a number with one or two digits.
- * return (string): n as a string with two digits, maybe with a
- *     leading 0.
- */
 CMS.CWSUtils.prototype.two_digits = function(n) {
     if (n < 10) {
         return "0" + n;
@@ -184,21 +169,12 @@ CMS.CWSUtils.prototype.two_digits = function(n) {
     }
 };
 
-
-/**
- * Return the time of the given timestamp as "HH:MM:SS" in UTC.
- *
- * timestamp (float): a UNIX timestamp.
- * return (string): hours, minutes and seconds, zero-padded to two
- *     digits and colon-separated, of timestamp in UTC timezone.
- */
 CMS.CWSUtils.prototype.format_time = function(timestamp) {
     var date = new Date(timestamp * 1000);
     return this.two_digits(date.getUTCHours()) + ":"
         + this.two_digits(date.getUTCMinutes()) + ":"
         + this.two_digits(date.getUTCSeconds());
 };
-
 
 CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
     // A negative time delta does not make sense, let's show zero to the user.
@@ -217,12 +193,8 @@ CMS.CWSUtils.prototype.format_timedelta = function(timedelta) {
         + this.two_digits(seconds);
 };
 
-
 CMS.CWSUtils.prototype.update_time = function(usaco_like_contest, timer = -1) {
     var now = $.now() / 1000;
-
-    // FIXME This may cause some problems around DST boundaries, as it
-    // is not adjusted because we consider it to be in UTC timezone.
     var server_timezoned_time = now - this.client_timestamp + this.server_timezoned_timestamp;
     $("#server_time").text(this.format_time(server_timezoned_time));
 
@@ -234,91 +206,54 @@ CMS.CWSUtils.prototype.update_time = function(usaco_like_contest, timer = -1) {
         window.location.href = contest_url;
     };
 
-    // TODO consider possible null values of this.current_phase_begin
-    // and this.current_phase_end (they mean -inf and +inf
-    // respectively)
-
     switch (this.phase) {
     case -2:
-        // Contest hasn't started yet.
         if (server_time >= this.current_phase_end) {
             reload_overview();
         }
-        $("#countdown_label").text(
-            $("#translation_until_contest_starts").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
+        $("#countdown_label").text($("#translation_until_contest_starts").text());
+        $("#countdown").text(this.format_timedelta(this.current_phase_end - server_time));
         break;
     case -1:
-        // Contest has already started but user is not competing yet,
-        // either because they haven't started the per user time yet,
-        // or because their start was delayed.
         if (usaco_like_contest) {
-            $("#countdown_label").text(
-                $("#translation_until_contest_ends").text());
+            $("#countdown_label").text($("#translation_until_contest_ends").text());
         } else {
-            $("#countdown_label").text(
-                $("#translation_until_contest_starts").text());
+            $("#countdown_label").text($("#translation_until_contest_starts").text());
         }
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
+        $("#countdown").text(this.format_timedelta(this.current_phase_end - server_time));
         break;
     case 0:
-        // Contest is currently running.
         if (server_time >= this.current_phase_end) {
             reload_overview();
         }
         $("#countdown_label").text($("#translation_time_left").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
+        $("#countdown").text(this.format_timedelta(this.current_phase_end - server_time));
         break;
     case +1:
-        // User has already finished its time but contest hasn't
-        // finished yet.
         if (server_time >= this.current_phase_end) {
             reload_overview();
         }
-        $("#countdown_label").text(
-            $("#translation_until_contest_ends").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
+        $("#countdown_label").text($("#translation_until_contest_ends").text());
+        $("#countdown").text(this.format_timedelta(this.current_phase_end - server_time));
         break;
     case +2:
-        // Contest has already finished but analysis mode hasn't started yet.
         if (server_time >= this.current_phase_end) {
             reload_overview();
         }
-        $("#countdown_label").text(
-            $("#translation_until_analysis_starts").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
+        $("#countdown_label").text($("#translation_until_analysis_starts").text());
+        $("#countdown").text(this.format_timedelta(this.current_phase_end - server_time));
         break;
     case +3:
-        // Contest has already finished. Analysis mode is running.
         if (server_time >= this.current_phase_end) {
             reload_overview();
         }
-        $("#countdown_label").text(
-            $("#translation_until_analysis_ends").text());
-        $("#countdown").text(
-            this.format_timedelta(this.current_phase_end - server_time));
+        $("#countdown_label").text($("#translation_until_analysis_ends").text());
+        $("#countdown").text(this.format_timedelta(this.current_phase_end - server_time));
         break;
     case +4:
-        // Contest has already finished and analysis mode is either disabled
-        // or finished.
         $("#countdown_box").addClass("hidden");
         break;
     }
-};
-
-/* Taken from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie#Using_relative_URLs_in_the_path_parameter */
-CMS.CWSUtils.prototype.rel_to_abs = function(sRelPath) {
-    var nUpLn, sDir = "", sPath = location.pathname.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, "$1"));
-    for (var nEnd, nStart = 0; nEnd = sPath.indexOf("/../", nStart), nEnd > -1; nStart = nEnd + nUpLn) {
-        nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
-        sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp("(?:\\\/+[^\\\/]*){0," + ((nUpLn - 1) / 3) + "}$"), "/");
-    }
-    return sDir + sPath.substr(nStart);
 };
 
 CMS.CWSUtils.prototype.switch_lang = function() {
@@ -343,7 +278,6 @@ CMS.CWSUtils.filter_languages = function(options, inputs) {
     for (var i = 0; i < inputs.length; i++) {
         exts.push('.' + inputs[i].value.match(/[^.]*$/)[0]);
     }
-    // Find all languages that should be enabled.
     var enabled = {};
     var anyEnabled = false;
     for (var lang in LANGUAGES) {
@@ -355,33 +289,11 @@ CMS.CWSUtils.filter_languages = function(options, inputs) {
             }
         }
     }
-    // If no language matches the extension, enable all and let the user
-    // select.
-    if (!anyEnabled) {
-        options.removeAttr('disabled');
-        return;
-    }
-
-    // Otherwise, disable all languages that do not match the extension.
-    var isSelectedDisabled = false;
-    options.each(function(i, option) {
-        if (enabled[option.value]) {
-            $(option).removeAttr('disabled');
-        } else {
-            $(option).attr('disabled', 'disabled');
-            if (option.selected) {
-                isSelectedDisabled = true;
-            }
-        }
-    });
-    // Else, if the current selected is disabled, select one that is enabled.
-    if (isSelectedDisabled) {
-        for (i = 0; i < options.length; i++) {
-            if ($(options[i]).attr('disabled') != 'disabled') {
-                options[i].selected = true;
-                break;
+    if (anyEnabled) {
+        for (var lang in LANGUAGES) {
+            if (enabled[lang]) {
+                options.append("<option value='" + lang + "'>" + lang + "</option>");
             }
         }
     }
 };
-
