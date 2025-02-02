@@ -1,15 +1,9 @@
 /* Always show the scrollbar */
-
 body {
     overflow-y: scroll;
 }
 
-/* Add some padding to the top of the page to avoid the static navbar from
-   covering the content on the top. Since (due to responsive CSS) the navbar
-   stops being static when the display is small enough, we have to add a
-   media-query rule
- */
-
+/* Add some padding to the top of the page to avoid the static navbar from covering content */
 @media (min-width: 980px) {
     #main {
         position: relative;
@@ -18,21 +12,18 @@ body {
 }
 
 /* Remove the on-hover coloring of rows in tables with table-nohover class */
-.table.table-nohover > tbody > tr:hover > td, .table.table-nohover > tbody > tr:hover > th {
+.table.table-nohover > tbody > tr:hover {
     background-color: transparent !important;
 }
 
-/** Announcements, questions, answers and messages **/
-
-/* Almost "copy" Bootstrap rules for alert-info */
-
+/* Announcements, questions, answers and messages */
 div.announcement_list div.announcement,
 div.question_list div.question,
 div.question_list div.answer,
 div.question_list div.no_answer,
 div.message_list div.message {
     padding: 14px 18px 14px 14px;
-    border-radius: 4px;
+    border-radius: 0.375rem; /* Updated for Bootstrap 5 */
     min-height: 18px;
     margin-bottom: 18px;
     text-shadow: 0 1px 0 rgba(255,255,255,0.5);
@@ -41,23 +32,7 @@ div.message_list div.message {
     background-color: #D9EDF7;
 }
 
-div.question_list div.question {
-    margin-bottom: 0;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-div.question_list div.answer,
-div.question_list div.no_answer {
-    margin-top: 0;
-    border-top: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
-
-
-/* Display the timestamp on the top right corner of the box */
-
+/* Display the timestamp on the top right corner */
 div.announcement_list div.announcement h4.subject,
 div.question_list div.question h4.subject,
 div.question_list div.answer h4.subject,
@@ -75,7 +50,6 @@ div.message_list div.message span.timestamp {
 }
 
 /* If the subject is missing, display a note in italic */
-
 div.announcement_list div.announcement h4.subject.empty,
 div.question_list div.question h4.subject.empty,
 div.question_list div.answer h4.subject.empty,
@@ -83,48 +57,23 @@ div.message_list div.message h4.subject.empty {
     font-style: italic;
 }
 
-/* Add some distance between the announcement header and its content */
-/* Also make sure the line breaks in the body text are preserved */
-
-div.announcement_list div.announcement div.body,
-div.question_list div.question div.body,
-div.question_list div.answer div.body,
-div.message_list div.message div.body {
-    padding-top: 5px;
-    clear: both;
-    white-space: pre-line;
-}
-
-/* Give some style to the "no answer" placeholder */
-
-div.question_list div.no_answer {
-    font-size: 1.2em;
-    font-style: italic;
-    margin: 0 0 18px;
-    text-align: center;
-}
-
-/* Add some margins to the headers, except the ones after the page-header */
-
-h2 {
-    margin: 30px 0 15px;
-}
-
-div.page-header + h2 {
-    margin: 0 0 15px;
-}
-
-/* Enhancements to the question form */
-
-div.question_submit form {
+/* Form adjustments */
+div.question_submit form,
+div.login_box form,
+div.register_box form {
     width: 100%;
     margin: 0;
 }
 
-div.question_submit div.control-group:last-child {
-    margin: 0;
+div.question_submit textarea,
+div.login_box textarea,
+div.register_box textarea {
+    resize: vertical;
+    min-height: 75px;
+    max-height: 275px;
 }
 
+/* Form control width based on screen size */
 @media (min-width: 768px) and (max-width: 979px) {
     div.question_submit input,
     div.question_submit textarea {
@@ -146,96 +95,18 @@ div.question_submit div.control-group:last-child {
     }
 }
 
-div.question_submit textarea {
-    resize: vertical;
-    min-height: 75px;
-    max-height: 275px;
+/* Task Description styling */
+.task_description .statement.many_statements .all_statements div {
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 0;
 }
 
-/** Login **/
-
-div.login_box form {
-    margin-bottom: 0;
+.task_description .statement.many_statements .all_statements div ul {
+    margin: 5px 5px 5px 25px;
 }
 
-div.login_box form fieldset div.control-group:last-child {
-    margin-bottom: 0;
-}
-
-div.login_container {
-    margin-bottom: 20px;
-}
-
-div.login_box {
-    max-width: 450px;
-    margin: 0 auto;
-}
-
-@media (max-width: 979px) {
-    div.navbar.navbar-fixed-top {
-        margin-bottom: 20px;
-    }
-}
-
-@media (min-width: 768px) {
-    div.login_box fieldset div.control-group div.controls input {
-        width: 280px;
-    }
-}
-
-@media (max-width: 979px) and (min-height: 488px) {
-    div.login_container {
-        position: fixed;
-        top: 50%;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: 0;
-        padding: 0 20px;
-    }
-
-    div.login_box {
-        /* The total height of the box is 2*60 (padding) + 60 (h2) +
-           (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
-        margin-top: -174px;
-    }
-}
-
-@media (min-width: 980px) and (min-height: 468px) {
-    div.login_container {
-        position: fixed;
-        top: 50%;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: 0;
-        padding: 0 20px;
-    }
-
-    div.login_box {
-        /* The total height of the box is 2*60 (padding) + 60 (h2) +
-           (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
-        margin-top: -174px;
-    }
-}
-
-/** Register **/
-
-div.register_box form {
-    margin-bottom: 0;
-}
-
-div.register_box form fieldset div.control-group:last-child {
-    margin-bottom: 0;
-}
-
-div.register_box {
-    max-width: 450px;
-    margin: 20px auto;
-}
-
-/* Some fixes and enhancements of Bootstrap */
-
+/* Enhance Modals */
 @media (max-width: 767px) {
     .modal {
         position: fixed;
@@ -246,188 +117,12 @@ div.register_box {
         margin: -250px 0 0;
     }
 
-    .modal.fade.in {
+    .modal.fade.show {
         top: 50%;
     }
 }
 
-@media (min-width: 768px) and (max-width: 979px) {
-    .modal.wide {
-        width: 600px;
-        margin-left: -300px;
-    }
-}
-
-@media (min-width: 980px) and (max-width: 1199px) {
-    .modal.wide {
-        width: 780px;
-        margin-left: -390px;
-    }
-}
-
-@media (min-width: 1200px) {
-    .modal.wide {
-        width: 970px;
-        margin-left: -485px;
-    }
-}
-
-/*** Task statement */
-
-.task_description .statement.no_statement {
-    font-size: 1.2em;
-    font-style: italic;
-    text-align: center;
-}
-
-.task_description .statement.one_statement {
-    text-align: center;
-}
-
-@media (max-width: 767px) {
-    .task_description .statement.many_statements .main_statements {
-        margin-bottom: 15px;
-    }
-
-    .task_description .statement.many_statements .all_statements div {
-        max-height: 280px;
-    }
-}
-
-@media (min-width: 768px) {
-    .task_description .statement.many_statements {
-        min-height: 238px;
-        position: relative;
-    }
-
-    .task_description .statement.many_statements .all_statements {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
-        margin: 0;
-    }
-
-    .task_description .statement.many_statements .all_statements div {
-        height: 100%;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 979px) {
-    .task_description .statement.many_statements .main_statements {
-        width: 290px;
-    }
-
-    .task_description .statement.many_statements .all_statements {
-        width: 228px;
-    }
-}
-
-@media (min-width: 980px) and (max-width: 1199px) {
-    .task_description .statement.many_statements .main_statements {
-        width: 380px;
-    }
-
-    .task_description .statement.many_statements .all_statements {
-        width: 300px;
-    }
-}
-
-@media (min-width: 1200px) {
-    .task_description .statement.many_statements .main_statements {
-        width: 470px;
-    }
-
-    .task_description .statement.many_statements .all_statements {
-        width: 370px;
-    }
-}
-
-.task_description .statement.many_statements .main_statements {
-    text-align: center;
-}
-
-.task_description .statement.many_statements .main_statements p {
-    text-align: left;
-}
-
-.task_description .statement.many_statements .main_statements p:last-child {
-    margin-bottom: 5px;
-}
-
-.task_description .statement.many_statements .main_statements a.btn {
-    min-width: 50%;
-    margin: 5px;
-}
-
-.task_description .statement.many_statements .all_statements {
-    padding: 5px;
-}
-
-.task_description .statement.many_statements .all_statements div {
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    overflow-y: auto;
-    padding: 0;
-}
-
-.task_description .statement.many_statements .all_statements div ul {
-    margin: 5px 5px 5px 25px;
-}
-
-/*** Compilation commands */
-
-.compilation_command_cell {
-    padding: 5px !important;
-}
-
-.compilation_command {
-    display: block;
-}
-
-.compilation_command + .compilation_command {
-    margin-top: 5px;
-}
-
-/*** Unread count */
-
-#unread_count {
-    float: right;
-}
-
-#unread_count.no_unread {
-    display: none;
-}
-
-/*** Token rules */
-
-td.token_rules p:last-child {
-    margin-bottom: 0;
-}
-
-/*** Notifications */
-
-.notifications {
-    position: fixed;
-    top: 60px;
-    width: 0;
-    right: 0;
-    bottom: 0;
-    overflow: visible;
-    z-index: 1;
-}
-
-.notifications .notification {
-    width: 160px;
-    float: right;
-    margin-right: 20px;
-    clear: both;
-}
-
-/*** Task score */
-
+/* Task Score Styles */
 .task_score_container {
     display: flex;
     justify-content: space-evenly;
@@ -455,597 +150,4 @@ td.token_rules p:last-child {
 
 .task_score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.4);
-}
-
-/*** Submit a solution */
-
-#submit_solution {
-    margin-bottom: 20px;
-}
-
-#submit_solution form {
-    margin-bottom: 0;
-}
-
-#submit_solution .control-group {
-    margin-bottom: 0;
-}
-
-#submit_solution .control-group:last-of-type {
-    margin-top: 10px;
-}
-
-#submit_solution .control-label {
-    width: 100px;
-    padding-top: 4px;
-    margin-bottom: 4px;
-}
-
-#submit_solution .controls {
-    margin-left: 110px;
-}
-
-#submit_solution input[type="file"] {
-    height: auto;
-    line-height: 18px;
-}
-
-
-/*** Submissions table */
-
-.submission_list colgroup col.time,
-.submission_list colgroup col.datetime {
-    width: 1%;
-}
-
-.submission_list colgroup col.status {
-    width: 20%;
-}
-
-.submission_list colgroup col.public_score {
-    width: 20%;
-}
-
-.submission_list colgroup col.total_score {
-    width: 20%;
-}
-
-.submission_list colgroup col.files {
-    width: 10%;
-}
-
-.submission_list colgroup col.token {
-    width: 10%;
-}
-
-.submission_list tbody tr td.no_submissions {
-    font-style: italic;
-    text-align: center !important;
-}
-
-.submission_list tbody tr td.time,
-.submission_list tbody tr td.datetime {
-    white-space: nowrap;
-}
-
-.submission_list tbody tr td.status .details {
-    float: right;
-    cursor: pointer;
-}
-
-.submission_list tbody tr td.files,
-.submission_list tbody tr td.token {
-    padding: 3px;
-}
-
-.submission_list tbody tr td.files .btn,
-.submission_list tbody tr td.token .btn {
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 100%;
-    white-space: nowrap;
-}
-
-.submission_list tbody tr td.token form {
-    display: inline;
-}
-
-.submission_list td.public_score.undefined {
-    color: #AAA;
-}
-
-.submission_list td.public_score.score_0 {
-    background-color: hsla(0, 100%, 50%, 0.4);
-}
-
-.submission_list tr:hover td.public_score.score_0 {
-    background-color: hsla(0, 100%, 50%, 0.5);
-}
-
-.submission_list td.public_score.score_0_100 {
-    background-color: hsla(60, 100%, 50%, 0.4);
-}
-
-.submission_list tr:hover td.public_score.score_0_100 {
-    background-color: hsla(60, 100%, 50%, 0.5);
-}
-
-.submission_list td.public_score.score_100 {
-    background-color: hsla(120, 100%, 50%, 0.4);
-}
-
-.submission_list tr:hover td.public_score.score_100 {
-    background-color: hsla(120, 100%, 50%, 0.5);
-}
-
-.submission_list td.total_score.undefined {
-    color: #AAA;
-}
-
-.submission_list td.total_score.score_0 {
-    background-color: hsla(0, 100%, 50%, 0.7);
-}
-
-.submission_list tr:hover td.total_score.score_0 {
-    background-color: hsla(0, 100%, 50%, 0.8);
-}
-
-.submission_list td.total_score.score_0_100 {
-    background-color: hsla(60, 100%, 50%, 0.7);
-}
-
-.submission_list tr:hover td.total_score.score_0_100 {
-    background-color: hsla(60, 100%, 50%, 0.8);
-}
-
-.submission_list td.total_score.score_100 {
-    background-color: hsla(120, 100%, 50%, 0.7);
-}
-
-.submission_list tr:hover td.total_score.score_100 {
-    background-color: hsla(120, 100%, 50%, 0.8);
-}
-
-/*** Submission details */
-
-#submission_detail .modal-body {
-    position: relative;
-    height: 400px;
-}
-
-#submission_detail .modal-body .loading {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 16px;
-    font-style: italic;
-    margin-top: -16px; /* half the height of the image */
-}
-
-#submission_detail .modal-body .loading img {
-    display: block;
-    height: 32px;
-    width: 32px;
-    margin: 0 auto 12px;
-}
-
-#submission_detail .modal-body {
-    overflow-y: scroll;
-}
-
-#submission_detail .modal-body h3 {
-    margin-bottom: 15px;
-}
-
-#submission_detail .modal-body h3:not(:first-of-type) {
-    margin-top: 30px;
-}
-
-#submission_detail .subtask.open {
-    margin-bottom: 20px;
-}
-
-#submission_detail .subtask-head {
-    font-size: 16px;
-    line-height: 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #E0E0E0;
-    cursor: pointer;
-    height: 20px;
-    padding: 4px;
-    margin-bottom: 10px;
-    box-shadow: 0 0 2px 2px #D0D0D0 inset;
-}
-
-#submission_detail .subtask.open .subtask-head {
-    margin-bottom: 15px;
-}
-
-#submission_detail .subtask .subtask-head i {
-    margin: 2px;
-}
-
-#submission_detail .subtask .subtask-head .score {
-    float: right;
-    font-weight: bold;
-    display: inline-block;
-    border-radius: 5px;
-    width: 20%;
-    text-align: center;
-    height: 24px;
-    margin-top: -2px;
-    margin-right: -2px;
-    color: white;
-    line-height: 24px;
-}
-
-#submission_detail .subtask.undefined .subtask-head .score {
-    background-color: #babdb6;
-}
-
-#submission_detail .subtask.correct .subtask-head .score {
-    background-color: #4e9a06;
-}
-
-#submission_detail .subtask.notcorrect .subtask-head .score {
-    background-color: #cc0000;
-}
-
-#submission_detail .subtask.partiallycorrect .subtask-head .score {
-    background-color: #edd400;
-}
-
-#submission_detail .subtask:not(.open) .subtask-body {
-    display: none;
-}
-
-#submission_detail table.testcase-list {
-    table-layout: fixed;
-    width: 100%;
-}
-
-#submission_detail table.testcase-list thead th.idx {
-    width: 5%;
-}
-
-#submission_detail table.testcase-list thead th.outcome {
-    width: 15%;
-}
-
-#submission_detail table.testcase-list thead th.execution-time,
-#submission_detail table.testcase-list thead th.memory-used {
-    width: 100px;
-}
-
-#submission_detail table.testcase-list tbody tr:not(.undefined) td.outcome {
-    padding: 5px;
-}
-
-#submission_detail table.testcase-list tbody tr:not(.undefined) td.outcome .outcome {
-    display: inline-block;
-    width: 100%;
-    height: 24px;
-    line-height: 24px;
-    border-radius: 5px;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    color: white;
-    padding-left: 5px;
-}
-
-#submission_detail table.testcase-list tbody tr.correct td.outcome .outcome {
-    background-color: #4e9a06;
-}
-
-#submission_detail table.testcase-list tbody tr.notcorrect td.outcome .outcome {
-    background-color: #cc0000;
-}
-
-#submission_detail table.testcase-list tbody tr.partiallycorrect td.outcome .outcome {
-    background-color: #edd400;
-}
-
-
-/*** per-user time box */
-
-.per_user_time p:last-child {
-    margin-bottom: 0;
-}
-
-/*** Countdown */
-
-#countdown_box {
-    text-align: center;
-    color: #333333;
-    margin: 0 0 8px;
-}
-
-#countdown_box.hidden {
-    display: none;
-}
-
-#countdown_label {
-    color: #999999;
-}
-
-/*** Server time */
-
-#server_time_box {
-    text-align: center;
-    color: #333333;
-    margin: 0 0 8px;
-}
-
-#server_time_label {
-    color: #999999;
-}
-
-/*** License notice */
-
-.license_notice {
-    display: block;
-    text-align: center;
-    padding: 0 6%;
-    font-size: 11px;
-}
-
-/*** Attachments */
-
-#attachments ul {
-    margin-left: 0;
-    list-style-type: none;
-    -webkit-column-count: 3;
-    -webkit-column-gap: 8px;
-    -moz-column-count: 3;
-    -moz-column-gap: 8px;
-    column-count: 3;
-    column-gap: 8px;
-}
-
-#attachments ul li {
-    -webkit-column-break-inside: avoid;
-    -webkit-break-inside: avoid;
-    -moz-break-inside: avoid;
-    break-inside: avoid;
-}
-
-/* this is a really ugly hack to simulate the no-break behavior on firefox */
-@-moz-document url-prefix() {
-    #attachments ul li {
-        display: table;
-        table-layout: fixed;
-        width: 100%;
-    }
-}
-
-#attachments ul li a {
-    display: block;
-    height: 36px;
-    margin-bottom: 8px;
-    padding: 6px;
-    text-align: left;
-}
-
-#attachments ul li a:hover {
-    background-color: #E3E3E3;
-}
-
-#attachments ul li img {
-    float: left;
-    margin: 2px 8px 2px 2px;
-}
-
-#attachments ul li .first_line {
-    display: block;
-    height: 18px;
-    overflow: hidden;
-}
-
-#attachments ul li .name {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: bold;
-}
-
-#attachments ul li .size {
-    float: right;
-    font-style: italic;
-    /* the size floats on right of the first line if there's enough space.
-       otherwise (if the name is very long) it gets shifted down,
-       "disappearing" because the first line has overflow: hidden */
-}
-
-#attachments ul li .type {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-
-/** Test interface */
-
-.test_interface .nav-tabs li {
-    display: block;
-    width: 33%;
-}
-
-.test_interface .nav-tabs li a {
-    display: block;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 100%;
-    text-align: center;
-}
-
-.test_interface .tab-content {
-    overflow: visible;
-}
-
-.submit_test {
-    margin-bottom: 20px;
-}
-
-.submit_test form {
-    margin-bottom: 0;
-}
-
-.submit_test .control-group {
-    margin-bottom: 0;
-}
-
-.submit_test .control-group:last-of-type {
-    margin-top: 10px;
-}
-
-.submit_test .control-label {
-    width: 100px;
-    padding-top: 4px;
-    margin-bottom: 4px;
-}
-
-.submit_test .controls {
-    margin-left: 110px;
-}
-
-.submit_test input[type="file"] {
-    height: auto;
-    line-height: 18px;
-}
-
-.user_test_list colgroup col.time,
-.user_test_list colgroup col.datetime {
-    width: 1%;
-}
-
-.user_test_list colgroup col.status {
-    width: 20%;
-}
-
-.user_test_list colgroup col.execution_time {
-    width: 3%;
-}
-
-.user_test_list colgroup col.memory {
-    width: 3%;
-}
-
-.user_test_list colgroup col.input {
-    width: 16%;
-}
-
-.user_test_list colgroup col.output {
-    width: 16%;
-}
-
-.user_test_list colgroup col.files {
-    width: 10%;
-}
-
-.user_test_list tbody tr td.no_user_tests {
-    font-style: italic;
-    text-align: center !important;
-}
-
-.user_test_list tbody tr td.time,
-.user_test_list tbody tr td.datetime {
-    white-space: nowrap;
-}
-
-.user_test_list tbody tr td.status .details {
-    float: right;
-    cursor: pointer;
-}
-
-.user_test_list tbody tr td.time.undefined,
-.user_test_list tbody tr td.memory.undefined {
-    color: #AAA;
-    white-space: nowrap;
-}
-
-.user_test_list tbody tr td.input,
-.user_test_list tbody tr td.output,
-.user_test_list tbody tr td.files {
-    padding: 3px;
-}
-
-.user_test_list tbody tr td.input .btn,
-.user_test_list tbody tr td.output .btn,
-.user_test_list tbody tr td.files .btn {
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 100%;
-    white-space: nowrap;
-}
-
-#user_test_detail .modal-body {
-    position: relative;
-    height: 400px;
-}
-
-#user_test_detail .modal-body .loading {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 16px;
-    font-style: italic;
-    margin-top: -16px; /* half the height of the image */
-}
-
-#user_test_detail .modal-body .loading img {
-    display: block;
-    height: 32px;
-    width: 32px;
-    margin: 0 auto 12px;
-}
-
-#lang {
-    width: 100px;
-}
-
-/** Printing interface */
-
-#printjob_list tbody tr td.no_printjobs {
-    font-style: italic;
-    text-align: center !important;
-}
-
-/* Contest selection page */
-
-.contest-list {
-    width: 60%;
-    margin: auto;
-    margin-top: 50px;
-}
-
-.contest-list ul {
-    padding: 0;
-}
-
-.contest-list li:first-child > a {
-    -webkit-border-radius: 6px 6px 0 0;
-    -moz-border-radius: 6px 6px 0 0;
-    border-radius: 6px 6px 0 0;
-}
-
-.contest-list li:last-child > a {
-    -webkit-border-radius: 0 0 6px 6px;
-    -moz-border-radius: 0 0 6px 6px;
-    border-radius: 0 0 6px 6px;
-}
-
-.contest-list li > a {
-    display: block;
-    margin: 0 0 -1px;
-    padding: 8px 14px;
-    background-color: white;
-    border: 1px solid #e5e5e5;
 }
