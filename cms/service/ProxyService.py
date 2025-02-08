@@ -330,7 +330,7 @@ class ProxyService(TriggeredService):
             contest = Contest.get_from_id(self.contest_id, session)
 
             if contest is None:
-                logger.error("Received request for unexistent contest "
+                logger.error("Received request for non-existent contest "
                              "id %s.", self.contest_id)
                 raise KeyError("Contest not found.")
 
@@ -474,7 +474,7 @@ class ProxyService(TriggeredService):
 
             if submission is None:
                 logger.error("[submission_scored] Received score request for "
-                             "unexistent submission id %s.", submission_id)
+                             "non-existent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
             # ScoringService sent us a submission of another contest, they
@@ -518,7 +518,7 @@ class ProxyService(TriggeredService):
 
             if submission is None:
                 logger.error("[submission_tokened] Received token request for "
-                             "unexistent submission id %s.", submission_id)
+                             "non-existent submission id %s.", submission_id)
                 raise KeyError("Submission not found.")
 
             # ScoringService sent us a submission of another contest, they
@@ -562,6 +562,10 @@ class ProxyService(TriggeredService):
         """
         with SessionGen() as session:
             task = Task.get_from_id(task_id, session)
+            if task is None:
+                logger.warning("Dataset update for non-existent task %d.", task_id)
+                raise KeyError("Task not found.")
+
             dataset = task.active_dataset
 
             # This ProxyService may focus on a different contest, and it should
@@ -569,7 +573,7 @@ class ProxyService(TriggeredService):
             if task.contest_id != self.contest_id:
                 logger.debug("Ignoring dataset change for task %d of contest "
                              "%d (this ProxyService considers contest %d "
-                             "only).", task_id, task.contest.id,
+                             "only).", task_id, task.contest_id,
                              self.contest_id)
                 return
 
