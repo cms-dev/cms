@@ -290,8 +290,8 @@ def get_submissions_operations(session, contest_id=None):
     contest_id (int|None): the contest for which we want the operations.
         If none, get operations for any contest.
 
-    return ([ESOperation, float, int]): a list of operation, timestamp
-        and priority.
+    return ([ESOperation, int, float]): a list of operation, priority
+        and timestamp.
 
     """
     operations = []

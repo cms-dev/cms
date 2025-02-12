@@ -356,14 +356,14 @@ class EvaluationService(TriggeredService):
         counter = 0
         with SessionGen() as session:
 
-            for operation, timestamp, priority in \
+            for operation, priority, timestamp in \
                     get_submissions_operations(session, self.contest_id):
-                if self.enqueue(operation, timestamp, priority):
+                if self.enqueue(operation, priority, timestamp):
                     counter += 1
 
-            for operation, timestamp, priority in \
+            for operation, priority, timestamp in \
                     get_user_tests_operations(session, self.contest_id):
-                if self.enqueue(operation, timestamp, priority):
+                if self.enqueue(operation, priority, timestamp):
                     counter += 1
 
         return counter
