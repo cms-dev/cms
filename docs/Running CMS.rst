@@ -98,6 +98,14 @@ After LogService is running, you can start ResourceService on each machine invol
 
 The flag ``-a`` informs ResourceService that it has to start all other services, and we have omitted again the shard number since, even if ResourceService is replicated, there must be only one of it in each machine. If you have a funny network configuration that confuses CMS, just give explicitly the shard number. In any case, ResourceService will ask you the contest to load, and will start all the other services. You should start see logs flowing in the LogService terminal.
 
+When maintaining a static list of services becomes too difficult, you can use ephemeral services.
+After configuring them in :file:`cms.conf`, you can start them by invoking the service directly without specifying a shard number, as it will be automatically assigned by the service itself.
+For example to start a Worker:
+
+.. sourcecode:: bash
+
+    cmsWorker
+
 Note that it is your duty to keep CMS's configuration synchronized among the machines.
 
 You should now be able to start exploring the admin interface, by default at http://localhost:8889/. The interface is accessible with an admin account, which you need to create first using the AddAdmin command, for example:
