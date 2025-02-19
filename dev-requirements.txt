@@ -5,4 +5,4 @@ pytest
 pytest-cov
 
 # Only for building documentation
-Sphinx>=1.8,<1.9
+Sphinx>=1.8,<8.3
