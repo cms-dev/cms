@@ -123,23 +123,25 @@ setup(
     url="https://github.com/cms-dev/cms",
     download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",
     description="A contest management system and grader "
-                "for IOI-like programming competitions",
+    "for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
     cmdclass={"build_py": build_py_and_l10n},
-    scripts=["scripts/cmsLogService",
-             "scripts/cmsScoringService",
-             "scripts/cmsEvaluationService",
-             "scripts/cmsWorker",
-             "scripts/cmsResourceService",
-             "scripts/cmsChecker",
-             "scripts/cmsContestWebServer",
-             "scripts/cmsAdminWebServer",
-             "scripts/cmsProxyService",
-             "scripts/cmsPrintingService",
-             "scripts/cmsRankingWebServer",
-             "scripts/cmsInitDB",
-             "scripts/cmsDropDB"],
+    scripts=[
+        "scripts/cmsLogService",
+        "scripts/cmsScoringService",
+        "scripts/cmsEvaluationService",
+        "scripts/cmsWorker",
+        "scripts/cmsResourceService",
+        "scripts/cmsChecker",
+        "scripts/cmsContestWebServer",
+        "scripts/cmsAdminWebServer",
+        "scripts/cmsProxyService",
+        "scripts/cmsPrintingService",
+        "scripts/cmsRankingWebServer",
+        "scripts/cmsInitDB",
+        "scripts/cmsDropDB",
+    ],
     entry_points={
         "console_scripts": [
             "cmsRunFunctionalTests=cmstestsuite.RunFunctionalTests:main",
@@ -172,6 +174,7 @@ setup(
         "cms.grading.tasktypes": [
             "Batch=cms.grading.tasktypes.Batch:Batch",
             "Communication=cms.grading.tasktypes.Communication:Communication",
+            "Online=cms.grading.tasktypes.Online:Online",
             "OutputOnly=cms.grading.tasktypes.OutputOnly:OutputOnly",
             "TwoSteps=cms.grading.tasktypes.TwoSteps:TwoSteps",
         ],
@@ -204,7 +207,6 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3.8",
-        "License :: OSI Approved :: "
-        "GNU Affero General Public License v3",
-    ]
+        "License :: OSI Approved :: GNU Affero General Public License v3",
+    ],
 )
