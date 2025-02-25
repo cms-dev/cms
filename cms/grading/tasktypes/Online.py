@@ -91,7 +91,7 @@ class Online(Communication):
     @property
     def name(self):
         """See TaskType.name."""
-        return "Communication"
+        return "Online"
 
     def __init__(self, parameters):
         super().__init__(parameters)
