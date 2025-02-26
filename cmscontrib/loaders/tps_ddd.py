@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import logging
-from tps import TpsTaskLoader
+from .tps import TpsTaskLoader
 
 logger = logging.getLogger(__name__)
 
