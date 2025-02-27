@@ -5,6 +5,8 @@ from .tps import TpsTaskLoader
 logger = logging.getLogger(__name__)
 
 class TpsDDDTaskLoader(TpsTaskLoader):
+    short_name = "ddd_tps_task"
+    description = "TPS task format with Online"
     def _get_task_type_parameters(self, data, task_type, evaluation_param):
         if task_type == "Online":
             params = super()._get_task_type_parameters(data, "Communication", evaluation_param)
