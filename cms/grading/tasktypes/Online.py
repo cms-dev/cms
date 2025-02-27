@@ -44,7 +44,7 @@ from . import (
     eval_output,
 )
 
-from Communication import Communication
+from .Communication import Communication
 
 logger = logging.getLogger(__name__)
 
