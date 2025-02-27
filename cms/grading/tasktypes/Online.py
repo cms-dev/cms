@@ -262,7 +262,7 @@ class Online(Communication):
         # Otherwise, advance to checking the solution
         else:
             # Check that the output file was created
-            if not manager.file_exists(self.ANSWER_FILENAME):
+            if not sandbox_mgr.file_exists(self.ANSWER_FILENAME):
                 outcome = 0.0
                 text = [N_("Evaluation didn't produce file %s"), self.ANSWER_FILENAME]
                 if job.get_output:
@@ -271,7 +271,7 @@ class Online(Communication):
             else:
                 # If asked so, put the output file into the storage.
                 if job.get_output:
-                    job.user_output = manager.get_file_to_storage(
+                    job.user_output = sandbox_mgr.get_file_to_storage(
                         self.ANSWER_FILENAME,
                         "Output file in job %s" % job.info,
                         trunc_len=100 * 1024,
@@ -289,19 +289,10 @@ class Online(Communication):
                         file_cacher,
                         job,
                         None,  # self.CHECKER_CODENAME if self._uses_checker() else None,
-                        user_output_path=manager.relative_path(self.ANSWER_FILENAME),
+                        user_output_path=sandbox_mgr.relative_path(
+                            self.ANSWER_FILENAME
+                        ),
                     )
-
-        # If asked so, save the output file with additional information,
-        # provided that it exists.
-        if job.get_output:
-            if sandbox_mgr.file_exists(self.OUTPUT_FILENAME):
-                job.user_output = sandbox_mgr.get_file_to_storage(
-                    self.OUTPUT_FILENAME,
-                    "Output file in job %s" % job.info,
-                    trunc_len=100 * 1024)
-            else:
-                job.user_output = None
 
         # Fill in the job with the results.
         job.success = success
