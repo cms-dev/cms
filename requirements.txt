@@ -10,7 +10,7 @@ greenlet>=3.0rc1
 werkzeug<1.0 # https://github.com/pallets/werkzeug/blob/master/CHANGES
 backports.ssl-match-hostname==3.7.0.1 # required by tornado<5.0
 patool>=1.12,<3.2  # https://github.com/wummel/patool/blob/master/doc/changelog.txt
-bcrypt>=3.1,<4.3  # https://github.com/pyca/bcrypt/
+bcrypt>=3.1,<4.4  # https://github.com/pyca/bcrypt/
 chardet>=3.0,<5.3  # https://pypi.python.org/pypi/chardet
 babel==2.12.1  # http://babel.pocoo.org/en/latest/changelog.html
 pyxdg>=0.26,<0.29  # https://freedesktop.org/wiki/Software/pyxdg/
