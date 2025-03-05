@@ -31,4 +31,4 @@ PyPDF2>=1.26,<3.1  # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
 prometheus-client>=0.7,<0.22  # https://pypi.org/project/prometheus-client
 
 # Only for cmsTelegramBot
-python-telegram-bot>=21.9,<21.10 # https://pypi.org/project/python-telegram-bot
+python-telegram-bot>=21.9,<21.12 # https://pypi.org/project/python-telegram-bot
