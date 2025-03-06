@@ -124,8 +124,7 @@
     "_help": "in core_services. If you access them through a proxy (acting",
     "_help": "as a load balancer) running on the same host you could put",
     "_help": "127.0.0.1 here for additional security.",
-    "_help": "When using ephemeral services only the first address and port",
-    "_help": "are used",
+    "_help": "Ephemeral instances of cws will use the first address and port.",
     "contest_listen_address": [""],
     "contest_listen_port":    [8888],
 

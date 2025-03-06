@@ -106,6 +106,8 @@ For example to start a Worker:
 
     cmsWorker
 
+When using both ephemeral and static services, cmsResourceService will start only the static ones.
+
 Note that it is your duty to keep CMS's configuration synchronized among the machines.
 
 You should now be able to start exploring the admin interface, by default at http://localhost:8889/. The interface is accessible with an admin account, which you need to create first using the AddAdmin command, for example:
