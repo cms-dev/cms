@@ -211,6 +211,7 @@ def eval_output(
     user_output_path: str | None = None,
     user_output_digest: str | None = None,
     user_output_filename: str = "",
+    extra_args: list[str] | None = None
 ) -> tuple[bool, float | None, list[str] | None]:
     """Evaluate ("check") a user output using a white diff or a checker.
 
@@ -224,6 +225,7 @@ def eval_output(
         using the path (exactly one must be non-None).
     user_output_filename: the filename the user was expected to write to,
         or empty if stdout (used to return an error to the user).
+    extra_args: additional arguments to pass to the checker
 
     return: tuple of success (true if the checker was
         able to check the solution successfully), outcome and text (both None
@@ -266,7 +268,7 @@ def eval_output(
             if checker_codename in job.managers else None
         success, outcome, text = checker_step(
             sandbox, checker_digest, job.input, job.output,
-            EVAL_USER_OUTPUT_FILENAME)
+            EVAL_USER_OUTPUT_FILENAME, extra_args)
 
         delete_sandbox(sandbox, success, job.keep_sandbox)
         return success, outcome, text

@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cmstestsuite.tasks.batch_and_output as batch_and_output
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.batch_stdio as batch_stdio
@@ -382,6 +383,58 @@ ALL_TESTS = [
                                               "twosteps-correct-second.%l"],
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
+
+
+    # BatchAndOutput
+    Test('batchandoutput-batchonly-correct',
+         task=batch_and_output, filenames=[
+             "output-0-stdio.%l", None, None, None],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(50, 100)]),
+
+    Test('batchandoutput-batchonly-incorrect',
+         task=batch_and_output, filenames=[
+             "output-1-stdio.%l", None, None, None],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('batchandoutput-outputonly-correct',
+         task=batch_and_output, filenames=[
+             None, "outputonly-1.txt", "outputonly-1.txt", "outputonly-0.txt"],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(75, 100)]),
+
+    Test('batchandoutput-outputonly-incorrect',
+         task=batch_and_output, filenames=[
+             None, "outputonly-0.txt", "outputonly-0.txt", "outputonly-1.txt"],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('batchandoutput-mixed-correct',
+         task=batch_and_output, filenames=[
+             "output-0-stdio.%l", "outputonly-1.txt", "outputonly-1.txt", "outputonly-0.txt"],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('batchandoutput-mixed-incorrect',
+         task=batch_and_output, filenames=[
+             "output-1-stdio.%l", "outputonly-0.txt", "outputonly-0.txt", "outputonly-1.txt"],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('batchandoutput-tle',
+         task=batch_and_output, filenames=[
+             "timeout-cputime.%l", "outputonly-1.txt", "outputonly-1.txt", "outputonly-0.txt"],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(75, 100)]),
+
+    # TODO(veluca): are these the semantics we want?
+    Test('batchandoutput-compile-fail',
+         task=batch_and_output, filenames=[
+             "compile-fail.%l", "outputonly-1.txt", "outputonly-1.txt", "outputonly-0.txt"],
+         languages=(LANG_CPP,),
+         checks=[CheckCompilationFail()]),
+
 
     # Writing to files not allowed.
 

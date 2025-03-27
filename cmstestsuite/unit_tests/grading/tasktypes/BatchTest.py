@@ -362,7 +362,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         # Check eval_output was called correctly.
         self.eval_output.assert_called_once_with(
             self.file_cacher, job, None,
-            user_output_path="/path/0/output.txt", user_output_filename="")
+            user_output_path="/path/0/output.txt", user_output_filename="", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.cleanup.assert_called_once_with(delete=True)
@@ -483,7 +483,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         # Check eval_output was called correctly.
         self.eval_output.assert_called_once_with(
             self.file_cacher, job, None, user_output_path="/path/0/myout",
-            user_output_filename="myout")
+            user_output_filename="myout", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.cleanup.assert_called_once_with(delete=True)
@@ -498,7 +498,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         # We only perform checks for the final eval step (checker).
         self.eval_output.assert_called_once_with(
             self.file_cacher, job, "checker",
-            user_output_path="/path/0/output.txt", user_output_filename="")
+            user_output_path="/path/0/output.txt", user_output_filename="", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.cleanup.assert_called_once_with(delete=True)
@@ -514,7 +514,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.eval_output.assert_called_once_with(
             self.file_cacher, job, "checker",
             user_output_path="/path/0/myout",
-            user_output_filename="myout")
+            user_output_filename="myout", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
         sandbox.cleanup.assert_called_once_with(delete=True)
