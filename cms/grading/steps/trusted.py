@@ -195,6 +195,7 @@ def checker_step(
     input_digest: str,
     correct_output_digest: str,
     output_filename: str,
+    extra_args: list[str] | None = None
 ) -> tuple[bool, float | None, list[str] | None]:
     """Run the explicit checker given by the admins
 
@@ -209,6 +210,7 @@ def checker_step(
         as "correct_output.txt".
     output_filename: inner filename of the user output (already in the
         sandbox).
+    extra_args: extra arguments to pass to the checker.
 
     return: success (true if the checker was able to check the solution
         successfully), outcome and text (both None if success is False).
@@ -240,7 +242,7 @@ def checker_step(
     command = ["./%s" % CHECKER_FILENAME,
                CHECKER_INPUT_FILENAME,
                CHECKER_CORRECT_OUTPUT_FILENAME,
-               output_filename]
+               output_filename] + (extra_args if extra_args is not None else [])
     box_success, success, unused_stats = trusted_step(sandbox, [command])
     if not box_success or not success:
         logger.error("Sandbox failed during checker step. "

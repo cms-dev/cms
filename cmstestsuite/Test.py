@@ -154,7 +154,7 @@ class Test:
     __test__ = False
 
     def __init__(self, name, *, task, filenames, alt_filenames={}, languages,
-            checks, user_tests=False, user_managers=[], user_checks=[]):
+                 checks, user_tests=False, user_managers=[], user_checks=[]):
         self.framework = FunctionalTestFramework()
 
         self.name = name
@@ -172,7 +172,7 @@ class Test:
         # Some tasks may require additional user test managers.
         self.user_managers = user_managers
         user_manager_format = list(e.strip()
-            for e in task.task_info.get("user_manager_format", "").split(","))
+                                   for e in task.task_info.get("user_manager_format", "").split(","))
         self.user_manager_format = user_manager_format
 
         self.submission_id = {}
@@ -186,7 +186,7 @@ class Test:
             filenames = alt_filenames.get(language, filenames)
 
             ext = get_language(language).source_extension
-            return [filename.replace(".%l", ext) for filename in filenames]
+            return [filename.replace(".%l", ext) if filename is not None else None for filename in filenames]
         else:
             return filenames
 
@@ -196,7 +196,8 @@ class Test:
 
         filenames = self._filenames_for_language(language, self.filenames,
                                                  self.alt_filenames)
-        full_paths = [os.path.join(path, filename) for filename in filenames]
+        full_paths = [os.path.join(
+            path, filename) if filename is not None else None for filename in filenames]
 
         return full_paths
 
@@ -206,7 +207,8 @@ class Test:
         path = os.path.join(os.path.dirname(self.task_module.__file__), "code")
 
         filenames = self._filenames_for_language(language, self.user_managers)
-        full_paths = [os.path.join(path, filename) for filename in filenames]
+        full_paths = [os.path.join(
+            path, filename) if filename is not None else None for filename in filenames]
 
         return full_paths
 
@@ -237,7 +239,7 @@ class Test:
     def submit_user_test(self, task_id, user_id, language):
         submission_format = self.submission_format + self.user_manager_format
         full_paths = self._sources_names(language) + \
-                     self._user_managers_names(language)
+            self._user_managers_names(language)
         self.user_test_id[language] = self.framework.cws_submit_user_test(
             task_id, user_id, submission_format, full_paths, language)
 
