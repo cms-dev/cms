@@ -204,7 +204,7 @@ def check_manager_present(job, codename):
 
 def eval_output(file_cacher, job, checker_codename,
                 user_output_path=None, user_output_digest=None,
-                user_output_filename=""):
+                user_output_filename="", extra_args=None):
     """Evaluate ("check") a user output using a white diff or a checker.
 
     file_cacher (FileCacher): file cacher to use to get files.
@@ -217,6 +217,7 @@ def eval_output(file_cacher, job, checker_codename,
         using the path (exactly one must be non-None).
     user_output_filename (str): the filename the user was expected to write to,
         or empty if stdout (used to return an error to the user).
+    extra_args ([str]|None): additional arguments to pass to the checker 
 
     return (bool, float|None, [str]|None): success (true if the checker was
         able to check the solution successfully), outcome and text (both None
@@ -256,7 +257,7 @@ def eval_output(file_cacher, job, checker_codename,
             if checker_codename in job.managers else None
         success, outcome, text = checker_step(
             sandbox, checker_digest, job.input, job.output,
-            EVAL_USER_OUTPUT_FILENAME)
+            EVAL_USER_OUTPUT_FILENAME, extra_args)
 
         delete_sandbox(sandbox, success, job.keep_sandbox)
         return success, outcome, text
