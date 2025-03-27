@@ -66,6 +66,8 @@ PACKAGE_DATA = {
     ],
     "cmstestsuite": [
         "code/*.*",
+        "tasks/batch_and_output/code/*",
+        "tasks/batch_and_output/data/*",
         "tasks/batch_stdio/data/*.*",
         "tasks/batch_fileio/data/*.*",
         "tasks/batch_fileio_managed/code/*",
@@ -163,6 +165,7 @@ setup(
         ],
         "cms.grading.tasktypes": [
             "Batch=cms.grading.tasktypes.Batch:Batch",
+            "BatchAndOutput=cms.grading.tasktypes.BatchAndOutput:BatchAndOutput",
             "Communication=cms.grading.tasktypes.Communication:Communication",
             "OutputOnly=cms.grading.tasktypes.OutputOnly:OutputOnly",
             "TwoSteps=cms.grading.tasktypes.TwoSteps:TwoSteps",
