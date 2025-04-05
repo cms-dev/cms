@@ -26,6 +26,7 @@ import subprocess
 from datetime import timedelta
 
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
+from cmscommon.constants import SCORE_MODE_MAX_SUBTASK
 from .base_loader import TaskLoader
 
 
@@ -42,7 +43,7 @@ class TpsTaskLoader(TaskLoader):
     """
 
     short_name = 'tps_task'
-    description = 'TPS task format'
+    description = 'TPS task format (version 2)'
 
     @staticmethod
     def detect(path):
@@ -58,6 +59,18 @@ class TpsTaskLoader(TaskLoader):
         return True
 
     def _get_task_type_parameters(self, data, task_type, evaluation_param):
+        if self.protocol_version >= 2:
+            # Task type parameters are completely specified in the json file.
+            task_type_params = data.get('task_type_params')
+            if task_type_params is None:
+                logger.critical("'task_type_params' is not provided.")
+                return None
+            if not isinstance(task_type_params, list):
+                logger.critical("Given 'task_type_params' is not a list.")
+                return None
+            return task_type_params
+
+        # protocol_version 1: Create the task type parameters manually...
         parameters_str = data['task_type_params']
         if parameters_str is None or parameters_str == '':
             parameters_str = '{}'
@@ -116,6 +129,21 @@ class TpsTaskLoader(TaskLoader):
         with open(json_src, 'rt', encoding='utf-8') as json_file:
             data = json.load(json_file)
 
+        if "protocol_version" in data:
+            self.protocol_version = data["protocol_version"]
+            logger.info("protocol_version=%s" % str(self.protocol_version))
+        else:
+            self.protocol_version = 1
+            logger.info("The protocol_version is not defined. Setting to default value: %s" % str(self.protocol_version))
+
+        if not isinstance(self.protocol_version, int):
+            logger.critical("Given protocol_version is not an integer")
+            return None
+
+        if not (1 <= self.protocol_version <= 2):
+            logger.critical("Invalid protocol_version %d" % self.protocol_version)
+            return None
+
         name = data['code']
         logger.info("Loading parameters for task %s.", name)
 
@@ -123,6 +151,7 @@ class TpsTaskLoader(TaskLoader):
 
         args["name"] = name
         args["title"] = data['name']
+        args["score_mode"] = data.get("score_mode", SCORE_MODE_MAX_SUBTASK)
 
         # Statements
         if get_statement:
@@ -250,6 +279,9 @@ class TpsTaskLoader(TaskLoader):
         args["task_type_parameters"] = \
             self._get_task_type_parameters(
                 data, data['task_type'], evaluation_param)
+
+        if args["task_type_parameters"] is None:
+            return None
 
         # Graders
         graders_dir = os.path.join(self.path, 'graders')
