@@ -24,6 +24,7 @@ gevent.monkey.patch_all()  # noqa
 
 import logging
 import sys
+import tornado
 
 from cms import ConfigError, default_argument_parser
 from cms.db import test_db_connection
@@ -37,6 +38,11 @@ def main():
     """Parse arguments and launch service.
 
     """
+    if tornado.version_info >= (5, 0):
+        import asyncio
+        from tornado.platform.asyncio import AnyThreadEventLoopPolicy
+        asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
+
     test_db_connection()
     success = default_argument_parser("Admins' web server for CMS.",
                                       AdminWebServer).run()
