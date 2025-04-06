@@ -99,7 +99,10 @@ After LogService is running, you can start ResourceService on each machine invol
 The flag ``-a`` informs ResourceService that it has to start all other services, and we have omitted again the shard number since, even if ResourceService is replicated, there must be only one of it in each machine. If you have a funny network configuration that confuses CMS, just give explicitly the shard number. In any case, ResourceService will ask you the contest to load, and will start all the other services. You should start see logs flowing in the LogService terminal.
 
 When maintaining a static list of services becomes too difficult, you can use ephemeral services.
-After configuring them in :file:`cms.conf`, you can start them by invoking the service directly without specifying a shard number, as it will be automatically assigned by the service itself.
+Ephemeral services are an alternative to static services which allows cms to dinamically start, discover and stop services as needed.
+Currently only cmsWorker and cmsContestWebServer are supported.
+After configuring them in :file:`cms.conf`, you can start them by invoking the service directly without specifying a shard number,
+as it will be automatically computed by the formula ``10000 + (service_address - subnet.min_address) * num_ports + (service_port - min_port)``.
 For example to start a Worker:
 
 .. sourcecode:: bash
