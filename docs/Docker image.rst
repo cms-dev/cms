@@ -7,15 +7,25 @@ dependencies. We also provide:
 
 * :gh_blob:`cms-test.sh`: This file uses :gh_blob:`docker-compose.test.yml` to
      spawn a volatile database (not persisted on disk) as well as a CMS instance
-     that automatically runs all tests.
+     that automatically runs all unit tests and functional tests.
+
+* :gh_blob:`cms-stresstest.sh`: Similar to `cms_test.sh` but runs the stress
+     tests instead of the unit tests. The stress test consists of: creating a
+     database, populating it with some sample tasks, and then simulating some
+     users logging in via ContestWebServer and repeatedly performing actions
+     such as download task statements and submitting solutions.
 
 * :gh_blob:`cms-dev.sh`: This file uses :gh_blob:`docker-compose.dev.yml` to
-     spawn a database (persisted in the local ``.dev/postgres-data`` folder
-     within the repository) as well as a CMS instance that only runs `bash`,
-     leaving you with a shell from where you can start cms services and servers.
-     The DB port and CMS server ports are also automatically forwarded on the
-     host machine (respectively to ``15432`` for the database, and ``8888-8890``
-     for CMS).
+     spawn a database (**persisted** in the local ``.dev/postgres-data`` folder
+     within the repository) as well as a CMS container that only runs `bash`,
+     leaving you with a shell from where you can start cms services. Changes
+     made in the repository are also reflected directly inside the container
+     (the source code is mounted as a docker volume). The DB port and CMS server
+     ports are also automatically forwarded on the host machine (respectively to
+     ``15432`` for the database, and ``8888-8890`` for CMS), which allows you to
+     access the CMS web server from your host machine, but that also means you
+     can only use `./cms-dev.sh` for one git branch at a time, as the ports are
+     already in use.
 
 Make sure that you have a recent version of Docker installed, as well as Docker
 Compose.
