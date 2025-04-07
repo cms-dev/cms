@@ -30,6 +30,7 @@ import time
 
 import gevent.lock
 
+from cms import ServiceCoord
 from cms.db import SessionGen, Contest, enumerate_files
 from cms.db.filecacher import FileCacher, TombstoneError
 from cms.grading import JobException
@@ -63,6 +64,13 @@ class Worker(Service):
         self._number_execution = 0
 
         self._fake_worker_time = fake_worker_time
+
+        self.evaluation_service = self.connect_to(
+            ServiceCoord("EvaluationService", 0),
+            on_connect=self.on_es_connection)
+
+    def on_es_connection(self, address):
+        self.evaluation_service.add_worker(coord=self._my_coord)
 
     @rpc_method
     def precache_files(self, contest_id):
