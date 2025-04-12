@@ -182,7 +182,7 @@ def trusted_step(sandbox, commands):
 
 
 def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
-                 output_filename):
+                 output_filename, extra_args=None):
     """Run the explicit checker given by the admins
 
     sandbox (Sandbox): the sandbox to run the checker in; should already
@@ -196,6 +196,7 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
         as "correct_output.txt".
     output_filename (str): inner filename of the user output (already in the
         sandbox).
+    extra_args ([str]|None): extra arguments to pass to the checker.
 
     return (bool, float|None, [str]|None): success (true if the checker was
         able to check the solution successfully), outcome and text (both None
@@ -228,7 +229,7 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
     command = ["./%s" % CHECKER_FILENAME,
                CHECKER_INPUT_FILENAME,
                CHECKER_CORRECT_OUTPUT_FILENAME,
-               output_filename]
+               output_filename] + (extra_args if extra_args is not None else [])
     box_success, success, unused_stats = trusted_step(sandbox, [command])
     if not box_success or not success:
         logger.error("Sandbox failed during checker step. "
