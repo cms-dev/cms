@@ -30,6 +30,7 @@
 """
 
 import ipaddress
+import json
 import logging
 
 import collections
@@ -313,6 +314,11 @@ class ContestHandler(BaseHandler):
 
     def notify_error(self, subject: str, text: str, text_params: object | None = None):
         self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
+
+    def json(self, data, status_code=200):
+        self.set_header("Content-type", "application/json; charset=utf-8")
+        self.set_status(status_code)
+        self.write(json.dumps(data))
 
     def check_xsrf_cookie(self):
         # We don't need to check for xsrf if the request came with a custom
