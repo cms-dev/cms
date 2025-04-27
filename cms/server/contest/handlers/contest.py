@@ -30,6 +30,7 @@
 """
 
 import ipaddress
+import json
 import logging
 
 import collections
@@ -69,6 +70,7 @@ class ContestHandler(BaseHandler):
     child of this class.
 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.contest_url = None
@@ -256,6 +258,20 @@ class ContestHandler(BaseHandler):
             .offset(int(submission_num) - 1) \
             .first()
 
+    def get_submission_count(self, task):
+        """Return the number of contestant submissions on the given task.
+
+        task (Task): a task for the contest that is being served.
+
+        return (int): the number of submissions from this user on this task.
+
+        """
+        return self.sql_session.query(Submission) \
+            .filter(Submission.participation == self.current_user) \
+            .filter(Submission.task == task) \
+            .order_by(Submission.timestamp) \
+            .count()
+
     def get_user_test(self, task, user_test_num):
         """Return the num-th contestant's test on the given task.
 
@@ -290,6 +306,11 @@ class ContestHandler(BaseHandler):
 
     def notify_error(self, subject, text, text_params=None):
         self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
+
+    def json(self, data, status_code=200):
+        self.set_header("Content-type", "application/json; charset=utf-8")
+        self.set_status(status_code)
+        self.write(json.dumps(data))
 
 
 class FileHandler(ContestHandler, FileHandlerMixin):
