@@ -161,7 +161,8 @@ class EvaluationExecutor(Executor):
                 item_entry = item.to_dict()
                 del item_entry["testcase_codename"]
                 item_entry["multiplicity"] = 1
-                entry = {"item": item_entry, "priority": priority, "timestamp": make_timestamp(timestamp)}
+                entry = {"item": item_entry, "priority": priority,
+                         "timestamp": make_timestamp(timestamp)}
                 self.queue_status_cumulative[key] = entry
         return success
 
@@ -196,6 +197,11 @@ class EvaluationExecutor(Executor):
         self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
         if self.queue_status_cumulative[key]["item"]["multiplicity"] == 0:
             del self.queue_status_cumulative[key]
+
+    def add_worker(self, worker_coord):
+        """Add a new worker to the pool.
+        """
+        self.pool.add_worker(worker_coord, ephemeral=True)
 
 
 def with_post_finish_lock(func):
@@ -378,6 +384,13 @@ class EvaluationService(TriggeredService):
 
         """
         return self.get_executor().pool.get_status()
+
+    @rpc_method
+    def add_worker(self, coord):
+        """Register a new worker to the list of workers.
+        """
+        service, shard = coord
+        self.get_executor().add_worker(ServiceCoord(service, shard))
 
     def check_workers_timeout(self):
         """We ask WorkerPool for the unresponsive workers, and we put
