@@ -45,7 +45,7 @@ RUN sudo pip3 install --break-system-packages -r dev-requirements.txt
 
 COPY --chown=cmsuser:cmsuser . /home/cmsuser/cms
 
-RUN sudo python3 setup.py install
+RUN sudo pip3 install --break-system-packages .
 
 RUN sudo python3 prerequisites.py --yes --cmsuser=cmsuser install
 
