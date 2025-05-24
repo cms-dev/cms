@@ -194,7 +194,7 @@ Once that is done, install the distribution by executing
 
 .. sourcecode:: bash
 
-    python3 setup.py install
+    pip3 install .
 
 CMS needs to be restarted for it to pick up the new task type.
 
