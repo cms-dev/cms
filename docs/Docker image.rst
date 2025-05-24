@@ -97,7 +97,7 @@ similar to:
 The command will build a fresh CMS image when necessary, and drop you into a
 bash prompt where the repository is mounted on ``~/cms`` for ease of
 development. You can edit the code from the host (i.e. outside the container)
-and then reinstall CMS (``python3 setup.py install``) directly from inside the
+and then reinstall CMS (``pip install .``) directly from inside the
 container, without having to rebuild the image every time.
 
 Upon running ``cms-dev.sh`` for the first time, the database will initially be

@@ -106,13 +106,7 @@ def find_version():
 # the po and mofiles will be part of the package data for cms.locale,
 # which is collected at this stage.
 class build_py_and_l10n(build_py):
-    def run(self):
-        self.run_command("compile_catalog")
-        # The build command of distutils/setuptools searches the tree
-        # and compiles a list of data files before run() is called and
-        # then stores that value. Hence we need to refresh it.
-        self.data_files = self._get_data_files()
-        super().run()
+    sub_commands = [('compile_catalog', None)] + build_py.sub_commands
 
 
 setup(
@@ -121,7 +115,6 @@ setup(
     author="The CMS development team",
     author_email="contestms@googlegroups.com",
     url="https://github.com/cms-dev/cms",
-    download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",
     description="A contest management system and grader for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
@@ -201,12 +194,11 @@ setup(
         ],
     },
     keywords="ioi programming contest grader management system",
-    license="Affero General Public License v3",
+    license_expression="AGPL-3.0-only",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.9",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "Programming Language :: Python :: 3.12",
     ],
 )
