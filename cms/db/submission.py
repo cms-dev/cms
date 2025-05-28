@@ -26,6 +26,7 @@
 
 """
 
+from datetime import datetime
 from sqlalchemy import Boolean
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import relationship
@@ -47,91 +48,91 @@ class Submission(Base):
     __tablename__ = 'submissions'
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # User and Contest, thus Participation (id and object) that did the
     # submission.
-    participation_id = Column(
+    participation_id: int = Column(
         Integer,
         ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    participation = relationship(
+    participation: Participation = relationship(
         Participation,
         back_populates="submissions")
 
     # Task (id and object) of the submission.
-    task_id = Column(
+    task_id: int = Column(
         Integer,
         ForeignKey(Task.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task: Task = relationship(
         Task,
         back_populates="submissions")
 
     # Time of the submission.
-    timestamp = Column(
+    timestamp: datetime = Column(
         DateTime,
         nullable=False)
 
     # Language of submission, or None if not applicable.
-    language = Column(
+    language: str | None = Column(
         String,
         nullable=True)
 
     # Comment from the administrator on the submission.
-    comment = Column(
+    comment: str = Column(
         Unicode,
         nullable=False,
         default="")
 
     # If false, submission will not be considered in contestant's score.
-    official = Column(
+    official: bool = Column(
         Boolean,
         nullable=False,
         default=True,
     )
 
     @property
-    def short_comment(self):
+    def short_comment(self) -> str:
         """The first line of the comment."""
         return self.comment.split("\n", 1)[0]
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
-    files = relationship(
+    files: dict[str, "File"] = relationship(
         "File",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="submission")
 
-    token = relationship(
+    token: "Token" = relationship(
         "Token",
         uselist=False,
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="submission")
 
-    results = relationship(
+    results: list["SubmissionResult"] = relationship(
         "SubmissionResult",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="submission")
 
-    def get_result(self, dataset=None):
+    def get_result(self, dataset: Dataset | None = None) -> "SubmissionResult | None":
         """Return the result associated to a dataset.
 
-        dataset (Dataset|None): the dataset for which the caller wants
+        dataset: the dataset for which the caller wants
             the submission result; if None, the active one is used.
 
-        return (SubmissionResult|None): the submission result
+        return: the submission result
             associated to this submission and the given dataset, if it
             exists in the database, otherwise None.
 
@@ -146,13 +147,13 @@ class Submission(Base):
         return SubmissionResult.get_from_id(
             (self.id, dataset_id), self.sa_session)
 
-    def get_result_or_create(self, dataset=None):
+    def get_result_or_create(self, dataset: Dataset | None = None) -> "SubmissionResult":
         """Return and, if necessary, create the result for a dataset.
 
-        dataset (Dataset|None): the dataset for which the caller wants
+        dataset: the dataset for which the caller wants
             the submission result; if None, the active one is used.
 
-        return (SubmissionResult): the submission result associated to
+        return: the submission result associated to
             the this submission and the given dataset; if it
             does not exists, a new one is created.
 
@@ -168,10 +169,10 @@ class Submission(Base):
 
         return submission_result
 
-    def tokened(self):
+    def tokened(self) -> bool:
         """Return if the user played a token against the submission.
 
-        return (bool): True if tokened, False otherwise.
+        return: True if tokened, False otherwise.
 
         """
         return self.token is not None
@@ -188,26 +189,26 @@ class File(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Submission (id and object) owning the file.
-    submission_id = Column(
+    submission_id: int = Column(
         Integer,
         ForeignKey(Submission.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission: Submission = relationship(
         Submission,
         back_populates="files")
 
     # Filename and digest of the submitted file.
-    filename = Column(
+    filename: str = Column(
         FilenameSchema,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -222,24 +223,24 @@ class Token(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Submission (id and object) the token has been used on.
-    submission_id = Column(
+    submission_id: int = Column(
         Integer,
         ForeignKey(Submission.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission: Submission = relationship(
         Submission,
         back_populates="token",
         single_parent=True)
 
     # Time the token was played.
-    timestamp = Column(
+    timestamp: datetime = Column(
         DateTime,
         nullable=False,
         default=make_datetime)
@@ -269,21 +270,21 @@ class SubmissionResult(Base):
     )
 
     # Primary key is (submission_id, dataset_id).
-    submission_id = Column(
+    submission_id: int = Column(
         Integer,
         ForeignKey(Submission.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True)
-    submission = relationship(
+    submission: Submission = relationship(
         Submission,
         back_populates="results")
 
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset)
 
     # Now below follow the actual result fields.
@@ -291,66 +292,66 @@ class SubmissionResult(Base):
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
     # compilation unsuccessful, throw it away).
-    compilation_outcome = Column(
+    compilation_outcome: str | None = Column(
         Enum("ok", "fail", name="compilation_outcome"),
         nullable=True)
 
     # The output from the sandbox (to allow localization the first item
     # of the list is a format string, possibly containing some "%s",
     # that will be filled in using the remaining items of the list).
-    compilation_text = Column(
+    compilation_text: list[str] = Column(
         ARRAY(String),
         nullable=False,
         default=[])
 
     # Number of failures during compilation.
-    compilation_tries = Column(
+    compilation_tries: int = Column(
         Integer,
         nullable=False,
         default=0)
 
     # The compiler stdout and stderr.
-    compilation_stdout = Column(
+    compilation_stdout: str | None = Column(
         Unicode,
         nullable=True)
-    compilation_stderr = Column(
+    compilation_stderr: str | None = Column(
         Unicode,
         nullable=True)
 
     # Other information about the compilation.
-    compilation_time = Column(
+    compilation_time: float | None = Column(
         Float,
         nullable=True)
-    compilation_wall_clock_time = Column(
+    compilation_wall_clock_time: float | None = Column(
         Float,
         nullable=True)
-    compilation_memory = Column(
+    compilation_memory: int | None = Column(
         BigInteger,
         nullable=True)
 
     # Worker shard and sandbox where the compilation was performed.
-    compilation_shard = Column(
+    compilation_shard: int | None = Column(
         Integer,
         nullable=True)
-    compilation_sandbox = Column(
+    compilation_sandbox: str | None = Column(
         Unicode,
         nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful). At any time, this should be equal to
     # evaluations != [].
-    evaluation_outcome = Column(
+    evaluation_outcome: str | None = Column(
         Enum("ok", name="evaluation_outcome"),
         nullable=True)
 
     # Number of failures during evaluation.
-    evaluation_tries = Column(
+    evaluation_tries: int = Column(
         Integer,
         nullable=False,
         default=0)
 
     # Score as computed by ScoringService. Null means not yet scored.
-    score = Column(
+    score: float | None = Column(
         Float,
         nullable=True)
 
@@ -359,43 +360,43 @@ class SubmissionResult(Base):
     # snippet that is shown on AWS and, if the user used a token, on
     # CWS to display the details of the submission.
     # For example, results for each testcases, subtask, etc.
-    score_details = Column(
+    score_details: object | None = Column(
         JSONB,
         nullable=True)
 
     # The same as the last two fields, but only showing information
     # visible to the user (assuming they did not use a token on this
     # submission).
-    public_score = Column(
+    public_score: float | None = Column(
         Float,
         nullable=True)
-    public_score_details = Column(
+    public_score_details: object | None = Column(
         JSONB,
         nullable=True)
 
     # Ranking score details. It is a list of strings that are going to
     # be shown in a single row in the table of submission in RWS.
-    ranking_score_details = Column(
+    ranking_score_details: list[str] | None = Column(
         ARRAY(String),
         nullable=True)
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
-    executables = relationship(
+    executables: dict[str, "Executable"] = relationship(
         "Executable",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="submission_result")
 
-    evaluations = relationship(
+    evaluations: list["Evaluation"] = relationship(
         "Evaluation",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="submission_result")
 
-    def get_status(self):
+    def get_status(self) -> int:
         """Return the status of this object.
 
         """
@@ -410,15 +411,13 @@ class SubmissionResult(Base):
         else:
             return SubmissionResult.SCORED
 
-    def get_evaluation(self, testcase):
+    def get_evaluation(self, testcase: Testcase) -> "Evaluation | None":
         """Return the Evaluation of this SR on the given Testcase, if any
 
-        testcase (Testcase): the testcase the returned evaluation will
-            belong to.
+        testcase: the testcase the returned evaluation will belong to.
 
-        return (Evaluation|None): the (only!) evaluation of this
-            submission result on the given testcase, or None if there
-            isn't any.
+        return: the (only!) evaluation of this submission result on the
+            given testcase, or None if there isn't any.
 
         """
         # Use IDs to avoid triggering a lazy-load query.
@@ -433,12 +432,11 @@ class SubmissionResult(Base):
             .filter(Evaluation.testcase == testcase)\
             .first()
 
-    def get_max_evaluation_resources(self):
+    def get_max_evaluation_resources(self) -> tuple[float | None, int | None]:
         """Return the maximum time and memory used by this result
 
-        return (float|None, int|None): max used time in seconds and
-            memory in bytes, or None if data is incomplete or
-            unavailable.
+        return: max used time in seconds and memory in bytes,
+            or None if data is incomplete or unavailable.
 
         """
         t, m = None, None
@@ -452,10 +450,10 @@ class SubmissionResult(Base):
                     m = ev.execution_memory
         return (t, m)
 
-    def compiled(self):
+    def compiled(self) -> bool:
         """Return whether the submission result has been compiled.
 
-        return (bool): True if compiled, False otherwise.
+        return: True if compiled, False otherwise.
 
         """
         return self.compilation_outcome is not None
@@ -467,10 +465,10 @@ class SubmissionResult(Base):
         """
         return SubmissionResult.compilation_outcome.isnot(None)
 
-    def compilation_failed(self):
+    def compilation_failed(self) -> bool:
         """Return whether the submission result did not compile.
 
-        return (bool): True if the compilation failed (in the sense
+        return: True if the compilation failed (in the sense
             that there is a problem in the user's source), False if
             not yet compiled or compilation was successful.
 
@@ -485,10 +483,10 @@ class SubmissionResult(Base):
         """
         return SubmissionResult.compilation_outcome == "fail"
 
-    def compilation_succeeded(self):
+    def compilation_succeeded(self) -> bool:
         """Return whether the submission compiled.
 
-        return (bool): True if the compilation succeeded (in the sense
+        return: True if the compilation succeeded (in the sense
             that an executable was created), False if not yet compiled
             or compilation was unsuccessful.
 
@@ -503,10 +501,10 @@ class SubmissionResult(Base):
         """
         return SubmissionResult.compilation_outcome == "ok"
 
-    def evaluated(self):
+    def evaluated(self) -> bool:
         """Return whether the submission result has been evaluated.
 
-        return (bool): True if evaluated, False otherwise.
+        return: True if evaluated, False otherwise.
 
         """
         return self.evaluation_outcome is not None
@@ -518,19 +516,19 @@ class SubmissionResult(Base):
         """
         return SubmissionResult.evaluation_outcome.isnot(None)
 
-    def needs_scoring(self):
+    def needs_scoring(self) -> bool:
         """Return whether the submission result needs to be scored.
 
-        return (bool): True if in need of scoring, False otherwise.
+        return: True if in need of scoring, False otherwise.
 
         """
         return (self.compilation_failed() or self.evaluated()) and \
             not self.scored()
 
-    def scored(self):
+    def scored(self) -> bool:
         """Return whether the submission result has been scored.
 
-        return (bool): True if scored, False otherwise.
+        return: True if scored, False otherwise.
 
         """
         return all(getattr(self, k) is not None for k in [
@@ -583,10 +581,10 @@ class SubmissionResult(Base):
         self.public_score_details = None
         self.ranking_score_details = None
 
-    def set_compilation_outcome(self, success):
+    def set_compilation_outcome(self, success: bool):
         """Set the compilation outcome based on the success.
 
-        success (bool): if the compilation was successful.
+        success: if the compilation was successful.
 
         """
         self.compilation_outcome = "ok" if success else "fail"
@@ -613,42 +611,42 @@ class Executable(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Submission (id and object) owning the executable.
-    submission_id = Column(
+    submission_id: int = Column(
         Integer,
         ForeignKey(Submission.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission: Submission = relationship(
         Submission,
         viewonly=True)
 
     # Dataset (id and object) owning the executable.
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset,
         viewonly=True)
 
     # SubmissionResult owning the executable.
-    submission_result = relationship(
+    submission_result: SubmissionResult = relationship(
         SubmissionResult,
         back_populates="executables")
 
     # Filename and digest of the generated executable.
-    filename = Column(
+    filename: str = Column(
         Filename,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -668,51 +666,51 @@ class Evaluation(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Submission (id and object) owning the evaluation.
-    submission_id = Column(
+    submission_id: int = Column(
         Integer,
         ForeignKey(Submission.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    submission = relationship(
+    submission: Submission = relationship(
         Submission,
         viewonly=True)
 
     # Dataset (id and object) owning the evaluation.
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset,
         viewonly=True)
 
     # SubmissionResult owning the evaluation.
-    submission_result = relationship(
+    submission_result: SubmissionResult = relationship(
         SubmissionResult,
         back_populates="evaluations")
 
     # Testcase (id and object) this evaluation was performed on.
-    testcase_id = Column(
+    testcase_id: int = Column(
         Integer,
         ForeignKey(Testcase.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    testcase = relationship(
+    testcase: Testcase = relationship(
         Testcase)
 
     # String containing the outcome of the evaluation (usually 1.0,
     # ...) not necessary the points awarded, that will be computed by
     # the score type.
-    outcome = Column(
+    outcome: str | None = Column(
         Unicode,
         nullable=True)
 
@@ -720,33 +718,33 @@ class Evaluation(Base):
     # (to allow localization the first item of the list is a format
     # string, possibly containing some "%s", that will be filled in
     # using the remaining items of the list).
-    text = Column(
+    text: list[str] = Column(
         ARRAY(String),
         nullable=False,
         default=[])
 
     # Evaluation's time and wall-clock time, in seconds.
-    execution_time = Column(
+    execution_time: float | None = Column(
         Float,
         nullable=True)
-    execution_wall_clock_time = Column(
+    execution_wall_clock_time: float | None = Column(
         Float,
         nullable=True)
 
     # Memory used by the evaluation, in bytes.
-    execution_memory = Column(
+    execution_memory: int | None = Column(
         BigInteger,
         nullable=True)
 
     # Worker shard and sandbox where the evaluation was performed.
-    evaluation_shard = Column(
+    evaluation_shard: int | None = Column(
         Integer,
         nullable=True)
-    evaluation_sandbox = Column(
+    evaluation_sandbox: str | None = Column(
         Unicode,
         nullable=True)
 
     @property
-    def codename(self):
+    def codename(self) -> str:
         """Return the codename of the testcase."""
         return self.testcase.codename

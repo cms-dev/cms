@@ -44,12 +44,12 @@ def _retrieve_icons():
 _icons = _retrieve_icons()
 
 
-def get_icon_for_type(typename):
+def get_icon_for_type(typename: str) -> str:
     """Get a generic icon name for the given MIME type.
 
-    typename (str): a MIME type, e.g., "application/pdf".
+    typename: a MIME type, e.g., "application/pdf".
 
-    return (str): the generic icon that best depicts the given MIME
+    return: the generic icon that best depicts the given MIME
         type, e.g., "x-office-document".
 
     """
@@ -60,12 +60,12 @@ def get_icon_for_type(typename):
     return mimetype.media + "-x-generic"
 
 
-def get_name_for_type(typename):
+def get_name_for_type(typename: str) -> str:
     """Get the natural language description of the MIME type.
 
-    typename (str): a MIME type, e.g., "application/pdf".
+    typename: a MIME type, e.g., "application/pdf".
 
-    return (str): the human-readable description (also called comment)
+    return: the human-readable description (also called comment)
         of the given MIME type, e.g., "PDF document".
 
     """
@@ -73,7 +73,7 @@ def get_name_for_type(typename):
     return mimetype.get_comment()
 
 
-def get_type_for_file_name(filename):
+def get_type_for_file_name(filename: str) -> str | None:
     """Guess the MIME type of a file given its name.
 
     filename (str): the name of a file (just the base name, without the

@@ -27,7 +27,7 @@ import pkg_resources
 logger = logging.getLogger(__name__)
 
 
-def plugin_list(entry_point_group):
+def plugin_list(entry_point_group: str) -> list[type]:
     """Return the list of plugin classes of the given group.
 
     The aspects of CMS that require the largest flexibility in behavior
@@ -41,11 +41,11 @@ def plugin_list(entry_point_group):
     installed, CMS will be able to automatically discover and use those
     classes.
 
-    entry_point_group (str): the name of the group of entry points that
+    entry_point_group: the name of the group of entry points that
         should be returned, typically one of cms.grading.tasktypes,
         scoretypes or languages.
 
-    return ([type]): the requested plugin classes.
+    return: the requested plugin classes.
 
     """
     classes = []

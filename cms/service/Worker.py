@@ -52,7 +52,7 @@ class Worker(Service):
     JOB_TYPE_COMPILATION = "compile"
     JOB_TYPE_EVALUATION = "evaluate"
 
-    def __init__(self, shard, fake_worker_time=None):
+    def __init__(self, shard: int, fake_worker_time: float | None = None):
         Service.__init__(self, shard)
         self.file_cacher = FileCacher(self)
 
@@ -65,10 +65,10 @@ class Worker(Service):
         self._fake_worker_time = fake_worker_time
 
     @rpc_method
-    def precache_files(self, contest_id):
+    def precache_files(self, contest_id: int):
         """RPC to ask the worker to precache of files in the contest.
 
-        contest_id (int): the id of the contest
+        contest_id: the id of the contest
 
         """
         lock = self.file_cacher.precache_lock()
@@ -102,13 +102,13 @@ class Worker(Service):
             logger.info("Precaching finished.")
 
     @rpc_method
-    def execute_job_group(self, job_group_dict):
+    def execute_job_group(self, job_group_dict: dict) -> dict:
         """Receive a group of jobs in a list format and executes them one by
         one.
 
-        job_group_dict ({}): a JobGroup exported to dict.
+        job_group_dict: a JobGroup exported to dict.
 
-        return ({}): the same JobGroup in dict format, but containing
+        return: the same JobGroup in dict format, but containing
             the results.
 
         """
@@ -174,7 +174,7 @@ class Worker(Service):
         elif isinstance(job, EvaluationJob):
             job.outcome = "1.0"
 
-    def _finalize(self, start_time):
+    def _finalize(self, start_time: float):
         end_time = time.time()
         busy_time = end_time - start_time
         free_time = 0.0

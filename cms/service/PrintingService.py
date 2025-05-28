@@ -35,6 +35,7 @@ from cms import config, rmtree
 from cms.db import SessionGen, PrintJob
 from cms.db.filecacher import FileCacher
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
+from cms.io.priorityqueue import QueueEntry
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import get_timezone, utc
@@ -50,7 +51,7 @@ def N_(message):
 
 
 class PrintingOperation(QueueItem):
-    def __init__(self, printjob_id):
+    def __init__(self, printjob_id: int):
         self.printjob_id = printjob_id
 
     def __str__(self):
@@ -71,13 +72,12 @@ class PrintingExecutor(Executor):
         self.jinja2_env.filters["escape_tex_normal"] = escape_tex_normal
         self.jinja2_env.filters["escape_tex_tt"] = escape_tex_tt
 
-    def execute(self, entry):
+    def execute(self, entry: QueueEntry):
         """Print a print job.
 
         This is the core of PrintingService.
 
-        entry (QueueEntry): the entry containing the operation to
-            perform.
+        entry: the entry containing the operation to perform.
 
         """
         # TODO: automatically re-enqueue in case of a recoverable
@@ -247,12 +247,12 @@ class PrintingService(TriggeredService):
         return counter
 
     @rpc_method
-    def new_printjob(self, printjob_id):
+    def new_printjob(self, printjob_id: int):
         """Schedule the given print job.
 
         Put it in the queue to have it printed, sooner or later.
 
-        printjob_id (int): the id of the printjob.
+        printjob_id: the id of the printjob.
 
         """
         self.enqueue(PrintingOperation(printjob_id))

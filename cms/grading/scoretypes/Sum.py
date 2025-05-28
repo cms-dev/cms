@@ -31,6 +31,7 @@ class Sum(ScoreTypeAlone):
     multiplied by the integer parameter.
 
     """
+    parameters: int
     # Mark strings for localization.
     N_("#")
     N_("Outcome")
@@ -145,12 +146,12 @@ class Sum(ScoreTypeAlone):
 
         return score, testcases, public_score, public_testcases, []
 
-    def get_public_outcome(self, outcome):
+    def get_public_outcome(self, outcome: float) -> str:
         """Return a public outcome from an outcome.
 
-        outcome (float): the outcome of the submission.
+        outcome: the outcome of the submission.
 
-        return (float): the public output.
+        return: the public output.
 
         """
         if outcome <= 0.0:

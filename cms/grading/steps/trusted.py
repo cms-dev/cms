@@ -41,6 +41,7 @@ from cms import config
 from cms.grading.Sandbox import Sandbox
 from .evaluation import EVALUATION_MESSAGES
 from .utils import generic_step
+from .stats import StatsDict
 
 
 logger = logging.getLogger(__name__)
@@ -54,12 +55,12 @@ CHECKER_CORRECT_OUTPUT_FILENAME = "correct_output.txt"
 CHECKER_FILENAME = "checker"
 
 
-def _filter_ansi_escape(string):
+def _filter_ansi_escape(string: str) -> str:
     """Filter out ANSI commands from the given string.
 
-    string (str): string to process.
+    string: string to process.
 
-    return (str): string with ANSI commands stripped.
+    return: string with ANSI commands stripped.
 
     """
     ansi_mode = False
@@ -74,13 +75,13 @@ def _filter_ansi_escape(string):
     return res
 
 
-def extract_outcome_and_text(sandbox):
+def extract_outcome_and_text(sandbox: Sandbox) -> tuple[float, list[str]]:
     """Extract the outcome and the text from the a standard manager output.
 
-    sandbox (Sandbox): the sandbox whose last execution was a manager writing
+    sandbox: the sandbox whose last execution was a manager writing
         a standard manager output.
 
-    return (float, [str]): outcome and text.
+    return: outcome and text.
 
     raise (ValueError): if cannot decode the data.
     raise (FileNotFoundError): if any of the sandbox stdout or stderr file
@@ -122,17 +123,17 @@ def extract_outcome_and_text(sandbox):
     return outcome, [text]
 
 
-def trusted_step(sandbox, commands):
+def trusted_step(sandbox: Sandbox, commands: list[list[str]]) -> tuple[bool, bool | None, StatsDict | None]:
     """Execute some trusted commands in the sandbox.
 
     Even if the commands are trusted, we use the sandbox to limit the resources
     they use to avoid crashing a worker due to some configuration or
     programming error.
 
-    sandbox (Sandbox): the sandbox we consider, already created.
-    commands ([[str]]): trusted commands to execute.
+    sandbox: the sandbox we consider, already created.
+    commands: trusted commands to execute.
 
-    return ((bool, bool|None, dict|None)): a tuple with three items:
+    return: a tuple with three items:
         * success: True if the sandbox did not fail, in any command;
         * execution_success: True if all commands terminated correctly,
             without timeouts or other errors; None if success is False;
@@ -181,25 +182,24 @@ def trusted_step(sandbox, commands):
         return False, None, None
 
 
-def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
-                 output_filename):
+def checker_step(sandbox: Sandbox, checker_digest: str | None, input_digest: str,
+                 correct_output_digest: str, output_filename: str) -> tuple[bool, float | None, list[str] | None]:
     """Run the explicit checker given by the admins
 
-    sandbox (Sandbox): the sandbox to run the checker in; should already
+    sandbox: the sandbox to run the checker in; should already
         contain input, correct output, and user output; the checker is instead
         copied from the managers.
-    checker_digest (str|None): digest of the checker, will be fetched as
+    checker_digest: digest of the checker, will be fetched as
         "checker"; if None, an appropriate error for bad configuration of the
         task will be generated.
-    input_digest (str): digest of the input, will be fetched as "input.txt".
-    correct_output_digest (str): digest of the correct output, will be fetched
+    input_digest: digest of the input, will be fetched as "input.txt".
+    correct_output_digest: digest of the correct output, will be fetched
         as "correct_output.txt".
-    output_filename (str): inner filename of the user output (already in the
+    output_filename: inner filename of the user output (already in the
         sandbox).
 
-    return (bool, float|None, [str]|None): success (true if the checker was
-        able to check the solution successfully), outcome and text (both None
-        if success is False).
+    return: success (true if the checker was able to check the solution
+        successfully), outcome and text (both None if success is False).
 
     """
     # Check that the file we are going to inject in the sandbox are not already

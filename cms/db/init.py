@@ -20,10 +20,10 @@
 from . import metadata
 
 
-def init_db():
+def init_db() -> bool:
     """Initialize the database.
 
-    return (bool): True if successful.
+    return: True if successful.
 
     """
     metadata.create_all()
