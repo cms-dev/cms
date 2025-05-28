@@ -26,7 +26,8 @@ import json
 import logging
 import socket
 import traceback
-from typing import Any, TYPE_CHECKING
+from typing import Any
+import typing
 import uuid
 from weakref import WeakSet
 
@@ -37,7 +38,7 @@ import gevent.socket
 
 from cms.conf import Address, ServiceCoord
 from cms.util import get_service_address
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from cms.io.service import Service
 
 
@@ -49,7 +50,8 @@ class RPCError(Exception):
     pass
 
 
-def rpc_method[T: Callable](func: T) -> T:
+_T = typing.TypeVar('_T', bound=Callable)
+def rpc_method(func: _T) -> _T:
     """Decorator for a method that other services are allowed to call.
 
     Does not do a lot, just defines the right method's attribute.

@@ -25,6 +25,7 @@ from datetime import datetime
 import logging
 import time
 from abc import ABCMeta, abstractmethod
+import typing
 
 import gevent
 from gevent.event import Event
@@ -195,7 +196,8 @@ class Executor(metaclass=ABCMeta):
         pass
 
 
-class TriggeredService[ExecutorT: Executor](Service):
+ExecutorT = typing.TypeVar('ExecutorT', bound=Executor)
+class TriggeredService(Service, typing.Generic[ExecutorT]):
 
     """A service receiving notifications to perform an operation.
 

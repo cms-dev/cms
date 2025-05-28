@@ -20,7 +20,7 @@
 from collections.abc import Callable
 import logging
 import time
-from typing import Any
+import typing
 
 import gevent
 from gevent.lock import RLock
@@ -29,7 +29,9 @@ from gevent.lock import RLock
 logger = logging.getLogger(__name__)
 
 
-class FlushingDict[KeyT, ValueT]:
+KeyT = typing.TypeVar('KeyT')
+ValueT = typing.TypeVar('ValueT')
+class FlushingDict(typing.Generic[KeyT, ValueT]):
     """A dict that periodically flushes its content to a callback.
 
     The dict flushes after a specified time since the latest entry
@@ -40,7 +42,7 @@ class FlushingDict[KeyT, ValueT]:
 
     """
 
-    def __init__(self, size: int, flush_latency_seconds: float, callback: Callable[[list[tuple[KeyT, ValueT]]], Any]):
+    def __init__(self, size: int, flush_latency_seconds: float, callback: Callable[[list[tuple[KeyT, ValueT]]], typing.Any]):
         # Elements contained in the dict that force a flush.
         self.size = size
 

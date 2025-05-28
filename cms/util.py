@@ -190,9 +190,10 @@ def get_service_shards(service: str) -> int:
             return i
 
 
-def default_argument_parser[T: "Service"](description: str,
-                            cls: type[T],
-                            ask_contest: Callable[[], int] | None = None) -> T:
+_ServiceT = typing.TypeVar('_ServiceT', bound="Service")
+def default_argument_parser(description: str,
+                            cls: type[_ServiceT],
+                            ask_contest: Callable[[], int] | None = None) -> _ServiceT:
     """Default argument parser for services.
 
     This has two versions, depending on whether the service needs a
