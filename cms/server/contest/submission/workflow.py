@@ -29,8 +29,10 @@
 
 from datetime import datetime
 import logging
+import typing
 
-from tornado.httputil import HTTPFile
+if typing.TYPE_CHECKING:
+    from tornado.httputil import HTTPFile
 
 from cms import config
 from cms.db import Submission, File, UserTestManager, UserTestFile, UserTest, Task, Participation, Session
@@ -66,7 +68,7 @@ class UnacceptableSubmission(Exception):
 
 
 def accept_submission(sql_session: Session, file_cacher: FileCacher, participation: Participation, task: Task, timestamp: datetime,
-                      tornado_files: dict[str, list[HTTPFile]], language_name: str | None, official: bool) -> Submission:
+                      tornado_files: dict[str, list["HTTPFile"]], language_name: str | None, official: bool) -> Submission:
     """Process a contestant's request to submit a submission.
 
     Parse and validate the data that a contestant sent for a submission
@@ -236,7 +238,7 @@ class UnacceptableUserTest(Exception):
 
 
 def accept_user_test(sql_session: Session, file_cacher: FileCacher, participation: Participation, task: Task, timestamp: datetime,
-                     tornado_files: dict[str, list[HTTPFile]], language_name: str | None) -> UserTest:
+                     tornado_files: dict[str, list["HTTPFile"]], language_name: str | None) -> UserTest:
     """Process a contestant's request to submit a user test.
 
     sql_session: the DB session to use to fetch and add data.

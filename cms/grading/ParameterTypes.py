@@ -30,7 +30,9 @@ represented by JSON objects.
 from abc import ABCMeta, abstractmethod
 
 from jinja2 import Markup, Template
-from tornado.web import RequestHandler
+import typing
+if typing.TYPE_CHECKING:
+    from tornado.web import RequestHandler
 
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
@@ -77,7 +79,7 @@ class ParameterType(metaclass=ABCMeta):
         """
         pass
 
-    def parse_handler(self, handler: RequestHandler, prefix: str) -> object:
+    def parse_handler(self, handler: "RequestHandler", prefix: str) -> object:
         """Parse relevant parameters in the handler.
 
         Attempts to parse any relevant parameters in the specified handler.

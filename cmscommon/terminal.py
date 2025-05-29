@@ -47,10 +47,10 @@ def has_color_support(stream: typing.IO) -> bool:
     file descriptor on which ncurses can initialize a terminal and if
     that terminal's entry in terminfo declares support for colors.
 
-    stream (fileobj): a file-like object (that adheres to the API
+    stream: a file-like object (that adheres to the API
         declared in the `io' package).
 
-    return (bool): True if we're sure that colors are supported, False
+    return: True if we're sure that colors are supported, False
         if they aren't or if we can't tell.
 
     """

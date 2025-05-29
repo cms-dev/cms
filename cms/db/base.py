@@ -245,7 +245,7 @@ class Base:
                 attrs[prp.key] = getattr(self, prp.key)
         return attrs
 
-    def set_attrs(self, attrs: dict[str, object], fill_with_defaults: bool = False):
+    def set_attrs(self, attrs: typing.Mapping[str, object], fill_with_defaults: bool = False):
         """Do self.__dict__.update(attrs) with validation.
 
         Limited to SQLAlchemy column and relationship properties.

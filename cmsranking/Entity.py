@@ -17,7 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from cmsranking.Store import Store
+import typing
+if typing.TYPE_CHECKING:
+    from cmsranking.Store import Store
 
 
 class InvalidKey(Exception):
@@ -61,7 +63,7 @@ class Entity:
         """
         pass
 
-    def consistent(self, stores: dict[str, Store]) -> bool:
+    def consistent(self, stores: dict[str, "Store"]) -> bool:
         """Check if the entity is consistent.
 
         Verify that all references to other entities are correct (i.e.

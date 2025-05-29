@@ -34,11 +34,11 @@ format.
 """
 
 import os.path
-from collections import namedtuple
 import typing
 
 from patoolib.util import PatoolError
-from tornado.httputil import HTTPFile
+if typing.TYPE_CHECKING:
+    from tornado.httputil import HTTPFile
 
 from cmscommon.archive import Archive
 
@@ -100,7 +100,7 @@ def extract_files_from_archive(data: bytes) -> list[ReceivedFile]:
     return result
 
 
-def extract_files_from_tornado(tornado_files: dict[str, list[HTTPFile]]) -> list[ReceivedFile]:
+def extract_files_from_tornado(tornado_files: dict[str, list["HTTPFile"]]) -> list[ReceivedFile]:
     """Transform some files as received by Tornado into our format.
 
     Given the files as provided by Tornado on the HTTPServerRequest's

@@ -32,7 +32,9 @@ compilation and the evaluation are contained in the task type class.
 import re
 from abc import ABCMeta, abstractmethod
 
-from tornado.web import RequestHandler
+import typing
+if typing.TYPE_CHECKING:
+    from tornado.web import RequestHandler
 
 from cms.db.filecacher import FileCacher
 from cms.grading.Job import CompilationJob, EvaluationJob, Job
@@ -66,7 +68,7 @@ class TaskType(metaclass=ABCMeta):
     ACCEPTED_PARAMETERS: list[ParameterType] = []
 
     @classmethod
-    def parse_handler(cls, handler: RequestHandler, prefix: str) -> list:
+    def parse_handler(cls, handler: "RequestHandler", prefix: str) -> list:
         """Ensure that the parameters list template agrees with the
         parameters actually passed.
 
