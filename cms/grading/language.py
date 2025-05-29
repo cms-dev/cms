@@ -54,7 +54,7 @@ class Language(metaclass=ABCMeta):
         return []
 
     @property
-    def source_extension(self) -> str | None:
+    def source_extension(self) -> str:
         """Default source extension for the language."""
         return self.source_extensions[0] \
             if len(self.source_extensions) > 0 else None

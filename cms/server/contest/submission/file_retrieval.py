@@ -35,19 +35,23 @@ format.
 
 import os.path
 from collections import namedtuple
+import typing
 
 from patoolib.util import PatoolError
+from tornado.httputil import HTTPFile
 
 from cmscommon.archive import Archive
 
 
 # Represents a file received through HTTP from an HTML form.
-# codename (str|None): the name of the form field (in our case it's the
+# codename: the name of the form field (in our case it's the
 #   filename-with-%l).
-# filename (str|None): the name the file had on the user's system.
-# content (bytes): the data of the file.
-ReceivedFile = namedtuple("ReceivedFile", ["codename", "filename", "content"])
-
+# filename: the name the file had on the user's system.
+# content: the data of the file.
+class ReceivedFile(typing.NamedTuple):
+    codename: str | None
+    filename: str | None
+    content: bytes
 
 class InvalidArchive(Exception):
     """Raised when the archive submitted by the user cannot be opened."""
@@ -55,7 +59,7 @@ class InvalidArchive(Exception):
     pass
 
 
-def extract_files_from_archive(data):
+def extract_files_from_archive(data: bytes) -> list[ReceivedFile]:
     """Return the files contained in the given archive.
 
     Given the binary data of an archive in any of the formats supported
@@ -64,9 +68,9 @@ def extract_files_from_archive(data):
     contents cannot have conflicting/duplicated paths) but the structure
     will be ignored and the files will be returned with their basename.
 
-    data (bytes): the raw contents of the archive.
+    data: the raw contents of the archive.
 
-    return ([ReceivedFile]): the files contained in the archive, with
+    return: the files contained in the archive, with
         their filename filled in but their codename set to None.
 
     raise (InvalidArchive): if the data doesn't seem to encode an
@@ -96,7 +100,7 @@ def extract_files_from_archive(data):
     return result
 
 
-def extract_files_from_tornado(tornado_files):
+def extract_files_from_tornado(tornado_files: dict[str, list[HTTPFile]]) -> list[ReceivedFile]:
     """Transform some files as received by Tornado into our format.
 
     Given the files as provided by Tornado on the HTTPServerRequest's
@@ -104,10 +108,10 @@ def extract_files_from_tornado(tornado_files):
     files look like they consist of just a compressed archive, extract
     it and return its contents instead.
 
-    tornado_files ({str: [tornado.httputil.HTTPFile]}): a bunch of
+    tornado_files: a bunch of
         files, in Tornado's format.
 
-    return ([ReceivedFile]): the same bunch of files, in our format
+    return: the same bunch of files, in our format
         (except if it was an archive: then it's the archive's contents).
 
     raise (InvalidArchive): if there are issues extracting the archive.

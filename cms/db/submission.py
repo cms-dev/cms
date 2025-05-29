@@ -113,7 +113,7 @@ class Submission(Base):
         passive_deletes=True,
         back_populates="submission")
 
-    token: "Token" = relationship(
+    token: "Token | None" = relationship(
         "Token",
         uselist=False,
         cascade="all, delete-orphan",

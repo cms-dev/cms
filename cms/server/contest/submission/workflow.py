@@ -27,10 +27,14 @@
 
 """Procedures used by CWS to accept submissions and user tests."""
 
+from datetime import datetime
 import logging
 
+from tornado.httputil import HTTPFile
+
 from cms import config
-from cms.db import Submission, File, UserTestManager, UserTestFile, UserTest
+from cms.db import Submission, File, UserTestManager, UserTestFile, UserTest, Task, Participation, Session
+from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from .check import check_max_number, check_min_interval
 from .file_matching import InvalidFilesOrLanguage, match_files_and_language
@@ -48,7 +52,7 @@ def N_(msgid):
 
 
 class UnacceptableSubmission(Exception):
-    def __init__(self, subject, text, text_params=None):
+    def __init__(self, subject: str, text: str, text_params: object = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
         self.text = text
@@ -61,28 +65,28 @@ class UnacceptableSubmission(Exception):
         return self.text % self.text_params
 
 
-def accept_submission(sql_session, file_cacher, participation, task, timestamp,
-                      tornado_files, language_name, official):
+def accept_submission(sql_session: Session, file_cacher: FileCacher, participation: Participation, task: Task, timestamp: datetime,
+                      tornado_files: dict[str, list[HTTPFile]], language_name: str | None, official: bool) -> Submission:
     """Process a contestant's request to submit a submission.
 
     Parse and validate the data that a contestant sent for a submission
     and, if all checks and operations succeed, add the result to the
     database and return it.
 
-    sql_session (Session): the DB session to use to fetch and add data.
-    file_cacher (FileCacher): the file cacher to use to store the files.
-    participation (Participation): the contestant who is submitting.
-    task (Task): the task on which they are submitting.
-    timestamp (datetime): the moment in time they submitted at.
-    tornado_files ({str: [tornado.httputil.HTTPFile]}): the files they
+    sql_session: the DB session to use to fetch and add data.
+    file_cacher: the file cacher to use to store the files.
+    participation: the contestant who is submitting.
+    task: the task on which they are submitting.
+    timestamp: the moment in time they submitted at.
+    tornado_files: the files they
         sent in.
-    language_name (str|None): the language they declared their files are
+    language_name: the language they declared their files are
         in (None means unknown and thus auto-detect).
-    official (bool): whether the submission was sent in during a regular
+    official: whether the submission was sent in during a regular
         contest phase (and should be counted towards the score/rank) or
         during the analysis mode.
 
-    return (Submission): the resulting submission, if all went well.
+    return: the resulting submission, if all went well.
 
     raise (UnacceptableSubmission): if the contestant wasn't allowed to
         hand in a submission, if the provided data was invalid, if there
@@ -146,7 +150,7 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
             N_("Invalid submission format!"),
             N_("Please select the correct files."))
 
-    digests = dict()
+    digests: dict[str, str] = dict()
     missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
@@ -218,7 +222,7 @@ class TestingNotAllowed(Exception):
 
 
 class UnacceptableUserTest(Exception):
-    def __init__(self, subject, text, text_params=None):
+    def __init__(self, subject: str, text: str, text_params: object = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
         self.text = text
@@ -231,21 +235,20 @@ class UnacceptableUserTest(Exception):
         return self.text % self.text_params
 
 
-def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
-                     tornado_files, language_name):
+def accept_user_test(sql_session: Session, file_cacher: FileCacher, participation: Participation, task: Task, timestamp: datetime,
+                     tornado_files: dict[str, list[HTTPFile]], language_name: str | None) -> UserTest:
     """Process a contestant's request to submit a user test.
 
-    sql_session (Session): the DB session to use to fetch and add data.
-    file_cacher (FileCacher): the file cacher to use to store the files.
-    participation (Participation): the contestant who is submitting.
-    task (Task): the task on which they are submitting.
-    timestamp (datetime): the moment in time they submitted at.
-    tornado_files ({str: [tornado.httputil.HTTPFile]}): the files they
-        sent in.
-    language_name (str|None): the language they declared their files are
+    sql_session: the DB session to use to fetch and add data.
+    file_cacher: the file cacher to use to store the files.
+    participation: the contestant who is submitting.
+    task: the task on which they are submitting.
+    timestamp: the moment in time they submitted at.
+    tornado_files: the files they sent in.
+    language_name: the language they declared their files are
         in (None means unknown and thus auto-detect).
 
-    return (UserTest): the resulting user test, if all went well.
+    return: the resulting user test, if all went well.
 
     raise (TestingNotAllowed): if the task doesn't allow for any tests.
     raise (UnacceptableUserTest): if the contestant wasn't allowed to
@@ -320,7 +323,7 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
             N_("Invalid test format!"),
             N_("Please select the correct files."))
 
-    digests = dict()
+    digests: dict[str, str] = dict()
     missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:

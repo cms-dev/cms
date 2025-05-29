@@ -72,7 +72,7 @@ class User(Base):
         default=lambda: build_password(generate_random_password()))
 
     # Email for any communications in case of remote contest.
-    email: str = Column(
+    email: str | None = Column(
         Unicode,
         nullable=True)
 
@@ -233,12 +233,12 @@ class Participation(Base):
 
     # Team (id and object) that the user is representing with this
     # participation.
-    team_id: int = Column(
+    team_id: int | None = Column(
         Integer,
         ForeignKey(Team.id,
                    onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=True)
-    team: Team = relationship(
+    team: Team | None = relationship(
         Team,
         back_populates="participations")
 

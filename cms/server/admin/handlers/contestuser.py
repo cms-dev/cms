@@ -105,7 +105,7 @@ class RemoveParticipationHandler(BaseHandler):
     def get(self, contest_id, user_id):
         self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
-        participation = self.sql_session.query(Participation)\
+        participation: Participation = self.sql_session.query(Participation)\
                             .filter(Participation.contest_id == contest_id)\
                             .filter(Participation.user_id == user_id)\
                             .first()
@@ -126,7 +126,7 @@ class RemoveParticipationHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
 
-        participation = self.sql_session.query(Participation)\
+        participation: Participation = self.sql_session.query(Participation)\
             .filter(Participation.user == user)\
             .filter(Participation.contest == self.contest)\
             .first()
@@ -150,7 +150,7 @@ class AddContestUserHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
 
         try:
-            user_id = self.get_argument("user_id")
+            user_id: str = self.get_argument("user_id")
             assert user_id != "null", "Please select a valid user"
         except Exception as error:
             self.service.add_notification(
@@ -180,7 +180,7 @@ class ParticipationHandler(BaseHandler):
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id, user_id):
         self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
+        participation: Participation = self.sql_session.query(Participation)\
                             .filter(Participation.contest_id == contest_id)\
                             .filter(Participation.user_id == user_id)\
                             .first()
@@ -205,7 +205,7 @@ class ParticipationHandler(BaseHandler):
             self.url("contest", contest_id, "user", user_id, "edit")
 
         self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
+        participation: Participation = self.sql_session.query(Participation)\
                             .filter(Participation.contest_id == contest_id)\
                             .filter(Participation.user_id == user_id)\
                             .first()
@@ -231,7 +231,7 @@ class ParticipationHandler(BaseHandler):
 
             # Update the team
             self.get_string(attrs, "team")
-            team = self.sql_session.query(Team)\
+            team: Team | None = self.sql_session.query(Team)\
                        .filter(Team.code == attrs["team"])\
                        .first()
             participation.team = team
@@ -257,7 +257,7 @@ class MessageHandler(BaseHandler):
     def post(self, contest_id, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = self.safe_get_item(Contest, contest_id)
-        participation = self.sql_session.query(Participation)\
+        participation: Participation | None = self.sql_session.query(Participation)\
             .filter(Participation.contest == self.contest)\
             .filter(Participation.user == user)\
             .first()

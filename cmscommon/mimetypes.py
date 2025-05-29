@@ -76,10 +76,10 @@ def get_name_for_type(typename: str) -> str:
 def get_type_for_file_name(filename: str) -> str | None:
     """Guess the MIME type of a file given its name.
 
-    filename (str): the name of a file (just the base name, without the
+    filename: the name of a file (just the base name, without the
         directory name), e.g., "statement.pdf".
 
-    return (str|None): a guess of what MIME type that file might have,
+    return: a guess of what MIME type that file might have,
         e.g., "application/pdf".
 
     """

@@ -83,13 +83,13 @@ class Task(Base):
         nullable=True)
 
     # Contest (id and object) owning the task.
-    contest_id: int = Column(
+    contest_id: int | None = Column(
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=True,
         index=True)
-    contest: Contest = relationship(
+    contest: Contest | None = relationship(
         Contest,
         back_populates="tasks")
 
@@ -185,11 +185,11 @@ class Task(Base):
 
     # Minimum interval between two submissions or user_tests for this
     # task, or None to not enforce this limitation.
-    min_submission_interval: timedelta = Column(
+    min_submission_interval: timedelta | None = Column(
         Interval,
         CheckConstraint("min_submission_interval > '0 seconds'"),
         nullable=True)
-    min_user_test_interval: timedelta = Column(
+    min_user_test_interval: timedelta | None = Column(
         Interval,
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
@@ -222,10 +222,10 @@ class Task(Base):
 
     # Active Dataset (id and object) currently being used for scoring.
     # The ForeignKeyConstraint for this column is set at table-level.
-    active_dataset_id: int = Column(
+    active_dataset_id: int | None = Column(
         Integer,
         nullable=True)
-    active_dataset: "Dataset" = relationship(
+    active_dataset: "Dataset | None" = relationship(
         'Dataset',
         foreign_keys=[active_dataset_id],
         # Use an UPDATE query *after* an INSERT query (and *before* a

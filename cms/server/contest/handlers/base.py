@@ -33,6 +33,8 @@ import logging
 import traceback
 
 import collections
+
+from cms.db.user import Participation
 try:
     collections.MutableMapping
 except:
@@ -50,6 +52,10 @@ from cms.db import Contest
 from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
 from cmscommon.datetime import utc as utc_tzinfo
+import typing
+if typing.TYPE_CHECKING:
+    from cms.server.contest.server import ContestWebServer
+
 
 
 logger = logging.getLogger(__name__)
@@ -61,6 +67,8 @@ class BaseHandler(CommonRequestHandler):
     This will also handle the contest list on the homepage.
 
     """
+    current_user: Participation | None
+    service: "ContestWebServer"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -117,10 +125,10 @@ class BaseHandler(CommonRequestHandler):
 
         self.set_header("Content-Language", chosen_lang)
 
-    def render_params(self):
+    def render_params(self) -> dict:
         """Return the default render params used by almost all handlers.
 
-        return (dict): default render params
+        return: default render params
 
         """
         ret = {}
@@ -175,6 +183,7 @@ class ContestListHandler(BaseHandler):
         # able to import new contests without having to restart CWS.
         contest_list = dict()
         for contest in self.sql_session.query(Contest).all():
+            contest: Contest
             contest_list[contest.name] = contest
         self.render("contest_list.html", contest_list=contest_list,
                     **self.r_params)

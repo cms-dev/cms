@@ -23,12 +23,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import logging
 
 from sqlalchemy import func
+from tornado.httputil import HTTPFile
 
 from cms import config
 from cms.db import PrintJob
+from cms.db.filecacher import FileCacher
+from cms.db.session import Session
+from cms.db.user import Participation
 
 
 logger = logging.getLogger(__name__)
@@ -48,31 +53,31 @@ class PrintingDisabled(Exception):
 class UnacceptablePrintJob(Exception):
     """Raised when a printout request can't be accepted."""
 
-    def __init__(self, subject, text, text_params=None):
+    def __init__(self, subject: str, text: str, text_params: object | None = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
         self.text = text
         self.text_params = text_params
 
 
-def accept_print_job(sql_session, file_cacher, participation, timestamp, files):
+def accept_print_job(sql_session: Session, file_cacher: FileCacher, participation: Participation, timestamp: datetime, files: dict[str, list[HTTPFile]]) -> PrintJob:
     """Add a print job to the database.
 
     This function receives the values that a contestant provides to CWS
     when they request a printout, it validates them and, if there are
     no issues, stores the files and creates a PrintJob in the database.
 
-    sql_session (Session): the SQLAlchemy database session to use.
-    file_cacher (FileCacher): the file cacher to store the files.
-    participation (Participation): the contestant who sent the request.
-    timestamp (datetime): the moment at which the request occurred.
-    files ({str: [HTTPFile]}): the provided files, as a dictionary
+    sql_session: the SQLAlchemy database session to use.
+    file_cacher: the file cacher to store the files.
+    participation: the contestant who sent the request.
+    timestamp: the moment at which the request occurred.
+    files: the provided files, as a dictionary
         whose keys are the field names and whose values are lists of
         Tornado HTTPFile objects (each with a filename and a body
         attribute). The expected format consists of one item, whose key
         is "file" and whose value is a singleton list.
 
-    return (PrintJob): the PrintJob that was added to the database.
+    return: the PrintJob that was added to the database.
 
     raise (PrintingDisabled): if printing is disabled because there are
         no printers available).

@@ -22,13 +22,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from functools import wraps
+import typing
+
+if typing.TYPE_CHECKING:
+    from cms.server.contest.handlers.contest import ContestHandler
 
 
-def compute_actual_phase(timestamp, contest_start, contest_stop,
-                         analysis_start, analysis_stop, per_user_time,
-                         starting_time, delay_time, extra_time):
+def compute_actual_phase(timestamp: datetime, contest_start: datetime, contest_stop: datetime,
+                         analysis_start: datetime | None, analysis_stop: datetime | None, per_user_time: timedelta | None,
+                         starting_time: datetime | None, delay_time: timedelta, extra_time: timedelta) -> tuple[int, datetime | None, datetime | None, datetime | None, datetime | None]:
     """Determine the current phase and when the active phase is.
 
     The "actual phase" of the contest for a certain user is the status
@@ -61,19 +66,19 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
     None meaning +/- infinity) and the boundaries of the phase 0 (if it
     is defined, otherwise None).
 
-    timestamp (datetime): the current time.
-    contest_start (datetime): the contest's start.
-    contest_stop (datetime): the contest's stop.
-    per_user_time (timedelta|None): the amount of time allocated to
+    timestamp: the current time.
+    contest_start: the contest's start.
+    contest_stop: the contest's stop.
+    per_user_time: the amount of time allocated to
         each user; if it's None the contest is traditional, otherwise
         it's USACO-like.
-    starting_time (datetime|None): when the user started their time
+    starting_time: when the user started their time
         frame.
-    delay_time (timedelta): how much the user's start is delayed.
-    extra_time (timedelta): how much extra time is given to the user at
+    delay_time: how much the user's start is delayed.
+    extra_time: how much extra time is given to the user at
         the end.
 
-    return (tuple): 5 items: an integer (in [-2, +2]) and two pairs of
+    return: 5 items: an integer (in [-2, +2]) and two pairs of
         datetimes (or None) defining two intervals.
 
     """
@@ -189,17 +194,21 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
             actual_start, actual_stop)
 
 
-def actual_phase_required(*actual_phases):
+def actual_phase_required(*actual_phases: int):
     """Return decorator filtering out requests in the wrong phase.
 
-    actual_phases ([int]): the phases in which the request can pass.
+    actual_phases: the phases in which the request can pass.
 
-    return (function): the decorator.
+    return: the decorator.
 
     """
-    def decorator(func):
+
+    _P = typing.ParamSpec('_P')
+    _R = typing.TypeVar('_R')
+    _Self = typing.TypeVar('_Self', bound="ContestHandler")
+    def decorator(func: Callable[typing.Concatenate[_Self, _P], _R]) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
         @wraps(func)
-        def wrapped(self, *args, **kwargs):
+        def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
             if self.r_params["actual_phase"] not in actual_phases and \
                     (self.current_user is None or
                      not self.current_user.unrestricted):
