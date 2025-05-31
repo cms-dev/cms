@@ -183,8 +183,10 @@ class Archive:
             names = []
             for path, _, filenames in os.walk(self.temp_dir):
                 for filename in filenames:
-                    names.append(os.path.relpath(os.path.join(path, filename),
-                                                 self.temp_dir))
+                    filepath = os.path.join(path, filename)
+                    if os.path.islink(filepath) or not os.path.isfile(filepath):
+                        continue
+                    names.append(os.path.relpath(filepath, self.temp_dir))
             return names
 
     def read(self, file_path):
