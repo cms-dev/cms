@@ -28,14 +28,14 @@ from cmscontrib.ImportContest import ContestImporter
 from cmscontrib.loaders.base_loader import ContestLoader, TaskLoader
 
 
-def fake_loader_factory(contest, contest_has_changed=False,
-                        tasks=None, usernames=None):
+def fake_loader_factory(contest: Contest, contest_has_changed: bool = False,
+                        tasks: list[tuple[str, bool]] | None = None, usernames: list[str] | None = None):
     """Return a Loader class always returning the same information
 
-    contest (Contest): the contest to return
-    contest_has_changed (bool): what to return from contest_has_changed
-    tasks ([(string, bool)]): list of task names and whether they have changed
-    usernames ([string]): list of usernames of participations
+    contest: the contest to return
+    contest_has_changed: what to return from contest_has_changed
+    tasks: list of task names and whether they have changed
+    usernames: list of usernames of participations
 
     """
 
