@@ -61,14 +61,14 @@ TEMPLATE[".cs"] = TEMPLATE[".c"]
 TEMPLATE[".rs"] = TEMPLATE[".c"]
 
 
-def filter_top_scoring(results, unique):
+def filter_top_scoring(results: list[tuple], unique: bool) -> list[tuple]:
     """Filter results keeping only the top scoring submissions for each user
     and task
 
-    results ([Submission]): the starting list of submissions
-    unique (bool): if True, keep only the first top-scoring submission
+    results: the starting list of submissions
+    unique: if True, keep only the first top-scoring submission
 
-    return ([Submission]): the filtered submissions
+    return: the filtered submissions
 
     """
     usertask = {}
