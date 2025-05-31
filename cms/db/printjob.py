@@ -20,6 +20,7 @@
 
 """
 
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
@@ -35,40 +36,40 @@ class PrintJob(Base):
     __tablename__ = 'printjobs'
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Participation (id and object) that did the submission.
-    participation_id = Column(
+    participation_id: int = Column(
         Integer,
         ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    participation = relationship(
+    participation: Participation = relationship(
         Participation,
         back_populates="printjobs")
 
     # Submission time of the print job.
-    timestamp = Column(
+    timestamp: datetime = Column(
         DateTime,
         nullable=False)
 
     # Filename and digest of the submitted file.
-    filename = Column(
+    filename: str = Column(
         Filename,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
-    done = Column(
+    done: bool = Column(
         Boolean,
         nullable=False,
         default=False)
 
-    status = Column(
+    status: list[str] = Column(
         ARRAY(String),
         nullable=False,
         default=[])

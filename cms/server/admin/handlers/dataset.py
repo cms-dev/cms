@@ -200,7 +200,7 @@ class RenameDatasetHandler(BaseHandler):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
 
-        description = self.get_argument("description", "")
+        description: str = self.get_argument("description", "")
 
         # Ensure description is unique.
         if any(description == d.description
@@ -508,7 +508,6 @@ class AddTestcasesHandler(BaseHandler):
         fallback_page = \
             self.url("dataset", dataset_id, "testcases", "add_multiple")
 
-        # TODO: this method is quite long, some splitting is needed.
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
 
@@ -526,8 +525,8 @@ class AddTestcasesHandler(BaseHandler):
         overwrite = self.get_argument("overwrite", None) is not None
 
         # Get input/output file names templates, or use default ones.
-        input_template = self.get_argument("input_template", "input.*")
-        output_template = self.get_argument("output_template", "output.*")
+        input_template: str = self.get_argument("input_template", "input.*")
+        output_template: str = self.get_argument("output_template", "output.*")
         input_re = re.compile(re.escape(input_template).replace("\\*",
                               "(.*)") + "$")
         output_re = re.compile(re.escape(output_template).replace("\\*",
@@ -599,9 +598,9 @@ class DownloadTestcasesHandler(BaseHandler):
 
         # Get zip file name, input/output file names templates,
         # or use default ones.
-        zip_filename = self.get_argument("zip_filename", "testcases.zip")
-        input_template = self.get_argument("input_template", "input.*")
-        output_template = self.get_argument("output_template", "output.*")
+        zip_filename: str = self.get_argument("zip_filename", "testcases.zip")
+        input_template: str = self.get_argument("input_template", "input.*")
+        output_template: str = self.get_argument("output_template", "output.*")
 
         # Template validations
         if input_template.count('*') != 1 or output_template.count('*') != 1:

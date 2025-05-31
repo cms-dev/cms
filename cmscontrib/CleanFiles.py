@@ -29,23 +29,24 @@ import argparse
 import logging
 import sys
 
-from cms.db import SessionGen, Digest, Executable, enumerate_files
+from cms.db import SessionGen, Session, Digest, Executable, enumerate_files
 from cms.db.filecacher import FileCacher
 
 
 logger = logging.getLogger()
 
 
-def make_tombstone(session):
+def make_tombstone(session: Session):
     count = 0
     for exe in session.query(Executable).all():
+        exe: Executable
         if exe.digest != Digest.TOMBSTONE:
             count += 1
         exe.digest = Digest.TOMBSTONE
     logger.info("Replaced %d executables with the tombstone.", count)
 
 
-def clean_files(session, dry_run):
+def clean_files(session: Session, dry_run: bool):
     filecacher = FileCacher()
     files = set(file[0] for file in filecacher.list())
     logger.info("A total number of %d files are present in the file store",

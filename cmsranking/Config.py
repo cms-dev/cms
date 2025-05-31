@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import sys
+import typing
 
 import pkg_resources
 
@@ -43,10 +44,11 @@ class Config:
         """
         # Connection.
         self.bind_address = ''
-        self.http_port = 8890
-        self.https_port = None
-        self.https_certfile = None
-        self.https_keyfile = None
+        self.http_port: int | None = 8890
+        self.https_port: int | None = None
+        self.https_certfile: str | None = None
+        self.https_keyfile: str | None = None
+        # TODO unused???
         self.timeout = 600  # 10 minutes (in seconds)
 
         # Authentication.
@@ -106,15 +108,15 @@ class Config:
 
         add_file_handler(self.log_dir)
 
-    def _load_many(self, conf_paths):
+    def _load_many(self, conf_paths: list[str]) -> bool:
         """Load the first existing config file among the given ones.
 
         Take a list of paths where config files may reside and attempt
         to load the first one that exists.
 
-        conf_paths([str]): paths of config file candidates, from most
+        conf_paths: paths of config file candidates, from most
             to least prioritary.
-        returns (bool): whether loading was successful.
+        returns: whether loading was successful.
 
         """
         for conf_path in conf_paths:
@@ -133,15 +135,15 @@ class Config:
         logger.warning("No config file found, using hardcoded defaults.")
         return True
 
-    def _load_one(self, conf_fobj):
+    def _load_one(self, conf_fobj: typing.TextIO) -> bool:
         """Populate config parameters from the given file.
 
         Parse it as JSON and store in self all configuration properties
         it defines. Log critical message and return False if anything
         goes wrong or seems odd.
 
-        conf_fobj (file-like object): the config file.
-        returns (bool): whether parsing was successful.
+        conf_fobj: the config file.
+        returns: whether parsing was successful.
 
         """
         # Parse config file.

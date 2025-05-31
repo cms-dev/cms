@@ -23,10 +23,10 @@ class Contest(Entity):
     """The entity representing a contest.
 
     It consists of the following properties:
-    - name (unicode): the human-readable name of the contest
-    - begin (int): the unix timestamp at which the contest begins
-    - end (int): the unix timestamp at which the contest ends
-    - score_precision (int): how many decimal places to show in scores
+    - name: the human-readable name of the contest
+    - begin: the unix timestamp at which the contest begins
+    - end: the unix timestamp at which the contest ends
+    - score_precision: how many decimal places to show in scores
 
     """
     def __init__(self):
@@ -34,10 +34,10 @@ class Contest(Entity):
 
         """
         Entity.__init__(self)
-        self.name = None
-        self.begin = None
-        self.end = None
-        self.score_precision = None
+        self.name: str = None
+        self.begin: int = None
+        self.end: int = None
+        self.score_precision: int = None
 
     @staticmethod
     def validate(data):

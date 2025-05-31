@@ -49,21 +49,21 @@ TASK_TYPES = dict((cls.__name__, cls)
                   for cls in plugin_list("cms.grading.tasktypes"))
 
 
-def get_task_type_class(name):
+def get_task_type_class(name: str):
     """Load the TaskType class given as parameter."""
     return TASK_TYPES[name]
 
 
-def get_task_type(name, parameters):
+def get_task_type(name: str, parameters: object) -> TaskType:
     """Construct the TaskType specified by parameters.
 
     Load the TaskType class named "name" and instantiate it with the
     data structure obtained by JSON-decoding "parameters".
 
-    name (str): the name of the TaskType class.
-    parameters (object): the parameters.
+    name: the name of the TaskType class.
+    parameters: the parameters.
 
-    return (TaskType): an instance of the correct TaskType class.
+    return: an instance of the correct TaskType class.
 
     raise (ValueError): when the arguments are not consistent or
         cannot be parsed.

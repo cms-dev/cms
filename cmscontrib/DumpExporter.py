@@ -40,14 +40,14 @@ import tempfile
 from datetime import date
 
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum, TypeEngine
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 from cms import rmtree, utf8_decoder
 from cms.db import version as model_version, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
     Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    Announcement, Participation, enumerate_files
+    Announcement, Participation, Base, enumerate_files
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -56,13 +56,13 @@ from cmscommon.digest import path_digest
 logger = logging.getLogger(__name__)
 
 
-def get_archive_info(file_name):
+def get_archive_info(file_name: str) -> dict:
     """Return information about the archive name.
 
-    file_name (string): the file name of the archive to analyze.
+    file_name: the file name of the archive to analyze.
 
-    return (dict): dictionary containing the following keys:
-                   "basename", "extension", "write_mode"
+    return: dictionary containing the following keys:
+        "basename", "extension", "write_mode"
 
     """
 
@@ -98,14 +98,13 @@ def get_archive_info(file_name):
     return ret
 
 
-def encode_value(type_, value):
+def encode_value(type_: TypeEngine, value: object) -> object:
     """Encode a given value of a given type to a JSON-compatible form.
 
-    type_ (sqlalchemy.types.TypeEngine): the SQLAlchemy type of the
-        column that held the value.
-    value (object): the value.
+    type_: the SQLAlchemy type of the column that held the value.
+    value: the value.
 
-    return (object): the value, encoded as bool, int, float, string,
+    return: the value, encoded as bool, int, float, string,
         list, dict or any other JSON-compatible format.
 
     """
@@ -134,19 +133,20 @@ class DumpExporter:
 
     """
 
-    def __init__(self, contest_ids, export_target,
-                 dump_files, dump_model, skip_generated,
-                 skip_submissions, skip_user_tests, skip_users, skip_print_jobs):
+    def __init__(self, contest_ids: list[int] | None, export_target: str,
+                 dump_files: bool, dump_model: bool, skip_generated: bool,
+                 skip_submissions: bool, skip_user_tests: bool,
+                 skip_users: bool, skip_print_jobs: bool):
         if contest_ids is None:
             with SessionGen() as session:
-                contests = session.query(Contest).all()
+                contests: list[Contest] = session.query(Contest).all()
                 self.contests_ids = [contest.id for contest in contests]
                 if not skip_users:
-                    users = session.query(User).all()
+                    users: list[User] = session.query(User).all()
                     self.users_ids = [user.id for user in users]
                 else:
                     self.users_ids = []
-                tasks = session.query(Task)\
+                tasks: list[Task] = session.query(Task)\
                     .filter(Task.contest_id.is_(None)).all()
                 self.tasks_ids = [task.id for task in tasks]
         else:
@@ -229,15 +229,16 @@ class DumpExporter:
 
                 # We use strings because they'll be the keys of a JSON
                 # object
-                self.ids = {}
-                self.queue = []
+                self.ids: dict[object, str] = {}
+                self.queue: list[Base] = []
 
-                data = dict()
+                data: dict[str, object] = dict()
 
                 for cls, lst in [(Contest, self.contests_ids),
                                  (User, self.users_ids),
                                  (Task, self.tasks_ids)]:
                     for i in lst:
+                        cls: type[Base]
                         obj = cls.get_from_id(i, session)
                         self.get_id(obj)
 
@@ -266,7 +267,7 @@ class DumpExporter:
 
         return True
 
-    def get_id(self, obj):
+    def get_id(self, obj: Base) -> str:
         obj_key = obj.sa_identity_key
         if obj_key not in self.ids:
             # We use strings because they'll be the keys of a JSON object
@@ -275,7 +276,7 @@ class DumpExporter:
 
         return self.ids[obj_key]
 
-    def export_object(self, obj):
+    def export_object(self, obj: Base):
 
         """Export the given object, returning a JSON-encodable dict.
 
@@ -303,7 +304,7 @@ class DumpExporter:
 
         cls = type(obj)
 
-        data = {"_class": cls.__name__}
+        data: dict[str, object] = {"_class": cls.__name__}
 
         for prp in cls._col_props:
             col, = prp.columns
@@ -358,16 +359,16 @@ class DumpExporter:
 
         return data
 
-    def safe_get_file(self, digest, path, descr_path=None):
+    def safe_get_file(self, digest: str, path: str, descr_path: str | None = None) -> bool:
 
         """Get file from FileCacher ensuring that the digest is
         correct.
 
-        digest (string): the digest of the file to retrieve.
-        path (string): the path where to save the file.
-        descr_path (string): the path where to save the description.
+        digest: the digest of the file to retrieve.
+        path: the path where to save the file.
+        descr_path: the path where to save the description.
 
-        return (bool): True if all ok, False if something wrong.
+        return: True if all ok, False if something wrong.
 
         """
 

@@ -32,7 +32,7 @@ from cms.db import SessionGen, User
 logger = logging.getLogger(__name__)
 
 
-def remove_user(username):
+def remove_user(username: str):
     with SessionGen() as session:
         user = session.query(User)\
             .filter(User.username == username).first()

@@ -24,6 +24,7 @@ import datetime
 import logging
 import os
 import subprocess
+import types
 
 from cms import TOKEN_MODE_FINITE
 from cmscommon.datetime import get_system_timezone
@@ -128,10 +129,10 @@ class TestRunner:
 
     # Data creation.
 
-    def create_contest(self):
+    def create_contest(self) -> int:
         """Create a new contest.
 
-        return (int): contest id.
+        return: contest id.
 
         """
         start_time = datetime.datetime.utcnow()
@@ -156,10 +157,10 @@ class TestRunner:
         logger.info("Created contest %s.", self.contest_id)
         return self.contest_id
 
-    def create_or_get_user(self):
+    def create_or_get_user(self) -> int:
         """Create a new user if it doesn't exists already.
 
-        return (int): user id.
+        return: user id.
 
         """
         self.num_users += 1
@@ -192,12 +193,12 @@ class TestRunner:
             logging.info("Created user with id %s.", self.user_id)
         return self.user_id
 
-    def create_or_get_task(self, task_module):
+    def create_or_get_task(self, task_module: types.ModuleType) -> int:
         """Create a new task if it does not exist.
 
-        task_module (module): a task as in task/<name>.
+        task_module: a task as in task/<name>.
 
-        return (int): task id of the new (or existing) task.
+        return: task id of the new (or existing) task.
 
         """
         name = "%s_%s" % (task_module.task_info['name'], self.suffix)
@@ -283,10 +284,10 @@ class TestRunner:
                 for lang in test.languages:
                     yield (test, lang)
 
-    def submit_tests(self, concurrent_submit_and_eval=True):
+    def submit_tests(self, concurrent_submit_and_eval: bool = True):
         """Create the tasks, and submit for all languages in all tests.
 
-        concurrent_submit_and_eval (boolean): if False, start ES only
+        concurrent_submit_and_eval: if False, start ES only
             after CWS received all the submissions, with the goal of
             having a clearer view of the time each step takes.
 

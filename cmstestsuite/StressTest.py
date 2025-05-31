@@ -247,12 +247,12 @@ class SubmitActor(Actor):
                 submissions_path=self.submissions_path))
 
 
-def harvest_contest_data(contest_id):
+def harvest_contest_data(contest_id: int) -> tuple[dict[str, dict], list[str]]:
     """Retrieve the couples username, password and the task list for a
     given contest.
 
-    contest_id (int): the id of the contest we want.
-    return (tuple): the first element is a dictionary mapping
+    contest_id: the id of the contest we want.
+    return: the first element is a dictionary mapping
                     usernames to passwords; the second one is the list
                     of the task names.
 

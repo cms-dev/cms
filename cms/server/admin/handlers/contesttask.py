@@ -57,8 +57,8 @@ class ContestTasksHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
 
         try:
-            task_id = self.get_argument("task_id")
-            operation = self.get_argument("operation")
+            task_id: str = self.get_argument("task_id")
+            operation: str = self.get_argument("operation")
             assert operation in (
                 self.REMOVE_FROM_CONTEST,
                 self.MOVE_UP,
@@ -160,7 +160,7 @@ class AddContestTaskHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
 
         try:
-            task_id = self.get_argument("task_id")
+            task_id: str = self.get_argument("task_id")
             # Check that the admin selected some task.
             assert task_id != "null", "Please select a valid task"
         except Exception as error:

@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 from werkzeug.exceptions import HTTPException, NotFound, ServiceUnavailable
 from werkzeug.wrappers import Response, Request
 from werkzeug.wsgi import responder, wrap_file
@@ -46,11 +47,11 @@ class FileServerMiddleware:
     DIGEST_HEADER = "X-CMS-File-Digest"
     FILENAME_HEADER = "X-CMS-File-Filename"
 
-    def __init__(self, file_cacher, app):
+    def __init__(self, file_cacher: FileCacher, app: Callable):
         """Create an instance.
 
-        file_cacher (FileCacher): the cacher to retrieve files from.
-        app (function): the WSGI application to wrap.
+        file_cacher: the cacher to retrieve files from.
+        app: the WSGI application to wrap.
 
         """
         self.file_cacher = file_cacher

@@ -27,14 +27,14 @@ from cms import utf8_decoder
 from cms.db import SessionGen, Task
 
 
-def ask(task_name):
+def ask(task_name: str):
     ans = input("This will delete task `%s' and all related data, including "
                 "submissions. Are you sure? [y/N] "
                 % task_name).strip().lower()
     return ans in ["y", "yes"]
 
 
-def remove_task(task_name):
+def remove_task(task_name: str):
     with SessionGen() as session:
         task = session.query(Task)\
             .filter(Task.name == task_name).first()

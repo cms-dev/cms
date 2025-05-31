@@ -23,9 +23,9 @@ class Submission(Entity):
     """The entity representing a submission.
 
     It consists of the following properties:
-    - user (unicode): the key of the user who submitted
-    - task (unicode): the key of the task of the submission
-    - time (int): the time the submission has been submitted
+    - user: the key of the user who submitted
+    - task: the key of the task of the submission
+    - time: the time the submission has been submitted
 
     """
     def __init__(self):
@@ -33,9 +33,13 @@ class Submission(Entity):
 
         """
         Entity.__init__(self)
-        self.user = None
-        self.task = None
-        self.time = None
+        self.user: str = None
+        self.task: str = None
+        self.time: int = None
+        # these are filled by the Scoring module
+        self.score: float
+        self.token: bool
+        self.extra: list[str]
 
     @staticmethod
     def validate(data):

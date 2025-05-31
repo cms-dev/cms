@@ -73,7 +73,7 @@ class TaskStatementViewHandler(FileHandler):
     @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
-    def get(self, task_name, lang_code):
+    def get(self, task_name: str, lang_code: str):
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)
@@ -99,7 +99,7 @@ class TaskAttachmentViewHandler(FileHandler):
     @tornado_web.authenticated
     @actual_phase_required(0, 3)
     @multi_contest
-    def get(self, task_name, filename):
+    def get(self, task_name: str, filename: str):
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)

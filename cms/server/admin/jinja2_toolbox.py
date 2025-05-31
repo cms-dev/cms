@@ -23,7 +23,7 @@ useful specifically to the use that AWS makes of it.
 
 """
 
-from jinja2 import PackageLoader
+from jinja2 import Environment, PackageLoader
 
 from cms.grading.languagemanager import LANGUAGES
 from cms.grading.scoretypes import SCORE_TYPES
@@ -33,7 +33,7 @@ from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from cmscommon.crypto import get_hex_random_key, parse_authentication
 
 
-def safe_parse_authentication(auth):
+def safe_parse_authentication(auth: str) -> tuple[str, str]:
     try:
         method, password = parse_authentication(auth)
     except ValueError:
@@ -41,7 +41,7 @@ def safe_parse_authentication(auth):
     return method, password
 
 
-def instrument_cms_toolbox(env):
+def instrument_cms_toolbox(env: Environment):
     env.globals["TASK_TYPES"] = TASK_TYPES
     env.globals["SCORE_TYPES"] = SCORE_TYPES
     env.globals["LANGUAGES"] = LANGUAGES
@@ -49,7 +49,7 @@ def instrument_cms_toolbox(env):
     env.globals["parse_authentication"] = safe_parse_authentication
 
 
-def instrument_formatting_toolbox(env):
+def instrument_formatting_toolbox(env: Environment):
     env.filters["format_dataset_attrs"] = format_dataset_attrs
 
 

@@ -65,6 +65,6 @@ class HaskellGhc(CompiledLanguage):
         return commands
 
     @staticmethod
-    def _capitalize(string):
+    def _capitalize(string: str):
         dirname, basename = os.path.split(string)
         return os.path.join(dirname, basename[0].upper() + basename[1:])

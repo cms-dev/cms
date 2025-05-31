@@ -45,6 +45,7 @@ __all__ = [
     "version", "engine",
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
+    "Session",
     # types
     "CastingArray", "Codename", "Filename", "FilenameSchema",
     "FilenameSchemaArray", "Digest",
@@ -88,7 +89,7 @@ engine = create_engine(config.database, echo=config.database_debug,
 
 metadata = MetaData(engine)
 
-from .session import Session, ScopedSession, SessionGen, \
+from .session import Session, Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
 from .types import CastingArray, Codename, Filename, FilenameSchema, \
@@ -119,14 +120,14 @@ configure_mappers()
 # The following is a method of Dataset that cannot be put in the right
 # file because of circular dependencies.
 
-def get_submission_results_for_dataset(self, dataset):
+def get_submission_results_for_dataset(self, dataset) -> list[SubmissionResult]:
     """Return a list of all submission results against the specified
     dataset.
 
     Also preloads the executable and evaluation objects relative to
     the submission results.
 
-    returns ([SubmissionResult]): list of submission results.
+    returns: list of submission results.
 
     """
     # We issue this query manually to optimize it: we load all

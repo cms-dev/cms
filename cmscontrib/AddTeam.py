@@ -38,7 +38,7 @@ from cms.db import SessionGen, Team
 logger = logging.getLogger(__name__)
 
 
-def add_team(code, name):
+def add_team(code: str, name: str) -> bool:
     logger.info("Creating the team in the database.")
     team = Team(code=code, name=name)
     try:

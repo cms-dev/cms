@@ -25,12 +25,12 @@ import os
 
 # Taken from
 # http://stackoverflow.com/questions/1158076/implement-touch-using-python
-def touch(path):
+def touch(path: str):
     """Touch path, which must be regular file.
 
     This behaves like the UNIX touch utility.
 
-    path (str): the path to be touched.
+    path: the path to be touched.
 
     """
     with open(path, 'ab'):

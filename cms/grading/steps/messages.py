@@ -37,12 +37,12 @@ class HumanMessage:
 
     """
 
-    def __init__(self, shorthand, message, help_text):
+    def __init__(self, shorthand: str, message: str, help_text: str):
         """Initialization.
 
-        shorthand (str): what to call this message in the code.
-        message (str): the message itself.
-        help_text (str): a longer explanation for the help page.
+        shorthand: what to call this message in the code.
+        message: the message itself.
+        help_text: a longer explanation for the help page.
 
         """
         self.shorthand = shorthand
@@ -53,14 +53,14 @@ class HumanMessage:
 class MessageCollection:
     """Represent a collection of messages, with error checking."""
 
-    def __init__(self, messages=None):
-        self._messages = {}
-        self._ordering = []
+    def __init__(self, messages: list[HumanMessage] | None = None):
+        self._messages: dict[str, HumanMessage] = {}
+        self._ordering: list[str] = []
         if messages is not None:
             for message in messages:
                 self.add(message)
 
-    def add(self, message):
+    def add(self, message: HumanMessage):
         if message.shorthand in self._messages:
             logger.error("Trying to registering duplicate message `%s'.",
                          message.shorthand)
@@ -68,7 +68,7 @@ class MessageCollection:
         self._messages[message.shorthand] = message
         self._ordering.append(message.shorthand)
 
-    def get(self, shorthand):
+    def get(self, shorthand: str) -> HumanMessage:
         if shorthand not in self._messages:
             error = "Trying to get a non-existing message `%s'." % \
                 shorthand
@@ -76,7 +76,7 @@ class MessageCollection:
             raise KeyError(error)
         return self._messages[shorthand]
 
-    def all(self):
+    def all(self) -> list[HumanMessage]:
         ret = []
         for shorthand in self._ordering:
             ret.append(self._messages[shorthand])

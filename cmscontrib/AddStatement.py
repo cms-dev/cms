@@ -34,7 +34,7 @@ from cms.db.filecacher import FileCacher
 logger = logging.getLogger(__name__)
 
 
-def add_statement(task_name, language_code, statement_file, overwrite):
+def add_statement(task_name: str, language_code: str, statement_file: str, overwrite: bool):
     logger.info("Adding the statement(language: %s) of task %s "
                 "in the database.", language_code, task_name)
 
@@ -47,7 +47,7 @@ def add_statement(task_name, language_code, statement_file, overwrite):
         return False
 
     with SessionGen() as session:
-        task = session.query(Task)\
+        task: Task | None = session.query(Task)\
             .filter(Task.name == task_name).first()
         if not task:
             logger.error("No task named %s", task_name)
@@ -60,7 +60,7 @@ def add_statement(task_name, language_code, statement_file, overwrite):
                 (task_name, language_code))
         except Exception:
             logger.error("Task statement storage failed.", exc_info=True)
-        arr = session.query(Statement)\
+        arr: list[Statement] = session.query(Statement)\
             .filter(Statement.language == language_code)\
             .filter(Statement.task == task)\
             .all()

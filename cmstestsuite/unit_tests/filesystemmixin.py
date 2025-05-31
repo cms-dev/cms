@@ -40,12 +40,12 @@ class FileSystemMixin:
         "Return the full path for a given inner path within the temp dir."
         return os.path.join(self.base_dir, inner_path)
 
-    def makedirs(self, inner_path):
+    def makedirs(self, inner_path: str) -> str:
         """Create (possibly many) directories up to inner_path.
 
-        inner_path (str): path to create.
+        inner_path: path to create.
 
-        return (str): full path of the possibly new directory.
+        return: full path of the possibly new directory.
 
         """
         path = self.get_path(inner_path)
@@ -55,13 +55,13 @@ class FileSystemMixin:
             pass
         return path
 
-    def write_file(self, inner_path, content):
+    def write_file(self, inner_path: str, content: bytes) -> str:
         """Write content and return the full path.
 
-        inner_path (str): path inside the temp dir to write to.
-        content (bytes): content to write.
+        inner_path: path inside the temp dir to write to.
+        content: content to write.
 
-        return (str): full path of the file written.
+        return: full path of the file written.
 
         """
         path = self.get_path(inner_path)

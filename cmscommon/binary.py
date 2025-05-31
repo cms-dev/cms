@@ -25,17 +25,17 @@ __all__ = [
 ]
 
 
-def bin_to_hex(bin):
+def bin_to_hex(bin: bytes) -> str:
     return binascii.b2a_hex(bin).decode('ascii')
 
 
-def hex_to_bin(hex):
+def hex_to_bin(hex: str) -> bytes:
     return binascii.a2b_hex(hex.encode('ascii'))
 
 
-def bin_to_b64(bin):
+def bin_to_b64(bin: bytes) -> str:
     return binascii.b2a_base64(bin, newline=False).decode('ascii')
 
 
-def b64_to_bin(b64):
+def b64_to_bin(b64: str) -> bytes:
     return binascii.a2b_base64(b64.encode('ascii'))

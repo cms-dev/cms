@@ -19,6 +19,7 @@
 import re
 import time
 from collections import deque
+from collections.abc import Generator
 from weakref import WeakSet
 
 from gevent import Timeout
@@ -34,7 +35,7 @@ __all__ = [
     ]
 
 
-def format_event(id_, event, data):
+def format_event(id_: str, event: str | None, data: str | None) -> bytes:
     """Format the parameters to be sent on an event stream.
 
     Produce a text that, written on a Server-Sent Events connection,
@@ -43,11 +44,11 @@ def format_event(id_, event, data):
     nor line breaks (i.e. "\\r\\n", "\\r", "\\n") are allowed in the
     event name and all line breaks in the event data will become "\\n".
 
-    id_ (unicode): the ID of the event.
-    event (unicode): the name of the event, or None.
-    data (unicode): the content of the event, or None.
+    id_: the ID of the event.
+    event: the name of the event, or None.
+    data: the content of the event, or None.
 
-    return (bytes): the value to write on the stream.
+    return: the value to write on the stream.
 
     raise (TypeError): if any parameter isn't unicode.
     raise (ValueError): if event contains illegal characters.
@@ -85,10 +86,10 @@ class Publisher:
     queue, and pushing new messages to all these queues.
 
     """
-    def __init__(self, size):
+    def __init__(self, size: int):
         """Instantiate a new publisher.
 
-        size (int): the number of messages to keep in cache.
+        size: the number of messages to keep in cache.
 
         """
         # We use a deque as it's efficient to add messages to one end
@@ -99,13 +100,13 @@ class Publisher:
         # when no one else is using (i.e. fetching from) them.
         self._sub_queues = WeakSet()
 
-    def put(self, event, data):
+    def put(self, event: str | None, data: str | None):
         """Dispatch a new item to all subscribers.
 
         See format_event for details about the parameters.
 
-        event (unicode): the type of event the client will receive.
-        data (unicode): the associated data.
+        event: the type of event the client will receive.
+        data: the associated data.
 
         """
         # Number of microseconds since epoch.
@@ -117,18 +118,18 @@ class Publisher:
         for queue in self._sub_queues:
             queue.put(msg)
 
-    def get_subscriber(self, last_event_id=None):
+    def get_subscriber(self, last_event_id: str | None = None) -> "Subscriber":
         """Obtain a new subscriber.
 
         The returned subscriber will receive all messages after the one
         with the given index (if they are still in the cache).
 
-        last_event_id (unicode|None): the ID of the last message the
+        last_event_id: the ID of the last message the
             client did receive, to request the one generated since
             then to be sent again. If not given no past message will
             be sent.
 
-        return (Subscriber): a new subscriber instance.
+        return: a new subscriber instance.
 
         """
         queue = Queue()
@@ -157,25 +158,25 @@ class Subscriber:
     it.
 
     """
-    def __init__(self, queue):
+    def __init__(self, queue: Queue[bytes]):
         """Create a new subscriber.
 
         Make it wait for messages on the given queue, managed by the
         Publisher.
 
-        queue (Queue): a message queue.
+        queue: a message queue.
 
         """
         self._queue = queue
 
-    def get(self):
+    def get(self) -> Generator[bytes]:
         """Retrieve new messages.
 
         Obtain all messages that were put in the associated publisher
         since this method was last called, or (on the first call) since
         the last_event_id given to get_subscriber.
 
-        return ([objects]): the items put in the publisher, in order
+        return: the items put in the publisher, in order
             (actually, returns a generator, not a list).
 
         raise (OutdatedError): if some of the messages it's supposed to
@@ -219,14 +220,14 @@ class EventSource:
         """
         self._pub = Publisher(self._CACHE_SIZE)
 
-    def send(self, event, data):
+    def send(self, event: str, data: str):
         """Send the event to the stream.
 
         Intended for subclasses to push new events to clients. See
         format_event for the meaning of the parameters.
 
-        event (unicode): the type of the event.
-        data (unicode): the data of the event.
+        event: the type of the event.
+        data: the data of the event.
 
         """
         self._pub.put(event, data)

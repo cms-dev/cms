@@ -45,13 +45,13 @@ class RandomFile:
         self.dim = dim
         self.digester = Digester()
 
-    def read(self, byte_num):
+    def read(self, byte_num: int) -> bytes:
         """Read byte_num bytes from the source and return them,
         updating the hashing.
 
-        byte_num (int): number of bytes to read.
+        byte_num: number of bytes to read.
 
-        return (string): byte_num bytes of content.
+        return: byte_num bytes of content.
 
         """
         if byte_num > self.dim:
@@ -70,10 +70,10 @@ class RandomFile:
         pass
 
     @property
-    def digest(self):
+    def digest(self) -> str:
         """Digest of the data read from the source file.
 
-        return (string): digest.
+        return: digest.
 
         """
         return self.digester.digest()
@@ -86,22 +86,22 @@ class HashingFile:
     def __init__(self):
         self.digester = Digester()
 
-    def write(self, buf):
+    def write(self, buf: bytes) -> int:
         """Update the hashing with the content of buf.
 
-        buf (string): new content for the file.
+        buf: new content for the file.
 
-        return (int): length of buf.
+        return: length of buf.
 
         """
         self.digester.update(buf)
         return len(buf)
 
     @property
-    def digest(self):
+    def digest(self) -> str:
         """Digest of the data written in the file.
 
-        return (string): digest.
+        return: digest.
 
         """
         return self.digester.digest()

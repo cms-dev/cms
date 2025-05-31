@@ -26,7 +26,7 @@ __all__ = [
 ]
 
 
-def pretty_print_cmdline(cmdline):
+def pretty_print_cmdline(cmdline: list[str]) -> str:
     """Pretty print a command line.
 
     Take a command line suitable to be passed to a Popen-like call and

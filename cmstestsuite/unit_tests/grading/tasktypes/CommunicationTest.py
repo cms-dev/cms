@@ -25,6 +25,7 @@ from unittest.mock import MagicMock, call, ANY, patch
 from cms import config
 from cms.db import File, Manager, Executable
 from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import merge_execution_stats
 from cms.grading.tasktypes.Communication import Communication
 from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
@@ -338,10 +339,10 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.assertEqual(job.text, text)
         self.assertEqual(job.plus, stats)
 
-    def _set_evaluation_step_return_values(self, sandbox_to_return_value):
+    def _set_evaluation_step_return_values(self, sandbox_to_return_value: dict[Sandbox | MagicMock, object]):
         """Set the return value of evaluation_step_after_run for each sandbox.
 
-        sandbox_to_return_value ({Sandbox|MagicMock: object}): map from the
+        sandbox_to_return_value: map from the
             sandbox to the return value of evaluation_step_after_run when
             called with that sandbox as first argument.
 

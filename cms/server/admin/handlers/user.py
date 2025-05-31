@@ -100,8 +100,8 @@ class UserListHandler(SimpleHandler("users.html")):
 
     @require_permission(BaseHandler.AUTHENTICATED)
     def post(self):
-        user_id = self.get_argument("user_id")
-        operation = self.get_argument("operation")
+        user_id: str = self.get_argument("user_id")
+        operation: str = self.get_argument("operation")
 
         if operation == self.REMOVE:
             asking_page = self.url("users", user_id, "remove")
@@ -268,7 +268,7 @@ class AddParticipationHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
 
         try:
-            contest_id = self.get_argument("contest_id")
+            contest_id: str = self.get_argument("contest_id")
             assert contest_id != "null", "Please select a valid contest"
         except Exception as error:
             self.service.add_notification(
@@ -305,8 +305,8 @@ class EditParticipationHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
 
         try:
-            contest_id = self.get_argument("contest_id")
-            operation = self.get_argument("operation")
+            contest_id: str = self.get_argument("contest_id")
+            operation: str = self.get_argument("operation")
             assert contest_id != "null", "Please select a valid contest"
             assert operation in (
                 "Remove",

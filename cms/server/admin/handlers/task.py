@@ -236,7 +236,7 @@ class AddStatementHandler(BaseHandler):
 
         task = self.safe_get_item(Task, task_id)
 
-        language = self.get_argument("language", "")
+        language: str = self.get_argument("language", "")
         if len(language) == 0:
             self.service.add_notification(
                 make_datetime(),
@@ -502,7 +502,7 @@ class RemoveTaskHandler(BaseHandler):
         self.sql_session.delete(task)
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
-            following_tasks = self.sql_session.query(Task)\
+            following_tasks: list[Task] = self.sql_session.query(Task)\
                 .filter(Task.contest_id == contest_id)\
                 .filter(Task.num > num)\
                 .all()

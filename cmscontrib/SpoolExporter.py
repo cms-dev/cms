@@ -55,12 +55,12 @@ class SpoolExporter:
     in Italian IOI repository for storing the results of a contest.
 
     """
-    def __init__(self, contest_id, spool_dir):
+    def __init__(self, contest_id: int, spool_dir: str):
         self.contest_id = contest_id
         self.spool_dir = spool_dir
         self.upload_dir = os.path.join(self.spool_dir, "upload")
-        self.contest = None
-        self.submissions = None
+        self.contest: Contest = None
+        self.submissions: list[Submission] = None
 
         self.file_cacher = FileCacher()
 

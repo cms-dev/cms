@@ -253,8 +253,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "analysis_start", conv=parse_datetime)
         load(conf, args, "analysis_stop", conv=parse_datetime)
 
-        tasks = load(conf, None, ["tasks", "problemi"])
-        participations = load(conf, None, ["users", "utenti"])
+        tasks: list[str] | None = load(conf, None, ["tasks", "problemi"])
+        participations: list[dict] | None = load(conf, None, ["users", "utenti"])
         participations = [] if participations is None else participations
         for p in participations:
             p["password"] = build_password(p["password"])
@@ -340,7 +340,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         return Team(**args)
 
-    def get_task(self, get_statement=True):
+    def get_task(self, get_statement=True) -> Task | None:
         """See docstring in class TaskLoader."""
         name = os.path.split(self.path)[1]
 

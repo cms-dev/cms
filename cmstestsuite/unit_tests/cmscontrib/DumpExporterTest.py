@@ -106,13 +106,13 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
         return r
 
-    def assertInDump(self, cls, **kwargs):
+    def assertInDump(self, cls: type, **kwargs) -> str:
         """Assert that an object is in the dump.
 
-        cls (Class): the object should be of this class.
-        kwargs (dict): the object should have at least these key/value pairs.
+        cls: the object should be of this class.
+        kwargs: the object should have at least these key/value pairs.
 
-        return (string): the key of the object in the dump.
+        return: the key of the object in the dump.
 
         raise (AssertionError): if the object is not in the dump.
 
@@ -124,11 +124,11 @@ class TestDumpExporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         raise AssertionError("Cannot find object of class %s with fields %s" %
                              (cls.__name__, kwargs))
 
-    def assertNotInDump(self, cls, **kwargs):
+    def assertNotInDump(self, cls: type, **kwargs):
         """Assert that an object is not in the dump.
 
-        cls (Class): the object should be of this class.
-        kwargs (dict): the object should have at least these key/value pairs.
+        cls: the object should be of this class.
+        kwargs: the object should have at least these key/value pairs.
 
         raise (AssertionError): if the object is in the dump.
 

@@ -32,7 +32,7 @@ from cms.db import SessionGen, Contest, User, Participation, ask_for_contest
 logger = logging.getLogger(__name__)
 
 
-def remove_participation(contest_id, username):
+def remove_participation(contest_id: int, username: str):
     with SessionGen() as session:
         user = session.query(User)\
             .filter(User.username == username).first()

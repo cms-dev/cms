@@ -32,12 +32,12 @@ from .base import BaseHandler, SimpleHandler, require_permission
 logger = logging.getLogger(__name__)
 
 
-def _admin_attrs(handler):
+def _admin_attrs(handler: BaseHandler) -> dict:
     """Return a dictionary with the arguments to define an admin
 
-    handler (BaseHandler): the handler receiving the arguments.
+    handler: the handler receiving the arguments.
 
-    return (dict): a dictionary with the arguments to define an admin,
+    return: a dictionary with the arguments to define an admin,
         based on those passed to handler.
 
     """
@@ -115,7 +115,7 @@ class AdminHandler(BaseHandler):
     ]
 
     @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, admin_id):
+    def get(self, admin_id: str):
         admin = self.safe_get_item(Admin, admin_id)
 
         self.r_params = self.render_params()
@@ -123,7 +123,7 @@ class AdminHandler(BaseHandler):
         self.render("admin.html", **self.r_params)
 
     @require_permission(BaseHandler.PERMISSION_ALL, self_allowed=True)
-    def post(self, admin_id):
+    def post(self, admin_id: str):
         admin = self.safe_get_item(Admin, admin_id)
 
         try:
@@ -152,7 +152,7 @@ class AdminHandler(BaseHandler):
             self.redirect(self.url("admin", admin_id))
 
     @require_permission(BaseHandler.PERMISSION_ALL)
-    def delete(self, admin_id):
+    def delete(self, admin_id: str):
         admin = self.safe_get_item(Admin, admin_id)
 
         self.sql_session.delete(admin)

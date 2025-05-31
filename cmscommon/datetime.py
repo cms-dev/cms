@@ -20,7 +20,11 @@
 import os
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, tzinfo
+import typing
+
+if typing.TYPE_CHECKING:
+    from cms.db import User, Contest
 
 import babel.dates
 
@@ -33,12 +37,12 @@ __all__ = [
     ]
 
 
-def make_datetime(timestamp=None):
+def make_datetime(timestamp: int | float | None = None) -> datetime:
     """Return the datetime object associated with the given timestamp.
 
-    timestamp (int|float|None): a POSIX timestamp, or None to use now.
+    timestamp: a POSIX timestamp, or None to use now.
 
-    return (datetime): the datetime representing the UTC time of the
+    return: the datetime representing the UTC time of the
         given timestamp.
 
     """
@@ -51,12 +55,12 @@ def make_datetime(timestamp=None):
 EPOCH = datetime(1970, 1, 1)
 
 
-def make_timestamp(_datetime=None):
+def make_timestamp(_datetime: datetime | None = None) -> float:
     """Return the timestamp associated with the given datetime object.
 
-    _datetime (datetime|None): a datetime object, or None to use now.
+    _datetime: a datetime object, or None to use now.
 
-    return (float): the POSIX timestamp corresponding to the given
+    return: the POSIX timestamp corresponding to the given
         datetime ("read" in UTC).
 
     """
@@ -70,13 +74,13 @@ utc = babel.dates.UTC
 local_tz = babel.dates.LOCALTZ
 
 
-def get_timezone(user, contest):
+def get_timezone(user: "User", contest: "Contest") -> tzinfo:
     """Return the timezone for the given user and contest
 
-    user (User): the user owning the timezone.
-    contest (Contest): the contest in which the user is competing.
+    user: the user owning the timezone.
+    contest: the contest in which the user is competing.
 
-    return (tzinfo): the timezone information for the user.
+    return: the timezone information for the user.
 
     """
     if user.timezone is not None:
@@ -92,10 +96,10 @@ def get_timezone(user, contest):
     return local_tz
 
 
-def get_system_timezone():
+def get_system_timezone() -> str:
     """Return the name of the system timezone.
 
-    return (unicode): the "best" description of the timezone of the
+    return: the "best" description of the timezone of the
         local system clock that we were able to find, in a format like
         "Europe/Rome", "CET", etc.
 

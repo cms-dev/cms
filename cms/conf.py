@@ -26,24 +26,28 @@ import json
 import logging
 import os
 import sys
-from collections import namedtuple
+import typing
 
-from .log import set_detailed_logs
+from cms.log import set_detailed_logs
 
 
 logger = logging.getLogger(__name__)
 
 
-class Address(namedtuple("Address", "ip port")):
+class Address(typing.NamedTuple):
+    ip: str
+    port: int
     def __repr__(self):
         return "%s:%d" % (self.ip, self.port)
 
 
-class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
+class ServiceCoord(typing.NamedTuple):
     """A compact representation for the name and the shard number of a
     service (thus identifying it).
 
     """
+    name: str
+    shard: int
     def __repr__(self):
         return "%s,%d" % (self.name, self.shard)
 
@@ -67,8 +71,8 @@ class AsyncConfig:
     anyway not constantly.
 
     """
-    core_services = {}
-    other_services = {}
+    core_services: dict[ServiceCoord, Address] = {}
+    other_services: dict[ServiceCoord, Address] = {}
 
 
 async_config = AsyncConfig()
@@ -184,7 +188,7 @@ class Config:
         # change the log configuration.
         set_detailed_logs(self.stream_log_detailed)
 
-    def _load(self, paths):
+    def _load(self, paths: list[str]):
         """Try to load the config files one at a time, until one loads
         correctly.
 
@@ -196,7 +200,7 @@ class Config:
             logging.warning("No configuration file found: "
                             "falling back to default values.")
 
-    def _load_unique(self, path):
+    def _load_unique(self, path: str):
         """Populate the Config class with everything that sits inside
         the JSON file path (usually something like /etc/cms.conf). The
         only pieces of data treated differently are the elements of
@@ -206,7 +210,7 @@ class Config:
         Services whose name begins with an underscore are ignored, so
         they can be commented out in the configuration file.
 
-        path (string): the path of the JSON config file.
+        path: the path of the JSON config file.
 
         """
         # Load config file.

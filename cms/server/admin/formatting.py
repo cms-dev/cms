@@ -23,14 +23,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-def format_dataset_attrs(dataset):
+from cms.db.task import Dataset
+
+
+def format_dataset_attrs(dataset: Dataset) -> str:
     """Return a printable string for the attributes of a dataset.
 
     E.g.: live, autojudge enabled, etc.
 
-    dataset (Dataset): the dataset in question.
+    dataset: the dataset in question.
 
-    return (unicode): printable string of relevant attributes.
+    return: printable string of relevant attributes.
 
     """
     if dataset is dataset.task.active_dataset:

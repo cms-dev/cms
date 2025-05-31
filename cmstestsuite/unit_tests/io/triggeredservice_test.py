@@ -40,7 +40,7 @@ class Notifier:
         return self._notifications
 
 
-class FakeExecutor(Executor):
+class FakeExecutor(Executor[FakeQueueItem]):
     def __init__(self, notifier, batch_executions=False):
         super().__init__(batch_executions)
         self._notifier = notifier
