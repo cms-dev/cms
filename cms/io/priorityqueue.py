@@ -41,14 +41,13 @@ together the three data point: item, priority, and timestamp.
 from datetime import datetime
 from functools import total_ordering
 from typing import TypedDict
+import typing
 
 from gevent.event import Event
 
 from cmscommon.datetime import make_datetime, make_timestamp
 
 
-# TODO: make PriorityQueue generic over the exact type of the QueueItem.
-# Allows more exact typing in other classes (i.e. TriggeredService and its children).
 class QueueItem:
 
     """Payload of an item in the queue.
@@ -61,15 +60,16 @@ class QueueItem:
         """Return a dict() representation of the object."""
         return self.__dict__
 
+QueueItemT = typing.TypeVar('QueueItemT', bound=QueueItem)
 
 @total_ordering
-class QueueEntry:
+class QueueEntry(typing.Generic[QueueItemT]):
 
     """Type of the actual objects in the queue.
 
     """
 
-    def __init__(self, item: QueueItem, priority: int, timestamp: datetime, index: int):
+    def __init__(self, item: QueueItemT, priority: int, timestamp: datetime, index: int):
         """Create a QueueEntry object.
 
         item: the payload.
@@ -102,7 +102,7 @@ class QueueEntryDict(TypedDict):
     priority: int
     timestamp: float
 
-class PriorityQueue:
+class PriorityQueue(typing.Generic[QueueItemT]):
 
     """A priority queue.
 
@@ -125,11 +125,11 @@ class PriorityQueue:
         """Create a priority queue."""
         # The queue: a min-heap whose elements are of the form
         # (priority, timestamp, item), where item is the actual data.
-        self._queue: list[QueueEntry] = []
+        self._queue: list[QueueEntry[QueueItemT]] = []
 
         # Reverse lookup for the items in the queue: a dictionary
         # associating the index in the queue to each item.
-        self._reverse = {}
+        self._reverse: dict[QueueItemT, int] = {}
 
         # Event to signal that there are items in the queue.
         self._event = Event()
@@ -159,7 +159,7 @@ class PriorityQueue:
                 return False
         return True
 
-    def __contains__(self, item: QueueItem) -> bool:
+    def __contains__(self, item: QueueItemT) -> bool:
         """Implement the 'in' operator for an item in the queue.
 
         item: an item to search.
@@ -234,7 +234,7 @@ class PriorityQueue:
         idx = self._up_heap(idx)
         return self._down_heap(idx)
 
-    def push(self, item: QueueItem, priority: int | None = None,
+    def push(self, item: QueueItemT, priority: int | None = None,
              timestamp: datetime | None = None) -> bool:
         """Push an item in the queue. If timestamp is not specified,
         uses the current time.
@@ -270,7 +270,7 @@ class PriorityQueue:
 
         return True
 
-    def top(self, wait: bool = False) -> QueueEntry:
+    def top(self, wait: bool = False) -> QueueEntry[QueueItemT]:
         """Return the first element in the queue without extracting it.
 
         wait: if True, block until an element is present.
@@ -292,7 +292,7 @@ class PriorityQueue:
                         continue
                     return self._queue[0]
 
-    def pop(self, wait: bool = False) -> QueueEntry:
+    def pop(self, wait: bool = False) -> QueueEntry[QueueItemT]:
         """Extract (and return) the first element in the queue.
 
         wait: if True, block until an element is present.
@@ -317,7 +317,7 @@ class PriorityQueue:
             self._event.clear()
         return top
 
-    def remove(self, item: QueueItem) -> QueueEntry:
+    def remove(self, item: QueueItemT) -> QueueEntry[QueueItemT]:
         """Remove an item from the queue. Raise a KeyError if not present.
 
         item: the item to remove.
@@ -343,7 +343,7 @@ class PriorityQueue:
 
         return entry
 
-    def set_priority(self, item: QueueItem, priority: int):
+    def set_priority(self, item: QueueItemT, priority: int):
         """Change the priority of an item inside the queue. Raises an
         exception if the item is not in the queue.
 

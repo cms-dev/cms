@@ -59,7 +59,7 @@ from .workerpool import WorkerPool
 logger = logging.getLogger(__name__)
 
 
-class EvaluationExecutor(Executor):
+class EvaluationExecutor(Executor[ESOperation]):
 
     # Real maximum number of operations to be sent to a worker.
     MAX_OPERATIONS_PER_BATCH = 25
@@ -122,7 +122,7 @@ class EvaluationExecutor(Executor):
                     ratio, ret)
         return ret
 
-    def execute(self, entries: list[QueueEntry]):
+    def execute(self, entries: list[QueueEntry[ESOperation]]):
         """Execute a batch of operations in the queue.
 
         The operations might not be executed immediately because of
@@ -190,7 +190,7 @@ class EvaluationExecutor(Executor):
         self._remove_from_cumulative_status(queue_entry)
         return queue_entry
 
-    def _remove_from_cumulative_status(self, queue_entry: QueueEntry):
+    def _remove_from_cumulative_status(self, queue_entry: QueueEntry[ESOperation]):
         # Remove the item from the cumulative status dictionary.
         key = queue_entry.item.short_key() + (queue_entry.priority,)
         self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
@@ -223,7 +223,7 @@ class Result:
         self.job_success = job_success
 
 
-class EvaluationService(TriggeredService[EvaluationExecutor]):
+class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
     """Evaluation service.
 
     """

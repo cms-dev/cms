@@ -128,7 +128,7 @@ class ProxyOperation(QueueItem):
                 "data": self.data}
 
 
-class ProxyExecutor(Executor):
+class ProxyExecutor(Executor[ProxyOperation]):
     """A thread that sends data to one ranking.
 
     The object is used as a thread-local storage and its run method is
@@ -182,7 +182,7 @@ class ProxyExecutor(Executor):
         self._ranking = ranking
         self._visible_ranking = safe_url(ranking)
 
-    def execute(self, entries: list[QueueEntry]):
+    def execute(self, entries: list[QueueEntry[ProxyOperation]]):
         """Consume (i.e. send) the data put in the queue, forever.
 
         Pick all operations found in the queue (if there aren't any,
@@ -230,7 +230,7 @@ class ProxyExecutor(Executor):
             gevent.sleep(self.FAILURE_WAIT)
 
 
-class ProxyService(TriggeredService):
+class ProxyService(TriggeredService[ProxyOperation, ProxyExecutor]):
     """Maintain the information held by rankings up-to-date.
 
     Discover (by receiving notifications and by periodically sweeping

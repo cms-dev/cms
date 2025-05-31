@@ -31,13 +31,13 @@ import gevent
 from gevent.event import Event
 
 from cms.io import PriorityQueue, Service, rpc_method
-from cms.io.priorityqueue import QueueEntry, QueueEntryDict, QueueItem
+from cms.io.priorityqueue import QueueEntry, QueueEntryDict, QueueItemT
 
 
 logger = logging.getLogger(__name__)
 
 
-class Executor(metaclass=ABCMeta):
+class Executor(typing.Generic[QueueItemT], metaclass=ABCMeta):
 
     """A class taking care of executing operations.
 
@@ -61,9 +61,9 @@ class Executor(metaclass=ABCMeta):
         super().__init__()
 
         self._batch_executions = batch_executions
-        self._operation_queue = PriorityQueue()
+        self._operation_queue: PriorityQueue[QueueItemT] = PriorityQueue()
 
-    def __contains__(self, item: QueueItem) -> bool:
+    def __contains__(self, item: QueueItemT) -> bool:
         """Return whether the item is in the queue.
 
         item: the item to look for.
@@ -84,7 +84,7 @@ class Executor(metaclass=ABCMeta):
         """
         return self._operation_queue.get_status()
 
-    def enqueue(self, item: QueueItem, priority: int | None = None, timestamp: datetime | None = None) -> bool:
+    def enqueue(self, item: QueueItemT, priority: int | None = None, timestamp: datetime | None = None) -> bool:
         """Add an item to the queue.
 
         item: the item to add.
@@ -97,7 +97,7 @@ class Executor(metaclass=ABCMeta):
         """
         return self._operation_queue.push(item, priority, timestamp)
 
-    def dequeue(self, item: QueueItem) -> QueueEntry:
+    def dequeue(self, item: QueueItemT) -> QueueEntry[QueueItemT]:
         """Remove an item from the queue.
 
         item: the item to remove.
@@ -107,7 +107,7 @@ class Executor(metaclass=ABCMeta):
         """
         return self._operation_queue.remove(item)
 
-    def _pop(self, wait: bool = False) -> QueueEntry:
+    def _pop(self, wait: bool = False) -> QueueEntry[QueueItemT]:
         """Extract (and return) the first element in the queue.
 
         wait: if True, block until an element is present.
@@ -180,7 +180,7 @@ class Executor(metaclass=ABCMeta):
         return 0
 
     @abstractmethod
-    def execute(self, entry: QueueEntry | list[QueueEntry]):
+    def execute(self, entry: QueueEntry[QueueItemT] | list[QueueEntry[QueueItemT]]):
         """Perform a single operation.
 
         Must be implemented if batch_execution is false.
@@ -196,8 +196,10 @@ class Executor(metaclass=ABCMeta):
         pass
 
 
+# The correct bound here is Executor[QueueItemT], but expressing that would
+# require higher-kinded types, which python's typechecking does not support.
 ExecutorT = typing.TypeVar('ExecutorT', bound=Executor)
-class TriggeredService(Service, typing.Generic[ExecutorT]):
+class TriggeredService(Service, typing.Generic[QueueItemT, ExecutorT]):
 
     """A service receiving notifications to perform an operation.
 
@@ -263,7 +265,7 @@ class TriggeredService(Service, typing.Generic[ExecutorT]):
         """
         return self._executors[0]
 
-    def enqueue(self, operation: QueueItem, priority: int | None = None,
+    def enqueue(self, operation: QueueItemT, priority: int | None = None,
                 timestamp: datetime | None = None) -> int:
         """Add an operation to the queue of each executor.
 
@@ -282,7 +284,7 @@ class TriggeredService(Service, typing.Generic[ExecutorT]):
                 ret += 1
         return ret
 
-    def dequeue(self, operation: QueueItem):
+    def dequeue(self, operation: QueueItemT):
         """Remove an operation from the queue of each executor.
 
         operation: the operation to dequeue.

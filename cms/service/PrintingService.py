@@ -61,7 +61,7 @@ class PrintingOperation(QueueItem):
         return {"printjob_id": self.printjob_id}
 
 
-class PrintingExecutor(Executor):
+class PrintingExecutor(Executor[PrintingOperation]):
     def __init__(self, file_cacher):
         super().__init__()
 
@@ -72,7 +72,7 @@ class PrintingExecutor(Executor):
         self.jinja2_env.filters["escape_tex_normal"] = escape_tex_normal
         self.jinja2_env.filters["escape_tex_tt"] = escape_tex_tt
 
-    def execute(self, entry: QueueEntry):
+    def execute(self, entry: QueueEntry[PrintingOperation]):
         """Print a print job.
 
         This is the core of PrintingService.
@@ -208,12 +208,12 @@ class PrintingExecutor(Executor):
                 rmtree(directory)
 
 
-class PrintingService(TriggeredService):
+class PrintingService(TriggeredService[PrintingOperation, PrintingExecutor]):
     """A service that prepares print jobs and sends them to a printer.
 
     """
 
-    def __init__(self, shard):
+    def __init__(self, shard: int):
         """Initialize the PrintingService.
 
         """

@@ -38,12 +38,12 @@ from .scoringoperations import ScoringOperation, get_operations
 logger = logging.getLogger(__name__)
 
 
-class ScoringExecutor(Executor):
+class ScoringExecutor(Executor[ScoringOperation]):
     def __init__(self, proxy_service):
         super().__init__()
         self.proxy_service = proxy_service
 
-    def execute(self, entry: QueueEntry):
+    def execute(self, entry: QueueEntry[ScoringOperation]):
         """Assign a score to a submission result.
 
         This is the core of ScoringService: here we retrieve the result
@@ -113,7 +113,7 @@ class ScoringExecutor(Executor):
                     submission_id=submission.id)
 
 
-class ScoringService(TriggeredService):
+class ScoringService(TriggeredService[ScoringOperation, ScoringExecutor]):
     """A service that assigns a score to submission results.
 
     A submission result is ready to be scored when its compilation is
