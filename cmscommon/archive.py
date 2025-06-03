@@ -21,10 +21,14 @@
 
 """
 
+from abc import ABCMeta, abstractmethod
+from collections.abc import Generator, Iterable
 import os
 import shutil
+import tarfile
 import tempfile
 import typing
+import zipfile
 
 import patoolib
 from patoolib.util import PatoolError
@@ -225,3 +229,64 @@ class Archive:
                 "You should write the file directly, in the "
                 "folder returned by unpack(), and then "
                 "call the repack() method.")
+
+class ArchiveBase(metaclass=ABCMeta):
+    @abstractmethod
+    def iter_regular_files(self) -> Iterable[tuple[str, int, object]]:
+        """Returns pairs of (filepath, decompressed size, handle), regular files only
+
+        handle can be passed to open_file."""
+        pass
+
+    @abstractmethod
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        """Open a member of the archive for reading."""
+        pass
+
+    def get_file_bytes(self, handle: object) -> bytes:
+        """Read an archive member into bytes."""
+        with self.open_file(handle) as f:
+            return f.read()
+
+class ArchiveZipfile(ArchiveBase):
+    def __init__(self, inner: zipfile.ZipFile):
+        self.inner = inner
+
+    def iter_regular_files(self) -> list[tuple[str, int, zipfile.ZipInfo]]:
+        return [
+            (x.filename, x.file_size, x)
+            for x in self.inner.infolist()
+            if not x.is_dir()
+        ]
+
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        assert isinstance(handle, zipfile.ZipInfo)
+        return self.inner.open(handle, 'r')
+
+class ArchiveTarfile(ArchiveBase):
+    def __init__(self, inner: tarfile.TarFile):
+        self.inner = inner
+
+    def iter_regular_files(self) -> Generator[tuple[str, int, tarfile.TarInfo]]:
+        while (member := self.inner.next()) is not None:
+            if member.isfile():
+                yield (member.path, member.size, member)
+
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        assert isinstance(handle, tarfile.TarInfo)
+        fobj = self.inner.extractfile(handle)
+        if fobj is None:
+            raise ValueError("not a regular file")
+        return fobj
+
+def open_archive(input: typing.IO[bytes]) -> ArchiveBase:
+    # Order is not entirely arbitrary here: is_zipfile is a very lenient check
+    # that will also return True when the file is an uncompressed tar file that
+    # happens to contain a zip file inside it. So check is_tarfile first (which
+    # only reads the very start of the file).
+    if tarfile.is_tarfile(input):
+        return ArchiveTarfile(tarfile.open(fileobj=input))
+    elif zipfile.is_zipfile(input):
+        return ArchiveZipfile(zipfile.ZipFile(input))
+    else:
+        raise ValueError("not a known archive format")
