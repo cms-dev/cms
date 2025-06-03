@@ -33,6 +33,7 @@ format.
 
 """
 
+import io
 import os.path
 import typing
 
@@ -40,7 +41,7 @@ from patoolib.util import PatoolError
 if typing.TYPE_CHECKING:
     from tornado.httputil import HTTPFile
 
-from cmscommon.archive import Archive
+from cmscommon.archive import open_archive
 
 
 # Represents a file received through HTTP from an HTML form.
@@ -57,10 +58,21 @@ class ReceivedFile(typing.NamedTuple):
 class InvalidArchive(Exception):
     """Raised when the archive submitted by the user cannot be opened."""
 
-    pass
+    def __init__(self, too_big: bool = False, too_many_files: bool = False):
+        """
+        too_big: Whether the InvalidArchive was raised because the files in it
+            exceeded the size limit after decompression.
+        too_many_files: Whether the InvalidArchive was raised because the
+            archive contained more than the maximum number of files.
+        """
+        self.too_big = too_big
+        self.too_many_files = too_many_files
+        super().__init__()
 
 
-def extract_files_from_archive(data: bytes) -> list[ReceivedFile]:
+def extract_files_from_archive(data: bytes,
+                               max_size: int | None = None,
+                               max_files: int | None = None) -> list[ReceivedFile]:
     """Return the files contained in the given archive.
 
     Given the binary data of an archive in any of the formats supported
@@ -70,6 +82,8 @@ def extract_files_from_archive(data: bytes) -> list[ReceivedFile]:
     will be ignored and the files will be returned with their basename.
 
     data: the raw contents of the archive.
+    max_size: maximum decompressed size of the archive.
+    max_files: maximum number of files to allow in the archive.
 
     return: the files contained in the archive, with
         their filename filled in but their codename set to None.
@@ -78,32 +92,33 @@ def extract_files_from_archive(data: bytes) -> list[ReceivedFile]:
         archive, its contents are invalid, or other issues.
 
     """
-    archive = Archive.from_raw_data(data)
 
-    if archive is None:
-        raise InvalidArchive()
-
-    result = list()
-
+    result: list[ReceivedFile] = []
+    total_size = 0
     try:
-        archive.unpack()
-        for name in archive.namelist():
-            with archive.read(name) as f:
-                result.append(
-                    ReceivedFile(None, os.path.basename(name), f.read()))
-
-    except (PatoolError, OSError):
+        archive = open_archive(io.BytesIO(data))
+        for (filepath, size, handle) in archive.iter_regular_files():
+            total_size += size
+            if max_size is not None and total_size > max_size:
+                raise InvalidArchive(too_big=True)
+            if max_files is not None and len(result) + 1 > max_files:
+                raise InvalidArchive(too_many_files=True)
+            filedata = archive.get_file_bytes(handle)
+            # TODO: is os.path.basename correct here? we should be using whatever sep the archive uses
+            # (seems to be '/' always?)
+            result.append(ReceivedFile(None, os.path.basename(filepath), filedata))
+    except InvalidArchive:
+        raise
+    # the Archive class might raise all kinds of exceptions when fed invalid data. Catch them all here.
+    except Exception:
         raise InvalidArchive()
-
-    finally:
-        archive.cleanup()
 
     return result
 
 
-def extract_files_from_tornado(
-    tornado_files: dict[str, list["HTTPFile"]],
-) -> list[ReceivedFile]:
+def extract_files_from_tornado(tornado_files: dict[str, list["HTTPFile"]],
+                               max_size: int | None = None,
+                               max_files: int | None = None) -> list[ReceivedFile]:
     """Transform some files as received by Tornado into our format.
 
     Given the files as provided by Tornado on the HTTPServerRequest's
@@ -112,6 +127,9 @@ def extract_files_from_tornado(
     it and return its contents instead.
 
     tornado_files: a bunch of files, in Tornado's format.
+    max_size: limit on total size of decompressed files
+        (protects against zip bombs).
+    max_files: maximum number of files to allow in the archive
 
     return: the same bunch of files, in our format
         (except if it was an archive: then it's the archive's contents).
@@ -121,7 +139,7 @@ def extract_files_from_tornado(
     """
     if len(tornado_files) == 1 and "submission" in tornado_files \
             and len(tornado_files["submission"]) == 1:
-        return extract_files_from_archive(tornado_files["submission"][0].body)
+        return extract_files_from_archive(tornado_files["submission"][0].body, max_size, max_files)
 
     result = list()
     for codename, files in tornado_files.items():
