@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2024-12-23 21:08+0000\n"
-"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: ro_RO\n"
@@ -295,6 +295,12 @@ msgstr "Parola"
 msgid "Login"
 msgstr "Logare"
 
+msgid "Don't have an account?"
+msgstr "Nu ai un cont?"
+
+msgid "Register"
+msgstr "Înregistrează-te"
+
 msgid "New message"
 msgstr "Mesaj nou"
 
@@ -346,6 +352,9 @@ msgstr "este eliberat sub"
 
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero General Public License"
+
+msgid "Choose a contest"
+msgstr "Alege un concurs"
 
 msgid "Programming languages and libraries"
 msgstr "Limbaje de programare si biblioteci"

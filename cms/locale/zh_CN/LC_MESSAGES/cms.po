@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2024-12-23 21:08+0000\n"
-"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -271,6 +271,12 @@ msgstr "密码"
 
 msgid "Login"
 msgstr "登入"
+
+msgid "Don't have an account?"
+msgstr "还没有账号？"
+
+msgid "Register"
+msgstr "注册"
 
 msgid "New message"
 msgstr "新信息"
