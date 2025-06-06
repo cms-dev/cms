@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import imp
 import logging
 import os
 import json
@@ -40,6 +41,70 @@ logger = logging.getLogger(__name__)
 
 def make_timedelta(t):
     return timedelta(seconds=t)
+
+
+LANGUAGE_MAP = {
+    'afrikaans': 'af',
+    'arabic': 'ar',
+    'armenian': 'hy',
+    'azerbaijani': 'az',
+    'belarusian': 'be',
+    'bengali': 'bn',
+    'bosnian': 'bs',
+    'bulgarian': 'bg',
+    'catalan': 'ca',
+    'chinese': 'zh',
+    'croatian': 'hr',
+    'czech': 'cs',
+    'danish': 'da',
+    'dutch': 'nl',
+    'english': 'en',
+    'estonian': 'et',
+    'filipino': 'fil',
+    'finnish': 'fi',
+    'french': 'fr',
+    'georgian': 'ka',
+    'german': 'de',
+    'greek': 'el',
+    'hebrew': 'he',
+    'hindi': 'hi',
+    'hungarian': 'hu',
+    'icelandic': 'is',
+    'indonesian': 'id',
+    'irish': 'ga',
+    'italian': 'it',
+    'japanese': 'ja',
+    'kazakh': 'kk',
+    'korean': 'ko',
+    'kyrgyz': 'ky',
+    'latvian': 'lv',
+    'lithuanian': 'lt',
+    'macedonian': 'mk',
+    'malay': 'ms',
+    'mongolian': 'mn',
+    'norwegian': 'no',
+    'persian': 'fa',
+    'polish': 'pl',
+    'portuguese': 'pt',
+    'romanian': 'ro',
+    'russian': 'ru',
+    'serbian': 'sr',
+    'sinhala': 'si',
+    'slovak': 'sk',
+    'slovene': 'sl',
+    'spanish': 'es',
+    'swedish': 'sv',
+    'tajik': 'tg',
+    'tamil': 'ta',
+    'thai': 'th',
+    'turkish': 'tr',
+    'turkmen': 'tk',
+    'ukrainian': 'uk',
+    'urdu': 'ur',
+    'uzbek': 'uz',
+    'vietnamese': 'vi',
+    'other': 'other',
+}
 
 
 class PolygonTaskLoader(TaskLoader):
@@ -150,11 +215,10 @@ class PolygonTaskLoader(TaskLoader):
         task_cms_conf = None
         if os.path.exists(task_cms_conf_path):
             logger.info("Found additional CMS options for task %s.", name)
-            import importlib.util
-            spec = importlib.util.spec_from_file_location(
-                'cms_conf', task_cms_conf_path)
-            task_cms_conf = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(task_cms_conf)
+            with open(task_cms_conf_path, 'rb') as f:
+                task_cms_conf = imp.load_module('cms_conf', f,
+                                                task_cms_conf_path,
+                                                ('.py', 'r', imp.PY_SOURCE))
         if task_cms_conf is not None and hasattr(task_cms_conf, "general"):
             args.update(task_cms_conf.general)
 
@@ -191,6 +255,9 @@ class PolygonTaskLoader(TaskLoader):
                     os.path.dirname(checker_src), "checker")
                 testlib_path = "/usr/local/include/cms"
                 testlib_include = os.path.join(testlib_path, "testlib.h")
+                if not config.installed:
+                    testlib_path = os.path.join(os.path.dirname(__file__),
+                                                "polygon")
                 code = subprocess.call(["g++", "-x", "c++", "-O2", "-static",
                                         "-DCMS", "-I", testlib_path,
                                         "-include", testlib_include,
