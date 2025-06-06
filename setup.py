@@ -194,7 +194,7 @@ setup(
         ],
     },
     keywords="ioi programming contest grader management system",
-    license_expression="AGPL-3.0-only",
+    license_expression="AGPL-3.0-or-later",
     python_requires=">=3.11",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
